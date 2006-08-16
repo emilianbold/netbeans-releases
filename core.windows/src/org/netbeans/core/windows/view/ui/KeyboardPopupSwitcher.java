@@ -20,6 +20,7 @@
 package org.netbeans.core.windows.view.ui;
 
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -249,13 +250,20 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         if (!isShown()) {
             // set popup to be always on top to be in front of all
             // floating separate windows
-            popup = new JWindow((Window)null);
+            popup = new JWindow();
             popup.setAlwaysOnTop(true);
             popup.getContentPane().add(pTable);
             popup.setLocation(x, y);
             popup.pack();
-            WindowManager.getDefault().getMainWindow().addWindowFocusListener( this );
             popup.setVisible(true);
+            // #82743 - on JDK 1.5 popup steals focus from main window for a millisecond,
+            // so we have to delay attaching of focus listener
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run () {
+                    WindowManager.getDefault().getMainWindow().
+                            addWindowFocusListener( KeyboardPopupSwitcher.this );
+                }
+            });
             shown = true;
         }
     }
@@ -394,7 +402,6 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         //remove the switcher when the main window is deactivated, 
         //e.g. user pressed Ctrl+Esc on MS Windows which opens the Start menu
         cancelSwitching();
-        WindowManager.getDefault().getMainWindow().removeWindowFocusListener( this );
     }
     
     /**
@@ -414,6 +421,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             toHide.setVisible(false);
             shown = false;
             hits = 0;
+            // part of #82743 fix
+            WindowManager.getDefault().getMainWindow().removeWindowFocusListener( KeyboardPopupSwitcher.this );
         }
     }
 }
