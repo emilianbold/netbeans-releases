@@ -53,6 +53,9 @@ public class SetSystemPropertiesAction extends WizardAction {
         Util.logSystemInfo(this);
         resolveProductBeanProperties();
         setDesktopIconName();
+        
+        //It is used to create file nbClusterDir + '/config/productid'
+        Util.setStringPropertyValue("ProductID","NB");
         Util.setStringPropertyValue(Names.INSTALLER_TYPE,Names.INSTALLER_NB);
     }
     
