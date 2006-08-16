@@ -168,6 +168,7 @@ public class Installer extends ModuleInstall {
                 }
                 if (nextURL != null) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(nextURL);
+                    return false;
                 }
             }
             return true;
@@ -215,7 +216,7 @@ public class Installer extends ModuleInstall {
                     String name = attrValue(in, "name");
                     String value = attrValue(in, "value");
                     
-                    if ("hidden".equals(type) && "submitAndExit".equals(name)) { // NOI18N
+                    if ("hidden".equals(type) && "submit".equals(name)) { // NOI18N
                         f.submitValue = value;
                     }
                 }
@@ -239,7 +240,7 @@ public class Installer extends ModuleInstall {
 
         PrintStream os = new PrintStream(conn.getOutputStream());
         
-        os.println("POST / HTTP/1.1");
+        os.println("POST " + postURL.getPath() + " HTTP/1.1");
         os.println("Pragma: no-cache");
         os.println("Cache-control: no-cache");
         os.println("Content-Type: multipart/form-data; boundary=----------konecbloku");
@@ -284,7 +285,7 @@ public class Installer extends ModuleInstall {
         LOG.fine("Reply from uploadLogs:");
         LOG.fine(redir.toString());
         
-        Pattern p = Pattern.compile("<meta *http-equiv=.Refresh. *URL=['\"]([^'\"]*)['\"] *>", Pattern.MULTILINE | Pattern.DOTALL);
+        Pattern p = Pattern.compile("<meta *http-equiv=.Refresh. *url=['\"]([^'\"]*)['\"] *>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
         Matcher m = p.matcher(redir);
         
         if (m.find()) {

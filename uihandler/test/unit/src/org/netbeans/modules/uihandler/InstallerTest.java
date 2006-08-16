@@ -68,7 +68,7 @@ public class InstallerTest extends TestCase {
 
     public void testReadListOfSubmitButtons() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
-            "<input type='hidden' name='submitAndExit' value=\"Send Feedback\"/>" +
+            "<input type='hidden' name='submit' value=\"Send Feedback\"/>" +
             "\n" +
             "</form></body></html>";
         
@@ -87,7 +87,7 @@ public class InstallerTest extends TestCase {
     
     public void testReadListOfSubmitButtonsWithAmpersand() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
-            "<input type='hidden' name='submitAndExit' value=\"&amp;Send Feedback\"/>" +
+            "<input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +
             "\n" +
             "</form></body></html>";
         
