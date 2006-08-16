@@ -54,6 +54,8 @@ public class Widget {
     private Border border;
     private Layout layout;
     private Point preferredLocation;
+    private Rectangle minimumBounds;
+    private Rectangle maximumBounds;
     private Rectangle preferredBounds;
     private boolean checkClipping;
 
@@ -292,6 +294,22 @@ public class Widget {
         revalidate ();
     }
 
+    public final Rectangle getMinimumBounds () {
+        return minimumBounds != null ? new Rectangle (minimumBounds) : null;
+    }
+
+    public final void setMinimumBounds (Rectangle minimumBounds) {
+        this.minimumBounds = minimumBounds;
+    }
+
+    public final Rectangle getMaximumBounds () {
+        return maximumBounds != null ? new Rectangle (maximumBounds) : null;
+    }
+
+    public final void setMaximumBounds (Rectangle maximumBounds) {
+        this.maximumBounds = maximumBounds;
+    }
+
     public final Point getPreferredLocation () {
         return preferredLocation != null ? new Point (preferredLocation) : null;
     }
@@ -308,11 +326,19 @@ public class Widget {
     }
 
     public final Rectangle getPreferredBounds () {
+        Rectangle rect;
         if (isPreferredBoundsSet ())
-            return new Rectangle (preferredBounds);
-        if (calculatedPreferredBounds == null)
-            calculatedPreferredBounds = calculatePreferredBounds ();
-        return new Rectangle (calculatedPreferredBounds);
+            rect = new Rectangle (preferredBounds);
+        else {
+            if (calculatedPreferredBounds == null)
+                calculatedPreferredBounds = calculatePreferredBounds ();
+            rect = new Rectangle (calculatedPreferredBounds);
+        }
+        if (minimumBounds != null)
+            rect.add (minimumBounds);
+        if (maximumBounds != null)
+            rect.intersection (maximumBounds);
+        return rect;
     }
 
     private Rectangle calculatePreferredBounds () {
