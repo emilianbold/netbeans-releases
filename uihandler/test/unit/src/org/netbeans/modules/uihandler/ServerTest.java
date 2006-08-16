@@ -100,7 +100,7 @@ public class ServerTest extends NbTestCase {
     
     public void testRedirectsLogs() throws Exception {
         LinkedList<String> query = new LinkedList<String>();
-        query.add("<meta http-equiv=\"Refresh\" URL=\"http://www.netbeans.org\">");
+        query.add("<meta http-equiv=\"Refresh\" conteNT='URL=http://www.netbeans.org'>");
         LinkedList<String> reply = new LinkedList<String>();
         int port = startServer(query, reply);
         
@@ -114,4 +114,29 @@ public class ServerTest extends NbTestCase {
         assertEquals("One reply received", 1, reply.size());
         assertEquals("Redirected to nb.org", new URL("http://www.netbeans.org"), redir);
     }
+
+
+    public void testRedirectsLogsWithTime() throws Exception {
+        LinkedList<String> query = new LinkedList<String>();
+        query.add("<meta http-equiv='Refresh' content='3; URL=http://logger.netbeans.org/welcome/use.html'>");
+        LinkedList<String> reply = new LinkedList<String>();
+        int port = startServer(query, reply);
+        
+        URL u = new URL("http://localhost:" + port);
+        
+        List<LogRecord> recs = new ArrayList<LogRecord>();
+        recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
+        URL redir = Installer.uploadLogs(u, Collections.<String,String>emptyMap(), recs);
+
+        assertTrue("one query has been sent: " + query, query.isEmpty());
+        assertEquals("One reply received", 1, reply.size());
+        assertEquals("Redirected to nb.org", new URL("http://logger.netbeans.org/welcome/use.html"), redir);
+    }
+
+    
+
+
+
 }
+
+
