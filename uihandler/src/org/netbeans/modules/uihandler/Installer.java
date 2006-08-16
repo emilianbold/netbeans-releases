@@ -20,12 +20,17 @@ package org.netbeans.modules.uihandler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -59,6 +64,7 @@ public class Installer extends ModuleInstall {
     private static Queue<LogRecord> logs = new LinkedList<LogRecord>();
     private static UIHandler ui = new UIHandler(logs, false);
     private static UIHandler handler = new UIHandler(logs, true);
+    private static final Logger LOG = Logger.getLogger(Installer.class.getName());
         
     
     
@@ -119,11 +125,11 @@ public class Installer extends ModuleInstall {
                 is.close();
             }
         } catch (ParserConfigurationException ex) {
-            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, null, ex);
         } catch (SAXException ex) {
-            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, null, ex);
         } catch (IOException ex) {
-            Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, null, ex);
         }
         
         List<LogRecord> recs = getLogs();
@@ -154,7 +160,12 @@ public class Installer extends ModuleInstall {
                 } catch (MalformedURLException ex) {
                     postURL = null;
                 }
-                URL nextURL = uploadLogs(postURL, recs);
+                URL nextURL = null;
+                try {
+                    nextURL = uploadLogs(postURL, Collections.<String,String>emptyMap(), recs);
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                }
                 if (nextURL != null) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(nextURL);
                 }
@@ -220,8 +231,67 @@ public class Installer extends ModuleInstall {
         return buttons.toArray();
     }
 
-    private URL uploadLogs(URL postURL, List<LogRecord> recs) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    static URL uploadLogs(URL postURL, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
+        URLConnection conn = postURL.openConnection();
+        
+        conn.setDoOutput(true);
+        conn.setDoInput(true);
+
+        PrintStream os = new PrintStream(conn.getOutputStream());
+        
+        os.println("POST / HTTP/1.1");
+        os.println("Pragma: no-cache");
+        os.println("Cache-control: no-cache");
+        os.println("Content-Type: multipart/form-data; boundary=----------konecbloku");
+        os.println();
+        
+        for (Map.Entry<String, String> en : attrs.entrySet()) {
+            os.println("----------konecbloku");
+            os.println("Content-Disposition: form-data; name=\"" + en.getKey() + "\"");
+            os.println();
+            os.println(en.getValue().getBytes());
+        }
+        
+        os.println("----------konecbloku");
+        os.println("Content-Disposition: form-data; name=\"logs\"");
+        os.println("Content-Type: x-application/gzip");
+        os.println();
+/*        GZIPOutputStream gzip = new GZIPOutputStream(os);
+        for (LogRecord r : recs) {
+        }
+        gzip.finish();
+ */
+        ObjectOutputStream oos = new ObjectOutputStream(os);
+        for (LogRecord r: recs) {
+            oos.writeObject(r);
+        }
+        oos.flush();
+        os.println("----------konecbloku--");
+        os.close();
+       
+        
+        InputStream is = conn.getInputStream();
+        StringBuffer redir = new StringBuffer();
+        for (;;) {
+            int ch = is.read();
+            if (ch == -1) {
+                break;
+            }
+            redir.append((char)ch);
+        }
+        is.close();
+        
+        LOG.fine("Reply from uploadLogs:");
+        LOG.fine(redir.toString());
+        
+        Pattern p = Pattern.compile("<meta *http-equiv=.Refresh. *URL=['\"]([^'\"]*)['\"] *>", Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher m = p.matcher(redir);
+        
+        if (m.find()) {
+            return new URL(m.group(1));
+        } else {
+            return null;
+        }
     }
     
     static final class Form extends Object {
