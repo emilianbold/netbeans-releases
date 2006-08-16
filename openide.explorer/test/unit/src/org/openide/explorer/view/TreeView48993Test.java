@@ -152,7 +152,8 @@ public class TreeView48993Test extends NbTestCase {
             f.getContentPane().add(BorderLayout.CENTER, p);
             f.pack();
             f.setVisible(true);
-            u.waitOn(10000);
+            boolean timedout = u.waitOn(10000);
+            assertFalse("First painted in 10s timeout", timedout);
             
             Thread.sleep(2000);
             ((VisualizerNode)Visualizer.findVisualizer(u)).getIcon(true, true); // this clears the internal cache
@@ -162,9 +163,11 @@ public class TreeView48993Test extends NbTestCase {
         }
         
         f.setBounds(300, 300, 200, 200);
-        f.validate();
+        f.setVisible(false);
         f.invalidate();
+        f.validate();
         f.repaint();
+        f.setVisible(true);
         
         boolean timedout = u.waitOn(10000); // Waits for getIcon to run
         assertFalse("Node painted in 10s timeout", timedout); 
