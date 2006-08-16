@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.utils.progress;
@@ -31,10 +31,10 @@ public class Progress {
     private String detail;
     private int percentage;
     
-    private Vector<ProgressListener> progressListeners;
+    private Vector<ProgressListener> listeners;
     
     public Progress() {
-        progressListeners = new Vector<ProgressListener>();
+        listeners = new Vector<ProgressListener>();
     }
     
     public Progress(ProgressListener initialListener) {
@@ -44,22 +44,20 @@ public class Progress {
     }
     
     public void addProgressListener(ProgressListener listener) {
-        synchronized (progressListeners) {
-            progressListeners.add(listener);
+        synchronized (listeners) {
+            listeners.add(listener);
         }
     }
     
     public void removeProgressListener(ProgressListener listener) {
-        synchronized (progressListeners) {
-            progressListeners.remove(listener);
+        synchronized (listeners) {
+            listeners.remove(listener);
         }
     }
     
     private void notifyListeners() {
-        synchronized (progressListeners) {
-            for (ProgressListener listener: progressListeners) {
-                listener.progressUpdated(this);
-            }
+        for (ProgressListener listener: listeners.toArray(new ProgressListener[0])) {
+            listener.progressUpdated(this);
         }
     }
     
