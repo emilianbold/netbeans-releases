@@ -33,9 +33,9 @@ import org.netbeans.modules.form.FormProperty;
  * Support class for BorderLayout. This is an example of support for layout
  * manager using simple component constraints (String).
  *
- * @author Tran Duc Trung, Tomas Pavek
+ * @author Tran Duc Trung, Tomas Pavek, Jan Stola
  */
-
+// Expects ltr orientation of designer
 public class BorderLayoutSupport extends AbstractLayoutSupport
 {
     /** Gets the supported layout manager class - BorderLayout.
@@ -95,23 +95,23 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
             else if (posInCont.y >= h-marginH-contInsets.bottom) yC = 2; // bottom
         }
 
-        if (xC == 0) primary = BorderLayout.WEST;
-        else if (xC == 2) primary = BorderLayout.EAST;
+        if (xC == 0) primary = BorderLayout.LINE_START;
+        else if (xC == 2) primary = BorderLayout.LINE_END;
         else alternateX = posInCont.x - contInsets.left <
                             (w - contInsets.left - contInsets.right)/2 ?
-                BorderLayout.WEST : BorderLayout.EAST;
+                BorderLayout.LINE_START : BorderLayout.LINE_END;
 
         if (yC == 0) { // top
             alternateX = primary;
-            primary = BorderLayout.NORTH;
+            primary = BorderLayout.PAGE_START;
         }
         else if (yC == 2) { // bottom
             alternateX = primary;
-            primary = BorderLayout.SOUTH;
+            primary = BorderLayout.PAGE_END;
         }
         else alternateY = posInCont.y - contInsets.top <
                             (h - contInsets.top - contInsets.bottom)/2 ?
-                BorderLayout.NORTH : BorderLayout.SOUTH;
+                BorderLayout.PAGE_START : BorderLayout.PAGE_END;
 
         String[] suggested = new String[] { primary, alternateY, alternateX };
         String[] free = findFreePositions();
@@ -182,50 +182,50 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
         int marginW = getMargin(contSize.width - contInsets.left - contInsets.right);
         int marginH = getMargin(contSize.height - contInsets.top - contInsets.bottom);
 
-        if (BorderLayout.NORTH.equals(position)) {
+        if (BorderLayout.PAGE_START.equals(position)) {
             x1 = contInsets.left;
             x2 = contSize.width - contInsets.right;
             y1 = contInsets.top;
             y2 = contInsets.top + (compPrefSize.height > 0 ?
                                    compPrefSize.height : marginH);
         }
-        else if (BorderLayout.SOUTH.equals(position)) {
+        else if (BorderLayout.PAGE_END.equals(position)) {
             x1 = contInsets.left;
             x2 = contSize.width - contInsets.right;
             y1 = contSize.height - contInsets.bottom
                    - (compPrefSize.height > 0 ? compPrefSize.height : marginH);
             y2 = contSize.height - contInsets.bottom;
         }
-        else { // EAST, WEST or CENTER
-            if (BorderLayout.WEST.equals(position)) {
+        else { // LINE_START, LINE_END or CENTER
+            if (BorderLayout.LINE_START.equals(position)) {
                 x1 = contInsets.left;
                 x2 = contInsets.left + (compPrefSize.width > 0 ?
                                         compPrefSize.width : marginW);
             }
-            else if (BorderLayout.EAST.equals(position)) {
+            else if (BorderLayout.LINE_END.equals(position)) {
                 x1 = contSize.width - contInsets.right
                        - (compPrefSize.width > 0 ? compPrefSize.width : marginW);
                 x2 = contSize.width - contInsets.right;
             }
             else { // CENTER
-                index = getComponentOnPosition(BorderLayout.WEST);
+                index = getComponentOnPosition(BorderLayout.LINE_START);
                 x1 = contInsets.left;
                 if (index >= 0)
                     x1 += comps[index].getSize().width;
 
-                index = getComponentOnPosition(BorderLayout.EAST);
+                index = getComponentOnPosition(BorderLayout.LINE_END);
                 x2 = contSize.width - contInsets.right;
                 if (index >= 0)
                     x2 -= comps[index].getSize().width;
             }
 
-            // y1 and y2 are the same for EAST, WEST and CENTER
-            index = getComponentOnPosition(BorderLayout.NORTH);
+            // y1 and y2 are the same for LINE_START, LINE_END and CENTER
+            index = getComponentOnPosition(BorderLayout.PAGE_START);
             y1 = contInsets.top;
             if (index >= 0)
                 y1 += comps[index].getSize().height;
 
-            index = getComponentOnPosition(BorderLayout.SOUTH);
+            index = getComponentOnPosition(BorderLayout.PAGE_END);
             y2 = contSize.height - contInsets.bottom;
             if (index >= 0)
                 y2 -= comps[index].getSize().height;
@@ -309,14 +309,14 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
 
         if (getComponentOnPosition(BorderLayout.CENTER) == -1)
             positions.add(BorderLayout.CENTER);
-        if (getComponentOnPosition(BorderLayout.NORTH) == -1)
-            positions.add(BorderLayout.NORTH);
-        if (getComponentOnPosition(BorderLayout.SOUTH) == -1)
-            positions.add(BorderLayout.SOUTH);
-        if (getComponentOnPosition(BorderLayout.EAST) == -1)
-            positions.add(BorderLayout.EAST);
-        if (getComponentOnPosition(BorderLayout.WEST) == -1)
-            positions.add(BorderLayout.WEST);
+        if (getComponentOnPosition(BorderLayout.PAGE_START) == -1)
+            positions.add(BorderLayout.PAGE_START);
+        if (getComponentOnPosition(BorderLayout.PAGE_END) == -1)
+            positions.add(BorderLayout.PAGE_END);
+        if (getComponentOnPosition(BorderLayout.LINE_END) == -1)
+            positions.add(BorderLayout.LINE_END);
+        if (getComponentOnPosition(BorderLayout.LINE_START) == -1)
+            positions.add(BorderLayout.LINE_START);
         if (positions.size() == 0)
             positions.add(BorderLayout.CENTER);
 
@@ -329,14 +329,28 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
         java.util.List constraints = getConstraintsList();
         if (constraints == null)
             return -1;
-
+        
+        position = (String)toAbsolute(position);
         for (int i=0, n=constraints.size(); i < n; i++) {
             LayoutConstraints constr = (LayoutConstraints) constraints.get(i);
-            if (constr != null && position.equals(constr.getConstraintsObject()))
+            if (constr != null && position.equals(toAbsolute(constr.getConstraintsObject())))
                 return i;
         }
 
         return -1;
+    }
+
+    private static Object toAbsolute(Object constraint) {
+        if (BorderLayout.LINE_START.equals(constraint)) {
+            constraint = BorderLayout.WEST;
+        } else if (BorderLayout.LINE_END.equals(constraint)) {
+            constraint = BorderLayout.EAST;
+        } else if (BorderLayout.PAGE_START.equals(constraint)) {
+            constraint = BorderLayout.NORTH;
+        } else if (BorderLayout.PAGE_END.equals(constraint)) {
+            constraint = BorderLayout.SOUTH;
+        }
+        return constraint;
     }
 
     private int getMargin(int size) {
@@ -408,6 +422,10 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
     static class BorderDirectionEditor extends PropertyEditorSupport {
         private final String[] values = {
             BorderLayout.CENTER,
+            BorderLayout.LINE_START,
+            BorderLayout.LINE_END,
+            BorderLayout.PAGE_START,
+            BorderLayout.PAGE_END,
             BorderLayout.WEST,
             BorderLayout.EAST,
             BorderLayout.NORTH,
@@ -415,6 +433,10 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
         };
         private final String[] javaInitStrings = {
             "java.awt.BorderLayout.CENTER", // NOI18N
+            "java.awt.BorderLayout.LINE_START", // NOI18N
+            "java.awt.BorderLayout.LINE_END", // NOI18N
+            "java.awt.BorderLayout.PAGE_START", // NOI18N
+            "java.awt.BorderLayout.PAGE_END", // NOI18N
             "java.awt.BorderLayout.WEST", // NOI18N
             "java.awt.BorderLayout.EAST", // NOI18N
             "java.awt.BorderLayout.NORTH", // NOI18N
