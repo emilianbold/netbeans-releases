@@ -51,6 +51,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -85,7 +86,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         
         setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
 
-        HttpProxySettings.getDefault().addPropertyChangeListener( this );
+        HttpProxySettings.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, HttpProxySettings.getDefault() ) );
     }
     
     RSSFeed() {

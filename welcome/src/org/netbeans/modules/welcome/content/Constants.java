@@ -137,6 +137,4 @@ public interface Constants {
 
     static final int FEED_PANEL_MAX_WIDTH = 650;
     static final int FEED_PANEL_MIN_WIDTH = 200;
-
-    static final ImageIcon BULLET_ICON = new ImageIcon( Utilities.loadImage( BULLET_IMAGE ) );
 }
