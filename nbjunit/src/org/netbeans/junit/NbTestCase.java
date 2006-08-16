@@ -1224,7 +1224,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             private void visitRef(Object from, Object to) {
                 objects.get(from).addOut(to);
                 objects.get(to).addIn(from);
-                if (to == target) throw new RuntimeException("Done");
+                if (to == target) throw new ObjectFoundException();
             }
             
             
