@@ -255,9 +255,9 @@ public class ServerPropertiesPanel extends JPanel
         formattingPanel = new JPanel();
         serverTypeLabel = new JLabel();
         serverTypeCombo = new JComboBox(new Object[] {NbBundle.getMessage(
-                Customizer.class, "TXT_ServerTypeLocal"),
-        NbBundle.getMessage(Customizer.class,
-                "TXT_ServerTypeRemote")});                             // NOI18N
+                Customizer.class, "TXT_ServerTypeLocal")/*,
+        //NbBundle.getMessage(Customizer.class,
+                "TXT_ServerTypeRemote")*/});// NOI18N
         localInstanceLabel = new JLabel();
         localInstancesCombo = new JComboBox(new InstancesModel(
                 wizardServerProperties.getServerInstances(
