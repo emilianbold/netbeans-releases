@@ -96,6 +96,10 @@ public class CommitAction extends ContextAction {
             }
         }       
 
+        if(fileList.size()==0) {
+            return; 
+        }
+        
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS);
