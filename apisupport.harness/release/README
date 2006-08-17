@@ -26,7 +26,8 @@ to indicate that it is an NBM project, and the configuration must be
     <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
 
 Note that this schema is a change from the /2 schema used in NetBeans 5.0.
-NetBeans 4.0 and 4.1 use schema /1.
+(/2 is still supported for compatibility.)
+NetBeans 4.0 and 4.1 use schema /1 which is no longer supported.
 
 Outside of the netbeans.org CVS tree, modules can take two forms. They may be
 marked with
@@ -303,26 +304,42 @@ module's current JAR so you do not need to keep track of it. *Important*: if you
 either *export* or *import* any implementation dependencies, you should probably
 use spec.version.base (see below).
 
-Specify your test dependencies on other modules:
+Specify your test dependencies on other modules [since 5.0u2, requires /3
+schema]:
 
-          <test-dependencies>
-              <test-type>
-                <!-- The test type name. It is used for historical reason. By default is used unit.
-                  The 'unit' test type is default and is supported by all module project types. 
-                  NetBeans module type also supports 'qa-functional' test type.   
-                   -->  
-                  <name>unit</name>
-                  <!-- A elementary dependency on a module or tests. ->
-                  <test-dependency>
-                      <!-- Code base name of module. -->
-                      <code-name-base>org.netbeans.modules.java.project</code-name-base>
-                      <!-- Add all transitive dependencies of module on classpath. -->
-                      <recursive/>
-                       <!-- Also compilation dependency (runtime is in everytime). --> 
-                      <compile-dependency/>
-                  </test-dependency>
-                </test-type>
-            </test-dependencies>  
+    <test-dependencies>
+        <test-type>
+            <!--
+            Which category of tests. Normally you will use 'unit'.
+            netbeans.org modules also support 'qa-functional' and others.
+            -->
+            <name>unit</name>
+            <!-- A dependency on a module or its tests. -->
+            <test-dependency>
+                <!-- Identification of module our tests depend upon. -->
+                <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                <!-- Include also transitive dependencies of that module. -->
+                <recursive/>
+                <!-- Always available when running, but to include at compile time also: --> 
+                <compile-dependency/>
+                <!-- To request the tests of that module, rather than the module itself: -->
+                <test/>
+            </test-dependency>
+        </test-type>
+    </test-dependencies>
+
+As an example, to ensure that FileUtil.toFileObject(File) will work when your
+unit tests are run:
+
+    <test-dependencies>
+        <test-type>
+            <name>unit</name>
+            <test-dependency>
+                <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                <recursive/>
+            </test-dependency>
+        </test-type>
+    </test-dependencies>
 
 Declare any public API/SPI packages you export:
 
@@ -669,20 +686,18 @@ src.dir - "src", module source directory. Avoid overriding.
 test.unit.cp.extra - any additional classpath you might need to compile your
 unit tests. If left empty, you can compile against JUnit; the NB test extensions
 in nbjunit.jar; your module; and anything your module compiled against (since
-5.0u1, ${module.run.classpath}). The dependencies can be also defined since 
-NetBeans 6.0. 
+5.0u1, ${module.run.classpath}). As of 5.0u2 you can and should include other
+modules in project.xml's <test-dependencies> but in earlier releases these must
+be listed in this property.
 
     test.unit.cp.extra=\
         ${tools.jar}:\
         ${basedir}/lib/custom-junit-helpers.jar
 
 test.unit.run.cp.extra - any additional classpath you might need to *run* your
-unit tests with (beyond what they are already compiled with). The dependencies can 
-be also defined since NetBeans 6.0. E.g. to make sure
-org.openide.filesystems.FileUtil.toFileObject works reliably:
-
-    test.unit.run.cp.extra=\
-        ${netbeans.dest.dir}/platform6/modules/org-netbeans-modules-masterfs.jar
+unit tests with (beyond what they are already compiled with). As of 5.0u2 you
+can and should include other modules in project.xml's <test-dependencies> but in
+earlier releases these must be listed in this property.
 
 test.unit.lib.cp - path to some basic libraries which can be used in unit tests:
 junit.jar, nbjunit.jar, and insanelib.jar. Not needed for netbeans.org modules.
@@ -967,15 +982,18 @@ and to be safe should end in *two* newlines.
 
 UPGRADING FROM NETBEANS 5.x
 ---------------------------
-Upgrading from NetBeans 5.x is trivial. 
 
-1. Change the harness to version from NetBeans 6.0.  
+Upgrading from NetBeans 5.x (including 5.0, 5.0 with Update 1 of the module
+development support, and 5.5) is trivial. If you do not need to specify test
+dependencies, you do not need to do anything. If you do:
 
-2. Execute fix-test-dependencies ant target for your module project. It switches
-to the /3 XML schema for project.xml. Test dependencies defined in test.unit.cp.extra
-and test.unit.run.cp.extra are moved to project.xml. Only libraries which are 
-neither part of platform nor modularized will stays in properties.  
-  
+1. Make sure you are using a 5.0u2+ harness.
+
+2. Execute the 'fix-test-dependencies' Ant target for your module project. It
+will switch your project.xml to the /3 schema. Test dependencies defined in
+${test.unit.cp.extra} and/or ${test.unit.run.cp.extra} in project.properties are
+moved to <test-dependencies> in project.xml. Only dependencies which do not
+correspond to modules will be left as is.
 
 UPGRADING FROM NETBEANS 4.0/4.1
 -------------------------------
@@ -984,8 +1002,8 @@ Upgrading an NBM project from an older 4.x version of NetBeans is not trivial
 but should not pose too much difficulty once you get the hang of it. (A tool may
 be provided in the future to do it for you.)
 
-1. Switch to the /2 XML schema for project.xml *and validate the result* to make
-sure it is syntactically correct. Delete any <javadoc/> element.
+1. Switch to the /2 or /3 XML schema for project.xml *and validate the result*
+to make sure it is syntactically correct. Delete any <javadoc/> element.
 
 2. Delete the <path> element from project.xml. Add <suite-component/> or
 <standalone/> for an external module.
