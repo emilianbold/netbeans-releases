@@ -77,7 +77,10 @@ public final class RootNode extends FilterNode {
     // --------
 
     public NewType[] getNewTypes() {
-        return new NewType[] { new NewCategory() };
+        NewType[] res = super.getNewTypes();
+        if( null == res || res.length == 0 )
+            res = new NewType[] { new NewCategory() };
+        return res;
     }
 
     public Action[] getActions(boolean context) {
