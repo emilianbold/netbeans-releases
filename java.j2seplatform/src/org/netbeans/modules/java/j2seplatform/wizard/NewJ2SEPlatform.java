@@ -81,7 +81,7 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
      */
     public void run() {
         try {
-            FileObject java = Util.findTool("java", this.getInstallFolders());
+            FileObject java = findTool("java");
             if (java == null)
                 return;
             File javaFile = FileUtil.toFile (java);
