@@ -81,9 +81,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             return handleRepositoryConnectError(false);
         } if(isNoCertificate(getException())) {
             return handleNoCertificateError();
-        } if (isHostNotFound(getException())) {
-            return handleRepositoryConnectError(true);
-        }
+        } 
 
         throw getException();
     }
