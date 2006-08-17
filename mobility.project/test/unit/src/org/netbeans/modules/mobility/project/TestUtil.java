@@ -228,6 +228,7 @@ public class TestUtil extends ProxyLookup {
             platPath=classPath.substring(id1,index+rootMobility.length())+rootWTK;
         }
         ZipFile zip=null;
+        String zipPath=null;
         try {
             String osarch=System.getProperty("os.name",null);
             String ossuf=null;
@@ -243,7 +244,8 @@ public class TestUtil extends ProxyLookup {
             } else
                 NbTestCase.fail("Operating system architecture: "+osarch+" not supported");
             
-            zip = new ZipFile(platPath+"wtk"+ossuf+".zip");
+            zipPath=platPath+"wtk"+ossuf+".zip";
+            zip = new ZipFile(zipPath);
             Enumeration files = zip.entries();
             while (files.hasMoreElements()) {
                 ZipEntry entry = (ZipEntry) files.nextElement();
@@ -264,7 +266,10 @@ public class TestUtil extends ProxyLookup {
             if (osarch.indexOf("Windows")==-1)
                 java.lang.Runtime.getRuntime().exec("chmod -R +x "+destPath+File.separator+"emulator"+File.separator+
                         wtkStr+File.separator+"bin");
-        } catch (IOException ex) {ex.printStackTrace();System.err.println(platPath);} finally {
+        } catch (IOException ex) {
+            NbTestCase.assertTrue("WTK zip file ("+zipPath+") not found or corrupted. Please add the correct zip file to run the tests",false);
+        }
+        finally {
             if (zip != null) try { zip.close(); } catch (IOException e) {}
         }
         System.setProperty("platform.home",destPath+File.separator+"emulator"+File.separator+wtkStr);

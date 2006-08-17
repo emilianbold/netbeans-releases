@@ -132,6 +132,7 @@ public class J2MEPlatformTest extends NbTestCase {
         }    
         catch (IOException ex) {
             installed=ex;
+            assertTrue("WTK zip file ("+zipPath+") not found or corrupted. Please add the correct zip file to run the tests",false);
         }
         finally {
             if (zip != null) {
