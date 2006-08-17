@@ -114,3 +114,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-indexedannotations" value="${javadoc.web.root}/org-netbeans-modules-indexedannotations"/>
 <property name="javadoc.docs.org-netbeans-modules-junit" value="${javadoc.web.root}/org-netbeans-modules-junit"/>
 <property name="javadoc.docs.org-netbeans-api-actions-support" value="${javadoc.web.root}/org-netbeans-api-actions-support"/>
+<property name="javadoc.docs.org-netbeans-modules-uihandler" value="${javadoc.web.root}/org-netbeans-modules-uihandler"/>
