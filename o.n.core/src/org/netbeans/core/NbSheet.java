@@ -420,6 +420,13 @@ public final class NbSheet extends TopComponent {
         }
     }
 
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            propertySheet.firePropertyChange("MACOSX", true, false);
+        }
+    }
+    
     /** Change listener to changes in selected nodes. And also
     * nodes listener to listen to global changes of the nodes.
     */

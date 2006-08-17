@@ -886,6 +886,14 @@ public class PropertySheet extends JPanel {
         return new TabInfo(titles, setSets);
     }
 
+    public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+        super.firePropertyChange(propertyName, oldValue, newValue);
+        // on macos we get this hint about focus lost..
+        if ("MACOSX".equals(propertyName)) {
+            this.table.focusLostCancel();
+        }
+    }
+
     private class TabSelectionListener implements ChangeListener, FocusListener {
         public void stateChanged(ChangeEvent e) {
             helpAction.checkContext();
