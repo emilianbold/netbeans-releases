@@ -21,6 +21,7 @@ package org.netbeans.installer.cluster;
 
 import com.installshield.product.ProductAction;
 import com.installshield.product.ProductActionSupport;
+import com.installshield.product.ProductBuilderSupport;
 import com.installshield.product.ProductException;
 import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
@@ -29,6 +30,8 @@ import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.system.SystemUtilService;
 
 import java.io.File;
+import org.netbeans.installer.PatchProductID;
+import org.netbeans.installer.Util;
 
 public class PostInstallFixupAction extends ProductAction {
     
@@ -38,9 +41,23 @@ public class PostInstallFixupAction extends ProductAction {
     
     private String clusterName;
     
+    private String [] nbClusterDirArray = new String[0];
+    
+    private FileService fileService = null;
+    
     private static final String BUNDLE = "$L(org.netbeans.installer.cluster.Bundle,";
     
+    public void build(ProductBuilderSupport support) {
+        try {
+            support.putClass(PatchProductID.class.getName());
+            support.putClass(Util.class.getName());
+        } catch (Exception ex) {
+            logEvent(this, Log.ERROR, ex);
+        }
+    }
+    
     private void init () throws ServiceException {
+        fileService = (FileService) getServices().getService(FileService.NAME);
         ProductService pservice = (ProductService)getService(ProductService.NAME);
         installDir = (String) pservice.getProductBeanProperty(
             ProductService.DEFAULT_PRODUCT_SOURCE,
@@ -53,6 +70,7 @@ public class PostInstallFixupAction extends ProductAction {
     public void install(ProductActionSupport support) throws ProductException {
         try {
             init();
+            patchProductID(true);
             patchNbClusters(true);
         } catch (ServiceException ex) {
             logEvent(this, Log.ERROR, ex);
@@ -62,6 +80,7 @@ public class PostInstallFixupAction extends ProductAction {
     public void uninstall(ProductActionSupport support) throws ProductException {
         try {
             init();
+            patchProductID(false);
             patchNbClusters(false);
             logEvent(this, Log.DBG, "uninstall installDir: " + installDir);
             deleteFiles(installDir, new String[] {"_uninst" + File.separator + "install.log"});
@@ -74,9 +93,86 @@ public class PostInstallFixupAction extends ProductAction {
         }
     }
     
+    private void initClusterDirArray () {
+        int arrLength = 0;
+        String s = resolveString(BUNDLE + "NetBeans.clusterDirLength)");
+        try {
+            arrLength = Integer.parseInt(s);
+        } catch (NumberFormatException exc) {
+            logEvent(this, Log.ERROR,"Incorrect number for NetBeans.clusterDirLength: " + s);
+        }
+        
+        //No order is defined.
+        if (arrLength == 0) {
+            return;
+        }
+        nbClusterDirArray = new String[arrLength];
+        for (int i = 0; i < arrLength; i++) {
+            nbClusterDirArray[i] = resolveString(BUNDLE + "NetBeans.nbClusterDir" + i + ")");
+            logEvent(this, Log.DBG,"nbClusterDirArray[" + i + "]: " + nbClusterDirArray[i]);
+        }
+    }
+    
+    private void patchProductID (boolean add) {
+        initClusterDirArray();
+        String fileName = "";
+        File dir;
+        boolean found = false;
+        for (int i = 0; i < nbClusterDirArray.length; i++) {
+            dir = new File(nbDir + File.separator + nbClusterDirArray[i]);
+            if (dir.isDirectory()) {
+                fileName = nbDir + File.separator + nbClusterDirArray[i] + File.separator + "config" + File.separator + "productid";
+                found = true;
+            }
+        }
+        if (!found) {
+            logEvent(this,Log.ERROR,"Error: Cannot find any nb cluster dir. Cannot patch productid.");
+            return;
+        }
+        File f = new File(fileName);
+        if (!f.exists()) {
+            logEvent(this,Log.ERROR,"Error: Cannot find file:" + f + " Cannot patch productid.");
+            return;
+        }
+        String[] content = null;
+        try {
+            logEvent(this,Log.DBG,"Patching file: " + fileName);
+            content = fileService.readAsciiFile(fileName);
+        } catch (ServiceException ex) {
+            logEvent(this,Log.ERROR,"Error: Cannot parse file:" + fileName);
+            Util.logStackTrace(this,ex);
+            return;
+        }
+        if (content == null) {
+            logEvent(this,Log.ERROR,"Error: Cannot parse file:" + fileName);
+            return;
+        }
+        if (content.length == 0) {
+            logEvent(this,Log.ERROR,"Error: Empty file:" + fileName);
+            return;
+        }
+        if (content.length > 1) {
+            logEvent(this,Log.WARNING,"Warning: productid file should contain only one line.");
+        }
+        String productID = content[0].trim();
+        logEvent(this,Log.DBG,"productID before patch: " + productID);
+        
+        if (add) {
+            productID = PatchProductID.add(productID,PatchProductID.PACK_ID_PROFILER,this);
+        } else {
+            productID = PatchProductID.remove(productID,PatchProductID.PACK_ID_PROFILER,this);
+        }
+        logEvent(this,Log.DBG,"productID after patch: " + productID);
+        try {
+            fileService.updateAsciiFile(fileName,new String [] { productID },0);
+        } catch (ServiceException ex) {
+            logEvent(this,Log.ERROR,"Error: Cannot update file:" + fileName);
+            Util.logStackTrace(this,ex);
+        }
+    }
+    
     private void deleteFiles(String dir, String[] fileNames) {
         try {
-            FileService fileService = (FileService) getServices().getService(FileService.NAME);
             for (int i = 0; i < fileNames.length; i++) {
                 if (fileNames[i] == null) {  //array bigger than num objs in array.
                     return;
@@ -96,8 +192,6 @@ public class PostInstallFixupAction extends ProductAction {
     
     private void patchNbClusters (boolean add) {
         try {
-            FileService fileService = (FileService) getServices().getService(FileService.NAME);
-            
             String fname = nbDir + File.separator + "etc" + File.separator + "netbeans.clusters";
             logEvent(this,Log.DBG,"Patching " + fname);
             String[] content = fileService.readAsciiFile(fname);
