@@ -26,12 +26,13 @@ import java.awt.*;
 import javax.swing.*;
 import org.netbeans.modules.welcome.content.ContentFactory;
 import org.openide.ErrorManager;
+import org.openide.nodes.Node;
 
 /**
  * The welcome screen.
  * @author  Richard Gregor
  */
-public class WelcomeComponent extends TopComponent{
+public class WelcomeComponent extends TopComponent {
     static final long serialVersionUID=6021472310161712674L;
     private static WeakReference/*<WelcomeComponent>*/ component =
                 new WeakReference(null); 
@@ -148,6 +149,18 @@ public class WelcomeComponent extends TopComponent{
             doInitialize();
         }
         super.componentShowing();
+        setActivatedNodes( new Node[] {} );
+    }
+
+    private static boolean firstTimeOpen = true;
+    protected void componentOpened() {
+        super.componentOpened();
+        if( firstTimeOpen ) {
+            firstTimeOpen = false;
+            if( !WelcomeOptions.getDefault().isShowOnStartup() ) {
+                close();
+            }
+        }
     }
 }
 
