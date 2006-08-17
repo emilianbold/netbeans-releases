@@ -79,7 +79,9 @@ public class CombinationRSSFeed extends RSSFeed {
 
     private static class DateFeedItemComparator implements Comparator {
     private static DateFormat dateFormat = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH ); // NOI18N
-        public int compare(Object o1, Object o2) {
+    private static DateFormat dateFormatShort = new SimpleDateFormat( "EEE, dd MMM yyyy", Locale.ENGLISH ); // NOI18N
+        
+    public int compare(Object o1, Object o2) {
             FeedItem item1 = (FeedItem)o1;
             FeedItem item2 = (FeedItem)o2;
 
@@ -105,7 +107,11 @@ public class CombinationRSSFeed extends RSSFeed {
                 if( null != item.dateTime )
                     return dateFormat.parse( item.dateTime );
             } catch( ParseException pE ) {
-                //ignore
+                try {     
+                    return dateFormatShort.parse( item.dateTime );
+                } catch( ParseException otherPE ) {
+                    //ignore
+                }
             }
             return null;
         }

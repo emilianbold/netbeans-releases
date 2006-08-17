@@ -73,7 +73,9 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     public static final String FEED_CONTENT_PROPERTY = "feedContent";
     
     private static DateFormat parsingDateFormat = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH ); // NOI18N
+    private static DateFormat parsingDateFormatShort = new SimpleDateFormat( "EEE, dd MMM yyyy", Locale.ENGLISH ); // NOI18N
     private static DateFormat printingDateFormat = DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
+    private static DateFormat printingDateFormatShort = DateFormat.getDateInstance( DateFormat.SHORT );
 
     public RSSFeed( String url ) {
         this.url = url;
@@ -250,7 +252,12 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
             Date date = parsingDateFormat.parse( strDateTime );
             return printingDateFormat.format( date );
         } catch( ParseException pE ) {
-            //ignore
+            try {
+                Date date = parsingDateFormatShort.parse( strDateTime );
+                return printingDateFormatShort.format( date );
+            } catch( ParseException otherPE ) {
+                //ignore
+            }
         }
         return strDateTime;
     }

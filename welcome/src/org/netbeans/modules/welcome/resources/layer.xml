@@ -81,10 +81,10 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Resources">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
 
-                <file name="mailinglists.url" url="nbresloc:/org/netbeans/modules/welcome/resources/mailinglists.url">
+                <file name="docsandsupport.url" url="nbresloc:/org/netbeans/modules/welcome/resources/docsandsupport.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 </file>
-                <file name="docsandsupport.url" url="nbresloc:/org/netbeans/modules/welcome/resources/docsandsupport.url">
+                <file name="mailinglists.url" url="nbresloc:/org/netbeans/modules/welcome/resources/mailinglists.url">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 </file>
                 <file name="platform.url" url="nbresloc:/org/netbeans/modules/welcome/resources/platform.url">
@@ -92,8 +92,8 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
 
 
-                <attr name="mailinglists.url/docsandsupport.url" boolvalue="true"/>
-                <attr name="docsandsupport.url/platform.url" boolvalue="true"/>
+                <attr name="docsandsupport.url/mailinglists.url" boolvalue="true"/>
+                <attr name="mailinglists.url/platform.url" boolvalue="true"/>
             </folder>
 
 
