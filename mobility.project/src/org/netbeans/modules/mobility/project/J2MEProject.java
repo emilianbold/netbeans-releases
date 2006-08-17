@@ -27,14 +27,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.SequenceInputStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -671,7 +668,7 @@ public final class J2MEProject implements Project, AntProjectListener {
             } finally {
                 in.close();
             }
-            return new String(buff).replace("__DEPENDS__", dependencies); //NOI18N
+            return new String(buff, "UTF-8").replace("__DEPENDS__", dependencies); //NOI18N
         }
     
     }

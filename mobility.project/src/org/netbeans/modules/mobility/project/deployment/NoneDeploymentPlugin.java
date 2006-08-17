@@ -57,7 +57,7 @@ public class NoneDeploymentPlugin implements DeploymentPlugin {
         return NbBundle.getMessage(NoneDeploymentPlugin.class, "LBL_NoneTypeName"); //NOI18N
     }
     
-    public Map getPropertyDefaultValues() {
+    public Map<String, Object> getPropertyDefaultValues() {
         return Collections.EMPTY_MAP;
     }
     

@@ -39,7 +39,7 @@ public interface DeploymentPlugin {
     
     public String getAntScriptLocation();
     
-    public Map getPropertyDefaultValues();
+    public Map<String,Object> getPropertyDefaultValues();
     
     public Component createCustomizerPanel();
 }

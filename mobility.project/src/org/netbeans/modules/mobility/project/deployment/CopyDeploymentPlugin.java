@@ -38,7 +38,7 @@ import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 public class CopyDeploymentPlugin implements DeploymentPlugin {
     
     public static final String PROP_TARGET = "deployment.copy.target"; //NOI18N
-    static final Map<String,File> propDefValues = Collections.singletonMap(PROP_TARGET, new File("")); //NOI18N
+    static final Map<String, Object> propDefValues = Collections.singletonMap(PROP_TARGET, (Object)new File("")); //NOI18N
         
     public String getAntScriptLocation() {
         return "modules/scr/deploy-copy-impl.xml"; // NOI18N
@@ -56,7 +56,7 @@ public class CopyDeploymentPlugin implements DeploymentPlugin {
         return NbBundle.getMessage(CopyDeploymentPlugin.class, "LBL_CopyTypeName"); //NOI18N
     }
     
-    public Map<String,File> getPropertyDefaultValues() {
+    public Map<String, Object> getPropertyDefaultValues() {
         return propDefValues;
     }
     

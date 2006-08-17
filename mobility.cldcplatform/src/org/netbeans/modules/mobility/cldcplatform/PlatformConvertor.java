@@ -618,7 +618,9 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             }
             lock = fo.lock();
             out = fo.getOutputStream(lock);
-            extractPlatformProperties("configs." + fileName + ".", platform, device, null, null).store(out, null); //NOI18N
+            Properties p = new Properties();
+            p.putAll(extractPlatformProperties("configs." + fileName + ".", platform, device, null, null));
+            p.store(out, null); //NOI18N
         } catch (FileAlreadyLockedException fale) {
             //bug #6292738
             //ignore - probabaly duplicite file names derived from the device list of the installed platform
@@ -643,8 +645,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     
     private static final String EMPTY = ""; //NOI18N
     
-    public static Properties extractPlatformProperties(final String prefix, final J2MEPlatform platform, J2MEPlatform.Device device, final String reqConfiguration, final String reqProfile) {
-        final Properties props = new Properties();
+    public static Map<String, String> extractPlatformProperties(final String prefix, final J2MEPlatform platform, J2MEPlatform.Device device, final String reqConfiguration, final String reqProfile) {
+        final HashMap<String, String> props = new HashMap();
         String pname, pdesc, dname;
         J2MEPlatform.J2MEProfile configuration = null, profile = null;
         final StringBuffer apis = new StringBuffer(), classpath = new StringBuffer();
