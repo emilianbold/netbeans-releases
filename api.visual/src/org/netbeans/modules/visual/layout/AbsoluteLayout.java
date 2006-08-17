@@ -28,6 +28,10 @@ public final class AbsoluteLayout implements Layout {
             child.resolveBounds (child.getPreferredLocation (), null);
     }
 
+    public boolean requiresJustification (Widget widget) {
+        return false;
+    }
+
     public void justify (Widget widget) {
     }
 

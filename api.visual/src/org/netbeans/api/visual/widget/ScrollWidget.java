@@ -192,6 +192,10 @@ public class ScrollWidget extends Widget {
             horizontalSlider.setValues (viewBounds.x + viewportBounds.x, viewBounds.x + viewportBounds.x + viewBounds.width, 0, viewportBounds.width);
         }
 
+        public boolean requiresJustification (Widget widget) {
+            return false;
+        }
+
         public void justify (Widget widget) {
         }
 

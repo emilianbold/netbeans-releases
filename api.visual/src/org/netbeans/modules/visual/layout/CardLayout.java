@@ -67,13 +67,17 @@ public final class CardLayout implements Layout {
             child.resolveBounds (preferredLocation, child == activeChildWidget ? preferredBounds : otherBounds);
     }
 
+    public boolean requiresJustification (Widget widget) {
+        return true;
+    }
+
     public void justify (Widget widget) {
         assert widget == cardLayoutWidget;
 
         if (activeChildWidget != null)
             for (Widget child : cardLayoutWidget.getChildren ())
                 if (child == activeChildWidget) {
-                    Rectangle bounds = widget.getBounds ();
+                    Rectangle bounds = widget.getClientArea ();
                     Point location = child.getLocation ();
                     Rectangle childBounds = child.getBounds ();
 

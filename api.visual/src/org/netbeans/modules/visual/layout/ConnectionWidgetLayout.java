@@ -113,6 +113,10 @@ public final class ConnectionWidgetLayout implements Layout {
         }
     }
 
+    public boolean requiresJustification (Widget widget) {
+        return false;
+    }
+
     public void justify (Widget widget) {
     }
 

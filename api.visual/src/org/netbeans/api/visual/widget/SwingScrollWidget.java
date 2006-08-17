@@ -187,6 +187,10 @@ public class SwingScrollWidget extends Widget {
             horizontalScroll.addAdjustmentListener (horizontalListener);
         }
 
+        public boolean requiresJustification (Widget widget) {
+            return false;
+        }
+
         public void justify (Widget widget) {
         }
 

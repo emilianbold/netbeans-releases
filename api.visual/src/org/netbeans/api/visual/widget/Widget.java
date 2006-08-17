@@ -67,6 +67,7 @@ public class Widget {
     private Point location;
     private Rectangle bounds;
     private Rectangle calculatedPreferredBounds;
+
     private boolean requiresFullValidation;
     private boolean requiresPartValidation;
 
@@ -532,27 +533,37 @@ public class Widget {
                 for (Dependency dependency : dependencies)
                     dependency.revalidateDependency ();
 
-        if (childFullValidation  ||  requiresPartValidation)
+        if (childFullValidation  ||  requiresPartValidation) {
             layout.layout (this);
+            if (layout.requiresJustification (this)) {
+                rejustify ();
+            }
+        }
 
         requiresFullValidation = false;
         requiresPartValidation = false;
     }
 
-    public final void rejustify () {
+    private void rejustify () {
         requiresFullJustification = true;
         rejustifyUptoRoot ();
     }
 
     private void rejustifyUptoRoot () {
+        if (requiresPartJustification)
+            return;
         requiresPartJustification = true;
         if (parentWidget != null)
             parentWidget.rejustifyUptoRoot ();
     }
 
     final void justify () {
-        if (requiresFullJustification)
+        if (requiresFullJustification) {
             layout.justify (this);
+            if (layout.requiresJustification (this))
+                for (Widget child : children)
+                    child.rejustify ();
+        }
 
         for (Widget widget : children)
             if (widget.requiresPartJustification)

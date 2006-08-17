@@ -26,7 +26,14 @@ public interface Layout {
     public void layout (Widget widget);
 
     /**
-     * Justify bounds of widget children based on a widget bounds.
+     * Resolve whether a widget requires justification after whole scene layout.
+     * @param widget the widget
+     * @return true if requires justification
+     */
+    public boolean requiresJustification (Widget widget);
+
+    /**
+     * Justify bounds of widget children based on a widget client area.
      * @param widget the widget
      */
     public void justify (Widget widget);

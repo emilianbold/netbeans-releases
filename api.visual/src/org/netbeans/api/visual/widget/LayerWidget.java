@@ -39,7 +39,7 @@ public class LayerWidget extends Widget {
 
     void layout (boolean fullValidation) {
         super.layout (fullValidation);
-        rejustify ();
+        justify ();
     }
 
     @Deprecated
