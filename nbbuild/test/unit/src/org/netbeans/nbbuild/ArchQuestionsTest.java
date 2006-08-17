@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.nbbuild;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -803,6 +804,69 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 
 		answers.deleteOnExit();
         assertTrue ("File is generated", answers.exists ());
+    }
+
+    public void testGenerateArchWithLogging () throws Exception {
+        File dtd = PublicPackagesInProjectizedXMLTest.extractResource("Arch.dtd");
+        File quest = PublicPackagesInProjectizedXMLTest.extractResource("Arch-api-questions.xml");
+        
+        
+        
+        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString(
+"<?xml version='1.0' encoding='UTF-8'?>\n" +
+"<!--\n" +
+                "CDDL Notice\n" +
+"-->\n" +
+"<!DOCTYPE api-answers PUBLIC '-//NetBeans//DTD Arch Answers//EN' '" + dtd + "' [\n" +
+"<!ENTITY api-questions SYSTEM '" + quest + "'>\n" +
+"]>\n" +
+"\n" +
+"<api-answers\n" +
+  "question-version='1.25'\n" +
+  "module='Input/Output System'\n" +
+  "author='jglick@netbeans.org'\n" +
+">\n" +
+"\n" +
+"&api-questions;\n" +
+"\n" +
+"\n" +
+"<answer id='dep-nb'>\n" +
+"<api name='some-logging' group='logger' type='export' category='stable'>MyLogger</api>\n" +
+"</answer>\n" +
+"\n" +
+"</api-answers>    \n"
+        );
+        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
+        output.delete();
+
+
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <arch answers=\"" + answers + "\" output='" + output + "' />" +
+            "</target>" +
+            "</project>"
+
+        );
+        String[] txt = new String[1];
+//        txt[0] = "-Darch.private.disable.validation.for.test.purposes=true";
+        txt[0] = "-verbose";
+        PublicPackagesInProjectizedXMLTest.execute (f, txt);
+
+        assertTrue ("File is generated", output.exists ());
+        
+        String content = PublicPackagesInProjectizedXMLTest.readFile(output);
+        
+        if (content.indexOf("MyLogger") == -1) {
+            fail(content);
+        }
+        if (content.indexOf("logger interface") == -1) {
+            fail(content);
+        }
+        fail(content);
     }
     
     public void testGenerateProfilerArch () throws Exception {

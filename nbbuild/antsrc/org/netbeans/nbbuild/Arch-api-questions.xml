@@ -382,7 +382,9 @@ and commits any changes to openide/www/tutorial/questions.html.
         <question id="exec-property" when="impl" >
             Is execution of your code influenced by any environment or
             Java system (<code>System.getProperty</code>) property?
-            
+            On a similar note, is there something interesting that you
+            pass to <code>java.util.logging.Logger</code>? Or do you observe
+            what others log?
             <hint>
             If there is a property that can change the behavior of your 
             code, somebody will likely use it. You should describe what it does 
