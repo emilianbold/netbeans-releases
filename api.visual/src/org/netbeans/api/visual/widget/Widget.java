@@ -407,12 +407,7 @@ public class Widget {
         notifyStateChanged (previousState, state);
     }
 
-    @Deprecated
-    protected void notifyStateChanged (ObjectState state) {
-    }
-
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        notifyStateChanged (state);
     }
 
     public final Point convertLocalToScene (Point localLocation) {
