@@ -171,8 +171,8 @@ public class TreeTableView extends BeanTreeView {
     private static final String COLUMNS_ICON = "/org/netbeans/modules/openide/explorer/columns.gif"; // NOI18N
 
     // icons of ascending/descending order in column header
-    private static final String SORT_ASC_ICON = "/org/netbeans/modules/openide/explorer/columnsSortedAsc.gif"; // NOI18N
-    private static final String SORT_DESC_ICON = "/org/netbeans/modules/openide/explorer/columnsSortedDesc.gif"; // NOI18N
+    private static final String SORT_ASC_ICON = "org/netbeans/modules/openide/explorer/columnsSortedAsc.gif"; // NOI18N
+    private static final String SORT_DESC_ICON = "org/netbeans/modules/openide/explorer/columnsSortedDesc.gif"; // NOI18N
 
     /** The table */
     protected JTable treeTable;
