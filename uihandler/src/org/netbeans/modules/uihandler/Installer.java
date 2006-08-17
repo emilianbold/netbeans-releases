@@ -285,7 +285,7 @@ public class Installer extends ModuleInstall {
         LOG.fine("Reply from uploadLogs:");
         LOG.fine(redir.toString());
         
-        Pattern p = Pattern.compile("<meta *http-equiv=.Refresh. *url=['\"]([^'\"]*)['\"] *>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        Pattern p = Pattern.compile("<meta *http-equiv=.Refresh. *content.*url=['\"]?([^'\" ]*) *['\"]", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
         Matcher m = p.matcher(redir);
         
         if (m.find()) {

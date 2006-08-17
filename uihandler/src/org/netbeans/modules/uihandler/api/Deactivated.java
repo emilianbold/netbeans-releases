@@ -21,7 +21,7 @@ package org.netbeans.modules.uihandler.api;
 
 import java.util.logging.Logger;
 
-/** Shall be registered in {@link org.openide.utilLookup#getDefault} and
+/** Shall be registered in {@link org.openide.util.Lookup#getDefault} and
  * is then called when the UI logger module is about to produce results. 
  * Can log various statics, etc. 
  *

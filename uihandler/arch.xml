@@ -77,9 +77,30 @@ Microsystems, Inc. All Rights Reserved.
  </answer>
 
  <answer id="arch-usecases">
-  <p>
-   XXX no answer for arch-usecases
-  </p>
+     <usecase id="gather-info" name="Gather information about UI gestures">
+         <p>
+             Primary purpose of this module is collect information about
+             the user actions that take place in the running NetBeans based
+             application. 
+         </p>
+     </usecase>
+     <usecase id="showing-results" name="Presenting usage statistics">
+         <p>
+             Important part of the behaviour of this module is the ability
+             to cooperate with information analyzing tools and present their 
+             results. This is done thru special HTTP contracts, where the 
+             module reads and understands various server responses and is
+             able to open browser after submitting data to analysis.
+         </p>
+     </usecase>
+     <usecase id="extending-info" name="Adding own UI gestures">
+         <p>
+             The base module is in fact just an infrastructure which collects
+             data about UI gestures, but the actual gestures need to be delivered
+             to it somehow. Here is the description of the ways how one can
+             extend own modules to cooperate with this UI gestures infrastructure.
+         </p>
+     </usecase>
  </answer>
 
 
@@ -244,7 +265,20 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="dep-nb">
-  <defaultanswer generate='here' />
+  <defaultanswer generate='none' />
+
+    <ul>
+        <li><api type='import' group='java' category='private' name='org.jdesktop.layout'>
+            jdesktop layout is used to make the dialog provided by this module to look better
+            </api>
+        </li>            
+        <li><api type='import' group='java' category='private' name='org.openide.explorer' url='../org-openide-explorer/overview-summary.html' >
+            The module uses explorer view to present the results before they get submitted to
+            the analysis server.
+            </api>
+        </li>            
+    </ul>
+  
  </answer>
 
 
