@@ -139,6 +139,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 }
             }
         });
+        setValid(true, "");
     }    
 
     private RepositoryPanel createPanel() {
@@ -188,8 +189,11 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         textEditor.selectAll();
         textEditor.getDocument().addDocumentListener(this);
         
+        repositoryPanel.userPasswordField.getDocument().addDocumentListener(this);
         repositoryPanel.userPasswordField.addFocusListener(this);
-
+        
+        repositoryPanel.userTextField.getDocument().addDocumentListener(this);
+        
         onSelectedRepositoryChange();
         return repositoryPanel;
     }
@@ -262,7 +266,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if (internalDocumentChange) return;
         Runnable awt = new Runnable() {
             public void run() {
-                if (e.getDocument() == repositoryPanel.userPasswordField.getDocument()) {
+                if (e.getDocument() == repositoryPanel.userTextField.getDocument()) {
+                    onUsernameChange();
+                } else if (e.getDocument() == repositoryPanel.userPasswordField.getDocument()) {
                     onPasswordChange();
                 } else if (e.getDocument() == ((JTextComponent) repositoryPanel.urlComboBox.getEditor().getEditorComponent()).getDocument()) {
                     onSelectedRepositoryChange();
@@ -364,6 +370,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
      * Always updates UI fields visibility.
      */
     private void onSelectedRepositoryChange() {
+        setValid(true, "");
         SelectedRepository repository = null;
         try {
             repository = getSelectedRepository();
@@ -471,7 +478,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         passwordExpected = false;
     }
 
+    private void onUsernameChange() {
+        setValid(true, "");
+    }
+    
     private void onPasswordChange() {
+        setValid(true, "");
         cancelPasswordUpdate();
     }
 
@@ -498,10 +510,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         boolean oldValue = this.valid;
         String oldMessage = this.message;
         this.message = message;
-        if(oldValue != valid || oldMessage != message) {
+        //if(oldValue != valid || oldMessage != message) {
             this.valid = valid;
             fireValidPropertyChanged(oldValue, valid);
-        };
+        //};
     }
 
     private void fireValidPropertyChanged(boolean oldValue, boolean valid) {
