@@ -20,9 +20,15 @@ import org.netbeans.api.visual.widget.Widget;
 public interface Layout {
 
     /**
-     * Resolve bounds of widget children.
+     * Resolve bounds of widget children based in their preferred locations and bounds.
      * @param widget the widget
      */
     public void layout (Widget widget);
+
+    /**
+     * Justify bounds of widget children based on a widget bounds.
+     * @param widget the widget
+     */
+    public void justify (Widget widget);
 
 }

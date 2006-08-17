@@ -187,6 +187,9 @@ public class SwingScrollWidget extends Widget {
             horizontalScroll.addAdjustmentListener (horizontalListener);
         }
 
+        public void justify (Widget widget) {
+        }
+
         private boolean checkHorizontal (Rectangle viewBounds, Rectangle viewportBounds) {
             return (viewBounds.x < viewportBounds.x  ||  viewBounds.x + viewBounds.width > viewportBounds.x + viewportBounds.width)  &&  viewportBounds.width > 3 * SwingScrollWidget.BAR_HORIZONTAL_SIZE;
         }

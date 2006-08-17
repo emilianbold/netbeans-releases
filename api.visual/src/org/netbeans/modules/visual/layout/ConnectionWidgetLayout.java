@@ -113,6 +113,9 @@ public final class ConnectionWidgetLayout implements Layout {
         }
     }
 
+    public void justify (Widget widget) {
+    }
+
     private void layoutChildAtDistance (double[] distances, int lineDistance, Widget child, java.util.List<Point> controlPoints) {
         int index = distances.length - 1;
         for (int i = 0; i < distances.length; i ++) {

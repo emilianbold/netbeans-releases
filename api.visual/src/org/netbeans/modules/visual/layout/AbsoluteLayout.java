@@ -28,4 +28,7 @@ public final class AbsoluteLayout implements Layout {
             child.resolveBounds (child.getPreferredLocation (), null);
     }
 
+    public void justify (Widget widget) {
+    }
+
 }

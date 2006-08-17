@@ -125,6 +125,7 @@ public class Scene extends Widget {
     // TODO - requires optimalization while changing preferred size and calling revalidate/repaint
     private void layoutScene () {
         layout (false);
+        rejustify ();
 
         Rectangle rect = null;
         for (Widget widget : getChildren ()) {

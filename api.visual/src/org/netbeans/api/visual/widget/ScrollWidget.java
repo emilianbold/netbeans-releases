@@ -54,8 +54,6 @@ public class ScrollWidget extends Widget {
     private Widget leftArrow;
     private Widget rightArrow;
 
-    private Dimension minimalSize, maximalSize;
-
     public ScrollWidget (Scene scene) {
         super (scene);
 
@@ -121,24 +119,6 @@ public class ScrollWidget extends Widget {
             viewport.addChild (this.view);
     }
 
-    public Dimension getMinimalSize () {
-        return minimalSize;
-    }
-
-    public void setMinimalSize (Dimension minimalSize) {
-        this.minimalSize = minimalSize;
-        revalidate ();
-    }
-
-    public Dimension getMaximalSize () {
-        return maximalSize;
-    }
-
-    public void setMaximalSize (Dimension maximalSize) {
-        this.maximalSize = maximalSize;
-        revalidate ();
-    }
-
     protected Rectangle calculateClientArea () {
         return new Rectangle (calculateSize ());
     }
@@ -148,27 +128,8 @@ public class ScrollWidget extends Widget {
             Rectangle preferredBounds = getPreferredBounds ();
             Insets insets = getBorder ().getInsets ();
             return new Dimension (preferredBounds.width - insets.left - insets.right, preferredBounds.height - insets.top - insets.bottom);
-        } else {
-            Dimension size = view.getBounds ().getSize ();
-
-            Dimension minimalSize = getMinimalSize ();
-            if (minimalSize != null) {
-                if (size.width < minimalSize.width)
-                    size.width = minimalSize.width;
-                if (size.height < minimalSize.height)
-                    size.height = minimalSize.height;
-            }
-
-            Dimension maximalSize = getMaximalSize ();
-            if (maximalSize != null) {
-                if (size.width > maximalSize.width)
-                    size.width = maximalSize.width;
-                if (size.height > maximalSize.height)
-                    size.height = maximalSize.height;
-            }
-
-            return size;
-        }
+        } else
+            return view.getBounds ().getSize ();
     }
 
     private final class ScrollLayout implements Layout {
@@ -229,6 +190,9 @@ public class ScrollWidget extends Widget {
 
             verticalSlider.setValues (viewBounds.y + viewportBounds.y, viewBounds.y + viewportBounds.y + viewBounds.height, 0, viewportBounds.height);
             horizontalSlider.setValues (viewBounds.x + viewportBounds.x, viewBounds.x + viewportBounds.x + viewBounds.width, 0, viewportBounds.width);
+        }
+
+        public void justify (Widget widget) {
         }
 
         private boolean checkHorizontal (Rectangle viewBounds, Rectangle viewportBounds) {

@@ -37,6 +37,11 @@ public class LayerWidget extends Widget {
         return false;
     }
 
+    void layout (boolean fullValidation) {
+        super.layout (fullValidation);
+        rejustify ();
+    }
+
     @Deprecated
     public Layout getDevolveLayout () {
         return devolveLayout;

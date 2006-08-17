@@ -70,6 +70,9 @@ public class Widget {
     private boolean requiresFullValidation;
     private boolean requiresPartValidation;
 
+    private boolean requiresFullJustification;
+    private boolean requiresPartJustification;
+
     // TODO - replace Scene parameter with an interface
     public Widget (Scene scene) {
         this.scene = scene;
@@ -519,7 +522,7 @@ public class Widget {
                 dependency.revalidateDependency ();
     }
 
-    final void layout (boolean fullValidation) {
+    void layout (boolean fullValidation) {
         boolean childFullValidation = fullValidation || requiresFullValidation;
         for (Widget widget : children)
             widget.layout (childFullValidation);
@@ -534,6 +537,29 @@ public class Widget {
 
         requiresFullValidation = false;
         requiresPartValidation = false;
+    }
+
+    public final void rejustify () {
+        requiresFullJustification = true;
+        rejustifyUptoRoot ();
+    }
+
+    private void rejustifyUptoRoot () {
+        requiresPartJustification = true;
+        if (parentWidget != null)
+            parentWidget.rejustifyUptoRoot ();
+    }
+
+    final void justify () {
+        if (requiresFullJustification)
+            layout.justify (this);
+
+        for (Widget widget : children)
+            if (widget.requiresPartJustification)
+                widget.justify ();
+
+        requiresFullJustification = false;
+        requiresPartJustification = false;
     }
 
     public final void paint () {

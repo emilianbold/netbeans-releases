@@ -46,7 +46,7 @@ public final class LayoutFactory {
     }
 
     public static Layout createVerticalLayout (SerialAlignment alignment, int gap) {
-        return new SerialLayout (SerialLayout.Orientation.VERTICAL, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
+        return new SerialLayout (true, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
     }
 
     public static Layout createHorizontalLayout () {
@@ -54,7 +54,7 @@ public final class LayoutFactory {
     }
 
     public static Layout createHorizontalLayout (SerialAlignment alignment, int gap) {
-        return new SerialLayout (SerialLayout.Orientation.HORIZONTAL, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
+        return new SerialLayout (false, alignment != null ? alignment : SerialAlignment.JUSTIFY, gap);
     }
 
     public static Layout createCardLayout (Widget cardLayoutWidget) {
