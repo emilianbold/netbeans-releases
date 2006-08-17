@@ -41,21 +41,21 @@
                       </Group>
                       <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="1">
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="userPasswordField" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="userTextField" alignment="0" pref="182" max="32767" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="userPasswordField" alignment="0" pref="182" max="32767" attributes="2"/>
+                                  <Component id="userTextField" alignment="0" pref="182" max="32767" attributes="2"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="leaveBlankLabel" pref="190" max="32767" attributes="2"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="leaveBlankLabel" pref="242" max="32767" attributes="1"/>
                           </Group>
-                          <Component id="urlComboBox" alignment="0" pref="376" max="32767" attributes="3"/>
-                          <Component id="tipLabel" alignment="0" pref="376" max="32767" attributes="1"/>
+                          <Component id="tipLabel" alignment="0" pref="436" max="32767" attributes="1"/>
+                          <Component id="urlComboBox" alignment="0" pref="436" max="32767" attributes="2"/>
                       </Group>
                   </Group>
                   <Component id="proxySettingsButton" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
