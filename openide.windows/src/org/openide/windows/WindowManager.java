@@ -363,7 +363,7 @@ public abstract class WindowManager extends Object implements Serializable {
     
     /** Informs about change of html display name of specified <code>TopComponent</code>.
      * @param tc <code>TopComponent</code> which display name has changed
-     * @param displayName newly changed html display name value
+     * @param htmlDisplayName newly changed html display name value
      * @since 6.4 */
     protected abstract void topComponentHtmlDisplayNameChanged(TopComponent tc, String htmlDisplayName);
 

@@ -1206,7 +1206,7 @@ public class Actions extends Object {
          * @return A dimension object indicating this component's maximum size.
          * @see #getMinimumSize
          * @see #getPreferredSize
-         * @see LayoutManager
+         * @see java.awt.LayoutManager
          */
         public Dimension getMaximumSize() {
             return this.getPreferredSize();
@@ -1235,7 +1235,7 @@ public class Actions extends Object {
          * @return A dimension object indicating this component's maximum size.
          * @see #getMinimumSize
          * @see #getPreferredSize
-         * @see LayoutManager
+         * @see java.awt.LayoutManager
          */
         public Dimension getMaximumSize() {
             return this.getPreferredSize();

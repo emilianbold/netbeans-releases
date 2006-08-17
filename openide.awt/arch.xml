@@ -518,7 +518,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-      <api name="UILogging-Actions" category="friend" group="property" type="export">
+      <api name="UILogging-Actions" category="friend" group="logger" type="export">
       There is a special support for notifying when an action wrapped by
       <a href="@TOP@/org/openide/awt/Actions.html">Actions bridge</a> is 
       invoked and how. The support is using <a href="@JDK@/java/util/logging/Logger.html">
