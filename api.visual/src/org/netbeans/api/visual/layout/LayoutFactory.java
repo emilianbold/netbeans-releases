@@ -16,6 +16,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.visual.layout.AbsoluteLayout;
 import org.netbeans.modules.visual.layout.CardLayout;
 import org.netbeans.modules.visual.layout.SerialLayout;
+import org.netbeans.modules.visual.layout.FillLayout;
 
 /**
  * @author David Kaspar
@@ -23,6 +24,7 @@ import org.netbeans.modules.visual.layout.SerialLayout;
 public final class LayoutFactory {
 
     private static final AbsoluteLayout LAYOUT_ABSOLUTE = new AbsoluteLayout ();
+    private static final FillLayout LAYOUT_FILL = new FillLayout ();
 
     public static enum SerialAlignment {
 
@@ -71,6 +73,10 @@ public final class LayoutFactory {
         Layout layout = widget.getLayout ();
         if (layout instanceof CardLayout)
             ((CardLayout) layout).setActiveChildWidget (activeChildWidget);
+    }
+
+    public static Layout createFillLayout () {
+        return LAYOUT_FILL;
     }
 
 }

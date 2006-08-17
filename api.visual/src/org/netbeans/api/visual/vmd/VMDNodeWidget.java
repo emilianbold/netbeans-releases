@@ -63,6 +63,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         setBackground (Color.WHITE);
         setOpaque (true);
         setBorder (BORDER_SHADOW_NORMAL);
+        setLayout (LayoutFactory.createFillLayout ());
 
         mainLayer = new Widget (scene);
         mainLayer.setLayout (LayoutFactory.createVerticalLayout ());
