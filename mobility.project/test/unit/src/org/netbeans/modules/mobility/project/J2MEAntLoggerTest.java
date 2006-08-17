@@ -40,10 +40,9 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.masterfs.MasterFileSystem;
+import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtenderTest;
 import org.openide.util.WeakSet;
 
 import org.openide.windows.OutputListener;
@@ -57,8 +56,17 @@ import org.openide.windows.OutputListener;
  */
 public class J2MEAntLoggerTest extends NbTestCase {
     
+    static
+    {
+        TestUtil.setLookup( new Object[] {            
+        }, J2MEAntLoggerTest.class.getClassLoader());
+        assertNotNull(MasterFileSystem.settingsFactory(null));
+    }
+    
     public J2MEAntLoggerTest(String testName) {
         super(testName);
+        
+        TestUtil.setEnv();
     }
     
     protected void setUp() throws Exception {

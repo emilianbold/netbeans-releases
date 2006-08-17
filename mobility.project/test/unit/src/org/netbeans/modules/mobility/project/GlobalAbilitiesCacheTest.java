@@ -86,6 +86,21 @@ public class GlobalAbilitiesCacheTest extends NbTestCase {
     public void testAbilities() throws IOException {
         System.out.println("Abilities");
         System.setProperty("netbeans.user","test/tiredTester");
+        FileObject root=Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject fo;
+        FileObject dir=root.getFileObject(PlatformConvertor.CFG_TEMPLATES_PATH);
+        if (dir == null)
+        {
+            if (root.getFileObject("Templates") == null)
+                root.createFolder("Templates");
+            if (root.getFileObject(PlatformConvertor.CFG_TEMPLATES_PATH) == null)
+                root.getFileObject("Templates").createFolder("J2MEProjectConfigurations");
+            dir=root.getFileObject(PlatformConvertor.CFG_TEMPLATES_PATH);
+        }
+        else if ((fo=dir.getFileObject("Template.cfg")) != null)
+        {
+            fo.delete();
+        }
         GlobalAbilitiesCache abilities = GlobalAbilitiesCache.getDefault();
         assertNotNull(abilities);
         
@@ -96,8 +111,8 @@ public class GlobalAbilitiesCacheTest extends NbTestCase {
         assertEquals(ab[0],"Abil1");
         assertEquals(ab[1],"Abil2");
         
-        FileObject dir=Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(PlatformConvertor.CFG_TEMPLATES_PATH);
-        FileObject fo=FileUtil.toFileObject(getGoldenFile("Test_template.cfg"));
+        
+        fo=FileUtil.toFileObject(getGoldenFile("Test_template.cfg"));
         fo.copy(dir,"Template","cfg");
         
         try {

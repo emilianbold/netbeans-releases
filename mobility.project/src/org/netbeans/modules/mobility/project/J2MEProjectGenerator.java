@@ -152,7 +152,7 @@ public class J2MEProjectGenerator {
         });
     }
     
-	public static AntProjectHelper duplicateProject(final J2MEProject oldProject, final File _projectLocation, final String name, final boolean copySources) throws IOException {
+    public static AntProjectHelper duplicateProject(final J2MEProject oldProject, final File _projectLocation, final String name, final boolean copySources) throws IOException {
         final FileObject projectLocation = createProjectLocation(_projectLocation);
         final AntProjectHelper h = ProjectGenerator.createProject(projectLocation, J2MEProjectType.TYPE);
         final AntProjectHelper oldHelper = oldProject.getLookup().lookup(AntProjectHelper.class);

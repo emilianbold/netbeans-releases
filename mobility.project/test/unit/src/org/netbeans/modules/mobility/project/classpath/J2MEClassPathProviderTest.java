@@ -32,7 +32,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
+import org.netbeans.modules.mobility.project.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -47,8 +49,17 @@ public class J2MEClassPathProviderTest extends NbTestCase {
     static J2MEClassPathProvider instance = null;
     static FileObject projDir = null;
     
+    static
+    {
+        TestUtil.setLookup( new Object[] {            
+        }, J2MEClassPathProviderTest.class.getClassLoader());
+        assertNotNull(MasterFileSystem.settingsFactory(null));
+    }
+    
     public J2MEClassPathProviderTest(String testName) {
         super(testName);
+        
+        TestUtil.setEnv();
     }
     
     protected void setUp() throws Exception {
@@ -93,7 +104,7 @@ public class J2MEClassPathProviderTest extends NbTestCase {
         entries=result.entries();
         assertTrue(entries.size()==1);
         ClassPath.Entry entry=(ClassPath.Entry)entries.get(0);
-        String s1=(projDir.getURL().toString()+"home/bin/").replaceAll(" ","%20");
+        String s1=(FileUtil.normalizeFile(new File(System.getProperty("platform.home"))).toURL().toString()+"bin/").replaceAll(" ","%20");
         String s2=entry.getURL().toString();
         assertEquals(s1,s2);
         

@@ -33,8 +33,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.configurations.ProjectConfiguration;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.modules.mobility.project.TestUtil;
+import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtenderTest;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
 
@@ -47,9 +50,16 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
     static ProjectConfigurationsHelper instance = null;
     static AntProjectHelper aph=null;
     
+    static
+    {
+        TestUtil.setLookup( new Object[] {            
+        }, ProjectConfigurationsHelperTest.class.getClassLoader());
+        assertNotNull(MasterFileSystem.settingsFactory(null));
+    }
     
     public ProjectConfigurationsHelperTest(String testName) {
         super(testName);
+        TestUtil.setEnv();
     }
     
     protected void setUp() throws Exception {

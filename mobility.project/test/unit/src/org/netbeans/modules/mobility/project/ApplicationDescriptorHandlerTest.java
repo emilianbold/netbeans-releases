@@ -76,7 +76,7 @@ public class ApplicationDescriptorHandlerTest extends NbTestCase {
         
         api=getGoldenFile("midpapi20.zip");
         tmp=getGoldenFile("Midlet.java");
-        
+
         FileObject fobj=Repository.getDefault().getDefaultFileSystem().getRoot();
         fobj=FileUtil.createFolder(fobj,"Templates");
         fobj=FileUtil.createFolder(fobj,"MIDP");

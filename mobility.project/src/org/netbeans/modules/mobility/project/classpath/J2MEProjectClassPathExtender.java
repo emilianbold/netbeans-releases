@@ -103,7 +103,7 @@ public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
                     final VisualClassPathItem item = VisualClassPathItem.create( library );
                     if (!resources.contains(item)) {
                         resources.add(item);
-                        final String itemRefs = cs.encodeToString( resources.iterator() );
+                        final String itemRefs = cs.encodeToString( resources );
                         props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties
                         props.setProperty(classPathId, itemRefs);
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -124,7 +124,7 @@ public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
         final ArrayList<String> list = collectAllConfigurationPropertiesToChange(CP_CLASS_PATH);
         
         boolean result = false;
-        for (int i = 0; i < list.size(); i++)
+        for (int i = 0; i < list.size(); i++) 
             result |= addArchiveFile(list.get(i), archiveFile);
         
         return result;
@@ -147,7 +147,7 @@ public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
                     
                     if (!resources.contains(item)) {
                         resources.add(item);
-                        final String itemRefs = cs.encodeToString( resources.iterator() );
+                        final String itemRefs = cs.encodeToString( resources );
                         props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                         props.setProperty(classPathId, itemRefs);
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -186,7 +186,7 @@ public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
                     final VisualClassPathItem item = VisualClassPathItem.create( artifact, artifactElement );
                     if (!resources.contains(item)) {
                         resources.add(item);
-                        final String itemRefs = cs.encodeToString( resources.iterator() );
+                        final String itemRefs = cs.encodeToString( resources );
                         props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                         props.setProperty(classPathId, itemRefs);
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -216,8 +216,8 @@ public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
             return (List<VisualClassPathItem>)DefaultPropertyParsers.PATH_PARSER.decode(raw, helper, refHelper);
         }
         
-        public String encodeToString(final Iterator<VisualClassPathItem> it) {
-            return DefaultPropertyParsers.PATH_PARSER.encode(it, helper, refHelper);
+        public String encodeToString(final List<VisualClassPathItem> lt) {
+            return DefaultPropertyParsers.PATH_PARSER.encode(lt, helper, refHelper);
         }
     }
 }

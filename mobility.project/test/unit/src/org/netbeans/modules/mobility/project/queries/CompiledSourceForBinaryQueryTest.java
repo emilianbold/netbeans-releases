@@ -34,8 +34,11 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
+import org.netbeans.modules.mobility.project.TestUtil;
+import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtenderTest;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -51,8 +54,17 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     static CompiledSourceForBinaryQuery instance = null;
     static FileObject projDir = null;
     
+    static
+    {
+        TestUtil.setLookup( new Object[] {            
+        }, CompiledSourceForBinaryQueryTest.class.getClassLoader());
+        assertNotNull(MasterFileSystem.settingsFactory(null));
+    }
+    
     public CompiledSourceForBinaryQueryTest(String testName) {
         super(testName);
+        
+        TestUtil.setEnv();
     }
     
     protected void setUp() throws Exception {

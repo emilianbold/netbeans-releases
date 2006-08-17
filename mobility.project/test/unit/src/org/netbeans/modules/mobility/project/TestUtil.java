@@ -32,6 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.logging.Handler;
@@ -45,6 +48,7 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.netbeans.api.project.Project;
+import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.mobility.cldcplatform.startup.PostInstallJ2meAction;
@@ -55,13 +59,17 @@ import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.xml.sax.SAXException;
 
 /**
  * Helper class for test bag purposes
@@ -94,6 +102,23 @@ public class TestUtil extends ProxyLookup {
     }
     
     static public void setEnv() {
+        /*Add the layer file */
+        URL res=TestUtil.class.getClassLoader().getResource("org/netbeans/modules/mobility/project/ui/resources/layer.xml");
+        FileSystem fs=null;
+        try
+        {
+            fs = new XMLFileSystem(res);
+        } 
+        catch (SAXException ex)
+        {
+            Assert.fail("layer.xml not found");
+        }
+        
+        Collection<FileSystem> layers=new ArrayList(Arrays.asList(((SystemFileSystem)Repository.getDefault().getDefaultFileSystem()).getLayers()));
+        layers.add(fs);
+        ((SystemFileSystem)Repository.getDefault().getDefaultFileSystem()).setLayers(layers.toArray(new FileSystem[layers.size()]));
+        /**************/
+        
         final String rootIDE=File.separator+"netbeans"+File.separator+"ide8";
         final String rootAnt=File.separator+"ide8"+File.separator+"ant";
         /* Hack to get ant directories */
@@ -243,6 +268,7 @@ public class TestUtil extends ProxyLookup {
             if (zip != null) try { zip.close(); } catch (IOException e) {}
         }
         System.setProperty("platform.home",destPath+File.separator+"emulator"+File.separator+wtkStr);
+        System.setProperty("platform.type","UEI-1.0");
     }
     
     public static void removePlatform(Class clazz) {

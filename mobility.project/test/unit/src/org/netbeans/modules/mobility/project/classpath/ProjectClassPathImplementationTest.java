@@ -31,11 +31,11 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import java.util.List;
 import java.io.File;
 import java.net.URL;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
+import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
+import org.netbeans.modules.mobility.project.TestUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -49,8 +49,17 @@ public class ProjectClassPathImplementationTest extends NbTestCase {
     static FileObject projDir = null;
     
     
+    static
+    {
+        TestUtil.setLookup( new Object[] {            
+        }, ProjectClassPathImplementationTest.class.getClassLoader());
+        assertNotNull(MasterFileSystem.settingsFactory(null));
+    }
+    
     public ProjectClassPathImplementationTest(String testName) {
         super(testName);
+        
+        TestUtil.setEnv();
     }
     
     protected void setUp() throws Exception {

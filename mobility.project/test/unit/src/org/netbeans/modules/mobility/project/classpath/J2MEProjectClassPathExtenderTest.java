@@ -36,7 +36,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
+import org.netbeans.modules.mobility.project.TestUtil;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -52,9 +54,17 @@ public class J2MEProjectClassPathExtenderTest extends NbTestCase {
     static J2MEProjectClassPathExtender instance = null;
     static FileObject projDir = null;
     
+    static
+    {
+        TestUtil.setLookup( new Object[] {            
+        }, J2MEProjectClassPathExtenderTest.class.getClassLoader());
+        assertNotNull(MasterFileSystem.settingsFactory(null));
+    }
     
     public J2MEProjectClassPathExtenderTest(String testName) {
         super(testName);
+        
+        TestUtil.setEnv();
     }
     
     protected void setUp() throws Exception {
