@@ -1,17 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
 <project name="xtest-dist" default="all" basedir=".">
     <target name="all">
-        <loadproperties srcFile="all-unit.properties"/>
+        <property name="xtest.home" location="../xtest"/>
         <property name="xtest.templates.dir" location="nbbuild/templates"/>
         <property name="xtest.results" location="results"/>
         <delete dir="${xtest.results}"/>
         <mkdir dir="${xtest.results}"/>
+ 
+        <fail unless="netbeans.dest.dir" message="Property netbeans.dest.dir doesn't exist."/>
+        <available file="${netbeans.dest.dir}/etc/netbeans.conf" property="exist.netbeans.dest.dir"/>
+        <fail unless="exist.netbeans.dest.dir" message="Path netbeans.dest.dir doesn't contain netbeans dir."/>
+        <fail unless="xtest.home" message="Property xtest.home doesn't exist."/>
+        <available file="${xtest.home}/lib/xtest.jar" property="exist.xtest.home"/>
+        <fail unless="exist.xtest.home" message="xtest.jar doesn't exist at ${xtest.home}/lib/xtest.jar"/>
+        
+        <taskdef name="testdistfilter" classpath="../nbbuild/nbantext.jar" classname="org.netbeans.nbbuild.TestDistFilter"/>
+        <!-- run modules with xtest.attribs="stable" in cfg-unit.xml -->
+        <property name="xtest.attribs" value="stable"/>
+        
+        <testdistfilter harness="xtest" testlistproperty="xtest.modules.list" attribs="${xtest.attribs}" testdistdir=".." testtype="unit"/>
+ 
         <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask" classpath="${xtest.home}/lib/xtest.jar"/>
         <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
         <subant buildpath="${xtest.modules.list}" target="runtestsdist" >
             <property name="xtest.templates.dir" location="../nbbuild/templates"/>
             <property name="xtest.results" location="results"/>
             <property name="xtest.results.testrun.dir" location="${xtest.results.testrun.dir}"/>
+            <property name="xtest.nobuildxtest" value="nobuild"/>
+            <property name="xtest.attribs" value="${xtest.attribs}"/>
         </subant>    
     </target>
 </project>
