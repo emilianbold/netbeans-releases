@@ -213,7 +213,9 @@ public class Scene extends Widget {
 
             // NOTE - maybe improves performance when component.repaint will be called for all widgets/rectangles separately
             if (repaintRegion != null) {
-                component.repaint (convertSceneToView (repaintRegion));
+                Rectangle r = convertSceneToView (repaintRegion);
+                r.grow (1, 1);
+                component.repaint (r);
                 repaintSatelite ();
                 repaintRegion = null;
             }
