@@ -35,12 +35,11 @@ import java.net.URLStreamHandler;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -64,6 +63,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -690,9 +690,45 @@ public final class J2MEProject implements Project, AntProjectListener {
         
     }
     
+    private static final Set<File> FRIENDS_JARS = collectFriendJars();
+    
+    private static Set<String> getFriends() {
+        Iterator<? extends ModuleInfo> it = Lookup.getDefault().lookupResult(ModuleInfo.class).allInstances().iterator();
+        while (it.hasNext()) {
+            ModuleInfo mi = it.next();
+            if ("org.netbeans.modules.mobility.project".equals(mi.getCodeNameBase())) {  //NOI18N
+                HashSet<String> friends = new HashSet<String>(Arrays.asList(((String)mi.getAttribute("OpenIDE-Module-Friends")).split("[,\\s]+"))); //NOI18N
+                friends.add("org.netbeans.modules.mobility.project"); //NOI18N
+                return friends;
+            }
+        }
+        return null;
+    }
+    
+    private static Set<File> collectFriendJars() {
+        Set<String> friends = getFriends();
+        if (friends == null) return null;
+        Set<File> jars = new HashSet<File>();
+        Iterator<? extends ModuleInfo> it = Lookup.getDefault().lookupResult(ModuleInfo.class).allInstances().iterator();
+        while (it.hasNext()) {
+            ModuleInfo mi = it.next();
+            if (friends.contains(mi.getCodeNameBase())) try {
+                Field f = mi.getClass().getDeclaredField("jar");//NOI18N
+                f.setAccessible(true);
+                File ff = (File)f.get(mi); //gettings field jar from StandardModule
+                if (ff != null) jars.add(ff);
+            } catch (Exception e) {};
+        }
+        if (jars.size() == 0) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Mobility Project Buildsystem cannot collect list of friend JARs."); //NOI18N
+            return null;
+        }
+        return jars;
+    }
+    
     private static boolean isAuthorized(FileObject fo) {
+        if (fo.isFolder() || FRIENDS_JARS == null) return true;
         URL u = null;
-        JarFile jf = null;
         try {
             u = fo.getURL();
             //looking for MultiFileObject.leader field
@@ -707,14 +743,8 @@ public final class J2MEProject implements Project, AntProjectListener {
                 String s = (String)f.get(fo);
                 if (s == null) return true; //the uri field is not declared - empty file
                 u = new URL(s);
-                if ("jar".equals(u.getProtocol())) { //URL points to module jar content, no other protocols are allowed //NOI18N
-                    jf = new JarFile(FileUtil.getArchiveFile(u).getPath(), false);
-                    Manifest m = jf.getManifest();
-                    String name = m == null ? null : m.getMainAttributes().getValue("OpenIDE-Module"); //NOI18N
-                    String deps = m == null ? null : m.getMainAttributes().getValue("OpenIDE-Module-Module-Dependencies"); //NOI18N
-                    //checking that module jar declares dependency on Mobility Buildsystem Core - it must be friend
-                    if (name != null && deps != null && (name+deps).contains("org.netbeans.modules.mobility.project")) return true; //NOI18N
-                }
+                 //URL points to module jar content, no other protocols are allowed and the jar must be listed as friend
+                if ("jar".equals(u.getProtocol()) && FRIENDS_JARS.contains(new File(FileUtil.getArchiveFile(u).toURI()))) return true;  //NOI18N
             } else {  //FileObject represents physical file (userdir or installdir / config /...) - this is not allowed
                 u = ff.toURL();
             }
@@ -724,8 +754,6 @@ public final class J2MEProject implements Project, AntProjectListener {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot verify access authorization to Mobility Project Build System from: " + String.valueOf(u)); //NOI18N
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return true;
-        } finally {
-            if (jf != null) try {jf.close();} catch (IOException ioe) {}
         }
     }
 }
