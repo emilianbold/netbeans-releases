@@ -42,7 +42,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
 
     private WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
     private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction (new MyPopupMenuProvider ());
-    private WidgetAction moveAction = ActionFactory.createMoveAcion ();
+    private WidgetAction moveAction = ActionFactory.createMoveAction ();
 
     public VMDGraphScene () {
         addChild (backgroundLayer);

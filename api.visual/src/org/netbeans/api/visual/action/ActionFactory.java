@@ -158,7 +158,7 @@ public final class ActionFactory {
         return new InplaceEditorAction<C> (provider);
     }
 
-    public static WidgetAction createMoveAcion () {
+    public static WidgetAction createMoveAction () {
         return createMoveAction (null, null);
     }
 
