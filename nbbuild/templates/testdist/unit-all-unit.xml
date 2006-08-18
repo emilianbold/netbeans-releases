@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="changeme" default="all" basedir=".">
-    <target name="all" depends="runtests,failtests">
-        
-    </target>
+    <target name="all" depends="runtests,failtests"/>
     
     <target name="runtests">
-       <loadproperties srcFile="all-unit.properties"/>
+        <taskdef name="testdistfilter" classpath="../nbbuild/nbantext.jar" classname="org.netbeans.nbbuild.TestDistFilter"/>
+        <testdistfilter harness="junit" testlistproperty="unit.modules.list" testdistdir=".."/>
            <property name="extra.test.libs" location="../extralibs"/>
            <property name="test.dist.dir" location="."/>
            <property name="test.unit.results.dir" location="results"/>
@@ -20,7 +19,7 @@
               <report format="frames" todir="${test.unit.results.dir}/html"/>
             </junitreport>
            <available file="${test.unit.results.dir}/failed-test-var" type="dir" property="test.failed"/>
-  </target>
+    </target>
   <target name="failtests" unless="test.disable.fails">
            <fail if="test.failed">Some tests failed; see details above.</fail>
   </target>
