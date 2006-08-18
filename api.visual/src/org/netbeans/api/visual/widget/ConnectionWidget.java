@@ -17,8 +17,8 @@ import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.router.DirectRouter;
 import org.netbeans.api.visual.router.Router;
+import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.modules.visual.layout.ConnectionWidgetLayout;
 
 import java.awt.*;
@@ -63,7 +63,7 @@ public class ConnectionWidget extends Widget {
         targetAnchorShape = AnchorShape.NONE;
         controlPointShape = PointShape.NONE;
         endPointShape = PointShape.NONE;
-        router = DirectRouter.DEFAULT;
+        router = RouterFactory.createDirectRouter ();
         routingRequired = true;
         connectionWidgetLayout = new ConnectionWidgetLayout (this);
         setLayout (connectionWidgetLayout);

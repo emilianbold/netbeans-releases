@@ -13,12 +13,16 @@
 package org.netbeans.api.visual.vmd;
 
 import org.netbeans.api.visual.action.*;
-import org.netbeans.api.visual.anchor.*;
-import org.netbeans.api.visual.router.OrthogonalSearchRouter;
+import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.anchor.AnchorFactory;
+import org.netbeans.api.visual.anchor.AnchorShape;
+import org.netbeans.api.visual.anchor.PointShape;
+import org.netbeans.api.visual.graph.GraphPinScene;
+import org.netbeans.api.visual.router.Router;
+import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.graph.GraphPinScene;
 
 import javax.swing.*;
 
@@ -34,7 +38,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
     private LayerWidget connectionLayer = new LayerWidget (this);
     private LayerWidget upperLayer = new LayerWidget (this);
 
-    private OrthogonalSearchRouter.CollisionsCollector collisionsCollector;
+    private Router router;
 
     private MoveControlPointAction moveControlPointAction = new MoveControlPointAction.OrthogonalMoveAction ();
     private PopupMenuAction popupMenuAction = new MyPopupMenuAction ();
@@ -46,7 +50,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         addChild (connectionLayer);
         addChild (upperLayer);
 
-        collisionsCollector = new OrthogonalSearchRouter.WidgetsCollisionCollector (mainLayer, connectionLayer);
+        router = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
 
         getActions ().addAction (new ZoomAction ());
         getActions ().addAction (new PanAction ());
@@ -79,7 +83,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
 
     protected Widget attachEdgeWidget (String edge) {
         ConnectionWidget connectionWidget = new ConnectionWidget (this);
-        connectionWidget.setRouter (new OrthogonalSearchRouter (collisionsCollector));
+        connectionWidget.setRouter (router);
         connectionWidget.setSourceAnchorShape (AnchorShape.TRIANGLE_OUT);
         connectionWidget.setTargetAnchorShape (AnchorShape.TRIANGLE_FILLED);
         connectionWidget.setControlPointShape (PointShape.SQUARE_FILLED_SMALL);
