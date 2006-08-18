@@ -47,6 +47,7 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.tigris.subversion.svnclientadapter.*;
+import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
 /**
  * Subversion-specific utilities.

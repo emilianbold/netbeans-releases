@@ -35,6 +35,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.subversion</friend>
                 <package>org.tigris.subversion.svnclientadapter</package>
+                <package>org.tigris.subversion.svnclientadapter.utils</package>
                 <package>org.tigris.subversion.svnclientadapter.commandline</package>
             </friend-packages>
             <class-path-extension>

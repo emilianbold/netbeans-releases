@@ -153,8 +153,8 @@ public class BlameAction extends ContextAction {
     }
 
     private static AnnotateLine [] toAnnotateLines(ISVNAnnotations annotations) {
-        AnnotateLine [] lines = new AnnotateLine[annotations.size()];
-        int n = annotations.size();
+        AnnotateLine [] lines = new AnnotateLine[annotations.numberOfLines()];
+        int n = annotations.numberOfLines();
         for (int i = 0; i < n; i++) {
             lines[i] = new AnnotateLine();
             lines[i].setAuthor(annotations.getAuthor(i));
