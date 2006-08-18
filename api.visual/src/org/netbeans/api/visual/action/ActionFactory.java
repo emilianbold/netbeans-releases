@@ -107,6 +107,8 @@ public final class ActionFactory {
 
     private static final WidgetAction MOVE_CONTROL_POINT_ACTION_ORTHOGONAL = createMoveControlPointAction (createOrthogonalMoveControlPointProvider ());
 
+    private static final WidgetAction MOVE_ACTION = createMoveAction (null, null);
+
     private ActionFactory () {
     }
 
@@ -117,7 +119,7 @@ public final class ActionFactory {
 
     public static WidgetAction createAlignWithMoveAction (LayerWidget collectionLayer, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
         assert collectionLayer != null;
-        return createAlignWithMoveAction (new SingleLayerAlignWithWidgetCollector (collectionLayer), interractionLayer, decorator);
+        return createAlignWithMoveAction (new SingleLayerAlignWithWidgetCollector (collectionLayer), interractionLayer, decorator != null ? decorator : ALIGN_WITH_MOVE_DECORATOR_DEFAULT);
     }
 
     public static WidgetAction createAlignWithMoveAction (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
@@ -127,12 +129,12 @@ public final class ActionFactory {
     }
 
     public static WidgetAction createConnectAction (LayerWidget interractionLayer, ConnectProvider provider) {
-        return createConnectAction (createDefaultConnectDecorator (), interractionLayer, provider);
+        return createConnectAction (null, interractionLayer, provider);
     }
 
     public static WidgetAction createConnectAction (ConnectDecorator decorator, LayerWidget interractionLayer, ConnectProvider provider) {
-        assert decorator != null  &&  interractionLayer != null  &&  provider != null;
-        return new ConnectAction (decorator, interractionLayer, provider);
+        assert interractionLayer != null  &&  provider != null;
+        return new ConnectAction (decorator != null ? decorator : createDefaultConnectDecorator (), interractionLayer, provider);
     }
 
     public static WidgetAction createEditAction (EditProvider provider) {
@@ -159,7 +161,7 @@ public final class ActionFactory {
     }
 
     public static WidgetAction createMoveAction () {
-        return createMoveAction (null, null);
+        return MOVE_ACTION;
     }
 
     public static WidgetAction createMoveAction (MoveStrategy strategy, MoveProvider provider) {
@@ -193,11 +195,11 @@ public final class ActionFactory {
     }
 
     public static WidgetAction createReconnectAction (ReconnectProvider provider) {
-        return createReconnectAction (createDefaultReconnectDecorator (), provider);
+        return createReconnectAction (null, provider);
     }
 
     public static WidgetAction createReconnectAction (ReconnectDecorator decorator, ReconnectProvider provider) {
-        return new ReconnectAction (decorator, provider);
+        return new ReconnectAction (decorator != null ? decorator : createDefaultReconnectDecorator (), provider);
     }
 
     public static WidgetAction createRectangularSelectAction (ObjectScene scene, LayerWidget interractionLayer) {
@@ -249,7 +251,7 @@ public final class ActionFactory {
         return MOVE_PROVIDER_DEFAULT;
     }
 
-    public static AlignWithMoveDecorator createDefaultAlignWithMoveDecorator () {
+    static AlignWithMoveDecorator createDefaultAlignWithMoveDecorator () {
         return ALIGN_WITH_MOVE_DECORATOR_DEFAULT;
     }
 
@@ -271,11 +273,11 @@ public final class ActionFactory {
         return new ObjectSceneRectangularSelectProvider (scene);
     }
 
-    public static ConnectDecorator createDefaultConnectDecorator () {
+    static ConnectDecorator createDefaultConnectDecorator () {
         return CONNECT_DECORATOR_DEFAULT;
     }
 
-    public static ReconnectDecorator createDefaultReconnectDecorator () {
+    static ReconnectDecorator createDefaultReconnectDecorator () {
         return RECONNECT_DECORATOR_DEFAULT;
     }
 
