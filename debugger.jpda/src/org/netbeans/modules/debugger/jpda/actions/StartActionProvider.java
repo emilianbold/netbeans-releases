@@ -246,8 +246,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             },
             new Runnable () {
                 public void run () {
-                    ((Session) lookupProvider.lookupFirst 
-                        (null, Session.class)).kill ();
+                    debuggerImpl.finish();
                 }
             },
             debuggerImpl.LOCK

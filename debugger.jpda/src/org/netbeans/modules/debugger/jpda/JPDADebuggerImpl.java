@@ -813,6 +813,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
             setState (STATE_STOPPED);
         }
     }
+    
+    private boolean finishing;
 
     /**
      * Used by KillActionProvider.
@@ -820,6 +822,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void finish () {
         //Workaround for #56233
         //synchronized (LOCK) { 
+            synchronized (this) {
+                if (finishing) {
+                    // Can easily be called twice - from the operator termination
+                    return ;
+                }
+                finishing = true;
+            }
             logger.fine("StartActionProvider.finish ()");
             AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
                 (null, AbstractDICookie.class);
