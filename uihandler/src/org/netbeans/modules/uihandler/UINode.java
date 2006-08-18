@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import javax.swing.JButton;
 import org.openide.awt.Actions;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -78,7 +79,7 @@ final class UINode extends AbstractNode implements VisualData {
         if ("UI_ACTION_BUTTON_PRESS".equals(r.getMessage())) { // NOI18N
             setDisplayName(Actions.cutAmpersand((String)r.getParameters()[4]));
             String thru = (String)r.getParameters()[1];
-            if (thru.contains("Toolbar")) {
+            if (thru.contains("Toolbar") || r.getParameters()[0] instanceof JButton) {
                 setIconBaseWithExtension("org/netbeans/modules/uihandler/toolbars.gif");
             } else if (thru.contains("MenuItem")) {
                 setIconBaseWithExtension("org/netbeans/modules/uihandler/menus.gif");

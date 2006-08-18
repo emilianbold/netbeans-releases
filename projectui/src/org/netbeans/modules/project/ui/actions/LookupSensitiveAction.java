@@ -21,10 +21,16 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JMenuItem;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -33,7 +39,8 @@ import org.openide.util.WeakListeners;
  * @author Pet Hrebejk
  */
 public abstract class LookupSensitiveAction extends BasicAction implements LookupListener {
-
+    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
+    
     private Lookup lookup;
     private Class<?>[] watch;
     private Lookup.Result results[];
@@ -102,6 +109,33 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     
     public final void actionPerformed( ActionEvent e ) {
         init ();
+        
+        if (UILOG.isLoggable(Level.FINE)) {
+            LogRecord r;
+            boolean isKey;
+            if (e.getSource() instanceof JMenuItem) {
+                isKey = false;
+            } else if (e.getSource() instanceof JButton) {
+                isKey = false;
+            } else {
+                isKey = true;
+            }
+            
+            if (!isKey) {
+                r = new LogRecord(Level.FINE, "UI_ACTION_BUTTON_PRESS"); // NOI18N
+                r.setResourceBundle(NbBundle.getBundle(LookupSensitiveAction.class));
+                r.setParameters(new Object[] { 
+                    e.getSource(), 
+                    e.getSource().getClass().getName(), 
+                    this, 
+                    getClass().getName(), 
+                    getValue(NAME) 
+                });
+                r.setLoggerName(UILOG.getName());
+                UILOG.log(r);
+            }
+        }
+        
         actionPerformed( lookup );
     }
     
