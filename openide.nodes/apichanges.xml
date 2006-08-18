@@ -23,6 +23,20 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+<change id="BeanNode.LookupCtor">
+     <api name="nodes"/>
+     <summary>BeanNode constructor allows passing Lookup instance</summary>
+     <version major="6" minor="9"/>
+     <date day="18" month="8" year="2006"/>
+     <author login="pnejedly"/>
+     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+     <description>
+        Adding a new constructors to <code>BeanNode</code>, allowing
+        subclasses to pass context Lookup.
+     </description>
+     <class package="org.openide.nodes" name="BeanNode"/>
+     <issue number="67098"/>
+    </change>
 <change id="AbstractNode.setIconBaseWithExtension">
      <api name="nodes"/>
      <summary>AbstractNode allows using different icon extensions</summary>

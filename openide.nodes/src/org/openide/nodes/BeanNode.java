@@ -45,6 +45,7 @@ import javax.swing.Action;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
@@ -83,7 +84,7 @@ public class BeanNode<T> extends AbstractNode {
 
     /** is synchronization of name in progress */
     private boolean synchronizeName;
-
+    
     // init ..................................................................................................................
 
     /**
@@ -94,7 +95,7 @@ public class BeanNode<T> extends AbstractNode {
     * @throws IntrospectionException if the bean cannot be analyzed
     */
     public BeanNode(T bean) throws IntrospectionException {
-        this(bean, getChildren(bean));
+        this(bean, null, null);
     }
 
     /** Constructs a node for a JavaBean with a defined child list.
@@ -105,7 +106,29 @@ public class BeanNode<T> extends AbstractNode {
     */
     protected BeanNode(T bean, Children children)
     throws IntrospectionException {
-        super((children == null) ? getChildren(bean) : children);
+        this(bean, children, null);
+    }
+
+    /** Constructs a node for a JavaBean.
+     * The subclass can provide its own {@link Children} implementation
+     * or leave the default implementation.
+     * It can also provide a Lookup, but if you provide one, please do not call
+     * methods {@link #getCookieSet} and {@link #setCookieSet} they will
+     * throw an exception.
+     * <p>More info on the correct usage of constructor with Lookup can be found
+     * in the {@link Node#Node(org.openide.nodes.Children, org.openide.util.Lookup)}
+     * javadoc.
+     *
+     * @param bean the bean this node will be based on
+     * @param children children for the node (default if null)
+     * @param lkp the lookup to provide content of {@link #getLookup}
+     *   and also {@link #getCookie}
+     * @throws IntrospectionException if the bean cannot be analyzed
+     * @since 6.9
+     */
+    protected BeanNode(T bean, Children children, Lookup lkp)
+    throws IntrospectionException {
+        super((children == null) ? getChildren(bean) : children, lkp);
 
         if (bean == null) {
             throw new NullPointerException("cannot make a node for a null bean"); // NOI18N
@@ -114,7 +137,7 @@ public class BeanNode<T> extends AbstractNode {
         this.bean = bean;
 
         try {
-            initialization();
+            initialization(lkp != null);
         } catch (IntrospectionException ie) {
             throw ie;
         } catch (RuntimeException re) {
@@ -123,7 +146,7 @@ public class BeanNode<T> extends AbstractNode {
             throw mkie(le);
         }
     }
-
+    
     private static Children getChildren(Object bean) {
         if (bean instanceof BeanContext) {
             return new BeanChildren((BeanContext) bean);
@@ -495,7 +518,7 @@ public class BeanNode<T> extends AbstractNode {
 
     /** Performs initialization of the node
     */
-    private void initialization() throws IntrospectionException {
+    private void initialization(boolean hasLookup) throws IntrospectionException {
         setIconBaseWithExtension(ICON_BASE);
 
         setSynchronizeName(true);
@@ -570,10 +593,12 @@ public class BeanNode<T> extends AbstractNode {
             setValue(aname, beanInfo.getBeanDescriptor().getValue(aname));
         }
 
-        Node.Cookie instanceCookie = TMUtil.createInstanceCookie(bean);
+        if (!hasLookup) {
+            Node.Cookie instanceCookie = TMUtil.createInstanceCookie(bean);
 
-        if (instanceCookie != null) {
-            getCookieSet().add(instanceCookie);
+            if (instanceCookie != null) {
+                getCookieSet().add(instanceCookie);
+            }
         }
     }
 

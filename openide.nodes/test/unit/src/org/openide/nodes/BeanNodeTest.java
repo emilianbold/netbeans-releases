@@ -27,6 +27,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import org.openide.nodes.*;
+import org.openide.util.lookup.Lookups;
 
 /** Test updating of bean children in proper circumstances, e.g.
  * deleting nodes or beans.
@@ -141,6 +142,31 @@ public class BeanNodeTest extends NbTestCase {
         bean.setHiddenProperty (11);
         
         assertFalse ("No change should be notified", pcl.changed ());
+    }
+    
+    public void testLookupAndBean() throws Exception {
+        class MyClass {
+        }
+
+        MyClass inst = new MyClass();
+
+        Bean1 b = new Bean1();
+        BeanNode n = new BeanNode(b, null, Lookups.singleton(inst));
+
+        // my lookup is propagated
+        MyClass tst = n.getLookup().lookup(MyClass.class);
+        assertSame(inst, tst);
+    }
+
+    public void testCanUseCookieSetWithoutLookup() throws Exception {
+        class MyBeanNode extends BeanNode {
+            MyBeanNode(Object bean) throws IntrospectionException {
+                super(bean, null, null);
+                getCookieSet();
+            }
+        };
+
+        new MyBeanNode(new Bean1());
     }
     
     // XXX test synchronizeName
