@@ -12,12 +12,13 @@
  */
 package org.netbeans.api.visual.widget;
 
-import org.netbeans.api.visual.action.MouseHoverAction;
+import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.animator.SceneAnimator;
-import org.netbeans.modules.visual.laf.DefaultLookFeel;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
@@ -314,19 +315,19 @@ public class Scene extends Widget {
 
     public WidgetAction createWidgetHoverAction () {
         if (widgetHoverAction == null) {
-            widgetHoverAction = new WidgetHoverAction ();
+            widgetHoverAction = ActionFactory.createHoverAction (new WidgetHoverAction ());
             getActions ().addAction (widgetHoverAction);
         }
         return widgetHoverAction;
     }
 
-    private class WidgetHoverAction extends MouseHoverAction.TwoStated {
+    private class WidgetHoverAction implements TwoStateHoverProvider {
 
-        protected void unsetHovering (Widget widget) {
+        public void unsetHovering (Widget widget) {
             widget.setState (widget.getState ().deriveWidgetHovered (false));
         }
 
-        protected void setHovering (Widget widget) {
+        public void setHovering (Widget widget) {
             widget.setState (widget.getState ().deriveWidgetHovered (true));
         }
 

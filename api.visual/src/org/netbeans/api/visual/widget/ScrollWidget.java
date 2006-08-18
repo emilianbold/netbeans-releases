@@ -13,7 +13,8 @@
 package org.netbeans.api.visual.widget;
 
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.action.SelectAction;
+import org.netbeans.api.visual.action.SelectProvider;
+import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
@@ -72,10 +73,10 @@ public class ScrollWidget extends Widget {
         addChild (horizontalSlider = createHorizontalSlider ());
         addChild (rightArrow = createRightArrow ());
 
-        upArrow.getActions ().addAction (new UnitScrollAction (0, -16));
-        downArrow.getActions ().addAction (new UnitScrollAction (0, 16));
-        leftArrow.getActions ().addAction (new UnitScrollAction (-16, 0));
-        rightArrow.getActions ().addAction (new UnitScrollAction (16, 0));
+        upArrow.getActions ().addAction (ActionFactory.createSelectAction (new UnitScrollProvider (0, -16)));
+        downArrow.getActions ().addAction (ActionFactory.createSelectAction (new UnitScrollProvider (0, 16)));
+        leftArrow.getActions ().addAction (ActionFactory.createSelectAction (new UnitScrollProvider (-16, 0)));
+        rightArrow.getActions ().addAction (ActionFactory.createSelectAction (new UnitScrollProvider (16, 0)));
 
         horizontalSlider.getActions ().addAction (new BlockScrollAction (horizontalSlider, - 64, 0));
         verticalSlider.getActions ().addAction (new BlockScrollAction (verticalSlider, 0, - 64));
@@ -390,21 +391,25 @@ public class ScrollWidget extends Widget {
             location.y = viewport.y + viewport.height - view.height;
     }
 
-    private class UnitScrollAction extends SelectAction {
+    private class UnitScrollProvider implements SelectProvider {
 
         private int dx;
         private int dy;
 
-        public UnitScrollAction (int dx, int dy) {
+        public UnitScrollProvider (int dx, int dy) {
             this.dx = dx;
             this.dy = dy;
         }
 
-        protected boolean isAimingAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+        public boolean isAimingAllowed (Widget widget, Point localLocation, boolean invertSelection) {
             return true;
         }
 
-        protected void doSelect (Widget widget, Point localLocation, boolean invertSelection) {
+        public boolean isSelectionAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+            return true;
+        }
+
+        public void select (Widget widget, Point localLocation, boolean invertSelection) {
             translateView (dx, dy);
         }
 

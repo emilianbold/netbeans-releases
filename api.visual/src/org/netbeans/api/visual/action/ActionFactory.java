@@ -103,6 +103,10 @@ public final class ActionFactory {
         }
     };
 
+    private static final WidgetAction MOVE_CONTROL_POINT_ACTION_FREE = createMoveControlPointAction (createFreeMoveControlPointProvider ());
+
+    private static final WidgetAction MOVE_CONTROL_POINT_ACTION_ORTHOGONAL = createMoveControlPointAction (createOrthogonalMoveControlPointProvider ());
+
     private ActionFactory () {
     }
 
@@ -162,7 +166,16 @@ public final class ActionFactory {
         return new MoveAction (strategy != null ? strategy : createFreeMoveStrategy (), provider != null ? provider : createDefaultMoveProvider ());
     }
 
+    public static WidgetAction createFreeMoveControlPointAction () {
+        return MOVE_CONTROL_POINT_ACTION_FREE;
+    }
+
+    public static WidgetAction createOrthogonalMoveControlPointAction () {
+        return MOVE_CONTROL_POINT_ACTION_ORTHOGONAL;
+    }
+
     public static WidgetAction createMoveControlPointAction (MoveControlPointProvider provider) {
+        assert provider != null;
         return new MoveControlPointAction (provider);
     }
 
@@ -240,11 +253,11 @@ public final class ActionFactory {
         return ALIGN_WITH_MOVE_DECORATOR_DEFAULT;
     }
 
-    public static MoveControlPointProvider getFreeMoveControlPointProvider () {
+    static MoveControlPointProvider createFreeMoveControlPointProvider () {
         return MOVE_CONTROL_POINT_PROVIDER_FREE;
     }
 
-    public static MoveControlPointProvider getOrthogonalMoveControlPointProvider () {
+    static MoveControlPointProvider createOrthogonalMoveControlPointProvider () {
         return MOVE_CONTROL_POINT_PROVIDER_ORTHOGONAL;
     }
 

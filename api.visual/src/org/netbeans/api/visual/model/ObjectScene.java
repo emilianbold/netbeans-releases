@@ -12,9 +12,7 @@
  */
 package org.netbeans.api.visual.model;
 
-import org.netbeans.api.visual.action.MouseHoverAction;
-import org.netbeans.api.visual.action.SelectAction;
-import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.*;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -42,7 +40,7 @@ public class ObjectScene extends Scene {
 
     private Object hoveredObject = null;
 
-    private WidgetAction selectAction = new ObjectSelectAction ();
+    private WidgetAction selectAction = ActionFactory.createSelectAction (new ObjectSelectProvider ());
     private WidgetAction objectHoverAction;
 
     public void addObject (Object object, Widget widget) {
@@ -166,7 +164,7 @@ public class ObjectScene extends Scene {
 
     public WidgetAction createObjectHoverAction () {
         if (objectHoverAction == null) {
-            objectHoverAction = new ObjectHoverAction ();
+            objectHoverAction = ActionFactory.createHoverAction (new ObjectHoverProvider ());
             getActions ().addAction (objectHoverAction);
         }
         return objectHoverAction;
@@ -211,8 +209,18 @@ public class ObjectScene extends Scene {
         }
     }
 
-    private class ObjectSelectAction extends SelectAction {
-        public void doSelect (Widget widget, Point localLocation, boolean invertSelection) {
+    private class ObjectSelectProvider implements SelectProvider {
+
+        public boolean isAimingAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+            return true;
+        }
+
+        public boolean isSelectionAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+            Object object = findObject (widget);
+            return object != null  &&  (invertSelection  ||  getSelectedObjects ().contains (object));
+        }
+
+        public void select (Widget widget, Point localLocation, boolean invertSelection) {
             Object object = findObject (widget);
 
             if (object != null) {
@@ -224,9 +232,9 @@ public class ObjectScene extends Scene {
         }
     }
 
-    private class ObjectHoverAction extends MouseHoverAction {
+    private class ObjectHoverProvider implements HoverProvider {
 
-        protected void widgetHovered (Widget widget) {
+        public void widgetHovered (Widget widget) {
             if (ObjectScene.this == widget)
                 widget = null;
             setHoveredObject (findObject (widget));

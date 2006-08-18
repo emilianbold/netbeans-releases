@@ -40,9 +40,9 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
 
     private Router router;
 
-    private MoveControlPointAction moveControlPointAction = new MoveControlPointAction.OrthogonalMoveAction ();
-    private PopupMenuAction popupMenuAction = new MyPopupMenuAction ();
-    private MoveAction moveAction = new MoveAction ();
+    private WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction ();
+    private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction (new MyPopupMenuProvider ());
+    private WidgetAction moveAction = ActionFactory.createMoveAcion ();
 
     public VMDGraphScene () {
         addChild (backgroundLayer);
@@ -52,9 +52,9 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
 
         router = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
 
-        getActions ().addAction (new ZoomAction ());
-        getActions ().addAction (new PanAction ());
-        getActions ().addAction (new RectangularSelectAction (this, backgroundLayer));
+        getActions ().addAction (ActionFactory.createZoomAction ());
+        getActions ().addAction (ActionFactory.createPanAction ());
+        getActions ().addAction (ActionFactory.createRectangularSelectAction (this, backgroundLayer));
     }
 
     protected Widget attachNodeWidget (String node) {
@@ -118,7 +118,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         return anchor;
     }
 
-    private static class MyPopupMenuAction extends PopupMenuAction {
+    private static class MyPopupMenuProvider implements PopupMenuProvider {
 
         public JPopupMenu getPopupMenu (Widget widget) {
             JPopupMenu popupMenu = new JPopupMenu ();
