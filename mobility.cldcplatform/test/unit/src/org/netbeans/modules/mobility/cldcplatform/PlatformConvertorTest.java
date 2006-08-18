@@ -318,8 +318,9 @@ public class PlatformConvertorTest extends NbTestCase {
         
         J2MEPlatform.Device device = platform.getDevices()[0]; // DefaultColorPhone
         assertNotNull(device);
-        Properties props = PlatformConvertor.extractPlatformProperties("", platform, device, "", "");
-        assertNotNull(props);
+        Properties props = new Properties();
+        props.putAll(PlatformConvertor.extractPlatformProperties("", platform, device, "", ""));
+        assertTrue(props.size()>0);
         
         String active = props.getProperty("platform.active");
         assertNotNull(active);

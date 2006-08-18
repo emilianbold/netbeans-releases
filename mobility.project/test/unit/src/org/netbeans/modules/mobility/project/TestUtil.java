@@ -213,24 +213,30 @@ public class TestUtil extends ProxyLookup {
         final String rootMobility=File.separator+rootStr;
         String wtkStr="wtk22";
         String destPath=Manager.getWorkDirPath();
+        String osarch=null;
         
-        /* Get a path to wtk - dirty hack but I don't know any better way */
-        String classPath=System.getProperty("java.class.path");
-        String platPath;
-        int index=classPath.indexOf(rootMobility);
-        if (index==-1) {
-            /* Running as a part of validity test */
-            String s2=Manager.getWorkDirPath();
-            platPath=new File(s2).getParentFile().getParentFile().getParentFile().getParent()+rootMobility+rootWTK;
-        } else {
-            /* Running as a part of xtest test */
-            int id1=classPath.lastIndexOf(File.pathSeparator,index)==-1?0:classPath.lastIndexOf(File.pathSeparator,index)+1;
-            platPath=classPath.substring(id1,index+rootMobility.length())+rootWTK;
-        }
         ZipFile zip=null;
         String zipPath=null;
-        try {
-            String osarch=System.getProperty("os.name",null);
+        
+        String wtkPath=System.getProperty("wtk.test.dir");
+        if (wtkPath==null)
+        {
+            /* Get a path to wtk - dirty hack but I don't know any better way */
+            String classPath=System.getProperty("java.class.path");
+            String platPath;
+            int index=classPath.indexOf(rootMobility);
+            if (index==-1) {
+                /* Running as a part of validity test */
+                String s2=Manager.getWorkDirPath();
+                platPath=new File(s2).getParentFile().getParentFile().getParentFile().getParent()+rootMobility+rootWTK;
+            } else {
+                /* Running as a part of xtest test */
+                int id1=classPath.lastIndexOf(File.pathSeparator,index)==-1?0:classPath.lastIndexOf(File.pathSeparator,index)+1;
+                platPath=classPath.substring(id1,index+rootMobility.length())+rootWTK;
+            }
+            
+
+            osarch=System.getProperty("os.name",null);
             String ossuf=null;
             NbTestCase.assertNotNull(osarch);
             if (osarch.toLowerCase().indexOf("windows")!=-1)
@@ -243,8 +249,12 @@ public class TestUtil extends ProxyLookup {
                 wtkStr="wtk21";
             } else
                 NbTestCase.fail("Operating system architecture: "+osarch+" not supported");
-            
+
             zipPath=platPath+"wtk"+ossuf+".zip";
+        }
+        else
+            zipPath=wtkPath;
+        try {   
             zip = new ZipFile(zipPath);
             Enumeration files = zip.entries();
             while (files.hasMoreElements()) {
@@ -258,11 +268,11 @@ public class TestUtil extends ProxyLookup {
                         copy(zip.getInputStream(entry), entry.getName(), new File(destPath));
                 }
             }
-            
+
             //Modify scripts
             NbTestCase.assertTrue(new File(destPath+File.separator+"emulator"+File.separator+wtkStr).exists());
             PostInstallJ2meAction.installAction(destPath+File.separator+"emulator"+File.separator+wtkStr);
-            
+
             if (osarch.indexOf("Windows")==-1)
                 java.lang.Runtime.getRuntime().exec("chmod -R +x "+destPath+File.separator+"emulator"+File.separator+
                         wtkStr+File.separator+"bin");

@@ -75,34 +75,40 @@ public class J2MEPlatformTest extends NbTestCase {
         osarch = System.getProperty("os.name", null);
         String ossuf = null;
         assertNotNull(osarch);
-        if (osarch.toLowerCase().indexOf("windows") != -1) {
-            ossuf = "22_win";
-        } else if (osarch.toLowerCase().indexOf("linux") != -1) {
-            ossuf = "22_linux";
-        } else if (osarch.toLowerCase().indexOf("sunos") != -1) {
-            wtkStr = "wtk21";
-            ossuf = "21_sunos";
-        } else {
-            fail("Operating system architecture: " + osarch + " not supported");
+        String wtkPath=System.getProperty("wtk.test.dir");
+        if (wtkPath == null)
+        {
+            if (osarch.toLowerCase().indexOf("windows") != -1) {
+                ossuf = "22_win";
+            } else if (osarch.toLowerCase().indexOf("linux") != -1) {
+                ossuf = "22_linux";
+            } else if (osarch.toLowerCase().indexOf("sunos") != -1) {
+                wtkStr = "wtk21";
+                ossuf = "21_sunos";
+            } else {
+                fail("Operating system architecture: " + osarch + " not supported");
+            }
+
+            String platPath;
+            final String rootMobility=File.separator+rootStr;
+            /* Get a path to wtk - dirty hack but I don't know any better way */
+            String classPath=System.getProperty("java.class.path");
+            int index=classPath.indexOf(rootMobility);
+            if (index==-1) {
+                /* Running as a part of validity test */
+                String s2=Manager.getWorkDirPath();
+                platPath=new File(s2).getParentFile().getParentFile().getParentFile().getParent()+rootMobility+rootWTK;
+            } else {
+                /* Running as a part of xtest test */
+                int id1=classPath.lastIndexOf(File.pathSeparator,index)==-1?0:classPath.lastIndexOf(File.pathSeparator,index)+1;
+                platPath=classPath.substring(id1,index+rootMobility.length())+rootWTK;
+            }
+
+            //File zipFile = getGoldenFile("wtk" + File.separator + "wtk" + ossuf + ".zip");
+            zipPath = platPath+"wtk"+ossuf+".zip"; //zipFile.getAbsolutePath();
         }
-        
-        String platPath;
-        final String rootMobility=File.separator+rootStr;
-        /* Get a path to wtk - dirty hack but I don't know any better way */
-        String classPath=System.getProperty("java.class.path");
-        int index=classPath.indexOf(rootMobility);
-        if (index==-1) {
-            /* Running as a part of validity test */
-            String s2=Manager.getWorkDirPath();
-            platPath=new File(s2).getParentFile().getParentFile().getParentFile().getParent()+rootMobility+rootWTK;
-        } else {
-            /* Running as a part of xtest test */
-            int id1=classPath.lastIndexOf(File.pathSeparator,index)==-1?0:classPath.lastIndexOf(File.pathSeparator,index)+1;
-            platPath=classPath.substring(id1,index+rootMobility.length())+rootWTK;
-        }
-        
-        //File zipFile = getGoldenFile("wtk" + File.separator + "wtk" + ossuf + ".zip");
-        zipPath = platPath+"wtk"+ossuf+".zip"; //zipFile.getAbsolutePath();
+        else
+            zipPath=wtkPath;
         ZipFile zip = null;
         try {
             zip = new ZipFile(zipPath);
