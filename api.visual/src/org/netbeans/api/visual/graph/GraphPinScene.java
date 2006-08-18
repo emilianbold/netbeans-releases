@@ -53,7 +53,7 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
 
     public final void removeNode (N node) {
         assert node != null  &&  nodes.contains (node);
-        for (P pin : nodePins.get (node))
+        for (P pin : new HashSet<P> (nodePins.get (node)))
             removePin (pin);
         nodes.remove (node);
         nodePins.remove (node);
