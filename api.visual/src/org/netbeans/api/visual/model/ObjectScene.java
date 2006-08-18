@@ -217,7 +217,7 @@ public class ObjectScene extends Scene {
 
         public boolean isSelectionAllowed (Widget widget, Point localLocation, boolean invertSelection) {
             Object object = findObject (widget);
-            return object != null  &&  (invertSelection  ||  getSelectedObjects ().contains (object));
+            return object != null  &&  (invertSelection  ||  ! getSelectedObjects ().contains (object));
         }
 
         public void select (Widget widget, Point localLocation, boolean invertSelection) {

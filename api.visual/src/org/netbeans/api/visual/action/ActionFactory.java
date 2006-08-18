@@ -109,6 +109,8 @@ public final class ActionFactory {
 
     private static final WidgetAction MOVE_ACTION = createMoveAction (null, null);
 
+    private static final WidgetAction RESIZE_ACTION = createResizeAction (null, null);
+
     private ActionFactory () {
     }
 
@@ -213,11 +215,11 @@ public final class ActionFactory {
     }
 
     public static WidgetAction createResizeAction () {
-        return createResizeAction (null, null);
+        return RESIZE_ACTION;
     }
 
     public static WidgetAction createResizeAction (ResizeStrategy strategy, ResizeProvider provider) {
-        return new ResizeAction (strategy, provider);
+        return new ResizeAction (strategy != null ? strategy : createFreeResizeStategy (), provider != null ? provider : createDefaultResizeProvider ());
     }
 
     public static WidgetAction createSelectAction (SelectProvider provider) {
@@ -251,15 +253,15 @@ public final class ActionFactory {
         return MOVE_PROVIDER_DEFAULT;
     }
 
-    static AlignWithMoveDecorator createDefaultAlignWithMoveDecorator () {
+    public static AlignWithMoveDecorator createDefaultAlignWithMoveDecorator () {
         return ALIGN_WITH_MOVE_DECORATOR_DEFAULT;
     }
 
-    static MoveControlPointProvider createFreeMoveControlPointProvider () {
+    public static MoveControlPointProvider createFreeMoveControlPointProvider () {
         return MOVE_CONTROL_POINT_PROVIDER_FREE;
     }
 
-    static MoveControlPointProvider createOrthogonalMoveControlPointProvider () {
+    public static MoveControlPointProvider createOrthogonalMoveControlPointProvider () {
         return MOVE_CONTROL_POINT_PROVIDER_ORTHOGONAL;
     }
 
@@ -273,16 +275,20 @@ public final class ActionFactory {
         return new ObjectSceneRectangularSelectProvider (scene);
     }
 
-    static ConnectDecorator createDefaultConnectDecorator () {
+    public static ConnectDecorator createDefaultConnectDecorator () {
         return CONNECT_DECORATOR_DEFAULT;
     }
 
-    static ReconnectDecorator createDefaultReconnectDecorator () {
+    public static ReconnectDecorator createDefaultReconnectDecorator () {
         return RECONNECT_DECORATOR_DEFAULT;
     }
 
     public static ResizeStrategy createFreeResizeStategy () {
         return RESIZE_STRATEGY_FREE;
+    }
+
+    public static ResizeProvider createDefaultResizeProvider () {
+        return RESIZE_PROVIDER_DEFAULT;
     }
 
 }

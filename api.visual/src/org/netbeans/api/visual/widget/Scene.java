@@ -201,9 +201,10 @@ public class Scene extends Widget {
             layoutScene ();
 
             for (Widget widget : repaintWidgets) {
-                Rectangle repaintBounds = calculateRepaintBounds (widget);
+                Rectangle repaintBounds = widget.getBounds ();
                 if (repaintBounds == null)
                     continue;
+                repaintBounds = widget.convertLocalToScene (repaintBounds);
                 if (repaintRegion != null)
                     repaintRegion.add (repaintBounds);
                 else
@@ -224,23 +225,6 @@ public class Scene extends Widget {
 
             for (SceneListener listener : ls)
                 listener.sceneValidated ();
-        }
-    }
-
-    public final Rectangle calculateRepaintBounds (Widget widget) {
-        Rectangle bounds = widget.getBounds ();
-        if (bounds == null)
-            return null;
-        Rectangle sceneRectangle = new Rectangle (bounds);
-        for (;;) {
-            if (widget == null)
-                return null;
-            Point location = widget.getLocation ();
-            sceneRectangle.x += location.x;
-            sceneRectangle.y += location.y;
-            if (widget == this)
-                return sceneRectangle;
-            widget = widget.getParentWidget ();
         }
     }
 
