@@ -23,6 +23,8 @@ package org.netbeans.core.windows.services;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Iterator;
+import java.util.WeakHashMap;
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbSheet;
 import org.openide.DialogDescriptor;
@@ -34,6 +36,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
+import org.openide.util.WeakSet;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -181,19 +184,61 @@ public final class NodeOperationImpl extends NodeOperation {
     * @param n the node to show properties for
     */
     public void showProperties (Node n) {
-        NbSheet s = new NbSheet ();
-        Node[] nds = new Node[] { n };
-        s.setNodes (nds);
-        openProperties(s, nds);
+        Dialog d = findCachedPropertiesDialog( n );
+        if( null == d ) {
+            NbSheet s = new NbSheet ();
+            Node[] nds = new Node[] { n };
+            s.setNodes (nds);
+            openProperties(s, nds);
+        } else {
+            d.setVisible( true );
+            d.toFront();
+            d.requestFocusInWindow();
+        }
     }
 
     /** Opens a modal propertySheet on given set of Nodes
     * @param n the array of nodes to show properties for
     */
     public void showProperties (Node[] nodes) {
-        NbSheet s = new NbSheet ();
-        s.setNodes (nodes);
-        openProperties(s, nodes);
+        Dialog d = findCachedPropertiesDialog( nodes );
+        if( null == d ) {
+            NbSheet s = new NbSheet ();
+            s.setNodes (nodes);
+            openProperties(s, nodes);
+        } else {
+            d.setVisible( true );
+            d.toFront();
+            d.requestFocusInWindow();
+        }
+    }
+    
+    //#79126 - cache the open properties windows and reuse them if the Nodes 
+    //are the same
+    private static WeakSet<Node[]> nodeCache = new WeakSet<Node[]>();
+    private static WeakHashMap<Node[], Dialog> dialogCache = new WeakHashMap<Node[], Dialog>();
+    
+    private static Dialog findCachedPropertiesDialog( Node n ) {
+        return findCachedPropertiesDialog( new Node[] { n } );
+    }
+    
+    private static Dialog findCachedPropertiesDialog( Node[] nodes ) {
+        for( Iterator<Node[]> it=nodeCache.iterator(); it.hasNext(); ) {
+            Node[] cached = it.next();
+            if( cached.length != nodes.length )
+                continue;
+            boolean match = true;
+            for( int i=0; i<cached.length; i++ ) {
+                if( !cached[i].equals( nodes[i] ) ) {
+                    match = false;
+                    break;
+                }
+            }
+            if( match ) {
+                return dialogCache.get( cached );
+            }
+        }
+        return null;
     }
 
     /** Opens explorer for specified root in modal mode. The set
@@ -252,6 +297,10 @@ public final class NodeOperationImpl extends NodeOperation {
                     //fix for issue #40323
                     SheetNodesListener listener = new SheetNodesListener(dlg, tc);
                     listener.attach(nds);
+                    
+                    nodeCache.add( nds );
+                    dialogCache.put( nds, dlg );
+                    
                     dlg.show();
                 }
             });
