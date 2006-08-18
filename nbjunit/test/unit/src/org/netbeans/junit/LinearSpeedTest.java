@@ -21,6 +21,7 @@ package org.netbeans.junit;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestResult;
 
 /** Checks behaviour of linear speed suite in case the
@@ -36,9 +37,14 @@ public class LinearSpeedTest extends NbTestCase {
     public static Test suite() {
         final Test t = NbTestSuite.linearSpeedSuite(LinearSpeedTest.class, 2,2);
 
-        class ThisHasToFail implements Test {
+        class ThisHasToFail extends TestCase {
+            
             public int countTestCases() {
                 return 1;
+            }
+
+            public String getName() {
+                return "LinearSpeedTest";
             }
 
             public void run(TestResult testResult) {
@@ -49,6 +55,9 @@ public class LinearSpeedTest extends NbTestCase {
                 if (count == 0) {
                     testResult.startTest(this);
                     testResult.addFailure(this, new AssertionFailedError("LinearSpeedTest must fail: " + count));
+                    testResult.endTest(this);
+                } else {
+                    testResult.startTest(this);
                     testResult.endTest(this);
                 }
             }
