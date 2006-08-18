@@ -69,6 +69,9 @@ import org.openide.util.lookup.Lookups;
  */
 public final class ModuleLogicalView implements LogicalViewProvider {
     
+    /** Package private for unit tests only. */
+    static final RequestProcessor RP = new RequestProcessor();
+    
     private final NbModuleProject project;
     
     public ModuleLogicalView(NbModuleProject project) {
@@ -408,7 +411,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             }
             if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
-                RequestProcessor.getDefault().post(new Runnable() { // #72471
+                RP.post(new Runnable() { // #72471
                     public void run() {
                         setKeys(visibleFiles);
                     }

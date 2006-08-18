@@ -32,7 +32,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 
 /**
  * Test functionality of {@link ModuleLogicalView}.
@@ -65,11 +64,11 @@ public class ModuleLogicalViewTest extends TestBase {
         Node iFiles = root.getChildren().findChild(ModuleLogicalView.IMPORTANT_FILES_NAME);
         assertNotNull("have the Important Files node", iFiles);
         iFiles.getChildren().getNodes(true); // ping
-        flushRequestProcessor();
+        waitForChildrenUpdate();
         assertEquals("four important files", 4, iFiles.getChildren().getNodes(true).length);
         FileUtil.createData(p.getProjectDirectory(), "nbproject/project.properties");
         iFiles.getChildren().getNodes(true); // ping
-        flushRequestProcessor();
+        waitForChildrenUpdate();
         assertEquals("nbproject/project.properties noticed", 5, iFiles.getChildren().getNodes(true).length);
     }
     
@@ -79,7 +78,7 @@ public class ModuleLogicalViewTest extends TestBase {
         Node root = new FilterNode(lvp.createLogicalView());
         
         lvp.findPath(root, f); // ping
-        flushRequestProcessor();
+        waitForChildrenUpdate();
         
         Node n = lvp.findPath(root, f);
         DataObject d = DataObject.find(f);
@@ -90,10 +89,10 @@ public class ModuleLogicalViewTest extends TestBase {
         return n;
     }
     
-    private void flushRequestProcessor() {
-        RequestProcessor.getDefault().post(new Runnable() {
+    private void waitForChildrenUpdate() {
+        ModuleLogicalView.RP.post(new Runnable() {
             public void run() {
-                // flush
+                // flush ModuleLogicalView.RP under which is the Children's update run
             }
         }).waitFinished();
     }

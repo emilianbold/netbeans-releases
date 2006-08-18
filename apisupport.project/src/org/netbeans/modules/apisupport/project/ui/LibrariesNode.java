@@ -92,7 +92,10 @@ final class LibrariesNode extends AbstractNode {
     
     private static final String DISPLAY_NAME = getMessage("LBL_libraries");
     
-    private Action[] actions;
+    /** Package private for unit tests only. */
+    static final RequestProcessor RP = new RequestProcessor();
+    
+    private final Action[] actions;
     
     public LibrariesNode(final NbModuleProject project) {
         super(new LibrariesChildren(project));
@@ -129,20 +132,19 @@ final class LibrariesNode extends AbstractNode {
     
     private static String createHtmlDescription(final ModuleDependency dep) {
         // assemble an html short description (tooltip actually)
-        StringBuffer shortDesc = new StringBuffer("<html>" + // NOI18N
-                "<u>" + dep.getModuleEntry().getCodeNameBase() + "</u><br>"); // NOI18N
+        StringBuffer shortDesc = new StringBuffer("<html><u>" + dep.getModuleEntry().getCodeNameBase() + "</u><br>"); // NOI18N
         if (dep.hasImplementationDepedendency()) {
             shortDesc.append("<br><font color=\"red\">" + getMessage("CTL_ImplementationDependency") + "</font>");
         }
         if (dep.hasCompileDependency()) {
-            shortDesc.append("<br>" + getMessage("CTL_NeededToCompile"));
+            shortDesc.append("<br>").append(getMessage("CTL_NeededToCompile"));
         }
         if (dep.getReleaseVersion() != null) {
-            shortDesc.append("<br>" + NbBundle.getMessage(LibrariesNode.class, "CTL_MajorReleaseVersion",
+            shortDesc.append("<br>").append(NbBundle.getMessage(LibrariesNode.class, "CTL_MajorReleaseVersion",
                     dep.getReleaseVersion()));
         }
         if (dep.getSpecificationVersion() != null) {
-            shortDesc.append("<br>" + NbBundle.getMessage(LibrariesNode.class, "CTL_SpecificationVersion",
+            shortDesc.append("<br>").append(NbBundle.getMessage(LibrariesNode.class, "CTL_SpecificationVersion",
                     dep.getSpecificationVersion()));
         }
         shortDesc.append("</html>"); // NOI18N
@@ -189,7 +191,7 @@ final class LibrariesNode extends AbstractNode {
             // with already acquired ProjectManager.mutex. This could lead to
             // refreshing during the misconfigurated suite/suite_component
             // relationship.
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     try {
                         ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {

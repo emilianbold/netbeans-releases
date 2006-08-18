@@ -25,13 +25,12 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author Martin Krauskopf
  */
 public class LibrariesNodeTest extends TestBase {
-
+    
     public LibrariesNodeTest(String testName) {
         super(testName);
     }
@@ -45,13 +44,13 @@ public class LibrariesNodeTest extends TestBase {
         assertNotNull("have the Libraries node", libraries);
         libraries.getChildren().getNodes(); // ping
         
-        flushProjectMutex();
+        waitForChildrenUpdate();
         assertEquals("just jdk node is present", 1, libraries.getChildren().getNodes(true).length);
         
         Util.addDependency(p, "org.netbeans.modules.java.project");
         ProjectManager.getDefault().saveProject(p);
         
-        flushProjectMutex();
+        waitForChildrenUpdate();
         assertEquals("dependency noticed", 2, libraries.getChildren().getNodes(true).length);
     }
     
@@ -64,20 +63,16 @@ public class LibrariesNodeTest extends TestBase {
         Util.addDependency(p, "org.netbeans.modules.java.project");
         ProjectManager.getDefault().saveProject(p);
         libraries.getChildren().getNodes(); // ping
-        flushProjectMutex();
+        waitForChildrenUpdate();
         Node[] nodes = libraries.getChildren().getNodes(true);
         assertEquals("dependency noticed", 2, nodes.length);
         assertEquals("dependency noticed", 4, nodes[1].getActions(false).length);
     }
     
-    private void flushProjectMutex() {
-        RequestProcessor.getDefault().post(new Runnable() {
+    private void waitForChildrenUpdate() {
+        LibrariesNode.RP.post(new Runnable() {
             public void run() {
-                ProjectManager.mutex().writeAccess(new Runnable() {
-                    public void run() {
-                        // flush
-                    }
-                });
+                // flush LibrariesNode.RP under which is the Children's update run
             }
         }).waitFinished();
     }
