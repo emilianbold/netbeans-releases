@@ -220,7 +220,7 @@ Microsystems, Inc. All Rights Reserved.
         
     <folder name="Buildsystem">
         <folder name="org.netbeans.modules.kjava.j2meproject">
-            <file name="build.xml" url="nbresloc:/org/netbeans/modules/mobility/project/resources/build.xsl"/>
+            <file name="build.xml" url="/org/netbeans/modules/mobility/project/resources/build.xsl"/>
             <folder name="nbproject">
                 <folder name="build-impl.xml">
                     <file name="head" url="buildscript/head"/>

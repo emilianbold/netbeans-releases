@@ -325,6 +325,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.mobility.editor</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
+                <friend>org.netbeans.modules.mobility.plugins.blackberry</friend>
                 <friend>org.netbeans.modules.mvd</friend>
                 <package>org.netbeans.api.mobility.project</package>
                 <package>org.netbeans.api.mobility.project.ui.customizer</package>

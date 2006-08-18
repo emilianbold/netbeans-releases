@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -37,6 +38,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -461,7 +465,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         files.addAll(Arrays.asList(root.getChildren()));
         while (!files.isEmpty()) {
             FileObject fo = files.removeFirst();
-            if (fo.getExt().equals("xml")) { //NOI18N
+            if (fo.getExt().equals("xml") && isAuthorized(fo)) { //NOI18N
                 URL u = fo.isData() ? fo.getURL() : new URL("", null, -1, fo.getPath(), COMPOSED_STREAM_HANDLER); //NOI18N
                 genFilesHelper.refreshBuildScript(FileUtil.getRelativePath(root, fo), u, checkForProjectXmlModified);
             } else if (fo.isFolder()) {
@@ -627,39 +631,52 @@ public final class J2MEProject implements Project, AntProjectListener {
     }
     
     private static final class ComposedConnection extends URLConnection {
+        
+        private static WeakHashMap<URL, byte[]> cache = new WeakHashMap();
+        
         public ComposedConnection(URL u) {
             super(u);
         }
 
-        public InputStream getInputStream() throws IOException {
-            DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(getURL().getPath()));
-            DataObject mainParts[] = root.getChildren();
-            StringBuffer sb = new StringBuffer();
-            String lastTarget = ""; //NOI18N
-            for (int i=0; i<mainParts.length; i++) {
-                if (mainParts[i] instanceof DataFolder) {
-                    DataObject subParts[] = ((DataFolder)mainParts[i]).getChildren();
-                    StringBuffer subTargets = new StringBuffer(lastTarget);
-                    for (int j=0; j<subParts.length; j++) {
-                        if (subParts[j].getPrimaryFile().isData()) {
-                            sb.append(read(subParts[j].getPrimaryFile(), lastTarget));
-                            subTargets.append(',').append(subParts[j].getName());
+        public synchronized InputStream getInputStream() throws IOException {
+            byte[] data = cache.get(getURL());
+            if (data == null) {
+                DataFolder root = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource(getURL().getPath()));
+                DataObject mainParts[] = root.getChildren();
+                StringBuffer sb = new StringBuffer();
+                String lastTarget = ""; //NOI18N
+                for (int i=0; i<mainParts.length; i++) {
+                    if (mainParts[i] instanceof DataFolder) {
+                        DataObject subParts[] = ((DataFolder)mainParts[i]).getChildren();
+                        StringBuffer subTargets = new StringBuffer(lastTarget);
+                        for (int j=0; j<subParts.length; j++) {
+                            FileObject fo = subParts[j].getPrimaryFile();
+                            if (fo.isData() && isAuthorized(fo)) {
+                                sb.append(read(subParts[j].getPrimaryFile(), lastTarget));
+                                subTargets.append(',').append(subParts[j].getName());
+                            } 
+                        }
+                        lastTarget = subTargets.toString();
+                    } else {
+                        FileObject fo = mainParts[i].getPrimaryFile();
+                        if (isAuthorized(fo)) {
+                            sb.append(read(fo, lastTarget));
+                            lastTarget = mainParts[i].getName();
                         }
                     }
-                    lastTarget = subTargets.toString();
-                } else {
-                    sb.append(read(mainParts[i].getPrimaryFile(), lastTarget));
-                    lastTarget = mainParts[i].getName();
+                }
+                data = sb.toString().getBytes("UTF-8"); //NOI18N
+                synchronized (cache) {
+                    cache.put(getURL(), data);
                 }
             }
-            return new ByteArrayInputStream(sb.toString().getBytes());
+            return new ByteArrayInputStream(data);
         }
         
         public void connect() throws IOException {}
     
         private String read(FileObject fo, String dependencies) throws IOException {
             int i = (int)fo.getSize();
-//            if (i < 0) return ""; //NOI18N 
             byte buff[] = new byte[i];
             DataInputStream in = new DataInputStream(fo.getInputStream());
             try {
@@ -670,6 +687,45 @@ public final class J2MEProject implements Project, AntProjectListener {
             }
             return new String(buff, "UTF-8").replace("__DEPENDS__", dependencies); //NOI18N
         }
+        
+    }
     
+    private static boolean isAuthorized(FileObject fo) {
+        URL u = null;
+        JarFile jf = null;
+        try {
+            u = fo.getURL();
+            //looking for MultiFileObject.leader field
+            Field f = fo.getClass().getDeclaredField("leader"); //NOI18N
+            f.setAccessible(true);
+            fo = (FileObject)f.get(fo); //getting the leader FileObject...
+            fo = (FileObject)f.get(fo); //...twice
+            File ff = FileUtil.toFile(fo);
+            if (ff == null) { //FileObject does not represent physical file
+                f = fo.getClass().getDeclaredField("uri"); //looking for BFSFile.uri field //NOI18N
+                f.setAccessible(true);
+                String s = (String)f.get(fo);
+                if (s == null) return true; //the uri field is not declared - empty file
+                u = new URL(s);
+                if ("jar".equals(u.getProtocol())) { //URL points to module jar content, no other protocols are allowed //NOI18N
+                    jf = new JarFile(FileUtil.getArchiveFile(u).getPath(), false);
+                    Manifest m = jf.getManifest();
+                    String name = m == null ? null : m.getMainAttributes().getValue("OpenIDE-Module"); //NOI18N
+                    String deps = m == null ? null : m.getMainAttributes().getValue("OpenIDE-Module-Module-Dependencies"); //NOI18N
+                    //checking that module jar declares dependency on Mobility Buildsystem Core - it must be friend
+                    if (name != null && deps != null && (name+deps).contains("org.netbeans.modules.mobility.project")) return true; //NOI18N
+                }
+            } else {  //FileObject represents physical file (userdir or installdir / config /...) - this is not allowed
+                u = ff.toURL();
+            }
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Unauthorized access to Mobility Project Build System from: " + String.valueOf(u)); //NOI18N
+            return false;
+        } catch (Exception e) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot verify access authorization to Mobility Project Build System from: " + String.valueOf(u)); //NOI18N
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return true;
+        } finally {
+            if (jf != null) try {jf.close();} catch (IOException ioe) {}
+        }
     }
 }

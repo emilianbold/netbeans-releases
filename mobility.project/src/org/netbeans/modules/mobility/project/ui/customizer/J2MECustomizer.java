@@ -34,6 +34,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import javax.swing.BorderFactory;
@@ -343,6 +344,7 @@ public class J2MECustomizer extends JPanel implements Runnable {
         
         final protected ExplorerManager manager;
         final private BeanTreeView btv;
+        private HashMap<Node, Integer> tabSelections = new HashMap<Node, Integer>();
         
         CategoryView( Node rootNode ) {
             
@@ -437,6 +439,10 @@ public class J2MECustomizer extends JPanel implements Runnable {
                 updateHelpCtx(new HelpCtx(tab.getComponent(0).getClass()));
                 customizerPanel.add(tab.getComponentCount()==1 ? tab.getComponent(0) : tab, BorderLayout.CENTER );
                 tab.addChangeListener(CategoryView.this);
+                Integer i = tabSelections.get(node);
+                if (i != null && i < tab.getTabCount()) {
+                    tab.setSelectedIndex(i);
+                }
             } else {
                 updateHelpCtx(null);
             }
@@ -450,7 +456,12 @@ public class J2MECustomizer extends JPanel implements Runnable {
          */
    
         public void stateChanged(ChangeEvent e) {
-            updateHelpCtx(new HelpCtx(((JTabbedPane)e.getSource()).getSelectedComponent().getClass()));
+            JTabbedPane p = (JTabbedPane)e.getSource();
+            Node nodes[] = manager.getSelectedNodes();
+            if (nodes != null && nodes.length == 1) {
+                tabSelections.put(nodes[0], p.getSelectedIndex());
+            }
+            updateHelpCtx(new HelpCtx(p.getSelectedComponent().getClass()));
         }
         
         private class ManagerChangeListener implements PropertyChangeListener {

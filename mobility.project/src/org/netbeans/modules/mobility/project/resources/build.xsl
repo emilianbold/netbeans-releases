@@ -18,10 +18,11 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:project="http://www.netbeans.org/ns/project/1"
-                xmlns:xalan="http://xml.apache.org/xslt"
-                exclude-result-prefixes="xalan project">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:project="http://www.netbeans.org/ns/project/1"
+    xmlns:j2meproject="http://www.netbeans.org/ns/j2me-project"
+    xmlns:xalan="http://xml.apache.org/xslt"
+    exclude-result-prefixes="xalan project j2meproject">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
     
@@ -36,8 +37,9 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:comment> some examples of how to customize the build. </xsl:comment>
         <xsl:comment> (If you delete it and reopen the project it will be recreated.) </xsl:comment>
         
-        <xsl:variable name="name" select="/project:project/project:name"/>
-        <project name="{$name}">
+        <xsl:variable name="name" select="/project:project/project:configuration/j2meproject:data/j2meproject:name"/>
+        <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
+        <project name="{$codename}">
             <xsl:attribute name="default">jar</xsl:attribute>
             <xsl:attribute name="basedir">.</xsl:attribute>
             <description>Builds, tests, and runs the project <xsl:value-of select="/project:project/project:display-name"/>.</description>
@@ -45,76 +47,76 @@ Microsystems, Inc. All Rights Reserved.
 
             <xsl:comment><![CDATA[
 
-    There exist several targets which are by default empty and which can be
-    used for execution of your tasks. These targets are usually executed
-    before and after some main targets. They are:
+            There exist several targets which are by default empty and which can be
+            used for execution of your tasks. These targets are usually executed
+            before and after some main targets. They are:
 
-      pre-init:                 called before initialization of project properties
-      post-init:                called after initialization of project properties
-      pre-preprocess:           called before text preprocessing of sources
-      post-preprocess:          called after text preprocessing of sources
-      pre-compile:              called before source compilation
-      post-compile:             called after source compilation
-      pre-obfuscate:            called before obfuscation 
-      post-obfuscate:           called after obfuscation
-      pre-preverify:            called before preverification
-      post-preverify:           called after preverification
-      pre-jar:                  called before jar building
-      post-jar:                 called after jar building
-      pre-clean:                called before cleaning build products
-      post-clean:               called after cleaning build products
+            pre-init:                 called before initialization of project properties
+            post-init:                called after initialization of project properties
+            pre-preprocess:           called before text preprocessing of sources
+            post-preprocess:          called after text preprocessing of sources
+            pre-compile:              called before source compilation
+            post-compile:             called after source compilation
+            pre-obfuscate:            called before obfuscation 
+            post-obfuscate:           called after obfuscation
+            pre-preverify:            called before preverification
+            post-preverify:           called after preverification
+            pre-jar:                  called before jar building
+            post-jar:                 called after jar building
+            pre-clean:                called before cleaning build products
+            post-clean:               called after cleaning build products
 
-    Example of pluging a my-special-task after the compilation could look like
+            Example of pluging a my-special-task after the compilation could look like
 
-        <target name="post-compile">
+            <target name="post-compile">
             <my-special-task>
-                <fileset dir="${build.classes.dir}"/>
+            <fileset dir="${build.classes.dir}"/>
             </my-special-task>
-        </target>
+            </target>
 
-    For list of available properties check the imported
-    nbproject/build-impl.xml file.
+            For list of available properties check the imported
+            nbproject/build-impl.xml file.
 
-    Other way how to customize the build is by overriding existing main targets.
-    The target of interest are:
+            Other way how to customize the build is by overriding existing main targets.
+            The target of interest are:
 
-      preprocess:               preprocessing
-      extract-libs:             extraction of libraries and resources
-      compile:                  compilation
-      create-jad:               construction of jad and jar manifest source
-      obfuscate:                obfuscation
-      preverify:                preverification
-      jar:                      jar archive building
-      run:                      execution
-      debug:                    execution in debug mode
-      javadoc:                  javadoc generation
+            preprocess:               preprocessing
+            extract-libs:             extraction of libraries and resources
+            compile:                  compilation
+            create-jad:               construction of jad and jar manifest source
+            obfuscate:                obfuscation
+            preverify:                preverification
+            jar:                      jar archive building
+            run:                      execution
+            debug:                    execution in debug mode
+            javadoc:                  javadoc generation
 
-    Example of overriding the target for project execution could look like
+            Example of overriding the target for project execution could look like
 
-        <target name="run" depends="init,jar">
+            <target name="run" depends="init,jar">
             <my-special-exec jadfile="${dist.dir}/${dist.jad}"/>
-        </target>
+            </target>
 
-    Be careful about correct dependencies when overriding original target. 
-    Again, for list of available properties which you can use check the target 
-    you are overriding in nbproject/build-impl.xml file.
+            Be careful about correct dependencies when overriding original target. 
+            Again, for list of available properties which you can use check the target 
+            you are overriding in nbproject/build-impl.xml file.
 
-    A special target for-all-configs can be used to run some specific targets for
-    all project configurations in a sequence. File nbproject/build-impl.xml 
-    already contains some "for-all" targets:
+            A special target for-all-configs can be used to run some specific targets for
+            all project configurations in a sequence. File nbproject/build-impl.xml 
+            already contains some "for-all" targets:
     
-      jar-all
-      javadoc-all
-      clean-all
+            jar-all
+            javadoc-all
+            clean-all
       
-    Example of definition of target iterating over all project configurations:
+            Example of definition of target iterating over all project configurations:
     
-        <target name="jar-all">
+            <target name="jar-all">
             <property name="target.to.call" value="jar"/>
             <antcall target="for-all-configs"/>
-        </target>
+            </target>
 
-    ]]></xsl:comment>
+            ]]></xsl:comment>
 
         </project>
 

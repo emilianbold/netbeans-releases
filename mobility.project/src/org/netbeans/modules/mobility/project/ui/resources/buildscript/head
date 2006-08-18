@@ -19,17 +19,18 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:p="http://www.netbeans.org/ns/project/1"
+                xmlns:project="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                xmlns:j2me="http://www.netbeans.org/ns/j2me-project/1"
+                xmlns:j2meproject="http://www.netbeans.org/ns/j2me-project"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
                 xmlns:configs="http://www.netbeans.org/ns/project-configurations/1"
-                exclude-result-prefixes="xalan p j2me projdeps configs">
+                exclude-result-prefixes="xalan project j2meproject projdeps projdeps2 configs">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 
 <xsl:comment> *** GENERATED FROM project.xml - DO NOT EDIT *** </xsl:comment>
 
-<xsl:variable name="name" select="/p:project/p:name"/>
-<project name="{$name}-impl" default="jar" basedir="..">
+<xsl:variable name="name" select="/project:project/project:configuration/j2meproject:data/j2meproject:name"/>
+<xsl:variable name="codename" select="translate($name, ' ', '_')"/>
+<project name="{$codename}-impl" default="jar" basedir="..">
