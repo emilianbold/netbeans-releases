@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -56,6 +58,8 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
  */
 public class JPDAReload extends Task {
 
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
+    
     private List filesets = new ArrayList ();
  
     /**
@@ -67,6 +71,9 @@ public class JPDAReload extends Task {
     }
     
     public void execute() throws BuildException {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("JPDAReload.execute(), filesets = "+filesets);
+        }
         if (filesets.size() == 0) {
             throw new BuildException ("A nested fileset with class to refresh in VM must be specified.");
         }
@@ -132,6 +139,9 @@ public class JPDAReload extends Task {
                     }
                 }
             }
+        }
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Reloaded classes: "+map.keySet());
         }
         if (map.size () == 0) {
             System.out.println (" No class to reload");

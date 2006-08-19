@@ -36,6 +36,8 @@ import com.sun.jdi.Bootstrap;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -69,15 +71,14 @@ import org.netbeans.api.java.platform.JavaPlatform;
  */
 public class JPDAStart extends Task implements Runnable {
 
-    private static final boolean    verbose = System.getProperty ("netbeans.debugger.debug") != null;
-    private static final boolean    startVerbose = System.getProperty ("netbeans.debugger.start") != null;
-
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
+    
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
      */
     private String                  addressProperty;
     /** Default transport is socket*/
-    private String                  transport = "dt_socket";
+    private String                  transport = "dt_socket"; // NOI18N
     /** Name which will represent this debugging session in debugger UI.
      * If known in advance it should be name of the app which will be debugged.
      */
@@ -167,24 +168,23 @@ public class JPDAStart extends Task implements Runnable {
         //verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
         verifyPaths(getProject(), sourcepath);
         try {
-            if (startVerbose)
-                System.out.println("\nS JPDAStart ***************");
-            debug ("Execute started");
+            logger.fine("JPDAStart.execute()"); // NOI18N
+            debug ("Execute started"); // NOI18N
             if (name == null)
                 throw new BuildException ("name attribute must specify name of this debugging session", getLocation ());
             if (addressProperty == null)
                 throw new BuildException ("addressproperty attribute must specify name of property to which address will be set", getLocation ());
             if (transport == null)
-                transport = "dt_socket";
-            debug ("Entering synch lock");
+                transport = "dt_socket"; // NOI18N
+            debug ("Entering synch lock"); // NOI18N
             lock = new Object [2];
             synchronized (lock) {
-                debug ("Entered synch lock");
+                debug ("Entered synch lock"); // NOI18N
                 RequestProcessor.getDefault ().post (this);
                 try {
-                    debug ("Entering wait");
+                    debug ("Entering wait"); // NOI18N
                     lock.wait ();
-                    debug ("Wait finished");
+                    debug ("Wait finished"); // NOI18N
                     if (lock [1] != null) {
                         if (lock[1] instanceof DebuggerStartException) {
                             //getProject().log(((DebuggerStartException) lock[1]).getLocalizedMessage(), Project.MSG_ERR);
@@ -204,11 +204,10 @@ public class JPDAStart extends Task implements Runnable {
     }
     
     public void run () {
-        if (startVerbose)
-            System.out.println("\nS JPDAStart2 ***************");
-        debug ("Entering synch lock");
+        logger.fine("JPDAStart.run()"); // NOI18N
+        debug ("Entering synch lock"); // NOI18N
         synchronized (lock) {
-            debug("Entered synch lock");
+            debug("Entered synch lock"); // NOI18N
             try {
 
                 ListeningConnector lc = null;
@@ -240,15 +239,15 @@ public class JPDAStart extends Task implements Runnable {
                 int port = -1;
                 try {
                     port = Integer.parseInt (address.substring (address.indexOf (':') + 1));
-                    getProject ().setNewProperty (getAddressProperty (), "localhost:" + port);
-                    Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port");
+                    getProject ().setNewProperty (getAddressProperty (), "localhost:" + port); // NOI18N
+                    Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); // NOI18N
                     portArg.setValue (port);
                 } catch (Exception e) {
                     // this address format is not known, use default
                     getProject ().setNewProperty (getAddressProperty (), address);
                 }
 
-                debug ("Creating source path");
+                debug ("Creating source path"); // NOI18N
                 ClassPath sourcePath = createSourcePath (
                     getProject (),
                     classpath, 
@@ -258,19 +257,18 @@ public class JPDAStart extends Task implements Runnable {
                     getProject (),
                     bootclasspath
                 );
-                if (startVerbose) {
-                    System.out.println("\nS Crete sourcepath: ***************");
-                    System.out.println ("    classpath : " + classpath);
-                    System.out.println ("    sourcepath : " + sourcepath);
-                    System.out.println ("    bootclasspath : " + bootclasspath);
-                    System.out.println ("    >> sourcePath : " + sourcePath);
-                    System.out.println ("    >> jdkSourcePath : " + jdkSourcePath);
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("Create sourcepath:"); // NOI18N
+                    logger.fine("    classpath : " + classpath); // NOI18N
+                    logger.fine("    sourcepath : " + sourcepath); // NOI18N
+                    logger.fine("    bootclasspath : " + bootclasspath); // NOI18N
+                    logger.fine("    >> sourcePath : " + sourcePath); // NOI18N
+                    logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N
                 }
                 
                 if (stopClassName != null && stopClassName.length() > 0) {
-                    if (startVerbose)
-                        System.out.println (
-                            "\nS create method breakpoint, class name = " + 
+                    logger.fine(
+                            "create method breakpoint, class name = " + // NOI18N
                             stopClassName
                         );
                     MethodBreakpoint b = createBreakpoint (stopClassName);
@@ -280,17 +278,16 @@ public class JPDAStart extends Task implements Runnable {
                     );
                 }                
                 
-                debug ("Debugger started");
-                if (startVerbose)
-                    System.out.println("\nS start listening on port " + port);
+                debug ("Debugger started"); // NOI18N
+                logger.fine("start listening on port " + port); // NOI18N
                 
                 final Map properties = new HashMap ();
                 // uncomment to implement smart stepping with step-outs 
                 // rather than step-ins (for J2ME)
                 // props.put("SS_ACTION_STEPOUT", Boolean.TRUE);
-                properties.put ("sourcepath", sourcePath);
-                properties.put ("name", getName ());
-                properties.put ("jdksources", jdkSourcePath);
+                properties.put ("sourcepath", sourcePath); // NOI18N
+                properties.put ("name", getName ()); // NOI18N
+                properties.put ("jdksources", jdkSourcePath); // NOI18N
                 final ListeningConnector flc = lc;
                 // Let it start asynchronously so that the script can go on and start the debuggee
                 RequestProcessor.getDefault().post(new Runnable() {
@@ -311,7 +308,7 @@ public class JPDAStart extends Task implements Runnable {
             } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException icaex) {
                 lock[1] = icaex;
             } finally {
-                debug ("Notifying");
+                debug ("Notifying"); // NOI18N
                 lock.notify ();
             }
         }
@@ -330,9 +327,9 @@ public class JPDAStart extends Task implements Runnable {
         return breakpoint;
     }
 
-    private void debug (String msg) {
-        if (!verbose) return;
-        System.out.println (
+    private final static void debug (String msg) {
+        if (!logger.isLoggable(Level.FINER)) return;
+        logger.finer (
             new Date() + " [" + Thread.currentThread().getName() + 
             "] - " + msg
         );
@@ -403,8 +400,7 @@ public class JPDAStart extends Task implements Runnable {
             if (!isValid (file, project)) continue;
             URL url = fileToURL (file, project);
             if (url == null) continue;
-            if (startVerbose)
-                System.out.println ("class: " + url);
+            logger.fine("convertToSourcePath - class: " + url); // NOI18N
             try {
                 FileObject fos[] = SourceForBinaryQuery.findSourceRoots 
                     (url).getRoots();
@@ -418,8 +414,7 @@ public class JPDAStart extends Task implements Runnable {
                 }
                  */
                 for (j = 0; j < jj; j++) {
-                    if (startVerbose)
-                        System.out.println("source : " + fos [j]);
+                    logger.fine("convertToSourcePath - source : " + fos [j]); // NOI18N
                     if (FileUtil.isArchiveFile (fos [j]))
                         fos [j] = FileUtil.getArchiveRoot (fos [j]);
                     try {
@@ -436,8 +431,8 @@ public class JPDAStart extends Task implements Runnable {
                     }
                 } // for
             } catch (IllegalArgumentException ex) {
-                if (startVerbose)
-                    System.out.println("illegal url!");
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                logger.fine("Have illegal url! "+ex.getLocalizedMessage()); // NOI18N
             }
         }
         return ClassPathSupport.createClassPath (l);

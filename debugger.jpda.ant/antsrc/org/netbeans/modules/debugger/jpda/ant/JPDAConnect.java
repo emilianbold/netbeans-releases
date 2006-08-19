@@ -21,6 +21,8 @@ package org.netbeans.modules.debugger.jpda.ant;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
@@ -38,10 +40,9 @@ import org.netbeans.api.java.classpath.ClassPath;
  */
 public class JPDAConnect extends Task {
 
-    private static final boolean startVerbose = 
-        System.getProperty ("netbeans.debugger.start") != null;
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
     
-    private String host = "localhost";
+    private String host = "localhost"; // NOI18N
 
     private String address;
     
@@ -60,7 +61,7 @@ public class JPDAConnect extends Task {
     private String name;
 
     /** Default transport is socket*/
-    private String transport = "dt_socket";
+    private String transport = "dt_socket"; // NOI18N
     
     
     /**
@@ -114,8 +115,7 @@ public class JPDAConnect extends Task {
     }
     
     public void execute () throws BuildException {
-        if (startVerbose)
-            System.out.println("\nS JPDAConnect.execute ()");
+        logger.fine("JPDAConnect.execute ()"); // NOI18N
 
         JPDAStart.verifyPaths(getProject(), classpath);
         //JPDAStart.verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
@@ -133,7 +133,7 @@ public class JPDAConnect extends Task {
                 getLocation ()
             );
         if (transport == null)
-            transport = "dt_socket";
+            transport = "dt_socket"; // NOI18N
 
         final Object[] lock = new Object [1];
 
@@ -146,18 +146,18 @@ public class JPDAConnect extends Task {
             getProject (),
             bootclasspath
         );
-        if (startVerbose) {
-            System.out.println("\nS Crete sourcepath: ***************");
-            System.out.println ("    classpath : " + classpath);
-            System.out.println ("    sourcepath : " + sourcepath);
-            System.out.println ("    bootclasspath : " + bootclasspath);
-            System.out.println ("    >> sourcePath : " + sourcePath);
-            System.out.println ("    >> jdkSourcePath : " + jdkSourcePath);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Create sourcepath:"); // NOI18N
+            logger.fine("    classpath : " + classpath); // NOI18N
+            logger.fine("    sourcepath : " + sourcepath); // NOI18N
+            logger.fine("    bootclasspath : " + bootclasspath); // NOI18N
+            logger.fine("    >> sourcePath : " + sourcePath); // NOI18N
+            logger.fine("    >> jdkSourcePath : " + jdkSourcePath); // NOI18N
         }
         final Map properties = new HashMap ();
-        properties.put ("sourcepath", sourcePath);
-        properties.put ("name", getName ());
-        properties.put ("jdksources", jdkSourcePath);
+        properties.put ("sourcepath", sourcePath); // NOI18N
+        properties.put ("name", getName ()); // NOI18N
+        properties.put ("jdksources", jdkSourcePath); // NOI18N
         
 
         synchronized(lock) {
@@ -165,16 +165,16 @@ public class JPDAConnect extends Task {
                 public void run() {
                     synchronized(lock) {
                         try {
-                            if (startVerbose)
-                                System.out.println(
-                                    "\nS JPDAConnect.execute ().synchronized: " 
-                                    + "host = " + host + " port = " + address + 
-                                    " transport = " + transport
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.fine(
+                                    "JPDAConnect.execute ().synchronized: "  // NOI18N
+                                    + "host = " + host + " port = " + address + // NOI18N
+                                    " transport = " + transport // NOI18N
                                 );
-                            
+                            }
                             // VirtualMachineManagerImpl can be initialized 
                             // here, so needs to be inside RP thread.
-                            if (transport.equals ("dt_socket"))
+                            if (transport.equals ("dt_socket")) // NOI18N
                                 try {
                                     JPDADebugger.attach (
                                         host, 
@@ -193,16 +193,14 @@ public class JPDAConnect extends Task {
                                     address, 
                                     new Object[] {properties}
                                 );
-                            if (startVerbose)
-                                System.out.println(
-                                    "\nS JPDAConnect.execute ().synchronized " +
-                                    "end: success"
+                            logger.fine(
+                                    "JPDAConnect.execute ().synchronized " + // NOI18N
+                                    "end: success" // NOI18N
                                 );
                         } catch (Throwable e) {
-                            if (startVerbose)
-                                System.out.println(
-                                    "\nS JPDAConnect.execute ().synchronized " +
-                                    "end: exception " + e
+                            logger.fine(
+                                    "JPDAConnect.execute().synchronized " + // NOI18N
+                                    "end: exception " + e // NOI18N
                                 );
                             lock[0] = e;
                         } finally {
@@ -214,19 +212,11 @@ public class JPDAConnect extends Task {
             try {
                 lock.wait();
             } catch (InterruptedException e) {
-                if (startVerbose)
-                    System.out.println(
-                        "\nS JPDAConnect.execute () " +
-                        "end: exception " + e
-                    );
+                logger.fine("JPDAConnect.execute() " + "end: exception " + e); // NOI18N
                 throw new BuildException(e);
             }
             if (lock[0] != null)  {
-                if (startVerbose)
-                    System.out.println(
-                        "\nS JPDAConnect.execute () " +
-                        "end: exception " + lock[0]
-                    );
+                logger.fine("JPDAConnect.execute() " + "end: exception " + lock[0]); // NOI18N
                 throw new BuildException((Throwable) lock[0]);
             }
 
@@ -235,10 +225,6 @@ public class JPDAConnect extends Task {
             log ("Attached JPDA debugger to " + address);
         else
             log ("Attached JPDA debugger to " + host + ":" + address);
-        if (startVerbose)
-            System.out.println(
-                "\nS JPDAConnect.execute () " +
-                "end: success "
-            );
+        logger.fine("JPDAConnect.execute () " + "end: success"); // NOI18N
     }
 }
