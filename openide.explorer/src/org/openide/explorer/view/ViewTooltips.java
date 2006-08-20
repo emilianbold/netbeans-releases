@@ -44,9 +44,11 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.ListCellRenderer;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
@@ -60,7 +62,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-//import org.openide.util.Utilities;
 
 /**
  * Displays pseudo-tooltips for tree and list views which don't have enough
@@ -158,54 +159,82 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      */
     void show (JScrollPane view, Point pt) {
         if (view.getViewport().getView() instanceof JTree) {
-            JTree tree = (JTree) view.getViewport().getView();
-            Point p = SwingUtilities.convertPoint(view, pt.x, pt.y, tree);
-            int row = tree.getClosestRowForLocation(p.x, p.y);
-            TreePath path = tree.getClosestPathForLocation(p.x, p.y);
-            Rectangle bds = tree.getPathBounds(path);
-            if (bds == null || !bds.contains(p)) {
-                hide();
-                return;
-            }
-            if (setCompAndRow (tree, row)) {
-                Rectangle visible = getShowingRect (view);
-                Rectangle[] rects = getRects (bds, visible);
-                if (rects.length > 0) {
-                    ensureOldPopupsHidden();
-                    painter.configure(path.getLastPathComponent(), 
-                            view, tree, path, row);
-                    showPopups (rects, bds, visible, tree, view);
-                } else {
-                    hide();
-                }
-            }
+            showJTree (view, pt);
         } else if (view.getViewport().getView() instanceof JList) {
-            JList list = (JList) view.getViewport().getView();
-            Point p = SwingUtilities.convertPoint(view, pt.x, pt.y, list);
-            int row = list.locationToIndex(p);
-            if (row == -1) {
-                hide();
-                return;
-            }
-            Rectangle bds = list.getCellBounds(row, row);
-            if (bds == null || !bds.contains(p)) {
-                hide();
-                return;
-            }
-            if (setCompAndRow (list, row)) {
-                Rectangle visible = getShowingRect (view);
-                Rectangle[] rects = getRects (bds, visible);
-                if (rects.length > 0) {
-                    ensureOldPopupsHidden();
-                    painter.configure(list.getModel().getElementAt(row), 
-                            view, list, row);
-                    showPopups (rects, bds, visible, list, view);
-                } else {
-                    hide();
-                }
-            }
+            showJList (view, pt);
         } else {
             assert false : "Bad component type registered: " + view.getViewport().getView();
+        }
+    }
+    
+    private void showJList (JScrollPane view, Point pt) {
+        JList list = (JList) view.getViewport().getView();
+        Point p = SwingUtilities.convertPoint(view, pt.x, pt.y, list);
+        int row = list.locationToIndex(p);
+        if (row == -1) {
+            hide();
+            return;
+        }
+        Rectangle bds = list.getCellBounds(row, 
+                row);
+        //GetCellBounds returns a width that is the
+        //full component width;  we want only what
+        //the renderer really needs.
+        ListCellRenderer ren = list.getCellRenderer();
+        Dimension rendererSize = 
+                ren.getListCellRendererComponent(list, 
+                list.getModel().getElementAt(row), 
+                row, false, false).getPreferredSize();
+        
+        bds.width = rendererSize.width;
+        if (bds == null || !bds.contains(p)) {
+            hide();
+            return;
+        }
+        if (setCompAndRow (list, row)) {
+            Rectangle visible = getShowingRect (view);
+            Rectangle[] rects = getRects (bds, visible);
+            if (rects.length > 0) {
+                ensureOldPopupsHidden();
+                painter.configure(
+                        list.getModel().getElementAt(row), 
+                        view, list, row);
+                showPopups (rects, bds, visible, list, view);
+            } else {
+                hide();
+            }
+        }
+    }
+    
+    private void showJTree (JScrollPane view, Point pt) {
+        JTree tree = (JTree) view.getViewport().getView();
+        Point p = SwingUtilities.convertPoint(view, 
+                pt.x, pt.y, tree);
+        
+        int row = tree.getClosestRowForLocation(
+                p.x, p.y);
+        
+        TreePath path = 
+                tree.getClosestPathForLocation(p.x, 
+                p.y);
+        
+        Rectangle bds = tree.getPathBounds(path);
+        if (bds == null || !bds.contains(p)) {
+            hide();
+            return;
+        }
+        if (setCompAndRow (tree, row)) {
+            Rectangle visible = getShowingRect (view);
+            Rectangle[] rects = getRects (bds, visible);
+            if (rects.length > 0) {
+                ensureOldPopupsHidden();
+                painter.configure(
+                        path.getLastPathComponent(), 
+                        view, tree, path, row);
+                showPopups (rects, bds, visible, tree, view);
+            } else {
+                hide();
+            }
         }
     }
     
@@ -250,7 +279,13 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      */
     private Rectangle getShowingRect (JScrollPane pane) {
         Insets ins1 = pane.getViewport().getInsets();
-        Insets ins2 = pane.getViewportBorder().getBorderInsets(pane);
+        Border inner = pane.getViewportBorder();
+        Insets ins2;
+        if (inner != null) {
+            ins2 = inner.getBorderInsets(pane);
+        } else {
+            ins2 = new Insets (0,0,0,0);
+        }
         Insets ins3 = new Insets(0,0,0,0);
         if (pane.getBorder() != null) {
             ins3 = pane.getBorder().getBorderInsets(pane);
@@ -277,25 +312,27 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      * @vis The visible area of the tree or list, in the tree or list's coordinate space
      */
     private static final Rectangle[] getRects(final Rectangle bds, final Rectangle vis) {
+        Rectangle[] result;
         if (vis.contains(bds)) {
-            return new Rectangle[0];
+            result = new Rectangle[0];
         } else {
             if (bds.x < vis.x && bds.x + bds.width > vis.x + vis.width) {
                 Rectangle a = new Rectangle (bds.x, bds.y, vis.x - bds.x, bds.height);
                 Rectangle b = new Rectangle (vis.x + vis.width, bds.y, (bds.x + bds.width) - (vis.x + vis.width), bds.height);
-                return new Rectangle[] {a, b};
+                result = new Rectangle[] {a, b};
             } else if (bds.x < vis.x) {
-                return new Rectangle[] {
+                result = new Rectangle[] {
                     new Rectangle (bds.x, bds.y, vis.x - bds.x, bds.height)
                 };
             } else if (bds.x + bds.width > vis.x + vis.width) {
-                return new Rectangle[] {
+                result = new Rectangle[] {
                     new Rectangle (vis.x + vis.width, bds.y, (bds.x + bds.width) - (vis.x + vis.width), bds.height)
                 };
             } else {
-                return new Rectangle[0];
+                result = new Rectangle[0];
             }
         }
+        return result;
     }
 
     /**
