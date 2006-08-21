@@ -193,7 +193,12 @@ public class SyncFileNode extends AbstractNode {
                             shortPath = org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_Location_NotInRepository"); // NOI18N
                         }
                         setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
-                        firePropertyChange(COLUMN_NAME_PATH, null, null);
+                        // Table sorter is not thread safe, use this as workaround
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                firePropertyChange(COLUMN_NAME_PATH, null, null);
+                            }
+                        });
                     }
                 };
                 repoload = Subversion.getInstance().getRequestProcessor().post(run);
