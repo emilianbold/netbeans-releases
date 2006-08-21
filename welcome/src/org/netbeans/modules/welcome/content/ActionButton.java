@@ -16,41 +16,48 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.welcome.content;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import javax.swing.Action;
+import javax.swing.Icon;
 import org.openide.awt.StatusDisplayer;
 
-/**
- *
- * @author S. Aubrecht
- */
-public class WebLink extends LinkButton {
+public class ActionButton extends LinkButton {
 
-    private String url;
+    private Action action;
+    private String urlString;
 
-    /** Creates a new instance of WebLink */
-    public WebLink( String key, boolean showBullet ) {
-        this( BundleSupport.getLabel( key ), BundleSupport.getURL( key ), showBullet );
-    }
-
-    public WebLink( String label, String url, boolean showBullet ) {
-        super( label, showBullet );
-        this.url = url;
+    public ActionButton( Action a, boolean showBullet, String urlString ) {
+        super( a.getValue( Action.NAME ).toString(), showBullet );
+        this.action = a;
+        this.urlString = urlString;
+        Object icon = a.getValue( Action.SMALL_ICON );
+        if( null != icon && icon instanceof Icon )
+            setIcon( (Icon)icon );
+        Object tooltip = a.getValue( Action.SHORT_DESCRIPTION );
+        if( null != tooltip )
+            setToolTipText( tooltip.toString() );
     }
 
     public void actionPerformed(ActionEvent e) {
-        Utils.showURL( url );
+        if( null != action ) {
+            action.actionPerformed( e );
+        }
     }
-    
+
     protected void onMouseExited(MouseEvent e) {
-        StatusDisplayer.getDefault().setStatusText( "" );
+        if( null != urlString ) {
+            StatusDisplayer.getDefault().setStatusText( "" ); //NOI18N
+        }
     }
 
     protected void onMouseEntered(MouseEvent e) {
-        StatusDisplayer.getDefault().setStatusText( url );
+        if( null != urlString ) {
+            StatusDisplayer.getDefault().setStatusText( urlString );
+        }
     }
-}
 
+    private static final long serialVersionUID = 1L; 
+}

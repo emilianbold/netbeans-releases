@@ -32,7 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentPanel;
-import org.netbeans.modules.welcome.content.LinkButton;
+import org.netbeans.modules.welcome.content.ActionButton;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -103,10 +103,10 @@ public class GetStarted extends ContentPanel {
         OpenCookie oc = (OpenCookie)dob.getCookie( InstanceCookie.class );
         if( null != oc ) {
             LinkAction la = new LinkAction( dob );
-            LinkButton lb = new LinkButton( la, true, getUrlString( dob ) );
+            ActionButton lb = new ActionButton( la, true, getUrlString( dob ) );
             lb.setForeground( HEADER_TEXT_COLOR );
             panel.add( lb, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
                 new Insets(row==1? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,0,2*TEXT_INSETS_RIGHT), 0, 0 ) );
         }
         return row;

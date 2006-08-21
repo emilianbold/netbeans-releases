@@ -26,7 +26,7 @@ import javax.swing.Action;
  *
  * @author S. Aubrecht
  */
-public class SampleProjectLink extends HtmlTextLinkButton {
+public class SampleProjectLink extends LinkButton {
 
     private String category;
     private String template;

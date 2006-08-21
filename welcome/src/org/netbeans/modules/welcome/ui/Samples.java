@@ -33,7 +33,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.welcome.content.ContentPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
-import org.netbeans.modules.welcome.content.HtmlTextLinkButton;
+import org.netbeans.modules.welcome.content.LinkButton;
 import org.netbeans.modules.welcome.content.SampleProjectLink;
 import org.netbeans.modules.welcome.content.Utils;
 import org.openide.filesystems.FileObject;
@@ -95,7 +95,7 @@ public class Samples extends ContentPanel implements Constants {
         SampleProjectLink link = new SampleProjectLink( category, null, title );
         link.setForeground( HEADER_TEXT_COLOR );
         panel.add( link, new GridBagConstraints( 0, row++, 1, 1, 1.0, 0.0,
-                GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
+                GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
                 new Insets(row==1 ? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,
                 0,TEXT_INSETS_RIGHT/2+UIManager.getInt("ScrollBar.width")), 0, 0 ) ); // NOI18N
     }
@@ -144,7 +144,7 @@ public class Samples extends ContentPanel implements Constants {
         addLink( panel, category, label );
     }
 
-    private static class NewProjectButton extends HtmlTextLinkButton {
+    private static class NewProjectButton extends LinkButton {
         public NewProjectButton() {
             super( BundleSupport.getLabel( "NewProject" ), false ); // NOI18N
             setFont( HEADER_FONT );
