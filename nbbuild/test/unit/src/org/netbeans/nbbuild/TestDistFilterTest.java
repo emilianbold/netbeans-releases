@@ -183,8 +183,13 @@ public class TestDistFilterTest extends NbTestCase {
         String arrayModules[] = (listModules.length() == 0) ? new String[0] :listModules.split(":");
         Set set1 = new HashSet();
         for (int i = 0 ; i < arrayModules.length ; i++) {
-            log(i + " = " +  arrayModules[i]);
-            set1.add(new File(arrayModules[i])); 
+            String module = arrayModules[i];
+            if (module.length() == 1 && i < arrayModules.length + 1) { 
+                // module is e:/dd/dd/ on windows
+                module = module + ":" + arrayModules[++i];
+            }
+            log(i + " = " + module );
+            set1.add(new File(module)); 
         }
         Set set2 = new HashSet();
         for (int i = 0 ; i < modules.length ; i++) {
