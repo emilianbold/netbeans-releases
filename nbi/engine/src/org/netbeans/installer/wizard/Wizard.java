@@ -96,15 +96,20 @@ public class Wizard {
         return instance;
     }
     
-    public static List<WizardComponent> loadWizardComponents(String componentsURI) 
+    public static List<WizardComponent> loadWizardComponents(String componentsURI) throws InitializationException {
+        return loadWizardComponents(componentsURI, Wizard.class.getClassLoader());
+    }
+    
+    public static List<WizardComponent> loadWizardComponents(String componentsURI, ClassLoader loader) 
             throws InitializationException {
         try {
-            DownloadOptions downloadOptions = DownloadOptions.getDefaults();
+            DownloadOptions options = DownloadOptions.getDefaults();
+            options.put(DownloadOptions.CLASSLOADER, loader);
             
             File schemaFile = 
-                    DownloadManager.getInstance().download(componentsSchemaURI, downloadOptions);
+                    DownloadManager.getInstance().download(componentsSchemaURI, options);
             File componentsFile = 
-                    DownloadManager.getInstance().download(componentsURI, downloadOptions);
+                    DownloadManager.getInstance().download(componentsURI, options);
             
             SchemaFactory schemaFactory =
                     SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
