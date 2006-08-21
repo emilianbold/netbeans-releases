@@ -247,6 +247,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     }
 
     private void update (BreakpointType t) {
+        if (type == t) return ;
         pEvent.removeAll ();
         DebuggerManager d = DebuggerManager.getDebuggerManager ();
         BreakpointType old = type;
