@@ -38,7 +38,7 @@ class PDFOpenSupport implements OpenCookie {
     private static final String[] APP_DIRS = new String[] {
             "/usr/bin", "/usr/local/bin" };                             //NOI18N
     private static final String[] VIEWER_NAMES = new String[] {
-            "xpdf", "kghostview", "ggv", "acroread" };                  //NOI18N
+            "evince", "xpdf", "kghostview", "ggv", "acroread" };        //NOI18N
     private static final String[] NO_PATH_VIEWERS = new String[] {
             "acroread", "open" };                                       //NOI18N
     static final String FALLBACK_VIEWER_NAME = "acroread";              //NOI18N
