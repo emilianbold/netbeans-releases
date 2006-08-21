@@ -21,7 +21,6 @@ package gui.propertyeditors;
 
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
 import org.netbeans.jellytools.properties.editors.IconCustomEditorOperator;
 
@@ -177,13 +176,13 @@ public class PropertyType_Icon extends PropertyEditorsTest {
     
     public String getValue(String property) {
         String returnValue;
-        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+        PropertySheetOperator propertiesTab = new PropertySheetOperator(propertiesWindow);
         
         returnValue = new Property(propertiesTab, property).getValue();
         err.println("X GET VALUE = [" + returnValue + "].");
         
         // hack for icon poperty, this action expects, that right value is displayed (with label "Invalid value") as Accessible Name
-        returnValue = new Property(propertiesTab, property).valueButtonOperator().getAccessibleContext().getAccessibleName();
+        returnValue = new Property(propertiesTab, property).getValue();
         returnValue = returnValue.substring(returnValue.indexOf(property)+property.length()+2);
         err.println("X GET VALUE ACCESSIBLE NAME = [" + returnValue + "].");
         

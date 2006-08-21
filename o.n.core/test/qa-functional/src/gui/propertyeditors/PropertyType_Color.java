@@ -21,7 +21,6 @@ package gui.propertyeditors;
 
 import org.netbeans.jellytools.properties.ColorProperty;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
 import org.netbeans.jellytools.properties.editors.ColorCustomEditorOperator;
 
@@ -112,7 +111,7 @@ public class PropertyType_Color extends PropertyEditorsTest {
     
     public String getValue(String propertyName) {
         String returnValue;
-        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+        PropertySheetOperator propertiesTab = new PropertySheetOperator(propertiesWindow);
         
         returnValue = new ColorProperty(propertiesTab, propertyName_L).getValue();
         err.println("GET VALUE = [" + returnValue + "].");

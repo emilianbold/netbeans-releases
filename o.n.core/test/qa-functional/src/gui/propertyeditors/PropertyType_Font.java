@@ -19,14 +19,10 @@
 
 package gui.propertyeditors;
 
-import java.util.StringTokenizer;
 import org.netbeans.jellytools.properties.FontProperty;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
 import org.netbeans.jellytools.properties.editors.FontCustomEditorOperator;
-
-import org.netbeans.jemmy.JemmyException;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -120,7 +116,7 @@ public class PropertyType_Font extends PropertyEditorsTest {
     
     public String getValue(String propertyName) {
         String returnValue;
-        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+        PropertySheetOperator propertiesTab = new PropertySheetOperator(propertiesWindow);
         
         returnValue = new FontProperty(propertiesTab, propertyName_L).getValue();
         err.println("GET VALUE = [" + returnValue + "].");

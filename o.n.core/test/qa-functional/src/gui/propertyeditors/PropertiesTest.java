@@ -143,8 +143,8 @@ public class PropertiesTest {
             props.put(new TestProperty("int",                   int.class));            
             props.put(new TestProperty("Long",                  java.lang.Long.class));            
             props.put(new TestProperty("long",                  long.class));            
-            props.put(new TestProperty("NbClassPath",           org.openide.execution.NbClassPath.class));            
-            props.put(new TestProperty("NbProcessDescriptor",   org.openide.execution.NbProcessDescriptor.class));            
+//            props.put(new TestProperty("NbClassPath",           org.openide.execution.NbClassPath.class));            
+//            props.put(new TestProperty("NbProcessDescriptor",   org.openide.execution.NbProcessDescriptor.class));            
             props.put(new TestProperty("Object",                java.lang.Object.class));            
             props.put(new TestProperty("Point",                 java.awt.Point.class));            
             props.put(new TestProperty("property_Properties",   java.util.Properties.class));            

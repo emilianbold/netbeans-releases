@@ -26,13 +26,11 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 
 import org.netbeans.jellytools.properties.Property;
-import org.netbeans.jellytools.properties.ComboBoxProperty;
-import org.netbeans.jellytools.properties.TextFieldProperty;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 
@@ -49,6 +47,8 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     public String propertyInitialValue;
     public String propertyValue;
     
+    protected static JTableOperator tableOperator;
+
     protected static NbDialogOperator propertyCustomizer;
     
     protected static NbDialogOperator propertiesWindow = null;
@@ -130,7 +130,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             propertyInitialValue = getValue(propertyName);
             
 //            ((TextFieldProperty) findProperty(propertyName, "TextFieldProperty")).setValue(propertyValue);
-            new PropertySheetOperator(propertiesWindow).tblSheet().changeCellObject(findProperty(propertyName, "TextFieldProperty").getRow(),1, propertyValue);
+            new PropertySheetOperator(propertiesWindow).tblSheet().changeCellObject(findProperty(propertyName, propertiesWindow).getRow(),1, propertyValue);
             
             err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"}  - finished.");
             verifyPropertyValue(expectance);
@@ -150,7 +150,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            (findProperty(propertyName, "ComboBoxProperty")).setValue(propertyValue);
+            findProperty(propertyName, propertiesWindow).setValue(propertyValue);
             
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"}  - finished.");
             verifyPropertyValue(expectance);
@@ -170,7 +170,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            (findProperty(propertyName, "ComboBoxProperty")).setValue(propertyValueIndex);
+            findProperty(propertyName, propertiesWindow).setValue(propertyValueIndex);
             
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"}  - finished.");
             verifyPropertyValue(expectance);
@@ -207,7 +207,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         // hack for troubles with request focus on already focused property
         new PropertySheetOperator(propertiesWindow).tblSheet().selectCell(0,0);
         
-        findProperty(propertyName, "").openEditor();
+        findProperty(propertyName, propertiesWindow).openEditor();
         propertyCustomizer = findPropertyCustomizer(propertyName);
         return propertyCustomizer;
     }
@@ -236,7 +236,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
      * @return value of property
      */
     public String getValue(String propertyName) {
-        String returnValue = findProperty(propertyName, "").getValue();
+        String returnValue = findProperty(propertyName, propertiesWindow).getValue();
         err.println("GET VALUE = [" + returnValue + "].");
         return returnValue;
     }
@@ -329,22 +329,21 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
      * @param type  TextFieldProperty - textfield property, ComboBoxProperty - combobox property
      * @return property by <b>propertyName</b> and <b>type</b>.
      */
-    public static Property findProperty(String propertyName, String type) {
-        Operator.StringComparator oldComparator = Operator.getDefaultStringComparator();
-        Operator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
+    protected static Property findProperty(String propertyName, NbDialogOperator propertiesWindow) {
+        PropertySheetOperator propertySheet = new PropertySheetOperator(propertiesWindow);
+        Property property = new Property(propertySheet, propertyName);
         
-        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
-        Property property;
-        
-        if(type.indexOf("TextFieldProperty")!=-1)
-            property = new TextFieldProperty(propertiesTab, propertyName);
-        else if(type.indexOf("ComboBoxProperty")!=-1)
-            property = new ComboBoxProperty(propertiesTab, propertyName);
-        else
-            property = new Property(propertiesTab, propertyName);
-        
-        Operator.setDefaultStringComparator(oldComparator);
-        
+        // property.openEditor(); - doesn't work - custom editor is opened without Users Event
+        // hack for invoking Custom Editor by pushing shortcut CTRL+SPACE
+        tableOperator = propertySheet.tblSheet();
+        // Need to request focus before selection because invokeCustomEditor action works
+        // only when table is focused
+        tableOperator.makeComponentVisible();
+        tableOperator.requestFocus();
+        tableOperator.waitHasFocus();
+        // need to select property first
+        ((javax.swing.JTable)tableOperator.getSource()).changeSelection(property.getRow(), 0, false, false);
+//        return new Property(new PropertySheetOperator(propertiesWindow), propertyName);
         return property;
     }
     
