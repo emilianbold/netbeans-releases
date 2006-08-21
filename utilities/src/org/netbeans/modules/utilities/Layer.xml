@@ -284,11 +284,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="netbeans-kb.url" url="nbresloc:/org/netbeans/modules/utilities/netbeans-kb.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
             </file>         
-            <attr name="netbeans-kb.url/relnotes.url" boolvalue="true"/>
-            <file name="relnotes.url" url="nbresloc:/org/netbeans/modules/utilities/relnotes.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-            </file>
-            <attr name="relnotes.url/utilities-sep-3.instance" boolvalue="true"/>
+            <attr name="netbeans-kb.url/utilities-sep-3.instance" boolvalue="true"/>
             <file name="utilities-sep-3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
