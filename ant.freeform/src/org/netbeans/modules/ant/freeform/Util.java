@@ -110,11 +110,9 @@ public class Util {
     private static final Pattern VALIDATION = Pattern.compile("([A-Za-z0-9])+"); // NOI18N
     
     public static String getMergedHelpIDFragments(Project p) {
-        Collection/*<HelpIDFragmentProvider>*/ providers = p.getLookup().lookup(new Lookup.Template(HelpIDFragmentProvider.class)).allInstances();
-        List/*<String>*/ fragments = new ArrayList();
+        List<String> fragments = new ArrayList<String>();
         
-        for (Iterator i = providers.iterator(); i.hasNext(); ) {
-            HelpIDFragmentProvider provider = (HelpIDFragmentProvider) i.next();
+        for (HelpIDFragmentProvider provider : p.getLookup().lookupAll(HelpIDFragmentProvider.class)) {
             String fragment = provider.getHelpIDFragment();
             
             if (fragment == null || !VALIDATION.matcher(fragment).matches()) {
@@ -127,9 +125,9 @@ public class Util {
         Collections.sort(fragments);
         
         StringBuffer result = new StringBuffer();
-        
-        for (Iterator i = fragments.iterator(); i.hasNext(); ) {
-            result.append((String) i.next());
+
+        for (Iterator<String> i = fragments.iterator(); i.hasNext(); ) {
+            result.append(i.next());
             
             if (i.hasNext()) {
                 result.append('.');
