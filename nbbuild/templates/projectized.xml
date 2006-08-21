@@ -302,6 +302,11 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.test.qa-functional.results.dir" location="${build.test.qa-functional.dir}/results"/>
         
         <property name="test.filter.trace" value="true"/>
+        <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
+           <!-- if project.xml doesn't contain test dependencies -->
+        <property name="test.qa-functional.folder" location="build/test/qa-functional/dist"/>
+        <property name="test.qa-functional.out.folder" location="${test.qa-functional.folder}"/>
+        <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
         
         <!-- path reference used in both compiler and executor -->
         <path id="test.qa-functional.cp">
@@ -349,12 +354,7 @@ Microsystems, Inc. All Rights Reserved.
         <available file="${test.qa-functional.dir}/data" type="dir" property="exists.test.qa-functional.data"/>
         <!-- test distribution -->
                <mkdir dir="${nb_all}/nbbuild/build/testdist"/>
-               <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
                <mkdir dir="${test.dist.dir}/extralibs"/>
-               <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
-           <!-- if project.xml doesn't contain test dependencies -->
-           <property name="test.qa-functional.folder" location="build/test/qa-functional/dist"/>
-           <property name="test.qa-functional.out.folder" location="${test.qa-functional.folder}"/>
            <mkdir dir="${test.qa-functional.out.folder}"/>
            <jar destfile="${test.qa-functional.out.folder}/tests.jar" basedir="${build.test.qa-functional.classes.dir}"/>            
            <!-- create properties -->
@@ -383,4 +383,42 @@ Microsystems, Inc. All Rights Reserved.
            <zip destfile="${test.qa-functional.out.folder}/data.zip" basedir="${test.qa-functional.dir}/data"/> 
     </target>
 
+    <target name="build-all-tests" depends="test-condition,test-build-condition,test-build-qa-functional-condition" if="contains.test" description="build all test types">
+    </target>
+    
+        <!-- it sets these conditions 
+           1. contains.unit.test  - contains unit tests
+           2. contains.qa-functional.test - contains tests
+           3. contains.test - project contains at least one test type
+        -->
+    <target name="test-condition" depends="init">
+        <available file="test/cfg-unit.xml" property="contains.unit.test"/>
+        <available file="test/cfg-qa-functional.xml" property="contains.qa-functional.test"/>
+         <condition property="contains.test">
+             <or>
+                 <isset property="contains.unit.test"/>
+                 <isset property="contains.qa-functional.test"/>
+             </or>
+         </condition>          
+    </target>
+    
+    <target name="test-build-condition" if="contains.unit.test" depends="test-init" description="build unit tests if exists">
+        <antcall target="test-build-datajar"/>
+        <convertimport file="${test.unit.out.folder}/build-unit.xml" 
+                       oldname="xtest-unit.xml"
+                       newpath="../../nbbuild/templates/xtest-unit.xml"/>
+        <convertimport file="${test.unit.out.folder}/build.xml" 
+                       oldname="xtest.xml"
+                       newpath="../../nbbuild/templates/xtest.xml"/>
+         <copy file="${nb_all}/nbbuild/templates/testdist/unit-unit.xml" tofile="${test.unit.out.folder}/unit-unit.xml"/>
+    </target>
+    <target name="test-build-qa-functional-condition" if="contains.qa-functional.test" depends="test-init-qa-functional" description="build qa-functional test if exists">
+        <antcall target="test-build-datajar-qa-functional"/>
+        <convertimport file="${test.qa-functional.out.folder}/build-qa-functional.xml" 
+                       oldname="xtest-qa-functional.xml"
+                       newpath="../../nbbuild/templates/xtest-qa-functional.xml"/>
+        <convertimport file="${test.qa-functional.out.folder}/build.xml" 
+                       oldname="xtest.xml"
+                       newpath="../../nbbuild/templates/xtest.xml"/>
+    </target>
 </project>

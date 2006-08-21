@@ -1788,14 +1788,31 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <incrspecvers nbroot=".." modules="${allmodules}" branch="${branch}"/>
   </target>
 
-  <target name="build-test-dist" depends="bootstrap,init-module-list" description="Built test distribution">
-         <subant buildpath="${test.modules.unit}" target="test-build"/>
-         <copy todir="${test.dist.dir}/unit"> 
+  <target name="build-test-dist" depends="bootstrap,init-module-list,init-tasks" description="Built test distribution">
+     <property name="config.modules.test" value="${config.modules.stable}"/>
+     <pathconvert property="modules.fullpath" >
+          <path>
+              <dirset dir="${nb_all}" includes="${config.modules.test}" />
+          </path>
+          <mapper type="identity" />
+      </pathconvert>
+      <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
+      <subant buildpath="${modules.sorted}" target="build-all-tests"/>
+      <!-- copy templates -->
+      <copy todir="${test.dist.dir}/unit"> 
              <fileset dir="templates/testdist">
                  <include name="*-all-unit.*"/>
                  <include name="all-unit.properties"/>
              </fileset>
-         </copy>
+      </copy>
+      <mkdir dir="${test.dist.dir}/nbbuild"/>
+      <copy todir="${test.dist.dir}/nbbuild"> 
+             <fileset dir="." includes="templates/*,*.xml,*.jar,*.txt,*.properties"/>
+      </copy>
+      <!-- add xtest -->
+      <mkdir dir="${test.dist.dir}/xtest"/>
+      <copy todir="${test.dist.dir}/xtest" > 
+             <fileset dir="../xtest" includes="lib/**,plugins/**,standard-test-*cludes.txt"/>
+      </copy>     
   </target>      
-
 </project>

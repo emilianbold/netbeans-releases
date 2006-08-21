@@ -82,6 +82,9 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="shorterpaths"
          classname="org.netbeans.nbbuild.ShorterPaths"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="convertimport"
+         classname="org.netbeans.nbbuild.ConvertImport"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <property name="tasks-already-set" value="true"/>
   </target>
   

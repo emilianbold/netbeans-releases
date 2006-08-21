@@ -301,8 +301,11 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.test.unit.dir" location="build/test/unit"/>
         <property name="build.test.unit.classes.dir" location="${build.test.unit.dir}/classes"/>
         <property name="build.test.unit.results.dir" location="${build.test.unit.dir}/results"/>
+        <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
+        <!-- if project.xml doesn't contain test dependencies -->
+        <property name="test.unit.folder" location="build/test/unit/dist"/>
+        <property name="test.unit.out.folder" location="${test.unit.folder}"/>
 
-        
         <property name="test.filter.trace" value="true"/>
         <path id="test.unit.cp">
             <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
@@ -364,11 +367,6 @@ Microsystems, Inc. All Rights Reserved.
         <available file="${test.unit.dir}/data" type="dir" property="exists.test.data"/>
         <!-- test distribution -->
            <mkdir dir="${test.dist.dir}/extralibs"/>
-           <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
-           <!-- if project.xml doesn't contain test dependencies -->
-           <property name="test.unit.folder" location="build/test/unit/dist"/>
-                            
-           <property name="test.unit.out.folder" location="${test.unit.folder}"/>
            <mkdir dir="${test.unit.out.folder}"/>
            <jar destfile="${test.unit.out.folder}/tests.jar" basedir="${build.test.unit.classes.dir}" filesetmanifest="merge"/>            
            <!-- create properties -->
@@ -383,7 +381,6 @@ Microsystems, Inc. All Rights Reserved.
                 <replacement dir="${java.home}" name="java.home"/>
                 <replacement dir="${java.home.parent}" name="java.home.parent"/>
             </shorterpaths>
-  <!--          <copy file="${nb_all}/nbbuild/templates/testdist/unit-unit.xml" tofile="${test.unit.out.folder}/unit-unit.xml"/>-->
              <copy todir="${test.unit.out.folder}">
                 <fileset dir="${test.unit.dir}/..">
                   <include name="build-unit.xml"/>
