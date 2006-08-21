@@ -200,7 +200,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                    ps.print(resultXml);
                    ps.close();
                 } else {
-                    System.out.println(buffer);
+                    System.out.println(resultXml);
                 }
             }
             
