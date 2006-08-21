@@ -217,4 +217,8 @@ Microsystems, Inc. All Rights Reserved.
         <nbinstaller module="${cluster}/${module.jar}" action="reinstall"/>
     </target>
     
+    <target name="test-clean" depends="test-init">
+        <delete dir="${test.unit.out.folder}"/>
+    </target>
+    
 </project>

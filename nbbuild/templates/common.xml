@@ -585,7 +585,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail" description="Delete testing user directory (if the application is not running); clears any saved settings etc."/>
     
-    <target name="clean" depends="files-init,testuserdir-delete">
+    <target name="clean" depends="files-init,testuserdir-delete,test-clean">
         <delete failonerror="false" includeemptydirs="true">
             <fileset dir="build">
                 <exclude name="testuserdir/"/>

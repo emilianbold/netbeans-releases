@@ -6,14 +6,6 @@
             <code-name-base>module1</code-name-base>
             <suite-component/>
             <module-dependencies/>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-              </test-type>
-              <test-type>
-                  <name>qa-functional</name>
-              </test-type>
-            </test-dependencies>
             <public-packages/>
         </data>
     </configuration>
