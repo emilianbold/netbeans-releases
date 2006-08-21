@@ -48,6 +48,7 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         addObject (node, widget);
         nodes.add (node);
         nodePins.put (node, new HashSet<P> ());
+        notifyNodeAdded (node, widget);
         return widget;
     }
 
@@ -71,6 +72,7 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         Widget widget = attachEdgeWidget (edge);
         addObject (edge, widget);
         edges.add (edge);
+        notifyEdgeAdded (edge, widget);
         return widget;
     }
 
@@ -99,6 +101,7 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         pinNodes.put (pin, node);
         pinInputEdges.put (pin, new ArrayList<E> ());
         pinOutputEdges.put (pin, new ArrayList<E> ());
+        notifyPinAdded (node, pin, widget);
         return widget;
     }
 
@@ -215,6 +218,15 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
     protected void detachEdgeWidget (E edge, Widget widget) {
         if (widget != null)
             widget.removeFromParent ();
+    }
+
+    protected void notifyNodeAdded (N node, Widget widget) {
+    }
+
+    protected void notifyEdgeAdded (E edge, Widget widget) {
+    }
+
+    protected void notifyPinAdded (N node, P pin, Widget widget) {
     }
 
     protected abstract Widget attachNodeWidget (N node);

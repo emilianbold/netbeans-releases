@@ -45,6 +45,7 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         nodes.add (node);
         nodeInputEdges.put (node, new ArrayList<E> ());
         nodeOutputEdges.put (node, new ArrayList<E> ());
+        notifyNodeAdded (node, widget);
         return widget;
     }
 
@@ -76,6 +77,7 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         Widget widget = attachEdgeWidget (edge);
         addObject (edge, widget);
         edges.add (edge);
+        notifyEdgeAdded (edge, widget);
         return widget;
     }
 
@@ -156,6 +158,12 @@ public abstract class GraphScene<N, E> extends ObjectScene {
 
     public boolean isEdge (Object object) {
         return edges.contains (object);
+    }
+
+    protected void notifyNodeAdded (N node, Widget widget) {
+    }
+
+    protected void notifyEdgeAdded (E edge, Widget widget) {
     }
 
     protected void detachNodeWidget (N node, Widget widget) {
