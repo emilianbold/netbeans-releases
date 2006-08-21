@@ -131,8 +131,20 @@ public class PostInstallFixupAction extends ProductAction {
         }
         File f = new File(fileName);
         if (!f.exists()) {
-            logEvent(this,Log.ERROR,"Error: Cannot find file:" + f + " Cannot patch productid.");
-            return;
+            if (add) {
+                logEvent(this,Log.WARNING,"Warning: Cannot find file:" + f + " File will be created.");
+                try {
+                    fileService.createAsciiFile
+                    (fileName,new String [] {PatchProductID.NB_ID_IDE + "_" + PatchProductID.PACK_ID_PROFILER});
+                } catch (ServiceException ex) {
+                    logEvent(this,Log.ERROR,"Error: Cannot create file:" + fileName);
+                    Util.logStackTrace(this,ex);
+                }
+                return;
+            } else {
+                logEvent(this,Log.ERROR,"Error: Cannot find file:" + f + " Cannot patch productid.");
+                return;
+            }
         }
         String[] content = null;
         try {

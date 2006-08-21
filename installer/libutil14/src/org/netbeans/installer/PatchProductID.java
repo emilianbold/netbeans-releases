@@ -35,6 +35,8 @@ public class PatchProductID {
     public static final String PACK_ID_ENTERPISE = "ENT";
     public static final String PACK_ID_CREATOR = "CRE";
     
+    public static final String NB_ID_IDE = "NB";
+    
     private PatchProductID () {
     }
 
