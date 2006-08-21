@@ -207,7 +207,7 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
     public void initGroupValues(final boolean useDefault) {
         vps.register(tableModel, new String[] {DefaultPropertiesDescriptor.ABILITIES}, useDefault);
         final boolean notUseDefault=useDefault ^ true;
-        bAdd.setEnabled(!notUseDefault);
+        bAdd.setEnabled(notUseDefault);
         bEdit.setEnabled(notUseDefault);
         bRemove.setEnabled(notUseDefault);
         table.setEnabled(notUseDefault);
