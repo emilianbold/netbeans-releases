@@ -33,6 +33,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import org.openide.util.Utilities;
 import org.openide.awt.DynamicMenuContent;
@@ -119,14 +120,17 @@ class DynaMenuModel {
         boolean wasSeparator = false;
         for (Iterator iter = menuItems.iterator(); iter.hasNext(); ) {
             curItem = (JComponent)iter.next();
-            if (curItem != null) {
-                m.add(curItem);
-                wasSeparator = curItem instanceof JSeparator;
-            } else {
+            if (curItem == null) {
                 // null means separator
-                if (!wasSeparator) {
-                    m.addSeparator();
-                }
+                curItem = new JSeparator();
+            }
+            m.add(curItem);
+            boolean isSeparator = curItem instanceof JSeparator;
+            if (isSeparator && wasSeparator) {
+                curItem.setVisible(false);
+            }
+            if (!(curItem instanceof InvisibleMenuItem)) {
+                wasSeparator = isSeparator;
             }
         }
     }
@@ -155,7 +159,7 @@ class DynaMenuModel {
             int oldIndex = 0;
             Component[] menuones = menu.getPopupMenu().getComponents();
             int menuIndex = old.length > 0 ? findFirstItemIndex(old[0], menuones) : -1;
-            JComponent[] newones = convertArray(pres.synchMenuPresenters(old));
+            JComponent[] newones = convertArray(pres.synchMenuPresenters(unconvertArray(old)));
             if (!compareEqualArrays(old, newones)) {
                 if (menuIndex < 0) {
                     menuIndex = 0;
@@ -195,6 +199,7 @@ class DynaMenuModel {
                 }
             }
         }
+        checkSeparators(menuones, menu.getPopupMenu());
         if (!hasAnyIcons && isWithIcons) {
             isWithIcons = false;
         }
@@ -207,9 +212,33 @@ class DynaMenuModel {
         }
     }
     
+    static void checkSeparators(Component[] menuones, JPopupMenu parent) {
+        boolean wasSeparator = false;
+        for (int i = 0; i < menuones.length; i++) {
+            Component curItem = menuones[i];
+            if (curItem != null) {
+                boolean isSeparator = curItem instanceof JSeparator;
+                if (isSeparator) {
+                    boolean isVisible = curItem.isVisible();
+                    if (isVisible != !wasSeparator) {
+                        //MACOSX whenever a property like enablement or visible is changed, need to remove and add.
+                        // could be possibly split to work differetly on other platform..
+                        parent.remove(i);
+                        JSeparator newOne = new JSeparator();
+                        newOne.setVisible(!wasSeparator);
+                        parent.add(newOne, i);
+                    }
+                }
+                if (!(curItem instanceof InvisibleMenuItem)) {
+                    wasSeparator = isSeparator;
+                }
+            }
+        }
+    }
+    
     private JComponent[] convertArray(JComponent[] arr) {
         if (arr == null || arr.length == 0) {
-            return new JComponent[0];
+            return new JComponent[] { new InvisibleMenuItem() };
         }
         JComponent[] toRet = new JComponent[arr.length];
         for (int i = 0; i < arr.length; i++) {
@@ -222,6 +251,14 @@ class DynaMenuModel {
         return toRet;
     }
     
+    private JComponent[] unconvertArray(JComponent[] arr) {
+        if (arr.length == 1 && arr[0] instanceof InvisibleMenuItem) {
+            return new JComponent[0];
+        } else {
+            return arr;
+        }
+    }
+        
     private int findFirstItemIndex(JComponent first, Component[] menuItems) {
         for (int i = 0; i < menuItems.length; i++) {
             if (first == menuItems[i]) {
@@ -261,5 +298,13 @@ class DynaMenuModel {
             result.add(obj);
         }
         return result;
+    }
+    
+    static final class InvisibleMenuItem extends JMenuItem {
+        
+        public boolean isVisible() {
+            return false;
+        }
+        
     }
 }

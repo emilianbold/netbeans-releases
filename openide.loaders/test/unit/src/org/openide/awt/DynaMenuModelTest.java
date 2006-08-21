@@ -27,6 +27,8 @@ import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import junit.framework.TestCase;
 import org.openide.util.actions.Presenter;
 
@@ -77,6 +79,39 @@ public class DynaMenuModelTest extends TestCase {
         assertEquals("0", ((JMenuItem)comps[0]).getText());
         assertEquals("1x", ((JMenuItem)comps[1]).getText());
         assertEquals("2x", ((JMenuItem)comps[2]).getText());
+        
+    }
+    
+    
+    
+    public  void testSeparators() {
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new JMenu());
+        menu.add(new JSeparator());
+        menu.add(new DynaMenuModel.InvisibleMenuItem());
+        menu.add(new JSeparator());
+        menu.add(new JMenuItem());
+        DynaMenuModel.checkSeparators(menu.getComponents(), menu);
+        Component[] menus = menu.getComponents();
+        assertTrue(menus[1].isVisible());
+        assertFalse(menus[3].isVisible());
+        
+        menu = new JPopupMenu();
+        menu.add(new JMenu());
+        menu.add(new JSeparator());
+        menu.add(new DynaMenuModel.InvisibleMenuItem());
+        menu.add(new JMenuItem());
+        menu.add(new DynaMenuModel.InvisibleMenuItem());
+        menu.add(new JSeparator());
+        menu.add(new JSeparator());
+        menu.add(new JMenuItem());
+        DynaMenuModel.checkSeparators(menu.getComponents(), menu);
+        Component[] menus2 = menu.getComponents();
+        assertTrue(menus2[1].isVisible());
+        assertTrue(menus2[5].isVisible());
+        assertFalse(menus2[6].isVisible());
+        
+        
         
     }
     
