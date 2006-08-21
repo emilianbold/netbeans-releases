@@ -384,7 +384,7 @@ public class WorkingCopyDetails {
             if(endBasePosition == -1) {
                 endBasePosition = basePosition + 1 + keyword.length();
             }
-            fromIndexBase = endBasePosition + 1;
+            fromIndexBase = endBasePosition;
 
             int workingPosition = workingLineBuilder.indexOf(headerPattern, fromIndexWorking);
             if (workingPosition != 1) {
@@ -393,7 +393,7 @@ public class WorkingCopyDetails {
                         endWorkingPosition = workingPosition + 1 + keyword.length();                                
                     }
                     String replacementValue = baseLine.substring(basePosition, fromIndexBase);
-                    workingLineBuilder.replace(workingPosition, endWorkingPosition + 1,
+                    workingLineBuilder.replace(workingPosition, endWorkingPosition,
                             replacementValue);
                     fromIndexWorking = workingPosition + replacementValue.length();
             }
