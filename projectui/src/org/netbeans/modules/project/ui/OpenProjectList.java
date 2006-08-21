@@ -86,6 +86,9 @@ public final class OpenProjectList {
     
     private static OpenProjectList INSTANCE;
     
+    // number of templates in LRU list
+    private static final int NUM_TEMPLATES = 15;
+    
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(OpenProjectList.class.getName());
     private static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
     
@@ -651,7 +654,7 @@ public final class OpenProjectList {
         // First take recently used templates and try to find those which
         // are supported by the project.
         
-        ArrayList<FileObject> result = new ArrayList<FileObject>( 10 );        
+        ArrayList<FileObject> result = new ArrayList<FileObject>(NUM_TEMPLATES);        
         
         RecommendedTemplates rt = project.getLookup().lookup( RecommendedTemplates.class );
         String rtNames[] = rt == null ? new String[0] : rt.getRecommendedTypes();
@@ -661,7 +664,7 @@ public final class OpenProjectList {
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();            
                 
         Iterator<String> it = recentTemplates.iterator();
-        for( int i = 0; i < 10 && it.hasNext(); i++ ) {
+        for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
             String templateName = it.next();
             FileObject fo = sfs.findResource( templateName );
             if ( fo == null ) {
@@ -678,7 +681,7 @@ public final class OpenProjectList {
         
         // If necessary fill the list with the rest of privileged templates
         it = privilegedTemplates.iterator();
-        for( int i = result.size(); i < 10 && it.hasNext(); i++ ) {
+        for( int i = result.size(); i < NUM_TEMPLATES && it.hasNext(); i++ ) {
             String path = it.next();
             FileObject fo = sfs.findResource( path );
             if ( fo != null ) {
