@@ -71,6 +71,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.xml.sax.SAXException;
 
+
 /**
  * Helper class for test bag purposes
  * @author Jesse Glick, Michal Skvor
@@ -213,12 +214,11 @@ public class TestUtil extends ProxyLookup {
         final String rootMobility=File.separator+rootStr;
         String wtkStr="wtk22";
         String destPath=Manager.getWorkDirPath();
-        String osarch=null;
+        String osarch=System.getProperty("os.name",null);
         
         ZipFile zip=null;
         String zipPath=null;
-        
-        String wtkPath=System.getProperty("wtk.test.dir");
+        String wtkPath=System.getProperty("wtk.base.dir");
         if (wtkPath==null)
         {
             /* Get a path to wtk - dirty hack but I don't know any better way */
@@ -235,8 +235,6 @@ public class TestUtil extends ProxyLookup {
                 platPath=classPath.substring(id1,index+rootMobility.length())+rootWTK;
             }
             
-
-            osarch=System.getProperty("os.name",null);
             String ossuf=null;
             NbTestCase.assertNotNull(osarch);
             if (osarch.toLowerCase().indexOf("windows")!=-1)
