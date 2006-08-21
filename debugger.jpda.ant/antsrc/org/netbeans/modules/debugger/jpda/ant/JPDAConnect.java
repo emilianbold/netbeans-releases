@@ -23,9 +23,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 
 import org.openide.util.RequestProcessor;
 
@@ -38,7 +42,7 @@ import org.netbeans.api.java.classpath.ClassPath;
  * @see "#18708"
  * @author Jesse Glick
  */
-public class JPDAConnect extends Task {
+public class JPDAConnect extends Task implements BuildListener {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
     
@@ -62,6 +66,8 @@ public class JPDAConnect extends Task {
 
     /** Default transport is socket*/
     private String transport = "dt_socket"; // NOI18N
+    
+    private JPDADebugger debugger;
     
     
     /**
@@ -116,6 +122,8 @@ public class JPDAConnect extends Task {
     
     public void execute () throws BuildException {
         logger.fine("JPDAConnect.execute ()"); // NOI18N
+        
+        getProject().addBuildListener(this);
 
         JPDAStart.verifyPaths(getProject(), classpath);
         //JPDAStart.verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
@@ -176,7 +184,7 @@ public class JPDAConnect extends Task {
                             // here, so needs to be inside RP thread.
                             if (transport.equals ("dt_socket")) // NOI18N
                                 try {
-                                    JPDADebugger.attach (
+                                    debugger = JPDADebugger.attach (
                                         host, 
                                         Integer.parseInt (address), 
                                         new Object[] {properties}
@@ -189,7 +197,7 @@ public class JPDAConnect extends Task {
                                     );
                                 }
                             else
-                                JPDADebugger.attach (
+                                debugger = JPDADebugger.attach (
                                     address, 
                                     new Object[] {properties}
                                 );
@@ -226,5 +234,39 @@ public class JPDAConnect extends Task {
         else
             log ("Attached JPDA debugger to " + host + ":" + address);
         logger.fine("JPDAConnect.execute () " + "end: success"); // NOI18N
+    }
+
+    public void buildStarted(BuildEvent buildEvent) {
+    }
+
+    public void buildFinished(BuildEvent buildEvent) {
+        logger.fine("Build Finished."); // NOI18N
+        // The build has finished - we need to terminate the debugger
+        if (debugger != null) {
+            // Find the associated session
+            Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+            for (int i = 0; i < sessions.length; i++) {
+                JPDADebugger d = (JPDADebugger) sessions[i].lookupFirst(null, JPDADebugger.class);
+                if (d == debugger) {
+                    sessions[i].kill();
+                    break;
+                }
+            }
+        }
+    }
+
+    public void targetStarted(BuildEvent buildEvent) {
+    }
+
+    public void targetFinished(BuildEvent buildEvent) {
+    }
+
+    public void taskStarted(BuildEvent buildEvent) {
+    }
+
+    public void taskFinished(BuildEvent buildEvent) {
+    }
+
+    public void messageLogged(BuildEvent buildEvent) {
     }
 }
