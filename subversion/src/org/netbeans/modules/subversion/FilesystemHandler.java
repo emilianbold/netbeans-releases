@@ -30,6 +30,9 @@ import org.openide.ErrorManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -509,12 +512,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     public void moveImpl(final File from, final File to) throws IOException {
         if (SwingUtilities.isEventDispatchThread()) {
             
-            // Openide implemetation mistakenly calls FS from AWT
-            // relax our asserts by reposting to non-AWT thread and wait
-            // and print out warning so original gets fixed
-            
-            Exception ex = new IllegalThreadStateException("WARNING: above code access filesystem from AWT.\nImagine that Subversion's filesystem handler can connect to server over (slow) network.\nWorkarounding... (it may deadlocks however)."); // NOI18N
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            Logger.getLogger("org.netbeans.modules.subversion").log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
             final Throwable innerT[] = new Throwable[1];
             Runnable outOfAwt = new Runnable() {
                 public void run() {
