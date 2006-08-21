@@ -484,7 +484,7 @@ public class RADVisualComponent extends RADComponent {
                                        accParent : getDefaultValue();
                         }
                         public void setTargetValue(Object value) {
-                            accParent = (Accessible) value;
+                            accParent = value;
                         }
                         public boolean supportsDefaultValue () {
                             return true;
