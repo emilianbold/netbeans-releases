@@ -26,6 +26,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -35,9 +36,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
@@ -325,12 +324,13 @@ public class TestKit {
             if (expected.length > actual.length) {
                 return -1;
             }
+            Arrays.sort(expected);
+            Arrays.sort(actual);
             for (int i = 0; i < expected.length; i++) {
-                for (int j = 0; j < actual.length; j++) {
-                    if (((String) expected[i]).equals((String) actual[j])) {
-                        result++;
-                        break;
-                    }
+                if (((String) expected[i]).equals((String) actual[i])) {
+                    result++;
+                } else {
+                    return -1;
                 }
             }
         }
