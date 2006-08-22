@@ -201,8 +201,6 @@ public class BridgeImpl implements BridgeInterface {
         catch (BuildException be) {
             logger.buildInitializationFailed(be);
             logger.shutdown();
-            out.close();
-            err.close();
             if (in != null) {
                 try {
                     in.close();
@@ -248,8 +246,6 @@ public class BridgeImpl implements BridgeInterface {
             project.fireBuildFinished(t);
         } finally {
             AntBridge.restoreSystemInOutErr();
-            out.close();
-            err.close();
             if (in != null) {
                 try {
                     in.close();

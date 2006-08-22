@@ -159,6 +159,8 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
      */
     public void shutdown() {
         running = false;
+        out.close();
+        err.close();
     }
     
     private void verifyRunning() {
