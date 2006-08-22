@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -136,6 +138,7 @@ public final class TargetExecutor implements Runnable {
     }
     
     private static final Map<InputOutput,StopAction> stopActions = new HashMap<InputOutput,StopAction>();
+    private static final Map<InputOutput,RerunAction> rerunActions = new HashMap<InputOutput,RerunAction>();
 
     private static final class StopAction extends AbstractAction {
 
@@ -159,6 +162,47 @@ public final class TargetExecutor implements Runnable {
         public void actionPerformed(ActionEvent e) {
             setEnabled(false); // discourage repeated clicking
             stopProcess(t);
+        }
+
+    }
+
+    private static final class RerunAction extends AbstractAction {
+
+        private final AntProjectCookie pcookie;
+        private final List<String> targetNames;
+        private final int verbosity;
+        private final Map<String,String> properties;
+
+        public RerunAction(TargetExecutor prototype) {
+            pcookie = prototype.pcookie;
+            targetNames = prototype.targetNames;
+            verbosity = prototype.verbosity;
+            properties = prototype.properties;
+            setEnabled(false); // initially, until ready
+        }
+
+        @Override
+        public Object getValue(String key) {
+            if (key.equals(Action.SMALL_ICON)) {
+                return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/rerun.png"));
+            } else if (key.equals(Action.SHORT_DESCRIPTION)) {
+                return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.RerunAction.rerun");
+            } else {
+                return super.getValue(key);
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            setEnabled(false);
+            try {
+                TargetExecutor exec = new TargetExecutor(pcookie,
+                        targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null);
+                exec.setVerbosity(verbosity);
+                exec.setProperties(properties);
+                exec.execute();
+            } catch (IOException x) {
+                Logger.getLogger(TargetExecutor.class.getName()).log(Level.INFO, null, x);
+            }
         }
 
     }
@@ -199,6 +243,7 @@ public final class TargetExecutor implements Runnable {
                         // Discard it.
                         free.closeInputOutput();
                         stopActions.remove(free);
+                        rerunActions.remove(free);
                     }
                 }
                 freeTabs.clear();
@@ -206,8 +251,10 @@ public final class TargetExecutor implements Runnable {
             }
             if (io == null) {
                 StopAction sa = new StopAction();
-                io = IOProvider.getDefault().getIO(displayName, SHOW_STOP_BUTTON ? new Action[] {sa} : new Action[0]);
+                RerunAction ra = new RerunAction(this);
+                io = IOProvider.getDefault().getIO(displayName, SHOW_STOP_BUTTON ? new Action[] {ra, sa} : new Action[0]);
                 stopActions.put(io, sa);
+                rerunActions.put(io, ra);
             }
             task = ExecutionEngine.getDefault().execute(displayName, this, InputOutput.NULL);
         }
@@ -233,8 +280,7 @@ public final class TargetExecutor implements Runnable {
         }
         @Override
         public void stop () {
-            // XXX this should call stopProcess instead (if it can find the Thread somewhere)
-            task.stop ();
+            stopActions.get(io).actionPerformed(null);
         }
         @Override
         public int result () {
@@ -261,6 +307,9 @@ public final class TargetExecutor implements Runnable {
         final Thread[] thisProcess = new Thread[1];
         final ProgressHandle[] handle = new ProgressHandle[1];
         StopAction sa = stopActions.get(io);
+        assert sa != null;
+        RerunAction ra = rerunActions.get(io);
+        assert ra != null;
         try {
             
         final boolean[] displayed = new boolean[] {AntSettings.getDefault().getAlwaysShowOutput()};
@@ -354,6 +403,7 @@ public final class TargetExecutor implements Runnable {
         StopBuildingAction.registerProcess(thisProcess[0], displayName);
         sa.t = thisProcess[0];
         sa.setEnabled(true);
+        ra.setEnabled(false);
         ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback);
         
         } finally {
@@ -367,6 +417,7 @@ public final class TargetExecutor implements Runnable {
             }
             sa.t = null;
             sa.setEnabled(false);
+            ra.setEnabled(true);
             activeDisplayNames.remove(displayName);
             if (handle[0] != null) {
                 handle[0].finish();
