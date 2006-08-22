@@ -225,7 +225,8 @@ public abstract class AbstractMultiViewTopComponentTestCase extends NbTestCase {
         
         hand.requestActive(Accessor.DEFAULT.createPerspective(desc1));
         result = tc.getUndoRedo();
-        assertEquals(redo, result);
+        assertFalse(redo.canRedo());
+        assertFalse(redo.canUndo());
     }
     
     

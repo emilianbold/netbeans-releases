@@ -34,6 +34,10 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.multiview.MultiViewModel.ActionRequestObserverFactory;
 import org.netbeans.core.multiview.MultiViewModel.ElementSelectionListener;
@@ -77,12 +81,14 @@ public final class MultiViewPeer  {
     private MultiViewActionMap delegatingMap;
     private boolean activated = false;
     private Object editorSettingsListener;
+    private DelegateUndoRedo delegateUndoRedo;
     
     public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
         peer = pr;
         factory = fact;
         editorSettingsListener = createEditorListener();
+        delegateUndoRedo = new DelegateUndoRedo();
     }
     
  
@@ -457,10 +463,12 @@ public final class MultiViewPeer  {
      * @return undoable edit for this component
      */
     UndoRedo peerGetUndoRedo() {
-        UndoRedo retValue;
-        retValue = model.getActiveElement().getUndoRedo();
-        return retValue;
+        return delegateUndoRedo;
     }    
+    
+    private UndoRedo privateGetUndoRedo() {
+        return model.getActiveElement().getUndoRedo() != null ? model.getActiveElement().getUndoRedo() : UndoRedo.NONE;
+    }
     
     /**
      * This method is called when this <code>TopComponent</code> is about to close.
@@ -624,6 +632,8 @@ public final class MultiViewPeer  {
         public void selectionChanged(MultiViewDescription oldOne, MultiViewDescription newOne) {
             hideElement(oldOne);
             showCurrentElement();
+            delegateUndoRedo.updateListeners(model.getElementForDescription(oldOne),
+                                             model.getElementForDescription(newOne));
         }
         
         public void selectionActivatedByButton() {
@@ -679,6 +689,70 @@ public final class MultiViewPeer  {
             tabs.requestFocusForSelectedButton();
             
         }
+    }
+    
+    private class DelegateUndoRedo implements UndoRedo {
+        
+        private List listeners = new ArrayList();
+        
+        public boolean canUndo() {
+            return privateGetUndoRedo().canUndo();
+        }
+
+        public boolean canRedo() {
+            return privateGetUndoRedo().canRedo();
+        }
+
+        public void undo() throws CannotUndoException {
+            privateGetUndoRedo().undo();
+        }
+
+        public void redo() throws CannotRedoException {
+            privateGetUndoRedo().redo();
+        }
+
+        public void addChangeListener(ChangeListener l) {
+            listeners.add(l);
+            privateGetUndoRedo().addChangeListener(l);
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+            listeners.remove(l);
+            privateGetUndoRedo().removeChangeListener(l);
+        }
+
+        public String getUndoPresentationName() {
+            return privateGetUndoRedo().getUndoPresentationName();
+        }
+
+        public String getRedoPresentationName() {
+            return privateGetUndoRedo().getRedoPresentationName();
+        }
+        
+        private void fireElementChange() {
+            Iterator it = new ArrayList(listeners).iterator();
+            while (it.hasNext()) {
+                ChangeListener elem = (ChangeListener) it.next();
+                ChangeEvent event = new ChangeEvent(this);
+                elem.stateChanged(event);
+            }
+            
+        }
+        
+        void updateListeners(MultiViewElement old, MultiViewElement fresh) {
+            Iterator it = listeners.iterator();
+            while (it.hasNext()) {
+                ChangeListener elem = (ChangeListener) it.next();
+                if (old.getUndoRedo() != null) {
+                    old.getUndoRedo().removeChangeListener(elem);
+                }
+                if (fresh.getUndoRedo() != null) {
+                    fresh.getUndoRedo().addChangeListener(elem);
+                }
+            }
+            fireElementChange();
+        }
+        
     }
     
 }

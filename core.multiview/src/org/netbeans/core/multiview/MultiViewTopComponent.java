@@ -130,18 +130,6 @@ public final class MultiViewTopComponent
         peer.peerComponentOpened();
     }
     
-    /**
-     * hides the old element when switching elements.
-     */
-    private void hideElement(MultiViewDescription desc) {
-        peer.hideElement(desc);
-    }
-
-    
-    private void showCurrentElement() {
-        peer.showCurrentElement();
-    }
-    
     
     /**
      * merge action for the topcomponent and the enclosed MultiViewElement..
