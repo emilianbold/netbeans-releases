@@ -194,7 +194,7 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
     }
     
     public String getEditorOptionsClassName() {
-        return "org.netbeans.modules.editor.options.JavaOptions";
+        return "org.netbeans.modules.java.editor.options.JavaOptions";
     }
     
     public void finishEditor() {

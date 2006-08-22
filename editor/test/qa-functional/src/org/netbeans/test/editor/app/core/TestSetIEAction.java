@@ -19,6 +19,7 @@
 package org.netbeans.test.editor.app.core;
 
 import java.util.ArrayList;
+import org.netbeans.modules.java.editor.options.JavaOptions;
 import org.netbeans.test.editor.app.gui.*;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
@@ -28,7 +29,6 @@ import org.openide.text.IndentEngine;
 import org.openide.options.SystemOption;
 import org.netbeans.modules.editor.options.BaseOptions;
 import java.util.Enumeration;
-import org.netbeans.modules.editor.options.JavaOptions;
 import org.netbeans.test.editor.app.util.Scheduler;
 import javax.swing.SwingUtilities;
 

@@ -19,6 +19,7 @@
 
 package org.netbeans.test.editor.app;
 
+import org.netbeans.modules.java.editor.options.JavaOptions;
 import org.netbeans.test.editor.app.core.*;
 import org.netbeans.test.editor.app.util.*;
 import org.netbeans.test.editor.app.gui.actions.*;
@@ -29,7 +30,6 @@ import org.netbeans.test.editor.app.core.cookies.*;
 import org.openide.loaders.XMLDataObject;
 import org.openide.xml.XMLUtil;
 
-import org.netbeans.modules.editor.options.JavaOptions;
 import org.openide.options.SystemOption;
 
 import java.beans.*;
@@ -45,7 +45,7 @@ import org.apache.xerces.parsers.DOMParser;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.editor.options.HTMLOptions;
+import org.netbeans.modules.html.editor.options.HTMLOptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
 import org.xml.sax.InputSource;

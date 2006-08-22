@@ -18,9 +18,9 @@
  */
 package org.netbeans.test.editor.app.core;
 
+import org.netbeans.modules.java.editor.options.JavaOptions;
 import org.w3c.dom.Element;
 import javax.swing.text.Document;
-import org.netbeans.modules.editor.options.JavaOptions;
 import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
 import org.netbeans.test.editor.app.core.properties.BooleanProperty;
 import org.netbeans.test.editor.app.core.properties.Properties;

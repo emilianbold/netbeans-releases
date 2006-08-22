@@ -7,7 +7,7 @@
 package org.netbeans.test.editor.app.core;
 
 import java.util.Map;
-import org.netbeans.modules.editor.options.JavaOptions;
+import org.netbeans.modules.java.editor.options.JavaOptions;
 import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
 import org.netbeans.test.editor.app.core.properties.MultiLineStringProperty;
 import org.netbeans.test.editor.app.core.properties.Properties;
