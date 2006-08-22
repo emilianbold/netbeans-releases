@@ -51,6 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/modules/openfile/*.class"/>
+                <include name="org/netbeans/modules/search/types/*.class"/>
             </patternset>
         </testset>
     </testbag>
