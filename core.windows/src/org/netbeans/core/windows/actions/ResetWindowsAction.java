@@ -58,6 +58,9 @@ public class ResetWindowsAction extends AbstractAction {
         //get a list of editor windows that should stay open even after the reset
         final TopComponent[] editors = wm.getEditorTopComponents();
         
+        //close all other windows just in case they hold some references to editor windows
+        wm.closeNonEditorViews();
+        
         //hide the main window to hide some window operations before the actual reset is performed
         wm.getMainWindow().setVisible( false );
         
@@ -66,8 +69,6 @@ public class ResetWindowsAction extends AbstractAction {
         //make sure that componentHidden() gets called on all opened and selected editors
         //so that they can reset their respective states and/or release some listeners
         wm.deselectEditorTopComponents();
-        //close all other windows just in case they hold some references to editor windows
-        wm.closeNonEditorViews();
         
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
