@@ -33,7 +33,6 @@ import junit.framework.TestResult;
 public class TimeOutTest extends NbTestCase {
     private Thread main;
     private boolean expectedResult;
-    private boolean ok;
 
     public TimeOutTest (String testName) {
         super (testName);
@@ -68,11 +67,10 @@ public class TimeOutTest extends NbTestCase {
             }
             return;
         }
-        
-        if (ok != (mine.failureCount() == 0)) {
+        if (expectedResult != (mine.failureCount() == 0)) {
             result.addFailure(this, 
                 new AssertionFailedError(
-                    "ok: " + ok + " count: " + mine.failureCount() + " for " + getName()
+                    "expectedResult: " + expectedResult + "failureCount: " + mine.failureCount() + " for " + getName()
                 )
             );
             return;
@@ -84,21 +82,18 @@ public class TimeOutTest extends NbTestCase {
     public void testRunsInAWTThreadAndShallSucceed () {
         assertTrue(SwingUtilities.isEventDispatchThread());
         expectedResult = true;
-        ok = SwingUtilities.isEventDispatchThread();
     }
     
     public void testRunsInAWTThreadAndShallSucceedWith1sDelay () throws Exception {
         assertTrue(SwingUtilities.isEventDispatchThread());
         expectedResult = true;
         Thread.sleep(1000);
-        ok = SwingUtilities.isEventDispatchThread();
     }
 
     public void testRunsInAWTThreadAndShallFailWith5sDelay () throws Exception {
         assertTrue(SwingUtilities.isEventDispatchThread());
         expectedResult = false;
         Thread.sleep(5000);
-        ok = true;
     }
 
     public void testRunsShallSucceedWithNoDelay () {
@@ -107,7 +102,6 @@ public class TimeOutTest extends NbTestCase {
             fail("We should run in dedicated thread");
         }
         expectedResult = true;
-        ok = true;
     }
     public void testRunsShallSucceedWith1sDelay () throws InterruptedException {
         assertFalse(SwingUtilities.isEventDispatchThread());
@@ -116,8 +110,8 @@ public class TimeOutTest extends NbTestCase {
         }
         expectedResult = true;
         Thread.sleep(1000);
-        ok = true;
     }
+    
     public void testRunsShallFailWith5sDelay () throws InterruptedException {
         assertFalse(SwingUtilities.isEventDispatchThread());
         if (Thread.currentThread() == main) {
@@ -125,7 +119,5 @@ public class TimeOutTest extends NbTestCase {
         }
         expectedResult = false;
         Thread.sleep(5000);
-        ok = true;
     }
-    
 }

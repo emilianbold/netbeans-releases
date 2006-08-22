@@ -230,7 +230,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 }
             };
             EventQueue.invokeLater(setUp);
-            setUp.waitFinished();
+            // need to have timeout because previous test case can block AWT thread
+            setUp.waitFinished(timeOut());
         } else {
             setUp();
         }
@@ -274,7 +275,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                     }
                 };
                 EventQueue.invokeLater(tearDown);
-                tearDown.waitFinished();
+                // need to have timeout because test can block AWT thread
+                tearDown.waitFinished(timeOut());
             } else {
                 tearDown();
             }
