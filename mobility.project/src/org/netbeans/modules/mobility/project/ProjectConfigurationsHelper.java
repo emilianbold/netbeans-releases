@@ -85,10 +85,10 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationsP
     
     protected final AntProjectHelper h;
     protected final AuxiliaryConfiguration aux;
-    protected HashMap<String,ProjectConfiguration> configurationsByName = new HashMap<String,ProjectConfiguration>();
+    private HashMap<String,ProjectConfiguration> configurations;
     private PropertyChangeSupport psp;
     private ProjectConfiguration activeConfiguration;
-    private ProjectConfiguration[] configurations;
+    //private ProjectConfiguration[] configurations;
     private ProjectConfiguration defaultConfiguration;
     
     
@@ -252,35 +252,39 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationsP
      * @return ProjectConfiguration[] list.
      */
     public final synchronized ProjectConfiguration[] getConfigurations() {
+        return getConfigurations(configurations);
+    }
+    
+    private final synchronized ProjectConfiguration[] getConfigurations(final HashMap<String,ProjectConfiguration> oldConfig) {
         if (configurations == null) {
-            configurations = ProjectManager.mutex().readAccess(new Mutex.Action<ProjectConfiguration[]>() {
-                public ProjectConfiguration[] run() {
+            configurations = ProjectManager.mutex().readAccess(new Mutex.Action<HashMap<String,ProjectConfiguration>>() {
+                public HashMap<String,ProjectConfiguration> run() {
                     final Element configs = loadConfigs(false);
+                    final HashMap<String,ProjectConfiguration> newByName = new HashMap<String,ProjectConfiguration>();
+                    newByName.put(getDefaultConfiguration().getName(),getDefaultConfiguration());
                     if (configs != null) {
                         try {
                             final NodeList subEls = configs.getElementsByTagNameNS(CONFIGS_NS, CONFIG_NAME);
-                            ProjectConfiguration confs[] = new ProjectConfiguration[subEls.getLength()+1];
-                            final HashMap<String,ProjectConfiguration> newByName = new HashMap<String,ProjectConfiguration>();
-                            confs[0] = getDefaultConfiguration();
-                            newByName.put(confs[0].getName(), confs[0]);
-                            for (int i=1; i<confs.length; i++) {
-                                final String configName = getConfigName(subEls.item(i-1));
-                                confs[i] = configurationsByName.get(configName);
-                                if (confs[i] == null) confs[i] = createConfiguration(configName);
-                                newByName.put(configName, confs[i]);
+                            for (int i=0; i<subEls.getLength(); i++) {
+                                final String configName = getConfigName(subEls.item(i));
+                                final ProjectConfiguration conf = oldConfig == null ? null : oldConfig.get(configName);
+                                if ( conf == null )
+                                {
+                                    final ProjectConfiguration confNew = createConfiguration(configName);
+                                    newByName.put(configName, confNew);
+                                }    
+                                else
+                                    newByName.put(configName,conf);
                             }
-                            configurationsByName = newByName;
-                            return confs;
                         } catch (IllegalArgumentException e) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         }
                     }
-                    return new ProjectConfiguration[] {getDefaultConfiguration()};
+                    return newByName;
                 }
             });
         }
-        // returning just "configuration" here exposes private object to possible outside modification
-        return configurations == null ? null : (ProjectConfiguration[]) configurations.clone();
+        return configurations == null ? null : configurations.values().toArray(new ProjectConfiguration[configurations.size()]);
     }
     
     protected static String getConfigName(final Node xml) throws IllegalArgumentException {
@@ -340,16 +344,14 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationsP
         return activeConfiguration;
     }
     
-    
-    /**
+    /** 
      * Helper method that returns ProjectConfiguration by name
-     * @param configName name of the ProjectConfiguration to retrieve
+     * @param configName name of the ProjectConfiguration to retrieve 
      * @return ProjectConfiguration object that has the passed name
      */
-    public final synchronized ProjectConfiguration getConfigurationByName(final String configName) {
-        return configurationsByName.get(configName);
-    }
-    
+    public final synchronized ProjectConfiguration getConfigurationByName(String configName) {
+    	return configurations.get(configName);
+    }  
     
     /**
      * Implements ProjectConfigurationsProvider.
@@ -398,9 +400,10 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationsP
     
     public void configurationXmlChanged(final AntProjectEvent ev) {
         if (psp != null && AntProjectHelper.PROJECT_XML_PATH.equals(ev.getPath())) {
-            final ProjectConfiguration oldCFs[] = configurations;
+            final HashMap<String,ProjectConfiguration> old = configurations;
+            final ProjectConfiguration oldCFs[]=old.values().toArray(new ProjectConfiguration[old.size()]);
             configurations = null;
-            final ProjectConfiguration newCFs[] = getConfigurations();
+            final ProjectConfiguration newCFs[] = getConfigurations(old);
             if (!Arrays.equals(oldCFs, newCFs)) {
                 psp.firePropertyChange(PROP_CONFIGURATIONS, oldCFs, newCFs);
             }
