@@ -19,6 +19,7 @@
 
 package org.openide.loaders;
 
+import java.util.logging.Logger;
 import org.openide.filesystems.*;
 
 import java.beans.*;
@@ -62,7 +63,11 @@ public class DataReadOnlyTest extends LoggingTestCaseHid {
         assertNotNull("File found", f);
         assertTrue("File exists", f.exists());
         
-        f.setReadOnly();
+        if (!f.setReadOnly()) {
+            // if the read only operation does not succeeds, then the test has to end
+            Logger.getAnonymousLogger().warning("Cannot set read only: " + f);
+            return;
+        }
         
         assertFalse("Is read only", f.canWrite());
         
