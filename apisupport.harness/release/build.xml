@@ -217,8 +217,12 @@ Microsystems, Inc. All Rights Reserved.
         <nbinstaller module="${cluster}/${module.jar}" action="reinstall"/>
     </target>
     
-    <target name="test-clean" depends="test-init">
-        <delete dir="${test.unit.out.folder}"/>
-    </target>
+     <target name="test-clean" depends="basic-init,files-init">
+         <parseprojectxml project=".">
+             <testtype name="unit"  folder="test.unit.folder" />
+         </parseprojectxml>      
+         <property name="test.unit.out.folder" location="${test.unit.folder}"/>
+         <delete dir="${test.unit.out.folder}"/>    
+     </target>
     
 </project>
