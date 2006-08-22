@@ -50,6 +50,7 @@ public class ResetToolbarsAction extends AbstractAction {
                 ex.printStackTrace();
             }
         }
+        ToolbarConfiguration.resetToolbarIconSize();
     }
     
 }

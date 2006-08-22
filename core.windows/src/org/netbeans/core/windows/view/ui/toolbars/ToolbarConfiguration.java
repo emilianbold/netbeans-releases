@@ -747,6 +747,17 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         return menu;
     }
     
+    public static void resetToolbarIconSize() {
+        ToolbarPool.getDefault().setPreferredIconSize(24);
+        //Rebuild toolbar panel
+        String name = ToolbarPool.getDefault().getConfiguration();
+        ToolbarConfiguration tbConf = findConfiguration(name);
+        if (tbConf != null) {
+            tbConf.rebuildPanel();
+            tbConf.rebuildMenu();
+        }
+    }
+    
     /** Fills given menu instance with list of toolbars and configurations */
     private void fillToolbarsMenu (JComponent menu) {
         lastConfigurationHash = Utilities.arrayHashCode(ToolbarPool.getDefault().getConfigurations());
