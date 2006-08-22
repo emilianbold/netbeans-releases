@@ -57,7 +57,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             (ToolbarPool.DEFAULT_CONFIGURATION)
                         )
                             ToolbarPool.getDefault ().setConfiguration 
-                                ("Debugging");
+                                ("Debugging"); // NOI18N
                     }
                 }
             });
@@ -67,22 +67,39 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 &&
              ((DebuggerEngine[]) evt.getNewValue ()).length == 0
         ) {
-            // Close debugger TopComponentGroup.
-            SwingUtilities.invokeLater (new Runnable () {
+            closeDebuggerUI();
+            isOpened = false;
+        }
+    }
+    
+    static void closeDebuggerUI() {
+        /*
+        java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine("CLOSING TopComponentGroup...");
+        StringWriter sw = new StringWriter();
+        new Exception("Stack Trace").fillInStackTrace().printStackTrace(new java.io.PrintWriter(sw));
+        java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine(sw.toString());
+         */
+        // Close debugger TopComponentGroup.
+        if (SwingUtilities.isEventDispatchThread()) {
+            doCloseDebuggerUI();
+        } else {
+            SwingUtilities.invokeLater(new Runnable () {
                 public void run () {
-                    TopComponentGroup group = WindowManager.getDefault ().
-                        findTopComponentGroup ("debugger"); // NOI18N
-                    if (group != null) {
-                        group.close ();
-                        if (ToolbarPool.getDefault ().getConfiguration ()
-                            .equals ("Debugging")
-                        )
-                            ToolbarPool.getDefault ().setConfiguration 
-                                (ToolbarPool.DEFAULT_CONFIGURATION);
-                    }
+                    doCloseDebuggerUI();
                 }
             });
-            isOpened = false;
+        }
+        //java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine("TopComponentGroup closed.");
+    }
+    
+    private static void doCloseDebuggerUI() {
+        TopComponentGroup group = WindowManager.getDefault ().
+                findTopComponentGroup ("debugger"); // NOI18N
+        if (group != null) {
+            group.close ();
+            if (ToolbarPool.getDefault().getConfiguration().equals("Debugging")) { // NOI18N
+                ToolbarPool.getDefault().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION);
+            }
         }
     }
     

@@ -4,4 +4,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/ui/Bundle.proper
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: 2.9
 OpenIDE-Module-Provides: org.netbeans.spi.debugger.ui
-
+OpenIDE-Module-Install: org/netbeans/modules/debugger/ui/DebuggerModule.class
