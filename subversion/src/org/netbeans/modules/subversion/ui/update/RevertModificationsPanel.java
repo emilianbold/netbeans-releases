@@ -44,56 +44,57 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
 
         buttonGroup.add(localChangesRadioButton);
         localChangesRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(localChangesRadioButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_RevertLocal"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(localChangesRadioButton, bundle.getString("CTL_RevertPanel_RevertLocal")); // NOI18N
         localChangesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         localChangesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        localChangesRadioButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_RevertLocal"));
+        localChangesRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertLocal")); // NOI18N
 
         buttonGroup.add(moreCommitsRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(moreCommitsRadioButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_RevertMulti"));
+        org.openide.awt.Mnemonics.setLocalizedText(moreCommitsRadioButton, bundle.getString("CTL_RevertPanel_RevertMulti")); // NOI18N
         moreCommitsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         moreCommitsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        moreCommitsRadioButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_RevertMulti"));
+        moreCommitsRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertMulti")); // NOI18N
 
         jLabel2.setLabelFor(startRevisionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_StartingRevision"));
-        jLabel2.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_StartingRevision"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("CTL_RevertPanel_StartingRevision")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_StartingRevision")); // NOI18N
 
         startRevisionTextField.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(startSearchButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_Search2"));
+        org.openide.awt.Mnemonics.setLocalizedText(startSearchButton, bundle.getString("CTL_RevertPanel_Search2")); // NOI18N
         startSearchButton.setEnabled(false);
-        startSearchButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_Search2"));
+        startSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search2")); // NOI18N
 
-        jLabel9.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_EmptyHint"));
+        jLabel9.setText(bundle.getString("CTL_RevertPanel_EmptyHint")); // NOI18N
 
         endRevisionTextField.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(endSearchButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_Search3"));
+        org.openide.awt.Mnemonics.setLocalizedText(endSearchButton, bundle.getString("CTL_RevertPanel_Search3")); // NOI18N
         endSearchButton.setEnabled(false);
-        endSearchButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_Search3"));
+        endSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search3")); // NOI18N
 
         jLabel3.setLabelFor(endRevisionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_EndingRevision"));
-        jLabel3.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_EndingRevision"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("CTL_RevertPanel_EndingRevision")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_EndingRevision")); // NOI18N
 
         buttonGroup.add(oneCommitRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(oneCommitRadioButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_RevertSingle"));
+        org.openide.awt.Mnemonics.setLocalizedText(oneCommitRadioButton, bundle.getString("CTL_RevertPanel_RevertSingle")); // NOI18N
         oneCommitRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         oneCommitRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        oneCommitRadioButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_RevertSingle"));
+        oneCommitRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertSingle")); // NOI18N
 
         jLabel4.setLabelFor(oneRevisionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_SingleRevision"));
-        jLabel4.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_SingleRevision"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("CTL_RevertPanel_SingleRevision")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_SingleRevision")); // NOI18N
 
         oneRevisionTextField.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(oneRevisionSearchButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_Search1"));
+        org.openide.awt.Mnemonics.setLocalizedText(oneRevisionSearchButton, bundle.getString("CTL_RevertPanel_Search1")); // NOI18N
         oneRevisionSearchButton.setEnabled(false);
-        oneRevisionSearchButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("ACSD_RevertPanel_Search1"));
+        oneRevisionSearchButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_Search1")); // NOI18N
 
-        jLabel10.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle").getString("CTL_RevertPanel_EmptyHint"));
+        jLabel10.setText(bundle.getString("CTL_RevertPanel_EmptyHint")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -107,21 +108,21 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                         .add(17, 17, 17)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
-                            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                            .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 112, Short.MAX_VALUE)
                             .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 112, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel10)
                             .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, endRevisionTextField)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, startRevisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, endRevisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, startRevisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                     .add(startSearchButton)
                                     .add(endSearchButton)))
-                            .add(layout.createSequentialGroup()
-                                .add(oneRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 116, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(oneRevisionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(oneRevisionSearchButton))))
                     .add(oneCommitRadioButton)
@@ -141,8 +142,8 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
-                    .add(oneRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(oneRevisionSearchButton))
+                    .add(oneRevisionSearchButton)
+                    .add(oneRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel9)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
