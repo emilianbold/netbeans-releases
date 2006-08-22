@@ -86,8 +86,8 @@ public class UpdateTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         //suite.addTest(new UpdateTest("testOpen"));
-        suite.addTest(new UpdateTest("testBrokenUpdateMerge"));
-        suite.addTest(new UpdateTest("testBrokenUpdateConflict"));
+        suite.addTest(new UpdateTest("testBrokenUpdateModMer"));
+        suite.addTest(new UpdateTest("testBrokenUpdateModConf"));
         suite.addTest(new UpdateTest("testBrokenUpdateModMod"));
         suite.addTest(new UpdateTest("testBrokenUpdateMerMer"));
         suite.addTest(new UpdateTest("testBrokenUpdateMerConf"));
@@ -207,7 +207,7 @@ public class UpdateTest extends JellyTestCase {
      * 2nd is merged then first one changed to up-to-date
      */
     
-    public void testBrokenUpdateMerge() throws Exception {
+    public void testBrokenUpdateModMer() throws Exception {
         int j = 0;
         long iter1 = 1;
         long iter2 = 2;
@@ -231,8 +231,7 @@ public class UpdateTest extends JellyTestCase {
         //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
         for (int i = 0; i < 1; i++) {
-            //change last file from last package
-            editFilesForMerge(PROJECT1, iter1, 1);
+            editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
             //editFilesForMerge(PROJECT2, iter);
             
             closeProject(PROJECT1);
@@ -241,7 +240,7 @@ public class UpdateTest extends JellyTestCase {
             checkOutProject(cvsRoot1, "test", PROJECT1);
             //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-            editFilesForMergeOtherLine(PROJECT1, iter2, 1);
+            editChosenFile(PROJECT1, "NewClass2.java", 7, iter1);
             //editFiles(PROJECT2, iter);
             
             node1 = new Node(new SourcePackagesNode(PROJECT1), "");
@@ -268,7 +267,7 @@ public class UpdateTest extends JellyTestCase {
             openProject(location1, PROJECT1);
             //openProject(location2, PROJECT2);
             
-            editFilesOthers(PROJECT1, iter1, 1);
+            editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
             //editFilesOthers(PROJECT2, iter);
             
             updateProject(PROJECT1, cvsRoot1);
@@ -326,7 +325,7 @@ public class UpdateTest extends JellyTestCase {
         }
     }
     
-    public void testBrokenUpdateConflict() throws Exception {
+    public void testBrokenUpdateModConf() throws Exception {
         int j = 0;
         long iter1 = 1;
         long iter2 = 2;
@@ -335,131 +334,85 @@ public class UpdateTest extends JellyTestCase {
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
-        
+               
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
+               
+        iter1 = System.currentTimeMillis();
+        //change last file from last package
+        editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editFilesForMerge(PROJECT1, iter1, 1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editFilesForMerge(PROJECT1, iter2, 1);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 1, co.tabFiles().getRowCount());
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass3.java", 5, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 1, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editFilesOthers(PROJECT1, iter1, 1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-                System.out.println(actual[k]);
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            expected = new String[] {"Locally Modified", "Local Conflict"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
-            co.cancel();
-            /*
-            oto1 = new OutputTabOperator(cvsRoot1);
-            //oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            //check out again
-            location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-            //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            
-            //validate data
-            validateCheckout(PROJECT1, iter, new int[] {1, 6});
-            //validateCheckout(PROJECT2, iter, new int[] {1, 6});
-           */
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass3.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
-            
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        expected = new String[] {"Locally Modified", "Local Conflict"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
+        co.cancel();        
     }        
     
     public void testBrokenUpdateModMod() throws Exception {
@@ -474,59 +427,51 @@ public class UpdateTest extends JellyTestCase {
         //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
-        
+                
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
+                
+        iter = System.currentTimeMillis();
         
-        for (int i = 0; i < 1; i++) {
-            iter = System.currentTimeMillis();
-            //change last file from last package
-                      
-            editFiles(PROJECT1, iter);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            Thread.sleep(1000);
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            expected = new String[] {"Locally Modified", "Locally Modified"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
-            co.cancel();
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter);
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        Thread.sleep(1000);
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        expected = new String[] {"Locally Modified", "Locally Modified"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
+        co.cancel();
     }
     
     public void testBrokenUpdateMerMer() throws Exception {
@@ -538,122 +483,72 @@ public class UpdateTest extends JellyTestCase {
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
-        
+               
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
         
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 1; i++) {
-            //change last file from last package
-            editFilesForMerge(PROJECT1, iter1, 2);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-        
-            editFilesForMergeOtherLine(PROJECT1, iter2, 2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
+        editChosenFile(PROJECT1, "NewClass2.java", 3, iter1);
+        closeProject(PROJECT1);
+                    
+        checkOutProject(cvsRoot1, "test", PROJECT1);
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editFilesOthers(PROJECT1, iter1, 2);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-                System.out.println(actual[k]);
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            expected = new String[] {"Locally Modified", "Locally Modified"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
-            co.cancel();
-            /*
-            oto1 = new OutputTabOperator(cvsRoot1);
-            //oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            //check out again
-            location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-            //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            
-            //validate data
-            validateCheckout(PROJECT1, iter, new int[] {1, 6});
-            //validateCheckout(PROJECT2, iter, new int[] {1, 6});
-           */
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter2);
+
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
+            System.out.println(actual[k]);
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        expected = new String[] {"Locally Modified", "Locally Modified"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
+        co.cancel();
     }
     
     public void testBrokenUpdateConfConf() throws Exception {
@@ -661,136 +556,86 @@ public class UpdateTest extends JellyTestCase {
         long iter1 = 1;
         long iter2 = 2;
         File location1;
-        File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
         
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editFilesForMerge(PROJECT1, iter1, 2);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editFilesForMerge(PROJECT1, iter2, 2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        iter1 = System.currentTimeMillis();
+        //change last file from last package
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
+        
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editFilesOthers(PROJECT1, iter1, 2);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-                System.out.println(actual[k]);
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            expected = new String[] {"Local Conflict", "Local Conflict"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
-            co.cancel();
-            /*
-            oto1 = new OutputTabOperator(cvsRoot1);
-            //oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            //check out again
-            location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-            //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            
-            //validate data
-            validateCheckout(PROJECT1, iter, new int[] {1, 6});
-            //validateCheckout(PROJECT2, iter, new int[] {1, 6});
-           */
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
+            System.out.println(actual[k]);
         }
-            
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        expected = new String[] {"Local Conflict", "Local Conflict"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
+        co.cancel();     
     }
 
     public void testBrokenUpdateMerConf() throws Exception {
@@ -802,107 +647,80 @@ public class UpdateTest extends JellyTestCase {
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
-        
+               
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
-            editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass1.java", 2, iter2);
-            editChosenFile(PROJECT1, "NewClass2.java", 5, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        iter1 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            //editFilesOthers(PROJECT1, iter1, 2);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            expected = new String[] {"Locally Modified", "Local Conflict"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
-            co.cancel();           
+        closeProject(PROJECT1);
+
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 2, iter2);
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter2);
+        //editFiles(PROJECT2, iter);
+
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        updateProject(PROJECT1, cvsRoot1);
+
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        expected = new String[] {"Locally Modified", "Local Conflict"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
+        co.cancel();           
     }
 
     public void testBrokenUpdateConfMer() throws Exception {
@@ -914,107 +732,80 @@ public class UpdateTest extends JellyTestCase {
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
         
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
+        iter1 = System.currentTimeMillis();
+        //change last file from last package
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
+        closeProject(PROJECT1);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
-            editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
-            editChosenFile(PROJECT1, "NewClass2.java", 2, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
+        editChosenFile(PROJECT1, "NewClass2.java", 2, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            //editFilesOthers(PROJECT1, iter1, 2);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            expected = new String[] {"Local Conflict", "Locally Modified"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        expected = new String[] {"Local Conflict", "Locally Modified"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
+        co.cancel();           
     }
     
     public void testBrokenUpdateConfMod() throws Exception {
@@ -1026,107 +817,81 @@ public class UpdateTest extends JellyTestCase {
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
-        
+               
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
+               
+        iter1 = System.currentTimeMillis();
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
-            //editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
-            //editChosenFile(PROJECT1, "NewClass2.java", 2, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 1, co.tabFiles().getRowCount());
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter1);
+        
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 1, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            expected = new String[] {"Local Conflict", "Locally Modified"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 2, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        expected = new String[] {"Local Conflict", "Locally Modified"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 2, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 2, co.tabFiles().getRowCount());
+        co.cancel();           
     }
     
     public void testBrokenUpdateModMerMer() throws Exception {
@@ -1134,104 +899,78 @@ public class UpdateTest extends JellyTestCase {
         long iter1 = 1;
         long iter2 = 2;
         File location1;
-        File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
-        
+               
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
+        iter1 = System.currentTimeMillis();
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
-            editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass2.java", 3, iter2);
-            editChosenFile(PROJECT1, "NewClass3.java", 3, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
+        editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
+        
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass2.java", 3, iter2);
+        editChosenFile(PROJECT1, "NewClass3.java", 3, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editChosenFile(PROJECT1, "NewClass1.java", 7, iter1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            expected = new String[] {"Locally Modified", "Locally Modified", "Locally Modified"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        editChosenFile(PROJECT1, "NewClass1.java", 7, iter1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        expected = new String[] {"Locally Modified", "Locally Modified", "Locally Modified"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
+        co.cancel();           
     }
     
     public void testBrokenUpdateModMerConf() throws Exception {
@@ -1239,111 +978,85 @@ public class UpdateTest extends JellyTestCase {
         long iter1 = 1;
         long iter2 = 2;
         File location1;
-        File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
-        
+                
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
+                
+        iter1 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
+        editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
+        closeProject(PROJECT1);
+                    
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass2.java", 3, iter2);
+        editChosenFile(PROJECT1, "NewClass3.java", 5, iter2);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
-            editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass2.java", 3, iter2);
-            editChosenFile(PROJECT1, "NewClass3.java", 5, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editChosenFile(PROJECT1, "NewClass1.java", 7, iter1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            expected = new String[] {"Locally Modified", "Locally Modified", "Local Conflict"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        editChosenFile(PROJECT1, "NewClass1.java", 7, iter1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        expected = new String[] {"Locally Modified", "Locally Modified", "Local Conflict"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
+        co.cancel();           
     }
     
     public void testBrokenUpdateModConfConf() throws Exception {
@@ -1351,12 +1064,9 @@ public class UpdateTest extends JellyTestCase {
         long iter1 = 1;
         long iter2 = 2;
         File location1;
-        File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
         Node node2;
@@ -1367,95 +1077,74 @@ public class UpdateTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
-            editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass2.java", 5, iter2);
-            editChosenFile(PROJECT1, "NewClass3.java", 5, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        iter1 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter1);
+        editChosenFile(PROJECT1, "NewClass3.java", 5, iter1);
+        
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter2);
+        editChosenFile(PROJECT1, "NewClass3.java", 5, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editChosenFile(PROJECT1, "NewClass1.java", 7, iter1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            expected = new String[] {"Locally Modified", "Local Conflict", "Local Conflict"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        editChosenFile(PROJECT1, "NewClass1.java", 7, iter1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        expected = new String[] {"Locally Modified", "Local Conflict", "Local Conflict"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
+        co.cancel();          
     }
     
     public void testBrokenUpdateMerModMer() throws Exception {
@@ -1463,104 +1152,78 @@ public class UpdateTest extends JellyTestCase {
         long iter1 = 1;
         long iter2 = 2;
         File location1;
-        File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
         
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
-            editChosenFile(PROJECT1, "NewClass3.java", 3, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
-            editChosenFile(PROJECT1, "NewClass3.java", 5, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        iter1 = System.currentTimeMillis();
+        
+        editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
+        editChosenFile(PROJECT1, "NewClass3.java", 3, iter1);
+        
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
+        editChosenFile(PROJECT1, "NewClass3.java", 5, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editChosenFile(PROJECT1, "NewClass2.java", 7, iter1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-                       
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            expected = new String[] {"Locally Modified", "Locally Modified", "Locally Modified"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        editChosenFile(PROJECT1, "NewClass2.java", 7, iter1);
+        updateProject(PROJECT1, cvsRoot1);
+        
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        expected = new String[] {"Locally Modified", "Locally Modified", "Locally Modified"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
+        co.cancel();           
     }
 
     public void testBrokenUpdateMerModConf() throws Exception {
@@ -1568,115 +1231,91 @@ public class UpdateTest extends JellyTestCase {
         long iter1 = 1;
         long iter2 = 2;
         File location1;
-        File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
         
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
-            editChosenFile(PROJECT1, "NewClass3.java", 3, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
-            editChosenFile(PROJECT1, "NewClass3.java", 3, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        iter1 = System.currentTimeMillis();
+        
+        editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
+        editChosenFile(PROJECT1, "NewClass3.java", 3, iter1);
+        
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
+        editChosenFile(PROJECT1, "NewClass3.java", 3, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editChosenFile(PROJECT1, "NewClass2.java", 7, iter1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-                       
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            expected = new String[] {"Locally Modified", "Locally Modified", "Local Conflict"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        editChosenFile(PROJECT1, "NewClass2.java", 7, iter1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        expected = new String[] {"Locally Modified", "Locally Modified", "Local Conflict"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
+        co.cancel();           
     }
     
     public void testBrokenUpdateConfModConf() throws Exception {
@@ -1684,115 +1323,89 @@ public class UpdateTest extends JellyTestCase {
         long iter1 = 1;
         long iter2 = 2;
         File location1;
-        File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
         
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
-            editChosenFile(PROJECT1, "NewClass3.java", 3, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass1.java", 3, iter2);
-            editChosenFile(PROJECT1, "NewClass3.java", 3, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        iter1 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
+        editChosenFile(PROJECT1, "NewClass3.java", 3, iter1);
+        
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 3, iter2);
+        editChosenFile(PROJECT1, "NewClass3.java", 3, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editChosenFile(PROJECT1, "NewClass2.java", 7, iter1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-                       
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            expected = new String[] {"Local Conflict", "Locally Modified", "Local Conflict"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        editChosenFile(PROJECT1, "NewClass2.java", 7, iter1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        expected = new String[] {"Local Conflict", "Locally Modified", "Local Conflict"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
+        co.cancel();           
     }
     
     public void testBrokenUpdateConfConfMod() throws Exception {
@@ -1800,12 +1413,9 @@ public class UpdateTest extends JellyTestCase {
         long iter1 = 1;
         long iter2 = 2;
         File location1;
-        File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
         Node node2;
@@ -1816,99 +1426,79 @@ public class UpdateTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
-            editChosenFile(PROJECT1, "NewClass2.java", 3, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass1.java", 3, iter2);
-            editChosenFile(PROJECT1, "NewClass2.java", 3, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        iter1 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
+        editChosenFile(PROJECT1, "NewClass2.java", 3, iter1);
+        
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 3, iter2);
+        editChosenFile(PROJECT1, "NewClass2.java", 3, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editChosenFile(PROJECT1, "NewClass3.java", 7, iter1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            NbDialogOperator nbDialog = new NbDialogOperator("Warning");
-            JButtonOperator btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            nbDialog = new NbDialogOperator("Command");
-            btnOk = new JButtonOperator(nbDialog);
-            btnOk.push();
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-                       
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            expected = new String[] {"Local Conflict", "Local Conflict", "Locally Modified"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        editChosenFile(PROJECT1, "NewClass3.java", 7, iter1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        NbDialogOperator nbDialog = new NbDialogOperator("Warning");
+        JButtonOperator btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+        nbDialog = new NbDialogOperator("Command");
+        btnOk = new JButtonOperator(nbDialog);
+        btnOk.push();
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        expected = new String[] {"Local Conflict", "Local Conflict", "Locally Modified"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
+        co.cancel();           
     }
     
     public void testBrokenUpdateMerMerMod() throws Exception {
@@ -1916,109 +1506,83 @@ public class UpdateTest extends JellyTestCase {
         long iter1 = 1;
         long iter2 = 2;
         File location1;
-        File location2;
         File work = new File("/tmp/work");
         work.mkdirs();
         closeProject(PROJECT1);
-        //closeProject(PROJECT2);
-        //TestKit.deleteRecursively(work);
         
         Node node1;
-        Node node2;
         org.openide.nodes.Node nodeIDE1;
-        org.openide.nodes.Node nodeIDE2;
         
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         
         location1 = checkOutProject(cvsRoot1, "test", PROJECT1);
-        //location2 = checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
         
-        for (int i = 0; i < 1; i++) {
-            iter1 = System.currentTimeMillis();
-            //change last file from last package
-            editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
-            editChosenFile(PROJECT1, "NewClass2.java", 3, iter1);
-            //editFilesForMerge(PROJECT2, iter);
-            
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            
-            checkOutProject(cvsRoot1, "test", PROJECT1);
-            //checkOutProject(cvsRoot2, "pvcspvcs", PROJECT2);
-            iter2 = System.currentTimeMillis();
-            editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
-            editChosenFile(PROJECT1, "NewClass2.java", 5, iter2);
-            //editFiles(PROJECT2, iter);
-            
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            CommitOperator co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
+        iter1 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 3, iter1);
+        editChosenFile(PROJECT1, "NewClass2.java", 3, iter1);
+        
+        closeProject(PROJECT1);
+        
+        checkOutProject(cvsRoot1, "test", PROJECT1);
+        iter2 = System.currentTimeMillis();
+        editChosenFile(PROJECT1, "NewClass1.java", 5, iter2);
+        editChosenFile(PROJECT1, "NewClass2.java", 5, iter2);
+        
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        CommitOperator co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit", 2, co.tabFiles().getRowCount());
 
-            OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
-            //OutputTabOperator oto2 = new OutputTabOperator(cvsRoot2);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            //oto2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //oto2.clear();
-            co.commit();
-            oto1.waitText("Committing");
-            oto1.waitText("finished");
-            //oto2.waitText("Committing");
-            //oto2.waitText("finished");
-            //delete all
-            closeProject(PROJECT1);
-            //closeProject(PROJECT2);
-            //TestKit.deleteRecursively(work);
-            
-            openProject(location1, PROJECT1);
-            //openProject(location2, PROJECT2);
-            
-            editChosenFile(PROJECT1, "NewClass3.java", 7, iter1);
-            //editFilesOthers(PROJECT2, iter);
-            
-            updateProject(PROJECT1, cvsRoot1);
-            //updateProject(PROJECT2, cvsRoot2);
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-            
-            Node node = new Node(new SourcePackagesNode(PROJECT1), "");
-            node.performPopupAction("CVS|Show Changes");
-            oto1.waitText("Refreshing CVS Status finished");
-            
-            Thread.sleep(1000);
-            oto1 = new OutputTabOperator(cvsRoot1);
-            oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto1.clear();
-                       
-            VersioningOperator vo = VersioningOperator.invoke();
-            String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
-            String[] actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
-            }
-            int result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            expected = new String[] {"Locally Modified", "Locally Modified", "Locally Modified"};
-            actual = new String[vo.tabFiles().getRowCount()];
-            for (int k = 0; k < actual.length; k++) {
-                actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
-            }
-            result = TestKit.compareThem(expected, actual, false);
-            assertEquals("Wrong records displayed in dialog", 3, result);
-            
-            //Commit
-            node1 = new Node(new SourcePackagesNode(PROJECT1), "");
-            //node2 = new Node(new SourcePackagesNode(PROJECT2), "");
-            co = CommitOperator.invoke(new Node[] {node1});
-            assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
-            co.cancel();           
+        OutputTabOperator oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+        co.commit();
+        oto1.waitText("Committing");
+        oto1.waitText("finished");
+        closeProject(PROJECT1);
+        
+        openProject(location1, PROJECT1);
+        
+        editChosenFile(PROJECT1, "NewClass3.java", 7, iter1);
+        
+        updateProject(PROJECT1, cvsRoot1);
+        
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        Node node = new Node(new SourcePackagesNode(PROJECT1), "");
+        node.performPopupAction("CVS|Show Changes");
+        oto1.waitText("Refreshing CVS Status finished");
+
+        Thread.sleep(1000);
+        oto1 = new OutputTabOperator(cvsRoot1);
+        oto1.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto1.clear();
+
+        VersioningOperator vo = VersioningOperator.invoke();
+        String[] expected = new String[] {"NewClass1.java", "NewClass2.java", "NewClass3.java"};
+        String[] actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 0).toString();
         }
+        int result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        expected = new String[] {"Locally Modified", "Locally Modified", "Locally Modified"};
+        actual = new String[vo.tabFiles().getRowCount()];
+        for (int k = 0; k < actual.length; k++) {
+            actual[k] = vo.tabFiles().getValueAt(k, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong records displayed in dialog", 3, result);
+
+        //Commit
+        node1 = new Node(new SourcePackagesNode(PROJECT1), "");
+        co = CommitOperator.invoke(new Node[] {node1});
+        assertEquals("Wrong count of files to commit - issue #71488", 3, co.tabFiles().getRowCount());
+        co.cancel();           
     }
     
     public static void closeProject(String project_name) {
@@ -2029,7 +1593,6 @@ public class UpdateTest extends JellyTestCase {
         catch (Exception e) {
             
         }    
-        //TestKit.deleteRecursively(file);
     }
     
     public void updateProject(String project, String cvsRoot) throws Exception {
@@ -2073,31 +1636,6 @@ public class UpdateTest extends JellyTestCase {
         return work;
     }
     
-    
-    public void editFilesForMergeOtherLine(String project, long iter, int last) {
-        Node node = new Node(new ProjectsTabOperator().tree(), project);
-        node.performPopupAction("CVS|Show Changes");
-        for (int i = nodes1.length - last; i < nodes1.length; i++) {
-            node = new Node(new SourcePackagesNode(project), nodes1[i]);
-            node.performPopupAction("Open");
-            EditorOperator eo = new EditorOperator(getObjectName(nodes1[i]));
-            eo.insert("//" + nodes1[i] + " >iter< " + iter + "\n", 6, 1);
-            eo.save();
-        }
-    }
-    
-    public void editFiles(String project, long iter) {
-        Node node = new Node(new ProjectsTabOperator().tree(), project);
-        node.performPopupAction("CVS|Show Changes");
-        for (int i = 0; i < nodes1.length; i++) {
-            node = new Node(new SourcePackagesNode(project), nodes1[i]);
-            node.performPopupAction("Open");
-            EditorOperator eo = new EditorOperator(getObjectName(nodes1[i]));
-            eo.insert("//" + nodes1[i] + " >iter< " + iter + "\n", 5, 1);
-            eo.save();
-        }
-    }
-    
     public void editChosenFile(String project, String name, int line, long iter) {
         Node node = new Node(new ProjectsTabOperator().tree(), project);
         //node.performPopupAction("CVS|Show Changes");
@@ -2106,30 +1644,6 @@ public class UpdateTest extends JellyTestCase {
         EditorOperator eo = new EditorOperator(name);
         eo.insert("//" + name + " >iter< " + iter + "\n", line, 1);
         eo.save();
-    }
-    
-    public void editFilesForMerge(String project, long iter, int last) {
-        Node node = new Node(new ProjectsTabOperator().tree(), project);
-        node.performPopupAction("CVS|Show Changes");
-        for (int i = nodes1.length - last; i < nodes1.length; i++) {
-            node = new Node(new SourcePackagesNode(project), nodes1[i]);
-            node.performPopupAction("Open");
-            EditorOperator eo = new EditorOperator(getObjectName(nodes1[i]));
-            eo.insert("//" + nodes1[i] + " >iter< " + iter + "\n", 5, 1);
-            eo.save();
-        }
-    }
-    
-    public void editFilesOthers(String project, long iter, int first) {
-        Node node = new Node(new ProjectsTabOperator().tree(), project);
-        node.performPopupAction("CVS|Show Changes");
-        for (int i = 0; i < nodes1.length - first; i++) {
-            node = new Node(new SourcePackagesNode(project), nodes1[i]);
-            node.performPopupAction("Open");
-            EditorOperator eo = new EditorOperator(getObjectName(nodes1[i]));
-            eo.insert("//" + nodes1[i] + " >iter< " + iter + "\n", 7, 1);
-            eo.save();
-        }
     }
     
     public void validateCheckout(String project, long iter, int[] indexes) throws Exception {
