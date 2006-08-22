@@ -866,7 +866,6 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         if (content.indexOf("logger interface") == -1) {
             fail(content);
         }
-        fail(content);
     }
     
     public void testGenerateProfilerArch () throws Exception {
