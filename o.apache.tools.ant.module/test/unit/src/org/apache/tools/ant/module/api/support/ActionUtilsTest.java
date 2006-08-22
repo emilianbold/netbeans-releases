@@ -99,7 +99,7 @@ public class ActionUtilsTest extends NbTestCase {
         for (int i = 0; i < sel.length; i++) {
             delegates[i] = sel[i].getLookup();
         }
-        delegates[sel.length] = Lookups.fixed(sel);
+        delegates[sel.length] = Lookups.fixed((Object[]) sel);
         return new ProxyLookup(delegates);
     }
     
