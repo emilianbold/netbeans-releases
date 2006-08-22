@@ -119,10 +119,10 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
     };
 
     private static final String JAXP_PARSE_EXCEPTIONS_DOC =
-        "@throws " + JAVA_IOEXCEPTION + " on I/O error.\n" + // NOI18N
-        "@throws " + SAX_EXCEPTION + " propagated exception thrown by a DocumentHandler.\n" + // NOI18N
-        "@throws " + JAXP_PARSER_CONFIGURATION_EXCEPTION + " a parser satisfining requested configuration can not be created.\n" + // NOI18N
-        "@throws " + JAXP_FACTORY_CONFIGURATION_ERROR + " if the implementation can not be instantiated.\n"; // NOI18N
+        "@throws " + JAVA_IOEXCEPTION + " on I/O error\n" + // NOI18N
+        "@throws " + SAX_EXCEPTION + " propagated exception thrown by a DocumentHandler\n" + // NOI18N
+        "@throws " + JAXP_PARSER_CONFIGURATION_EXCEPTION + " a parser satisfying the requested configuration cannot be created\n" + // NOI18N
+        "@throws " + JAXP_FACTORY_CONFIGURATION_ERROR + " if the implementation cannot be instantiated\n"; // NOI18N
 
 
     // input fields - these control generation process
