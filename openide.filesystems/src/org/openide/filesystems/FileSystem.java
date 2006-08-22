@@ -115,7 +115,7 @@ public abstract class FileSystem implements Serializable {
     /** Describes capabilities of the filesystem.
     */
     @Deprecated // have to store it for compat
-    // XXX javac still reports it even though @Deprecated, and @SuppressWarnings("deprecation") does not help either
+    // XXX JDK #6460147: javac still reports it even though @Deprecated, and @SuppressWarnings("deprecation") does not help either
     private FileSystemCapability capability;
 
     /** property listener on FileSystemCapability. */
