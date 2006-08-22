@@ -114,17 +114,17 @@ public class Hacks {
      * whole NewFileWizard (w/o TemplateWizard).
      *
      * @param tw instance of TemplateWizard (thus NewFileWizard)
-     * @param dobj tempate
+     * @param dobj template
      */    
     static void reloadPanelsInWizard (final TemplateWizard tw, final DataObject dobj) {
         try {
-            Class twClazz = Class.forName(
+            Class<?> twClazz = Class.forName(
                 "org.openide.loaders.TemplateWizard", true, // NOI18N
                 Thread.currentThread().getContextClassLoader());
             if (twClazz != null) {
-                Method reloadPanels = twClazz.getDeclaredMethod ("reload", new Class[] {DataObject.class}); // NOI18N
+                Method reloadPanels = twClazz.getDeclaredMethod("reload", DataObject.class); // NOI18N
                 reloadPanels.setAccessible (true);
-                reloadPanels.invoke (tw, new Object[] {dobj});
+                reloadPanels.invoke(tw, dobj);
             }
         } catch (Exception e) {
             // XXX
