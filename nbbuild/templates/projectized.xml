@@ -418,19 +418,19 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="test-build-datajar"/>
         <convertimport file="${test.unit.out.folder}/build-unit.xml" 
                        oldname="xtest-unit.xml"
-                       newpath="../../nbbuild/templates/xtest-unit.xml"/>
+                       newpath="../../../nbbuild/templates/xtest-unit.xml"/>
         <convertimport file="${test.unit.out.folder}/build.xml" 
                        oldname="xtest.xml"
-                       newpath="../../nbbuild/templates/xtest.xml"/>
+                       newpath="../../../nbbuild/templates/xtest.xml"/>
          <copy file="${nb_all}/nbbuild/templates/testdist/unit-unit.xml" tofile="${test.unit.out.folder}/unit-unit.xml"/>
     </target>
     <target name="test-build-qa-functional-condition" if="contains.qa-functional.test" depends="test-init-qa-functional" description="build qa-functional test if exists">
         <antcall target="test-build-datajar-qa-functional"/>
         <convertimport file="${test.qa-functional.out.folder}/build-qa-functional.xml" 
                        oldname="xtest-qa-functional.xml"
-                       newpath="../../nbbuild/templates/xtest-qa-functional.xml"/>
+                       newpath="../../../nbbuild/templates/xtest-qa-functional.xml"/>
         <convertimport file="${test.qa-functional.out.folder}/build.xml" 
                        oldname="xtest.xml"
-                       newpath="../../nbbuild/templates/xtest.xml"/>
+                       newpath="../../../nbbuild/templates/xtest.xml"/>
     </target>
 </project>

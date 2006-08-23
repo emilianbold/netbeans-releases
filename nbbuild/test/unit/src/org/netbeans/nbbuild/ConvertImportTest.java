@@ -73,7 +73,22 @@ public class ConvertImportTest extends NbTestCase {
        createFile(xml);
        convert.execute();
        assertNewXml(xml);
- 
+
+       xml =  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+              "<!-- file -->" +
+           "<project name=\"ant/freeform/test-unit\" basedir=\".\" default=\"all\">\n" +
+           "<import file=\"../../../nbbuild/templates/xtest-unit.xml\"/>\n" +
+           "</project>";
+       xmlOut =  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+              "<!-- file -->" +               
+           "<project name=\"ant/freeform/test-unit\" basedir=\".\" default=\"all\">\n" +
+           "<import file=\"${test.dist.dir}/xx\"/>\n" +
+           "</project>";
+       createFile(xml);
+       convert.setNewPath("xx");
+       convert.execute();
+       assertNewXml(xmlOut);
+       
     }
 
     private File createFile(String xml) throws IOException {

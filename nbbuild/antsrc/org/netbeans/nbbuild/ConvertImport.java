@@ -73,7 +73,7 @@ public class ConvertImport extends Task {
                 if (end == -1) {
                     continue;
                 }
-                int fileIndex = xml.indexOf("file");
+                int fileIndex = xml.indexOf("file",start);
                 int q1 = xml.indexOf("\"",fileIndex);
                 int q2 = xml.indexOf("\'",fileIndex);
                 int qStart = (q1 != -1 && ( q2 > q1 || q2 == -1))  ? q1 : q2;
