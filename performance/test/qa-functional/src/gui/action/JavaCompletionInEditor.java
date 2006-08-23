@@ -42,6 +42,9 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class JavaCompletionInEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
+    private static final int lineNumber = 39;
+    private static final String ccText = "        System";
+    
     /** Creates a new instance of JavaCompletionInEditor */
     public JavaCompletionInEditor(String testName) {
         super(testName);
@@ -90,6 +93,16 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorWindowOperator().getEditor("Main.java");
         turnOff();
+        
+        repaintManager().setRegionFilter(COMPLETION_FILTER);
+        setJavaEditorCaretFilteringOn();
+        
+        // scroll to the place where we start
+        editorOperator.activateWindow();
+        editorOperator.setCaretPositionToLine(lineNumber);
+        
+        // insert the initial text
+        editorOperator.insert(ccText);
     }
     
     public void prepare() {
@@ -104,14 +117,10 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         }
         */
                 
-        repaintManager().setRegionFilter(COMPLETION_FILTER);
-        setJavaEditorCaretFilteringOn();
-
         // scroll to the place where we start
         editorOperator.activateWindow();
-        editorOperator.setCaretPositionToLine(39);
-        // insert the initial text
-        editorOperator.insert("{ System");
+        editorOperator.setCaretPositionToEndOfLine(lineNumber);
+        
         // wait
         waitNoEvent(1000);
    }
@@ -122,6 +131,12 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         // wait for the completion window
 //        return new ComponentOperator(MainWindowOperator.getDefault(), new CodeCompletionSubchooser());
         return new CompletionJListOperator();
+    }
+    
+    public void close() {
+        super.close();
+        editorOperator.setCaretPositionRelative(-1);
+        editorOperator.delete(1);
     }
     
     public void shutdown() {
@@ -141,6 +156,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     };
 
     public static void main(java.lang.String[] args) {
+        System.setProperty("org.netbeans.performance.repeat", "3");
         junit.textui.TestRunner.run(new JavaCompletionInEditor("measureTime"));
     }
     
