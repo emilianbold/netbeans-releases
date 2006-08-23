@@ -96,7 +96,16 @@ public class WSClassLoader extends URLClassLoader {
         File[] directories = new File[] {
             new File(serverRoot + "/lib/"),                            // NOI18N
             new File(serverRoot + "/java/jre/lib/"),                   // NOI18N
-            new File(serverRoot + "/java/jre/lib/ext/")                // NOI18N
+            new File(serverRoot + "/java/jre/lib/ext/"),                // NOI18N
+            new File(serverRoot + "/lib/WMQ/java/lib/"),
+            new File(serverRoot + "/cloudscape/lib/"),
+            new File(serverRoot + "/cloudscape/lib/locales/"),
+            new File(serverRoot + "/cloudscape/lib/otherjars/"),
+            new File(serverRoot + "/deploytool/itp/"),
+            new File(serverRoot + "/deploytool/itp/plugins/"),
+            new File(serverRoot + "/installedChannels/"),
+            new File(serverRoot + "/etc/"),
+            new File(serverRoot + "/optionalLibraries/Apache/Struts/1.1/")
         };
         
         // for each directory add all the .jar files to the class path
