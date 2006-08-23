@@ -386,9 +386,13 @@ Microsystems, Inc. All Rights Reserved.
     <target name="test-clean" depends="test-unit-clean,test-qa-functional-clean" description="Clean all tests"/>
 
     <target name="test-unit-clean" >
+        <property name="test.unit.out.folder" location="${test.dist.dir}/unit/${cluster.dir}/${code.name.base.dashes}"/>
+        <delete dir="${test.unit.out.folder}"/>
     </target>
     
     <target name="test-qa-functional-clean" >
+        <property name="test.qa-functional.out.folder" location="${test.dist.dir}/qa-functional/${cluster.dir}/${code.name.base.dashes}"/>
+        <delete dir="${test.qa-functional.out.folder}"/>
     </target>
     
     <target name="build-all-tests" depends="test-condition,test-build-condition,test-build-qa-functional-condition" if="contains.test" description="build all test types">
