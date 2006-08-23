@@ -1790,6 +1790,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
   <target name="build-test-dist" depends="bootstrap,init-module-list,init-tasks" description="Built test distribution">
      <property name="config.modules.test" value="${config.modules.stable}"/>
+     <!-- if is 'false' it will ignore compilation error in subant  -->
+     <property name= "test.fail.on.error" value="true"/>
      <pathconvert property="modules.fullpath" >
           <path>
               <dirset dir="${nb_all}" includes="${config.modules.test}" />
@@ -1797,17 +1799,22 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <mapper type="identity" />
       </pathconvert>
       <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
-      <subant buildpath="${modules.sorted}" target="build-all-tests"/>
+      <subant buildpath="${modules.sorted}" target="build-all-tests" failonerror="${test.fail.on.error}"/>
       <!-- copy templates -->
       <copy todir="${test.dist.dir}/unit"> 
              <fileset dir="templates/testdist">
                  <include name="*-all-unit.*"/>
-                 <include name="all-unit.properties"/>
              </fileset>
       </copy>
+      <copy todir="${test.dist.dir}/qa-functional"> 
+             <fileset dir="templates/testdist">
+                 <include name="*-all-qa-functional.*"/>
+             </fileset>
+      </copy>
+      <copy todir="${test.dist.dir}" file="templates/testdist/build.xml"/>
       <mkdir dir="${test.dist.dir}/nbbuild"/>
       <copy todir="${test.dist.dir}/nbbuild"> 
-             <fileset dir="." includes="templates/*,*.xml,*.jar,*.txt,*.properties"/>
+             <fileset dir="." includes="templates/*,*.xml,*.jar,*.txt,*.properties" excludes="templates/testdist"/>
       </copy>
       <!-- add xtest -->
       <mkdir dir="${test.dist.dir}/xtest"/>

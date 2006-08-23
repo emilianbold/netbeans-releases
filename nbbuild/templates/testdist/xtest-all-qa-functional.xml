@@ -36,9 +36,9 @@ Microsystems, Inc. All Rights Reserved.
         
         <taskdef name="testdistfilter" classpath="../nbbuild/nbantext.jar" classname="org.netbeans.nbbuild.TestDistFilter"/>
         <!-- run modules with xtest.attribs="stable" in cfg-unit.xml -->
-        <property name="xtest.attribs" value="stable"/>
+        <property name="xtest.attribs" value="validation"/>
         
-        <testdistfilter harness="xtest" testlistproperty="xtest.modules.list" attribs="${xtest.attribs}" testdistdir=".." testtype="unit"/>
+        <testdistfilter harness="xtest" testlistproperty="xtest.modules.list" attribs="${xtest.attribs}" testdistdir=".." testtype="qa-functional"/>
  
         <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask" classpath="${xtest.home}/lib/xtest.jar"/>
         <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.results.testrun.dir" location="${xtest.results.testrun.dir}"/>
             <property name="xtest.nobuildxtest" value="nobuild"/>
             <property name="xtest.attribs" value="${xtest.attribs}"/>
-            <property name="xtest.testtype" value="unit"/>
+            <property name="xtest.testtype" value="qa-functional"/>
         </subant>    
     </target>
 </project>
