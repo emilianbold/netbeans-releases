@@ -148,13 +148,12 @@ public final class TestKit {
             Arrays.sort(actual);
             boolean found = false;
             for (int i = 0; i < expected.length; i++) {
-                for (int j = 0; j < actual.length; j++) {
-                    if (((String) expected[i]).equals((String) actual[j])) {
-                        result++;
-                        j = actual.length;
-                    }
+                if (((String) expected[i]).equals((String) actual[i])) {
+                    result++;
+                } else {
+                    return -1;
                 }
-            }
+            }    
             return result;
         }
         return result; 
