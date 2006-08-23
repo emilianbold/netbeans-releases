@@ -178,6 +178,15 @@ Microsystems, Inc. All Rights Reserved.
                   <test-dependency>
                       <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                   </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core.startup</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.bootstrap</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.libs.xerces</code-name-base>
+                  </test-dependency>
               </test-type>
               <test-type>
                   <name>qa-functional</name>
