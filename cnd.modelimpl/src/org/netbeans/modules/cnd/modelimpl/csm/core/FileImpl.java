@@ -264,6 +264,8 @@ public class FileImpl implements
             }
         }
         declarations.clear();
+	includes.clear();
+	macros.clear();
     }
         
     public AST parse(PPCallback callback) {
@@ -487,6 +489,10 @@ public class FileImpl implements
     
     private void addMacros(Collection/*<CsmMacro>*/ macros) {
         addMacrosOrIncludes(macros, this.macros, true);        
+    }
+    
+    public void addInclude(IncludeImpl includeImpl) {
+	includes.add(includeImpl);
     }
     
     private void addMacrosOrIncludes(Collection/*<CsmOffsetable>*/ src,
