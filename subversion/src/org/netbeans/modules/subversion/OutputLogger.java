@@ -87,6 +87,8 @@ public class OutputLogger implements ISVNNotifyListener {
     public void setCommand(int command) {
         ignoreCommand = command == ISVNNotifyListener.Command.INFO ||
                         command == ISVNNotifyListener.Command.STATUS ||
+                        command == ISVNNotifyListener.Command.ANNOTATE ||
+                        command == ISVNNotifyListener.Command.LOG ||
                         command == ISVNNotifyListener.Command.LS;
     }
             
