@@ -245,7 +245,7 @@ public class WorkingCopyDetails {
             } else {
 	        String rawKeywords = workingSvnProps != null ? workingSvnProps.getProperty("svn:keywords") : null;
 	        if (rawKeywords != null) {
-                    returnValue = isModifiedByLine(rawKeywords);
+                    returnValue = isModifiedByLine(rawKeywords.trim());
 	        } else {
 	            returnValue = isModifiedByByte();
 	        }
@@ -344,16 +344,22 @@ public class WorkingCopyDetails {
             String baseLine = baseReader.readLine();
             String fileLine = fileReader.readLine();
             while (baseLine != null) {
-                StringBuilder modifiedFileLine = new StringBuilder(fileLine);
-                for (int i = 0; i < keywords.length; i++) {
-                    removeKeyDetails(modifiedFileLine, baseLine, keywords[i]);
+                //StringBuilder modifiedFileLine = new StringBuilder(fileLine);
+                
+                if (!fileLine.equals(baseLine)) {
+                    boolean equal = false;
+                    for (int i = 0; i < keywords.length; i++) {
+                        String headerPattern = "$" + keywords[i];
+                        if(fileLine.indexOf(headerPattern) > -1) {
+                            equal = compareKeywordLines(fileLine, baseLine, keywords);
+                            break;
+                        }                    
+                    }
+                    if(!equal) {
+                        return true;
+                    }
                 }
-
-                fileLine = modifiedFileLine.toString();
-                if (!(fileLine.equals(baseLine))) {
-                    return true;
-                }
-
+                    
                 baseLine = baseReader.readLine();
                 fileLine = fileReader.readLine();
             }
@@ -372,33 +378,69 @@ public class WorkingCopyDetails {
         return returnValue;
     }
 
-    private void removeKeyDetails(StringBuilder workingLineBuilder, String baseLine, String keyword) {
-        String headerPattern = "$" + keyword;
-        int fromIndexBase = 0;
-        int fromIndexWorking = 0;
-
-        int basePosition = baseLine.indexOf(headerPattern, fromIndexBase);
-        while (basePosition != -1) {
-            //Get the closing $
-            int endBasePosition = baseLine.indexOf("$", basePosition + 1);
-            if(endBasePosition == -1) {
-                endBasePosition = basePosition + 1 + keyword.length();
-            }
-            fromIndexBase = endBasePosition;
-
-            int workingPosition = workingLineBuilder.indexOf(headerPattern, fromIndexWorking);
-            if (workingPosition != 1) {
-                    int endWorkingPosition = workingLineBuilder.indexOf("$", workingPosition + 1);
-                    if(endWorkingPosition == -1) {
-                        endWorkingPosition = workingPosition + 1 + keyword.length();                                
+    private boolean compareKeywordLines(String modifiedLine, String baseLine, String[] keywords) {
+        
+        int modifiedIdx = 0;
+        for (int fileIdx = 0; fileIdx < baseLine.length(); fileIdx++) {
+            
+            if(baseLine.charAt(fileIdx) == '$') {
+                // 1. could be a keyword ...
+                for (int keywordsIdx = 0; keywordsIdx < keywords.length; keywordsIdx++) {
+                    
+                    String keyword = keywords[keywordsIdx] + "$";
+                    
+                    boolean gotHeader = false;
+                    for (int keyIdx = 0; keyIdx < keyword.length(); keyIdx++) {
+                        if(fileIdx + keyIdx + 1 > baseLine.length() - 1 ||                           // we are already at the end of the baseline
+                           keyword.charAt(keyIdx) != baseLine.charAt(fileIdx + keyIdx + 1))          // the chars are not equal
+                        {    
+                            gotHeader = false;
+                            break; // 2. it's not a keyword -> try the next one
+                        } 
+                        gotHeader = true;
                     }
-                    String replacementValue = baseLine.substring(basePosition, fromIndexBase);
-                    workingLineBuilder.replace(workingPosition, endWorkingPosition,
-                            replacementValue);
-                    fromIndexWorking = workingPosition + replacementValue.length();
+                    if(gotHeader) {
+                        // 3. it was a keyword -> skip the chars until the next '$'
+                        
+                        // for the base file
+                        fileIdx += keyword.length(); 
+                   
+                        // for the modified file - '$Id: '
+                        modifiedIdx += keyword.length() + 1;       //                  
+                        while(++modifiedIdx < modifiedLine.length() && modifiedLine.charAt(modifiedIdx) != '$');
+                                          
+                        if(modifiedIdx >= modifiedLine.length()) {
+                            // modified line is done but we found a kyeword -> wrong
+                            return false; 
+                        } 
+                        break;
+                    }
+                }
+            }            
+            if(modifiedLine.charAt(modifiedIdx) != baseLine.charAt(fileIdx)) {
+                return false; 
             }
-
-            basePosition = baseLine.indexOf(headerPattern, fromIndexBase);
+            modifiedIdx++;
+            if(modifiedIdx >= modifiedLine.length()) {
+                // if the modified line is done then must be also the base line done
+                return fileIdx == baseLine.length() - 1;
+            }
         }
+        return modifiedIdx == modifiedLine.length() - 2;
+        
+        
+//        int fromIndex = workingLineBuilder.indexOf(headerPattern);
+//        
+//        while (fromIndex > -1) {
+//            //Get the closing $
+//            int endIndex = workingLineBuilder.indexOf("$", fromIndex + 1);
+//            if(endIndex == -1) {
+//                endIndex = fromIndex + headerPattern.length();
+//            }
+//            
+//            workingLineBuilder.replace(fromIndex, endIndex, headerPattern);           
+//
+//            fromIndex = workingLineBuilder.indexOf(headerPattern, fromIndex);
+//        }
     }
 }
