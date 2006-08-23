@@ -68,7 +68,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     private RepositoryPanel repositoryPanel;
     private ProxyDescriptor proxyDescriptor;
-    private RequestProcessor.Task updatePasswordTask;
+    private RequestProcessor.Task updatePasswordAndProxyTask;
     private volatile boolean internalDocumentChange;   
     private boolean passwordExpected;        
     private boolean valid = true;
@@ -148,7 +148,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             repositoryPanel.proxySettingsButton.addActionListener(this);
 
             RequestProcessor requestProcessor = new RequestProcessor();
-            updatePasswordTask = requestProcessor.create(new Runnable() {
+            updatePasswordAndProxyTask = requestProcessor.create(new Runnable() {
                 public void run() {
                     SelectedRepository repository = null;
                     try {
@@ -157,6 +157,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                     if(repository == null) {
                         return;
                     }                    
+                    if (userVisitedProxySettings == false) {
+                        proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(SvnUtils.ripUserFromHost(repository.getUrl().getHost()));
+                    }
                     PasswordFile passwordFile = PasswordFile.findFileForUrl(repository.getUrl());
                     if (passwordFile != null && passwordFile.getPassword() != null && passwordExpected) {
                         internalDocumentChange = true;
@@ -382,9 +385,6 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if(repository != null) {
             url = repository.getUrl();
             if (url != null && !url.getProtocol().equals("file")) { // NOI18N
-                if (userVisitedProxySettings == false) {
-                    proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(SvnUtils.ripUserFromHost(url.getHost()));
-                }
                 schedulePasswordUpdate();
             }
         }
@@ -470,7 +470,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
              selectedUrlString.startsWith("svn+ssh:") )   // NOI18N
         {    
             passwordExpected = true;
-            updatePasswordTask.schedule(10);
+            updatePasswordAndProxyTask.schedule(10);
         }
     }
 

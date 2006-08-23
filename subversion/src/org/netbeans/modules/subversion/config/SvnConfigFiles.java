@@ -26,8 +26,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -344,13 +342,7 @@ public class SvnConfigFiles {
                 return servers.get(key);
             }
 
-            InetAddress hostAddress = null;
-            try {
-                hostAddress = InetAddress.getByName(host);
-            } catch (UnknownHostException ex) {                
-                continue; // behind a proxy ? still try the rest...
-            }
-            if(match(value, hostAddress.getHostName()) || match(value, hostAddress.getHostAddress()) ) {
+            if (match(value, host)) {
                 return (Ini.Section) servers.get(key);
             }            
         }
