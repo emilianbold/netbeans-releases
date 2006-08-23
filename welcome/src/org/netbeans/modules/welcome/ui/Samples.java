@@ -148,7 +148,6 @@ public class Samples extends ContentPanel implements Constants {
         public NewProjectButton() {
             super( BundleSupport.getLabel( "NewProject" ), false ); // NOI18N
             setFont( HEADER_FONT );
-            setForeground( HEADER_TEXT_COLOR );
         }
 
         public void actionPerformed(ActionEvent e) {

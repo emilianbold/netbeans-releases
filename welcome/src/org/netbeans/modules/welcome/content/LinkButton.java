@@ -51,7 +51,7 @@ public abstract class LinkButton extends JButton
 
     public LinkButton( String label, boolean showBullet ) {
         super( label );
-        setForeground( DEFAULT_TEXT_COLOR );
+        setForeground( HEADER_TEXT_COLOR );
         setFont( REGULAR_FONT );
         setBorder( new EmptyBorder(1, 1, 1, 1) );
         setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
@@ -89,7 +89,7 @@ public abstract class LinkButton extends JButton
 
     public void mouseExited(MouseEvent e) {
         underline = false;
-        setForeground( DEFAULT_TEXT_COLOR );
+        setForeground( HEADER_TEXT_COLOR );
         repaint();
         onMouseExited( e );
     }

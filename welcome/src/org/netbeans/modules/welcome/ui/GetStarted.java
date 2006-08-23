@@ -104,7 +104,6 @@ public class GetStarted extends ContentPanel {
         if( null != oc ) {
             LinkAction la = new LinkAction( dob );
             ActionButton lb = new ActionButton( la, true, getUrlString( dob ) );
-            lb.setForeground( HEADER_TEXT_COLOR );
             panel.add( lb, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
                 new Insets(row==1? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,0,2*TEXT_INSETS_RIGHT), 0, 0 ) );

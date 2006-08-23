@@ -183,7 +183,6 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
 
                         WebLink linkButton = new WebLink( item.title, item.link, true );
                         linkButton.setFont( HEADER_FONT );
-                        linkButton.setForeground( HEADER_TEXT_COLOR );
                         panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,1.0,
                                 GridBagConstraints.WEST,GridBagConstraints.NONE,
                                 new Insets(0,5,2,TEXT_INSETS_RIGHT),0,0 ) );
