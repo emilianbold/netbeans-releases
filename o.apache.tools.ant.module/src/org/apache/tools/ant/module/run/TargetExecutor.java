@@ -63,7 +63,6 @@ import org.w3c.dom.Element;
 public final class TargetExecutor implements Runnable {
     
     private static final boolean USE_PROGRESS = Boolean.getBoolean("org.apache.tools.ant.module.run.TargetExecutor.USE_PROGRESS");
-    private static final boolean SHOW_STOP_BUTTON = Boolean.getBoolean("org.apache.tools.ant.module.run.TargetExecutor.SHOW_STOP_BUTTON");
     
     /**
      * All tabs which were used for some process which has now ended.
@@ -252,7 +251,7 @@ public final class TargetExecutor implements Runnable {
             if (io == null) {
                 StopAction sa = new StopAction();
                 RerunAction ra = new RerunAction(this);
-                io = IOProvider.getDefault().getIO(displayName, SHOW_STOP_BUTTON ? new Action[] {ra, sa} : new Action[0]);
+                io = IOProvider.getDefault().getIO(displayName, new Action[] {ra, sa});
                 stopActions.put(io, sa);
                 rerunActions.put(io, ra);
             }
