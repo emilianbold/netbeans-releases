@@ -127,7 +127,7 @@ public class ShorterPaths extends Task {
                     path = file.getCanonicalPath();
                     simplyPath(path, externalLibBuf, nbLibBuff);
                 } else {
-                    log("Path element "+ file + " doesn't exist.");
+                    log("Path element "+ file + " doesn't exist.",Project.MSG_VERBOSE);
                 }
             } 
             if (out != null) {
