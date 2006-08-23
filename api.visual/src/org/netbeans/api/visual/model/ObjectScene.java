@@ -212,7 +212,7 @@ public class ObjectScene extends Scene {
     private class ObjectSelectProvider implements SelectProvider {
 
         public boolean isAimingAllowed (Widget widget, Point localLocation, boolean invertSelection) {
-            return true;
+            return false;
         }
 
         public boolean isSelectionAllowed (Widget widget, Point localLocation, boolean invertSelection) {
