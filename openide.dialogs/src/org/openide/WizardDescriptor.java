@@ -2259,13 +2259,26 @@ public class WizardDescriptor extends DialogDescriptor {
             errorPanel.add(m_lblMessage, BorderLayout.CENTER);
             
             progressBarPanel = new JPanel (new BorderLayout ());
-            // placeholder for progress bar components
-            progressBarPanel.add (new JLabel (), BorderLayout.NORTH);
-            progressBarPanel.add (new JProgressBar (), BorderLayout.CENTER);
             progressBarPanel.setVisible (false);
             
-            progressBarPanel.setBorder (BorderFactory.createEmptyBorder (4, 0, 0, 0));
-            errorPanel.add (progressBarPanel, BorderLayout.SOUTH);
+            if (contentDisplayed) {
+                // place for visualize progress bar in content panel (if contentDisplayed)
+                progressBarPanel.setOpaque (false);
+                progressBarPanel.setBorder (BorderFactory.createEmptyBorder (0, 4, 7, 4));
+                contentPanel.add (progressBarPanel, BorderLayout.SOUTH);
+            } else {
+                // placeholder for progress bar components in WizardPanel (if no contentDisplayed set)
+                progressBarPanel.add (new JLabel (), BorderLayout.NORTH);
+                JProgressBar pb = new JProgressBar ();
+                pb.setOrientation (JProgressBar.HORIZONTAL);
+                pb.setAlignmentX(0.5f);
+                pb.setAlignmentY(0.5f);
+                pb.setString ("0"); // NOI18N
+                progressBarPanel.add (pb, BorderLayout.CENTER);
+
+                progressBarPanel.setBorder (BorderFactory.createEmptyBorder (4, 0, 0, 0));
+                errorPanel.add (progressBarPanel, BorderLayout.SOUTH);
+            }
 
             JPanel fullRightPanel = new JPanel(new BorderLayout());
             fullRightPanel.add(labelPanel, BorderLayout.NORTH);
@@ -2299,14 +2312,12 @@ public class WizardDescriptor extends DialogDescriptor {
         }
         
         private void setProgressComponent (JComponent progressComp, JLabel progressLabel) {
-            progressBarPanel.removeAll ();
             if (progressLabel != null) {
                 progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
                 progressBarPanel.add (progressLabel, BorderLayout.NORTH);
             }
             progressBarPanel.add (progressComp, BorderLayout.CENTER);
             progressBarPanel.setVisible (true);
-            progressBarPanel.revalidate ();
         }
 
         /** Creates content panel.
