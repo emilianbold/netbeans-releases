@@ -30,7 +30,7 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
 
 /**
  *
- * @author Jan Jancura
+ * @author Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
 public class BreakpointsReader implements Properties.Reader {
 

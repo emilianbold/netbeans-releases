@@ -44,7 +44,6 @@ public class EditorContextBridge {
     
     public static EditorContext getContext() {
         if (context == null) {
-            //context = new EditorContextBridge();
             List l = DebuggerManager.getDebuggerManager().lookup(null, EditorContext.class);
             context = (EditorContext) l.get(0);
             int i, k = l.size();

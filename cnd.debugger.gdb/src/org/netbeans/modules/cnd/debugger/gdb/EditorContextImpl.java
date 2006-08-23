@@ -79,7 +79,7 @@ public class EditorContextImpl extends EditorContext {
     
     
     {
-        pcs = new PropertyChangeSupport (this);
+        pcs = new PropertyChangeSupport(this);
 
         resDataObject = Utilities.actionsGlobalContext().lookup(new Lookup.Template(DataObject.class));
         resDataObject.addLookupListener(new EditorLookupListener(DataObject.class));
