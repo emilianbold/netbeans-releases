@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ====================================== -->
 
     <compiler name="default-compiler" antfile="build-qa-functional.xml" 
-              target="default-compiler" default="true"/>
+              target="qa-functional-compiler" default="true"/>
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
