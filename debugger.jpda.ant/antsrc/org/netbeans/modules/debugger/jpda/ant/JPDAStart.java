@@ -38,14 +38,11 @@ import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.tools.ant.BuildEvent;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
@@ -72,7 +69,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
  *
  * @author Jesse Glick, David Konecny
  */
-public class JPDAStart extends Task implements Runnable, BuildListener {
+public class JPDAStart extends Task implements Runnable {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
     
@@ -95,8 +92,6 @@ public class JPDAStart extends Task implements Runnable, BuildListener {
     private Object []               lock = null; 
     /** The class debugger should stop in, or null. */
     private String                  stopClassName = null;
-    /** The debugger instance after it's started */
-    private JPDADebugger            debugger;
 
     
     // properties ..............................................................
@@ -169,7 +164,6 @@ public class JPDAStart extends Task implements Runnable, BuildListener {
     // main methods ............................................................
 
     public void execute () throws BuildException {
-        getProject().addBuildListener(this);
         verifyPaths(getProject(), classpath);
         //verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
         verifyPaths(getProject(), sourcepath);
@@ -299,7 +293,7 @@ public class JPDAStart extends Task implements Runnable, BuildListener {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
-                            debugger = JPDADebugger.listen (
+                            JPDADebugger.startListening (
                                 flc,
                                 args,
                                 new Object[] { properties }
@@ -477,40 +471,6 @@ public class JPDAStart extends Task implements Runnable, BuildListener {
             return false;
         }
         return true;
-    }
-
-    public void buildStarted(BuildEvent buildEvent) {
-    }
-
-    public void buildFinished(BuildEvent buildEvent) {
-        logger.fine("Build Finished."); // NOI18N
-        // The build has finished - we need to terminate the debugger
-        if (debugger != null) {
-            // Find the associated session
-            Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-            for (int i = 0; i < sessions.length; i++) {
-                JPDADebugger d = (JPDADebugger) sessions[i].lookupFirst(null, JPDADebugger.class);
-                if (d == debugger) {
-                    sessions[i].kill();
-                    break;
-                }
-            }
-        }
-    }
-
-    public void targetStarted(BuildEvent buildEvent) {
-    }
-
-    public void targetFinished(BuildEvent buildEvent) {
-    }
-
-    public void taskStarted(BuildEvent buildEvent) {
-    }
-
-    public void taskFinished(BuildEvent buildEvent) {
-    }
-
-    public void messageLogged(BuildEvent buildEvent) {
     }
 
     
