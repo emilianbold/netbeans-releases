@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.netbeans.modules.cnd.makeproject" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.cnd.makeproject.</description>
+    <import file="nbproject/build-impl.xml"/>
+    
+    <!-- zip up samples before creating the jar file -->
+    <property name="sample-src" value="src/org/netbeans/modules/cnd/makeproject/samples"/>
+    <property name="sample-dist" value="build/classes/org/netbeans/modules/cnd/makeproject/ui/resources/samples"/>
+    <patternset id="sample-src-pattern-set">
+        <include name="**/*"/>
+        <exclude name="**/SCCS"/>
+        <exclude name="**/CVS"/>
+    </patternset>
+    <target name="jar-prep" depends="projectized-common.jar-prep">
+        <zip zipfile="${sample-dist}/args.zip" >
+            <fileset dir="${sample-src}/args">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/mp.zip" >
+            <fileset dir="${sample-src}/mp">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/welcome.zip" >
+            <fileset dir="${sample-src}/welcome">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/helloapp.zip" >
+            <fileset dir="${sample-src}/helloapp">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/quote.zip" >
+            <fileset dir="${sample-src}/quote">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/io.zip" >
+            <fileset dir="${sample-src}/io">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+    </target>
+</project>

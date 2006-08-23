@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.modules.cnd.antlr</code-name-base>
+            <suite-component/>
+            <module-dependencies/>
+            <public-packages>
+                <package>antlr</package>
+                <package>antlr.collections</package>
+                <package>antlr.collections.impl</package>
+                <package>antlr.debug</package>
+                <package>antlr.debug.misc</package>
+            </public-packages>
+        </data>
+    </configuration>
+</project>

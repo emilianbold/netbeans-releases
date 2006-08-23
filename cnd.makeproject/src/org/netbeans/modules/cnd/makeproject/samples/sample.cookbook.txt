@@ -1,0 +1,56 @@
+# The contents of this file are subject to the terms of the Common Development
+# and Distribution License (the License). You may not use this file except in
+# compliance with the License.
+#
+# You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+# or http://www.netbeans.org/cddl.txt.
+#
+# When distributing Covered Code, include this CDDL Header Notice in each file
+# and include the License file at http://www.netbeans.org/cddl.txt.
+# If applicable, add the following below the CDDL Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyrighted [year] [name of copyright owner]"
+#
+# The Original Software is NetBeans. The Initial Developer of the Original
+# Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+# Microsystems, Inc. All Rights Reserved.
+
+Follow these steps to create a sample project from a set of existing sources:
+
+1) Copy the source files to a disk folder of your choice. In this example we use /tmp/Quote.
+   Don't copy makefiles or other build scripts.
+2) Use the IDE to create a C/C++ project in the work folder (/tmp/Quote). Add C/C++ source files to Source Files, 
+   header files to Header Files, and other files to Resource files. 
+3) If there is a readme file, add it to Important Files for easy viewing. Make sure it has a .txt suffix.
+4) Make sure the project builds (without warnings!) and runs on *all* supported platforms using both Sun 
+   Compiler Set (Solaris) and GNU Compiler Set (Windows/Linux).
+5) Make sure all text files have proper copyright notices.
+6) Remove 'build' and 'dist' folders from work folder (/tmp/Quote).
+7) Remove all hidden files like .make.state files from work folder (/tmp/Quote).
+8) Remove all generated makefiles (Makefile-*) in nbproject folder in work folder (/tmp/Quote).
+9) Edit .../nbproject/configurations.xml and remove all <toolsSet>...</toolsSet> blocks. This is to ensure
+   the project is platform/compiler neutral.
+10) Remove all files in .../nbproject/private.
+11) Pick a name for the project that is not already taken. In this example we pick 'quote'.
+12) Create a folder in .../cnd/makeproject/src/org/netbeans/modules/cnd/makeproject/samples
+   with the name of the project (quote).
+13) Copy all source files and project metadata files from work folder (/tmp/Quote) to samples folder (.../samples/quote).
+14) Edit makeproject's layer file and add an entry similar to this:
+<file name="quote.zip" url="samples/quote.zip">
+  <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
+  <attr name="template" boolvalue="true"/>
+  <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/quote.html"/>
+  <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
+  <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
+</file>
+15) Edit org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle.properties and add an entry similar to this:
+Templates/Project/Samples/Native/Applications/quote.zip=Quote
+This is the default project name for the samle project.
+16) Create a file with the name 'quote.html' in org.netbeans.modules.cnd.makeproject.ui.resources.samples with a description (html)
+   of what the sample does
+17) Edit the makefile project build script (makeproject/build.xml) and add an entry similar to this:
+<zip zipfile="${sample-dist}/quote.zip" >
+  <fileset dir="${sample-src}/quote">
+   <patternset refid="sample-src-pattern-set"/>
+  </fileset>
+</zip>

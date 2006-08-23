@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+<project name="org.netbeans.modules.cnd.modelimpl" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.cnd.modelimpl.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <target name="netbeans" depends="projectized-common.netbeans">
+	<chmod file="${cluster}/bin/stdouterr.sh" perm="ugo+rx"/>
+    </target>
+    
+    <target name="compile" depends="antlr,projectized-common.compile">
+        <chmod file="tracemodel.sh" perm="ugo+rx"/>
+    </target>
+ 
+    <target name="init-antlr">
+        <!-- ANTLR output directories -->
+        <property name="antlr.folding.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr"/>
+        <property name="antlr.output.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr2/generated"/>
+        <property name="antlr.apt.output.dir" location="src/org/netbeans/modules/cnd/modelimpl/apt/impl/support/generated"/>
+    </target>
+    
+    <target name="clean" depends="projectized-common.clean, init-antlr">
+        <delete dir="${antlr.output.dir}"/>   
+        <property name="antlr.folding.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr"/>
+        <delete>
+            <fileset dir="${antlr.folding.dir}" includes="CPPFolding*"/>
+        </delete>   
+        <delete dir="${antlr.apt.output.dir}"/>   
+    </target>
+    
+    <target name="antlr" depends="init-antlr" unless="up-to-date">
+	<property name="antlr.jar" location="../suite/build/cluster/modules/org-netbeans-modules-cnd-antlr.jar"/>
+	<antlr target="${antlr.folding.dir}/cppjx.g"
+            outputdirectory="${antlr.folding.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>
+        <property name="antlr.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/antlr2"/>
+        <mkdir dir="${antlr.output.dir}"/>
+        <antlr target="${antlr.grammar.dir}/cpplexer.g"
+            outputdirectory="${antlr.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>  
+        <antlr target="${antlr.grammar.dir}/ppeparser.g"
+            outputdirectory="${antlr.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>        
+        <antlr target="${antlr.grammar.dir}/cppparser.g"
+            outputdirectory="${antlr.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>
+        <property name="antlr.apt.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/apt/impl/support"/>
+        <mkdir dir="${antlr.apt.output.dir}"/>
+        <copy file="${antlr.output.dir}/CPPLexerTokenTypes.txt"
+                    todir="${antlr.apt.output.dir}" 
+                    overwrite="true"/>        
+        <antlr  target="${antlr.apt.grammar.dir}/aptlexer.g"
+                outputdirectory="${antlr.apt.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>  
+        <antlr  target="${antlr.apt.grammar.dir}/aptexpr.g"
+                outputdirectory="${antlr.apt.output.dir}">
+                <classpath path="${antlr.jar}"/>
+        </antlr>          
+    </target>
+    
+    
+</project>
