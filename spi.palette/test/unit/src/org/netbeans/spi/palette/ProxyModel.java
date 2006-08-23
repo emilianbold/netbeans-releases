@@ -41,7 +41,7 @@ public class ProxyModel implements Model {
         this.original = original;
     }
 
-    public void showCustomizer(org.netbeans.modules.palette.Settings settings) {
+    public void showCustomizer(PaletteController pc, org.netbeans.modules.palette.Settings settings) {
         showCustomizerCalled = true;
         //super.showCustomizer(settings);
     }
