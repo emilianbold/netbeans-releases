@@ -70,8 +70,6 @@ public class MergeUiTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new MergeUiTest("testInvokeClose"));
-        suite.addTest(new MergeUiTest("testFinalRemove"));
-        
         return suite;
     }
     
@@ -146,11 +144,6 @@ public class MergeUiTest extends JellyTestCase {
         assertEquals("Wrong folder selection!!!", "tags", moo.getRepositoryFolder());
         moo.cancel();
         
-        TestKit.removeAllData(PROJECT_NAME);
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
+        //TestKit.removeAllData(PROJECT_NAME);
     }
 }

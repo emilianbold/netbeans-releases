@@ -70,7 +70,6 @@ public class AnnotationsTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new AnnotationsTest("testShowAnnotations"));
-        suite.addTest(new AnnotationsTest("testFinalRemove"));
         return suite;
     }
     
@@ -117,13 +116,8 @@ public class AnnotationsTest extends JellyTestCase {
         node.performPopupAction("Subversion|Show Annotations");
         oto.waitText("Annotating... finished.");
         
-        TestKit.removeAllData(PROJECT_NAME);
+        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

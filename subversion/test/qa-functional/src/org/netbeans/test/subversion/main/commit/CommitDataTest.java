@@ -78,7 +78,6 @@ public class CommitDataTest extends JellyTestCase {
         suite.addTest(new CommitDataTest("testCommitFile"));      
         suite.addTest(new CommitDataTest("testCommitPackage"));      
         suite.addTest(new CommitDataTest("testRecognizeMimeType"));   
-        suite.addTest(new CommitDataTest("testFinalRemove"));   
         return suite;
     }
     
@@ -281,7 +280,7 @@ public class CommitDataTest extends JellyTestCase {
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull("There shouldn't be any table in Versioning view", tee);
-        TestKit.removeAllData(PROJECT_NAME);
+        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
     }
@@ -408,14 +407,8 @@ public class CommitDataTest extends JellyTestCase {
             tee = (TimeoutExpiredException) e;
         }
         assertNotNull("There shouldn't be any table in Versioning view", tee);       
-        TestKit.removeAllData(PROJECT_NAME);
+        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
-    }
-    
-    public void testFinalRemove() throws Exception {
-        TestKit.closeProject(PROJECT_NAME);
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

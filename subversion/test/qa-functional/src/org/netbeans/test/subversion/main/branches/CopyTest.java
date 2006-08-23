@@ -74,7 +74,6 @@ public class CopyTest extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CopyTest("testCreateNewCopySwitch"));
         suite.addTest(new CopyTest("testCreateNewCopy"));
-        suite.addTest(new CopyTest("testFinalRemove"));
         return suite;
     }
     
@@ -242,13 +241,8 @@ public class CopyTest extends JellyTestCase {
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         assertEquals("Wrong annotation of node!!!", TestKit.UPTODATE_STATUS, status);
         
-        TestKit.removeAllData(PROJECT_NAME);
+        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

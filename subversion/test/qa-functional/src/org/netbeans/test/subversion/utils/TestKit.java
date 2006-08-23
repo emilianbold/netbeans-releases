@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -23,7 +24,6 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.CheckboxOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.ide.ProjectSupport;
@@ -118,6 +118,13 @@ public final class TestKit {
         }    
     }
     
+    public static void finalRemove() throws Exception {
+        closeProject("JavaApp");
+        closeProject("SVNApplication");
+        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
+        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
+    }
+    
     public static int compareThem(Object[] expected, Object[] actual, boolean sorted) {
         int result = 0;
         if (expected == null || actual == null)
@@ -137,6 +144,8 @@ public final class TestKit {
             if (expected.length > actual.length) {
                 return -1;
             }
+            Arrays.sort(expected);
+            Arrays.sort(actual);
             boolean found = false;
             for (int i = 0; i < expected.length; i++) {
                 for (int j = 0; j < actual.length; j++) {

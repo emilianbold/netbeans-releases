@@ -69,8 +69,6 @@ public class CommitUiTest extends JellyTestCase{
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CommitUiTest("testInvokeClose"));
-        suite.addTest(new CommitUiTest("testFinalRemove"));
-        
         return suite;
     }
     
@@ -125,11 +123,6 @@ public class CommitUiTest extends JellyTestCase{
         
         co.verify();
         co.cancel();
-        TestKit.removeAllData(PROJECT_NAME);        
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
+        //TestKit.removeAllData(PROJECT_NAME);        
     }
 }

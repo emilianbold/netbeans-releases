@@ -73,7 +73,6 @@ public class DiffTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new DiffTest("testDiffFile"));
-        suite.addTest(new DiffTest("testFinalRemove"));
         return suite;
     }
     
@@ -167,13 +166,8 @@ public class DiffTest extends JellyTestCase {
             System.out.println("Problem with buttons of differences");
         }    
         
-        TestKit.removeAllData(PROJECT_NAME);
+        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

@@ -73,9 +73,7 @@ public class SearchHistoryUITest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new SearchHistoryUITest("testInvokeSearch"));
-        suite.addTest(new SearchHistoryUITest("testFinalRemove"));
-        
+        suite.addTest(new SearchHistoryUITest("testInvokeSearch"));      
         return suite;
     }
     
@@ -138,13 +136,8 @@ public class SearchHistoryUITest extends JellyTestCase{
         sho.setFrom("1");
         sho.setTo("2");
         
-        TestKit.removeAllData(PROJECT_NAME);
+        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

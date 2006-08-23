@@ -161,7 +161,7 @@ public class IgnoreTest extends JellyTestCase {
         assertEquals("Versioning view should be empty", 1, model.getRowCount());
         assertEquals("File should be listed in Versioning view", "NewClass.java", model.getValueAt(0, 0).toString());
         
-        TestKit.removeAllData(PROJECT_NAME);
+        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
     }
@@ -260,7 +260,7 @@ public class IgnoreTest extends JellyTestCase {
         assertEquals("Versioning view should be empty", 1, model.getRowCount());
         assertEquals("Package should be listed in Versioning view", "xx", model.getValueAt(0, 0).toString());
         
-        TestKit.removeAllData(PROJECT_NAME);
+        //TestKit.removeAllData(PROJECT_NAME);
         stream.flush();
         stream.close();
     }
@@ -360,7 +360,6 @@ public class IgnoreTest extends JellyTestCase {
     }
     
     public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
+        TestKit.finalRemove();
     }
 }

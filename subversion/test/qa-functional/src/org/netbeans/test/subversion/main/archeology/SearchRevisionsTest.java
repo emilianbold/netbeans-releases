@@ -66,7 +66,6 @@ public class SearchRevisionsTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new SearchRevisionsTest("testSearchRevisionsTest"));
-        suite.addTest(new SearchRevisionsTest("testFinalRemove"));
         return suite;
     }
     
@@ -112,10 +111,5 @@ public class SearchRevisionsTest extends JellyTestCase {
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         stream.flush();
         stream.close();
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

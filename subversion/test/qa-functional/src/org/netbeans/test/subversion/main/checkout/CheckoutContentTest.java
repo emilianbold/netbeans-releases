@@ -70,8 +70,7 @@ public class CheckoutContentTest extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CheckoutContentTest("testCheckoutProject"));      
-        suite.addTest(new CheckoutContentTest("testCheckoutContent"));      
-        suite.addTest(new CheckoutContentTest("testFinalRemove"));      
+        suite.addTest(new CheckoutContentTest("testCheckoutContent"));          
         return suite;
     }
     
@@ -110,7 +109,7 @@ public class CheckoutContentTest extends JellyTestCase {
         ProjectSupport.waitScanFinished();
         Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         
-        TestKit.removeAllData(PROJECT_NAME); 
+        //TestKit.removeAllData(PROJECT_NAME); 
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
     }
@@ -151,10 +150,5 @@ public class CheckoutContentTest extends JellyTestCase {
         RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         //ProjectSupport.waitScanFinished();
         //Node projNode = new Node(new ProjectsTabOperator().tree(), "JavaApp");
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

@@ -89,7 +89,6 @@ public class CheckoutUITest extends JellyTestCase{
         suite.addTest(new CheckoutUITest("testIncorrentUrl"));        
         suite.addTest(new CheckoutUITest("testAvailableFields"));
         suite.addTest(new CheckoutUITest("testRepositoryFolder"));        
-        suite.addTest(new CheckoutUITest("testFinalRemove"));
         return suite;
     }
     
@@ -353,10 +352,5 @@ public class CheckoutUITest extends JellyTestCase{
         rso.btStop().push();
         assertEquals("Warning message - process was cancelled by user", "Action canceled by user", rso.lblWarning().getText());
         co.btCancel().pushNoBlock();
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
     }
 }

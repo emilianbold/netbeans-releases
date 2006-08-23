@@ -67,8 +67,6 @@ public class SwitchUiTest extends JellyTestCase{
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new SwitchUiTest("testInvokeClose"));
-        suite.addTest(new SwitchUiTest("testFinalRemove"));
-        
         return suite;
     }
     
@@ -109,11 +107,6 @@ public class SwitchUiTest extends JellyTestCase{
         assertEquals("Folder wasn't created", "branches", so.getRepositoryFolder());
         
         so.cancel();
-        TestKit.removeAllData(PROJECT_NAME); 
-    }
-    
-    public void testFinalRemove() throws Exception {
-        RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
-        RepositoryMaintenance.deleteFolder(new File("/tmp/repo"));
+        //TestKit.removeAllData(PROJECT_NAME); 
     }
 }
