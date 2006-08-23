@@ -81,6 +81,7 @@ public class CommitTable implements AncestorListener, TableModelListener {
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         label.setLabelFor(table);
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitTable.class, "ACSD_CommitTable")); // NOI18N
+        setColumns(columns);
     }
 
     public void ancestorAdded(AncestorEvent event) {
@@ -229,13 +230,13 @@ public class CommitTable implements AncestorListener, TableModelListener {
         }
     }
 
-    private static class CommitStringsCellRenderer extends DefaultTableCellRenderer {
+    private class CommitStringsCellRenderer extends DefaultTableCellRenderer {
 
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             int col = table.convertColumnIndexToModel(column);
-            if (col == 0) {
+            if (columns[col] == CommitTableModel.COLUMN_NAME_NAME) {
                 TableSorter sorter = (TableSorter) table.getModel();
                 CommitTableModel model = (CommitTableModel) sorter.getTableModel();
                 SvnFileNode node = model.getNode(sorter.modelIndex(row));
@@ -248,7 +249,7 @@ public class CommitTable implements AncestorListener, TableModelListener {
                     value = "<html><s>" + value + "</s></html>"; // NOI18N
                 }
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if (col == 3) {
+            } else if (columns[col] == CommitTableModel.COLUMN_NAME_PATH) {
                 return pathRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
