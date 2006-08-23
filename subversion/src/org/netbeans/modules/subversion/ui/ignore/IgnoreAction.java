@@ -88,18 +88,6 @@ public class IgnoreAction extends ContextAction {
                 actionStatus = UNDEFINED;
                 break;
             }
-
-            // only direct descendants of versioned files are ignorable
-            if (actionStatus == IGNORING) {
-                File parent = files[i].getParentFile();
-                if (parent != null) {
-                    FileInformation status = cache.getStatus(parent);
-                    if ((status.getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
-                        actionStatus = UNDEFINED;
-                        break;
-                    }
-                }
-            }
         }
         return actionStatus == -1 ? UNDEFINED : actionStatus;
     }
@@ -136,6 +124,7 @@ public class IgnoreAction extends ContextAction {
                     File parent = file.getParentFile();
                     if (actionStatus == IGNORING) {
                         try {
+                            ensureVersioned(parent);
                             client.addToIgnoredPatterns(parent, file.getName());
                             // it's not catched by cache's onNotify(), refresh explicitly
                             Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
@@ -158,6 +147,31 @@ public class IgnoreAction extends ContextAction {
             }
         };            
         support.start(createRequestProcessor(nodes));
+    }
+
+    /**
+     * Adds this file and all its parent folders to repository if they are not yet added. 
+     * 
+     * @param file file to add
+     * @throws SVNClientException if something goes wrong in subversion
+     */ 
+    private void ensureVersioned(File file) throws SVNClientException {
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) != 0) return;
+        ensureVersioned(file.getParentFile());
+        add(file);
+        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+    }
+
+    /**
+     * Adds the file to repository with 'svn add', non-recursively.
+     * 
+     * @param file file to add
+     */ 
+    private void add(File file) throws SVNClientException {
+        SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
+        SvnClient client = Subversion.getInstance().getClient(repositoryUrl, true);               
+        client.addFile(file);
     }
 
     protected boolean asynchronous() {
