@@ -27,11 +27,6 @@ package org.netbeans.test.gui.javadoc;
 
 import java.io.File;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-import junit.textui.TestRunner;
-
 import org.netbeans.jellytools.*;
 
 import org.netbeans.jellytools.actions.Action;
@@ -48,9 +43,6 @@ import org.netbeans.jemmy.JemmyProperties;
 
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-
-import org.netbeans.junit.NbTestSuite;
-
 
 /** JUnit test suite with Jemmy support
  *
@@ -74,7 +66,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
     
     // -------------------------------------------------------------------------
     
-    public void testGenerate() {
+   /* public void testGenerate() {
         
         String userHome = System.getProperty("netbeans.user"); // NOI18N
         RepositoryTabOperator repoTabOper = RepositoryTabOperator.invoke();
@@ -151,7 +143,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
                    "colorpicker" + sep + "ColorPicker.html").exists()); // NOI18N
         new EventTool().waitNoEvent(1000);
         
-    }
+    }*/
     
     private void verifyCommonJdocFiles(String base, String folder) {
         assertTrue("index.html doesn't exist!", new File(base + sep + folder + sep + "index.html").exists()); // NOI18N
@@ -171,7 +163,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         assertTrue("package-tree.html doesn't exist!", new File(base + sep + folder + sep + "package-tree.html").exists()); // NOI18N
     }
     
-    public void testGenerateToFolder() {
+  /*  public void testGenerateToFolder() {
         
         String userHome = System.getProperty("netbeans.user"); // NOI18N
         RepositoryTabOperator repoTabOper = RepositoryTabOperator.invoke();
@@ -215,7 +207,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
                    "imageviewer" + sep + "ImageViewer.html").exists()); // NOI18N
         new EventTool().waitNoEvent(1000);
         
-    }
+    }*/
     
     public void testCreateDoclet() {
         

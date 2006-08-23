@@ -187,6 +187,15 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 
             </module-dependencies>
+            <test-dependencies>            
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                      <code-name-base>org.openide.filesystems</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                </test-type>
+            </test-dependencies>
             <public-packages/>            
         </data>
     </configuration>
