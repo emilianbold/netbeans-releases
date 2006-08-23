@@ -18,48 +18,27 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project basedir="." default="all" name="qa-functional Test Type Script">
+<project name="junit/test-qa-functional" basedir="." default="all">
 
-    <target name="set_classpath">
-
-        <property name="jemmy.home" location="../../jemmy/builds"/>
-        <property name="jelly.home" location="../../jellytools/builds"/>
-        <property location="../../../nb_all/a11y" name="a11y.home"/>
-
-        <property name="xtest.extra.jars.path" value="${jemmy.home};${jelly.home};${a11y.home}/tests"/>
-        <property name="xtest.extra.jars" value=""/>
-        <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly2-nb.jar;a11y.jar"/>
-        <property name="xtest.extra.ide.mounts" value=""/>
-        <property name="xtest.jvmargs" value=""/>
-        <property name="xtest.ide.commandline.suffix" value=""/>
-	<property name="compiletest.classpath" value=""/>
-
-    </target>
+    <!-- Imports default qa-functional-compiler and runidetest executor.
+    jemmy and jellytools jars are on classpath for both. -->
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
     
-    <target depends="set_classpath" name="default-compiler">
-       <ant antfile="${xtest.module_harness.antfile}" dir="." target="buildtests">
-           <property name="compile.srcdir" value="${xtest.testtype}/src"/>
-           <property name="compile.excludes" value="**/data/**"/>
-       </ant>
-    </target>
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
 
-    <target depends="set_classpath" name="runidetest">
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="test">
-           <property name="xtest.exectype" value="ide"/>
-           <property name="xtest.ide.winsys" value="sdi"/>
-       </ant>
+    <!-- You can override default qa-functional-compiler if you need something special -->
+
+    <target name="qa-functional-compiler" depends="init-cp">
+        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+                <pathelement location="../../a11y/build/classes"/>
+            </classpath>
+        </buildTests>
     </target>
+         
     
-    <target depends="set_classpath" name="runcodetest">
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="test">
-           <property name="xtest.exectype" value="code"/>
-        </ant>
-    </target>
-
-    <property name="xtest.source.location" value="ide"/>
-
-    <target name="all">
-      <fail message="This buildfile is not intended to be directly executed. It contains executors and compilers. Use build.xml to execute tests."/>
-    </target>
-
+    
 </project>

@@ -2,16 +2,20 @@
 <!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">
 <mconfig name="qa-functional Test Type Config">
 
-	<testbag testattribs="validation,full" executor="ide" compiler="default-compiler" name="Validation test bag">
-		<testset dir="qa-functional/src">
-			<patternset>
-				<include name="test/Test.class"/>
-			</patternset>
-		</testset>
-	</testbag>
+    <testbag testattribs="validation,full" name="Validation test bag">
+        <testset dir="qa-functional/src">
+            <patternset>
+                
+                <!-- Some Old 3.x tests -->               
+                <!-- <include name="test/Test.class"/> -->
+                
+                <!-- Example test -->
+                <!-- <include name="org/netbeans/test/junit/ExampleTest.class"/> -->
+            </patternset>
+        </testset>
+    </testbag>
 
-	<executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
-	<executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
-	<compiler name="default-compiler" default="true" antfile="build-qa-functional.xml" target="default-compiler"/>
-	<resultsprocessor name="default-results-processor" default="true" antfile="build.xml" target="test_report"/>
+    <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
 </mconfig>

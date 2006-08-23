@@ -18,48 +18,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project basedir="." default="all" name="junit XTest Workspace Script">
+<project name="junit/test" basedir="." default="all">
 
-    <property location="../../../nb_all/nbbuild/netbeans" name="netbeans.home"/>
+    <!-- Name of tested module -->
     <property name="xtest.module" value="junit"/>
-    <property location="../../../nb_all/xtest" name="xtest.home"/>
 
+    <import file="../../nbbuild/templates/xtest.xml"/>
+
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
     <property name="xtest.attribs" value="validation"/>
 
-    <property location="${xtest.home}/lib/module_harness.xml" name="xtest.module_harness.antfile"/>
-
-    <property name="build.sysclasspath" value="ignore"/>
-    
-    <target depends="runtests" name="all"/>
-    
-    <target name="buildtests">
-       <ant antfile="${xtest.module_harness.antfile}" dir="." target="compiler-launcher"/>
-    </target>
-    
-    <target name="cleantests">
-       <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleantests"/>
-    </target> 
-
-    <target depends="buildtests" name="runtests">
-        <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="runtests"/>
-    </target>
-    
-    <target name="test_report">
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="test_report"/>
-    </target>
-    
-    <target name="cleanresults">
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleanresults"/>
-    </target>
-    
-    <target depends="cleantests,cleanresults" name="realclean">
-        <ant antfile="${xtest.module_harness.antfile}" dir="." target="realclean"/>
-    </target>
-    
-    <target name="printconfig">
-        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
-    </target>
-    
 </project>
