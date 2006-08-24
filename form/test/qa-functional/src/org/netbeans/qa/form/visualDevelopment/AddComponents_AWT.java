@@ -102,17 +102,20 @@ public class AddComponents_AWT extends JellyTestCase {
         Vector componentNames = new Vector();
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
         palette.collapseBeans();
-//        palette.collapseLayouts();
-        palette.collapseSwing();
+        //        palette.collapseLayouts();
+        palette.collapseSwingControls();
+        palette.collapseSwingControls();
+        palette.collapseSwingMenus();
+        palette.collapseSwingWindows();
         palette.expandAWT();
-        String[] componentList = {"Label", "Button", "TextField", "TextArea", "Checkbox", "Choice", "List", "Scrollbar", "ScrollPane", "Panel", "Canvas", "MenuBar", "PopupMenu"};
+        String[] componentList = {"Label", "Button", "Text Field", "Text Area", "Checkbox", "Choice", "List", "Scrollbar", "Scroll Pane", "Panel", "Canvas", "Menu Bar", "Popup Menu"};
         for (int i=0;i < componentList.length; i++) {
             componentNames.addElement(componentList[i]);
         }
         ComponentInspectorOperator cio = new ComponentInspectorOperator();
         Node inspectorRootNode = new Node(cio.treeComponents(), FRAME_ROOT);
         inspectorRootNode.select();
-        inspectorRootNode.expand();      
+        inspectorRootNode.expand();
         // add all beans from Palette Category to form
         Action popupAddFromPaletteAction;
         for(int i = 0; i < componentNames.size(); i++){
@@ -120,7 +123,7 @@ public class AddComponents_AWT extends JellyTestCase {
             popupAddFromPaletteAction.perform(inspectorRootNode);
         }
         
-        log("All components from Component Palette : " + categoryName + " - were added to " + FILE_NAME);        
+        log("All components from Component Palette : " + categoryName + " - were added to " + FILE_NAME);
         log("Try to save the form.");
         editAction.perform(formnode);
         Action saveAction;
@@ -135,9 +138,9 @@ public class AddComponents_AWT extends JellyTestCase {
     public void testFormFile() {
         try {
             getRef().print(
-            VisualDevelopmentUtil.readFromFile(
-            getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".form")
-            );
+                    VisualDevelopmentUtil.readFromFile(
+                    getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".form")
+                    );
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
@@ -159,9 +162,9 @@ public class AddComponents_AWT extends JellyTestCase {
     public void testJavaFile() {
         try {
             getRef().print(
-            VisualDevelopmentUtil.readFromFile(
-            getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".java")
-            );
+                    VisualDevelopmentUtil.readFromFile(
+                    getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".java")
+                    );
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
@@ -169,15 +172,15 @@ public class AddComponents_AWT extends JellyTestCase {
             compareReferenceFiles(this.getName()+".ref",this.getName()+"_13.pass",this.getName()+".diff");
         } else
             System.out.println("XXX " + this.getName()+".ref");
-            compareReferenceFiles();
+        compareReferenceFiles();
     }
     /** Run test.
      */
     
     public void testCloseDataProject(){
         closeDataProject();
-//        EditorWindowOperator ewo = new EditorWindowOperator();
-//        ewo.closeDiscard();
+        //        EditorWindowOperator ewo = new EditorWindowOperator();
+        //        ewo.closeDiscard();
     }
     
     public void closeDataProject(){

@@ -118,11 +118,12 @@ public class AddComponents_SWING extends JellyTestCase {
         palette.collapseBeans();
 //        palette.collapseLayouts();
         palette.collapseAWT();
-        palette.expandSwing();
+        //palette.expandSwing();
+        palette.expandSwingControls();
         JListOperator list = palette.lstComponents(); //selectPage(categoryName);
         System.out.println("LLL " + list.getModel());
-        String [] componentList = {"JLabel", "JButton", "JToggleButton", "JCheckBox", "JRadioButton", "ButtonGroup", "JComboBox", "JList", "JTextField", "JTextArea", "JPanel", "JTabbedPane", "JScrollBar", "JScrollPane", "JMenuBar", "JPopupMenu", "JSlider", "JProgressBar", "JSplitPane", "JFormattedTextField", "JPasswordField", "JSpinner", "JSeparator", "JTextPane", "JEditorPane", "JTree", "JTable", "JToolBar", "JInternalFrame", "JLayeredPane", "JDesktopPane", "JOptionPane", "JColorChooser", "JFileChooser", "JFrame", "JDialog"};
-
+        //String [] componentList = {"JLabel", "JButton", "JToggleButton", "JCheckBox", "JRadioButton", "ButtonGroup", "JComboBox", "JList", "JTextField", "JTextArea", "JPanel", "JTabbedPane", "JScrollBar", "JScrollPane", "JMenuBar", "JPopupMenu", "JSlider", "JProgressBar", "JSplitPane", "JFormattedTextField", "JPasswordField", "JSpinner", "JSeparator", "JTextPane", "JEditorPane", "JTree", "JTable", "JToolBar", "JInternalFrame", "JLayeredPane", "JDesktopPane", "JOptionPane", "JColorChooser", "JFileChooser", "JFrame", "JDialog"};
+        String [] componentList = {"Label", "Button", "Toggle Button", "Check Box", "Radio Button", "Button Group", "Combo Box", "List", "Text Field", "Text Area", "Scroll Bar", "Slider", "Progress Bar", "Formatted Field", "Password Field", "Spinner", "Separator", "Text Pane", "Editor Pane", "Tree", "Table"};
         for (int i=0; i<componentList.length; i++) {
             componentNames.addElement(componentList[i]);
         }
@@ -135,7 +136,7 @@ public class AddComponents_SWING extends JellyTestCase {
         // add all beans from Palette Category to form
         Action popupAddFromPaletteAction;
         for(int i = 0; i < componentNames.size(); i++){
-            popupAddFromPaletteAction = new Action(null, "Add From Palette|Swing|" + componentNames.elementAt(i).toString());
+            popupAddFromPaletteAction = new Action(null, "Add From Palette|Swing Controls|" + componentNames.elementAt(i).toString());
             popupAddFromPaletteAction.perform(inspectorRootNode);
         }
         

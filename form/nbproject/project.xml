@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.form</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -266,6 +266,91 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+          <test-dependencies>
+              <test-type>
+                  <name>unit</name>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.form</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.compat</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.loaders</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.swing.plaf</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.bootstrap</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.options</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.queries</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.explorer</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.nodes</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.text</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.util</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.actions</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core.startup</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.api.mdr</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.modules</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.filesystems</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+              </test-type>
+              <test-type>
+                  <name>qa-functional</name>
+              </test-type>
+            </test-dependencies>
             <public-packages>
                 <!-- XXX temporary: for use from i18n-form until it uses impl deps -->
                 <package>org.netbeans.modules.form</package>
