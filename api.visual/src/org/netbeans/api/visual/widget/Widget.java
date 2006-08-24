@@ -421,7 +421,7 @@ public class Widget {
             sceneLocation.y += location.y;
             widget = widget.getParentWidget ();
         }
-        return new Point (sceneLocation.x, sceneLocation.y);
+        return sceneLocation;
     }
 
     public final Rectangle convertLocalToScene (Rectangle localRectangle) {
