@@ -218,6 +218,7 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
         }
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             try{
+		dObj.setChangedFromUI(true);
                 WSWebExt webext=dObj.getWebExt();
                 ExtendedServletsType es=new ExtendedServletsType();
                 es.setDefaults();
@@ -234,7 +235,7 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
                 Node servletNode = new ServletsNode();
                 view.getRoot().getChildren().add(new Node[]{servletNode});
                 servletNode.setDisplayName(servletNode.getDisplayName()+number);
-                dObj.setChangedFromUI(true);
+                
                 dObj.modelUpdatedFromUI();
                 ExtendedServletsType[] servlets = webext.getExtendedServlets();
                 SectionPanel sectionPanel=new SectionPanel(view,servletNode,es);
