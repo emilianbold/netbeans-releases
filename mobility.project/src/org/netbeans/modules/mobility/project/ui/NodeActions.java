@@ -133,10 +133,8 @@ abstract class NodeAction<T> extends ContextAction
         final List<VisualClassPathItem> list=(List)j2meProperties.get(propName);
         HashSet<VisualClassPathItem> set=new HashSet<VisualClassPathItem>(list);
         set=addItems (obj,set, node);
-        list.clear();
-        list.addAll(set);
-
-        j2meProperties.put(propName,list);
+        
+        j2meProperties.put(propName,new ArrayList(set));
     }
     
     static private void save(final HashMap<J2MEProject,J2MEProjectProperties> map)

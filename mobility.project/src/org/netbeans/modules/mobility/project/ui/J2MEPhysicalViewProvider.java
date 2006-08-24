@@ -352,9 +352,6 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_RUN_WITH, bundle.getString( "LBL_RunWithAction_Name" ), null )); // NOI18N
-                act.add(null);
-                act.add(new SetActiveConfigurationAction(pcp));
-                act.add(null);
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_BUILD_ALL, bundle.getString( "LBL_BuildAllAction_Name" ), null )); // NOI18N
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_REBUILD_ALL, bundle.getString( "LBL_RebuildAllAction_Name" ), null )); // NOI18N
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_CLEAN_ALL, bundle.getString( "LBL_CleanAllAction_Name" ), null )); // NOI18N

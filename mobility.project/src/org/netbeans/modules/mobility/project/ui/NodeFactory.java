@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.Icon;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
@@ -124,38 +125,29 @@ class ActionNode extends AbstractNode
 {
     Action[] actions;    
     
-    public ActionNode(Children ch,final Lookup lookup, String name,String icon, Action act[])
-    {
-        super(ch,lookup);
-        setName(name);
-        setIconBaseWithExtension(icon);
-        actions=act;
-    }
-
+    
     public ActionNode(Children ch,final Lookup lookup,String name,String dName,String icon, Action act[])
     {
         super(ch,lookup);
         setName(name);
-        setDisplayName(dName);
-        setIconBaseWithExtension(icon);
+        if (dName != null) setDisplayName(dName);
+        if (icon  != null) setIconBaseWithExtension(icon);
         actions=act;
+    }
+    
+    public ActionNode(Children ch,final Lookup lookup, String name,String icon, Action act[])
+    {
+        this(ch,lookup,name,null,icon,act);
     }
     
     public ActionNode(Children ch,final Lookup lookup,String name,String icon)
     {
-        super(ch,lookup);
-        setName(name);
-        setIconBaseWithExtension(icon);
-        actions=null;
+        this(ch,lookup,name,null,icon,null);        
     }
     
     public ActionNode(Children ch,final Lookup lookup,String name,String dName,String icon)
     {
-        super(ch, lookup);
-        setName(name);
-        setDisplayName(dName);
-        setIconBaseWithExtension(icon);
-        actions=null;
+        this(ch,lookup,name,dName,icon,null);        
     }
 
     public void setActions( final Action[] act)

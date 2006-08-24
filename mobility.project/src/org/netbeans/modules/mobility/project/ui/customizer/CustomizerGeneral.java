@@ -133,8 +133,8 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel {
             }
             if ( !result.contains( sp ) ) {
                 result.add( sp );
+                addSubprojects( sp, result );
             }
-            addSubprojects( sp, result );
         }
         
     }

@@ -28,6 +28,7 @@
 
 package org.netbeans.modules.mobility.project.ui;
 
+import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,8 +68,6 @@ import org.openide.util.lookup.Lookups;
  */
 class ConfigurationsProvider
 {
-    private static final String PLATFORM_ICON = "org/netbeans/modules/mobility/cldcplatform/resources/platform.gif";    //NOI18N   
-    
     static private List<Node> createPackage(final J2MEProject project,final ProjectConfiguration conf,final ClassPath path, final HashMap<FileObject,VisualClassPathItem> map, final boolean actions)
     {
         final FileObject[] roots = path == null ? new FileObject[] {} : path.getRoots();
@@ -111,12 +110,13 @@ class ConfigurationsProvider
                         }
                     }    
                     
-                    VisualClassPathItem item=map.get(file);
+                    final VisualClassPathItem item=map.get(file);
                     node.setValue("VCPI",item);
                     if (item != null)
                     {   
                         final File f=FileUtil.toFile(file);
                         final Lookup lookup=Lookups.fixed(new Object[] {project, conf, f} );
+                        
                         node=new FilterNode(node,null,lookup) 
                         {
                             final Action act[]=new Action[] 
@@ -127,6 +127,10 @@ class ConfigurationsProvider
                             public Action[] getActions(boolean context)
                             {
                                 return actions?act:super.getActions(context);
+                            }
+                            
+                            public Image getIcon(int i) {
+                                return ((ImageIcon)item.getIcon()).getImage();
                             }
                         };
                         node.setDisplayName(item.getDisplayName());
@@ -180,7 +184,7 @@ class ConfigurationsProvider
         
         if (libs!=null)
         {
-            for (VisualClassPathItem item : libs)
+            for (final VisualClassPathItem item : libs)
             {
                 String raw=item.getRawText();
                 String itemPath=helper.getStandardPropertyEvaluator().evaluate(raw);
@@ -189,9 +193,15 @@ class ConfigurationsProvider
                 assert f != null;
                 if (fo==null)
                 {
+                    Object o=item.getIcon();
                     final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item, f} );
                     final Action actions[]=gray ? new Action[] {} : new Action[] { RemoveResourceAction.getStaticInstance() };
-                    final Node n=new ActionNode(Children.LEAF,lookup,itemPath,PLATFORM_ICON,actions);
+                    final Node n=new FilterNode(new ActionNode(Children.LEAF,lookup,itemPath,null,actions),null,lookup)
+                    {
+                            public Image getIcon(int i) {
+                                return ((ImageIcon)item.getIcon()).getImage();
+                            }   
+                    };
                     n.setValue("error",Boolean.TRUE);
                     brokenArray.add(n);
                 }

@@ -125,7 +125,7 @@ class NodeCache implements PropertyChangeListener
         String libs=usedLibs(cfg);
         final Collection<Node> resNodes=ConfigurationsProvider.createResourcesNodes(project,cfg);
         final Collection<Node> allNodes=new ArrayList<Node>();
-        final boolean gray = libs == null ? true : false;
+        final boolean gray = libs == null;
         
         Node resNode=null;
         Node subNodes[]=new Node[resNodes.size()];
