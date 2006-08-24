@@ -194,6 +194,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
     
     public void createSuccess(FileObject fo) {
         if (ignoringEvents()) return;
+        if (fo == null) return;
         try {
             Diagnostics.println("[createSuccess " + fo); // NOI18N
             if (fo.isFolder() && svn.isAdministrative(fo.getNameExt())) {
