@@ -281,7 +281,8 @@ public class Scene extends Widget {
     }
 
     public final Point convertSceneToView (Point sceneLocation) {
-        return new Point ((int) (zoomFactor * sceneLocation.x), (int) (zoomFactor * sceneLocation.y));
+        Point location = getLocation ();
+        return new Point ((int) (zoomFactor * (location.x + sceneLocation.x)), (int) (zoomFactor * (location.y + sceneLocation.y)));
     }
 
     public final Rectangle convertSceneToView (Rectangle sceneRectangle) {
