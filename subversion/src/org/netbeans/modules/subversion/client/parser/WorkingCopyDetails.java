@@ -426,21 +426,6 @@ public class WorkingCopyDetails {
                 return fileIdx == baseLine.length() - 1;
             }
         }
-        return modifiedIdx == modifiedLine.length() - 2;
-        
-        
-//        int fromIndex = workingLineBuilder.indexOf(headerPattern);
-//        
-//        while (fromIndex > -1) {
-//            //Get the closing $
-//            int endIndex = workingLineBuilder.indexOf("$", fromIndex + 1);
-//            if(endIndex == -1) {
-//                endIndex = fromIndex + headerPattern.length();
-//            }
-//            
-//            workingLineBuilder.replace(fromIndex, endIndex, headerPattern);           
-//
-//            fromIndex = workingLineBuilder.indexOf(headerPattern, fromIndex);
-//        }
+        return modifiedIdx == modifiedLine.length() - 2;      
     }
 }
