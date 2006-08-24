@@ -18,14 +18,10 @@
  */
 package org.netbeans.modules.j2ee.websphere6.dd.loaders.ejbbnd;
 
+import java.io.IOException;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.EjbBindingsType;
-import org.netbeans.modules.j2ee.websphere6.dd.beans.ResRefBindingsType;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.WSEjbBnd;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.SectionNodes.*;
 import org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.ui.WSEjbBindingsPanel;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.ui.WSEjbBndAttributesPanel;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.ui.WSReferenceBindingsPanel;
 import org.netbeans.modules.xml.multiview.*;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.openide.nodes.*;
@@ -45,6 +41,8 @@ public class WSEjbBndToolBarMVElement extends ToolBarMultiViewElement implements
     private boolean needInit=true;
     private javax.swing.Action addBindingAction, removeBindingAction;
     private static final long serialVersionUID = 76737428339792L;
+    private static final String EJBBND_MV_ID = WSMultiViewDataObject.MULTIVIEW_EJBBND + 
+            WSMultiViewDataObject.DD_MULTIVIEW_POSTFIX;
     
     public WSEjbBndToolBarMVElement(WSEjbBndDataObject dObj) {
         super(dObj);
@@ -91,7 +89,11 @@ public class WSEjbBndToolBarMVElement extends ToolBarMultiViewElement implements
     
     public void componentShowing() {
         super.componentShowing();
-        view=new WSEjbBndView(dObj);
+        if (needInit) {
+            repaintView();
+            needInit=false;
+        }
+        //view=new WSEjbBndView(dObj);
         comp.setContentView(view);
         try {
             ((SectionView)view).openPanel(dObj.getEjbBnd());
@@ -100,8 +102,36 @@ public class WSEjbBndToolBarMVElement extends ToolBarMultiViewElement implements
         view.checkValidity();
     }
     
+    public void componentOpened() {
+        super.componentOpened();
+        try {
+            dObj.getEjbBnd().addPropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
+    }
+    
+    public void componentClosed() {
+        super.componentClosed();
+        try {
+            dObj.getEjbBnd().removePropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
+    }
+    
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        
+        if (!dObj.isChangedFromUI()) {
+            String name = evt.getPropertyName();
+            if ( name.indexOf("EjbJarBnd")>0 ) { //NOI18
+                // repaint view if the wiew is active and something is changed with filters
+                if (EJBBND_MV_ID.equals(dObj.getSelectedPerspective().preferredID())) {
+                    repaintingTask.schedule(100);
+                } else {
+                    needInit=true;
+                }
+            }
+        }
     }
     
     private class WSEjbBndView extends SectionView {
@@ -188,7 +218,7 @@ public class WSEjbBndToolBarMVElement extends ToolBarMultiViewElement implements
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             
             try{
-                
+                dObj.setChangedFromUI(true);
                 long time_id=java.lang.System.currentTimeMillis();
                 WSEjbBnd ejbbnd=dObj.getEjbBnd();
                 int number=ejbbnd.sizeEjbBindings()+1;

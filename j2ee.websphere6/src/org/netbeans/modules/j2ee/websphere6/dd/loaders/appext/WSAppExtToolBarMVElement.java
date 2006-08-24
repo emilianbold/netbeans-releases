@@ -18,15 +18,13 @@
  */
 package org.netbeans.modules.j2ee.websphere6.dd.loaders.appext;
 
+import java.io.IOException;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.WSAppExt;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.SectionNodes.*;
 import org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.ui.WSAppExtAttributesPanel;
 import org.netbeans.modules.xml.multiview.*;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.openide.nodes.*;
 import org.openide.util.RequestProcessor;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.multiview.Error;
 /**
  *
@@ -41,7 +39,8 @@ public class WSAppExtToolBarMVElement extends ToolBarMultiViewElement implements
     private boolean needInit=true;
     private static final long serialVersionUID = 76737428339792L;
     
-    
+     private static final String APPEXT_MV_ID = WSMultiViewDataObject.MULTIVIEW_APPEXT + 
+            WSMultiViewDataObject.DD_MULTIVIEW_POSTFIX;
     
     public WSAppExtToolBarMVElement(WSAppExtDataObject dObj) {
         super(dObj);
@@ -84,7 +83,11 @@ public class WSAppExtToolBarMVElement extends ToolBarMultiViewElement implements
     
     public void componentShowing() {
         super.componentShowing();
-        view=new WSAppExtView(dObj);
+        if (needInit) {
+            repaintView();
+            needInit=false;
+        }
+        //view=new WSAppExtView(dObj);
         comp.setContentView(view);
         try {
             ((SectionView)view).openPanel(dObj.getAppExt());
@@ -93,8 +96,35 @@ public class WSAppExtToolBarMVElement extends ToolBarMultiViewElement implements
         view.checkValidity();
     }
     
+    public void componentOpened() {
+        super.componentOpened();
+        try {
+            dObj.getAppExt().addPropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
+    }
+    
+    public void componentClosed() {
+        super.componentClosed();
+        try {
+            dObj.getAppExt().removePropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
+    }
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        
+        if (!dObj.isChangedFromUI()) {
+            String name = evt.getPropertyName();
+            if ( name.indexOf("ApplicationExt")>0 ) { //NOI18
+                // repaint view if the wiew is active and something is changed with filters
+                if (APPEXT_MV_ID.equals(dObj.getSelectedPerspective().preferredID())) {
+                    repaintingTask.schedule(100);
+                } else {
+                    needInit=true;
+                }
+            }
+        }
     }
     
     private class WSAppExtView extends SectionView {

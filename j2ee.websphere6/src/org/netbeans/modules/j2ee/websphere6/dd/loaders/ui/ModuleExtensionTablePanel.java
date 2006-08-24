@@ -42,6 +42,7 @@ public class ModuleExtensionTablePanel extends DefaultTablePanel {
         this.dObj=dObj;
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
+		dObj.setChangedFromUI(true);
                 model.removeRow(getTable().getSelectedRow());
                 dObj.modelUpdatedFromUI();
                 //dObj.setChangedFromUI(true);
@@ -138,7 +139,7 @@ public class ModuleExtensionTablePanel extends DefaultTablePanel {
                 String altExtensions = dialogPanel.getAltExtensionsField().getText().trim();
                 String type = (String) dialogPanel.getTypeComboBox().getSelectedItem();
                 
-                
+                dObj.setChangedFromUI(true);
                 if (add) {
                     model.addRow(new String[]{id,href,altRoot,altBindings,altExtensions,type});
                 } else {

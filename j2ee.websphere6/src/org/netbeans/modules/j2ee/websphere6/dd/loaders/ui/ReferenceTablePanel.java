@@ -45,7 +45,7 @@ public class ReferenceTablePanel extends DefaultTablePanel implements DDXmiConst
         
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                
+                dObj.setChangedFromUI(true);
                 int row = getTable().getSelectedRow();
                 model.removeRow(row);
                 dObj.modelUpdatedFromUI();
@@ -134,7 +134,7 @@ public class ReferenceTablePanel extends DefaultTablePanel implements DDXmiConst
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 
-                
+                dObj.setChangedFromUI(true);
                 String id = dialogPanel.getIdField().getText().trim();
                 String jndiName = dialogPanel.getJndiNameField().getText().trim();
                 String href = dialogPanel.getHrefField().getText().trim();

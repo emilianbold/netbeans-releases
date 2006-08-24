@@ -18,11 +18,13 @@
  */
 package org.netbeans.modules.j2ee.websphere6.dd.loaders.webbnd;
 
+import java.io.IOException;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.DDXmiConstants;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.EjbRefBindingsType;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.ResEnvRefBindingsType;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.ResRefBindingsType;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.WSWebBnd;
+import org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject;
 import org.netbeans.modules.j2ee.websphere6.dd.loaders.ui.WSReferenceBindingsPanel;
 import org.netbeans.modules.j2ee.websphere6.dd.loaders.SectionNodes.*;
 import org.netbeans.modules.xml.multiview.*;
@@ -46,6 +48,9 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
     private javax.swing.Action addEjbRefAction, removeEjbRefAction;
     private javax.swing.Action addResEnvRefAction, removeResEnvRefAction;
     private static final long serialVersionUID = 76123745399723L;
+    private static final String WEBBND_MV_ID = WSMultiViewDataObject.MULTIVIEW_WEBBND + 
+            WSMultiViewDataObject.DD_MULTIVIEW_POSTFIX;
+    
     public WSWebBndToolBarMVElement(WSWebBndDataObject dObj) {
         super(dObj);
         this.dObj=dObj;
@@ -97,7 +102,11 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
     
     public void componentShowing() {
         super.componentShowing();
-        view=new WSWebBndView(dObj);
+        if (needInit) {
+            repaintView();
+            needInit=false;
+        }
+        //view=new WSWebBndView(dObj);
         comp.setContentView(view);
         try {
             ((SectionView)view).openPanel(dObj.getWebBnd());
@@ -107,11 +116,36 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
         
         view.checkValidity();
     }
-    
-    public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        
+    public void componentOpened() {
+        super.componentOpened();
+        try {
+            dObj.getWebBnd().addPropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
     }
     
+    public void componentClosed() {
+        super.componentClosed();
+        try {
+            dObj.getWebBnd().removePropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
+    }
+    public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        if (!dObj.isChangedFromUI()) {
+            String name = evt.getPropertyName();
+            if ( name.indexOf("WebApplicationBnd")>0 ) { //NOI18
+                // repaint view if the wiew is active and something is changed with filters
+                if (WEBBND_MV_ID.equals(dObj.getSelectedPerspective().preferredID())) {
+                    repaintingTask.schedule(100);
+                } else {
+                    needInit=true;
+                }
+            }
+        }
+    }
     
     private class AddResRefAction extends javax.swing.AbstractAction {
         
@@ -122,6 +156,7 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
         }
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             try{
+		dObj.setChangedFromUI(true);
                 WSWebBnd webbnd=dObj.getWebBnd();
                 ResRefBindingsType rr=new ResRefBindingsType(WEB_APPLICATION);
                 rr.setDefaults();
@@ -184,6 +219,7 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             
             try{
+		dObj.setChangedFromUI(true);
                 WSWebBnd webbnd=dObj.getWebBnd();
                 EjbRefBindingsType er=new EjbRefBindingsType(WEB_APPLICATION);
                 er.setDefaults();
@@ -325,7 +361,7 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
                 setRoot(root);
             }
         }
-    
+        
         
         private Node createWebBndAttrNode() {
             Node webbndNode = new WSWebBndNode();

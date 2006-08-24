@@ -26,20 +26,12 @@ import org.netbeans.modules.j2ee.websphere6.dd.beans.DDXmi;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.spi.xml.cookies.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
-import org.openide.text.DataEditorSupport;
-
-import java.nio.channels.FileLock;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import javax.xml.parsers.*;
 import org.xml.sax.*;
 
 
@@ -53,6 +45,13 @@ public abstract class WSMultiViewDataObject extends XmlMultiViewDataObject{
     protected boolean changedFromUI;
     protected DDXmi ddBaseBean;
     private static final long serialVersionUID = 76675745399723L;
+    public static final String DD_MULTIVIEW_POSTFIX = "_multiview_design";
+    public static final String MULTIVIEW_WEBBND = "webbnd";
+    public static final String MULTIVIEW_WEBEXT = "webext";
+    public static final String MULTIVIEW_APPBND = "appbnd";
+    public static final String MULTIVIEW_APPEXT = "appext";
+    public static final String MULTIVIEW_EJBBND = "ejbbnd";
+    public static final String MULTIVIEW_EJBEXT = "ejbext";
     /**
      * Creates a new instance of WSMultiViewDataObject
      */

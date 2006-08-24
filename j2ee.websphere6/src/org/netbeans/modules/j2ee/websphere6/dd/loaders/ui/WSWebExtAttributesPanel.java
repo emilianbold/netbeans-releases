@@ -97,7 +97,7 @@ public class WSWebExtAttributesPanel extends  SectionInnerPanel  implements java
     
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
         // TODO add your handling code here:
-        
+        dObj.setChangedFromUI(true);
         webext.setPrecompileJSPs(precompileJPSCheckBox.isSelected());
         webext.setServeServletsByClassname(serveServletsCheckBox.isSelected());
         webext.setDirectoryBrowsing(directoryBrowsingCheckBox.isSelected());
@@ -108,7 +108,7 @@ public class WSWebExtAttributesPanel extends  SectionInnerPanel  implements java
         webext.setReload(reloadIntervalCheckBox.isSelected());
         webext.setReloadInterval(reloadIntervalSpinner.getValue().toString());
         dObj.modelUpdatedFromUI();
-        
+        dObj.setChangedFromUI(false);
     }
     
     /** This will be called before model is changed from this panel

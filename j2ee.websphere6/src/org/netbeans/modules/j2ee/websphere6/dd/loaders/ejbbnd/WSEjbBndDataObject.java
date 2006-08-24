@@ -84,7 +84,7 @@ public class WSEjbBndDataObject extends WSMultiViewDataObject {
         }
         
         public String preferredID() {
-            return "ejbext_multiview_design";
+            return "ejbbnd_multiview_design";
         }
         public WSEjbBndToolBarMVElement getEBTB() {
             return ebtb;

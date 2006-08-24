@@ -171,6 +171,7 @@ public class EjbExtensionPanel extends SectionInnerPanel implements java.awt.eve
         
     }
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
+	dObj.setChangedFromUI(true);
         String selectedString=(String)typeComboBox.getSelectedItem();
         if(selectedString!=null) {
             if(selectedString.equals(Types[0])) { //session

@@ -91,6 +91,7 @@ public class WSAppExtAttributesPanel extends SectionInnerPanel
         dObj.modelUpdatedFromUI();
     }
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
+	dObj.setChangedFromUI(true);
         if(evt.getSource()==reloadIntervalCheckBox) {
             appext.setReload(reloadIntervalCheckBox.isSelected());
             if(reloadIntervalCheckBox.isSelected()) {
@@ -104,6 +105,7 @@ public class WSAppExtAttributesPanel extends SectionInnerPanel
             appext.setSharedSession(shareSessionCheckBox.isSelected());
         }
         dObj.modelUpdatedFromUI();
+	dObj.setChangedFromUI(false);
     }
     
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {

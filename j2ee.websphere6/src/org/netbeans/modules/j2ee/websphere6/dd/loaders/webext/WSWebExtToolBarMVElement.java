@@ -18,8 +18,9 @@
  */
 package org.netbeans.modules.j2ee.websphere6.dd.loaders.webext;
 
+import java.io.IOException;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.*;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.ui.*;
+import org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.*;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.openide.nodes.*;
@@ -39,6 +40,8 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
     private boolean needInit=true;
     private javax.swing.Action addServletAction, removeServletAction;
     private static final long serialVersionUID = 76757425329721L;
+    private static final String WEBEXT_MV_ID= WSMultiViewDataObject.MULTIVIEW_WEBEXT + 
+            WSMultiViewDataObject.DD_MULTIVIEW_POSTFIX;
     public WSWebExtToolBarMVElement(WSWebExtDataObject dObj) {
         super(dObj);
         this.dObj=dObj;
@@ -82,16 +85,47 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
     
     public void componentShowing() {
         super.componentShowing();
-        view=new WSWebExtView(dObj);
+        if (needInit) {
+            repaintView();
+            needInit=false;
+        }
+        //view=new WSWebExtView(dObj);
         comp.setContentView(view);
         try {
             view.openPanel(dObj.getWebExt());
         } catch(java.io.IOException ex){}
         view.checkValidity();
     }
+    public void componentOpened() {
+        super.componentOpened();
+        try {
+            dObj.getWebExt().addPropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
+    }
+    
+    public void componentClosed() {
+        super.componentClosed();
+        try {
+            dObj.getWebExt().removePropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
+    }
     
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        
+        if (!dObj.isChangedFromUI()) {
+            String name = evt.getPropertyName();
+            if ( name.indexOf("WebApplicationExt")>0 ) { //NOI18
+                // repaint view if the wiew is active and something is changed with filters
+                if (WEBEXT_MV_ID.equals(dObj.getSelectedPerspective().preferredID())) {
+                    repaintingTask.schedule(100);
+                } else {
+                    needInit=true;
+                }
+            }
+        }
     }
     
     private class WSWebExtView extends SectionView {
@@ -168,14 +202,14 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
             addSection(new SectionPanel(this,servletsCCNode,webext));
             return servletsCCNode;
         }
-         
+        
         public SectionContainer getServletsContainer() {
             return servletsCont;
         }
         
     }
     
-     private class AddServletAction extends javax.swing.AbstractAction {
+    private class AddServletAction extends javax.swing.AbstractAction {
         
         AddServletAction(String actionName) {
             super(actionName);
@@ -189,8 +223,8 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
                 es.setDefaults();
                 int number=webext.getExtendedServlets().length+1;
                 long time_id=java.lang.System.currentTimeMillis();
-                        
-                es.setExtendedServlet("");        
+                
+                es.setExtendedServlet("");
                 es.setXmiId("ServletExtension_"+time_id);
                 es.setHref("");
                 
@@ -243,7 +277,7 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
             
         }
     }
-      
+    
     
     public Error validateView() {
         /*try {
@@ -334,5 +368,5 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
             setDisplayName("Servlet Cache Configs");
             //setIconBaseWithExtension("org/netbeans/modules/webextmultiview/ws.gif"); //NOI18N
         }
-    }   
+    }
 }

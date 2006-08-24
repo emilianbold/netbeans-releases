@@ -192,7 +192,7 @@ public class WSEjbBndAttributesPanel extends SectionInnerPanel implements java.a
         ((CMPConnectionFactory)cmpConnectionFactoryPanel).setEnabledComponents();
     }
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
-        
+        dObj.setChangedFromUI(true);
         changeCmpConnectionFactoryState();
         // TODO add your handling code here:
         dObj.modelUpdatedFromUI();

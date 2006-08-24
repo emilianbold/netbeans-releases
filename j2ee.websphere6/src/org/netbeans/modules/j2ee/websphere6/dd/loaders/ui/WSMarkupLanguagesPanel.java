@@ -76,6 +76,7 @@ public class WSMarkupLanguagesPanel extends SectionInnerPanel implements java.aw
         pagesContainerPanel.add(ptp,gridBagConstraints);
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(ActionEvent e) {
+		dObj.setChangedFromUI(true);
                 int selectedTab=markupLanguagesTabPanel.getSelectedIndex();
                 markupLanguagesTabPanel.removeTabAt(selectedTab);
                 for(int i=0;i<markupLanguagesTabPanel.getTabCount();i++) {
@@ -142,6 +143,7 @@ public class WSMarkupLanguagesPanel extends SectionInnerPanel implements java.aw
         return null;
     }
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
+	dObj.setChangedFromUI(true);
         if(evt.getSource()==nameComboBox) {
             markupLanguage.setName((String)nameComboBox.getSelectedItem());
             

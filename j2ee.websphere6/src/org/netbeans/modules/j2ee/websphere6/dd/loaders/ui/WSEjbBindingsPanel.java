@@ -222,7 +222,7 @@ public class WSEjbBindingsPanel extends SectionInnerPanel implements java.awt.ev
         return null;
     }
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
-        
+        dObj.setChangedFromUI(true);
         String selectedString=(String)beanTypeComboBox.getSelectedItem();
         if(selectedString!=null) {
             if(selectedString.equals(Types[0])) { //session

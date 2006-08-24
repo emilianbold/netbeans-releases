@@ -45,7 +45,7 @@ public class PagesTablePanel extends DefaultTablePanel {
         this.defaultPageComboBox=defaultPageComboBox;
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                
+                dObj.setChangedFromUI(true);
                 int row = getTable().getSelectedRow();
                 
                 String selectedItem=(String)errorPageComboBox.getSelectedItem();
@@ -146,7 +146,7 @@ public class PagesTablePanel extends DefaultTablePanel {
                 String id = dialogPanel.getIdField().getText().trim();
                 String name = dialogPanel.getNameField().getText().trim();
                 String uri = dialogPanel.getUriField().getText().trim();
-                
+                dObj.setChangedFromUI(true);
                 if (add) {
                     model.addRow(new String[]{id,name,uri});
                     int selectedIndex=errorPageComboBox.getSelectedIndex();

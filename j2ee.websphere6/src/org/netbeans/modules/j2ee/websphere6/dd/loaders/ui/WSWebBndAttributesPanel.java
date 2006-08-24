@@ -107,6 +107,7 @@ public class WSWebBndAttributesPanel extends /*javax.swing.JPanel*/ SectionInner
     }
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
         // TODO add your handling code here:
+	dObj.setChangedFromUI(true);
         dObj.modelUpdatedFromUI();
         //dObj.setChangedFromUI(true);
         dObj.setChangedFromUI(false);

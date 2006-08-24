@@ -179,10 +179,12 @@ public class WSExtendedServletPanel extends /*javax.swing.JPanel*/ SectionInnerP
     
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
         // TODO add your handling code here:
+	dObj.setChangedFromUI(true);
         extendedServlet.setXmiId(nameField.getText());
         extendedServlet.setHref(hrefField.getText());
         changeLocalTransactionState();        
         dObj.modelUpdatedFromUI();
+	dObj.setChangedFromUI(false);
     }
     
     
@@ -399,6 +401,7 @@ public class WSExtendedServletPanel extends /*javax.swing.JPanel*/ SectionInnerP
         dialogPanel.getIdField().getDocument().removeDocumentListener(docListener);
         
         if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
+	    dObj.setChangedFromUI(true);
             MarkupLanguagesType markupLang=new MarkupLanguagesType();
             markupLang.setXmiId(dialogPanel.getIdField().getText().trim());
             markupLang.setName(((String) dialogPanel.getNameComboBox().getSelectedItem()));

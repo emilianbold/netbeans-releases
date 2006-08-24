@@ -155,6 +155,7 @@ public class WSAuthorizationsPanel extends SectionInnerPanel
     }
     
     public void itemStateChanged(java.awt.event.ItemEvent e) {
+	dObj.setChangedFromUI(true);
         if(e.getSource()==specialTypeComboBox) {
             SpecialSubjectType sst=auth.getSpecialSubjects();
             String selectedItem=(String)specialTypeComboBox.getSelectedItem();
@@ -177,6 +178,7 @@ public class WSAuthorizationsPanel extends SectionInnerPanel
             }
         }
         dObj.modelUpdatedFromUI();
+	dObj.setChangedFromUI(false);
     }
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         if(comp==authNameField) {

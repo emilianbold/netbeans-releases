@@ -104,6 +104,7 @@ public class WSReferenceBindingsPanel extends SectionInnerPanel implements java.
     }
     
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
+        dObj.setChangedFromUI(true);
         if(evt.getSource()==typeComboBox) {
             reference.setXmiType((String)typeComboBox.getSelectedItem());
         }

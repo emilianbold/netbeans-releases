@@ -76,7 +76,7 @@ public class WSAppExtDataObject extends WSMultiViewDataObject {
         }
         
         public String preferredID() {
-            return "AppExt_multiview_design";
+            return "appext_multiview_design";
         }
         public WSAppExtToolBarMVElement getaetb() {
             return aetb;

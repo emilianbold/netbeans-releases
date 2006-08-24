@@ -18,11 +18,10 @@
  */
 package org.netbeans.modules.j2ee.websphere6.dd.loaders.appbnd;
 
+import java.io.IOException;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.AuthorizationsType;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.WSAppBnd;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.SectionNodes.*;
 import org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.ui.WSAppBndAttributesPanel;
 import org.netbeans.modules.xml.multiview.*;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.openide.nodes.*;
@@ -43,7 +42,8 @@ public class WSAppBndToolBarMVElement extends ToolBarMultiViewElement implements
     private static final long serialVersionUID = 76117428339792L;
     
     private javax.swing.Action addAuthorizationAction, removeAuthorizationAction;
-    
+    private static final String APPBND_MV_ID = WSMultiViewDataObject.MULTIVIEW_APPBND + 
+            WSMultiViewDataObject.DD_MULTIVIEW_POSTFIX;
     public WSAppBndToolBarMVElement(WSAppBndDataObject dObj) {
         super(dObj);
         this.dObj=dObj;
@@ -89,7 +89,11 @@ public class WSAppBndToolBarMVElement extends ToolBarMultiViewElement implements
     
     public void componentShowing() {
         super.componentShowing();
-        view=new WSAppBndView(dObj);
+        if (needInit) {
+            repaintView();
+            needInit=false;
+        }
+        //view=new WSAppBndView(dObj);
         comp.setContentView(view);
         try {
             ((SectionView)view).openPanel(dObj.getAppBnd());
@@ -98,8 +102,35 @@ public class WSAppBndToolBarMVElement extends ToolBarMultiViewElement implements
         view.checkValidity();
     }
     
+     public void componentOpened() {
+        super.componentOpened();
+        try {
+            dObj.getAppBnd().addPropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
+    }
+    
+    public void componentClosed() {
+        super.componentClosed();
+        try {
+            dObj.getAppBnd().removePropertyChangeListener(this);
+        } catch(IOException ex) {
+            ex=null;
+        }
+    }
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        
+        if (!dObj.isChangedFromUI()) {
+            String name = evt.getPropertyName();
+            if ( name.indexOf("ApplicationBnd")>0 ) { //NOI18
+                // repaint view if the wiew is active and something is changed with filters
+                if (APPBND_MV_ID.equals(dObj.getSelectedPerspective().preferredID())) {
+                    repaintingTask.schedule(100);
+                } else {
+                    needInit=true;
+                }
+            }
+        }
     }
     
     private class WSAppBndView extends SectionView {
@@ -188,7 +219,7 @@ public class WSAppBndToolBarMVElement extends ToolBarMultiViewElement implements
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             
             try{
-                
+                dObj.setChangedFromUI(true);
                 long time_id=java.lang.System.currentTimeMillis();
                 WSAppBnd appbnd=dObj.getAppBnd();
                 int number=appbnd.getAuthorizationTable().sizeAuthorizations()+1;
