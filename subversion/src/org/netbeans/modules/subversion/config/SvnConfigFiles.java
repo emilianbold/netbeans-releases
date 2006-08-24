@@ -68,6 +68,7 @@ public class SvnConfigFiles {
     private static final String WINDOWS_USER_APPDATA = getAPPDATA();
     private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Subversion"; // NOI18N
     private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion"; // NOI18N
+    private static final List<String> DEFAULT_GLOBAL_IGNORES = parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -208,23 +209,26 @@ public class SvnConfigFiles {
      *
      */
     public List<String> getGlobalIgnores() {
-        List<String> ret = new ArrayList<String>();
         Ini.Section miscellany = config.get("miscellany"); // NOI18N
-        if(miscellany == null) {
-            return Collections.emptyList();
+        if (miscellany != null) {
+            String ignores = miscellany.get("global-ignores"); // NOI18N
+            if (ignores != null && ignores.trim().length() > 0) {
+                return parseGlobalIgnores(ignores);
+            }
         }
-        String ignores = miscellany.get("global-ignores"); // NOI18N
-        if(ignores == null || ignores.trim().equals("")) { // NOI18N
-            return Collections.emptyList();
-        }
+        return DEFAULT_GLOBAL_IGNORES;
+    }
+
+    private static List<String> parseGlobalIgnores(String ignores) {
         StringTokenizer st = new StringTokenizer(ignores, " "); // XXX what if the space is a part of a pattern? // NOI18N
+        List<String> ret = new ArrayList<String>(10);
         while (st.hasMoreTokens()) {
             String entry = st.nextToken();
             if (!entry.equals("")) // NOI18N
                 ret.add(entry);
         }
         return ret;
-    }        
+    }
 
     /**
      * Returns the path for the Sunbversion configuration dicectory used 
