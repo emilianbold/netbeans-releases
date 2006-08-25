@@ -219,7 +219,7 @@ public class UpdateExecutor extends ExecutorSupport {
 
     private void refreshFile(File file) {
         long lastModified = file.lastModified();
-        if (cache.getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE &&
+        if (!cmd.hasFailed() && cache.getStatus(file.getParentFile()).getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE &&
                 lastModified > 0 && lastModified < updateStartTimestamp) {
             cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
         } else {
