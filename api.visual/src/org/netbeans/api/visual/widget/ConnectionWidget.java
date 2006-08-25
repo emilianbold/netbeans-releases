@@ -213,7 +213,7 @@ public class ConnectionWidget extends Widget {
         connectionWidgetLayout.removeConstraint (childWidget);
     }
 
-    public void calculateRouting () {
+    public final void calculateRouting () {
         if (routingRequired)
             setControlPoints (router.routeConnection (this), true);
     }
