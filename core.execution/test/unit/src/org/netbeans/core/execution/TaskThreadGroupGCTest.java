@@ -38,14 +38,18 @@ public class TaskThreadGroupGCTest extends NbTestCase {
         super(name);
     }
 
-	protected void setUp() throws Exception {
-		super.setUp();
-		
-		SwingUtilities.invokeAndWait(new Runnable() {
-			public void run() {
-			}
-		});
-	}
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+            }
+        });
+    }
+
+    protected int timeOut() {
+        return 5000;
+    }
 	
 	
     public void testTTGGC() throws Exception {
