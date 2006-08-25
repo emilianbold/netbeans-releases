@@ -206,7 +206,7 @@ public final class ActionFactory {
 
     public static WidgetAction createRectangularSelectAction (ObjectScene scene, LayerWidget interractionLayer) {
         assert scene != null;
-        return createRectangularSelectAction (ActionFactory.createDefaultRectangularSelectionDecorator (scene), interractionLayer, ActionFactory.createObjectSceneRectangularSelectionProvider (scene));
+        return createRectangularSelectAction (ActionFactory.createDefaultRectangularSelectDecorator (scene), interractionLayer, ActionFactory.createObjectSceneRectangularSelectProvider (scene));
     }
 
     public static WidgetAction createRectangularSelectAction (RectangularSelectDecorator decorator, LayerWidget interractionLayer, RectangularSelectProvider provider) {
@@ -265,12 +265,12 @@ public final class ActionFactory {
         return MOVE_CONTROL_POINT_PROVIDER_ORTHOGONAL;
     }
 
-    public static RectangularSelectDecorator createDefaultRectangularSelectionDecorator (Scene scene) {
+    public static RectangularSelectDecorator createDefaultRectangularSelectDecorator (Scene scene) {
         assert scene != null;
         return new DefaultRectangularSelectDecorator (scene);
     }
 
-    public static RectangularSelectProvider createObjectSceneRectangularSelectionProvider (ObjectScene scene) {
+    public static RectangularSelectProvider createObjectSceneRectangularSelectProvider (ObjectScene scene) {
         assert scene != null;
         return new ObjectSceneRectangularSelectProvider (scene);
     }
