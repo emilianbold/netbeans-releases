@@ -41,6 +41,14 @@ public class ConflictResolvedAction extends ContextAction {
         return "resolve";  // NOI18N
     }
 
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_VERSIONED_CONFLICT;
+    }
+
+    protected int getDirectoryEnabledStatus() {
+        return 0;
+    }
+
     protected void performContextAction(Node[] nodes) {
         final Context ctx = getContext(nodes);
         final File[] files = ctx.getFiles();
