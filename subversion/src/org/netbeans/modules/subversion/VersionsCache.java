@@ -93,7 +93,8 @@ public class VersionsCache {
                 } else {
                     SVNUrl url = SvnUtils.getRepositoryUrl(base);
                     if (url != null) {
-                        in = client.getContent(url, SVNRevision.HEAD);
+                        url = url.appendPath("@" + revision);
+                        in = client.getContent(url, svnrevision);
                     } else {
                         in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
                     }

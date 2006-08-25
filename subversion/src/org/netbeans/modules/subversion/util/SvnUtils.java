@@ -541,7 +541,7 @@ public class SvnUtils {
     public static SVNUrl getRepositoryUrl(File file) {
         SvnClient client = Subversion.getInstance().getClient(false);
 
-        List<String> path = new ArrayList<String>();
+        StringBuffer path = new StringBuffer();
         SVNUrl fileURL = null;
         while (Subversion.getInstance().isManaged(file)) {
 
@@ -549,9 +549,9 @@ public class SvnUtils {
                 // it works with 1.3 workdirs and our .svn parser
                 ISVNStatus status = getSingleStatus(client, file);
                 if (status != null) {
-                    SVNUrl url = status.getUrl();
-                    if (url != null) {
-                        return url;
+                    fileURL = status.getUrl();
+                    if (fileURL != null) {
+                        break;
                     }
                 }
             } catch (SVNClientException ex) {
@@ -575,21 +575,15 @@ public class SvnUtils {
                 fileURL = info.getUrl();
 
                 if (fileURL != null ) {
-                    Iterator it = path.iterator();
-                    StringBuffer sb = new StringBuffer();
-                    while (it.hasNext()) {
-                        String segment = (String) it.next();
-                        sb.append("/" + segment); // NOI18N
-                    }
-                    fileURL = fileURL.appendPath(sb.toString());
                     break;
                 }
             }
 
-            path.add(0, file.getName());
+            path.insert(0, file.getName()).insert(0, "/");
             file = file.getParentFile();
 
         }
+        if (path.length() > 0) fileURL = fileURL.appendPath(path.toString());
         return fileURL;
     }
     
