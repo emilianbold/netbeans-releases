@@ -38,7 +38,7 @@ public class VMDPinWidget extends Widget {
         addChild (nameWidget = new LabelWidget (scene));
         addChild (glyphsWidget = new VMDGlyphSetWidget (scene));
 
-        notifyStateChanged (ObjectState.NORMAL, ObjectState.NORMAL);
+        notifyStateChanged (ObjectState.createNormal (), ObjectState.createNormal ());
     }
 
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {

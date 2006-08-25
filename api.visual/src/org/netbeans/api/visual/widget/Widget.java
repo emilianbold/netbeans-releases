@@ -59,7 +59,7 @@ public class Widget {
     private Rectangle preferredBounds;
     private boolean checkClipping;
 
-    private ObjectState state = ObjectState.NORMAL;
+    private ObjectState state = ObjectState.createNormal ();
 
     private Cursor cursor;
     private String toolTipText;

@@ -49,10 +49,10 @@ public class ObjectScene extends Scene {
             assert ! widget2objects.containsKey (widget)  &&  widget.getScene () == this  &&  widget.getParentWidget () != null;
         objects.put (object, object);
         object2widgets.put (object, widget);
-        objectStates.put (object, ObjectState.NORMAL);
+        objectStates.put (object, ObjectState.createNormal ());
         if (widget != null) {
             widget2objects.put (widget, object);
-            widget.setState (ObjectState.NORMAL);
+            widget.setState (ObjectState.createNormal ());
         }
     }
 
@@ -65,7 +65,7 @@ public class ObjectScene extends Scene {
         objectStates.remove (object);
         Widget widget = object2widgets.remove (object);
         if (widget != null) {
-            widget.setState (ObjectState.NORMAL);
+            widget.setState (ObjectState.createNormal ());
             widget2objects.remove (widget);
         }
         objects.remove (object);

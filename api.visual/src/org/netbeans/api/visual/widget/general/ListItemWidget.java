@@ -26,7 +26,7 @@ public class ListItemWidget extends LabelWidget {
     public ListItemWidget (Scene scene) {
         super (scene);
 
-        setState (ObjectState.NORMAL);
+        setState (ObjectState.createNormal ());
     }
 
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {

@@ -46,7 +46,7 @@ public class ListWidget extends Widget {
 
         addChild (new SeparatorWidget (scene, SeparatorWidget.Orientation.HORIZONTAL));
 
-        setState (ObjectState.NORMAL);
+        setState (ObjectState.createNormal ());
     }
 
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {

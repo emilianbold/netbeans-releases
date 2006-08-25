@@ -82,6 +82,8 @@ public class ObjectState {
         return new ObjectState (objectSelected, objectHighlighted, objectHovered, widgetHovered, aimed);
     }
 
-    public static
+    public static ObjectState createNormal () {
+        return NORMAL;
+    }
 
 }

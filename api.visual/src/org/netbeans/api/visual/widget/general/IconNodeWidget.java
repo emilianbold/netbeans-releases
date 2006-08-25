@@ -60,7 +60,7 @@ public class IconNodeWidget extends Widget {
         labelWidget.setFont (scene.getDefaultFont ().deriveFont (14.0f));
         addChild (labelWidget);
 
-        setState (ObjectState.NORMAL);
+        setState (ObjectState.createNormal ());
     }
 
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {

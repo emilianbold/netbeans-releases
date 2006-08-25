@@ -30,7 +30,7 @@ public final class DefaultRectangularSelectDecorator implements RectangularSelec
 
     public Widget createSelectionWidget () {
         Widget widget = new Widget (scene);
-        widget.setBorder (scene.getLookFeel ().getMiniBorder (ObjectState.NORMAL.deriveSelected (true)));
+        widget.setBorder (scene.getLookFeel ().getMiniBorder (ObjectState.createNormal ().deriveSelected (true)));
         return widget;
     }
 

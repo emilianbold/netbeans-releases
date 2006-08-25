@@ -111,7 +111,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
 
         topLayer.addChild (minimizeWidget);
 
-        notifyStateChanged (ObjectState.NORMAL, ObjectState.NORMAL);
+        notifyStateChanged (ObjectState.createNormal (), ObjectState.createNormal ());
     }
 
     /**
