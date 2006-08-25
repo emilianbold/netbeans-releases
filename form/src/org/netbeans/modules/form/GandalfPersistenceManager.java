@@ -775,7 +775,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
                 catch (Exception ex) {
                     // error occurred - treat this container as with unknown layout
-                    layoutModel.removeComponent(visualContainer.getId(), true);
+                    layoutModel.changeContainerToComponent(visualContainer.getId());
                     layoutEx = ex;
                 }
             }
