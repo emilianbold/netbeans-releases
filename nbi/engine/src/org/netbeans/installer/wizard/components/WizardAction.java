@@ -31,7 +31,7 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public abstract class WizardAction implements WizardComponent {
-    private Wizard  wizard;
+    private SubWizard  wizard;
     private boolean active = true;
     
     private List<WizardCondition> wizardConditions = 
@@ -39,12 +39,12 @@ public abstract class WizardAction implements WizardComponent {
     
     private Properties properties = new Properties();
     
-    public final void executeComponent(Wizard aWizard) {
-        wizard = aWizard;
-        active = true;
+    public final void executeComponent(final SubWizard wizard) {
+        this.wizard = wizard;
+        this.active = true;
         
         if (getUI() != null) {
-            getUI().executeComponent(aWizard);
+            getUI().executeComponent(wizard);
         }
         
         Thread workerThread = new Thread() {
@@ -69,13 +69,13 @@ public abstract class WizardAction implements WizardComponent {
         return true;
     }
     
-    public void addCondition(WizardCondition aCondition) {
-        wizardConditions.add(aCondition);
+    public void addCondition(WizardCondition condition) {
+        wizardConditions.add(condition);
     }
     
     public abstract WizardPanel getUI();
     
-    public Wizard getWizard() {
+    public SubWizard getWizard() {
         return wizard;
     }
     

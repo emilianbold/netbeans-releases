@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.wizard;
@@ -35,14 +35,15 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathFactory;
-import org.netbeans.installer.Installer;
-import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.download.DownloadManager;
 import org.netbeans.installer.download.DownloadOptions;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.error.ErrorManager;
+import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.log.LogManager;
+import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 import org.w3c.dom.Document;
@@ -52,41 +53,42 @@ import org.xml.sax.SAXException;
 
 /**
  *
- *
  * @author Kirill Sorokin
  */
-public class Wizard {
-    /////////////////////////////////////////////////////////////////////////////////
+public class Wizard extends SubWizard {
+    ////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String DEFAULT_COMPONENTS_INSTANCE_URI = 
+    public static final String DEFAULT_COMPONENTS_INSTANCE_URI =
             "resource:org/netbeans/installer/wizard/wizard-components.xml";
     
-    public static final String DEFAULT_COMPONENTS_SCHEMA_URI = 
+    public static final String DEFAULT_COMPONENTS_SCHEMA_URI =
             "resource:org/netbeans/installer/wizard/wizard-components.xsd";
     
-    public static final String COMPONENTS_INSTANCE_URI_PROPERTY = 
+    public static final String COMPONENTS_INSTANCE_URI_PROPERTY =
             "nbi.wizard.components.instance.uri";
-        
-    public static final String COMPONENTS_SCHEMA_URI_PROPERTY = 
+    
+    public static final String COMPONENTS_SCHEMA_URI_PROPERTY =
             "nbi.wizard.components.schema.uri";
     
-    /////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     // Static
     private static Wizard instance;
     
-    private static String componentsInstanceURI = DEFAULT_COMPONENTS_INSTANCE_URI;
+    private static String componentsInstanceURI =
+            DEFAULT_COMPONENTS_INSTANCE_URI;
     
-    private static String componentsSchemaURI = DEFAULT_COMPONENTS_SCHEMA_URI;
+    private static String componentsSchemaURI =
+            DEFAULT_COMPONENTS_SCHEMA_URI;
     
     public static synchronized Wizard getInstance() {
         if (instance == null) {
             if (System.getProperty(COMPONENTS_INSTANCE_URI_PROPERTY) != null) {
-                componentsInstanceURI = 
+                componentsInstanceURI =
                         System.getProperty(COMPONENTS_INSTANCE_URI_PROPERTY);
             }
             
             if (System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY) != null) {
-                componentsInstanceURI = 
+                componentsInstanceURI =
                         System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY);
             }
             
@@ -96,19 +98,21 @@ public class Wizard {
         return instance;
     }
     
-    public static List<WizardComponent> loadWizardComponents(String componentsURI) throws InitializationException {
+    public static List<WizardComponent> loadWizardComponents(
+            String componentsURI) throws InitializationException {
         return loadWizardComponents(componentsURI, Wizard.class.getClassLoader());
     }
     
-    public static List<WizardComponent> loadWizardComponents(String componentsURI, ClassLoader loader) 
+    public static List<WizardComponent> loadWizardComponents(
+            String componentsURI, ClassLoader loader)
             throws InitializationException {
         try {
             DownloadOptions options = DownloadOptions.getDefaults();
             options.put(DownloadOptions.CLASSLOADER, loader);
             
-            File schemaFile = 
+            File schemaFile =
                     DownloadManager.getInstance().download(componentsSchemaURI, options);
-            File componentsFile = 
+            File componentsFile =
                     DownloadManager.getInstance().download(componentsURI, options);
             
             SchemaFactory schemaFactory =
@@ -116,7 +120,7 @@ public class Wizard {
             
             Schema schema = schemaFactory.newSchema(schemaFile);
             
-            DocumentBuilderFactory documentBuilderFactory = 
+            DocumentBuilderFactory documentBuilderFactory =
                     DocumentBuilderFactory.newInstance();
             documentBuilderFactory.setSchema(schema);
             documentBuilderFactory.setNamespaceAware(true);
@@ -142,13 +146,13 @@ public class Wizard {
         }
     }
     
-    private static List<WizardComponent> loadWizardComponents(Node node) 
+    private static List<WizardComponent> loadWizardComponents(Node node)
             throws InitializationException {
         List<WizardComponent> wizardComponents = new ArrayList<WizardComponent>();
         
         XPath xpath = XPathFactory.newInstance().newXPath();
         try {
-            NodeList nodeList = (NodeList) xpath.evaluate("./component", node, 
+            NodeList nodeList = (NodeList) xpath.evaluate("./component", node,
                     XPathConstants.NODESET);
             
             for (int i = 0; i < nodeList.getLength(); i++) {
@@ -163,7 +167,7 @@ public class Wizard {
         return wizardComponents;
     }
     
-    private static WizardComponent loadWizardComponent(Node node) 
+    private static WizardComponent loadWizardComponent(Node node)
             throws InitializationException {
         WizardComponent component = null;
         
@@ -175,18 +179,18 @@ public class Wizard {
             
             component = (WizardComponent) Class.forName(classname).newInstance();
             
-            Node componentsNode = 
+            Node componentsNode =
                     (Node) xpath.evaluate("./components", node, XPathConstants.NODE);
             
             if (componentsNode != null) {
-                List<WizardComponent> childComponents = 
+                List<WizardComponent> childComponents =
                         loadWizardComponents(componentsNode);
                 for (WizardComponent childComponent: childComponents) {
                     component.addChildComponent(childComponent);
                 }
             }
             
-            Node conditionsNode = 
+            Node conditionsNode =
                     (Node) xpath.evaluate("./conditions", node, XPathConstants.NODE);
             
             if (conditionsNode != null) {
@@ -196,7 +200,7 @@ public class Wizard {
                 }
             }
             
-            Node propertiesNode = 
+            Node propertiesNode =
                     (Node) xpath.evaluate("./properties", node, XPathConstants.NODE);
             if (propertiesNode != null) {
                 loadProperties(propertiesNode, component);
@@ -218,7 +222,7 @@ public class Wizard {
         return component;
     }
     
-    private static List<WizardCondition> loadWizardConditions(Node node) 
+    private static List<WizardCondition> loadWizardConditions(Node node)
             throws InitializationException {
         List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
         
@@ -237,7 +241,7 @@ public class Wizard {
                 WizardCondition condition =
                         (WizardCondition) Class.forName(classname).newInstance();
                 
-                Node propertiesNode = (Node) 
+                Node propertiesNode = (Node)
                         xpath.evaluate("./properties", node, XPathConstants.NODE);
                 loadProperties(propertiesNode, condition);
                 wizardConditions.add(condition);
@@ -259,7 +263,7 @@ public class Wizard {
         return wizardConditions;
     }
     
-    private static void loadProperties(Node node, Object component) 
+    private static void loadProperties(Node node, Object component)
             throws InitializationException {
         try {
             XPath xpath = XPathFactory.newInstance().newXPath();
@@ -287,177 +291,57 @@ public class Wizard {
         }
     }
     
-    /////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     // Instance
-    private ProductComponent      productComponent;
-    private List<WizardComponent> wizardComponents;
-    private int                   currentIndex;
-    private WizardFrame           wizardFrame;
-    private Wizard                parent;
+    boolean executingAction;
     
+    // constructor /////////////////////////////////////////////////////////////
     private Wizard() {
         try {
             wizardComponents = loadWizardComponents(componentsInstanceURI);
         } catch (InitializationException e) {
-            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, 
+            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL,
                     "Failed to load wizard components", e);
         }
     }
     
-    private Wizard(ProductComponent aProductComponent, Wizard aWizard) {
-        // save the product component reference
-        productComponent = aProductComponent;
+    // wizard lifecycle control methods ////////////////////////////////////////
+    public void open() {
+        // create the UI
+        frame = new WizardFrame(this);
         
-        // save the parent wizard reference
-        parent = aWizard;
-        
-        // init the wizard components list
-        wizardComponents = productComponent.getWizardComponents();
-    }
-    
-    private Wizard(List<WizardComponent> someWizardComponents, Wizard aWizard) {
-        // save the parent wizard reference
-        parent = aWizard;
-        
-        // init the wizard components list
-        wizardComponents = someWizardComponents;
-        
-        // save the product component reference
-        productComponent = parent.getProductComponent();
-    }
-    
-    public void start() {
-        if (parent == null) {
-            // create the UI
-            wizardFrame = new WizardFrame(this);
-            
-            // show the UI
-            SwingUtilities.invokeLater(new Runnable(){
-                public void run() {
-                    wizardFrame.setVisible(true);
-                }
-            });
-        } else {
-            wizardFrame = parent.getWizardFrame();
-        }
-        
-        // init the current index
-        currentIndex = -1;
-        
-        // call next() to display the first component
-        next();
-    }
-    
-    private WizardComponent getNext() {
-        for (int i = currentIndex + 1; i < wizardComponents.size(); i++) {
-            WizardComponent component = wizardComponents.get(i);
-            if (component.isActive() && component.evaluateConditions()) {
-                return component;
+        // show the UI
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run() {
+                frame.setVisible(true);
             }
-        }
-        
-        return null;
+        });
     }
     
-    public boolean hasNext() {
-        return (getNext() != null) || ((parent != null) && parent.hasNext());
+    public void close() {
+        frame.setVisible(false);
+        frame.dispose();
     }
     
     public void next() {
-        if (wizardFrame == null) {
-            throw new IllegalStateException("Cannot move to the next component - the wizard has not yet been initialized");
-        }
-        
-        WizardComponent component = getNext();
-        
-        if (component != null) {
-            currentIndex = wizardComponents.indexOf(component);
-            
-            component.executeComponent(this);
+        if (executingAction) {
+            executingAction = false;
         } else {
-            finish();
+            super.next();
         }
     }
     
-    private WizardComponent getPrevious() {
-        for (int i = currentIndex - 1; i > -1; i--) {
-            WizardComponent component = wizardComponents.get(i);
-            if (component.isActive() && component.evaluateConditions()) {
-                return component;
+    // other ///////////////////////////////////////////////////////////////////
+    public void executeAction(WizardAction action) {
+        action.executeComponent(this);
+        
+        executingAction = true;
+        while (executingAction) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                ErrorManager.getInstance().notify(ErrorLevel.DEBUG, "interrupted", e);
             }
         }
-        
-        return null;
-    }
-    
-    public boolean hasPrevious() {
-        return (getPrevious() != null) || ((parent != null) && parent.hasPrevious());
-    }
-    
-    public void previous() {
-        if (wizardFrame == null) {
-            throw new IllegalStateException("Cannot move to the previous component - the wizard has not yet been initialized");
-        }
-        
-        WizardComponent component = getPrevious();
-        
-        if (component != null) {
-            currentIndex = wizardComponents.indexOf(component);
-            
-            component.executeComponent(this);
-        } else {
-            if (parent != null) {
-                parent.previous();
-            } else {
-                throw new IllegalStateException("Cannot move to the previous component - the wizard is at the first component");
-            }
-        }
-    }
-    
-    public void cancel() {
-        if (wizardFrame == null) {
-            throw new IllegalStateException("Cannot cancel the wizard - the wizard has not yet been initialized");
-        }
-        
-        // hide and dispose the UI
-        wizardFrame.setVisible(false);
-        wizardFrame.dispose();
-        
-        // cancel the installer
-        Installer.getInstance().cancel();
-    }
-    
-    public void finish() {
-        // check the wizard state
-        if (wizardFrame == null) {
-            throw new IllegalStateException("Cannot finish the wizard - the wizard has not yet been initialized");
-        }
-        
-        if (parent == null) {
-            // hide and dispose the UI
-            wizardFrame.setVisible(false);
-            wizardFrame.dispose();
-            
-            // finish the installer
-            Installer.getInstance().finish();
-        } else {
-            parent.next();
-        }
-    }
-    
-    public Wizard createSubWizard(ProductComponent productComponent) {
-        return new Wizard(productComponent, this);
-    }
-    
-    public Wizard createSubWizard(List<WizardComponent> wizardComponents) {
-        return new Wizard(wizardComponents, this);
-    }
-    
-    public WizardFrame getWizardFrame() {
-        return wizardFrame;
-    }
-    
-    public ProductComponent getProductComponent() {
-        return productComponent;
     }
 }

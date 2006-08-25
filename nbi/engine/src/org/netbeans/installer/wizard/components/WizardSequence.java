@@ -23,7 +23,7 @@ package org.netbeans.installer.wizard.components;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.netbeans.installer.wizard.Wizard;
+import org.netbeans.installer.wizard.SubWizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
@@ -41,8 +41,8 @@ public class WizardSequence implements WizardComponent {
     
     private Properties properties = new Properties();
     
-    public void executeComponent(Wizard wizard) {
-        wizard.createSubWizard(wizardComponents).start();
+    public void executeComponent(SubWizard wizard) {
+        wizard.createSubWizard(wizardComponents).next();
     }
     
     public void addChildComponent(WizardComponent aWizardComponent) {

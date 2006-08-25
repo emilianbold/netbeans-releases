@@ -65,8 +65,8 @@ public class Progress {
         return title;
     }
     
-    public void setTitle(String aTitle) {
-        title = aTitle;
+    public void setTitle(final String title) {
+        this.title = title;
         
         notifyListeners();
     }
@@ -75,8 +75,8 @@ public class Progress {
         return detail;
     }
     
-    public void setDetail(String aDetail) {
-        detail = aDetail;
+    public void setDetail(final String detail) {
+        this.detail = detail;
         
         notifyListeners();
     }
@@ -85,22 +85,34 @@ public class Progress {
         return percentage;
     }
     
-    public void setPercentage(int aPercentage) {
-        if ((aPercentage < START) || (aPercentage > COMPLETE)) {
+    public void setPercentage(final int percentage) {
+        if ((percentage < START) || (percentage > COMPLETE)) {
             throw new IllegalArgumentException("The percentage should be between 0 and 100 inclusive");
         }
         
-        percentage = aPercentage;
+        this.percentage = percentage;
         
         notifyListeners();
     }
     
-    public void setPercentage(double aPercentage) {
-        if ((aPercentage < 0.0) || (aPercentage > 1.0)) {
+    public void setPercentage(final double percentage) {
+        if ((percentage < 0.0) || (percentage > 1.0)) {
             throw new IllegalArgumentException("The percentage should be between 0.0 and 1.0 inclusive");
         }
         
-        percentage = (int) (100.0 * aPercentage);
+        this.percentage = (int) (100.0 * percentage);
+        
+        notifyListeners();
+    }
+    
+    public void addPercentage(final int percentage) {
+        int result = this.percentage + percentage;
+        
+        if ((result < START) || (result> COMPLETE)) {
+            throw new IllegalArgumentException("The percentage should be between 0 and 100 inclusive");
+        }
+        
+        this.percentage = result;
         
         notifyListeners();
     }

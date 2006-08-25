@@ -23,12 +23,12 @@ package org.netbeans.installer;
 import java.io.File;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.error.ErrorManager;
 import org.netbeans.installer.utils.exceptions.InitializationException;
-import org.netbeans.installer.utils.exceptions.FinalizationException;
 import org.netbeans.installer.wizard.Wizard;
+import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
+import org.netbeans.installer.wizard.components.actions.InitalizeRegistryAction;
 
 /**
  * The main class of the NBBA installer framework. It represents the installer and
@@ -120,25 +120,24 @@ public class Installer {
      * @param arguments The command line arguments
      */
     public void start() {
-        try {
-            // initialize the components registry
-            ProductRegistry.getInstance().initialize();
-            
-            // start the wizard
-            Wizard.getInstance().start();
-        } catch (InitializationException e) {
-            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, e);
+        if (!localDirectory.exists()) {
+            if (!localDirectory.mkdirs()) {
+                ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, "Cannot create local directory: " + localDirectory);
+            }
+        } else if (localDirectory.isFile()) {
+            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, "Local directory exists and is a file: " + localDirectory);
+        } else if (!localDirectory.canRead()) {
+            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, "Cannot read local directory - not enought permissions");
+        } else if (!localDirectory.canWrite()) {
+            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, "Cannot write to local directory - not enought permissions");
         }
-    }
-    
-    /**
-     * Parses the command line arguments passed to the installer. All unknown
-     * arguments are ignored.
-     *
-     * @param arguments The command line arguments
-     */
-    private void parseCommandLineArguments(String[] arguments) {
-        // TODO
+        
+        
+        final Wizard wizard = Wizard.getInstance();
+        
+        wizard.open();
+        wizard.executeAction(new InitalizeRegistryAction());
+        wizard.next();
     }
     
     /**
@@ -149,9 +148,6 @@ public class Installer {
      * @see #criticalExit()
      */
     public void cancel() {
-        // cancel changes in components registry
-        ProductRegistry.getInstance().cancelChanges();
-        
         // exit with the cancel error code
         System.exit(CANCEL_ERRORCODE);
     }
@@ -164,14 +160,11 @@ public class Installer {
      * @see #criticalExit()
      */
     public void finish() {
-        // save changes in components registry
-        try {
-            ProductRegistry.getInstance().finalizeChanges();
-        } catch (FinalizationException e) {
-            ErrorManager.getInstance().notify(ErrorLevel.CRITICAL, "Cannot save registry", e);
-        }
+        Wizard wizard = Wizard.getInstance();
         
-        // exit with success error code
+        wizard.executeAction(new FinalizeRegistryAction());
+        wizard.close();
+        
         System.exit(NORMAL_ERRORCODE);
     }
     
@@ -189,6 +182,16 @@ public class Installer {
     
     public File getLocalDirectory() {
         return localDirectory;
+    }
+    
+    /**
+     * Parses the command line arguments passed to the installer. All unknown
+     * arguments are ignored.
+     *
+     * @param arguments The command line arguments
+     */
+    private void parseCommandLineArguments(String[] arguments) {
+        // TODO
     }
     
     /////////////////////////////////////////////////////////////////////////////////

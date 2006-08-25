@@ -26,7 +26,7 @@ import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import org.netbeans.installer.wizard.Wizard;
+import org.netbeans.installer.wizard.SubWizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
@@ -34,7 +34,7 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public abstract class WizardPanel extends JPanel implements WizardComponent {
-    private Wizard  wizard;
+    private SubWizard  wizard;
     private boolean active      = true;
     private boolean initialized = false;
     
@@ -43,7 +43,7 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
     
     private Properties properties = new Properties();
     
-    public final void executeComponent(Wizard aWizard) {
+    public final void executeComponent(SubWizard aWizard) {
         wizard = aWizard;
         
         if (!initialized) {
@@ -56,7 +56,7 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
         defaultInitialize();
         initialize();
         
-        getWizard().getWizardFrame().setWizardPanel(this);
+        getWizard().getFrame().setWizardPanel(this);
     }
     
     public abstract void initialize();
@@ -84,32 +84,32 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
     public abstract String getDialogTitle();
     
     public final JButton getHelpButton() {
-        return wizard.getWizardFrame().getContentPane().getHelpButton();
+        return wizard.getFrame().getContentPane().getHelpButton();
     }
     
     public abstract void evaluateHelpButtonClick();
     
     public final JButton getBackButton() {
-        return wizard.getWizardFrame().getContentPane().getBackButton();
+        return wizard.getFrame().getContentPane().getBackButton();
     }
     
     public abstract void evaluateBackButtonClick();
     
     public final JButton getNextButton() {
-        return wizard.getWizardFrame().getContentPane().getNextButton();
+        return wizard.getFrame().getContentPane().getNextButton();
     }
     
     public abstract void evaluateNextButtonClick();
     
     public final JButton getCancelButton() {
-        return wizard.getWizardFrame().getContentPane().getCancelButton();
+        return wizard.getFrame().getContentPane().getCancelButton();
     }
     
     public abstract void evaluateCancelButtonClick();
     
     public abstract JButton getDefaultButton();
     
-    public final Wizard getWizard() {
+    public final SubWizard getWizard() {
         return wizard;
     }
     

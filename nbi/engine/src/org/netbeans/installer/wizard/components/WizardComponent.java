@@ -29,7 +29,7 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public interface WizardComponent {
-    public abstract void executeComponent(Wizard aWizard);
+    public abstract void executeComponent(SubWizard aWizard);
     
     public abstract void addChildComponent(WizardComponent aWizardComponent);
     

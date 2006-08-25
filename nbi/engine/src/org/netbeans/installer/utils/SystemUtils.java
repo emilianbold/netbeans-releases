@@ -24,7 +24,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.installer.utils.error.ErrorManager;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
+import org.netbeans.installer.utils.log.LogManager;
 
 /**
  *
@@ -54,6 +56,8 @@ public abstract class SystemUtils {
     public abstract Platform getCurrentPlatform();
     
     public abstract boolean isMacOS();
+    
+    public abstract void sleep(long millis);
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
@@ -112,6 +116,14 @@ public abstract class SystemUtils {
         public boolean isMacOS() {
             return (getCurrentPlatform() == Platform.MACOS_X_X86) ||
                     (getCurrentPlatform() == Platform.MACOS_X_PPC);
+        }
+        
+        public void sleep(long millis) {
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException e) {
+                ErrorManager.getInstance().notify(ErrorLevel.DEBUG, "Interrupted while sleeping", e);
+            }
         }
     }
     
