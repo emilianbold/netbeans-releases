@@ -24,7 +24,7 @@ import java.io.File;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.utils.ErrorLevel;
-import org.netbeans.installer.utils.error.ErrorManager;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;

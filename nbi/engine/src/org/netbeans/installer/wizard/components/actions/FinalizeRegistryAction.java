@@ -22,7 +22,7 @@ package org.netbeans.installer.wizard.components.actions;
 
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorLevel;
-import org.netbeans.installer.utils.error.ErrorManager;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.exceptions.FinalizationException;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardPanel;

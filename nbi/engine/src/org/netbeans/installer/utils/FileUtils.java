@@ -28,7 +28,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Vector;
 import java.util.zip.CRC32;
-import org.netbeans.installer.utils.log.LogManager;
+import org.netbeans.installer.utils.LogManager;
 import java.io.*;
 import java.security.MessageDigest;
 

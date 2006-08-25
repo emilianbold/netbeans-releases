@@ -24,9 +24,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.installer.utils.error.ErrorManager;
+import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
-import org.netbeans.installer.utils.log.LogManager;
+import org.netbeans.installer.utils.LogManager;
 
 /**
  *
