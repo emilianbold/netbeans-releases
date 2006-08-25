@@ -19,6 +19,7 @@
 
 package org.openide.windows;
 
+import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Window;
@@ -460,6 +461,28 @@ public abstract class WindowManager extends Object implements Serializable {
      * @return <code>TopComponent</code> instance corresponding to unique ID
      * @since 4.15 */
     public abstract TopComponent findTopComponent(String tcID);
+    
+    /** Provides support for executing a piece of code when UI of the window
+     * system is ready. 
+     * The behaviour is similar to {@link EventQueue#invokeLater}
+     * moreover it is guaranteed that only one Runnable runs at given time.
+     * This method can be invoked from any thread.
+     *
+     * <p class="non-normative">
+     * The typical usecase is to call this method during startup of NetBeans
+     * based application. The default manager then waits till the main window
+     * is opened and then executes all the registered methods one by one.
+     * </p>
+     * 
+     * Note to WindowManager providers: This method not abstract for backward compatibility reasons,
+     * please override and provide implementation.
+     * 
+     * @param run the runnable that executes piece of code when UI of the system is ready
+     * @since 6.8
+     */
+    public void invokeWhenUIReady(Runnable run) {
+        EventQueue.invokeLater(run);
+    }
 
     /** A manager that handles operations on top components.
      * It is always attached to a {@link TopComponent}.

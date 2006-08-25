@@ -19,6 +19,7 @@
 
 package org.netbeans.core.windows;
 
+import java.util.ArrayList;
 
 import java.awt.*;
 import java.beans.*;
@@ -77,6 +78,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     private TopComponent persistenceShowingTC;
     
     
+    /** exclusive invocation of runnables */
+    private Exclusive exclusive = new Exclusive();
     /** Default constructor. Don't use directly, use getDefault()
      * instead.
      */
@@ -708,6 +711,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Sets visible or invisible window system GUI. */
     public void setVisible(boolean visible) {
+        SwingUtilities.invokeLater(exclusive);
         central.setVisible(visible);
     }
     
@@ -1122,6 +1126,55 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         
         return PersistenceManager.getDefault().getGlobalTopComponentID(tc, preferredID);
     }
+
+    @Override
+    public void invokeWhenUIReady(Runnable run) {
+        // don't try to invoke at all in these special cases
+        if (Boolean.getBoolean("netbeans.full.hack") || Boolean.getBoolean("netbeans.close")) { // NOI18N
+            return;
+        }
+        exclusive.register(run);
+    }
+
+    /** Handles exclusive invocation of Runnables.
+     */
+    private static final class Exclusive implements Runnable {
+        /** lists of runnables to run */
+        private ArrayList<Runnable> arr = new ArrayList<Runnable>();
+
+        /** Registers given runnable and ensures that it is run when UI 
+         * of the system is ready.
+         */
+        public synchronized void register(Runnable r) {
+            arr.add(r);
+            SwingUtilities.invokeLater(this);
+        }
+
+        public void run() {
+            if (!WindowManagerImpl.getInstance().isVisible()) {
+                return;
+            }
+            
+            ArrayList<Runnable> arrCopy = null;
+            synchronized (this) {
+                if (arr.isEmpty()) {
+                    return;
+                }
+                
+                arrCopy = arr;
+                arr = new ArrayList<Runnable>();
+            }
+
+            for (Runnable r : arrCopy) {
+                try {
+                    r.run();
+                } catch (RuntimeException ex) {
+                    Logger.getLogger(WindowManagerImpl.class.getName()).log(
+                            Level.WARNING, null, ex);
+                }
+            }
+        }
+    } // end of Exclusive class
     
     public void resetModel() {
         central.resetModel();

@@ -24,6 +24,22 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+<change id="invokeWhenUIReady">
+    <api name="winsys"/>
+    <summary>New method to invoke code after main window is shown</summary>
+    <author login="dsimonek" />
+    <version major="6" minor="8"/>
+    <date day="23" month="8" year="2006"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        New method <a href="@TOP@org/openide/windows/WindowManager.html#invokeWhenUIReady(java.lang.Runnable)">WindowManager.invokeWhenUIReady</a>
+        has been added that can be used to execute a code
+        that is supposed to run after main window is shown.
+    </description>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <issue number="65431"/>
+</change>
+    
 <change id="ExternalDragAndDrop">
     <api name="winsys"/>
     <summary>Added <code>ExternalDropHandler</code> abstract class.</summary>
