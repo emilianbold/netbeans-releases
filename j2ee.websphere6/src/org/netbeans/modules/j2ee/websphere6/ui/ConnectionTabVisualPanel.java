@@ -235,7 +235,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
             if (!tabServerProperties.isValidDomainRoot(profilePathField.getText())) {
                 JOptionPane.showMessageDialog(null,
                         NbBundle.getMessage(ConnectionTabVisualPanel.class,
-                        "ERR_INVALID_DOMAIN_ROOT"));                           // NOI18N
+                        "ERR_InvalidDomainRoot"));                           // NOI18N
                 return false;
             }
         }
@@ -244,7 +244,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         if (hostField.getText().trim().equals("")) {
             JOptionPane.showMessageDialog(null,
                     NbBundle.getMessage(ConnectionTabVisualPanel.class,
-                    "ERR_INVALID_HOST"));                // NOI18N
+                    "ERR_InvalidHost"));                // NOI18N
             return false;
         }
         
@@ -254,7 +254,7 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         if (!portField.getText().trim().matches("[0-9]+")) {
             JOptionPane.showMessageDialog(null,
                     NbBundle.getMessage(ConnectionTabVisualPanel.class,
-                    "ERR_INVALID_PORT"));                              // NOI18N
+                    "ERR_InvalidPort"));                              // NOI18N
             return false;
         }
         
@@ -428,9 +428,9 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
     private void portFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_portFieldFocusLost
         String port = portField.getText();
         if(!port.trim().matches("[0-9]+")){
-            JOptionPane.showMessageDialog(portField,NbBundle.getMessage(ConnectionTabVisualPanel.class,"ERR_INVALID_PORT"));                                    
+            JOptionPane.showMessageDialog(portField,NbBundle.getMessage(ConnectionTabVisualPanel.class,"ERR_InvalidPort"));                                    
         } else if((new java.lang.Integer(port)).intValue() > 65535) {
-            JOptionPane.showMessageDialog(portField,NbBundle.getMessage(ConnectionTabVisualPanel.class,"ERR_INVALID_PORT"));
+            JOptionPane.showMessageDialog(portField,NbBundle.getMessage(ConnectionTabVisualPanel.class,"ERR_InvalidPort"));
         } else {
             targetData.setPort(port);
         }
