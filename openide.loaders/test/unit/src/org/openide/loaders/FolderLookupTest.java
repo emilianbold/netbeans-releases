@@ -30,6 +30,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -406,6 +407,40 @@ public class FolderLookupTest extends NbTestCase {
         doDeser (false);
     }
     
+    public void testGcWhenHoldingOnlyResult () throws Exception {
+        String fsstruct [] = new String [] {
+            "AA/BB/A.simple"
+        };
+        
+        TestUtilHid.destroyLocalFileSystem (getName());
+        FileSystem lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
+        Repository.getDefault ().addFileSystem (lfs);
+
+        DataFolder folder = DataFolder.findFolder (lfs.findResource("/AA"));
+        DataFolder subfolder = DataFolder.findFolder (lfs.findResource("/AA/BB/"));
+        DataObject tmp = InstanceDataObject.create (subfolder, null, Hashtable.class);
+
+        FolderLookup lkp = new FolderLookup (folder);
+        Lookup.Result res = lkp.getLookup ().lookup (new Lookup.Template(Hashtable.class));
+        java.lang.ref.WeakReference ref2 = new java.lang.ref.WeakReference (lkp);
+        
+        lkp = null;
+        folder = null;
+        subfolder = null;
+        tmp = null;
+        boolean collected;
+        try {
+            assertGC("XXX", ref2);
+            collected = true;
+        } catch (junit.framework.AssertionFailedError x) {
+            collected = false;
+        }
+        assertEquals(res.allInstances().size(), 1);
+        if (collected) {
+            fail("Lookup got GCed when holding only result..");
+        }
+    }
+    
     private void doDeser (boolean root) throws Exception {
         String fsstruct [] = new String [] {
             "AA/BB/A.simple"
@@ -449,6 +484,8 @@ public class FolderLookupTest extends NbTestCase {
         
         Repository.getDefault ().removeFileSystem (lfs);
     }
+    
+    
     
    
     
