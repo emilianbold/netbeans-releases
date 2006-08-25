@@ -183,7 +183,12 @@ public abstract class GraphPinScene<N, E, P> extends ObjectScene {
         return list;
     }
 
+    @Deprecated
     public final Collection<E> findEdgeBetween (P sourcePin, P targetPin) {
+        return findEdgesBetween (sourcePin, targetPin);
+    }
+
+    public final Collection<E> findEdgesBetween (P sourcePin, P targetPin) {
         HashSet<E> list = new HashSet<E> ();
         List<E> inputEdges = pinInputEdges.get (targetPin);
         List<E> outputEdges = pinOutputEdges.get (sourcePin);

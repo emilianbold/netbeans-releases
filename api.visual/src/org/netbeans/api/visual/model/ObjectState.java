@@ -17,6 +17,7 @@ package org.netbeans.api.visual.model;
  */
 public class ObjectState {
 
+    @Deprecated
     public static final ObjectState NORMAL = new ObjectState ();
 
     private boolean objectSelected;
@@ -28,6 +29,7 @@ public class ObjectState {
     private ObjectState () {
     }
 
+    @Deprecated
     public ObjectState (boolean objectSelected, boolean objectHighlighted, boolean objectHovered, boolean widgetHovered, boolean widgetAimed) {
         this.objectSelected = objectSelected;
         this.objectHighlighted = objectHighlighted;
@@ -79,5 +81,7 @@ public class ObjectState {
     public ObjectState deriveWidgetAimed (boolean aimed) {
         return new ObjectState (objectSelected, objectHighlighted, objectHovered, widgetHovered, aimed);
     }
+
+    public static
 
 }

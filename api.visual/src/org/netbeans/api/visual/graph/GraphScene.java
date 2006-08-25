@@ -142,7 +142,12 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         return list;
     }
 
+    @Deprecated
     public final Collection<E> findEdgeBetween (N sourceNode, N targetNode) {
+        return findEdgesBetween (sourceNode, targetNode);
+    }
+
+    public final Collection<E> findEdgesBetween (N sourceNode, N targetNode) {
         HashSet<E> list = new HashSet<E> ();
         List<E> inputEdges = nodeInputEdges.get (targetNode);
         List<E> outputEdges = nodeOutputEdges.get (sourceNode);
@@ -155,7 +160,7 @@ public abstract class GraphScene<N, E> extends ObjectScene {
     public boolean isNode (Object object) {
         return nodes.contains (object);
     }
-
+    
     public boolean isEdge (Object object) {
         return edges.contains (object);
     }
