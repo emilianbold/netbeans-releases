@@ -19,7 +19,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <mconfig name="apisupport/project">
-    <testbag testattribs="stable" executor="unit-executor" name="apisupport/project">
+    <testbag testattribs="stable-cvs" executor="unit-executor" name="apisupport/project">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
