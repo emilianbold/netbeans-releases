@@ -45,7 +45,13 @@ import org.openide.util.Utilities;
 public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
     
     final private static String[] availableDefaultPermissions = {
-        "javax.microedition.io.Connector.bluetooth.client", //NOI18N
+        "javax.bluetooth.RemoteDevice.authorize", //NOI18N
+        "javax.microedition.amms.control.camera.enableShutterFeedback", //NOI18N
+        "javax.microedition.amms.control.tuner.setPreset", //NOI18N
+        "javax.microedition.apdu.aid", //NOI18N
+        "javax.microedition.apdu.sat", //NOI18N
+        "javax.microedition.content.ContentHandler", //NOI18N
+	"javax.microedition.io.Connector.bluetooth.client", //NOI18N
         "javax.microedition.io.Connector.bluetooth.server", //NOI18N
         "javax.microedition.io.Connector.cbs", //NOI18N
         "javax.microedition.io.Connector.comm", //NOI18N
@@ -57,12 +63,17 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         "javax.microedition.io.Connector.https", //NOI18N
         "javax.microedition.io.Connector.mms", //NOI18N
         "javax.microedition.io.Connector.obex.client", //NOI18N
+        "javax.microedition.io.Connector.obex.client.tcp",
         "javax.microedition.io.Connector.obex.server", //NOI18N
+        "javax.microedition.io.Connector.obex.server.tcp",
         "javax.microedition.io.Connector.serversocket", //NOI18N
+        "javax.microedition.io.Connector.sip", //NOI18N
+        "javax.microedition.io.Connector.sips", //NOI18N
         "javax.microedition.io.Connector.sms", //NOI18N
         "javax.microedition.io.Connector.socket", //NOI18N
         "javax.microedition.io.Connector.ssl", //NOI18N
         "javax.microedition.io.PushRegistry", //NOI18N
+        "javax.microedition.jcrmi", //NOI18N
         "javax.microedition.location.LandmarkStore.category", //NOI18N
         "javax.microedition.location.LandmarkStore.management", //NOI18N
         "javax.microedition.location.LandmarkStore.read", //NOI18N
@@ -72,17 +83,20 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         "javax.microedition.location.ProximityListener", //NOI18N
         "javax.microedition.media.control.RecordControl", //NOI18N
         "javax.microedition.media.control.VideoControl.getSnapshot", //NOI18N
+        "javax.microedition.payment.process", //NOI18N
         "javax.microedition.pim.ContactList.read", //NOI18N
         "javax.microedition.pim.ContactList.write", //NOI18N
         "javax.microedition.pim.EventList.read", //NOI18N
         "javax.microedition.pim.EventList.write", //NOI18N
         "javax.microedition.pim.ToDoList.read", //NOI18N
         "javax.microedition.pim.ToDoList.write", //NOI18N
+        "javax.microedition.securityservice.CMSMessageSignatureService", //NOI18N
         "javax.wireless.messaging.cbs.receive", //NOI18N
         "javax.wireless.messaging.mms.receive", //NOI18N
         "javax.wireless.messaging.mms.send", //NOI18N
         "javax.wireless.messaging.sms.receive", //NOI18N
         "javax.wireless.messaging.sms.send" //NOI18N
+
     };
     
     private DialogDescriptor dd;
