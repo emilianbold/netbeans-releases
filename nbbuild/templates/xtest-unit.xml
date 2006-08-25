@@ -107,12 +107,18 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
-
+    
     <target name="run-unit-test" depends="run-unit-test-dist,run-unit-test-nodist"/>
 
     <!-- Run unit tests from binary distribution. -->
-    <target name="run-unit-test-dist" if="xtest.distexec">
+   <target name="run-unit-test-dist" if="xtest.distexec">
         <property file="test.properties"/>
+        <validatepath path="${test.unit.run.cp}"/>
+        <!-- convert properties from test-unit-sys-prop.* to xtest.userdata|  -->
+        <property name="temp.properties.path" location="${xtest.workdir}/sys/temp.properties"/>
+        <copy file="test.properties" tofile="${temp.properties.path}"/>
+        <replace file="${temp.properties.path}" token="test-unit-sys-prop." value="xtest.userdata|"/>
+        <property file="${temp.properties.path}"/>
         <executeTests pluginname="jvm">
             <classpath>
                 <pathelement path="${test.unit.run.cp}"/>

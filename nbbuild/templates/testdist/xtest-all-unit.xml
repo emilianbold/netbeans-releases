@@ -23,8 +23,11 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.home" location="../xtest"/>
         <property name="xtest.templates.dir" location="nbbuild/templates"/>
         <property name="xtest.results" location="results"/>
-        <property name= "test.fail.on.error" value="true"/>
-        <delete dir="${xtest.results}"/>
+        <property name="test.fail.on.error" value="true"/>
+        <property name="nbantext.jar" location="../nbbuild/nbantext.jar"/>
+        <property name="test.dist.dir" location=".."/>
+         <taskdef name="validatepath" classname="org.netbeans.nbbuild.ValidatePath" classpath="${nbantext.jar}"/>
+       <delete dir="${xtest.results}"/>
         <mkdir dir="${xtest.results}"/>
  
         <fail unless="netbeans.dest.dir" message="Property netbeans.dest.dir doesn't exist."/>
@@ -49,6 +52,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.nobuildxtest" value="nobuild"/>
             <property name="xtest.attribs" value="${xtest.attribs}"/>
             <property name="xtest.testtype" value="unit"/>
+            <property name="test.dist.dir" value="${test.dist.dir}"/>
         </subant>    
     </target>
 </project>
