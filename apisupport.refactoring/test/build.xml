@@ -20,8 +20,8 @@ Microsystems, Inc. All Rights Reserved.
 <project name="apisupport/refactoring/test" basedir="." default="all">
     <property name="xtest.module" value="apisupport/refactoring"/>
     <import file="../../../nbbuild/templates/xtest.xml"/>
-    <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.testtype" value="qa-functional"/>
+    <property name="xtest.attribs" value="validation"/>
     <property name="xtest.ide.use.classloader" value="org.netbeans.modules.apisupport.refactoring"/>
 
 </project>
