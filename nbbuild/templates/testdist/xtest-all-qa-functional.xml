@@ -49,6 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.nobuildxtest" value="nobuild"/>
             <property name="xtest.attribs" value="${xtest.attribs}"/>
             <property name="xtest.testtype" value="qa-functional"/>
+            <property name="test.dist.dir" location=".."/>
         </subant>    
     </target>
 </project>

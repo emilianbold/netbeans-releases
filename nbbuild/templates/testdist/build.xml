@@ -21,9 +21,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all" depends="unit,qa-functional" description="Run all tests">
     </target>
     <target name="unit" description="Run all unit tests">
-        <subant antfile="xtest-all-unit.xml"  buildpath="xtest"/>
+        <subant antfile="xtest-all-unit.xml"  buildpath="unit"/>
     </target>
     <target name="qa-functional" description="Run all qa-functional tests">
-        <subant antfile="qa-functional/xtest-all-qa-functional.xml"/>
+        <subant antfile="xtest-all-qa-functional.xml" buildpath="qa-functional"/>
     </target>
 </project>

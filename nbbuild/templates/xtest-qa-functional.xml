@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
         </parseprojectxml>
     </target>
         
-    <target name="init" depends="init-parse-project-xml">
+    <target name="init" depends="init-parse-project-xml,init-distribution-env">
         <property file="../nbproject/private/private.properties"/>
         <property file="../nbproject/project.properties"/>
         <property name="build.compiler.debug" value="true"/>
@@ -66,7 +66,18 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.sysclasspath" value="ignore"/>
     </target>
     
-
+    <target name="init-distribution-env" if="exists.test.properties" depends="check-distribution">
+        <property name="test.dist.dir" location="../.."/>
+        <property name="extra.test.libs" location="${test.dist.dir}/extralibs"/>
+        <property name="jemmy.jar" location="${extra.test.libs}/jemmy.jar"/>
+        <property name="jelly.jar" location="${extra.test.libs}/jelly2-nb.jar"/>
+        <property file="test.properties"/>
+    </target>
+    
+    <target name="check-distribution">
+        <available file="test.properties" property="exists.test.properties"/>
+    </target>
+    
     <target name="build-jellytools" if="need.to.build.jellytools">
         <!-- <ant dir="${nb_all}/jellytools" target="jar-library" inheritAll="false"/> -->
         <!-- The following is used instead of above because inheritAll="false"
@@ -85,10 +96,15 @@ Microsystems, Inc. All Rights Reserved.
     <target name="init-cp" depends="init,build-jellytools">
         <!-- Used built jar preferably. If not available use the latest from CVS. -->
         <available file="${nb_all}/jellytools/jelly2-nb.jar" property="jelly.jar" value="${nb_all}/jellytools/jelly2-nb.jar"/>
-        <property name="jelly.jar" location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+        <property name="jelly.jar" location="${nb_all}/jellytools/jelly2-nb.jar"/>
+        <property name="jemmy.jar" location="${nb_all}/jemmy/dist/jemmy.jar"/>
+        <available file="${jelly.jar}" property="exists.jelly.jar"/>
+        <available file="${jemmy.jar}" property="exists.jemmy.jar"/>
+        <fail unless="exists.jemmy.jar" message="jemmy.jar is missing at ${jemmy.jar}"/>
+        <fail unless="exists.jelly.jar" message="jelly.jar is missing at ${jelly.jar}"/>
         <!-- path reference used in both compiler and executor -->
         <path id="jemmy.and.jelly.path">
-            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
+            <pathelement location="${jemmy.jar}"/>
             <pathelement location="${jelly.jar}"/>
         </path>
         <!-- These properties cannot be undefined. -->
@@ -124,8 +140,11 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     
     <target name="runidetest" depends="init-cp">
+        <property name="test.qa-functional.run.cp.extra" value=""/>
         <executeTests pluginname="ide">
-            <classpath refid="test.qa-functional.run.cp"/>
+            <classpath>
+                <path refid="jemmy.and.jelly.path"/>
+            </classpath>
         </executeTests>
     </target>
     
