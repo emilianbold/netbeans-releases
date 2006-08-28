@@ -22,6 +22,7 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import junit.framework.AssertionFailedError;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
@@ -100,7 +101,39 @@ public class SortSuiteModulesTest extends NbTestCase {
             // ok
         }
     }
-    public void testModuleAndTestDependencies() throws IOException {
+    public void testModuleAndTestDependenciesDisabledTestSort() throws IOException {
+        generateTestModules1(false);
+        
+        String property = project.getProperty(SORTED_MODULES);
+        assertNotNull("null sorted modules path",property);
+        String paths[] = getSorted(property);
+        
+        assertEdge(paths,a,b);
+        assertEdge(paths,a,c);
+        assertEdge(paths,b,d);
+        assertEdge(paths,b,e);
+        assertEdge(paths,f,g);
+        try {
+            assertEdge(paths,b,g);
+            fail("sort test deps disabled");
+        } catch (AssertionFailedError  be) {}; 
+    }    
+    public void testModuleAndTestDependenciesEnabledTestSort() throws IOException {
+        generateTestModules1(true);
+        
+        String property = project.getProperty(SORTED_MODULES);
+        assertNotNull("null sorted modules path",property);
+        String paths[] = getSorted(property);
+        
+        assertEdge(paths,a,b);
+        assertEdge(paths,a,c);
+        assertEdge(paths,b,d);
+        assertEdge(paths,b,e);
+        assertEdge(paths,b,g);
+        assertEdge(paths,f,g);
+    }    
+
+    private void generateTestModules1(boolean sortTests) throws IOException, BuildException {
         
         // a -> b means: a depends on b 
         
@@ -120,19 +153,11 @@ public class SortSuiteModulesTest extends NbTestCase {
         ssm.setProject(project);
         ssm.setUnsortedModules(path);
         ssm.setSortedModulesProperty(SORTED_MODULES);
+        if (sortTests) {
+            ssm.setSortTests(true);
+        }
         ssm.execute();
-        
-        String property = project.getProperty(SORTED_MODULES);
-        assertNotNull("null sorted modules path",property);
-        String paths[] = getSorted(property);
-        
-        assertEdge(paths,a,b);
-        assertEdge(paths,a,c);
-        assertEdge(paths,b,d);
-        assertEdge(paths,b,e);
-        assertEdge(paths,b,g);
-        assertEdge(paths,f,g);
-    }    
+    }
 
     private void createModule(String module, String[] mdeps) throws IOException {
         createModule(module,mdeps,new String[0],new String[0]);
@@ -230,7 +255,7 @@ public class SortSuiteModulesTest extends NbTestCase {
         return -1;
     }
     
-    public void testTestDependenciesCycle() throws IOException {
+    public void testTestDependenciesCycleEnabledTestSort() throws IOException {
         createModule(a,new String[]{b},new String[]{b},NULL);
         createModule(b,NULL,new String[]{a},NULL);
         Path path = createPath(new String[]{a,b});
@@ -238,6 +263,7 @@ public class SortSuiteModulesTest extends NbTestCase {
         ssm.setProject(project);
         ssm.setUnsortedModules(path);
         ssm.setSortedModulesProperty(SORTED_MODULES);
+        ssm.setSortTests(true);
         try {
             ssm.execute();
             fail("Exception must be thrown");
@@ -245,5 +271,15 @@ public class SortSuiteModulesTest extends NbTestCase {
             // ok
         }
     }
- 
+    public void testTestDependenciesCycleDisabledTestSort() throws IOException {
+        createModule(a,new String[]{b},new String[]{b},NULL);
+        createModule(b,NULL,new String[]{a},NULL);
+        Path path = createPath(new String[]{a,b});
+        SortSuiteModules ssm = new SortSuiteModules();
+        ssm.setProject(project);
+        ssm.setUnsortedModules(path);
+        ssm.setSortedModulesProperty(SORTED_MODULES);
+        // no exception 
+        ssm.execute();
+    } 
 }

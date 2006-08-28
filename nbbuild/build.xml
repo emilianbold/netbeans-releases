@@ -1789,7 +1789,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="build-test-dist" depends="bootstrap,init-module-list,init-tasks" description="Built test distribution">
-     <property name="config.modules.test" value="${config.modules.stable}"/>
+     <property name="config.modules.test" value="openide,${config.fixedmodules.stable},${config.modules.stable}"/>
      <!-- if is 'false' it will ignore compilation error in subant  -->
      <property name= "test.fail.on.error" value="true"/>
      <pathconvert property="modules.fullpath" >
@@ -1798,7 +1798,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           </path>
           <mapper type="identity" />
       </pathconvert>
-      <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
+      <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted" sorttests="true"/>
       <subant buildpath="${modules.sorted}" target="build-all-tests" failonerror="${test.fail.on.error}"/>
       <!-- copy templates -->
       <copy todir="${test.dist.dir}/unit"> 
@@ -1820,6 +1820,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <mkdir dir="${test.dist.dir}/xtest"/>
       <copy todir="${test.dist.dir}/xtest" > 
              <fileset dir="../xtest" includes="lib/**,plugins/**,standard-test-*cludes.txt"/>
-      </copy>     
+      </copy> 
+      <zip basedir="${test.dist.dir}" destfile="build/testdist.zip"/>
   </target>      
 </project>

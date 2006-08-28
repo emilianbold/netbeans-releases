@@ -41,7 +41,7 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  */
 public class SortSuiteModules extends Task {
-
+    private boolean sortTests;
     private Path unsortedModules;
     /**
      * Set a list of modules in the suite.
@@ -57,6 +57,18 @@ public class SortSuiteModules extends Task {
      */
     public void setSortedModulesProperty(String sortedModulesProperty) {
         this.sortedModulesProperty = sortedModulesProperty;
+    }
+    
+    /** Is enabled sorting test dependencies?
+     */
+    public boolean isSortTests() {
+        return sortTests;
+    }
+
+    /** Enable or disable sorting test dependenciens. Default value is false.
+     */
+    public void setSortTests(boolean sortTests) {
+        this.sortTests = sortTests;
     }
     
     public SortSuiteModules() {}
@@ -118,6 +130,30 @@ public class SortSuiteModules extends Task {
                 deps.add(cnb2);
             }
             buildDeps.put(cnb, deps);
+            
+            // create test dependencies
+            if (isSortTests()) {
+                Element testDepsEl = ParseProjectXml.findNBMElement(data,"test-dependencies");
+                if (testDepsEl != null) {
+                    // <test-type>
+                    Iterator itTType = XMLUtil.findSubElements(testDepsEl).iterator();
+                    while (itTType.hasNext()) {
+                        Iterator itt = XMLUtil.findSubElements((Element)itTType.next()).iterator();
+                        while (itt.hasNext()) {
+                            Element dep = (Element) itt.next();
+                            if (ParseProjectXml.findNBMElement(dep, "test") == null) {
+                                continue;
+                            }
+                            Element cnbEl2 = ParseProjectXml.findNBMElement(dep, "code-name-base");
+                            if (cnbEl2 == null) {
+                                throw new BuildException("No cobase found for test-dependency");
+                            }
+                            String cnb2 = XMLUtil.findText(cnbEl2);
+                            deps.add(cnb2);
+                        }
+                    }
+                }
+            }
         }
         Iterator it = buildDeps.values().iterator();
         while (it.hasNext()) {
