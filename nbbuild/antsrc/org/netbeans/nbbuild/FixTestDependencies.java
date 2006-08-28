@@ -22,16 +22,13 @@ package org.netbeans.nbbuild;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -47,6 +44,9 @@ import org.netbeans.nbbuild.ModuleListParser.Entry;
  * @author pzajac
  */
 public class FixTestDependencies extends org.apache.tools.ant.Task {
+    /**  entries for unit testing in order to avoid scanning modules
+     */
+    Set/*<ModuleListParser.Entry>*/ cachedEntries ;
     
     /** Creates a new instance of FixTestClassPath */
     public FixTestDependencies() {
@@ -54,8 +54,6 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
     
     
     String cnb;
-    
-    private String nbAll;
     
     File projectXmlFile;
     public void setProjectXml(File projectXml) {
@@ -116,11 +114,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                     ps.close();                  
                     return ;
                 }
-                // no :
-                // scan for all modules
-                ModuleListParser listParser;
-                listParser = new ModuleListParser(getProject().getProperties(), projectType, getProject());
-                Set/*<ModuleListParser.Entry>*/ entries =  listParser.findAll();
+                Set entries = getModuleList(projectType);
                 Set/*<String>*/ allCnbs = getCNBsFromEntries(entries);
                 // read properties
 
@@ -136,10 +130,8 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                 Properties projectProperties = getTestProperties();
                 readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
                 readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp.extra",allCnbs,entries);
-
                 readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp",allCnbs,entries);
                 readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.unit.run.cp.extra",allCnbs,entries);
-
                 updateProperties(projectProperties,new String[]{"test.unit.cp","test.unit.cp.extra","test.unit.run.cp","test.unit.run.cp.extra"});
 
                 StringWriter writer = new StringWriter();
@@ -173,7 +165,6 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
 
                 readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.qa-functional.runtime.cp",allCnbs,entries);
                 readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.qa-functional.runtime.extra",allCnbs,entries);
-
                 addDependencies(buffer,compileCNB,compileTestCNB,true,false);
                 addDependencies(buffer,runtimeCNB,runtimeTestCNB,false,false);
                 buffer.println("              </test-type>");
@@ -209,6 +200,17 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
         }
         
         // store project.properties and project.xml
+    }
+
+    private Set getModuleList(final int projectType) throws IOException {
+        if (cachedEntries == null ) {
+          // scan for all modules
+            ModuleListParser listParser = new ModuleListParser(getProject().getProperties(), projectType, getProject());
+            return  listParser.findAll();
+        } else {
+            // used by FixTestDependenciesTest
+            return cachedEntries;
+        }
     }
     
     private Set/*<String>*/ getCNBsFromEntries(Set/*<ModuleListParser.Entry>*/ entries) {
@@ -288,8 +290,12 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                             if (firstSlash != -1 ) {
                                 String  prjFolder = token.substring(firstSlash + 1, prjEnd);
                                 String  codebaseName = getCNBForFolder(prjFolder,entries);
-                                testsCNB.add(codebaseName);
-                                found = true;
+                                if (codebaseName == null) {
+                                    log("No code name base found for file " + token);
+                                } else {
+                                    testsCNB.add(codebaseName);
+                                    found = true;
+                                }
                             }
                         }
                     }
@@ -332,13 +338,6 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
         
     }
     
-    private String getNbAll() {
-        if (nbAll == null) {
-            nbAll = getProject().getProperty("nb_all");
-        }
-        return nbAll;
-    }
-    
     private Properties getTestProperties() throws IOException {
         if (propertiesFile == null || !propertiesFile.isFile()) {
             throw new BuildException("Property file doesn't exist");
@@ -356,7 +355,6 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
     /** @return codeNameBase of project for relative folder prjFolder
      */
     private String getCNBForFolder(String prjFolder, Set entries) {
-        String cnb = null;
         for (Iterator it = entries.iterator(); it.hasNext();) {
             ModuleListParser.Entry elem = (ModuleListParser.Entry) it.next();
             if (prjFolder.equals(elem.getNetbeansOrgPath())) {
@@ -419,4 +417,5 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
         }
         return retLines;
     } 
+
 }
