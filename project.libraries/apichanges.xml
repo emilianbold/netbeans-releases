@@ -79,6 +79,7 @@ is the proper place.
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
+    <changes>
     
     <change>
             <api name="general"/>
@@ -98,7 +99,6 @@ is the proper place.
             <class package="org.netbeans.spi.project.libraries" name="LibraryFactory"/>
             <class package="org.netbeans.spi.project.libraries.support" name="LibrariesSupport"/>
         </change>    
-    <changes>
 
         <change id="rel-vers-1">
             <api name="general"/>
