@@ -103,6 +103,13 @@ public class SvnWcParser {
                     //status.c had a schedule="replace", but TSVN
                     //simply did a copy
                 }
+                value = wcDetails.getValue("deleted");  // NOI18N
+                if (value != null) {
+                    if (value.equals("true")) {  // NOI18N
+                        finalTextStatus = SVNStatusKind.UNVERSIONED.toString();
+                        finalPropStatus = SVNStatusKind.NONE.toString();
+                    }
+                }    
 
                 String fileUrl = wcDetails.getValue("url");          // NOI18N        
                 long revision = wcDetails.getLongValue("revision");             // NOI18N                         
