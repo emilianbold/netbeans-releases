@@ -25,10 +25,12 @@ import java.awt.event.KeyListener;
 /**
  * @author David Kaspar
  */
+@Deprecated
 public final class TextFieldInplaceEditorProvider implements InplaceEditorProvider<JTextField> {
 
     private TextFieldInplaceEditor editor;
 
+    @Deprecated
     public TextFieldInplaceEditorProvider (TextFieldInplaceEditor editor) {
         this.editor = editor;
     }
