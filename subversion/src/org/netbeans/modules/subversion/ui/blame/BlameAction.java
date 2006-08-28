@@ -91,6 +91,7 @@ public class BlameAction extends ContextAction {
             final JEditorPane currentPane = panes[0];
             
             final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
+            ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
 
             SVNUrl repository = SvnUtils.getRepositoryRootUrl(file);
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
@@ -108,6 +109,7 @@ public class BlameAction extends ContextAction {
         try {
             client = Subversion.getInstance().getClient(file, progress);
         } catch (SVNClientException ex) {
+            ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationFailed")); // NOI18N;
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return;
         }
@@ -116,10 +118,12 @@ public class BlameAction extends ContextAction {
         try {
             annotations = client.annotate(file, new SVNRevision.Number(1), SVNRevision.BASE);
         } catch (SVNClientException e) {
+            ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationFailed")); // NOI18N;
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return;
         }
         if (progress.isCanceled()) {
+            ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationFailed")); // NOI18N;
             return;
         }
         AnnotateLine [] lines = toAnnotateLines(annotations);

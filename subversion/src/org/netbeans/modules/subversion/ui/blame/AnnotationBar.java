@@ -168,8 +168,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     public void annotate() {
         annotated = true;
         elementAnnotations = null;
-        ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
-        elementAnnotationsSubstitute = loc.getString("CTL_AnnotationSubstitute"); // NOI18N
 
         doc.addDocumentListener(this);
         textComponent.addComponentListener(this);
@@ -178,6 +176,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         revalidate();  // resize the component
     }
 
+    public void setAnnotationMessage(String message) {
+        elementAnnotationsSubstitute = message;
+        revalidate();
+    }
+    
     /**
      * Result computed show it...
      * Takes AnnotateLines and shows them.
