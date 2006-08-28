@@ -300,10 +300,10 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
                 
         menu.add(new JSeparator());        
-        item = menu.add(new SystemActionBridge(SystemAction.get(BlameAction.class), org.openide.util.NbBundle.getMessage(SyncTable.class, "CTL_PopupMenuItem_Blame"))); // NOI18N
-//                                               ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible(null) ?
-//                                               actionString("CTL_PopupMenuItem_HideAnnotations") : // NOI18N
-//                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(BlameAction.class),
+                                               ((BlameAction)SystemAction.get(BlameAction.class)).visible(null) ?
+                                               actionString("CTL_PopupMenuItem_HideBlame") : // NOI18N
+                                               actionString("CTL_PopupMenuItem_Blame"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         
         item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
