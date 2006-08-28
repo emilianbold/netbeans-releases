@@ -129,8 +129,9 @@ public final class ToolbarPool extends JComponent implements Accessible {
         }
     }
     
-    /** Returns preferred size of icons used by toolbar buttons. Default icons size
-     * is 16x16. Icon size 24x24 is also supported.
+    /**
+     * Gets preferred size of icons used by toolbar buttons. Default icon size
+     * is 24x24. Icon size 16x16 is also supported.
      * @return preferred size of toolbar icons in pixels
      * @since 4.15
      */
