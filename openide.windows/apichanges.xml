@@ -27,9 +27,9 @@ Microsystems, Inc. All Rights Reserved.
 <change id="invokeWhenUIReady">
     <api name="winsys"/>
     <summary>New method to invoke code after main window is shown</summary>
-    <author login="dsimonek" />
     <version major="6" minor="8"/>
     <date day="23" month="8" year="2006"/>
+    <author login="dsimonek"/>
     <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
     <description>
         New method <a href="@TOP@org/openide/windows/WindowManager.html#invokeWhenUIReady(java.lang.Runnable)">WindowManager.invokeWhenUIReady</a>
