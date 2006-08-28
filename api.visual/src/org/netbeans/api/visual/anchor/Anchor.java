@@ -55,7 +55,7 @@ public abstract class Anchor implements Widget.Dependency {
         revalidateDependency ();
     }
 
-    public void removeEntry (Entry entry) {
+    public final void removeEntry (Entry entry) {
         entries.remove (entry);
         if (attachedToWidget  &&  entries.size () <= 0) {
             attachedToWidget = false;
