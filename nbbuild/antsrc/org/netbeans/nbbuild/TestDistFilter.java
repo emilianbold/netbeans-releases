@@ -131,9 +131,10 @@ public class TestDistFilter extends Task {
             if (xmlAttr == null) {
                 return false;
             }
-            StringTokenizer tokenizer = new StringTokenizer(xmlAttr,"&|,");
+            StringTokenizer tokenizer = new StringTokenizer(xmlAttr,"&|, ");
             while (tokenizer.hasMoreTokens()) {
-                if (tokenizer.nextToken().trim().equals(userAttr)) {
+                String token = tokenizer.nextToken().trim();
+                if (token.equals(userAttr)) {
                     return true;
                 } 
             }
@@ -178,7 +179,6 @@ public class TestDistFilter extends Task {
               }
           }
           define(getTestListProperty(),getTestList());
-          
     }
     /** get path with test dirs separated by :
      */

@@ -36,6 +36,7 @@ public class TestDistFilterTest extends NbTestCase {
     private static final String ORG_OPENIDE_UNIT = "unit/platform5/org-openide";
     private static final String ORG_OPENIDE_FS = "unit/platform5/org-openide-fs";
     private static final String ORG_OPENIDE_LOADERS = "unit/platform5/org-openide-loaders";
+    private static final String ORG_OPENIDE_LOADERS_QA = "qa-functional/platform5/org-openide-loaders";
     private static final String ORG_OPENIDE_FS_QA = "qa-functional/platform5/org-openide-fs";   
     public TestDistFilterTest(java.lang.String testName) {
         super(testName);
@@ -143,6 +144,20 @@ public class TestDistFilterTest extends NbTestCase {
         filter.setTestListProperty("list.prop6");
         filter.execute();
         assertProperty(prj,"list.prop6",new String[]{});
+   }
+   public void testComplexAttribs2 () throws IOException {
+        TestDistFilter filter = new TestDistFilter();
+        filter.setTestDistDir(getWorkDir());
+        Project prj = getProject();
+        filter.setProject(prj);
+        createModule(ORG_OPENIDE_LOADERS_QA,createConfig("validation or full or ds or i18n or dspool","code"));
+        filter.setAttribs("validation");
+        filter.setHarness("xtest");
+        filter.setTesttype("qa-functional");
+        filter.setTestListProperty("list.prop1");
+        filter.execute();
+        assertProperty(prj,"list.prop1",new String[]{ORG_OPENIDE_LOADERS_QA});
+      
    }
     private String createConfig(String attribs,String executor) {   
         return "<?xml version='1.0' encoding='UTF-8'?>\n" +
