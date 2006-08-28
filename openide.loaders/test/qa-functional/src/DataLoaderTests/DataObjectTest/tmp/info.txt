@@ -1,0 +1,1 @@
+Needed this file because of checkouting empty directory from cvs is not possible.

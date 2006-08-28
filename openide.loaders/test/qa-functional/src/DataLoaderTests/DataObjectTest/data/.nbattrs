@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE attributes PUBLIC "-//NetBeans//DTD DefaultAttributes 1.0//EN" "http://www.netbeans.org/dtds/attributes-1_0.dtd">
+<attributes version="1.0">
+    <fileobject name="JavaSourceObject.java">
+        <attr name="class_dependency_java.lang.Object" stringvalue="JavaSourceObject"/>
+    </fileobject>
+    <fileobject name="SecurityJApplet.java">
+        <attr name="class_dependency_javax.swing.JApplet" stringvalue="SecurityJApplet"/>
+    </fileobject>
+    <fileobject name="ClassObject.java">
+        <attr name="class_dependency_java.lang.Object" stringvalue="ClassObject"/>
+    </fileobject>
+    <fileobject name="SwingFormObject.java">
+        <attr name="class_dependency_javax.swing.JFrame" stringvalue="SwingFormObject"/>
+    </fileobject>
+    <fileobject name="AWTFormObject.java">
+        <attr name="class_dependency_java.awt.Frame" stringvalue="AWTFormObject"/>
+    </fileobject>
+</attributes>

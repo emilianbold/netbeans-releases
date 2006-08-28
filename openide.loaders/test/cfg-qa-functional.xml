@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<!DOCTYPE mconfig PUBLIC "-//NetBeans//DTD XTest cfg 1.0//EN" "http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd"> -->
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial stableeloper of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+  These classes are excluded by default (defined in build.xml):
+    "**/*Suite.class"
+    "**/*$$*.class"
+    "**/data/**"
+    "**/hidden/**"
+    "**/*Hidden.*"
+    "**/*Hid.*"
+-->
+
+<mconfig name="openide qa-functional test config">
+
+    <!--
+    Stable tests are enumerated bellow
+    -->
+
+    <testbag testattribs="validation or full or ds or i18n or dspool" executor="code" name="DO1" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="DataLoaderTests/LoaderPoolTest/DataLoaderPoolTest_explore.class"/>
+                <include name="DataLoaderTests/LoaderPoolTest/DataLoaderPoolTest_create.class"/>
+                <include name="DataLoaderTests/LoaderPoolTest/DataLoaderPoolTest_find.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="validation or full or ds or i18n or dsmanipulation" executor="ide" name="DO2" resultsprocessor="unit">        
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="DataLoaderTests/DataObjectTest/Manipulation.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="validation or full or ds or i18n or dsmodify" executor="ide" name="DO3" resultsprocessor="unit">        
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="DataLoaderTests/DataObjectTest/Modify.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="validation or full or ds or i18n or dsvalidity" executor="ide" name="DO4" resultsprocessor="unit">        
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="DataLoaderTests/DataObjectTest/Validity.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="validation or full or ds or i18n or dsother" executor="ide" name="DO5" resultsprocessor="unit">        
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="DataLoaderTests/DataObjectTest/Others.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    
+
+    <testbag testattribs="fs or full or validation or attribs or i18n" executor="ide" name="FileObject attributes test" resultsprocessor="unit">
+          <testset dir="qa-functional/src"> 
+            <patternset>
+                <include name="FileSystemTest/AttrTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+                     
+
+    <testbag testattribs="full or fsunit or i18n" executor="ide" name="Filesystem unit" resultsprocessor="unit">        
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="unit/org/openide/filesystems/FilesystemBugs.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    
+    
+    
+    <testbag testattribs="full or explorer or i18n" executor="ide" name="Explorer tests" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="gui/explorer/CopyCutPasteRenameTest.class"/>
+        </patternset>
+        </testset>        
+    </testbag>
+    
+   <testbag testattribs="validation or ds" executor="ide" name="DO6">
+    <testset dir="qa-functional/src">
+            <patternset>
+                <include name="DataLoaderTests/DataObjectTest/SomeTests.class"/>
+            </patternset>     
+    </testset>        
+    </testbag>
+
+
+  <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>    
+    <executor name="code" antfile="build-qa-functional.xml" target="run-code-test"/>
+  <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
+
+</mconfig>

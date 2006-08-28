@@ -166,6 +166,16 @@ Microsystems, Inc. All Rights Reserved.
               </test-type>
               <test-type>
                   <name>qa-functional</name>
+                  <test-dependency>
+                      <code-name-base>org.openide.loaders</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.netbeans.core</code-name-base>
+                      <recursive/>
+                      <compile-dependency/>
+                  </test-dependency>
               </test-type>
             </test-dependencies>
             <public-packages>
