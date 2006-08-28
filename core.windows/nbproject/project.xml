@@ -149,6 +149,11 @@ Microsystems, Inc. All Rights Reserved.
                       <compile-dependency/>
                   </test-dependency>
                   <test-dependency>
+                      <code-name-base>org.openide.windows</code-name-base>
+                      <compile-dependency/>
+                      <test/>
+                  </test-dependency>
+                  <test-dependency>
                       <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                       <compile-dependency/>
                   </test-dependency>
