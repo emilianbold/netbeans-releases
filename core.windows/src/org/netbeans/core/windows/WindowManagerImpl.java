@@ -1129,10 +1129,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     @Override
     public void invokeWhenUIReady(Runnable run) {
-        // don't try to invoke at all in these special cases
-        if (Boolean.getBoolean("netbeans.full.hack") || Boolean.getBoolean("netbeans.close")) { // NOI18N
-            return;
-        }
         exclusive.register(run);
     }
 
