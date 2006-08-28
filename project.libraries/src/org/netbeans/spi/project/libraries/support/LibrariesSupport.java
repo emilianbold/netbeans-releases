@@ -18,8 +18,10 @@
  */
 package org.netbeans.spi.project.libraries.support;
 
+import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 
 /**
  * SPI Support class.
@@ -39,5 +41,26 @@ public final class LibrariesSupport {
      */
     public static LibraryImplementation createLibraryImplementation (String libraryType, String[] volumeTypes) {
         return new DefaultLibraryImplementation (libraryType, volumeTypes);
+    }
+    
+    /**
+     * Returns registered {@link LibraryTypeProvider} for given library type. This method 
+     * is mostly used by {@link org.netbeans.spi.project.libraries.LibraryProvider} implementators.
+     * @param libraryType  the type of library for which the provider should be returned.
+     * @return {@link LibraryTypeProvider} for given library type or null, if none is registered.
+     * @since org.netbeans.modules.project.libraries/1 1.14
+     */
+    public static LibraryTypeProvider getLibraryTypeProvider (String libraryType) {
+        return LibraryTypeRegistry.getDefault().getLibraryTypeProvider(libraryType);
+    }
+    
+    /**
+     * Returns all registered {@link LibraryTypeProvider}s. This method 
+     * is mostly used by {@link org.netbeans.spi.project.libraries.LibraryProvider} implementators.
+     * @return an array of {@link LibraryTypeProvider}, never returns null.
+     * @since org.netbeans.modules.project.libraries/1 1.14
+     */
+    public static LibraryTypeProvider[] getLibraryTypeProviders () {
+        return LibraryTypeRegistry.getDefault().getLibraryTypeProviders();
     }
 }

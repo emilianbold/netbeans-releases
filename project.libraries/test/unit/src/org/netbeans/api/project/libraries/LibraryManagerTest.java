@@ -22,6 +22,7 @@ package org.netbeans.api.project.libraries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -32,10 +33,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.project.libraries.WritableLibraryProvider;
+import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryProvider;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.InstanceDataObject;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.Lookups;
 /**
  *
@@ -45,6 +55,13 @@ public class LibraryManagerTest extends NbTestCase {
     
     private TestLibraryProvider lp;
     
+    private static final String LIBRARY_TYPE = "j2se";  //NOI18N
+    private static final String[] VOLUME_TYPES = new String[] {
+        "bin",
+        "src",
+        "doc"
+    };
+    
     /** Creates a new instance of LibraryManagerTest */
     public LibraryManagerTest (String testName) {
         super (testName);
@@ -53,7 +70,27 @@ public class LibraryManagerTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         lp = new TestLibraryProvider ();
-        TestUtil.setLookup (Lookups.fixed(new Object[] {lp}));
+        TestUtil.setLookup (Lookups.fixed(new Object[] {
+            lp
+        }));
+        registerLibraryTypeProvider();
+    }
+    
+    
+    private static void registerLibraryTypeProvider () throws Exception {
+        StringTokenizer tk = new StringTokenizer("org-netbeans-api-project-libraries/LibraryTypeProviders","/");
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        while (tk.hasMoreElements()) {
+            String pathElement = tk.nextToken();
+            FileObject tmp = root.getFileObject(pathElement);
+            if (tmp == null) {
+                tmp = root.createFolder(pathElement);
+            }
+            root = tmp;
+        }
+        if (root.getChildren().length == 0) {
+            InstanceDataObject.create (DataFolder.findFolder(root),"TestLibraryTypeProvider",TestLibraryTypeProvider.class);
+        }
     }
     
     public void testGetLibraries () throws Exception {        
@@ -93,6 +130,30 @@ public class LibraryManagerTest extends NbTestCase {
         assertNull ("Nonexisting library", lib);
     }
     
+    public void testAddRemoveLibrary () throws Exception {
+        final LibraryImplementation[] impls = createTestLibs();
+        lp.setLibraries(impls);
+        final LibraryManager lm = LibraryManager.getDefault();
+        Library[] libs = lm.getLibraries();
+        assertEquals ("Libraries count", 2, libs.length);
+        assertLibsEquals (libs, impls);
+        final LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(LIBRARY_TYPE);
+        assertNotNull (provider);
+        final LibraryImplementation newLibImplementation = provider.createLibrary();
+        newLibImplementation.setName("NewLib");
+        final Library newLibrary = LibraryFactory.createLibrary(newLibImplementation);
+        lm.addLibrary(newLibrary);
+        libs = lm.getLibraries();
+        assertEquals ("Libraries count", 3, libs.length);
+        List newLibs = new ArrayList (Arrays.asList(impls));
+        newLibs.add (newLibImplementation);
+        assertLibsEquals (libs, (LibraryImplementation[])newLibs.toArray(new LibraryImplementation[newLibs.size()]));
+        lm.removeLibrary(newLibrary);
+        libs = lm.getLibraries();
+        assertEquals("Libraries count",2,libs.length);
+        assertLibsEquals (libs, impls);
+    }
+    
     static LibraryImplementation[] createTestLibs () throws MalformedURLException {
         LibraryImplementation[] impls = new LibraryImplementation[] {
             new TestLibraryImplementation (),
@@ -129,14 +190,14 @@ public class LibraryManagerTest extends NbTestCase {
     }
     
     
-    static class TestLibraryProvider implements LibraryProvider  {
+    static class TestLibraryProvider implements WritableLibraryProvider  {
         
         private PropertyChangeSupport support;
-        private LibraryImplementation[] libraries;
+        private List libraries;
         
         public TestLibraryProvider () {
             this.support = new PropertyChangeSupport (this);
-            this.libraries = new LibraryImplementation[0];
+            this.libraries = new ArrayList();
         }
         
         public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -148,11 +209,27 @@ public class LibraryManagerTest extends NbTestCase {
         }
 
         public LibraryImplementation[] getLibraries() {
-            return this.libraries;
-        }
+            return (LibraryImplementation[]) this.libraries.toArray(new LibraryImplementation[libraries.size()]);
+        }                
         
         public void setLibraries (LibraryImplementation[] libraries) {
-            this.libraries = libraries;
+            this.libraries = new ArrayList(Arrays.asList(libraries));
+            this.support.firePropertyChange(PROP_LIBRARIES,null,null);
+        }
+
+        public void addLibrary(LibraryImplementation library) throws IOException {
+            this.libraries.add (library);
+            this.support.firePropertyChange(PROP_LIBRARIES,null,null);
+        }
+
+        public void removeLibrary(LibraryImplementation library) throws IOException {
+            this.libraries.remove (library);
+            this.support.firePropertyChange(PROP_LIBRARIES,null,null);
+        }
+
+        public void updateLibrary(LibraryImplementation oldLibrary, LibraryImplementation newLibrary) throws IOException {
+            this.libraries.remove(oldLibrary);
+            this.libraries.add (newLibrary);
             this.support.firePropertyChange(PROP_LIBRARIES,null,null);
         }
         
@@ -175,6 +252,41 @@ public class LibraryManagerTest extends NbTestCase {
         }
     }
     
+    
+    public static class TestLibraryTypeProvider implements LibraryTypeProvider {
+            
+
+        public String getDisplayName() {
+            return LIBRARY_TYPE;
+        }
+
+        public String getLibraryType() {
+            return LIBRARY_TYPE;
+        }
+
+        public String[] getSupportedVolumeTypes() {
+            return VOLUME_TYPES;
+        }
+
+        public LibraryImplementation createLibrary() {
+            return LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES);
+        }
+
+        public void libraryDeleted(LibraryImplementation library) {
+        }
+
+        public void libraryCreated(LibraryImplementation library) {
+        }
+
+        public java.beans.Customizer getCustomizer(String volumeType) {
+            return null;
+        }
+
+        public org.openide.util.Lookup getLookup() {
+            return null;
+        }
+    }
+    
     static class TestLibraryImplementation implements LibraryImplementation {
         
         private static final Set<String> supportedTypes;
@@ -184,12 +296,8 @@ public class LibraryManagerTest extends NbTestCase {
         private Map<String,List<URL>> contents;
         private PropertyChangeSupport support;
         
-        static {
-            Set<String> st = new HashSet<String>();
-            st.add ("bin");
-            st.add ("src");
-            st.add ("doc");
-            supportedTypes = Collections.unmodifiableSet(st);
+        static {            
+            supportedTypes = Collections.unmodifiableSet(new HashSet(Arrays.asList(VOLUME_TYPES)));
         }
         
         public TestLibraryImplementation () {
@@ -198,7 +306,7 @@ public class LibraryManagerTest extends NbTestCase {
         }
         
         public String getType() {
-            return "TestLibraryType";
+            return LIBRARY_TYPE;
         }
         
         public String getName() {

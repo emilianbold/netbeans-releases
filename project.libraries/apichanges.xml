@@ -79,7 +79,25 @@ is the proper place.
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
-
+    
+    <change>
+            <api name="general"/>
+            <summary>Added methods for adding and removing libraries into/from library manager</summary>
+            <version major="1" minor="14"/>
+            <date day="11" month="8" year="2006"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added method for adding and removing a new library into/from the library manager.
+                    Added a factory class for creating Library (API object) form LibraryImplementation (SPI object).
+                    Added a support methods for listing installed LibraryTypeProviders.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.libraries" name="LibraryManager"/>
+            <class package="org.netbeans.spi.project.libraries" name="LibraryFactory"/>
+            <class package="org.netbeans.spi.project.libraries.support" name="LibrariesSupport"/>
+        </change>    
     <changes>
 
         <change id="rel-vers-1">

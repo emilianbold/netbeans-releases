@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import org.netbeans.modules.project.libraries.LibraryAccessor;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -56,7 +57,7 @@ public final class Library {
      * Creates new library instance
      *
      */
-    Library (LibraryImplementation impl) {
+    private Library (LibraryImplementation impl) {
         this.impl = impl;
         this.impl.addPropertyChangeListener (new PropertyChangeListener () {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -203,6 +204,14 @@ public final class Library {
             // OK, not required to be there.
             return key;
         }
+    }
+    
+    static {
+        LibraryAccessor.DEFAULT = new LibraryAccessor () {
+            public Library createLibrary (LibraryImplementation impl) {
+                return new Library (impl);
+            }
+        };
     }
 
 } // end Library

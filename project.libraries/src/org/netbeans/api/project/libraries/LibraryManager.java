@@ -30,7 +30,11 @@ import org.openide.util.LookupEvent;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.project.libraries.WritableLibraryProvider;
+import org.netbeans.spi.project.libraries.LibraryFactory;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
 // XXX make getLibraries return Set not array
 
@@ -102,8 +106,8 @@ public final class LibraryManager {
             for (LibraryProvider storage : instances) {
                 this.currentStorages.add (storage);
                 for (LibraryImplementation impl : storage.getLibraries()) {
-                    l.add(new Library(impl));
-                }                
+                    l.add(LibraryFactory.createLibrary(impl));
+                }
             }
             for (LibraryProvider p : removed) {
                 p.removePropertyChangeListener(this.plistener);
@@ -114,6 +118,58 @@ public final class LibraryManager {
             this.cache = l;
         }
         return this.cache.toArray(new Library[this.cache.size()]);
+    }
+    
+    
+    /**
+     * Installs a new library into the library manager.
+     * <div class="nonnormative">
+     * <p>
+     * A typical usage would be:
+     * </p>
+     * LibraryManager libraryManager = LibraryManager.getDefault();
+     * LibraryImplementation libImpl = LibrariesSupport.getLibraryTypeProvider("j2se").createLibrary();        
+     * libImpl.setName("FooLibTest");
+     * libImpl.setContent ("classpath",listOfResources);
+     * libraryManager.addLibrary(LibraryFactory.createLibrary(libImpl));
+     * </div>
+     * @param library to be installed, the library has to be created
+     * with registered {@link org.netbeans.spi.project.libraries.LibraryTypeProvider}.
+     * @throws IOException when the library cannot be stored
+     * @throws IllegalArgumentException if the library is not recognized by any 
+     * {@link org.netbeans.spi.project.libraries.LibraryTypeProvider} or the library
+     * of the same name already exists.
+     * @since org.netbeans.modules.project.libraries/1 1.14
+     */
+    public void addLibrary (final Library library) throws IOException, IllegalArgumentException {
+        assert library != null;
+        if (LibrariesSupport.getLibraryTypeProvider(library.getType()) == null) {
+            throw new IllegalArgumentException ("Trying to add a library of unknown type: " + library.getType()); //NOI18N
+        }
+        String newLibraryName = library.getName();
+        if ( newLibraryName == null || getLibrary(newLibraryName)!= null) {
+            throw new IllegalArgumentException ("Library hasn't name or the name is already used: " + newLibraryName); //NOI18N
+        }
+        final Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template (WritableLibraryProvider.class));
+        final Collection/*<WriteableLibraryProvider>*/ providers = result.allInstances();
+        assert providers.size() == 1;        
+        ((WritableLibraryProvider)providers.iterator().next()).addLibrary(library.getLibraryImplementation());
+    }
+    
+    /**
+     * Removes installed library 
+     * @param library to be removed. 
+     * @throws IOException when library cannot be deleted.
+     * @throws IllegalArgumentException when library is not installed in a writeable 
+     * {@link org.netbeans.spi.project.libraries.LibraryProvider}
+     * @since org.netbeans.modules.project.libraries/1 1.14
+     */
+    public void removeLibrary (final Library library) throws IOException, IllegalArgumentException {
+        assert library != null;
+        final Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template (WritableLibraryProvider.class));
+        final Collection/*<WriteableLibraryProvider>*/ providers = result.allInstances();
+        assert providers.size() == 1;
+        ((WritableLibraryProvider)providers.iterator().next()).removeLibrary(library.getLibraryImplementation());
     }
 
     /**
