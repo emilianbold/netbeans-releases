@@ -49,9 +49,8 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
 
     private static final int STATUS_BADGEABLE = FileInformation.STATUS_VERSIONED_UPTODATE | 
                                                 FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | 
+                                                FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
                                                 FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
-
-    private static final Action[] EMPTY_ACTIONS = new Action[0];
 
     private static FileStatusProvider instance;
     private boolean shutdown; 
@@ -184,7 +183,6 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
      * as unmanaged (future user action feature))
      */
     private static boolean isManaged(Set fileObjects) {
-        boolean managed  = false;
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         Iterator it = fileObjects.iterator();
         while (it.hasNext()) {
@@ -245,7 +243,7 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
         }
         for (Iterator i = folders.keySet().iterator(); i.hasNext();) {
             FileSystem fs = (FileSystem) i.next();
-            Set files = (Set) folders.get(fs);
+            Set files = folders.get(fs);
             Diagnostics.println("Firing status event: " + file.getAbsolutePath()); // NOI18N
             fireFileStatusChanged(new FileStatusEvent(fs, files, true, false));
         }
