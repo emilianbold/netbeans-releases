@@ -64,8 +64,7 @@ public class WinXPSlidingButtonUI extends WindowsSlidingButtonUI {
     protected JToggleButton hiddenToggle;
     
     
-    /** Private, no need for outer classes to instantiate */
-    private WinXPSlidingButtonUI() {
+    WinXPSlidingButtonUI() {
     }
     
     public static ComponentUI createUI(JComponent c) {

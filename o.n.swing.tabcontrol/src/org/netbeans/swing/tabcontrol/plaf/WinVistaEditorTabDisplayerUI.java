@@ -30,44 +30,47 @@ import org.netbeans.swing.tabcontrol.TabListPopupAction;
 import org.openide.util.Utilities;
 
 /**
- * Windows xp impl of tabs ui
+ * Windows Vista impl of tabs ui
  *
- * @author Tim Boudreau
+ * @author S. Aubrecht
  */
-public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
+public final class WinVistaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
     private static final Rectangle scratch5 = new Rectangle();
 
-    public WinXPEditorTabDisplayerUI(TabDisplayer displayer) {
+    public WinVistaEditorTabDisplayerUI(TabDisplayer displayer) {
         super (displayer);
     }
 
     public static ComponentUI createUI(JComponent c) {
-        return new WinXPEditorTabDisplayerUI ((TabDisplayer) c);
+        return new WinVistaEditorTabDisplayerUI ((TabDisplayer) c);
     }    
 
     private static final String[] iconNames = new String[]{
-        "org/netbeans/swing/tabcontrol/resources/xp-right-enabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-right-disabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-right-enabled-selected.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-left-enabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-left-disabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-left-enabled-selected.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-down-enabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-down-disabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-down-enabled-selected.gif"}; //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_left_enabled.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_left_disabled.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_left_over.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_left_pressed.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_right_enabled.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_right_disabled.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_right_over.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_right_pressed.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_popup_enabled.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_popup_enabled.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_popup_over.png", //NOI18N
+        "org/netbeans/swing/tabcontrol/resources/vista_popup_pressed.png"}; //NOI18N
 
     protected AbstractButton[] createControlButtons() {
         //XXX probably this can be moved into superclass?
         JButton[] result = new JButton[3];
-        result[0] = new TimerButton(scroll().getBackwardAction());
-        result[1] = new TimerButton(scroll().getForwardAction());
+        result[0] = new TimerButton(scroll().getBackwardAction(), false);
+        result[1] = new TimerButton(scroll().getForwardAction(), false);
         result[2] = new OnPressButton(new TabListPopupAction(displayer));
         configureButton(result[0], 0);
-        configureButton(result[2], 1);
-        configureButton(result[1], 2);
-        result[0].setPreferredSize(new Dimension(15, 14));
-        result[2].setPreferredSize(new Dimension(16, 14));
-        result[1].setPreferredSize(new Dimension(15, 14));
+        configureButton(result[1], 1);
+        configureButton(result[2], 2);
+        result[0].setPreferredSize(new Dimension(15, 15));
+        result[2].setPreferredSize(new Dimension(16, 15));
+        result[1].setPreferredSize(new Dimension(15, 15));
 
         scroll().getBackwardAction().putValue("control", displayer); //NOI18N
         scroll().getForwardAction().putValue("control", displayer); //NOI18N
@@ -76,12 +79,12 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
     }
 
     public Dimension getPreferredSize(JComponent c) {
-        int prefHeight = 24;
+        int prefHeight = 22;
         Graphics g = BasicScrollingTabDisplayerUI.getOffscreenGraphics();
         if (g != null) {
             FontMetrics fm = g.getFontMetrics(displayer.getFont());
             Insets ins = getTabAreaInsets();
-            prefHeight = fm.getHeight() + ins.top + ins.bottom + 8;
+            prefHeight = fm.getHeight() + ins.top + ins.bottom + 6;
         }
         return new Dimension(displayer.getWidth(), prefHeight);
     }
@@ -90,27 +93,22 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
         return new ImageIcon(Utilities.loadImage(iconNames[i]));
     }
 
-    private static final Dimension controlButtonSize(int index) {
-        Dimension result = new Dimension(index == 1 ? 13 : 14, 15);
-        return result;
-    }
-
-
     private static void configureButton(JButton button, int idx) {
         button.setFocusPainted(false);
         button.setBorderPainted(false);
         button.setContentAreaFilled(false);
+        button.setBorder(BorderFactory.createEmptyBorder());
 
-        Icon normal = createIcon((idx * 3));
-        Icon disabled = createIcon((idx * 3) + 1);
-        Icon rollover = createIcon((idx * 3) + 2);
+        Icon normal = createIcon((idx * 4));
+        Icon disabled = createIcon((idx * 4) + 1);
+        Icon rollover = createIcon((idx * 4) + 2);
+        Icon pressed = createIcon((idx * 4) + 3);
 
         button.setIcon(normal);
         button.setRolloverEnabled(true);
         button.setRolloverIcon(rollover);
         button.setDisabledIcon(disabled);
-        button.setPreferredSize(new Dimension(normal.getIconWidth() + 1,
-                                              normal.getIconHeight() + 1));
+        button.setPressedIcon(pressed);
 
         button.setMargin(null);
         button.setText(null);
@@ -131,64 +129,10 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
 
         Insets ins = getTabAreaInsets();
 
-        int y = displayer.getHeight() - WinXPEditorTabCellRenderer.BOTTOM_INSET;
-        //Draw the fill line that will be under the white highlight line - this
-        //goes across the whole component.
-        int selEnd = 0;
-        int i = selectionModel.getSelectedIndex();
-        g.setColor(WinXPEditorTabCellRenderer.getSelectedTabBottomLineColor());
-        g.drawLine(0, y + 1, displayer.getWidth(), y + 1);
-        
-        //Draw the white highlight under all tabs but the selected one:
-        
-        //Check if we will need to draw a white line from the left edge to the 
-        //selection, and another from the left edge of the selection to the
-        //end of the control, skipping the selection area.  If the selection is
-        //visible we should skip it.
+        int y = displayer.getHeight() - WinVistaEditorTabCellRenderer.BOTTOM_INSET;
         int tabsWidth = getTabsAreaWidth();
-        boolean needSplitLine = i != -1 && ((i
-                < scroll().getLastVisibleTab(tabsWidth) || i
-                <= scroll().getLastVisibleTab(tabsWidth)
-                && !scroll().isLastTabClipped())
-                && i >= scroll().getFirstVisibleTab(tabsWidth));
 
-        g.setColor(UIManager.getColor("controlLtHighlight"));
-        if (needSplitLine) {
-            //Find the rectangle of the selection to skip it
-            getTabRect(i, scratch5);
-            //Make sure it's not offscreen
-            if (scratch5.width != 0) {
-                //draw the first part of the line
-                if (r.x < scratch5.x) {
-                    g.drawLine(r.x, y, scratch5.x + 1, y);
-                }
-                //Now draw the second part out to the right edge
-                if (scratch5.x + scratch5.width < r.x + r.width) {
-                    //Find the right edge of the selected tab rectangle
-                    selEnd = scratch5.x + scratch5.width;
-                    //If the last tab is not clipped, the final tab is one
-                    //pixel smaller; we need to overwrite one pixel of the
-                    //border or there will be a small stub sticking down
-                    if (!scroll().isLastTabClipped()) {
-                        selEnd--;
-                    }
-                    //Really draw the second part, now that we know where to
-                    //start
-                    g.drawLine(selEnd, y, r.x + r.width, y);
-                }
-            }
-        } else {
-            //The selection is not visible - draw the white highlight line
-            //across the entire width of the container
-            g.drawLine(r.x, y, r.x + r.width, y);
-        }
-
-        //Draw the left and right edges so the area below the tabs looks 
-        //closed
-        g.setColor(WinXPEditorTabCellRenderer.getBorderColor());
-        g.drawLine(0, y - 1, 0, displayer.getHeight());
-        g.drawLine(displayer.getWidth() - 1, y - 1, displayer.getWidth() - 1,
-                   displayer.getHeight());
+        g.setColor(WinVistaEditorTabCellRenderer.getBorderColor());
         
         //Draw a line tracking the bottom of the tabs under the control
         //buttons, out to the right edge of the control
@@ -208,7 +152,7 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
     }
 
     protected TabCellRenderer createDefaultRenderer() {
-        return new WinXPEditorTabCellRenderer();
+        return new WinVistaEditorTabCellRenderer();
     }
 
     protected LayoutManager createLayout() {
@@ -216,7 +160,16 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
     }
 
     public java.awt.Insets getTabAreaInsets() {
-        return new Insets(0, 0, 0, 55);
+        return new Insets(0, 0, 0, 57);
+    }
+    
+    protected Rectangle getTabRectForRepaint( int tab, Rectangle rect ) {
+        Rectangle res = super.getTabRectForRepaint( tab, rect );
+        //we need to repaint extra vertical lines on both sides when mouse-over 
+        //or selection changes
+        res.x--;
+        res.width += 2;
+        return res;
     }
 
     private class WCLayout implements LayoutManager {

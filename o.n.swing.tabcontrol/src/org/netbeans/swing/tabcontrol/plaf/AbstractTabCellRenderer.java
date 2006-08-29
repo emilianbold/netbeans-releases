@@ -221,6 +221,15 @@ public abstract class AbstractTabCellRenderer extends JLabel
 
     /**
      * Convenience getter to determine if the current state indicates
+     * that the renderer is currently configured appears to the left of
+     * the armed tab.
+     */
+    protected final boolean isNextTabArmed() {
+        return (state & TabState.BEFORE_ARMED) != 0;
+    }
+
+    /**
+     * Convenience getter to determine if the current state indicates
      * that the renderer is currently configured appears to the right of
      * the selected tab.
      */

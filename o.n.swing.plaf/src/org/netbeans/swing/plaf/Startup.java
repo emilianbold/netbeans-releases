@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.swing.plaf.winclassic.WindowsLFCustoms;
+import org.netbeans.swing.plaf.winvista.VistaLFCustoms;
 import org.netbeans.swing.plaf.winxp.XPLFCustoms;
 
 /** Singleton, manages customizers for various LFs. Installs, uninstalls them on LF change.
@@ -288,7 +289,9 @@ public final class Startup {
         if (FORCED_CUSTOMS != null) {
             System.err.println("Using explicitly set UI customizations: " + //NOI18N
                 FORCED_CUSTOMS);
-            if ("XP".equals(FORCED_CUSTOMS)) { //NOI18N
+            if ("Vista".equals(FORCED_CUSTOMS)) { //NOI18N
+                return new VistaLFCustoms();
+            } else if ("XP".equals(FORCED_CUSTOMS)) { //NOI18N
                 return new XPLFCustoms();
             } else if ("Aqua".equals(FORCED_CUSTOMS)) { //NOI18N
                 return new AquaLFCustoms();
@@ -312,11 +315,15 @@ public final class Startup {
         buf.append("Nb."); //NOI18N
         buf.append(UIManager.getLookAndFeel().getID());
         if (UIUtils.isXPLF()) {
-            buf.append("XPLFCustoms"); //NOI18N
+            if (isWindowsVista()) {
+                buf.append("VistaLFCustoms"); //NOI18N
+            } else {
+                buf.append("XPLFCustoms"); //NOI18N
+            }
         } else {
             buf.append("LFCustoms"); //NOI18N
         }
-
+        
         LFCustoms result = null;
         try {
             result = (LFCustoms)UIManager.get(buf.toString());
@@ -331,7 +338,11 @@ public final class Startup {
             switch (Arrays.asList(knownLFs).indexOf(UIManager.getLookAndFeel().getID())) {
                 case 1 :
                     if (UIUtils.isXPLF()) {
-                        result = new XPLFCustoms();
+                        if (isWindowsVista()) {
+                            result = new VistaLFCustoms();
+                        } else {
+                            result = new XPLFCustoms();
+                        }
                     } else {
                         result = new WindowsLFCustoms();
                     }
@@ -348,7 +359,11 @@ public final class Startup {
                 default :
                     // #79401 check if it's XP style LnF, for example jGoodies
                     if (UIUtils.isXPLF()) {
-                        result = new XPLFCustoms();
+                        if (isWindowsVista()) {
+                            result = new VistaLFCustoms();
+                        } else {
+                            result = new XPLFCustoms();
+                        }
                     } else {
                         result = new WindowsLFCustoms();
                     }
@@ -386,6 +401,11 @@ public final class Startup {
     private boolean isWindows() {
         String osName = System.getProperty ("os.name");
         return osName.startsWith("Windows");
+    }
+
+    private boolean isWindowsVista() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Vista") >= 0;
     }
 
     private boolean isMac() {

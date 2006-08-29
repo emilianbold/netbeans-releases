@@ -263,9 +263,15 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         Timer timer = null;
         Image disabledImage = null;
         Image enabledImage = null;
+        boolean useCachedPainting = true;
 
         public TimerButton(Action a) {
+            this( a, true );
+        }
+        
+        public TimerButton(Action a, boolean useCachedPainting) {
             super(a);
+            this.useCachedPainting = useCachedPainting;
         }
 
         private Timer getTimer() {
@@ -324,9 +330,8 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
                 startTimer();
             } else if (me.getID() == me.MOUSE_RELEASED) {
                 stopTimer();
-            } else {
-                super.processMouseEvent(me);
             }
+            super.processMouseEvent(me);
         }
 
         protected void processFocusEvent(FocusEvent fe) {
@@ -337,29 +342,33 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         }
 
         protected void paintComponent(Graphics g) {
-            boolean enabled = isEnabled();
-            if (enabled && enabledImage == null
-            || !enabled && disabledImage == null) {
-                GraphicsConfiguration gc = getGraphicsConfiguration();
-                Image intermediateImage = gc.createCompatibleImage(16, 18, Transparency.BITMASK);
-                Graphics2D gImg = (Graphics2D)intermediateImage.getGraphics();
-                Composite old = gImg.getComposite();
-                gImg.setComposite(AlphaComposite.Src);
-                gImg.setColor(new Color(0, 0, 0, 0));
-                gImg.fillRect(0, 0, 16, 18);
-                gImg.setClip( 0, 0, 16, 18 );
-                gImg.setComposite(old);
-                super.paintComponent(gImg);
-                gImg.dispose();
-                if (enabled) {
-                    enabledImage = intermediateImage;
+            if( useCachedPainting ) {
+                boolean enabled = isEnabled();
+                if (enabled && enabledImage == null
+                || !enabled && disabledImage == null) {
+                    GraphicsConfiguration gc = getGraphicsConfiguration();
+                    Image intermediateImage = gc.createCompatibleImage(16, 18, Transparency.BITMASK);
+                    Graphics2D gImg = (Graphics2D)intermediateImage.getGraphics();
+                    Composite old = gImg.getComposite();
+                    gImg.setComposite(AlphaComposite.Src);
+                    gImg.setColor(new Color(0, 0, 0, 0));
+                    gImg.fillRect(0, 0, 16, 18);
+                    gImg.setClip( 0, 0, 16, 18 );
+                    gImg.setComposite(old);
+                    super.paintComponent(gImg);
+                    gImg.dispose();
+                    if (enabled) {
+                        enabledImage = intermediateImage;
+                    }
+                    else {
+                        disabledImage = intermediateImage;
+                    }
                 }
-                else {
-                    disabledImage = intermediateImage;
-                }
-            }
 
-            g.drawImage(enabled? enabledImage: disabledImage, 0, 0, null);
+                g.drawImage(enabled? enabledImage: disabledImage, 0, 0, null);
+            } else {
+                super.paintComponent( g );
+            }
         }
     }
 

@@ -524,6 +524,12 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
                 | TabState.REPAINT_ON_MOUSE_PRESSED;
     }
 
+    /**
+     * @return Rectangle of the tab to be repainted
+     */ 
+    protected Rectangle getTabRectForRepaint( int tab, Rectangle rect ) {
+        return getTabRect( tab, rect );
+    }
 
     protected class BasicTabState extends TabState {
 
@@ -558,7 +564,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
             if (tab == -1 || tab > displayer.getModel().size()) {
                 return;
             }
-            getTabRect(tab, scratch);
+            getTabRectForRepaint(tab, scratch);
             scratch.y = 0;
             scratch.height = displayer.getHeight();
             displayer.repaint(scratch.x, scratch.y, scratch.width,

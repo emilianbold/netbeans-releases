@@ -74,6 +74,10 @@ final class ColorUtil {
      * holds icon of XP style tab drag texture
      */
     private static Icon XP_DRAG_IMAGE;
+    /**
+     * holds icon of Vista style tab drag texture
+     */
+    private static Icon VISTA_DRAG_IMAGE;
 
     /**
      * Utility class, no instances should be created.
@@ -516,6 +520,73 @@ final class ColorUtil {
     }
 
     /**
+     * Fills given the upper and lower halves of the given rectangle 
+     * in gradient style from bright to dark colors.
+     */
+    public static void vistaFillRectGradient(Graphics2D g, Rectangle rect,
+                                          Color brightUpperC, Color darkUpperC,
+                                          Color brightLowerC, Color darkLowerC) {
+        vistaFillRectGradient(g, rect.x, rect.y, rect.width, rect.height, 
+                brightUpperC, darkUpperC, brightLowerC, darkLowerC);
+    }
+
+    /**
+     * Fills given the upper and lower halves of the given rectangle 
+     * in gradient style from bright to dark colors.
+     */
+    public static void vistaFillRectGradient(Graphics2D g, int x, int y,
+                                          int width, int height, 
+                                          Color brightUpperC, Color darkUpperC,
+                                          Color brightLowerC, Color darkLowerC) {
+        paintVistaGradientFill( g, x, y, width, height/2, 
+                brightUpperC, darkUpperC );
+        paintVistaGradientFill( g, x, y+height/2, width, height-height/2, 
+                brightLowerC, darkLowerC );
+    }
+
+    /**
+     * Fills given rectangle in gradient style from bright to dark colors,
+     * the upper half of the rectangle has a single color fill.
+     */
+    public static void vistaFillRectGradient(Graphics2D g, Rectangle rect,
+                                          Color upperC,
+                                          Color brightLowerC, Color darkLowerC) {
+        vistaFillRectGradient( g, rect.x, rect.y, rect.width, rect.height, 
+                upperC, brightLowerC, darkLowerC );
+    }
+    /**
+     * Fills given rectangle in gradient style from bright to dark colors,
+     * the upper half of the rectangle has a single color fill.
+     */
+    public static void vistaFillRectGradient(Graphics2D g, int x, int y,
+                                          int width, int height, 
+                                          Color upperC,
+                                          Color brightLowerC, Color darkLowerC) {
+        g.setColor( upperC );
+        g.fillRect( x, y, width, height/2 );
+        paintVistaGradientFill( g, x, y+height/2, width, height-height/2, 
+                brightLowerC, darkLowerC );
+    }
+    
+    /**
+     * Draws drag texture of the tab in specified bounds.
+     */
+    public static void paintVistaTabDragTexture(Component control, Graphics g,
+                                             int x, int y, int height) {
+        if (VISTA_DRAG_IMAGE == null) {
+            VISTA_DRAG_IMAGE = initVistaDragTextureImage();
+        }
+        int count = height / 4;
+        int ypos = y;
+        g.setColor( Color.WHITE );
+        for (int i = 0; i < count; i++) {
+            VISTA_DRAG_IMAGE.paintIcon(control, g, x, ypos);
+            g.drawLine( x+1, ypos+2, x+2, ypos+2 );
+            g.drawLine( x+2, ypos+1, x+2, ypos+1 );
+            ypos += 4;
+        }
+    }
+    /**
      * Adjusts color by given values, positive values means brightening,
      * negative values darkening of original color.
      *
@@ -607,6 +678,31 @@ final class ColorUtil {
         i.setRGB(1, 0, dk2.getRGB());
         Color up = UIManager.getColor("inactiveCaptionBorder"); //NOI18N
         i.setRGB(0, 0, up.getRGB());
+        return new ImageIcon(i);
+    }
+    
+    /**
+     * Fills given rectangle using top-down gradient fill of specified colors
+     */
+    private static void paintVistaGradientFill(Graphics2D g, int x, int y,
+                                            int width, int height,
+                                            Color brightC, Color darkC) {
+        GradientPaint gradient = getGradientPaint(x, y, brightC, x, y + height,
+                                                  darkC);
+        g.setPaint(gradient);
+        g.fillRect(x, y, width, height);
+    }
+
+    /**
+     * Dynamically creates and returns drag texture icon
+     */
+    private static final Icon initVistaDragTextureImage() {
+        BufferedImage i = new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB);
+        int grey = new Color(124,124,124).getRGB();
+        i.setRGB(1, 0, grey);
+        i.setRGB(0, 1, grey);
+        i.setRGB(0, 0, new Color(162,163,164).getRGB());
+        i.setRGB(1, 1, new Color(107,107,107).getRGB());
         return new ImageIcon(i);
     }
     

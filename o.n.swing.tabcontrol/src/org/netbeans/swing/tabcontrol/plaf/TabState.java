@@ -177,6 +177,12 @@ public abstract class TabState {
     public static final int ATTENTION = 16384;
     
     /**
+     * Bitmask indicating that the tab's index is that of the armed index
+     * less one
+     */
+    public static final int BEFORE_ARMED = 32768;
+    
+    /**
      * Indicates the last constant defined - renderers that wish to add their
      * own bitmasks should use multiples of this number
      */
@@ -256,6 +262,9 @@ public abstract class TabState {
         }
         if (tab == selectedIndex - 1) {
             result |= BEFORE_SELECTED;
+        }
+        if (tab == containsMouseIndex - 1) {
+            result |= BEFORE_ARMED;
         }
         if (isAlarmTab(tab)) {
             result |= ATTENTION;
