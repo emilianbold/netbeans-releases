@@ -54,7 +54,7 @@ public class WSUtil {
            }
            
            if (WSDebug.isEnabled()) 
-               WSDebug.notify(clazz, "read string: " + buffer.toString());
+               WSDebug.notify(clazz, "read string: \n" + buffer.toString());
            
            // return the string
            return buffer.toString();
@@ -73,6 +73,9 @@ public class WSUtil {
      */
     public static void writeFile(File file, String contents) {
         try {
+            if (WSDebug.isEnabled()) 
+                WSDebug.notify(clazz, "write string: \n" + contents);
+           
             // create a writer and write the contents
             new FileOutputStream(file).write(contents.getBytes());
         } catch (IOException e) {
