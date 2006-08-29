@@ -1129,7 +1129,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
         );
     }
     
-    public JPDAStep createJPDAStep(int size, int depth) { 
-        return new JPDAStepImpl(this, size, depth);
+    public JPDAStep createJPDAStep(int size, int depth) {
+        Session session = (Session) lookupProvider.lookupFirst (null, Session.class);
+        return new JPDAStepImpl(this, session, size, depth);
     }
 }

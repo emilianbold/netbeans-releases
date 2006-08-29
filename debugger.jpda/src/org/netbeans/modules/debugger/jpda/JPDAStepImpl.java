@@ -20,6 +20,8 @@
 package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.VirtualMachine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -37,8 +39,11 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 
 public class JPDAStepImpl extends JPDAStep implements Executor {
     
-    public JPDAStepImpl(JPDADebugger debugger, int size, int depth) {
+    private Session session;
+    
+    public JPDAStepImpl(JPDADebugger debugger, Session session, int size, int depth) {
         super(debugger, size, depth);
+        this.session = session;
     }
     
     public void addStep(JPDAThread tr) {
@@ -73,8 +78,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         EventRequestManager erm = vm.eventRequestManager();
         erm.deleteEventRequest(event.request());
         firePropertyChange(PROP_STATE_EXEC, null, null);
-        if (! getHidden())
+        if (! getHidden()) {
+            DebuggerManager.getDebuggerManager().setCurrentSession(session);
             debuggerImpl.setStoppedState(trImpl.getThreadReference());
+        }
         return getHidden();
     }
 }

@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 
 
 import org.netbeans.spi.debugger.ContextProvider;
@@ -228,6 +230,10 @@ implements Executor {
                      (lookupProvider, t, getSmartSteppingFilterImpl ())
                 ) {
                     // YES!
+                    Session session = (Session) lookupProvider.lookupFirst(null, Session.class);
+                    if (session != null) {
+                        DebuggerManager.getDebuggerManager().setCurrentSession(session);
+                    }
                     getDebuggerImpl ().setStoppedState (tr);
                     //S ystem.out.println("/nStepAction.exec end - do not resume");
                     return false; // do not resume

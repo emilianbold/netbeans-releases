@@ -32,6 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 
 
 import org.netbeans.spi.debugger.ContextProvider;
@@ -224,6 +226,10 @@ implements Executor, PropertyChangeListener {
             }
             if (stop) {
                 removeStepRequests (le.thread ());
+                Session session = (Session) contextProvider.lookupFirst(null, Session.class);
+                if (session != null) {
+                    DebuggerManager.getDebuggerManager().setCurrentSession(session);
+                }
                 getDebuggerImpl ().setStoppedState (tr);
             } else {
                 smartLogger.finer(" => do next step.");
