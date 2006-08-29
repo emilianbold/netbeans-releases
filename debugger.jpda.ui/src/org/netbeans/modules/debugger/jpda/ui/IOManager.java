@@ -67,6 +67,7 @@ public class IOManager {
         debuggerIO = IOProvider.getDefault ().getIO (title, true);
         debuggerIO.setFocusTaken (false);
         debuggerOut = debuggerIO.getOut ();
+        debuggerIO.select();
     }
     
     
