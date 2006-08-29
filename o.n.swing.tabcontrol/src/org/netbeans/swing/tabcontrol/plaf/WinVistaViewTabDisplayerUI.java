@@ -287,7 +287,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
         if (((OwnController) getController()).getMouseIndex() == index) {
             return true;
         }
-        return isTabInFront(index) && isMoreThanOne();
+        return isSelected(index) && isActive();
     }
 
     /**
@@ -296,22 +296,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
      */
     private boolean isMouseOver(int index) {
         return ((OwnController) getController()).getMouseIndex() == index
-                && !isTabInFront(index);
-    }
-
-    /**
-     * @return true if tab is selected in other tabs or selected and also
-     *         active
-     */
-    private boolean isTabInFront(int index) {
-        return isSelected(index) && (isActive() || isMoreThanOne());
-    }
-
-    /**
-     * @return true if there is more then one tab, false otherwise
-     */
-    private boolean isMoreThanOne() {
-        return getDataModel().size() > 1;
+                && !isSelected(index);
     }
 
     /**

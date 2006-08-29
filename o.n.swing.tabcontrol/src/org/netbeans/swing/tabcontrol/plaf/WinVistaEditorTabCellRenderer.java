@@ -332,7 +332,8 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             
             g.translate(x, y);
 
-            Color borderColor = ren.isArmed() || ren.isSelected() ? getSelBorderColor() : getBorderColor();
+            Color borderColor = ((ren.isActive() && ren.isSelected())
+                    || ren.isArmed()) ? getSelBorderColor() : getBorderColor();
             g.setColor(borderColor);
             int left = 0;
             //left
@@ -341,7 +342,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             //top
             g.drawLine(0, 0, width - 1, 0);
             //right
-            if( ren.isNextTabSelected() || ren.isNextTabArmed() )
+            if( (ren.isActive() && ren.isNextTabSelected()) || ren.isNextTabArmed() )
                 g.setColor( getSelBorderColor() );
             g.drawLine(width - 1, 0, width - 1, height - 2);
             //bottom
@@ -429,7 +430,8 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             WinVistaEditorTabCellRenderer ren = (WinVistaEditorTabCellRenderer) c;
             g.translate(x, y);
 
-            Color borderColor = ren.isArmed() || ren.isSelected() ? getSelBorderColor() : getBorderColor();
+            Color borderColor = ((ren.isActive() && ren.isSelected())
+                    || ren.isArmed()) ? getSelBorderColor() : getBorderColor();
             g.setColor(borderColor);
             int left = 0;
             //left
@@ -437,7 +439,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             //top
             g.drawLine(0, 0, width - 1, 0);
             //right
-            if( ren.isNextTabSelected() || ren.isNextTabArmed() )
+            if( (ren.isActive() && ren.isNextTabSelected()) || ren.isNextTabArmed() )
                 g.setColor( getSelBorderColor() );
             g.drawLine(width - 1, 0, width - 1, height - 2);
             //bottom
@@ -520,7 +522,8 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             
             g.translate(x, y);
 
-            Color borderColor = ren.isArmed() || ren.isSelected() ? getSelBorderColor() : getBorderColor();
+            Color borderColor = ((ren.isActive() && ren.isSelected())
+                    || ren.isArmed()) ? getSelBorderColor() : getBorderColor();
             g.setColor(borderColor);
             int left = 0;
             //left
