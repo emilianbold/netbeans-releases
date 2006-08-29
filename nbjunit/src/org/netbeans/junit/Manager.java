@@ -94,7 +94,7 @@ public class Manager extends Object {
             path = path.replace('/', File.separatorChar);
         } else {
             // Fallback value, guaranteed to be defined.
-            path = System.getProperty("java.io.tmpdir") + File.separatorChar + "tests";
+            path = System.getProperty("java.io.tmpdir") + File.separatorChar + "tests-" + System.getProperty("user.name");
         }
         return path;
     }
