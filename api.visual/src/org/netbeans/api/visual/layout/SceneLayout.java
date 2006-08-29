@@ -68,12 +68,14 @@ public abstract class SceneLayout {
         }
     }
 
+    @Deprecated
     public static final class DevolveWidgetLayout extends SceneLayout {
 
         private Widget widget;
         private Layout devolveLayout;
         private boolean animate;
 
+        @Deprecated
         public DevolveWidgetLayout (Widget widget, Layout devolveLayout, boolean animate) {
             super (widget.getScene ());
             assert devolveLayout != null;

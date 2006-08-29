@@ -79,4 +79,8 @@ public final class LayoutFactory {
         return LAYOUT_FILL;
     }
 
+    public static SceneLayout createDevolveWidgetLayout (Widget widget, Layout devolveLayout, boolean animate) {
+        return new SceneLayout.DevolveWidgetLayout (widget, devolveLayout, animate);
+    }
+
 }
