@@ -88,7 +88,7 @@ WhiteSpace = [ \t\f]
 NonWhiteSpace = [^ \t\f\r\n]
 StringText = (\\\"|[^\r\n\"])*
 
-%state COMMAND, OTHERTEXT
+%state COMMAND, OLDCOMMAND, OTHERTEXT
 
 %%
 
@@ -107,8 +107,8 @@ StringText = (\\\"|[^\r\n\"])*
   "//#enddebug"                      { yybegin(COMMAND); return token(COMMAND_ENDDEBUG); }
   "//#define"                        { yybegin(COMMAND); return token(COMMAND_DEFINE); }
   "//#undefine"                      { yybegin(COMMAND); return token(COMMAND_UNDEFINE); }
-  "/*#"                              { yybegin(COMMAND); return token(OLD_STX_HEADER_START); }
-  "/*$"                              { yybegin(COMMAND); return token(OLD_STX_FOOTER_START); }
+  "/*#"                              { yybegin(OLDCOMMAND); return token(OLD_STX_HEADER_START); }
+  "/*$"                              { yybegin(OLDCOMMAND); return token(OLD_STX_FOOTER_START); }
   "//#"{NonWhiteSpace}+              { yybegin(OTHERTEXT); return token(COMMAND_UNKNOWN); }
   "//-----"                          { yybegin(OTHERTEXT); padding.append(yytext()); }
   "//#"{WhiteSpace}? | "//--"        { yybegin(OTHERTEXT); return token(PREPROCESSOR_COMMENT); }
@@ -135,13 +135,23 @@ StringText = (\\\"|[^\r\n\"])*
   ":defined"                              { return token(COLON_DEFINED); }
   "defined"                               { return token(DEFINED); }
   "="                                     { return token(ASSIGN); }       
-  "#*/"                                   { yybegin(OTHERTEXT); return token(OLD_STX_HEADER_END); }
-  "$*/"                                   { yybegin(OTHERTEXT); return token(OLD_STX_FOOTER_END); }
   "//" | "/*"                             { yybegin(OTHERTEXT); return token(SIMPLE_COMMENT); }
   [a-zA-Z_]([a-zA-Z0-9_\.\\\/$])*         { return token(ABILITY); }
   [0-9]+                                  { return token(NUMBER); }
   \"{StringText}\"                        { return token(STRING); }
   \"{StringText}                          { return token(UNFINISHED_STRING); }
+  {WhiteSpace}+                           { padding.append(yytext()); }
+  {LineTerminator}                        { yybegin(YYINITIAL); return token(END_OF_LINE); }
+  {InputCharacter}                        { yybegin(OTHERTEXT); padding.append(yytext()); }
+}
+
+<OLDCOMMAND> {
+  "!"                                     { return token(OP_NOT); }       
+  ","                                     { return token(COMMA); }       
+  "#*/"                                   { yybegin(OTHERTEXT); return token(OLD_STX_HEADER_END); }
+  "$*/"                                   { yybegin(OTHERTEXT); return token(OLD_STX_FOOTER_END); }
+  "//" | "/*"                             { yybegin(OTHERTEXT); return token(SIMPLE_COMMENT); }
+  [a-zA-Z_]([a-zA-Z0-9_\.\\\/])*          { return token(ABILITY); }
   {WhiteSpace}+                           { padding.append(yytext()); }
   {LineTerminator}                        { yybegin(YYINITIAL); return token(END_OF_LINE); }
   {InputCharacter}                        { yybegin(OTHERTEXT); padding.append(yytext()); }
