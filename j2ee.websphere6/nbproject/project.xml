@@ -29,14 +29,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                  get a NoClassDefFoundException at runtime.
             -->
             <module-dependencies>
-                <dependency>	
-                    <code-name-base>org.openide.awt</code-name-base>	
-                    <build-prerequisite/>	
-                    <compile-dependency/>	
-                    <run-dependency>	
-                        <specification-version>6.2</specification-version>	
-                    </run-dependency>	
-                </dependency>	                
                 <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
@@ -174,6 +166,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -197,6 +197,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
