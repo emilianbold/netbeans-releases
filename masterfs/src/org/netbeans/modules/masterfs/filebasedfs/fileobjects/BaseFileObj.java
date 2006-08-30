@@ -182,7 +182,7 @@ public abstract class BaseFileObj extends FileObject {
                 }                
             }
         }
-        
+        WriteLock.relock(file,file2Rename);
         fireFileRenamedEvent(originalName, originalExt);
     }
 
