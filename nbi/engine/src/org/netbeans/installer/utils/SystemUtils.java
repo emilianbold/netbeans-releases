@@ -59,6 +59,8 @@ public abstract class SystemUtils {
     
     public abstract void sleep(long millis);
     
+    public abstract String getLineSeparator();
+    
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private static class GenericSystemUtils extends SystemUtils {
@@ -124,6 +126,10 @@ public abstract class SystemUtils {
             } catch (InterruptedException e) {
                 ErrorManager.getInstance().notify(ErrorLevel.DEBUG, "Interrupted while sleeping", e);
             }
+        }
+        
+        public String getLineSeparator() {
+            return System.getProperty("line.separator");
         }
     }
     

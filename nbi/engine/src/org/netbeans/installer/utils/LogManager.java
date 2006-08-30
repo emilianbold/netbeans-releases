@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.utils;
@@ -37,7 +37,7 @@ import java.io.Writer;
 public class LogManager {
     private static LogManager instance;
     
-    public static LogManager getInstance() {
+    public synchronized static LogManager getInstance() {
         if (instance == null) {
             instance = new LogManager();
         }
@@ -51,6 +51,8 @@ public class LogManager {
     private Writer  logWriter;
     
     private boolean loggingAvailable;
+    
+    private int     indent;
     
     private LogManager() {
         // check for custom log file
@@ -88,16 +90,27 @@ public class LogManager {
             e.printStackTrace();
             loggingAvailable = false;
         }
+        
+        // set the initial indent
+        indent = 0;
     }
     
-    public void log(int level, String message) {
+    public synchronized void indent() {
+        indent++;
+    }
+    
+    public synchronized void unindent() {
+        indent--;
+    }
+    
+    public synchronized void log(int level, String message) {
         if (level <= logLevel) {
             BufferedReader reader = new BufferedReader(new StringReader(message));
             
             try {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     
-                    String string = "[" + DateUtils.getInstance().getFormattedTimestamp() + "]: " + line + "\n";
+                    String string = "[" + DateUtils.getInstance().getFormattedTimestamp() + "]: " + StringUtils.getInstance().pad(INDENT, indent) + line + SystemUtils.getInstance().getLineSeparator();
                     
                     if (loggingAvailable) {
                         logWriter.write(string);
@@ -115,38 +128,38 @@ public class LogManager {
         }
     }
     
-    public void log(int level, Throwable exception) {
+    public synchronized void log(int level, Throwable exception) {
         log(level, StringUtils.getInstance().asString(exception));
     }
     
-    public void log(int level, Object object) {
+    public synchronized void log(int level, Object object) {
         log(level, object.toString());
     }
     
-    public void log(String message) {
+    public synchronized void log(String message) {
         log(ErrorLevel.DEBUG, message);
     }
     
-    public void log(Throwable exception) {
+    public synchronized void log(Throwable exception) {
         log(ErrorLevel.DEBUG, exception);
     }
     
-    public void log(Object object) {
+    public synchronized void log(Object object) {
         log(ErrorLevel.DEBUG, object);
     }
-
-    public void log(String string, IOException ex) {
-        log(string);
-        log(ex);
+    
+    public synchronized void log(String message, Throwable exception) {
+        log(message);
+        log(exception);
     }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    
-    
     public static final String LOG_FILE_PROPERTY       = "nbi.utils.log.file";
     public static final String LOG_LEVEL_PROPERTY      = "nbi.utils.log.level";
     public static final String LOG_TO_CONSOLE_PROPERTY = "nbi.utils.log.to.console";
+    
+    public static final String INDENT = "    ";
     
     public static final String  DEFAULT_LOG_FILE       = System.getProperty("user.home") + File.separator + ".nbi" + File.separator + "log" + File.separator + DateUtils.getInstance().getTimestamp() + ".log";
     public static final int     DEFAULT_LOG_LEVEL      = ErrorLevel.DEBUG;

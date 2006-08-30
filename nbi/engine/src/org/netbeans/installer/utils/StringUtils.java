@@ -94,6 +94,8 @@ public abstract class StringUtils {
     
     public abstract String base64Decode(String string, String charset) throws UnsupportedEncodingException;
     
+    public abstract String pad(String string, int number);
+    
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private static class GenericStringUtils extends StringUtils {
@@ -351,6 +353,16 @@ public abstract class StringUtils {
             }
             
             return new String(decodedBytes, charset);
+        }
+        
+        public String pad(String string, int number) {
+            StringBuilder builder = new StringBuilder();
+            
+            for (int i = 0; i < number; i++) {
+                builder.append(string);
+            }
+            
+            return builder.toString();
         }
     }
     

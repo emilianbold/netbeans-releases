@@ -25,6 +25,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
@@ -78,14 +79,20 @@ public class Installer {
     private File localDirectory =
             new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
     
+    private LogManager logManager = LogManager.getInstance();
+    
     /**
      * The only private constructor - we need to hide the default one as
      * <code>Installer is a singleton.
      */
     private Installer(String[] arguments) {
-        // set the system look and feel
+        logManager.log(ErrorLevel.MESSAGE, "initializing the installer engine");
+        logManager.indent();
+        
+        logManager.log(ErrorLevel.MESSAGE, "setting the look and feel");
+        String lfName = UIManager.getSystemLookAndFeelClassName();
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel(lfName);
         } catch (ClassNotFoundException e) {
             ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Could " +
                     "not set the Look And Feel to the system default.", e);
@@ -99,18 +106,21 @@ public class Installer {
             ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Could " +
                     "not set the Look And Feel to the system default.", e);
         }
+        logManager.log(ErrorLevel.MESSAGE, "... look and feel set to " + lfName);
         
-        // parse the command line arguments
+        logManager.log(ErrorLevel.MESSAGE, "parsing command-line arguments");
         parseCommandLineArguments(arguments);
+        logManager.log(ErrorLevel.MESSAGE, "... command line arguments successfully parsed");
         
-        // save this as the instance
         instance = this;
         
-        // initialize the local nbi home directory
+        logManager.log(ErrorLevel.MESSAGE, "initializing the local directory");
         if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
             localDirectory = new File(System.getProperty(
                     LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
         }
+        
+        logManager.unindent();
     }
     
     /**
