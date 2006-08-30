@@ -25,6 +25,7 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 
 public class FileSystemTestHid extends TestBaseHid {
+    private FileObject root;
     private static String[] resources = new String [] {
         "atleastone"
     };
@@ -103,7 +104,6 @@ public class FileSystemTestHid extends TestBaseHid {
     
     public void testFsfileFolderCreated() throws IOException {
         FileSystem fs = this.testedFS;
-        FileObject root = fs.getRoot ();
         if (!fs.isReadOnly () && !root.isReadOnly()) {
             root.getChildren();
             registerDefaultListener (fs);            
@@ -114,7 +114,6 @@ public class FileSystemTestHid extends TestBaseHid {
     
     public void testFsfileDataCreated() throws IOException {
         FileSystem fs = this.testedFS;
-        FileObject root = fs.getRoot ();
         if (!fs.isReadOnly () && !root.isReadOnly()) {
             root.getChildren();
             registerDefaultListener (fs);            
@@ -126,7 +125,6 @@ public class FileSystemTestHid extends TestBaseHid {
 
     public void testFsfileRenamed() throws IOException {
         FileSystem fs = this.testedFS;
-        FileObject root = fs.getRoot ();
         if (!fs.isReadOnly () && !root.isReadOnly()) {
             root.getChildren();
             registerDefaultListener (fs);            
@@ -145,7 +143,6 @@ public class FileSystemTestHid extends TestBaseHid {
 
     public void testFsfileDeleted() throws IOException {
         FileSystem fs = this.testedFS;
-        FileObject root = fs.getRoot ();
         if (!fs.isReadOnly () && !root.isReadOnly()) {
             root.getChildren();
             registerDefaultListener (fs);            
@@ -177,6 +174,11 @@ public class FileSystemTestHid extends TestBaseHid {
         // remove from repo -> become invalid
         r.removeFileSystem(testedFS);
         fsAssert("remove from repo -> become invalid", !testedFS.isValid());
+    }
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        root = testedFS.findResource(getResourcePrefix());
     }
     
 }
