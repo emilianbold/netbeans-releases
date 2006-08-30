@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import org.apache.tools.ant.BuildException;
 import org.netbeans.nbbuild.ModuleListParser.Entry;
 
@@ -122,10 +123,10 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
 
                 // unittest
                 //
-                Set/*<String>*/ compileCNB = new HashSet();
-                Set/*<String>*/ compileTestCNB = new HashSet();
-                Set/*<String>*/ runtimeCNB = new HashSet();
-                Set/*<String>*/ runtimeTestCNB = new HashSet();
+                Set/*<String>*/ compileCNB = new TreeSet();
+                Set/*<String>*/ compileTestCNB = new TreeSet();
+                Set/*<String>*/ runtimeCNB = new TreeSet();
+                Set/*<String>*/ runtimeTestCNB = new TreeSet();
 
                 Properties projectProperties = getTestProperties();
                 readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.unit.cp",allCnbs,entries);
@@ -157,17 +158,20 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                 compileTestCNB.clear();
                 runtimeTestCNB.clear();
 
-                buffer.println("              <test-type>");
-                buffer.println("                  <name>qa-functional</name>");
-
                 readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.qa-functional.cp",allCnbs,entries);
                 readCodeNameBases(compileCNB,compileTestCNB,projectProperties,"test.qa-functional.cp.extra",allCnbs,entries);
 
                 readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.qa-functional.runtime.cp",allCnbs,entries);
                 readCodeNameBases(runtimeCNB,runtimeTestCNB,projectProperties,"test.qa-functional.runtime.extra",allCnbs,entries);
-                addDependencies(buffer,compileCNB,compileTestCNB,true,false);
-                addDependencies(buffer,runtimeCNB,runtimeTestCNB,false,false);
-                buffer.println("              </test-type>");
+                if (!compileTestCNB.isEmpty() || !compileCNB.isEmpty() || !runtimeTestCNB.isEmpty() || !runtimeCNB.isEmpty()) {
+                    buffer.println("              <test-type>");
+                    buffer.println("                  <name>qa-functional</name>");
+
+                    addDependencies(buffer,compileCNB,compileTestCNB,true,false);
+                    addDependencies(buffer,runtimeCNB,runtimeTestCNB,false,false);
+                    buffer.println("              </test-type>");
+                }
+                
                 buffer.println("            </test-dependencies>");
                 updateProperties(projectProperties,new String[]{"test.qa-functional.cp","test.qa-functional.cp","test.qa-functional.runtime.cp","test.qa-functional.runtime.extra"});
 
@@ -222,7 +226,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
     }
     /** parses all codenamebases from path
      */
-    private void readCodeNameBases(Set/*<String>*/ compileCNB,
+     void readCodeNameBases(Set/*<String>*/ compileCNB,
             Set /*<String>*/ testsCNB,
             Properties projectPropertis,
             String property,
@@ -247,7 +251,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                     } else if (token.endsWith("core/core.jar")) {
                         compileCNB.add("org.netbeans.core.startup");
                         found = true;
-                    } else if (lastSlash != -1 && lastDot != -1) {
+                    } else if (lastSlash != -1 && lastDot != -1 && lastSlash + 1< lastDot ) {
                         String codeBaseName = token.substring(lastSlash + 1, lastDot);
                         codeBaseName = codeBaseName.replace('-','.');
                         if (allCnbs.contains(codeBaseName)) {
@@ -287,7 +291,7 @@ public class FixTestDependencies extends org.apache.tools.ant.Task {
                         if (prjEnd != -1) {
                             // get the project folder
                             int firstSlash = token.indexOf("/");
-                            if (firstSlash != -1 ) {
+                            if (firstSlash != -1 && firstSlash + 1 < prjEnd) {
                                 String  prjFolder = token.substring(firstSlash + 1, prjEnd);
                                 String  codebaseName = getCNBForFolder(prjFolder,entries);
                                 if (codebaseName == null) {

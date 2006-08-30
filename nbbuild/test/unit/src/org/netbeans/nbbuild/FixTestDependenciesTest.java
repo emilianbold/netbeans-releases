@@ -25,9 +25,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Set;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.netbeans.junit.NbTestCase;
 
@@ -49,13 +52,32 @@ public class FixTestDependenciesTest extends NbTestCase {
 
     }
 
-    private void doFixProjectXml(final File propertiesFile, final File prjFile) throws Exception, IOException {
+    public void testWrongBuilClassDep() throws IOException {
+        FixTestDependencies ftd = newFixTestDependencies();
+        Set/*<String>*/ cnb = new HashSet();
+        Set/*<String>*/ testCnb = new HashSet();
+ 
+        Properties props = new Properties();
+        String PNAME = "cp.extra";
+        String PVALUE = "../build/test/unit/classes";
+        props.setProperty(PNAME,PVALUE);
+        ftd.readCodeNameBases(cnb,testCnb,props,"cp.extra",Collections.EMPTY_SET,Collections.EMPTY_SET);
+        assertEquals("No dependency on module.",0,cnb.size());        
+        assertEquals("No test dependency on module.",0,testCnb.size()); 
+        assertEquals("property value",PVALUE,props.getProperty(PNAME));
+    }
+
+    private FixTestDependencies newFixTestDependencies() throws IOException, BuildException {
         Project project = new Project();
         project.setBaseDir(getWorkDir());
         FixTestDependencies ftd = new FixTestDependencies();
         ftd.setProject(project);
-        ftd.setProjectXml(prjFile);
+        return ftd;
+    }
+    private void doFixProjectXml(final File propertiesFile, final File prjFile) throws Exception, IOException {
+        FixTestDependencies ftd = newFixTestDependencies();
         ftd.setPropertiesFile(propertiesFile);
+        ftd.setProjectXml(prjFile);
         ftd.cachedEntries = getEntries();
         ftd.execute();
         assertFile(copyFile("FixTestDependenciesProjectPass.xml"),prjFile);
