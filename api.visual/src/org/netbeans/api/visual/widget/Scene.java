@@ -19,6 +19,7 @@ import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.util.GeomUtil;
 import org.netbeans.modules.visual.laf.DefaultLookFeel;
+import org.netbeans.modules.visual.widget.SatelliteComponent;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
@@ -90,7 +91,7 @@ public class Scene extends Widget {
     }
 
     public JComponent createSatelliteView () {
-        return new SateliteComponent (this);
+        return new SatelliteComponent (this);
     }
 
     public final Graphics2D getGraphics () {
@@ -99,6 +100,13 @@ public class Scene extends Widget {
 
     final void setGraphics (Graphics2D graphics) {
         this.graphics = graphics;
+    }
+
+    public final void paint (Graphics2D gr) {
+        Graphics2D prevoiusGraphics = getGraphics ();
+        setGraphics (gr);
+        paint ();
+        setGraphics (prevoiusGraphics);
     }
 
     public Font getDefaultFont () {
