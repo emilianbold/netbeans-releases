@@ -268,8 +268,8 @@ public class FileStatusCache implements ISVNNotifyListener {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
         }
         Map<File, FileInformation> files = getScannedFiles(dir);
-        if (files == NOT_MANAGED_MAP) return FILE_INFORMATION_NOTMANAGED;
-        FileInformation current = (FileInformation) files.get(file);
+        if (files == NOT_MANAGED_MAP && repositoryStatus == REPOSITORY_STATUS_UNKNOWN) return FILE_INFORMATION_NOTMANAGED;
+        FileInformation current = files.get(file);
         
         ISVNStatus status = null;
         try {
@@ -466,7 +466,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            FileInformation info = (FileInformation) files.get(file);
+            FileInformation info = files.get(file);
             if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
                 fireFileStatusChanged(file, null, info);
             }

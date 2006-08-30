@@ -22,6 +22,7 @@ package org.netbeans.modules.subversion.ui.commit;
 import java.io.*;
 import org.netbeans.modules.subversion.settings.*;
 import org.netbeans.modules.subversion.ui.actions.*;
+import org.netbeans.modules.subversion.FileInformation;
 import org.openide.nodes.*;
 
 /**
@@ -36,6 +37,14 @@ public final class ExcludeFromCommitAction extends ContextAction {
 
     protected boolean enable(Node[] nodes) {
         return getActionStatus(nodes) != UNDEFINED;
+    }
+
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_LOCAL_CHANGE;
+    }
+
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_LOCAL_CHANGE;
     }
 
     protected String getBaseName(Node [] activatedNodes) {

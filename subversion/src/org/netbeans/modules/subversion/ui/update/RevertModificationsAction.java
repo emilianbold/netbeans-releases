@@ -24,7 +24,6 @@ import java.util.*;
 
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
@@ -54,6 +53,14 @@ public class RevertModificationsAction extends ContextAction {
 
     protected String getBaseName(Node[] activatedNodes) {
         return "CTL_MenuItem_Revert"; // NOI18N
+    }
+
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_NEWINREPOSITORY;
+    }
+
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_VERSIONED & ~FileInformation.STATUS_VERSIONED_NEWINREPOSITORY;
     }
 
     protected void performContextAction(final Node[] nodes) {
