@@ -248,8 +248,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                         return;
                     }
                 } catch (SVNClientException ex) {
-                    ExceptionHandler eh = new ExceptionHandler(ex);
-                    eh.annotate();
+                    annotate(ex);
                     invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
                 }
 
