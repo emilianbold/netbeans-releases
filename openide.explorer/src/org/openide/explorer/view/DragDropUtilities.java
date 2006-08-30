@@ -348,14 +348,15 @@ final class DragDropUtilities extends Object {
     * @param node given node to ask fro paste types
     * @param trans transferable to discover
     * @param action drop action
+    * @param dropIndex where the object is dropped
     */
-    static PasteType getDropType(Node node, Transferable trans, int action) {
+    static PasteType getDropType(Node node, Transferable trans, int action, int dropIndex) {
         if (!trans.isDataFlavorSupported(ExTransferable.multiFlavor)) {
             // only single, so return drop type
             PasteType pt = null;
 
             try {
-                pt = node.getDropType(trans, action, -1);
+                pt = node.getDropType(trans, action, dropIndex);
             } catch (NullPointerException npe) {
                 Exceptions.printStackTrace(npe);
 
@@ -375,7 +376,7 @@ final class DragDropUtilities extends Object {
                 // extract default drop type of transferables
                 for (int i = 0; i < count; i++) {
                     t[i] = obj.getTransferableAt(i);
-                    pt = node.getDropType(t[i], action, -1);
+                    pt = node.getDropType(t[i], action, dropIndex);
 
                     // return null if not accepted
                     if (pt == null) {

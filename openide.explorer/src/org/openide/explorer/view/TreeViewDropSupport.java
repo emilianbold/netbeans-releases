@@ -34,9 +34,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Line2D;
 import java.awt.geom.Line2D.Double;
+import java.util.ArrayList;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 
 import javax.swing.JTree;
@@ -70,6 +73,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
     Rectangle lastNodeArea;
     private int upperNodeIdx = -1;
     private int lowerNodeIdx = -1;
+    private int dropIndex = -1;
 
     /** Swing Timer for expand node's parent with delay time. */
     Timer timer;
@@ -107,6 +111,8 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
     public void dragEnter(DropTargetDragEvent dtde) {
         checkStoredGlassPane();
 
+        dropIndex = -1;
+        
         // set a status and cursor of dnd action
         doDragOver(dtde);
     }
@@ -168,6 +174,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
         // if I haven't any node for drop then reject drop
         if (dropNode == null) {
+            dropIndex = -1;
             dtde.rejectDrag();
             removeDropLine();
 
@@ -239,7 +246,10 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
                 upperNodeIdx = indexCookie.indexOf(getNodeForDrop(p));
                 lowerNodeIdx = upperNodeIdx + 1;
             }
+            dropIndex = lowerNodeIdx;
         }
+        if( dropNode == getNodeForDrop(p) )
+            dropIndex = -1;
 
         // 3. expand with a delay
         if (
@@ -402,6 +412,8 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
     /** User exits the dragging */
     public void dragExit(DropTargetEvent dte) {
+        dropIndex = -1;
+        
         ExplorerDnDManager.getDefault().setMaybeExternalDragAndDrop( false );
         stopDragging();
     }
@@ -609,7 +621,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         }
 
         // get paste types for given transferred transferable
-        PasteType pt = DragDropUtilities.getDropType(n, trans, dropAction);
+        PasteType pt = DragDropUtilities.getDropType(n, trans, dropAction, dropIndex);
 
         return (pt != null);
     }
@@ -719,20 +731,26 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
             if( null == t ) {
                 t = dtde.getTransferable();
             }
-            PasteType pt = DragDropUtilities.getDropType( dropNode, t, dropAction );
+            PasteType pt = DragDropUtilities.getDropType( dropNode, t, dropAction, dropIndex );
 
-            /*// help loop for all paste actions
-            System.out.println("PASTE TYPES FOR "+dropAction);
-            for (int i=0; i<pt.length; i++) {
-                System.out.println(i+". "+pt [i].getName ());
-            }*/
+            //remember the Nodes before the drop
+            final Node[] preNodes = dropNode.getChildren().getNodes( true );
+            final Node parentNode = dropNode;
+            
             Node[] diffNodes = DragDropUtilities.performPaste(pt, dropNode);
+            
             ExplorerDnDManager.getDefault().setDraggedNodes(diffNodes);
 
-            // check canReorder or optionally perform it
-            if (canReorder(dropNode, diffNodes)) {
-                performReorder(dropNode, diffNodes, lowerNodeIdx, upperNodeIdx);
+            //postpone the potential re-order so that the drop Node has enough 
+            //time to re-create its children
+            SwingUtilities.invokeLater( new Runnable() {
+                public void run() {
+                    Node[] diffNodes = getDiffNodes( parentNode, preNodes );
+                    if( canReorder( parentNode, diffNodes ) ) {
+                        performReorder( parentNode, diffNodes, lowerNodeIdx, upperNodeIdx );
             }
+        }
+            });
         }
 
         TreeCellEditor tce = tree.getCellEditor();
@@ -743,6 +761,26 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
         // finished
         dtde.dropComplete(true);
+    }
+
+    private Node[] getDiffNodes( Node parent, Node[] childrenBefore ) {
+        Node[] childrenCurrent = parent.getChildren().getNodes(true);
+
+        // calculate new nodes
+        List<Node> pre = Arrays.asList(childrenBefore);
+        List<Node> post = Arrays.asList(childrenCurrent);
+        Iterator<Node> it = post.iterator();
+        List<Node> diff = new ArrayList<Node>();
+
+        while (it.hasNext()) {
+            Node n = it.next();
+
+            if (!pre.contains(n)) {
+                diff.add(n);
+            }
+        }
+
+        return diff.toArray(new Node[diff.size()]);
     }
 
     /** Activates or deactivates Drag support on asociated JTree
