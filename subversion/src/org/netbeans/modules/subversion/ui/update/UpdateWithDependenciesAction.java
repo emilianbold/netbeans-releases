@@ -19,17 +19,66 @@
 
 package org.netbeans.modules.subversion.ui.update;
 
-import org.netbeans.modules.subversion.ui.actions.PlaceholderAction;
+import org.netbeans.modules.subversion.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.SubprojectProvider;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
+
+import java.util.*;
 
 /**
+ * Updates selected projects and all projects they depend on.
  *
- * @author Petr Kuzel
+ * @author Maros Sandor
  */
-public class UpdateWithDependenciesAction extends PlaceholderAction {
+public class UpdateWithDependenciesAction extends ContextAction {
+    
+    private boolean running;
 
-    /** Creates a new instance of UpdateWithDependenciesAction */
-    public UpdateWithDependenciesAction() {
-        name = "Update with Dependencies"; // NOI18N
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_UpdateWithDependencies";    // NOI18N
     }
 
+    protected boolean enable(Node[] nodes) {
+        for (int i = 0; i < nodes.length; i++) {
+            Node node = nodes[i];
+            if (SvnUtils.isVersionedProject(node) == false) {
+                return false;
+            }
+        }
+        return !running && nodes.length > 0;
+    }
+    
+    protected void performContextAction(final Node[] nodes) {
+        running = true;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    updateWithDependencies(nodes);
+                } finally {
+                    running = false;
+                }
+            }
+        });
+    }
+
+    private void updateWithDependencies(Node[] nodes) {
+        Set<Project> projectsToUpdate = new HashSet<Project>(nodes.length * 2);
+        for (Node node : nodes) {
+            Project project =  (Project) node.getLookup().lookup(Project.class);
+            projectsToUpdate.add(project);
+            SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
+            Set<? extends Project> children = deps.getSubprojects();
+            for (Project child : children) {
+                if (SvnUtils.isVersionedProject(child)) {
+                    projectsToUpdate.add(child);
+                }
+            }
+        }
+        Context context = SvnUtils.getProjectsContext(projectsToUpdate.toArray(new Project[projectsToUpdate.size()]));
+        UpdateAction.performUpdate(context);
+    }
 }

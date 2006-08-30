@@ -156,12 +156,16 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator3.instance">
        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-            <attr name="Separator3.instance/org-netbeans-modules-subversion-ui-status-StatusAction.shadow" boolvalue="true"/>
-            <!--
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.instance"/>
+            <attr name="Separator3.instance/org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.shadow" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.instance"/>
             </file>
-            -->
+            <attr name="org-netbeans-modules-subversion-ui-UpdateWithDependenciesAction.shadow/Separator9.instance" boolvalue="true"/>
+            <file name="Separator9.instance">
+           		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="Separator9.instance/org-netbeans-modules-subversion-ui-status-StatusAction.shadow" boolvalue="true"/>
             
             <file name="org-netbeans-modules-subversion-ui-status-StatusAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-ui-status-StatusAction.instance"/>
