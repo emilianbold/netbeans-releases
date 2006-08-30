@@ -154,7 +154,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 (p.endsWith(".dir") && p.lastIndexOf('.', p.length() - 5) == -1); // NOI18N
     }
     
-    private final Pattern ANT_PROP_REGEX = Pattern.compile("\\$\\{([a-zA-Z0-9._-]+)\\}"); // NOI18N
+    private static final Pattern ANT_PROP_REGEX = Pattern.compile("\\$\\{([a-zA-Z0-9._-]+)\\}"); // NOI18N
     private boolean isModuleListDependentValue(String v) {
         if (v == null) {
             return false;
