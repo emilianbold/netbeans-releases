@@ -54,8 +54,8 @@ public class ConnectionWidget extends Widget {
     private Stroke stroke;
     private boolean paintControlPoints;
 
-    private ConnectionEntry sourceEntry;
-    private ConnectionEntry targetEntry;
+    private Anchor.Entry sourceEntry;
+    private Anchor.Entry targetEntry;
 
     public ConnectionWidget (Scene scene) {
         super (scene);
@@ -122,11 +122,11 @@ public class ConnectionWidget extends Widget {
         reroute ();
     }
 
-    public ConnectionEntry getSourceAnchorEntry () {
+    public Anchor.Entry getSourceAnchorEntry () {
         return sourceEntry;
     }
 
-    public ConnectionEntry getTargetAnchorEntry () {
+    public Anchor.Entry getTargetAnchorEntry () {
         return targetEntry;
     }
 
