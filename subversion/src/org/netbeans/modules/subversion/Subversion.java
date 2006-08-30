@@ -315,6 +315,8 @@ public class Subversion {
 
     /**
      * Non-recursive ignore check.
+     * This method is synchronized because it reads and eventually sets the svn:ignore property and this reads/writes
+     * need to be synchronized.
      *
      * <p>Side effect: if under SVN version control
      * it sets svn:ignore property
@@ -322,7 +324,7 @@ public class Subversion {
      * @return true if file is listed in parent's ignore list
      * or IDE thinks it should be.
      */
-    boolean isIgnored(File file) {
+    synchronized boolean isIgnored(File file) {
         String name = file.getName();
 
         // ask SVN
