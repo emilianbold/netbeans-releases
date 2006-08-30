@@ -83,6 +83,9 @@ public class BreakpointsReader implements Properties.Reader {
             lb.setCondition (
                 properties.getString (LineBreakpoint.PROP_CONDITION, "")
             );
+            lb.setPreferredClassName(
+                properties.getString(LineBreakpoint.PROP_PREFERRED_CLASS_NAME, null)
+            );
             synchronized (this) {
                 cachedClassNames.put(lb, properties.getString("className", null));
                 cachedSourceRoots.put(lb, properties.getString("sourceRoot", null));
@@ -234,6 +237,10 @@ public class BreakpointsReader implements Properties.Reader {
             properties.setString (
                 LineBreakpoint.PROP_CONDITION, 
                 lb.getCondition ()
+            );
+            properties.setString(
+                LineBreakpoint.PROP_PREFERRED_CLASS_NAME,
+                lb.getPreferredClassName()
             );
             properties.setString("className", findCachedClassName(lb));
             properties.setString("sourceRoot", findCachedSourceRoot(lb));

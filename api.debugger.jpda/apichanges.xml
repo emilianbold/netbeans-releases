@@ -406,6 +406,22 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.api.debugger.jpda" name="ReturnVariable" />
         <issue number="80090"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Added setPreferedClassName and getPreferredClassName methods to LineBreakpoint</summary>
+        <version major="2" minor="8"/>
+        <date day="22" month="8" year="2006"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+                In order to be able to provide the class name for which the
+                breakpoint should be submitted. This is necessary for JSP.
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="LineBreakpoint" />
+        <issue number="54449"/>
+    </change>
 
 </changes>
 

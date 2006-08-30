@@ -78,10 +78,11 @@ public class JspLineBreakpoint extends Breakpoint {
         String filter = Utils.getClassFilter(url);
         Utils.getEM().log("filter: " + filter);
         
-        javalb = LineBreakpoint.create(filter, lineNumber);
+        javalb = LineBreakpoint.create(url, lineNumber);
         javalb.setStratum("JSP"); // NOI18N
         javalb.setSourceName(Utils.getJspName(url));
         javalb.setSourcePath(Utils.getJspPath(url));
+        javalb.setPreferredClassName(filter);
         javalb.setHidden(true);
         javalb.setPrintText(printText);
         

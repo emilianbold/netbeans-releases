@@ -48,13 +48,16 @@ public class LineBreakpoint extends JPDABreakpoint {
     public static final String          PROP_SOURCE_PATH = "sourcePath"; // NOI18N
     /** Property name constant. */
     public static final String          PROP_STRATUM = "stratum"; // NOI18N
+    /** Property name constant. */
+    public static final String          PROP_PREFERRED_CLASS_NAME = "classNamePreferred"; // NOI18N
     
-    private String                      url = "";
+    private String                      url = ""; // NOI18N
     private int                         lineNumber;
     private String                      condition = ""; // NOI18N
-    private String                      sourceName = null; // NOI18N
-    private String                      sourcePath = null; // NOI18N
+    private String                      sourceName = null;
+    private String                      sourcePath = null;
     private String                      stratum = "Java"; // NOI18N
+    private String                      className = null;
 
     
     private LineBreakpoint () {
@@ -246,6 +249,35 @@ public class LineBreakpoint extends JPDABreakpoint {
             sourcePath = sp;
         }
         firePropertyChange (PROP_SOURCE_PATH, old, sp);
+    }
+    
+    /**
+     * Sets the binary class name that is used to submit the breakpoint.
+     * @param className The binary class name, or <code>null</code> if the class
+     * name should be retrieved automatically from the URL and line number.
+     * @since 2.8
+     */
+    public void setPreferredClassName(String className) {
+        String old;
+        synchronized (this) {
+            if (this.className == className || (className != null && className.equals(this.className))) {
+                return ;
+            }
+            old = className;
+            this.className = className;
+        }
+        firePropertyChange (PROP_PREFERRED_CLASS_NAME, old, className);
+    }
+    
+    /**
+     * Gets the binary class name that is used to submit the breakpoint.
+     * @return The binary class name, if previously set by {@link setPreferedClassName}
+     * method, or <code>null</code> if the class name should be retrieved
+     * automatically from the URL and line number.
+     * @since 2.8
+     */
+    public String getPreferredClassName() {
+        return className;
     }
     
     /**

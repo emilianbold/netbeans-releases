@@ -90,14 +90,17 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     
     protected void setRequests () {
         lineNumber = breakpoint.getLineNumber ();
-        String className = reader.findCachedClassName(breakpoint);
+        String className = breakpoint.getPreferredClassName();
         if (className == null) {
-            className = EditorContextBridge.getClassName (
-                breakpoint.getURL (), 
-                lineNumber
-            );
-            if (className != null) {
-                reader.storeCachedClassName(breakpoint, className);
+            className = reader.findCachedClassName(breakpoint);
+            if (className == null) {
+                className = EditorContextBridge.getClassName (
+                    breakpoint.getURL (), 
+                    lineNumber
+                );
+                if (className != null) {
+                    reader.storeCachedClassName(breakpoint, className);
+                }
             }
         }
         if (className == null) {
