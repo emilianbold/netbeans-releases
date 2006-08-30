@@ -44,6 +44,7 @@ import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.LocaleSupport;
+import org.netbeans.editor.Settings;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
@@ -358,7 +359,8 @@ public class EditorModule extends ModuleInstall {
             return null;
         }
         
-        public synchronized Object get(Object key) {
+        public Object get(Object key) {
+            synchronized (Settings.class) {
             if (debug) LOG.log(Level.INFO, "HackMap.get key=" + key); //NOI18N
             
             Object retVal = null;
@@ -392,9 +394,11 @@ public class EditorModule extends ModuleInstall {
             }
             
             return retVal;
+            } // synchronized (Settings.class)
         }
         
-        public synchronized Object put(Object key, Object value) {
+        public Object put(Object key, Object value) {
+            synchronized (Settings.class) {
             if (debug) LOG.log(Level.INFO, "HackMap.put key=" + key + " value=" + value); //NOI18N
             
             if (delegate == null) {
@@ -410,9 +414,11 @@ public class EditorModule extends ModuleInstall {
             }
              
             return ret;
+            } // synchronized (Settings.class)
         }
 
-        public synchronized Object remove(Object key) {
+        public Object remove(Object key) {
+            synchronized (Settings.class) {
             if (debug) LOG.log(Level.INFO, "HackMap.remove key=" + key); //NOI18N
             
             Object ret = (delegate != null) ? delegate.remove(key) : null;
@@ -423,6 +429,7 @@ public class EditorModule extends ModuleInstall {
             }
             
             return ret;
+            } // synchronized (Settings.class)
         }
         
         Hashtable getOriginal() {
