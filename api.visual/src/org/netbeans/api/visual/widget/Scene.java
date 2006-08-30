@@ -68,13 +68,13 @@ public class Scene extends Widget {
         component = new SceneComponent (this);
         component.addAncestorListener (new AncestorListener() {
             public void ancestorAdded (AncestorEvent event) {
-                repaintSatelite ();
+                repaintSatellite ();
             }
             public void ancestorRemoved (AncestorEvent event) {
-                repaintSatelite ();
+                repaintSatellite ();
             }
             public void ancestorMoved (AncestorEvent event) {
-                repaintSatelite ();
+                repaintSatellite ();
             }
         });
         return component;
@@ -84,8 +84,12 @@ public class Scene extends Widget {
         return component;
     }
 
-    @SuppressWarnings("unchecked")
+    @Deprecated
     public JComponent createSateliteView () {
+        return createSatelliteView ();
+    }
+
+    public JComponent createSatelliteView () {
         return new SateliteComponent (this);
     }
 
@@ -155,7 +159,7 @@ public class Scene extends Widget {
         if (! preferredSize.equals (component.getPreferredSize ())) {
             component.setPreferredSize (preferredSize);
             component.revalidate ();
-//            repaintSatelite ();
+//            repaintSatellite ();
         }
 
         Dimension componentSize = component.getSize ();
@@ -218,7 +222,7 @@ public class Scene extends Widget {
                 Rectangle r = convertSceneToView (repaintRegion);
                 r.grow (1, 1);
                 component.repaint (r);
-                repaintSatelite ();
+                repaintSatellite ();
                 repaintRegion = null;
             }
     //        System.out.println ("time: " + System.currentTimeMillis ());
@@ -228,7 +232,7 @@ public class Scene extends Widget {
         }
     }
 
-    private void repaintSatelite () {
+    private void repaintSatellite () {
         SceneListener[] ls;
         synchronized (sceneListeners) {
             ls = sceneListeners.toArray (new SceneListener[sceneListeners.size ()]);
