@@ -256,7 +256,9 @@ public class WatchesModel implements TreeModel {
 
         
         public void setEvaluated(JPDAWatch evaluatedWatch) {
-            this.evaluatedWatch = evaluatedWatch;
+            synchronized (this) {
+                this.evaluatedWatch = evaluatedWatch;
+            }
             if (evaluatedWatch != null) {
                 if (evaluatedWatch instanceof JPDAWatchImpl) {
                     setInnerValue(((JPDAWatchImpl) evaluatedWatch).getInnerValue());
@@ -270,7 +272,7 @@ public class WatchesModel implements TreeModel {
             //model.fireTableValueChangedComputed(this, null);
         }
         
-        JPDAWatch getEvaluatedWatch() {
+        synchronized JPDAWatch getEvaluatedWatch() {
             return evaluatedWatch;
         }
         
@@ -279,7 +281,7 @@ public class WatchesModel implements TreeModel {
             parseExpression(w.getExpression());
         }
         
-        public String getExceptionDescription() {
+        public synchronized String getExceptionDescription() {
             if (evaluatedWatch != null) {
                 return evaluatedWatch.getExceptionDescription();
             } else {
@@ -287,7 +289,7 @@ public class WatchesModel implements TreeModel {
             }
         }
 
-        public String getExpression() {
+        public synchronized String getExpression() {
             if (evaluatedWatch != null) {
                 return evaluatedWatch.getExpression();
             } else {
@@ -296,6 +298,9 @@ public class WatchesModel implements TreeModel {
         }
 
         public String getToStringValue() throws InvalidExpressionException {
+            synchronized (this) {
+                JPDAWatch evaluatedWatch = this.evaluatedWatch;
+            }
             if (evaluatedWatch == null) {
                 getValue();
             }
@@ -303,6 +308,9 @@ public class WatchesModel implements TreeModel {
         }
 
         public String getType() {
+            synchronized (this) {
+                JPDAWatch evaluatedWatch = this.evaluatedWatch;
+            }
             if (evaluatedWatch == null) {
                 getValue(); // To init the evaluatedWatch
             }
@@ -318,8 +326,10 @@ public class WatchesModel implements TreeModel {
                         return null;
                     }
                 }
-                if (evaluatedWatch != null) {
-                    return evaluatedWatch.getValue();
+                synchronized (this) {
+                    if (evaluatedWatch != null) {
+                        return evaluatedWatch.getValue();
+                    }
                 }
                 evaluating[0] = true;
             }
@@ -348,7 +358,7 @@ public class WatchesModel implements TreeModel {
             return jw.getValue();
         }
 
-        public void remove() {
+        public synchronized void remove() {
             if (evaluatedWatch != null) {
                 evaluatedWatch.remove();
             } else {
@@ -361,7 +371,7 @@ public class WatchesModel implements TreeModel {
             expressionChanged();
         }
 
-        public void setValue(String value) throws InvalidExpressionException {
+        public synchronized void setValue(String value) throws InvalidExpressionException {
             if (evaluatedWatch != null) {
                 evaluatedWatch.setValue(value);
             } else {
@@ -396,7 +406,7 @@ public class WatchesModel implements TreeModel {
         
         /** Tells whether the variable is fully initialized and getValue()
          *  returns the value immediately. */
-        public boolean isCurrent() {
+        public synchronized boolean isCurrent() {
             return evaluatedWatch != null;
         }
 
