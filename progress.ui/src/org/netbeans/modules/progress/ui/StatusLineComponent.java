@@ -26,6 +26,8 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -44,6 +46,9 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -53,6 +58,7 @@ import javax.swing.JWindow;
 import javax.swing.KeyStroke;
 import javax.swing.Popup;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
@@ -88,6 +94,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     private PopupPane pane;
     private Map<InternalHandle, ListComponent> handleComponentMap;
     private final int prefferedHeight;
+    private JButton closeButton;
     /** Creates a new instance of StatusLineComponent */
     public StatusLineComponent() {
         handleComponentMap = new HashMap<InternalHandle, ListComponent>();
@@ -127,8 +134,14 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         pane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "HidePopup");
         pane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "HidePopup");
         separator = new JSeparator(JSeparator.VERTICAL);
-        separator.setPreferredSize(new Dimension(5, prefferedHeight));
+//        separator.setPreferredSize(new Dimension(5, prefferedHeight));
         separator.setBorder(BorderFactory.createEmptyBorder(1, 0, 2, 0));
+        closeButton = new JButton();
+        closeButton.setBorderPainted(false);
+        closeButton.setBorder(BorderFactory.createEmptyBorder());
+        closeButton.setOpaque(false);
+        
+        closeButton.setToolTipText(NbBundle.getMessage(ListComponent.class, "ListComponent.btnClose.tooltip"));
     }
     
     public Dimension getPreferredSize() {
@@ -249,9 +262,18 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             add(bar);
             toShow = true;
         }
+        if (closeButton.getParent() == null) {
+            add(closeButton);
+            toShow = true;
+        }
         if (separator.getParent() == null) {
             add(separator);
             toShow = true;
+        }
+        if (handle.isAllowCancel()) {
+            closeButton.setAction(new CancelAction(false));
+        } else {
+            closeButton.setAction(new EmptyCancelAction());
         }
         if (toShow) {
             revalidate();
@@ -347,7 +369,8 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         Dimension dim = popupWindow.getSize();
         //#63265 
         Rectangle usableRect = Utilities.getUsableScreenBounds();
-        Point loc = new Point(point.x + this.getSize().width + 4 - dim.width , point.y - dim.height - 5);
+        Point loc = new Point(point.x + this.getSize().width - dim.width - separator.getSize().width - 5 * 2  , point.y - dim.height - 5);
+        // -5 in x coordinate is becuase of the hgap between the separator and button and separator and edge
         if (! usableRect.contains(loc)) {
             loc = new Point(loc.x, point.y + 5 + this.getSize().height);
         }
@@ -422,15 +445,23 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         JPopupMenu popup = new JPopupMenu();
         popup.add(new ProgressListAction(NbBundle.getMessage(StatusLineComponent.class, "StatusLineComponent.ShowProcessList"))); 
         popup.add(new ViewAction());
-        popup.add(new CancelAction());
+        popup.add(new CancelAction(true));
         popup.show((Component)e.getSource(), e.getX(), e.getY());
     }
     
   private class CancelAction extends AbstractAction {
-        public CancelAction() {
-            putValue(Action.NAME, NbBundle.getMessage(StatusLineComponent.class, "StatusLineComponent.Cancel"));
+        public CancelAction(boolean text) {
+            if (text) {
+                putValue(Action.NAME, NbBundle.getMessage(StatusLineComponent.class, "StatusLineComponent.Cancel"));
+            } else {
+                Image icon = (Image)UIManager.get("nb.progress.cancel.icon");
+                if (icon == null) {
+                       // for custom L&F?
+                   icon = Utilities.loadImage("org/netbeans/progress/module/resources/buton.png");
+                }
+                putValue(Action.SMALL_ICON, new ImageIcon(icon));
+            }
             setEnabled(handle == null ? false : handle.isAllowCancel());
-            
         }
         public void actionPerformed(ActionEvent actionEvent) {
             InternalHandle hndl = handle;
@@ -461,5 +492,25 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         }
     }    
     
+    
+    private class EmptyCancelAction extends AbstractAction {
+        public EmptyCancelAction() {
+            setEnabled(false);
+            putValue(Action.SMALL_ICON, new Icon() {
+                public int getIconHeight() {
+                    return 12;
+                }
+                public int getIconWidth() {
+                    return 12;
+                }
+                public void paintIcon(Component c, Graphics g, int x, int y) {
+                }
+            });
+            putValue(Action.NAME, "");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
 
 }
