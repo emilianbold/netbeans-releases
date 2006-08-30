@@ -41,7 +41,6 @@
                     <source-file>
                         <location>lib/jvm_execution_targets.xml</location>
                     </source-file>
-
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
@@ -53,6 +52,7 @@
                     </action>
                 </context-menu>
             </view>
+            <subprojects/>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>

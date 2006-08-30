@@ -360,7 +360,7 @@ public class JVMTestRunnerTask extends Task implements TestBoardLauncher {
         if (timeout == null){
             return null;
         }
-        return new ExecuteWatchdog(timeout.longValue());
+        return new JVMExecuteWatchdog(timeout.longValue(), getProject());
     }
         
  
