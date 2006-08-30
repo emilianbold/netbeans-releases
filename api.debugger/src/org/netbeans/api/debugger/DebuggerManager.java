@@ -471,7 +471,7 @@ public final class DebuggerManager {
     ) {
         if (initBreakpoints (breakpoint)) {
             breakpoints.addElement (breakpoint);
-            fireBreakpointCreated (breakpoint);
+            fireBreakpointCreated (breakpoint, null);
         }
     }
     
@@ -649,7 +649,7 @@ public final class DebuggerManager {
      *
      * @param breakpoint  a breakpoint that was created
      */
-    private void fireBreakpointCreated (final Breakpoint breakpoint) {
+    private void fireBreakpointCreated (final Breakpoint breakpoint, final DebuggerManagerListener originatingListener) {
         initDebuggerManagerListeners ();
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_BREAKPOINTS, null, null
@@ -658,9 +658,11 @@ public final class DebuggerManager {
         Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener) l.elementAt (i)).breakpointAdded 
-                (breakpoint);
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            DebuggerManagerListener dl = (DebuggerManagerListener) l.elementAt (i);
+            if (dl != originatingListener) {
+                dl.breakpointAdded (breakpoint);
+                dl.propertyChange (ev);
+            }
         }
         
         Vector l1;
@@ -673,9 +675,11 @@ public final class DebuggerManager {
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener) l1.elementAt (i)).breakpointAdded 
-                    (breakpoint);
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                DebuggerManagerListener dl = (DebuggerManagerListener) l1.elementAt (i);
+                if (dl != originatingListener) {
+                    dl.breakpointAdded (breakpoint);
+                    dl.propertyChange (ev);
+                }
             }
         }
     }
@@ -736,6 +740,7 @@ public final class DebuggerManager {
         // and DebuggerManagerListener.propertyChange(..PROP_BREAKPOINTS_INIT..) calls.
         // Clients should return the breakpoints via that listener, not add them
         // directly. Therefore this should not lead to deadlock...
+        Map originatingListeners;
         synchronized (breakpoints) {
             if (breakpointsInitialized) return true;
             if (breakpointsInitializing) {
@@ -750,20 +755,19 @@ public final class DebuggerManager {
             breakpointsInitializing = true;
             try {
                 initDebuggerManagerListeners ();
-                PropertyChangeEvent ev = new PropertyChangeEvent (
-                    this, PROP_BREAKPOINTS_INIT, null, null
-                );
 
                 createdBreakpoints = new ArrayList();
+                originatingListeners = new HashMap();
 
                 Vector l = (Vector) listeners.clone ();
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
-                    createdBreakpoints.addAll (Arrays.asList (
-                        ((DebuggerManagerListener) l.elementAt (i)).initBreakpoints ()
-                    ));
-                    // What was the point here??
-                    //((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+                    DebuggerManagerListener dl = (DebuggerManagerListener) l.elementAt (i);
+                    Breakpoint[] breakpoints = dl.initBreakpoints();
+                    createdBreakpoints.addAll (Arrays.asList (breakpoints));
+                    for (int j = 0; j < breakpoints.length; j++) {
+                        originatingListeners.put(breakpoints[j], dl);
+                    }
                 }
 
                 Vector l1;
@@ -776,11 +780,12 @@ public final class DebuggerManager {
                 if (l1 != null) {
                     k = l1.size ();
                     for (i = 0; i < k; i++) {
-                        createdBreakpoints.addAll (Arrays.asList (
-                            ((DebuggerManagerListener) l1.elementAt (i)).initBreakpoints ()
-                        ));
-                        // What was the point here??
-                        //((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                        DebuggerManagerListener dl = (DebuggerManagerListener) l1.elementAt (i);
+                        Breakpoint[] breakpoints = dl.initBreakpoints();
+                        createdBreakpoints.addAll (Arrays.asList (breakpoints));
+                        for (int j = 0; j < breakpoints.length; j++) {
+                            originatingListeners.put(breakpoints[j], dl);
+                        }
                     }
                 }
 
@@ -792,8 +797,10 @@ public final class DebuggerManager {
         }
         int k = createdBreakpoints.size ();
         for (int i = 0; i < k; i++) {
-            fireBreakpointCreated ((Breakpoint) createdBreakpoints.get (i));
+            Breakpoint bp = (Breakpoint) createdBreakpoints.get (i);
+            fireBreakpointCreated (bp, (DebuggerManagerListener) originatingListeners.get(bp));
         }
+        createdBreakpoints = null;
         return true;
     }
 

@@ -63,23 +63,27 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     }
     
     public void breakpointAdded (Breakpoint breakpoint) {
-        Properties p = Properties.getDefault ().getProperties ("debugger").
-            getProperties (DebuggerManager.PROP_BREAKPOINTS);
-        p.setArray (
-            JSP_PROPERTY, 
-            getBreakpoints ()
-        );
-        breakpoint.addPropertyChangeListener(this);
+        if (breakpoint instanceof JspLineBreakpoint) {
+            Properties p = Properties.getDefault ().getProperties ("debugger").
+                getProperties (DebuggerManager.PROP_BREAKPOINTS);
+            p.setArray (
+                JSP_PROPERTY, 
+                getBreakpoints ()
+            );
+            breakpoint.addPropertyChangeListener(this);
+        }
     }
 
     public void breakpointRemoved (Breakpoint breakpoint) {
-        Properties p = Properties.getDefault ().getProperties ("debugger").
-            getProperties (DebuggerManager.PROP_BREAKPOINTS);
-        p.setArray (
-            JSP_PROPERTY, 
-            getBreakpoints ()
-        );
-        breakpoint.removePropertyChangeListener(this);
+        if (breakpoint instanceof JspLineBreakpoint) {
+            Properties p = Properties.getDefault ().getProperties ("debugger").
+                getProperties (DebuggerManager.PROP_BREAKPOINTS);
+            p.setArray (
+                JSP_PROPERTY, 
+                getBreakpoints ()
+            );
+            breakpoint.removePropertyChangeListener(this);
+        }
     }
     public void watchAdded (Watch watch) {
     }
