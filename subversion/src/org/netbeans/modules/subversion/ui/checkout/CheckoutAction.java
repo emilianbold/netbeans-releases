@@ -63,9 +63,7 @@ public final class CheckoutAction extends CallableSystemAction {
                     setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
                     checkout(client, repository, repositoryFiles, file, atWorkingDirLevel, this);
                 } catch (SVNClientException ex) {
-                    ExceptionHandler eh = new ExceptionHandler(ex);
-                    eh.annotate();
-                    //ErrorManager.getDefault().notify(ex);
+                    annotate(ex);
                     return;
                 }
                 if(isCanceled()) {

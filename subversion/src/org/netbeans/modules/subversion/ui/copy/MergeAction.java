@@ -128,8 +128,7 @@ public class MergeAction extends ContextAction {
                          recursive);                              
 
         } catch (SVNClientException ex) {
-            ExceptionHandler eh = new ExceptionHandler(ex);
-            eh.annotate();
+            support.annotate(ex);
         }
     }
 }

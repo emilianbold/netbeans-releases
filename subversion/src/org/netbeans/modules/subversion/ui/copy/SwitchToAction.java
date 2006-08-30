@@ -114,8 +114,7 @@ public class SwitchToAction extends ContextAction {
             refreshRecursively(root); // XXX the same for another implementations like this in the code.... (see SvnUtils.refreshRecursively() )
             FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
         } catch (SVNClientException ex) {
-            ExceptionHandler eh = new ExceptionHandler(ex);
-            eh.annotate();
+            support.annotate(ex);
         }
     }
 

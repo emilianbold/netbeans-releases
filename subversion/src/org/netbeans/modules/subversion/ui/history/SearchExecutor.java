@@ -155,8 +155,7 @@ class SearchExecutor implements Runnable {
                 ISVNLogMessage [] messages = client.getLogMessages(rootUrl, null, fromRevision, toRevision, false, true, 0);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
-                ExceptionHandler eh = new ExceptionHandler(e);
-                eh.annotate();
+                progressSupport.annotate(e);
             }
         } else {
             String [] paths = new String[files.size()];
@@ -168,8 +167,7 @@ class SearchExecutor implements Runnable {
                 ISVNLogMessage [] messages = client.getLogMessages(rootUrl, paths, fromRevision, toRevision, false, true);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {
-                ExceptionHandler eh = new ExceptionHandler(e);
-                eh.annotate();
+                progressSupport.annotate(e);
             }
         }
     }

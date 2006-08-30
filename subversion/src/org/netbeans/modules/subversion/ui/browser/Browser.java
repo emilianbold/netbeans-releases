@@ -211,8 +211,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 // is not a folder in the repository
                 return null;
             } else {
-                ExceptionHandler eh = new ExceptionHandler(ex);
-                eh.annotate();                
+                support.annotate(ex);                
                 throw ex;
             }                
         }

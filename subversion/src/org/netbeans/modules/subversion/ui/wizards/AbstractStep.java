@@ -77,9 +77,6 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
             } catch (RuntimeException ex) {
                 ErrorManager.getDefault().notify(ex);
             } finally {
-                if(panel == null) {
-                    System.out.println("asd"); // NOI18N
-                }
                 assert panel != null;
                 underConstruction = false;
                 fireChange();

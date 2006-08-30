@@ -89,7 +89,7 @@ public class ConflictResolvedAction extends ContextAction {
             perform(file, client);
         } catch (SVNClientException ex) {
             ExceptionHandler eh = new ExceptionHandler (ex);
-            eh.annotate();
+            eh.notifyException();
         }        
     }
 
@@ -110,7 +110,7 @@ public class ConflictResolvedAction extends ContextAction {
             }
         } catch (SVNClientException ex) {
             ExceptionHandler eh = new ExceptionHandler (ex);
-            eh.annotate();
+            eh.notifyException();
         }        
     }
 

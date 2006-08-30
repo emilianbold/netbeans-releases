@@ -134,8 +134,7 @@ public class CreateCopyAction extends ContextAction {
             }
 
         } catch (SVNClientException ex) {
-            ExceptionHandler eh = new ExceptionHandler(ex);
-            eh.annotate();
+            support.annotate(ex);
         }
     }
 }

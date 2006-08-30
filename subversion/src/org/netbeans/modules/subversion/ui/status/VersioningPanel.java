@@ -72,7 +72,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
     private RequestProcessor.Task       refreshViewTask;
     private Thread                      refreshViewThread;
 
-    private RequestProcessor.Task       onRefreshTask;
+    private SvnProgressSupport          svnProgressSupport;   
     private static final RequestProcessor   rp = new RequestProcessor("SubversionView", 1);  // NOI18N
 
     private final NoContentPanel noContentComponent = new NoContentPanel();
@@ -344,20 +344,20 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
 
     /* Async Connects to repository and gets recent status. */
     private RequestProcessor.Task refreshStatuses() {
-        if (onRefreshTask != null) {
-            onRefreshTask.cancel();
+        if(svnProgressSupport!=null) {
+            svnProgressSupport.cancel();
+            svnProgressSupport = null;
         }
 
         SVNUrl repository = CommitAction.getSvnUrl(context);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        svnProgressSupport = new SvnProgressSupport() {
             public void perform() {                
                 StatusAction.executeStatus(context, this);
                 setupModels();
             }            
         };
-        onRefreshTask = support.start(rp, repository, org.openide.util.NbBundle.getMessage(VersioningPanel.class, "LBL_Refresh_Progress")); // NOI18N
-        return onRefreshTask;
+        return svnProgressSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(VersioningPanel.class, "LBL_Refresh_Progress")); // NOI18N
     }
 
     /**

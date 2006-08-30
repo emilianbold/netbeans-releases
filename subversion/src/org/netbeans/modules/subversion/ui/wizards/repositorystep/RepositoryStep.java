@@ -183,8 +183,7 @@ public class RepositoryStep
                 
                     info = client.getInfo(selectedRepository.getUrl());
                 } catch (SVNClientException ex) {
-                    ExceptionHandler eh = new ExceptionHandler(ex);
-                    eh.annotate();
+                    annotate(ex);
                     invalidMsg = ExceptionHandler.parseExceptionMessage(ex);
                 } 
                 if(isCanceled()) {

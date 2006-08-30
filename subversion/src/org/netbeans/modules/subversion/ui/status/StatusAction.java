@@ -25,7 +25,6 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
@@ -71,9 +70,9 @@ public class StatusAction  extends ContextAction {
         if (context == null || context.getRoots().size() == 0) {
             return;
         }
-                
+            
         try {
-            SvnClient client;
+            SvnClient client;            
             try {
                 client = Subversion.getInstance().getClient(context, support);
             } catch (SVNClientException ex) {
@@ -106,8 +105,7 @@ public class StatusAction  extends ContextAction {
                 }
             }
         } catch (SVNClientException ex) {
-            ExceptionHandler eh = new ExceptionHandler(ex);
-            eh.annotate();
+            support.annotate(ex);
         }
     }
 }

@@ -113,8 +113,7 @@ public class UpdateAction extends ContextAction {
                     }
                     updateRoots(flatFiles, this, client, false);
                 } catch (SVNClientException e1) {
-                    ExceptionHandler eh = new ExceptionHandler (e1);
-                    eh.annotate();
+                    annotate(e1);
                 }
         
             }
@@ -167,8 +166,7 @@ roots_loop:
                         client.update(root, SVNRevision.HEAD, true);
                     }
                 } catch (SVNClientException ex) {
-                    ExceptionHandler eh = new ExceptionHandler(ex);
-                    eh.annotate();
+                    annotate(ex);
                 }
             }
         };

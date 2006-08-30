@@ -28,6 +28,8 @@ import org.netbeans.modules.subversion.OutputLogger;
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
+import org.openide.util.TaskListener;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -45,11 +47,20 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     private String originalDisplayName = ""; // NOI18N
     private OutputLogger logger;
     private SVNUrl repositoryRoot;
-
+    private RequestProcessor.Task task;
+    
     public RequestProcessor.Task start(RequestProcessor rp, SVNUrl repositoryRoot, String displayName) {
         setDisplayName(displayName);
         this.repositoryRoot = repositoryRoot;
-        return rp.post(this);        
+        task = rp.post(this);   
+        task.addTaskListener(new TaskListener() {
+            public void taskFinished(org.openide.util.Task task) {
+                delegate = null;
+                interruptibleThread = null;
+                delegate = null;
+            }
+        });
+        return task;
     }
 
     public void setRepositoryRoot(SVNUrl repositoryRoot) {
@@ -66,7 +77,9 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
         try {
             interruptibleThread = Thread.currentThread();
             Diagnostics.println("Start - " + displayName); // NOI18N
-            perform();
+            if(!canceled) {
+                perform();
+            }
             Diagnostics.println("End - " + displayName); // NOI18N
         } finally {            
             finnishProgress();
@@ -81,9 +94,13 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
     }
 
     public synchronized boolean cancel() {
+        getLogger().flushLog();
         if (canceled) {
             return false;
         }        
+        if(task != null) {
+            task.cancel();
+        }
         if(delegate != null) {
             delegate.cancel();
         }
@@ -138,5 +155,14 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
             logger = Subversion.getInstance().getLogger(repositoryRoot);
         }
         return logger;
+    }
+    
+    public void annotate(SVNClientException ex) {        
+        ExceptionHandler eh = new ExceptionHandler(ex);
+        if(isCanceled()) {
+            eh.notifyException(false);
+        } else {
+            eh.notifyException();    
+        }
     }
 }
