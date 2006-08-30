@@ -410,7 +410,7 @@ Microsystems, Inc. All Rights Reserved.
         <api name="JPDADebuggerAPI"/>
         <summary>Added setPreferedClassName and getPreferredClassName methods to LineBreakpoint</summary>
         <version major="2" minor="8"/>
-        <date day="22" month="8" year="2006"/>
+        <date day="30" month="8" year="2006"/>
         <author login="mentlicher"/>
         <compatibility addition="yes" source="compatible" binary="compatible"/>
         <description>
@@ -420,7 +420,7 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
         <class package="org.netbeans.api.debugger.jpda" name="LineBreakpoint" />
-        <issue number="54449"/>
+        <issue number="83188"/>
     </change>
 
 </changes>
