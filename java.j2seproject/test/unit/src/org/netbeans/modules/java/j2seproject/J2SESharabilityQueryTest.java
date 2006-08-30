@@ -124,7 +124,7 @@ public class J2SESharabilityQueryTest extends NbTestCase {
         Element roots = (Element) nl.item(0);
         Document doc = roots.getOwnerDocument();
         Element root = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");
-        root.setAttributeNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id",propName);
+        root.setAttribute("id", propName);
         roots.appendChild (root);
         helper.putPrimaryConfigurationData (data,true);
         EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
