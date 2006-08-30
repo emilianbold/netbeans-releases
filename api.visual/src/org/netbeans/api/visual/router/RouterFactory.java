@@ -20,12 +20,18 @@ import org.netbeans.api.visual.widget.LayerWidget;
 public final class RouterFactory {
 
     private static final Router ROUTER_DIRECT = new DirectRouter ();
+    private static final Router FREE_ROUTER = new FreeRouter ();
+
 
     private RouterFactory () {
     }
 
     public static Router createDirectRouter () {
         return ROUTER_DIRECT;
+    }
+    
+    public static Router createFreeRouter () {
+        return FREE_ROUTER;
     }
 
     public static Router createOrthogonalSearchRouter (LayerWidget... layers) {
