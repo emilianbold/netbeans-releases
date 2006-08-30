@@ -134,6 +134,11 @@ public class LogManager {
     public void log(Object object) {
         log(ErrorLevel.DEBUG, object);
     }
+
+    public void log(String string, IOException ex) {
+        log(string);
+        log(ex);
+    }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants

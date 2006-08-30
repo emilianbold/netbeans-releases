@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.channels.FileChannel;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Vector;
@@ -167,6 +168,23 @@ public abstract class FileUtils {
     public abstract File createTempFile() throws IOException;
     
     public abstract File createTempFile(File parent) throws IOException;
+    
+    
+    //(dd)
+    public static void transferData(File in, File out) throws IOException {
+        if (!in.exists() && !in.isFile()) throw new IllegalArgumentException("check in arg");
+        if (!out.exists()) {
+            if (!out.getParentFile().exists()) {
+                out.getParentFile().mkdirs();
+            }
+        }
+        out.createNewFile();
+        if (!out.isFile()) throw new IllegalArgumentException("check out arg");
+        FileChannel inChannel = new FileInputStream(in).getChannel();
+        FileChannel outChannel = new FileOutputStream(out).getChannel();
+        inChannel.transferTo(0, inChannel.size(),outChannel);
+    }
+    //(end dd)
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
