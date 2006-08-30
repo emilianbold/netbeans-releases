@@ -153,6 +153,7 @@ public final class DebuggerManager {
     private List                              sessions = new ArrayList();
     private Set                               engines = new HashSet ();
     private Vector                            breakpoints = new Vector ();
+    private boolean                           breakpointsInitializing = false;
     private boolean                           breakpointsInitialized = false;
     private Vector                            watches = new Vector ();
     private boolean                           watchesInitialized = false;
@@ -468,9 +469,10 @@ public final class DebuggerManager {
     public void addBreakpoint (
         Breakpoint breakpoint
     ) {
-        initBreakpoints ();
-        breakpoints.addElement (breakpoint);
-        fireBreakpointCreated (breakpoint);
+        if (initBreakpoints (breakpoint)) {
+            breakpoints.addElement (breakpoint);
+            fireBreakpointCreated (breakpoint);
+        }
     }
     
     /** 
@@ -664,9 +666,11 @@ public final class DebuggerManager {
         Vector l1;
         synchronized (listenersMap) {
             l1 = (Vector) listenersMap.get (PROP_BREAKPOINTS);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
         }
         if (l1 != null) {
-            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).breakpointAdded 
@@ -703,9 +707,11 @@ public final class DebuggerManager {
         Vector l1;
         synchronized (listenersMap) {
             l1 = (Vector) listenersMap.get (PROP_BREAKPOINTS);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
         }
         if (l1 != null) {
-            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).breakpointRemoved 
@@ -716,51 +722,79 @@ public final class DebuggerManager {
     }
 
     private void initBreakpoints () {
-        List createdBreakpoints;
+        initBreakpoints(null);
+    }
+    
+    private List createdBreakpoints;
+    
+    /**
+     * @param newBreakpoint a breakpoint that is to be added if the breakpoints are not yet initialized.
+     * @return true if the breakpoints were successfully initialized.
+     */
+    private boolean initBreakpoints(Breakpoint newBreakpoint) {
         // All is under the lock, including DebuggerManagerListener.initBreakpoints()
         // and DebuggerManagerListener.propertyChange(..PROP_BREAKPOINTS_INIT..) calls.
         // Clients should return the breakpoints via that listener, not add them
         // directly. Therefore this should not lead to deadlock...
         synchronized (breakpoints) {
-            if (breakpointsInitialized) return ;
-            breakpointsInitialized = true; 
-            initDebuggerManagerListeners ();
-            PropertyChangeEvent ev = new PropertyChangeEvent (
-                this, PROP_BREAKPOINTS_INIT, null, null
-            );
-            
-            createdBreakpoints = new ArrayList();
-            
-            Vector l = (Vector) listeners.clone ();
-            int i, k = l.size ();
-            for (i = 0; i < k; i++) {
-                createdBreakpoints.addAll (Arrays.asList (
-                    ((DebuggerManagerListener) l.elementAt (i)).initBreakpoints ()
-                ));
-                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            if (breakpointsInitialized) return true;
+            if (breakpointsInitializing) {
+                if (newBreakpoint != null) {
+                    // Someone is trying to add new breakpoints during initialization process.
+                    // We must permit that doue to historical reasons - see web/jspdebug/src/org/netbeans/modules/web/debug/breakpoints/JspLineBreakpoint.java
+                    createdBreakpoints.add(newBreakpoint);
+                    return false;
+                }
+                throw new IllegalStateException("Breakpoints not yet initialized and tried to initialize again...");
             }
-            
-            Vector l1;
-            synchronized (listenersMap) {
-                l1 = (Vector) listenersMap.get (PROP_BREAKPOINTS_INIT);
-            }
-            if (l1 != null) {
-                l1 = (Vector) l1.clone ();
-                k = l1.size ();
+            breakpointsInitializing = true;
+            try {
+                initDebuggerManagerListeners ();
+                PropertyChangeEvent ev = new PropertyChangeEvent (
+                    this, PROP_BREAKPOINTS_INIT, null, null
+                );
+
+                createdBreakpoints = new ArrayList();
+
+                Vector l = (Vector) listeners.clone ();
+                int i, k = l.size ();
                 for (i = 0; i < k; i++) {
                     createdBreakpoints.addAll (Arrays.asList (
-                        ((DebuggerManagerListener) l1.elementAt (i)).initBreakpoints ()
+                        ((DebuggerManagerListener) l.elementAt (i)).initBreakpoints ()
                     ));
-                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                    // What was the point here??
+                    //((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
                 }
+
+                Vector l1;
+                synchronized (listenersMap) {
+                    l1 = (Vector) listenersMap.get (PROP_BREAKPOINTS_INIT);
+                    if (l1 != null) {
+                        l1 = (Vector) l1.clone ();
+                    }
+                }
+                if (l1 != null) {
+                    k = l1.size ();
+                    for (i = 0; i < k; i++) {
+                        createdBreakpoints.addAll (Arrays.asList (
+                            ((DebuggerManagerListener) l1.elementAt (i)).initBreakpoints ()
+                        ));
+                        // What was the point here??
+                        //((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                    }
+                }
+
+                breakpoints.addAll(createdBreakpoints);
+            } finally {
+                breakpointsInitializing = false;
             }
-            
-            breakpoints.addAll(createdBreakpoints);
+            breakpointsInitialized = true; 
         }
         int k = createdBreakpoints.size ();
         for (int i = 0; i < k; i++) {
             fireBreakpointCreated ((Breakpoint) createdBreakpoints.get (i));
         }
+        return true;
     }
 
     /**
@@ -790,9 +824,11 @@ public final class DebuggerManager {
         Vector l1;
         synchronized (listenersMap) {
             l1 = (Vector) listenersMap.get (PROP_WATCHES);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
         }
         if (l1 != null) {
-            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).watchAdded 
@@ -830,9 +866,11 @@ public final class DebuggerManager {
         Vector l1;
         synchronized (listenersMap) {
             l1 = (Vector) listenersMap.get (PROP_WATCHES);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
         }
         if (l1 != null) {
-            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).watchRemoved 
@@ -863,9 +901,11 @@ public final class DebuggerManager {
         Vector l1;
         synchronized (listenersMap) {
             l1 = (Vector) listenersMap.get (PROP_WATCHES_INIT);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
         }
         if (l1 != null) {
-            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).initWatches ();
@@ -905,9 +945,11 @@ public final class DebuggerManager {
         Vector l1;
         synchronized (listenersMap) {
             l1 = (Vector) listenersMap.get (PROP_SESSIONS);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
         }
         if (l1 != null) {
-            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).sessionAdded
@@ -948,9 +990,11 @@ public final class DebuggerManager {
         Vector l1;
         synchronized (listenersMap) {
             l1 = (Vector) listenersMap.get (PROP_SESSIONS);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
         }
         if (l1 != null) {
-            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).sessionRemoved 
@@ -991,9 +1035,11 @@ public final class DebuggerManager {
         Vector l1;
         synchronized (listenersMap) {
             l1 = (Vector) listenersMap.get (PROP_DEBUGGER_ENGINES);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
         }
         if (l1 != null) {
-            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).engineAdded
@@ -1034,9 +1080,11 @@ public final class DebuggerManager {
         Vector l1;
         synchronized (listenersMap) {
             l1 = (Vector) listenersMap.get (PROP_DEBUGGER_ENGINES);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
         }
         if (l1 != null) {
-            l1 = (Vector) l1.clone ();
             k = l1.size ();
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).engineRemoved 

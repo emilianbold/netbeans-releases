@@ -330,13 +330,13 @@ public abstract class Properties {
         public void write (Object object, Properties properties);
     }
     
-    private static class PrimitiveRegister {
+    private final static class PrimitiveRegister {
         
         private HashMap properties = new HashMap ();
         private boolean isInitialized = false;
 
 
-        protected String getProperty (String propertyName, String defaultValue) {
+        public synchronized String getProperty (String propertyName, String defaultValue) {
             if (!isInitialized) load ();
             isInitialized = true;
             String value = (String) properties.get (propertyName);
@@ -344,8 +344,9 @@ public abstract class Properties {
             return defaultValue;
         }
 
-        protected void setProperty (String propertyName, String value) {
+        public synchronized void setProperty (String propertyName, String value) {
             if (!isInitialized) load ();
+            isInitialized = true;
             properties.put (propertyName, value);
             save ();
         }
@@ -353,16 +354,7 @@ public abstract class Properties {
         private void load () {
             BufferedReader br = null;
             try {
-                FileSystem fs = Repository.getDefault ().
-                    getDefaultFileSystem ();
-                FileObject r = fs.findResource ("Services");
-                if (r == null)
-                    r = fs.getRoot ();
-                FileObject fo = r.getFileObject 
-                    ("org-netbeans-modules-debugger-Settings", "properties");
-                if (fo == null)
-                    fo = r.createData 
-                        ("org-netbeans-modules-debugger-Settings", "properties");
+                FileObject fo = findSettings();
                 InputStream is = fo.getInputStream ();
                 br = new BufferedReader (new InputStreamReader (is));
 
@@ -375,7 +367,7 @@ public abstract class Properties {
                 }
                 br.close ();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ErrorManager.getDefault().notify(ex);
             }
         }
         
@@ -400,13 +392,7 @@ public abstract class Properties {
             PrintWriter pw = null;
             FileLock lock = null;
             try {
-                FileObject r = Repository.getDefault ().getDefaultFileSystem ().
-                    findResource ("Services");
-                FileObject fo = r.getFileObject 
-                    ("org-netbeans-modules-debugger-Settings", "properties");
-                if (fo == null)
-                    fo = r.createData 
-                        ("org-netbeans-modules-debugger-Settings", "properties");
+                FileObject fo = findSettings();
                 lock = fo.lock ();
                 OutputStream os = fo.getOutputStream (lock);
                 pw = new PrintWriter (os);
@@ -437,6 +423,21 @@ public abstract class Properties {
                 }
             }
         }
+        
+        private static FileObject findSettings() throws IOException {
+            FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+            FileObject r = fs.findResource("Services"); // NOI18N
+            if (r == null) {
+                r = fs.getRoot ().createFolder("Services"); // NOI18N
+            }
+            FileObject fo = r.getFileObject 
+                ("org-netbeans-modules-debugger-Settings", "properties"); // NOI18N
+            if (fo == null) {
+                fo = r.createData 
+                    ("org-netbeans-modules-debugger-Settings", "properties"); // NOI18N
+            }
+            return fo;
+        }
     }
 
     private static class PropertiesImpl extends Properties {
@@ -465,7 +466,11 @@ public abstract class Properties {
         }
         
         private Reader findReader (String typeID) {
-            if (register == null) initReaders ();
+            synchronized (this) {
+                if (register == null) {
+                    initReaders ();
+                }
+            }
             
             Reader r = (Reader) register.get (typeID);
             if (r != null) return r;
@@ -474,7 +479,7 @@ public abstract class Properties {
             try {
                 c = getClassLoader ().loadClass (typeID);
             } catch (ClassNotFoundException e) {
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(e);
                 return null;
             }
             while ((c != null) && (register.get (c.getName ()) == null)) {
@@ -688,7 +693,7 @@ public abstract class Properties {
                     l
                 );
             } catch (ClassNotFoundException ex) {
-                ex.printStackTrace ();
+                ErrorManager.getDefault().notify(ex);
                 os = new Object [l];
             }
             for (int i = 0; i < l; i++) {
