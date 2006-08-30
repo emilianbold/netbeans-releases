@@ -748,8 +748,8 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
                     Node[] diffNodes = getDiffNodes( parentNode, preNodes );
                     if( canReorder( parentNode, diffNodes ) ) {
                         performReorder( parentNode, diffNodes, lowerNodeIdx, upperNodeIdx );
-            }
-        }
+                    }
+                }
             });
         }
 
