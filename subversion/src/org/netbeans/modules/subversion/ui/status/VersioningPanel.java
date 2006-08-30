@@ -331,6 +331,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Proper
      */ 
     private void onRefreshAction() {
         LifecycleManager.getDefault().saveAll();
+        if(context.getRootFiles().length < 1) {
+            return;
+        }        
         refreshStatuses();
     }
 
