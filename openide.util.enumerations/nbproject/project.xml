@@ -32,9 +32,6 @@ Microsystems, Inc. All Rights Reserved.
                       <test/>
                   </test-dependency>
               </test-type>
-              <test-type>
-                  <name>qa-functional</name>
-              </test-type>
             </test-dependencies>            
             <public-packages>
                 <package>org.openide.util.enum</package>
