@@ -263,8 +263,7 @@ public class J2MECustomizer extends JPanel implements Runnable {
     }
     
     private void jButtonEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditActionPerformed
-        final CustomizerConfigManager ccm = new CustomizerConfigManager();
-        ccm.initValues(props, null);
+        final CustomizerConfigManager ccm = new CustomizerConfigManager(props,null);
         DialogDisplayer.getDefault().notify(new DialogDescriptor(ccm, NbBundle.getMessage(J2MECustomizer.class, "Title_ProjectConfigurationManager"), true, new Object[]{NotifyDescriptor.CLOSED_OPTION}, NotifyDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CustomizerConfigManager.class), null));    //NOI18N
         setConfigurationCombo();
     }//GEN-LAST:event_jButtonEditActionPerformed

@@ -24,24 +24,37 @@
  */
 package org.netbeans.modules.mobility.project.ui.customizer;
 
-import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
-import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  gc149856
  */
-public class CustomizerConfigManager extends javax.swing.JPanel implements CustomizerPanel {
+public class CustomizerConfigManager extends javax.swing.JPanel {
     
     J2MEProjectProperties j2meProperties=null;
     
     private VisualConfigSupport vcs=null;
     
     /** Creates new form ConfigManager */
-    public CustomizerConfigManager() {
+    public CustomizerConfigManager(J2MEProjectProperties props, String configuration) {
         initComponents();
         initAccessibility();
+        
+        this.j2meProperties = props;
+        
+        if (vcs == null) {
+            this.vcs = new VisualConfigSupport(
+                    jListConfigs,
+                    jButtonAddConfig,
+                    jButtonRemoveConfig,
+                    jButtonDuplicate,
+                    jButtonSave);
+            
+            
+            // don't need to register with VisualPropertySupport, because we're not modifying properties from this panel
+            register(vcs);
+        }
     }
     
     /** This method is called from within the constructor to
@@ -136,23 +149,6 @@ public class CustomizerConfigManager extends javax.swing.JPanel implements Custo
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerConfigManager.class, "ACSD_CustConfig"));
     }
     
-    public void initValues(ProjectProperties props, String configuration) {
-        
-        this.j2meProperties = j2meProperties;
-        
-        if (vcs == null) {
-            this.vcs = new VisualConfigSupport(
-                    jListConfigs,
-                    jButtonAddConfig,
-                    jButtonRemoveConfig,
-                    jButtonDuplicate,
-                    jButtonSave);
-            
-            
-            // don't need to register with VisualPropertySupport, because we're not modifying properties from this panel
-            register(vcs);
-        }
-    }
     
     /** Registers VisualConfigSupport containing ConfigPanel items and accompanying
      *  buttons for handling the configs

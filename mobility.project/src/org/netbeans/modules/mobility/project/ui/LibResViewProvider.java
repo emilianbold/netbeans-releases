@@ -128,20 +128,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                    final int end=pos-1;
                    confName=prop.substring(begin,end);
                 }
-                parentNode=node.getChildren().findChild(confName);
-                if (parentNode==null)
-                {   //new Configuration
-                    final ProjectConfiguration conf=project.getConfigurationHelper().getConfigurationByName(confName);
-                    final Node newNode=new ActionNode(
-                            new ConfigChildren(),
-                            Lookups.fixed(new Object[] {project, conf, new AbilitiesPanel.VAData()}),
-                            confName,ARCHIVE_ICON,
-                            new Action[] {RemoveConfigurationAction.getStaticInstance(),
-                                          SetConfigurationAction.getStaticInstance(),
-                                         });
-                    node.getChildren().add(new Node[] {newNode});
-                    return;
-                }
+
                 if (oldV!=null && newV==null)
                 {  //remove Configuration
                    node.getChildren().remove(new Node[] {parentNode}) ;
@@ -232,9 +219,24 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
 
                     if (nObj!=null)
                     {
-                        final Node n=node.getChildren().findChild(nObj.getName());
+                        Node n=node.getChildren().findChild(nObj.getName());
                         if (n!=null)
                         {
+                            n.setValue("bold",Boolean.TRUE);
+                            n.setName(nObj.getName());
+                        }
+                        else
+                        {
+                            //new Configuration
+                            final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
+                            n=new ActionNode(
+                                    new ConfigChildren(),
+                                    Lookups.fixed(new Object[] {project, nObj, new AbilitiesPanel.VAData()}),
+                                    nObj.getName(),ARCHIVE_ICON,
+                                    new Action[] {RemoveConfigurationAction.getStaticInstance(),
+                                                  SetConfigurationAction.getStaticInstance(),
+                                                 });
+                            node.getChildren().add(new Node[] {n});
                             n.setValue("bold",Boolean.TRUE);
                             n.setName(nObj.getName());
                         }

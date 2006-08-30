@@ -159,9 +159,9 @@ class ActionNode extends AbstractNode
         final String PRIMARY_TYPE = "application";   //NOI18N
         final String LIST_TYPE = "x-java-file-list"; //NOI18N
         final String DND_TYPE = "x-java-openide-nodednd"; //NOI18N
+        final String MULTI_TYPE = "x-java-openide-multinode"; //NOI18N
         final HashSet<VisualClassPathItem> set=new HashSet<VisualClassPathItem>();
-    
-        
+            
         class NDPasteType extends PasteType
         {
             public Transferable paste() throws IOException
@@ -218,11 +218,11 @@ class ActionNode extends AbstractNode
                     
                 }
                 
-                if (DND_TYPE.equals(flavor.getSubType ())) {
+                 if (MULTI_TYPE.equals(flavor.getSubType ())) {
                     Node nodes[]=NodeTransfer.nodes(tr,NodeTransfer.DND_COPY_OR_MOVE);
                     for (Node node : nodes)
                     {
-                        if (node.getValue("resource") != null )
+                        if (node != null && node.getValue("resource") != null )
                         {
                             VisualClassPathItem item=(VisualClassPathItem)node.getValue("VCPI");
                             if (item != null)
@@ -234,6 +234,23 @@ class ActionNode extends AbstractNode
                             set.clear();
                             return null;
                         }
+                    }
+                    return  new NDPasteType();
+                }
+                
+                if (DND_TYPE.equals(flavor.getSubType ())) {
+                    Node node=NodeTransfer.node(tr,NodeTransfer.DND_COPY_OR_MOVE);
+                    if (node != null && node.getValue("resource") != null )
+                    {
+                        VisualClassPathItem item=(VisualClassPathItem)node.getValue("VCPI");
+                        if (item != null)
+                            set.add(item);
+                    }
+                    //Node is not of correct type
+                    else 
+                    {
+                        set.clear();
+                        return null;
                     }
                     return  new NDPasteType();
                 }
@@ -253,6 +270,12 @@ class ActionNode extends AbstractNode
             return type;
         }
         return null;
+    }
+    
+    protected void createPasteTypes(Transferable t, List<PasteType> s) 
+    {
+        PasteType pt=getDropType(t,0,0);
+        if (pt != null) s.add(pt);
     }
     
     

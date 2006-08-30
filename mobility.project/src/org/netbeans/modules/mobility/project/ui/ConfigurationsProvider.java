@@ -57,9 +57,11 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
+import org.openide.actions.CopyAction;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -121,16 +123,47 @@ class ConfigurationsProvider
                         {
                             final Action act[]=new Action[] 
                             {
-                                RemoveResourceAction.getStaticInstance()
+                                RemoveResourceAction.getStaticInstance(),
+                                null,
+                                SystemAction.get(CopyAction.class),
+                            };
+                            
+                            final Action gract[]=new Action[] 
+                            {
+                                SystemAction.get(CopyAction.class),
                             };
                             
                             public Action[] getActions(boolean context)
                             {
-                                return actions?act:super.getActions(context);
+                                return actions?act:gract;
                             }
                             
                             public Image getIcon(int i) {
                                 return ((ImageIcon)item.getIcon()).getImage();
+                            }
+                            
+                            public Image getOpenedIcon(int i) {
+                                return ((ImageIcon)item.getIcon()).getImage();
+                            }
+                            
+                            public boolean canDestroy()
+                            {
+                                return false;
+                            }
+                            
+                            public boolean canRename()
+                            {
+                                return false;
+                            }
+                            
+                            public boolean canCut()
+                            {
+                                return false;
+                            }
+                            
+                            public boolean canCopy()
+                            {
+                                return true;
                             }
                         };
                         node.setDisplayName(item.getDisplayName());
@@ -195,7 +228,9 @@ class ConfigurationsProvider
                 {
                     Object o=item.getIcon();
                     final Lookup lookup = Lookups.fixed( new Object[] {project,conf, item, f} );
-                    final Action actions[]=gray ? new Action[] {} : new Action[] { RemoveResourceAction.getStaticInstance() };
+                    final Action actions[]=gray ? new Action[] {} : new Action[] { 
+                                                                                   RemoveResourceAction.getStaticInstance(),
+                                                                                 };
                     final Node n=new FilterNode(new ActionNode(Children.LEAF,lookup,itemPath,null,actions),null,lookup)
                     {
                             public Image getIcon(int i) {

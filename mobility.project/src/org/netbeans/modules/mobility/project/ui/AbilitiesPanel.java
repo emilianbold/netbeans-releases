@@ -143,7 +143,7 @@ public class AbilitiesPanel implements NavigatorPanel
                     //Default configuration is a special case
                     final ProjectConfigurationsHelper pch=project.getLookup().lookup(ProjectConfigurationsHelper.class);
                     final ProjectConfiguration cf=conf.getName().equals(pch.getDefaultConfiguration().getName()) ? null : conf;
-                    final boolean def=testForNonDefaultValue(j2meProperties,conf);
+                    final boolean def=testForNonDefaultValue(j2meProperties,cf);
                     final boolean useDefault=def ^ true; //Negation
                     
                     tableModel.setEditable(def);

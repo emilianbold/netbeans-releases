@@ -29,6 +29,7 @@
 package org.netbeans.modules.mobility.project.ui;
 
 import java.awt.Dialog;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -39,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -344,6 +346,12 @@ class RemoveResourceAction extends NodeAction<Object>
     private RemoveResourceAction()
     {
         super(aName);
+        putValue (
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke ("DELETE")
+        );
+
+        //this.putValue("ACCELERATOR_KEY",KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
     }
     
     public static Action getStaticInstance()

@@ -40,8 +40,10 @@ import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.actions.PasteAction;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -60,6 +62,8 @@ class NodeCache implements PropertyChangeListener
                 AddJarAction.getStaticInstance(),
                 AddFolderAction.getStaticInstance(),
                 AddLibraryAction.getStaticInstance(),
+                null,
+                SystemAction.get(PasteAction.class),
             };
     
     /** Creates a new instance of NodeCache */
@@ -140,7 +144,6 @@ class NodeCache implements PropertyChangeListener
             resNode=NodeFactory.createNode(resNodes.toArray(subNodes), lookup, "Resources","Resources",PLATFORM_ICON,pActions);
         }
         resNode.setValue("gray",gray);
-        
         allNodes.add(resNode);        
         nodes.put(cfg.getName(),allNodes);
         
