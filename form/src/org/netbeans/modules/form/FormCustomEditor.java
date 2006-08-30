@@ -391,6 +391,9 @@ public class FormCustomEditor extends JPanel
             }
         }
 
+        if (!editor.getProperty().canWrite() && (value instanceof FormProperty.ValueWithEditor)) { // Issue 83770
+            value = ((FormProperty.ValueWithEditor)value).getValue();
+        }
         return value;
     }
 }
