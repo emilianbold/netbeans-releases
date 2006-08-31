@@ -104,32 +104,23 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             }
         }
         if (className == null) {
-            //HACK: for JSPs.
-            //PENDING
-            className = breakpoint.getURL ();
-            setClassRequests (
-                new String[] {
-                    className
-                }, 
-                new String [0],
-                ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
-            );
-        } else {
-            // HACK
-            // EditorContext does not provide the real class name, it does not
-            // provide anonymous inner classes. Therefore we need to add a request
-            // for className$ as well.
-            
-            logger.fine("LineBreakpoint "+breakpoint+" - setting request for "+className);
-            setClassRequests (
-                new String[] {
-                    className,
-                    className + "$*", // innerclasses
-                }, 
-                new String [0],
-                ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
-            );
+            logger.warning("Class name not defined for breakpoint "+breakpoint);
+            return ;
         }
+        // HACK
+        // EditorContext does not provide the real class name, it does not
+        // provide anonymous inner classes. Therefore we need to add a request
+        // for className$ as well.
+
+        logger.fine("LineBreakpoint "+breakpoint+" - setting request for "+className);
+        setClassRequests (
+            new String[] {
+                className,
+                className + "$*", // innerclasses
+            }, 
+            new String [0],
+            ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
+        );
         checkLoadedClasses (className);
     }
 
