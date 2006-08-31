@@ -26,6 +26,9 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +57,12 @@ public class OutputWindow extends AbstractOutputWindow {
     public static final String ICON_RESOURCE =
         "org/netbeans/core/resources/frames/output.gif"; // NOI18N
         
+    private MouseListener activateListener = new MouseAdapter() {
+        public void mouseClicked(MouseEvent e) {
+            //#83829
+            requestActive();
+        }
+    };
 
     public OutputWindow() {
         this (new Controller());
@@ -62,6 +71,17 @@ public class OutputWindow extends AbstractOutputWindow {
         getActionMap().put("PreviousViewAction", controller.prevTabAction);
         getActionMap().put("NextViewAction", controller.nextTabAction);
     }
+    
+    public void addNotify() {
+        super.addNotify();
+        pane.addMouseListener(activateListener);
+    }
+
+    public void removeNotify() {
+        super.removeNotify();
+        pane.removeMouseListener(activateListener);
+    }
+    
 
     protected void closeRequest(AbstractOutputTab tab) {
         controller.close (this, (OutputTab) tab, false);
