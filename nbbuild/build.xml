@@ -1812,6 +1812,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
              </fileset>
       </copy>
       <copy todir="${test.dist.dir}" file="templates/testdist/build.xml"/>
+      <copy todir="${test.dist.dir}" file="templates/testdist/README.txt"/>
       <mkdir dir="${test.dist.dir}/nbbuild"/>
       <copy todir="${test.dist.dir}/nbbuild"> 
              <fileset dir="." includes="templates/*,*.xml,*.jar,*.txt,*.properties" excludes="templates/testdist"/>
