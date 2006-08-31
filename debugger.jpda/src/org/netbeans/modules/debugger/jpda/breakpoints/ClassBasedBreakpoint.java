@@ -31,6 +31,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 
@@ -101,6 +102,12 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 if (sourceRoot.equals(sourceRoots[i])) {
                     return true;
                 }
+            }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Breakpoint "+getBreakpoint()+
+                            " NOT submitted because it's source root "+sourceRoot+
+                            " is cont contained in debugger's source roots: "+
+                            java.util.Arrays.asList(sourceRoots));
             }
             return false;
         }

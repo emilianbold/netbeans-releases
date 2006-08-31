@@ -28,6 +28,8 @@ import java.util.*;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -59,6 +61,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     
     private static boolean          verbose = 
         System.getProperty ("netbeans.debugger.sourcepathproviderimpl") != null;
+    
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.projects");
     
     private static final Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./");
     private static final Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./");
@@ -248,6 +252,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      * @param sourceRoots a new array of sourceRoots
      */
     public void setSourceRoots (String[] sourceRoots) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("SourcePathProviderImpl.setSourceRoots("+java.util.Arrays.asList(sourceRoots)+")");
+        }
         int i, k = sourceRoots.length;
         FileObject[] fos = new FileObject [k];
         for (i = 0; i < k; i++)
