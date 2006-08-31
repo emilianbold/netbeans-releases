@@ -41,6 +41,8 @@ public class FormLAF {
     private static DelegatingDefaults delDefaults;
     /** User UIDefaults of the IDE. */
     private static Map netbeansDefaults = new HashMap();
+    /** User UIDefaults of components */
+    private static Map userDefaults = new HashMap();
     /** Maps LAF class to its theme. */
     private static Map lafToTheme = new HashMap();
     /** Determines whether the IDE LAF is subclass of MetalLookAndFeel. */
@@ -203,8 +205,8 @@ public class FormLAF {
         UIDefaults defaults = UIManager.getDefaults();
         netbeansDefaults.clear();
         netbeansDefaults.putAll(defaults);
-        Iterator iter = netbeansDefaults.keySet().iterator();
-        while (iter.hasNext()) defaults.remove(iter.next());
+        netbeansDefaults.keySet().removeAll(userDefaults.keySet());
+        defaults.keySet().removeAll(netbeansDefaults.keySet());
 
         if (!preview) {
             setUseDesignerDefaults(true);
@@ -214,6 +216,8 @@ public class FormLAF {
     }
 
     private static void useIDELookAndFeel() {
+        userDefaults.clear();
+        userDefaults.putAll(UIManager.getDefaults());
         UIManager.getDefaults().putAll(netbeansDefaults);
 
         if (!preview) {
