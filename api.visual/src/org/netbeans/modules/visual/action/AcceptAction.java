@@ -28,15 +28,15 @@ public final class AcceptAction extends WidgetAction.Adapter {
     }
 
     public State dragOver (Widget widget, WidgetDropTargetDragEvent event) {
-        return provider.isAcceptable (widget, event.getPoint (), event.getCurrentDataFlavorsAsList ()) ? State.CONSUMED : State.REJECTED;
+        return provider.isAcceptable (widget, event.getPoint (), event.getTransferable ()) ? State.CONSUMED : State.REJECTED;
     }
 
     public State dropActionChanged (Widget widget, WidgetDropTargetDragEvent event) {
-        return provider.isAcceptable (widget, event.getPoint (), event.getCurrentDataFlavorsAsList ()) ? State.CONSUMED : State.REJECTED;
+        return provider.isAcceptable (widget, event.getPoint (), event.getTransferable ()) ? State.CONSUMED : State.REJECTED;
     }
 
     public State drop (Widget widget, WidgetDropTargetDropEvent event) {
-        boolean acceptable = provider.isAcceptable (widget, event.getPoint (), event.getCurrentDataFlavorsAsList ());
+        boolean acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
         if (acceptable)
             provider.accept (widget, event.getPoint (), event.getTransferable ());
         return acceptable ? State.CONSUMED : State.REJECTED;

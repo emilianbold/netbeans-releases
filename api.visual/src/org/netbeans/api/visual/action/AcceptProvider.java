@@ -15,7 +15,6 @@ package org.netbeans.api.visual.action;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 
 /**
@@ -23,7 +22,7 @@ import java.awt.datatransfer.Transferable;
  */
 public interface AcceptProvider {
 
-    boolean isAcceptable (Widget widget, Point point, java.util.List<DataFlavor> dataFlavors);
+    boolean isAcceptable (Widget widget, Point point, Transferable transferable);
 
     void accept (Widget widget, Point point, Transferable transferable);
 
