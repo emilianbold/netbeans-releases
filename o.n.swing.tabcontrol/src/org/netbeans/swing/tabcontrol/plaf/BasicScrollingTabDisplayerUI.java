@@ -383,9 +383,25 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         protected void processMouseEvent(MouseEvent me) {
             super.processMouseEvent(me);
             if (isEnabled() && me.getID() == me.MOUSE_PRESSED) {
+                Icon defaultIcon = getIcon();
+                Icon pressedIcon = getPressedIcon();
+                //swap regular and pressed icon to force 'pressed' visual feedback
+                if( null != defaultIcon && null != pressedIcon ) {
+                    setIcon( pressedIcon );
+                    setPressedIcon( defaultIcon );
+                }
                 getAction().actionPerformed(new ActionEvent(this,
                                                             ActionEvent.ACTION_PERFORMED,
                                                             "pressed"));
+            }
+            else if (isEnabled() && me.getID() == me.MOUSE_RELEASED) {
+                Icon defaultIcon = getPressedIcon();
+                Icon pressedIcon = getIcon();
+                //mouse button released - restore icons back
+                if( null != defaultIcon && null != pressedIcon ) {
+                    setIcon( defaultIcon );
+                    setPressedIcon( pressedIcon );
+                }
             }
         }
     }
