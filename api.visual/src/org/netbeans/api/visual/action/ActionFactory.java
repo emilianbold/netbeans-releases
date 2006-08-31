@@ -119,6 +119,14 @@ public final class ActionFactory {
         return new AcceptAction (provider);
     }
 
+    public static WidgetAction createAddDeleteControlPointAction () {
+        return createAddDeleteControlPointAction (1.0, 5.0);
+    }
+
+    public static WidgetAction createAddDeleteControlPointAction (double createSensitivity, double deleteSensitivity) {
+        return new AddDeleteControlPointAction (createSensitivity, deleteSensitivity);
+    }
+
     public static WidgetAction createAlignWithMoveAction (LayerWidget collectionLayer, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
         assert collectionLayer != null;
         return createAlignWithMoveAction (new SingleLayerAlignWithWidgetCollector (collectionLayer), interractionLayer, decorator != null ? decorator : ALIGN_WITH_MOVE_DECORATOR_DEFAULT);
