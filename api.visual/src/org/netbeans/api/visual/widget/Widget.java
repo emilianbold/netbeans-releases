@@ -76,6 +76,8 @@ public class Widget {
 
     // TODO - replace Scene parameter with an interface
     public Widget (Scene scene) {
+        if (scene == null)
+            scene = (Scene) this;
         this.scene = scene;
         children = new ArrayList<Widget> ();
         childrenUm = Collections.unmodifiableList (children);
@@ -101,14 +103,6 @@ public class Widget {
 
     public final Scene getScene () {
         return scene;
-    }
-
-    /**
-     * This method could be called in Scene class constructor only.
-     * @param scene
-     */
-    void setScene (Scene scene) {
-        this.scene = scene;
     }
 
     protected Graphics2D getGraphics () {

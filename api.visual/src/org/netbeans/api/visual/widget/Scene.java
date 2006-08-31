@@ -54,7 +54,6 @@ public class Scene extends Widget {
 
     public Scene () {
         super (null);
-        setScene (this);
         defaultFont = Font.decode (null);
         resolveBounds (new Point (), new Rectangle ());
         setOpaque(true);
@@ -98,6 +97,7 @@ public class Scene extends Widget {
         return graphics;
     }
 
+    // HACK - used by SceneComponent and ConvolutionWidget
     final void setGraphics (Graphics2D graphics) {
         this.graphics = graphics;
     }
