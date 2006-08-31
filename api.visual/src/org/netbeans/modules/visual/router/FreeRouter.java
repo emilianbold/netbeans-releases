@@ -32,16 +32,21 @@ public class FreeRouter implements Router {
         
         Anchor sourceAnchor = widget.getSourceAnchor();
         Anchor targetAnchor = widget.getTargetAnchor();
-        if (sourceAnchor == null  ||  targetAnchor == null)return Collections.emptyList();
-        if (sourceAnchor != null  &&  targetAnchor != null) {
-            list.add(sourceAnchor.compute(widget.getSourceAnchorEntry()).getAnchorSceneLocation());
-            if(widget.getControlPoints()!=null){
-                ArrayList<Point> oldList = new ArrayList<Point> (widget.getControlPoints());
-                oldList.remove(widget.getFirstControlPoint());oldList.remove(widget.getLastControlPoint());
-                list.addAll(oldList);
-            }
-            list.add(targetAnchor.compute(widget.getTargetAnchorEntry()).getAnchorSceneLocation());
+        if (sourceAnchor == null  ||  targetAnchor == null)
+            return Collections.emptyList();
+
+        list.add(sourceAnchor.compute(widget.getSourceAnchorEntry()).getAnchorSceneLocation());
+
+        List<Point> oldControlPoints = widget.getControlPoints ();
+        if(oldControlPoints !=null) {
+            ArrayList<Point> oldList = new ArrayList<Point> (oldControlPoints);
+            oldList.remove(widget.getFirstControlPoint());
+            oldList.remove(widget.getLastControlPoint());
+            list.addAll(oldList);
         }
+
+        list.add(targetAnchor.compute(widget.getTargetAnchorEntry()).getAnchorSceneLocation());
+
         return list;
     }
     

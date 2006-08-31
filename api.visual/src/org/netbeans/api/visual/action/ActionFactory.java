@@ -120,7 +120,7 @@ public final class ActionFactory {
     }
 
     public static WidgetAction createAddDeleteControlPointAction () {
-        return createAddDeleteControlPointAction (1.0, 5.0);
+        return createAddDeleteControlPointAction (3.0, 5.0);
     }
 
     public static WidgetAction createAddDeleteControlPointAction (double createSensitivity, double deleteSensitivity) {
