@@ -242,11 +242,12 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         }
     }
 
-    private void showPopup(MouseEvent e) {
+    private void showPopup(final MouseEvent e) {
         int row = table.rowAtPoint(e.getPoint());
         if (row != -1) {
             boolean makeRowSelected = true;
             int [] selectedrows = table.getSelectedRows();
+
             for (int i = 0; i < selectedrows.length; i++) {
                 if (row == selectedrows[i]) {
                     makeRowSelected = false;
@@ -257,8 +258,13 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 table.getSelectionModel().setSelectionInterval(row, row);
             }
         }
-        JPopupMenu menu = getPopup();
-        menu.show(table, e.getX(), e.getY());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // invoke later so the selection on the table will be set first
+                JPopupMenu menu = getPopup();         
+                menu.show(table, e.getX(), e.getY());
+            }
+        });
     }
 
     /**
@@ -397,7 +403,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             if (action.isEnabled()) {
                 action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
             }
-        }
+        } 
     }
 
     public void valueChanged(ListSelectionEvent e) {
