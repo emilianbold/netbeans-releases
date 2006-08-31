@@ -15,6 +15,7 @@ package org.netbeans.api.visual.action;
 import org.netbeans.api.visual.widget.Widget;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author David Kaspar
@@ -26,10 +27,11 @@ public interface PopupMenuProvider {
      * This method may return <code>null</code>.  If that is the case,
      * no popup menu will be displayed if this PopupMenuAction gets
      * a valid popup trigger on the given Widget.
-     * @param widget
+     * @param widget the widget
+     * @param localLocation the local location where the popup menu was invoked
      * @return The JPopupMenu to display for the given Widget.
      *         May be <code>null</code>.
      */
-    public JPopupMenu getPopupMenu (Widget widget);
+    public JPopupMenu getPopupMenu (Widget widget, Point localLocation);
 
 }

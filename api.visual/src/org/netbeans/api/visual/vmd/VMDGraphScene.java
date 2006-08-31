@@ -25,6 +25,7 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author David Kaspar
@@ -105,7 +106,6 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         ((ConnectionWidget) findWidget (edge)).setTargetAnchor (getPinAnchor (targetPin));
     }
 
-
     private Anchor getPinAnchor (String pin) {
         VMDNodeWidget nodeWidget = (VMDNodeWidget) findWidget (getPinNode (pin));
         Widget pinMainWidget = findWidget (pin);
@@ -120,7 +120,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
 
     private static class MyPopupMenuProvider implements PopupMenuProvider {
 
-        public JPopupMenu getPopupMenu (Widget widget) {
+        public JPopupMenu getPopupMenu (Widget widget, Point localLocation) {
             JPopupMenu popupMenu = new JPopupMenu ();
             popupMenu.add (new JMenuItem ("Open " + ((VMDNodeWidget) widget).getNodeName ()));
             return popupMenu;

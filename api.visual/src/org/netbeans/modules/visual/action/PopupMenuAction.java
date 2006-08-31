@@ -80,7 +80,7 @@ public final class PopupMenuAction extends WidgetAction.Adapter {
         // and mouseReleased(...) methods delegate to this method to
         // handle the MouseEvent.
         if (event.isPopupTrigger ()) {
-            JPopupMenu popupMenu = provider.getPopupMenu (widget);
+            JPopupMenu popupMenu = provider.getPopupMenu (widget, event.getPoint ());
             if (popupMenu != null) {
                 Scene scene = widget.getScene ();
                 Point point = scene.convertSceneToView (widget.convertLocalToScene (event.getPoint ()));
