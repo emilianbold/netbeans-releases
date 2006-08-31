@@ -147,6 +147,16 @@ public final class ActionFactory {
         return new ConnectAction (decorator != null ? decorator : createDefaultConnectDecorator (), interractionLayer, provider);
     }
 
+    public static WidgetAction createExtendedConnectAction (LayerWidget interractionLayer, ConnectProvider provider) {
+        return createExtendedConnectAction (null, interractionLayer, provider);
+    }
+
+    public static WidgetAction createExtendedConnectAction (ConnectDecorator decorator, LayerWidget interractionLayer, ConnectProvider provider) {
+        assert interractionLayer != null  &&  provider != null;
+        return new ExtendedConnectAction (decorator != null ? decorator : createDefaultConnectDecorator (), interractionLayer, provider);
+    }
+
+    
     public static WidgetAction createEditAction (EditProvider provider) {
         assert provider != null;
         return new EditAction (provider);
