@@ -39,16 +39,20 @@ import org.openide.filesystems.FileUtil;
  * @author Lukas Waldmann
  */
 public class MEKeyToolTest extends NbTestCase {
-    static final J2MEPlatform.Device devices[];
-    static final J2MEPlatform plat;
-    static final String platBase;
-    
-    
+    final J2MEPlatform.Device devices[];    
+    final String platBase;
+    final J2MEPlatform plat;
+        
     static
     {
         TestUtil.setLookup( new Object[] {MEKeyToolTest.class
         }, MEKeyToolTest.class.getClassLoader());
-        
+    }
+    
+    
+    public MEKeyToolTest(String testName) {
+        super(testName);
+        TestUtil.setEnv();
         devices=new J2MEPlatform.Device[] {
             new J2MEPlatform.Device("d1","d2",null,new J2MEPlatform.J2MEProfile[0] ,null)
         };
@@ -58,12 +62,6 @@ public class MEKeyToolTest extends NbTestCase {
         assertTrue(fa.length==1);
         platBase=FileUtil.normalizeFile(fa[0]).getAbsolutePath();
         plat=new J2MEPlatform("n1",platBase,"t1","d1",null,null,null,null,null,devices);
-    }
-    
-    
-    public MEKeyToolTest(String testName) {
-        super(testName);
-        TestUtil.setEnv();
     }
     
     protected void setUp() throws Exception {

@@ -51,6 +51,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.netbeans.modules.mobility.cldcplatform.UEIEmulatorConfiguratorImpl;
 import org.netbeans.modules.mobility.cldcplatform.startup.PostInstallJ2meAction;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.ProjectFactory;
@@ -59,7 +61,6 @@ import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -81,6 +82,7 @@ public class TestUtil extends ProxyLookup {
     static public  final   String rootStr="cldcpack";
     static private String message;
     static private AntProjectHelper p=null;
+    static private J2MEPlatform instance=null;
     
     static {
         TestUtil.class.getClassLoader().setDefaultAssertionStatus(true);
@@ -98,11 +100,20 @@ public class TestUtil extends ProxyLookup {
             Lookups.singleton(TestUtil.class.getClassLoader()),
         });
         System.setProperty("netbeans.user","test/tiredTester");
-        
-        TestUtil.createPlatform();
+    }
+    
+    static public J2MEPlatform getPlatform()
+    {
+        if (instance==null)
+        {
+            createPlatform();
+            instance = new UEIEmulatorConfiguratorImpl(System.getProperty("platform.home")).getPlatform();
+        }
+        return instance;
     }
     
     static public void setEnv() {
+        getPlatform();
         /*Add the layer file */
         URL res=TestUtil.class.getClassLoader().getResource("org/netbeans/modules/mobility/project/ui/resources/layer.xml");
         FileSystem fs=null;
@@ -209,7 +220,7 @@ public class TestUtil extends ProxyLookup {
     }
     
     
-    public static void createPlatform() {
+    private static void createPlatform() {
         final String rootWTK=File.separator+"test"+File.separator+"emulators"+File.separator;
         final String rootMobility=File.separator+rootStr;
         String wtkStr="wtk22";
@@ -268,7 +279,7 @@ public class TestUtil extends ProxyLookup {
             }
 
             //Modify scripts
-            NbTestCase.assertTrue(new File(destPath+File.separator+"emulator"+File.separator+wtkStr).exists());
+            NbTestCase.assertTrue(destPath+File.separator+"emulator"+File.separator+wtkStr,new File(destPath+File.separator+"emulator"+File.separator+wtkStr).exists());
             PostInstallJ2meAction.installAction(destPath+File.separator+"emulator"+File.separator+wtkStr);
 
             if (osarch.indexOf("Windows")==-1)
