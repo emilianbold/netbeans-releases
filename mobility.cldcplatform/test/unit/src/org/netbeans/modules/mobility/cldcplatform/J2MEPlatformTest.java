@@ -48,15 +48,12 @@ public class J2MEPlatformTest extends NbTestCase {
     static private String zipPath;
     static private String platHome;
     static private String osarch;
-    static private Exception installed = null;
-    
-    static
-    {
-        createPlatform();
-    }
+    static private Exception installed = null;    
     
     public J2MEPlatformTest(String testName) {
         super(testName);
+        if (instance == null)
+            createPlatform();
         String message=installed==null?"":installed.getMessage();        
         assertNull(message,installed);
         assertNotNull("Platform not installed correctly",instance);
