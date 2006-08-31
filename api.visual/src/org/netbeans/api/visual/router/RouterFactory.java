@@ -13,6 +13,10 @@
 package org.netbeans.api.visual.router;
 
 import org.netbeans.api.visual.widget.LayerWidget;
+import org.netbeans.modules.visual.router.DirectRouter;
+import org.netbeans.modules.visual.router.FreeRouter;
+import org.netbeans.modules.visual.router.OrthogonalSearchRouter;
+import org.netbeans.modules.visual.router.WidgetsCollisionCollector;
 
 /**
  * @author David Kaspar
@@ -20,7 +24,7 @@ import org.netbeans.api.visual.widget.LayerWidget;
 public final class RouterFactory {
 
     private static final Router ROUTER_DIRECT = new DirectRouter ();
-    private static final Router FREE_ROUTER = new FreeRouter ();
+    private static final Router ROUTER_FREE = new FreeRouter ();
 
 
     private RouterFactory () {
@@ -29,9 +33,9 @@ public final class RouterFactory {
     public static Router createDirectRouter () {
         return ROUTER_DIRECT;
     }
-    
+
     public static Router createFreeRouter () {
-        return FREE_ROUTER;
+        return ROUTER_FREE;
     }
 
     public static Router createOrthogonalSearchRouter (LayerWidget... layers) {
@@ -44,7 +48,7 @@ public final class RouterFactory {
     }
 
     private static CollisionsCollector createWidgetsCollisionCollector (LayerWidget... layers) {
-        return new OrthogonalSearchRouter.WidgetsCollisionCollector (layers);
+        return new WidgetsCollisionCollector (layers);
     }
 
 }
