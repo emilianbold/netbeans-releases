@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.templates.dir" location="nbbuild/templates"/>
         <property name="xtest.results" location="results"/>
         <property name= "test.fail.on.error" value="true"/>
+        <property name="nbantext.jar" location="../nbbuild/nbantext.jar"/>
         <delete dir="${xtest.results}"/>
         <mkdir dir="${xtest.results}"/>
  
@@ -34,7 +35,8 @@ Microsystems, Inc. All Rights Reserved.
         <available file="${xtest.home}/lib/xtest.jar" property="exist.xtest.home"/>
         <fail unless="exist.xtest.home" message="xtest.jar doesn't exist at ${xtest.home}/lib/xtest.jar"/>
         
-        <taskdef name="testdistfilter" classpath="../nbbuild/nbantext.jar" classname="org.netbeans.nbbuild.TestDistFilter"/>
+        <taskdef name="testdistfilter" classpath="${nbantext.jar}" classname="org.netbeans.nbbuild.TestDistFilter"/>
+         <taskdef name="validatepath" classpath="${nbantext.jar}" classname="org.netbeans.nbbuild.ValidatePath" />
         <!-- run modules with xtest.attribs="stable" in cfg-unit.xml -->
         <property name="xtest.attribs" value="validation"/>
         
