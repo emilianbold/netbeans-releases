@@ -13,10 +13,7 @@
 package org.netbeans.api.visual.layout;
 
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.visual.layout.AbsoluteLayout;
-import org.netbeans.modules.visual.layout.CardLayout;
-import org.netbeans.modules.visual.layout.SerialLayout;
-import org.netbeans.modules.visual.layout.FillLayout;
+import org.netbeans.modules.visual.layout.*;
 
 /**
  * @author David Kaspar
@@ -80,7 +77,7 @@ public final class LayoutFactory {
     }
 
     public static SceneLayout createDevolveWidgetLayout (Widget widget, Layout devolveLayout, boolean animate) {
-        return new SceneLayout.DevolveWidgetLayout (widget, devolveLayout, animate);
+        return new DevolveWidgetLayout (widget, devolveLayout, animate);
     }
 
 }
