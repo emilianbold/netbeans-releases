@@ -23,12 +23,6 @@ import java.awt.*;
  */
 public interface ReconnectProvider {
 
-    public enum ConnectorState {
-
-        ACCEPT, REJECT, REJECT_AND_STOP
-
-    }
-
     boolean isSourceReconnectable (ConnectionWidget connectionWidget);
 
     boolean isTargetReconnectable (ConnectionWidget connectionWidget);

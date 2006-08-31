@@ -12,15 +12,11 @@
  */
 package org.netbeans.api.visual.action;
 
-import org.netbeans.api.visual.widget.Widget;
-
-import java.awt.*;
-
 /**
  * @author David Kaspar
  */
-public interface MoveStrategy {
+public enum ConnectorState {
 
-    Point locationSuggested (Widget widget, Point originalLocation, Point suggestedLocation);
+    ACCEPT, REJECT, REJECT_AND_STOP
 
 }

@@ -22,12 +22,6 @@ import java.awt.*;
  */
 public interface ConnectProvider {
 
-    public enum ConnectorState {
-
-        ACCEPT, REJECT, REJECT_AND_STOP
-
-    }
-
     boolean isSourceWidget (Widget sourceWidget);
 
     ConnectorState isTargetWidget (Widget sourceWidget, Widget targetWidget);

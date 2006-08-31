@@ -98,7 +98,7 @@ public final class ActionFactory {
     };
 
     private static final ResizeStrategy RESIZE_STRATEGY_FREE = new ResizeStrategy () {
-        public Rectangle boundsSuggested (Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ResizeAction.ControlPoint controlPoint) {
+        public Rectangle boundsSuggested (Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ResizeProvider.ControlPoint controlPoint) {
             return suggestedBounds;
         }
     };
@@ -151,7 +151,7 @@ public final class ActionFactory {
 
     public static WidgetAction createHoverAction  (TwoStateHoverProvider provider) {
         assert provider != null;
-        return new MouseHoverAction.TwoStated (provider);
+        return new TwoStatedMouseHoverAction (provider);
     }
 
     public static WidgetAction createInplaceEditorAction (TextFieldInplaceEditor editor) {
@@ -187,13 +187,9 @@ public final class ActionFactory {
         return new PanAction ();
     }
 
-    public static WidgetAction createPopupMenuAction (final PopupMenuProvider popupMenuProvider) {
-        assert popupMenuProvider != null;
-        return new PopupMenuAction () {
-            public JPopupMenu getPopupMenu (Widget widget) {
-                return popupMenuProvider.getPopupMenu (widget);
-            }
-        };
+    public static WidgetAction createPopupMenuAction (final PopupMenuProvider provider) {
+        assert provider != null;
+        return new PopupMenuAction (provider);
     }
 
     public static WidgetAction createReconnectAction (ReconnectProvider provider) {
@@ -229,7 +225,7 @@ public final class ActionFactory {
 
     public static WidgetAction createSwitchCardAction (Widget cardLayoutWidget) {
         assert cardLayoutWidget != null;
-        return new SwitchCardAction (cardLayoutWidget);
+        return new SelectAction (new SwitchCardProvider (cardLayoutWidget));
     }
 
     public static WidgetAction createZoomAction () {
@@ -246,7 +242,7 @@ public final class ActionFactory {
 
     public static MoveStrategy createSnapToGripMoveStrategy (int horizontalGridSize, int verticalGridSize) {
         assert horizontalGridSize > 0  &&  verticalGridSize > 0;
-        return new MoveAction.SnapToGridStrategy (horizontalGridSize, verticalGridSize);
+        return new SnapToGridMoveStrategy (horizontalGridSize, verticalGridSize);
     }
 
     public static MoveProvider createDefaultMoveProvider () {

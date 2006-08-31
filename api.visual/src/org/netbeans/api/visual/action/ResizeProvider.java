@@ -19,6 +19,12 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public interface ResizeProvider {
 
+    public enum ControlPoint {
+
+        TOP_CENTER, BOTTOM_CENTER, CENTER_LEFT, CENTER_RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
+
+    }
+
     void resizingStarted (Widget widget);
 
     void resizingFinished (Widget widget);

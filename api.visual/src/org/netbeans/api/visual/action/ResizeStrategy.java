@@ -12,6 +12,8 @@
  */
 package org.netbeans.api.visual.action;
 
+import org.netbeans.modules.visual.action.ResizeAction;
+
 /**
  * @author David Kaspar
  */
