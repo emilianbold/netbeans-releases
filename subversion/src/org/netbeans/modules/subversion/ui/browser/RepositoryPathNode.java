@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.awt.*;
 import java.beans.BeanInfo;
 import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.subversion.Subversion;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -222,6 +223,9 @@ public class RepositoryPathNode extends AbstractNode {
                             RepositoryPathNode node = (RepositoryPathNode) getNode();
                             node.setRepositoryFolder(false);
                         } else {
+                            if(!isCreativeBrowser(client)) {
+                                removePreselectedFolders(cl);
+                            }                            
                             setKeys(cl);
                         }
                     } catch (SVNClientException ex) {
@@ -229,15 +233,57 @@ public class RepositoryPathNode extends AbstractNode {
                         return;
                     }
                 }
+
+                
             };
             support.start(rp, pathEntry.getRepositoryFile().getRepositoryUrl(), org.openide.util.NbBundle.getMessage(Browser.class, "BK2001")); // NOI18N
         }
 
+        private String getLastPathSegment(RepositoryPathEntry entry) {            
+            String[] childSegments = entry.getRepositoryFile().getPathSegments();
+            return childSegments.length > 0 ? childSegments[childSegments.length-1] : null;            
+        }
+        
         private static Node errorNode(Exception ex) {
             AbstractNode errorNode = new AbstractNode(Children.LEAF);
             errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2002")); // NOI18N
             errorNode.setShortDescription(ex.getLocalizedMessage());
             return errorNode;
         }    
+        
+        private boolean isCreativeBrowser(BrowserClient client) {
+            Action[] actions = client.getActions();
+            for (int i = 0; i < actions.length; i++) {
+                if(actions[i] instanceof CreateFolderAction) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private void removePreselectedFolders(final Collection cl) {
+            Node[] childNodes = getNodes();
+            for(int i=0; i < childNodes.length; i++) {
+                if(childNodes[i] instanceof RepositoryPathNode) {
+                    String lastChildSegment = getLastPathSegment( ((RepositoryPathNode) childNodes[i]).getEntry() );                                
+                    if(lastChildSegment!=null) {
+                        boolean pathExists = false;
+                        for(Iterator it = cl.iterator(); it.hasNext(); ) {
+                            String lastNewChildSegment = getLastPathSegment((RepositoryPathEntry) it.next());     
+                            if(lastNewChildSegment!=null) {
+                                if(lastNewChildSegment.equals(lastChildSegment)) {
+                                    pathExists = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!pathExists) {                                            
+                            remove(new Node[] { childNodes[i] });
+                        }
+                    }
+                }
+            }
+        }
+
     }    
 }
