@@ -210,6 +210,8 @@ public class MetaComponentCreator {
             Insets insets = cont.getInsets();
             initialSize.width -= insets.left + insets.right;
             initialSize.height -= insets.top + insets.bottom;
+            initialSize.width = Math.max(initialSize.width, 0); // Issue 83945
+            initialSize.height = Math.max(initialSize.height, 0);
         }
         // test code logging - only for precreation
         if (metacomp == preMetaComp) {
