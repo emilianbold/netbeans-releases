@@ -187,13 +187,6 @@ public final class ResizeAction extends WidgetAction.LockedAdapter {
         rectangle.width += dx;
     }
 
-    @Deprecated
-    public interface Strategy {
-
-        public Rectangle boundsSuggested (Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ResizeProvider.ControlPoint controlPoint);
-
-    }
-
 //    public static class SnapToGridStrategy implements Strategy {
 //
 //        private int horizontalGridSize;

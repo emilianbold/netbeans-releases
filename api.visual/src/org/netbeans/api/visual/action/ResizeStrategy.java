@@ -12,11 +12,15 @@
  */
 package org.netbeans.api.visual.action;
 
-import org.netbeans.modules.visual.action.ResizeAction;
+import org.netbeans.api.visual.widget.Widget;
+
+import java.awt.*;
 
 /**
  * @author David Kaspar
  */
-public interface ResizeStrategy extends ResizeAction.Strategy {
+public interface ResizeStrategy {
+
+    public Rectangle boundsSuggested (Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ResizeProvider.ControlPoint controlPoint);
 
 }
