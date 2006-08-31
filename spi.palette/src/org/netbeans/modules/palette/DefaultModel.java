@@ -53,7 +53,7 @@ public class DefaultModel implements Model, NodeListener {
      */
     private Category selectedCategory;
     private PropertyChangeSupport propertySupport;
-    private ArrayList modelListeners = new ArrayList( 3 );
+    private ArrayList<ModelListener> modelListeners = new ArrayList<ModelListener>( 3 );
     /**
      * Cached categories
      */
@@ -176,7 +176,7 @@ public class DefaultModel implements Model, NodeListener {
         ModelListener[] listeners;
         synchronized( modelListeners ) {
             listeners = new ModelListener[modelListeners.size()];
-            listeners = (ModelListener[])modelListeners.toArray( (Object[])listeners );
+            listeners = modelListeners.toArray( listeners );
         }
         for( int i=0; i<listeners.length; i++ ) {
             if( null != changedCategories ) {

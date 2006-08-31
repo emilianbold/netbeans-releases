@@ -58,8 +58,8 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
     
     final static private int DELAY_TIME_FOR_EXPAND = 1000;
 
-    private List /*<DragGestureRecognizer>*/ recognizers = new ArrayList( 5 );
-    private List /*<DropTarget>*/ dropTargets = new ArrayList( 5 );
+    private List<DragGestureRecognizer> recognizers = new ArrayList<DragGestureRecognizer>( 5 );
+    private List<DropTarget> dropTargets = new ArrayList<DropTarget>( 5 );
 
     private Category draggingCategory;
     private Item draggingItem;
@@ -93,27 +93,27 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
     }
 
     void remove( CategoryDescriptor descriptor ) {
-        ArrayList toRemove = new ArrayList( 2 );
-        for( Iterator i=recognizers.iterator(); i.hasNext(); ) {
-            DragGestureRecognizer dgr = (DragGestureRecognizer)i.next();
+        ArrayList<DragGestureRecognizer> recognizersToRemove = new ArrayList<DragGestureRecognizer>( 2 );
+        for( Iterator<DragGestureRecognizer> i=recognizers.iterator(); i.hasNext(); ) {
+            DragGestureRecognizer dgr = i.next();
             if( dgr.getComponent() == descriptor.getButton()
                 || dgr.getComponent() == descriptor.getList() ) {
-                toRemove.add( dgr );
+                recognizersToRemove.add( dgr );
                 dgr.removeDragGestureListener( this );
             }
         }
-        recognizers.removeAll( toRemove );
-        toRemove.clear();
+        recognizers.removeAll( recognizersToRemove );
         
-        for( Iterator i=dropTargets.iterator(); i.hasNext(); ) {
-            DropTarget dt = (DropTarget)i.next();
+        ArrayList<DropTarget> dropTargetsToRemove = new ArrayList<DropTarget>( 2 );
+        for( Iterator<DropTarget> i=dropTargets.iterator(); i.hasNext(); ) {
+            DropTarget dt = i.next();
             if( dt.getComponent() == descriptor.getButton()
                 || dt.getComponent() == descriptor.getList() ) {
-                toRemove.add( dt );
+                dropTargetsToRemove.add( dt );
                 dt.removeDropTargetListener( this );
             }
         }
-        dropTargets.removeAll( toRemove );
+        dropTargets.removeAll( dropTargetsToRemove );
     }
 
     public void dragGestureRecognized( DragGestureEvent dge ) {

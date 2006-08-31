@@ -20,6 +20,7 @@
 package org.netbeans.modules.palette;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteFilter;
@@ -172,11 +173,9 @@ class CategoryNode extends FilterNode {
             return new ItemNode( node );
         }
         
-        protected Node[] createNodes(Object key) {
-            Node n = (Node) key;
-            
-            if( null == filter || filter.isValidItem( n.getLookup() ) ) {
-                return new Node[] { copyNode(n) };
+        protected Node[] createNodes(Node key) {
+            if( null == filter || filter.isValidItem( key.getLookup() ) ) {
+                return new Node[] { copyNode(key) };
             }
 
             return null;
@@ -184,7 +183,8 @@ class CategoryNode extends FilterNode {
         
         public void resultChanged(LookupEvent ev) {
             Node[] nodes = original.getChildren().getNodes();
-            setKeys( Collections.EMPTY_LIST );
+            List<Node> empty = Collections.emptyList();
+            setKeys( empty );
             setKeys( nodes );
         }
     }

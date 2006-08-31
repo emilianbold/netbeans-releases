@@ -40,7 +40,7 @@ import org.openide.util.Lookup;
 public class DefaultCategory implements Category, NodeListener {
     
     private Node categoryNode;
-    private ArrayList categoryListeners = new ArrayList( 3 );
+    private ArrayList<CategoryListener> categoryListeners = new ArrayList<CategoryListener>( 3 );
     private Item[] items;
     
     /** 
@@ -105,7 +105,7 @@ public class DefaultCategory implements Category, NodeListener {
         CategoryListener[] listeners;
         synchronized( categoryListeners ) {
             listeners = new CategoryListener[categoryListeners.size()];
-            listeners = (CategoryListener[])categoryListeners.toArray( (Object[])listeners );
+            listeners = categoryListeners.toArray( listeners );
         }
         for( int i=0; i<listeners.length; i++ ) {
             listeners[i].categoryModified( this );

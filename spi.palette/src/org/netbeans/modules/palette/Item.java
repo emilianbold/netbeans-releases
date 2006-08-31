@@ -23,9 +23,8 @@ package org.netbeans.modules.palette;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.io.IOException;
 import javax.swing.Action;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -33,7 +32,7 @@ import org.openide.util.Lookup;
  *
  * @author S. Aubrecht
  */
-public interface Item {
+public interface Item extends Node.Cookie {
 
     String getName();
 

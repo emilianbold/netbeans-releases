@@ -128,7 +128,7 @@ public final class PaletteFactory {
             throw new IllegalArgumentException( "Palette custom actions must be provided." );
         }
         
-        ArrayList lookupObjects = new ArrayList(3);
+        ArrayList<Object> lookupObjects = new ArrayList<Object>(3);
         lookupObjects.add( customActions );
         if( null != filter )
             lookupObjects.add( filter );

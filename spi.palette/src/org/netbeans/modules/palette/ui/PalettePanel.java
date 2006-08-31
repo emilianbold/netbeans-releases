@@ -126,13 +126,13 @@ public class PalettePanel extends JPanel implements Scrollable {
     }
     
     private Category[] getVisibleCategories( Category[] cats ) {
-        ArrayList tmp = new ArrayList( cats.length );
+        ArrayList<Category> tmp = new ArrayList<Category>( cats.length );
         for( int i=0; i<cats.length; i++ ) {
             if( settings.isVisible( cats[i] ) ) {
                 tmp.add( cats[i] );
             }
         }
-        return (Category[])tmp.toArray( new Category[tmp.size()] );
+        return tmp.toArray( new Category[tmp.size()] );
     }
 
     void computeHeights( Category openedCategory ) {

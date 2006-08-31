@@ -84,7 +84,7 @@ public class CategoryList extends JList implements Autoscroll {
     private Category category;
     private PalettePanel palettePanel;
 
-    private static WeakReference rendererRef;
+    private static WeakReference<ListCellRenderer> rendererRef;
     
     private Item draggingItem;
     
@@ -234,11 +234,10 @@ public class CategoryList extends JList implements Autoscroll {
     // list item renderer
 
     private static ListCellRenderer getItemRenderer () {
-        ListCellRenderer renderer = rendererRef == null ? null :
-                (ListCellRenderer) rendererRef.get ();
+        ListCellRenderer renderer = rendererRef == null ? null : rendererRef.get ();
         if (renderer == null) {
             renderer = new ItemRenderer ();
-            rendererRef = new WeakReference (renderer);
+            rendererRef = new WeakReference<ListCellRenderer>( renderer );
         }
         return renderer;
     }

@@ -206,10 +206,8 @@ public final class Utils {
             Index order = (Index)paletteNode.getCookie(Index.class);
             if (order != null) {
                 final Node[] nodes = paletteNode.getChildren().getNodes( DefaultModel.canBlock() );
-                Arrays.sort( nodes, new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        Node n1 = (Node)o1;
-                        Node n2 = (Node)o2;
+                Arrays.sort( nodes, new Comparator<Node>() {
+                    public int compare(Node n1, Node n2) {
                         return n1.getDisplayName().compareTo( n2.getDisplayName() );
                     }
                 } );
@@ -380,10 +378,8 @@ public final class Utils {
             Index order = (Index)categoryNode.getCookie(Index.class);
             if (order != null) {
                 final Node[] nodes = categoryNode.getChildren().getNodes( DefaultModel.canBlock() );
-                Arrays.sort( nodes, new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        Node n1 = (Node)o1;
-                        Node n2 = (Node)o2;
+                Arrays.sort( nodes, new Comparator<Node>() {
+                    public int compare(Node n1, Node n2) {
                         return n1.getDisplayName().compareTo( n2.getDisplayName() );
                     }
                 } );

@@ -28,7 +28,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Libor Kotouc
  */
-class ActiveEditorDropProvider implements InstanceContent.Convertor {
+class ActiveEditorDropProvider implements InstanceContent.Convertor<String,ActiveEditorDrop> {
 
     private static ActiveEditorDropProvider instance = new ActiveEditorDropProvider();
 
@@ -40,29 +40,21 @@ class ActiveEditorDropProvider implements InstanceContent.Convertor {
         return instance;
     }
     
-    public Class type(Object obj) {
+    public Class<? extends ActiveEditorDrop> type(String obj) {
         //able to convert String instances only
-        if (obj instanceof String)
-            return ActiveEditorDrop.class;
-        
-        return null;
-        
+        return ActiveEditorDrop.class;
     }
 
-    public String id(Object obj) {
+    public String id(String obj) {
         return obj.toString();
     }
 
-    public String displayName(Object obj) {
-        return ((Class)obj).getName();
+    public String displayName(String obj) {
+        return obj;
     }
 
-    public Object convert(Object obj) {
-        Object drop = null;
-        if (obj instanceof String)
-            drop = getActiveEditorDrop((String)obj);
-
-        return drop;
+    public ActiveEditorDrop convert(String obj) {
+        return getActiveEditorDrop(obj);
     }
     
     private ActiveEditorDrop getActiveEditorDrop(String instanceName) {

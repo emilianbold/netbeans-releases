@@ -20,13 +20,11 @@
 
 package org.netbeans.modules.palette;
 
-import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.Action;
-import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteActions;
-import org.netbeans.spi.palette.PaletteFactory;
 import org.netbeans.spi.palette.PaletteFilter;
 
 import org.openide.*;
@@ -34,9 +32,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.Lookup;
@@ -171,11 +166,9 @@ public final class RootNode extends FilterNode {
             return new CategoryNode( node, lkp );
         }
         
-        protected Node[] createNodes(Object key) {
-            Node n = (Node) key;
-            
-            if( null == filter || filter.isValidCategory( n.getLookup() ) ) {
-                return new Node[] { copyNode(n) };
+        protected Node[] createNodes(Node key) {
+            if( null == filter || filter.isValidCategory( key.getLookup() ) ) {
+                return new Node[] { copyNode(key) };
             }
 
             return null;
@@ -183,7 +176,8 @@ public final class RootNode extends FilterNode {
         
         public void refreshNodes() {
             Node[] nodes = original.getChildren().getNodes();
-            setKeys( Collections.EMPTY_LIST );
+            List<Node> empty = Collections.emptyList();
+            setKeys( empty );
             setKeys( nodes );
         }
     }

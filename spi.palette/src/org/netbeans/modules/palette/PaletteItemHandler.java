@@ -50,7 +50,7 @@ public final class PaletteItemHandler extends DefaultHandler {
     private static final String ATTR_DISPLAY_NAME_KEY = "display-name-key"; // NOI18N
     private static final String ATTR_TOOLTIP_KEY = "tooltip-key"; // NOI18N
 
-    private LinkedList/*<String>*/ bodyLines;
+    private LinkedList<String> bodyLines;
     private boolean insideBody = false;
     
     //raw data read from the file
@@ -96,7 +96,7 @@ public final class PaletteItemHandler extends DefaultHandler {
 //            String value = attributes.getValue(ATTR_ATTRIBVALUE);
 //            attributeMap.put(name, value);
         } else if (TAG_BODY.equals(qName)) {
-            bodyLines = new LinkedList();
+            bodyLines = new LinkedList<String>();
             insideBody = true;
         } else if (TAG_CLASS.equals(qName)) {
             className = attributes.getValue(ATTR_CLASSNAME);

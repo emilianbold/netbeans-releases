@@ -60,7 +60,7 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
     }
 
     
-    private static class PaletteItemNodeFactory implements InstanceContent.Convertor {
+    private static class PaletteItemNodeFactory implements InstanceContent.Convertor<Class,PaletteItemNode> {
 
 //        private static final String URL_PREFIX_INSTANCES = "PaletteItems/";
         
@@ -68,7 +68,7 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
 
         private Lookup lookup = null;
         
-        Reference refNode = new WeakReference(null);
+        Reference<PaletteItemNode> refNode = new WeakReference<PaletteItemNode>(null);
 
         PaletteItemNodeFactory(XMLDataObject obj) {
 
@@ -86,20 +86,22 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
         
         // ----------------   InstanceContent.Convertor ----------------------------    
 
-        public Class type(Object obj) {
-            return (Class)obj;
+        public Class<? extends PaletteItemNode> type(Class obj) {
+            if( obj == Node.class )
+                return PaletteItemNode.class;
+            return null;
         }
 
-        public String id(Object obj) {
+        public String id(Class obj) {
             return obj.toString();
         }
 
-        public String displayName(Object obj) {
-            return ((Class)obj).getName();
+        public String displayName(Class obj) {
+            return obj.getName();
         }
 
-        public Object convert(Object obj) {
-            Object o = null;
+        public PaletteItemNode convert(Class obj) {
+            PaletteItemNode o = null;
             if (obj == Node.class) {
                 try {
                     o = getInstance();
@@ -115,7 +117,7 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
         
         public synchronized PaletteItemNode getInstance() {
 
-            PaletteItemNode node = (PaletteItemNode)refNode.get();
+            PaletteItemNode node = refNode.get();
             if (node != null)
                 return node;
 
@@ -141,7 +143,7 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
             }
 
             node = createPaletteItemNode(handler);
-            refNode = new WeakReference(node);
+            refNode = new WeakReference<PaletteItemNode>(node);
 
             return node;
         }

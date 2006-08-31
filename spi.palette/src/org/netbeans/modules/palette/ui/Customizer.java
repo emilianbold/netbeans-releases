@@ -375,7 +375,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
     private void updateInfoLabel(org.openide.nodes.Node[] nodes) {
         String text = " "; // NOI18N
         if (nodes.length == 1) {
-            Item item = (Item) nodes[0].getCookie(Item.class);
+            Item item = nodes[0].getCookie( Item.class );
             if (item != null)
                 text = item.getShortDescription(); //TODO revisit PaletteSupport.getItemComponentDescription(item);
         }
