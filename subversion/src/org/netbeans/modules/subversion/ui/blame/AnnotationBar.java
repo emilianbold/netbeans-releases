@@ -148,6 +148,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private RequestProcessor.Task latestAnnotationTask = null;
 
     /**
+     * Holds false if Rollback Changes action is NOT valid for current revision, true otherwise. 
+     */ 
+    private boolean recentRevisionCanBeRolledBack;
+
+    /**
      * Creates new instance initializing final fields.
      */
     public AnnotationBar(JTextComponent target) {
@@ -362,6 +367,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         });
         popupMenu.add(rollbackMenu);
+        rollbackMenu.setEnabled(recentRevisionCanBeRolledBack);
 
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations"));
@@ -452,6 +458,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         recentStatusMessage = loc.getString("CTL_StatusBar_WaitFetchAnnotation");
         statusBar.setText(StatusBar.CELL_MAIN, recentStatusMessage);
         
+        recentRevisionCanBeRolledBack = false;
         // determine current line
         int line = -1;
         int offset = caret.getDot();
@@ -484,6 +491,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         String revision = al.getRevision();
         if (revision.equals(recentRevision) == false) {
             recentRevision = revision;
+            recentRevisionCanBeRolledBack = al.canBeRolledBack();
             repaint();
 
             AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);

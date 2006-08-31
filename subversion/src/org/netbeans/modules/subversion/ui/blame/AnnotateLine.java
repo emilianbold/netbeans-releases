@@ -36,6 +36,11 @@ public class AnnotateLine {
     private int     lineNum;
 
     private String commitMessage;
+    
+    /**
+     * The default is true to enable rollback even if we were unable to determine the correct value.  
+     */ 
+    private boolean canBeRolledBack = true;
 
     private ISVNLogMessageChangePath [] changedPaths;
 
@@ -127,5 +132,16 @@ public class AnnotateLine {
      */
     public void setLineNum(int lineNum) {
         this.lineNum = lineNum;
+    }
+
+    /**
+     * @return false if the file was added to repository (created) in this revision, true otherwise
+     */ 
+    public boolean canBeRolledBack() {
+        return this.canBeRolledBack;
+    }
+
+    public void setCanBeRolledBack(boolean canBeRolledBack) {
+        this.canBeRolledBack = canBeRolledBack;
     }
 }

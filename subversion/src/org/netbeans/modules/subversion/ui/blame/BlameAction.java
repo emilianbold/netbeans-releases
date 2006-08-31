@@ -144,15 +144,24 @@ public class BlameAction extends ContextAction {
     }
 
     private static void fillCommitMessages(AnnotateLine [] annotations, ISVNLogMessage[] logs) {
+        long lowestRevisionNumber = Long.MAX_VALUE;
         for (int i = 0; i < annotations.length; i++) {
             AnnotateLine annotation = annotations[i];
             for (int j = 0; j < logs.length; j++) {
                 ISVNLogMessage log = logs[j];
+                if (log.getRevision().getNumber() < lowestRevisionNumber) {
+                    lowestRevisionNumber = log.getRevision().getNumber(); 
+                }
                 if (annotation.getRevision().equals(log.getRevision().toString())) {
                     annotation.setDate(log.getDate());
                     annotation.setCommitMessage(log.getMessage());
                 }
             }
+        }
+        String lowestRev = Long.toString(lowestRevisionNumber);
+        for (int i = 0; i < annotations.length; i++) {
+            AnnotateLine annotation = annotations[i];
+            annotation.setCanBeRolledBack(!annotation.getRevision().equals(lowestRev));
         }
     }
 
