@@ -29,7 +29,7 @@ import java.awt.event.MouseEvent;
  *
  * @author David Kaspar
  */
-public final class ConnectAction extends WidgetAction.LockedAdapter {
+public class ConnectAction extends WidgetAction.LockedAdapter {
 
     private static final int MIN_DIFFERENCE = 5;
 
