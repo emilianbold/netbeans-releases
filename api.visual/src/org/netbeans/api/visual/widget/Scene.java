@@ -103,6 +103,7 @@ public class Scene extends Widget {
     }
 
     public final void paint (Graphics2D gr) {
+        validate ();
         Graphics2D prevoiusGraphics = getGraphics ();
         setGraphics (gr);
         paint ();
