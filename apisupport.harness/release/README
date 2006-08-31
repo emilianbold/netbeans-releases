@@ -305,41 +305,94 @@ either *export* or *import* any implementation dependencies, you should probably
 use spec.version.base (see below).
 
 Specify your test dependencies on other modules [since 5.0u2, requires /3
-schema]:
+schema]. The tags in project.xml are 
+described below:
 
     <test-dependencies>
+        <! -- Dependencies for a source root with tests: -->
         <test-type>
             <!--
-            Which category of tests. Normally you will use 'unit'.
-            netbeans.org modules also support 'qa-functional' and others.
+            Name of test type. Normally you will use 'unit'.
+            netbeans.org modules also support 'qa-functional' test-type.
             -->
             <name>unit</name>
-            <!-- A dependency on a module or its tests. -->
+            <!-- A dependency on a module or its tests: -->
             <test-dependency>
-                <!-- Identification of module our tests depend upon. -->
+                <!-- Identification of module our tests depend upon: -->
                 <code-name-base>org.netbeans.modules.java.project</code-name-base>
-                <!-- Include also transitive dependencies of that module. -->
+                <!-- Include also transitive module dependencies of that module: -->
                 <recursive/>
-                <!-- Always available when running, but to include at compile time also: --> 
+                <!-- Always available when running, but to include at compile time also: -->
                 <compile-dependency/>
-                <!-- To request the tests of that module, rather than the module itself: -->
+                <!-- To request the tests of that module, rather than itself: -->
                 <test/>
             </test-dependency>
         </test-type>
     </test-dependencies>
 
-As an example, to ensure that FileUtil.toFileObject(File) will work when your
-unit tests are run:
+Source root for a test type:
+{project.dir}/test/${test-type.name}/src
 
-    <test-dependencies>
-        <test-type>
-            <name>unit</name>
-            <test-dependency>
-                <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                <recursive/>
-            </test-dependency>
-        </test-type>
-    </test-dependencies>
+{project.dir}/test/unit/src  - source root for unit test
+
+
+For example you have three modules with code name bases A,B,C. A depends on B, B
+depends on C. You want to add test dependencies to unit test type of module D:
+
+Use case 1: Runtime dependency on module.
+
+<test-type>
+ <name>unit</name>
+ <test-dependency>
+    <code-name-base>A</code-name-base>
+ </test-dependency> 
+</testtype>
+
+Runtime classpath is D+A. 
+Compile classpath is D.
+
+Use case 2: Runtime dependency on a module and its recursive runtime classpath.
+
+<test-type>
+ <name>unit</name>
+ <test-dependency>
+    <code-name-base>A</code-name-base>
+    <recursive/>
+ </test-dependency> 
+</testtype>
+
+Runtime classpath is A+B+C+D.
+Compile classpath is D.
+
+Use case 3: Compile and runtime dependency on a module its recursive runtime classpath.
+
+<test-type>
+ <name>unit</name>
+ <test-dependency>
+    <code-name-base>A</code-name-base>
+    <compile-dependency/>
+    <recursive/>
+ </test-dependency> 
+</testtype>
+
+Runtime classpath is A+B+C+D.
+Compile classpath is A+B+C+D.
+
+Use case 4: Compile and runtime dependency on a module, its recursive runtime classpath 
+and tests.
+
+<test-type>
+ <name>unit</name>
+ <test-dependency>
+    <code-name-base>A</code-name-base>
+    <compile-dependency/>
+    <recursive/>
+    <test/>
+ </test-dependency> 
+</testtype>
+
+Runtime classpath is A+B+C+D + A/unit tests.
+Compile classpath is A+B+C+D + A/unit tests.
 
 Declare any public API/SPI packages you export:
 
