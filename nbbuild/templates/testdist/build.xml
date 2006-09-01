@@ -18,10 +18,13 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="Test Distribution" default="all" basedir=".">
+    <property name="test.required.modules" value=""/>
     <target name="all" depends="unit,qa-functional" description="Run all tests">
     </target>
     <target name="unit" description="Run all unit tests">
-        <subant antfile="xtest-all-unit.xml"  buildpath="unit"/>
+        <subant antfile="xtest-all-unit.xml"  buildpath="unit">
+            <property name="test.required.modules" value="${test.required.modules}"/>
+        </subant>    
     </target>
     <target name="qa-functional" description="Run all qa-functional tests">
         <subant antfile="xtest-all-qa-functional.xml" buildpath="qa-functional"/>

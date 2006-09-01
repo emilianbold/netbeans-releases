@@ -38,6 +38,7 @@ public class TestDistFilterTest extends NbTestCase {
     private static final String ORG_OPENIDE_LOADERS = "unit/platform5/org-openide-loaders";
     private static final String ORG_OPENIDE_LOADERS_QA = "qa-functional/platform5/org-openide-loaders";
     private static final String ORG_OPENIDE_FS_QA = "qa-functional/platform5/org-openide-fs";   
+    private static final String ORG_OPENIDE_NO_LOADERS = "unit/platform5/org-openide-no-loaders";
     public TestDistFilterTest(java.lang.String testName) {
         super(testName);
     }
@@ -159,6 +160,53 @@ public class TestDistFilterTest extends NbTestCase {
         assertProperty(prj,"list.prop1",new String[]{ORG_OPENIDE_LOADERS_QA});
       
    }
+    public void testRequiredModules() throws IOException {
+        TestDistFilter filter = new TestDistFilter();
+        filter.setTestDistDir(getWorkDir());
+        filter.setAttribs("stable");
+        filter.setHarness("junit");
+        Project prj = getProject();
+        filter.setProject(prj);
+        filter.setTesttype("unit");
+        
+        String FS = "modules/org-openide-filesystems.jar";
+        String LOADERS = "modules/org-openide-loaders.jar";
+        createModule(ORG_OPENIDE_UNIT,createConfig("stable","code"),LOADERS); 
+        createModule(ORG_OPENIDE_FS,createConfig("stable","code"),FS); 
+        createModule(ORG_OPENIDE_LOADERS,createConfig("stable","code"),FS + ":" + LOADERS ); 
+        createModule(ORG_OPENIDE_NO_LOADERS,createConfig("stable","code"),FS); 
+        filter.setRequiredModules("org-openide-filesystems.jar");
+        filter.setTestListProperty("list.prop");
+        filter.execute();
+        assertProperty(prj,"list.prop",new String[]{ORG_OPENIDE_FS,ORG_OPENIDE_LOADERS,ORG_OPENIDE_NO_LOADERS});
+
+        filter.setRequiredModules(null);
+        filter.setTestListProperty("list.prop1");
+        filter.execute();
+        assertProperty(prj,"list.prop1",new String[]{ORG_OPENIDE_UNIT,ORG_OPENIDE_FS,ORG_OPENIDE_LOADERS,ORG_OPENIDE_NO_LOADERS});
+
+        filter.setRequiredModules("");
+        filter.setTestListProperty("list.prop11");
+        filter.execute();
+        assertProperty(prj,"list.prop11",new String[]{ORG_OPENIDE_UNIT,ORG_OPENIDE_FS,ORG_OPENIDE_LOADERS,ORG_OPENIDE_NO_LOADERS});
+        
+        filter.setRequiredModules("org-openide-loaders.jar");
+        filter.setTestListProperty("list.prop2");
+        filter.execute();
+        assertProperty(prj,"list.prop2",new String[]{ORG_OPENIDE_UNIT,ORG_OPENIDE_LOADERS});
+
+        filter.setRequiredModules("none.jar");
+        filter.setTestListProperty("list.prop3");
+        filter.execute();
+        assertProperty(prj,"list.prop3",new String[]{});
+        
+        filter.setRequiredModules("org-openide-loaders.jar,org-openide-filesystems.jar");
+        filter.setTestListProperty("list.prop4");
+        filter.execute();
+        assertProperty(prj,"list.prop4",new String[]{ORG_OPENIDE_LOADERS});
+        
+    }
+   
     private String createConfig(String attribs,String executor) {   
         return "<?xml version='1.0' encoding='UTF-8'?>\n" +
                 "<!DOCTYPE mconfig PUBLIC '-//NetBeans//DTD XTest cfg 1.0//EN' 'http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd'>\n" +
@@ -212,5 +260,17 @@ public class TestDistFilterTest extends NbTestCase {
         }
         assertEquals("paths length",set2.size(),set1.size());
         assertEquals("Different paths: ", set2,set1);
+    }
+
+    private void createModule(String path, String xml, String runcp) throws IOException {
+        createModule(path,xml);
+        File dir = new File(getWorkDir(),path);
+        File props = new File(dir,"test.properties");
+        PrintStream ps = new PrintStream(props);
+        try { 
+            ps.println("test.unit.run.cp=" + runcp);
+        } finally {
+            ps.close();
+        }
     }
 }

@@ -20,13 +20,16 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.xml.parsers.DocumentBuilder;
@@ -54,13 +57,16 @@ import org.xml.sax.SAXException;
  *    <li>attribs - xtest.attribs filter (attribs are declared in cfg-<xxx>.xml file  
  *    <li>testlistproperty  - store to property path with test folders (separated by ':')
  *    <li>testdistdir - root folder with test distribution
+ *    <li>requiredmodules - list of module names required on runtime classpath example:
+ *             org-netbeans-modules-masterfs.jar,org-openide-loaders.jar. Only tests 
+ *             which contains masterfs and loaders will be stored to testlistproperty value.
  * </ul>
  */
 public class TestDistFilter extends Task {
     public static final String TYPE_ALL = "all";
     public static final String TYPE_UNIT = "unit";
     public static final String TYPE_QA_FUNCTIONAL = "qa-functional";
-    
+  
     public static final String HARNESS_JUNIT = "junit";
     public static final String HARNESS_XTEST = "xtest";
 
@@ -73,6 +79,7 @@ public class TestDistFilter extends Task {
     // xtest attribs
     private String attribs ;
     private String testListProperty;
+    private String requiredModules;
     // TODO customize method names to match custom task
     // property and type (handled by inner class) names
     
@@ -186,6 +193,9 @@ public class TestDistFilter extends Task {
         StringBuffer path = new StringBuffer();
         for (Iterator it = possibleTests.iterator() ; it.hasNext() ; ) {
             TestConf tc = (TestConf)it.next();
+            if (!matchRequiredModule(tc.getModuleDir())) {
+                continue;
+            }
             if (path.length() > 0) {
                 path.append(':');
             }
@@ -290,5 +300,58 @@ public class TestDistFilter extends Task {
 
     public void setTestDistDir(File testDistDir) {
         this.testDistDir = testDistDir;
+    }
+
+    public String getRequiredModules() {
+        return requiredModules;
+    }
+
+    public void setRequiredModules(String requiredModules) {
+        this.requiredModules = requiredModules;
+    }
+
+    private boolean matchRequiredModule(File path) {
+       if (requiredModules == null || requiredModules.trim().length() == 0) {
+           return true;
+       }
+       File pfile = new File(path,"test.properties");
+       if (pfile.exists()) {
+           Properties props = new Properties();
+            try {
+                FileInputStream fis = new FileInputStream(pfile);
+                try { 
+                  props.load(fis);
+                  
+                  String runCp = props.getProperty("test.unit.run.cp");
+                  if (runCp != null) {
+                      String paths[] = runCp.split(":");
+                      Set reqModules = getRequiredModulesSet();
+                      for (int i = 0 ; i < paths.length ; i++) {
+                          String p = paths[i];
+                          int lastSlash = p.lastIndexOf('/');
+                          if (lastSlash != -1) {
+                              p = p.substring(lastSlash + 1);
+                          } 
+                          if (reqModules.contains(p)) {
+                              reqModules.remove(p);
+                          }
+                      }
+                      if (reqModules.size() == 0) {
+                          return true;
+                      }
+                  }
+                } finally {
+                  fis.close();  
+                }
+            } catch(IOException ioe){
+                throw new BuildException(ioe);
+            }
+       }
+       return false;        
+    }
+
+    private Set getRequiredModulesSet() {
+        String names[] = getRequiredModules().split(",");
+        return new HashSet(Arrays.asList(names));
     }
 }

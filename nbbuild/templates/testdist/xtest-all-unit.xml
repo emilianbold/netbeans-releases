@@ -26,8 +26,10 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.fail.on.error" value="true"/>
         <property name="nbantext.jar" location="../nbbuild/nbantext.jar"/>
         <property name="test.dist.dir" location=".."/>
-         <taskdef name="validatepath" classname="org.netbeans.nbbuild.ValidatePath" classpath="${nbantext.jar}"/>
-       <delete dir="${xtest.results}"/>
+        <!-- only for these module on runtime classpath -->
+        <property name="test.required.modules" value=""/>
+        <taskdef name="validatepath" classname="org.netbeans.nbbuild.ValidatePath" classpath="${nbantext.jar}"/>
+        <delete dir="${xtest.results}"/>
         <mkdir dir="${xtest.results}"/>
  
         <fail unless="netbeans.dest.dir" message="Property netbeans.dest.dir doesn't exist."/>
@@ -41,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- run modules with xtest.attribs="stable" in cfg-unit.xml -->
         <property name="xtest.attribs" value="stable"/>
         
-        <testdistfilter harness="xtest" testlistproperty="xtest.modules.list" attribs="${xtest.attribs}" testdistdir=".." testtype="unit"/>
+        <testdistfilter harness="xtest" testlistproperty="xtest.modules.list" attribs="${xtest.attribs}" testdistdir=".." testtype="unit" requiredmodules="${test.required.modules}"/>
  
         <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask" classpath="${xtest.home}/lib/xtest.jar"/>
         <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
