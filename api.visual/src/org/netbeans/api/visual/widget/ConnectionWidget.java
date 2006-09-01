@@ -183,6 +183,34 @@ public class ConnectionWidget extends Widget {
         reroute ();
     }
 
+    public void addDeleteControlPoint (Point point,double createSensitivity, double deleteSensitivity) {
+        ArrayList<Point> list = new ArrayList<Point> (getControlPoints());
+            if(!removePoint(point,list,deleteSensitivity)){
+                Point exPoint=null;int index=0;
+                for (Point elem : list) {
+                    if(exPoint!=null){
+                        Line2D l2d=new Line2D.Double(exPoint,elem);
+                        if(l2d.ptLineDist(point)<createSensitivity){
+                            list.add(index,point);
+                            break;
+                        }
+                    }
+                    exPoint=elem;index++;
+                }
+            }
+            setControlPoints(list,false);
+    }
+    
+    private boolean removePoint(Point point, ArrayList<Point> list, double deleteSensitivity){
+        for (Point elem : list) {
+            if(elem.distance(point)<deleteSensitivity){
+                list.remove(elem);
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public List<Point> getControlPoints () {
         return controlPointsUm;
     }
