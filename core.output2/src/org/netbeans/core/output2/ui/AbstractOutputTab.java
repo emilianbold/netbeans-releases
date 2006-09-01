@@ -235,7 +235,6 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
                 toolbar.setOrientation(JToolBar.VERTICAL);
                 toolbar.setLayout (new BoxLayout(toolbar, BoxLayout.Y_AXIS));
                 toolbar.setFloatable(false);
-                toolbar.setOpaque(false);
             }
             if (toolbar.getParent() != this) {
                 add (toolbar);
