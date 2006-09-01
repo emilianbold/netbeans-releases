@@ -64,7 +64,7 @@ public class ViewActions extends AbstractAction {
         openComponent (viewName, true);
     }
     
-    static void openComponent (String viewName, boolean activate) {
+    static TopComponent openComponent (String viewName, boolean activate) {
         TopComponent view = WindowManager.getDefault().findTopComponent(viewName);
         if (view == null) {
             throw new IllegalArgumentException(viewName);
@@ -73,6 +73,7 @@ public class ViewActions extends AbstractAction {
         if (activate) {
             view.requestActive();
         }
+        return view;
     }
     
     

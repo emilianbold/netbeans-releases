@@ -132,6 +132,6 @@ public class AddWatchAction extends CallableSystemAction {
         watchHistory = watch;
         
         // open watches view
-        ViewActions.openComponent ("watchesView", false);
+        ViewActions.openComponent ("watchesView", false).requestVisible();
     }
 }
