@@ -32,6 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.configurations.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
@@ -116,26 +117,6 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
             String confName;
             final String defName=project.getConfigurationHelper().getDefaultConfiguration().getName();
             
-            if ((pos=prop.indexOf(DefaultPropertiesDescriptor.PLATFORM_BOOTCLASSPATH))!=-1)
-            {
-                if (pos==0)
-                {
-                    confName=defName;
-                }
-                else
-                {
-                   final int begin=J2MEProjectProperties.CONFIG_PREFIX.length();
-                   final int end=pos-1;
-                   confName=prop.substring(begin,end);
-                }
-
-                if (oldV!=null && newV==null)
-                {  //remove Configuration
-                   node.getChildren().remove(new Node[] {parentNode}) ;
-                   return;
-                }
-            }
-            
             if ((pos=prop.indexOf(DefaultPropertiesDescriptor.LIBS_CLASSPATH))!=-1)
             {
                 if (pos==0)
@@ -200,6 +181,45 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         
         public void propertyChange(final PropertyChangeEvent evt)
         {
+            if (evt.getNewValue() instanceof ProjectConfiguration[])
+            {
+                final List<ProjectConfiguration> nObj=Arrays.asList((ProjectConfiguration[])evt.getNewValue());
+                final List<ProjectConfiguration> oObj=Arrays.asList((ProjectConfiguration[])evt.getOldValue());
+                
+                //Add new configurations
+                List<ProjectConfiguration> base=new ArrayList(nObj);
+                base.removeAll(oObj);
+                for (ProjectConfiguration cfg : base)
+                {
+                    //new Configuration
+                    final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
+                    final Node n=new ActionNode(
+                            new ConfigChildren(),
+                            Lookups.fixed(new Object[] {project, cfg, new AbilitiesPanel.VAData()}),
+                            cfg.getName(),ARCHIVE_ICON,
+                            new Action[] {
+                                          SetConfigurationAction.getStaticInstance(),
+                                          null,
+                                          RemoveConfigurationAction.getStaticInstance(),
+                                         });
+                    node.getChildren().add(new Node[] {n});
+                    n.setValue("bold",Boolean.TRUE);
+                    n.setName(cfg.getName());
+                }
+                
+                //Remove configurations
+                base=new ArrayList(oObj);
+                base.removeAll(nObj);
+                for (ProjectConfiguration cfg : base)
+                {
+                   Node parentNode=node.getChildren().findChild(cfg.getName());
+                   if (parentNode!= null)
+                     node.getChildren().remove(new Node[] {parentNode}) ;
+                   return;
+                }
+            }
+            
+            //Change of active configuration
             if (evt.getNewValue() instanceof ProjectConfiguration)
             {   // Configuration changed
                 final ProjectConfiguration nObj=(ProjectConfiguration)evt.getNewValue();
@@ -222,21 +242,6 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                         Node n=node.getChildren().findChild(nObj.getName());
                         if (n!=null)
                         {
-                            n.setValue("bold",Boolean.TRUE);
-                            n.setName(nObj.getName());
-                        }
-                        else
-                        {
-                            //new Configuration
-                            final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
-                            n=new ActionNode(
-                                    new ConfigChildren(),
-                                    Lookups.fixed(new Object[] {project, nObj, new AbilitiesPanel.VAData()}),
-                                    nObj.getName(),ARCHIVE_ICON,
-                                    new Action[] {RemoveConfigurationAction.getStaticInstance(),
-                                                  SetConfigurationAction.getStaticInstance(),
-                                                 });
-                            node.getChildren().add(new Node[] {n});
                             n.setValue("bold",Boolean.TRUE);
                             n.setName(nObj.getName());
                         }
@@ -266,8 +271,10 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                 new ActionNode(new ConfigChildren(),
                     Lookups.fixed(new Object[] {project, confs[i], new AbilitiesPanel.VAData()}),
                     confs[i].getName(),ARCHIVE_ICON,
-                    new Action[] {RemoveConfigurationAction.getStaticInstance(),
+                    new Action[] {
                                   SetConfigurationAction.getStaticInstance(),
+                                  null,
+                                  RemoveConfigurationAction.getStaticInstance(),
                                   });
             nodeArray.add(node);
             if (confs[i].getName().equals(active.getName()))
