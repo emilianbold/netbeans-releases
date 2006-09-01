@@ -1141,11 +1141,11 @@ public final class ParseProjectXml extends Task {
         }
         // #82204 intialize default testtypes when are not  in project.xml
         if (!existsUnitTests) {
-            log("Default TestDeps for unit");
+            log("Default TestDeps for unit", Project.MSG_VERBOSE);
             testDepsList.add(new TestDeps(TestDeps.UNIT,testCnb,modules));
         }
         if (!existsQaFunctionalTests) {
-            log("Default TestDeps for qa-functional");
+            log("Default TestDeps for qa-functional", Project.MSG_VERBOSE);
             testDepsList.add(new TestDeps(TestDeps.QA_FUNCTIONAL,testCnb,modules));
         }
         TestDeps testDepss[] = new TestDeps[testDepsList.size()];
