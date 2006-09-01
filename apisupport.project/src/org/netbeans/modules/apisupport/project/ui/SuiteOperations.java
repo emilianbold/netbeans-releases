@@ -39,6 +39,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
@@ -146,14 +147,16 @@ public final class SuiteOperations implements DeleteOperationImplementation,
     
     public List/*<FileObject>*/ getMetadataFiles() {
         List/*<FileObject>*/ files = new ArrayList();
-        addFile(GeneratedFilesHelper.BUILD_XML_PATH, files); // NOI18N
+        addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
         addFile("nbproject", files); // NOI18N
         addFile(".cvsignore", files); // NOI18N
         return files;
     }
     
     public List/*<FileObject>*/ getDataFiles() {
-        return Collections.EMPTY_LIST;
+        List/*<FileObject>*/ files = new ArrayList();
+        addFile(suite.getEvaluator().getProperty(BrandingSupport.BRANDING_DIR_PROPERTY), files);
+        return files;
     }
     
     private void addFile(String fileName, List/*<FileObject>*/ result) {

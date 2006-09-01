@@ -76,16 +76,24 @@ public class SuiteProjectTest extends NbTestCase {
         assertEquals("Sweetness is Now!", model.getTitle());
     }
     
-    public void testSuiteEvaluatorReturnsUpToDateValues_67314() throws Exception {
+    public void testSuiteEvaluatorReturnsUpToDateValues() throws Exception { // #67314, #72981
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
         PropertyEvaluator eval = suite1.getEvaluator();
         TestBase.generateSuiteComponent(suite1, "module1");
         
-        EditableProperties suiteEP = Util.loadProperties(suite1.getProjectDirectory().getFileObject("nbproject/project.properties"));
+        FileObject suiteEPFO = suite1.getProjectDirectory().getFileObject("nbproject/project.properties");
+        EditableProperties suiteEP = Util.loadProperties(suiteEPFO);
         assertEquals("modules property", "${project.org.example.module1}", suiteEP.getProperty("modules"));
         assertEquals("project.org.example.module1 property", "module1", suiteEP.getProperty("project.org.example.module1"));
-        
+        // #67314
         assertEquals("up-to-date 'modules' property from suite evaluator", "module1", eval.getProperty("modules"));
+        
+        // branding.dir check (#72981)
+        assertEquals("branding.dir has a default value", "branding", eval.getProperty("branding.dir"));
+        suiteEP.setProperty("custom.dir", "custom");
+        suiteEP.setProperty("branding.dir", "${custom.dir}/nonDefaultBrandingDir");
+        suite1.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, suiteEP);
+        assertEquals("branding dir evaluated", "custom/nonDefaultBrandingDir", eval.getProperty("branding.dir"));
     }
     
     public void testPlatformPropertiesFromEvaluatorAreUpToDate() throws Exception {

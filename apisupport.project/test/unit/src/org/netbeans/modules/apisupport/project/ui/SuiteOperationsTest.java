@@ -38,7 +38,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Test ModuleOperations.
+ * Test {@link SuiteOperations}.
  *
  * @author Martin Krauskopf
  */
@@ -87,6 +87,8 @@ public class SuiteOperationsTest extends TestBase {
     
     public void testDeleteOfNonEmptySuite() throws Exception {
         SuiteProject suite = generateSuite("suite");
+        FileObject prjDir = suite.getProjectDirectory();
+        prjDir.createFolder("branding");
         NbModuleProject module1 = TestBase.generateSuiteComponent(suite, "module1");
         NbModuleProject module2 = TestBase.generateSuiteComponent(suite, "module2");
         assertEquals("module1 is suite component", NbModuleTypeProvider.SUITE_COMPONENT, Util.getModuleType(module1));
@@ -99,7 +101,6 @@ public class SuiteOperationsTest extends TestBase {
         assertNotNull("have an action provider", ap);
         assertTrue("delete action is enabled", ap.isActionEnabled(ActionProvider.COMMAND_DELETE, null));
         
-        FileObject prjDir = suite.getProjectDirectory();
         
         // build project
         ap.invokeActionImpl(ActionProvider.COMMAND_BUILD, suite.getLookup()).waitFinished();
@@ -110,7 +111,10 @@ public class SuiteOperationsTest extends TestBase {
             prjDir.getFileObject("nbproject"),
         };
         assertEquals("correct metadata files", Arrays.asList(expectedMetadataFiles), ProjectOperations.getMetadataFiles(suite));
-        assertTrue("no data files", ProjectOperations.getDataFiles(suite).isEmpty());
+        FileObject[] expectedDataFiles = new FileObject[] {
+            prjDir.getFileObject("branding"),
+        };
+        assertEquals("correct data files", Arrays.asList(expectedDataFiles), ProjectOperations.getDataFiles(suite));
         
         // It is hard to simulate exact scenario invoked by user. Let's test at least something.
         ProjectOperations.notifyDeleting(suite);

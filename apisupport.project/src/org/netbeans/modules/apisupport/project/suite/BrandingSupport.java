@@ -47,20 +47,21 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
- * Provide set of helper methods for branding purposes
+ * Provide set of helper methods for branding purposes.
  * @author Radek Matous
  */
 public final class BrandingSupport {
+    
     private final SuiteProject suiteProject;
-    private SuiteProperties suiteProperties;    
-    private Set brandedModules = null;
-    private Set brandedBundleKeys = null;
-    private Set brandedFiles = null;
+    private final SuiteProperties suiteProperties;    
+    private Set brandedModules;
+    private Set brandedBundleKeys;
+    private Set brandedFiles;
     
     private NbPlatform platform;
     private final File brandingDir;
     
-    private static final String NAME_OF_BRANDING_FOLDER="branding";//NOI18N
+    public static final String BRANDING_DIR_PROPERTY = "branding.dir"; // NOI18N
     private static final String BUNDLE_NAME = "Bundle.properties"; //NOI18N
 
     public static BrandingSupport getInstance(final SuiteProperties suiteProperties) throws IOException {
@@ -627,7 +628,7 @@ public final class BrandingSupport {
     }
 
     public String getNameOfBrandingFolder() {
-        String retval = suiteProject.getEvaluator().getProperty("branding.dir");//NOI18N
-        return (retval != null) ? retval : NAME_OF_BRANDING_FOLDER;
+        return suiteProject.getEvaluator().getProperty(BRANDING_DIR_PROPERTY);
     }
+    
 }
