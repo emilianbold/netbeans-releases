@@ -62,7 +62,7 @@ public final class BorderEditor extends PropertyEditorSupport
     private static final String NO_BORDER_BASE =
         "org/netbeans/modules/form/editors2/nullBorder.gif"; // NOI18N
 
-    private static Node.Property[] EMPTY_PROPERTIES = new Node.Property[0];
+    private static FormProperty[] EMPTY_PROPERTIES = new FormProperty[0];
     
     // --------------
     // variables
@@ -108,8 +108,8 @@ public final class BorderEditor extends PropertyEditorSupport
 
         if (value instanceof BorderDesignSupport) {
             borderSupport = (BorderDesignSupport) value;
-        }
-        else if (value instanceof Border) {
+        } else {
+            assert (value instanceof Border);
             if (!(value instanceof javax.swing.plaf.UIResource))
                 borderSupport = new BorderDesignSupport((Border)value);
         }
@@ -1305,11 +1305,12 @@ public final class BorderEditor extends PropertyEditorSupport
 	return !isSupportedBorder();
     }
 	
-    private boolean isSupportedBorder() {	
-	if(getValue() == null) {
+    private boolean isSupportedBorder() {
+        Object value = getValue();
+	if ((value == null) || (value instanceof javax.swing.plaf.UIResource)) {
 	    // supports also null value - see storeNullBorder()
 	    return true;
-	}	
+        }
 	Class borderClass = borderSupport.getBorderClass();
 	return borderClass.isAssignableFrom(TitledBorder.class)
             || borderClass.isAssignableFrom(EtchedBorder.class)
@@ -1322,7 +1323,8 @@ public final class BorderEditor extends PropertyEditorSupport
     }
 
     public Node.Property[] getProperties() {
-	if(getValue() == null) {
+        Object value = getValue();
+	if ((value == null) || (value instanceof javax.swing.plaf.UIResource)) {
 	    // supports also null value - see storeNullBorder()
 	    return EMPTY_PROPERTIES;
 	}	
