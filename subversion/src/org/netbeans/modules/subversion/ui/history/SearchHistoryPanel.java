@@ -277,41 +277,48 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         if (results == null) {
             return Collections.EMPTY_SET;
         }
-        List<Setup> setups = new ArrayList<Setup>(results.size());
-        Iterator<RepositoryRevision> it = results.iterator();
-        while (it.hasNext()) {
-            RepositoryRevision entry = it.next();
-
-            boolean atomicRange = true;
-            String prev = null;
-/*
-            List revisions = entry.getRevisions();
-            Iterator revs = revisions.iterator();
-            while (revs.hasNext()) {
-                DispRevision revision = (DispRevision) revs.next();
-                String rev = revision.getRevision().getNumber();
-                if (prev != null) {
-                    if (prev.equals(SvnUtils.previousRevision(rev)) == false) {
-                        atomicRange = false;
-                        break;
-                    }
+        if (tbDiff.isSelected()) {
+            return diffView.getSetups();
+        } else {
+            return summaryView.getSetups();
+        }
+    }
+    
+    Collection getSetups(RepositoryRevision [] revisions, RepositoryRevision.Event [] events) {
+        long fromRevision = Long.MAX_VALUE;
+        long toRevision = Long.MIN_VALUE;
+        Set<File> filesToDiff = new HashSet<File>();
+        
+        for (RepositoryRevision revision : revisions) {
+            long rev = revision.getLog().getRevision().getNumber();
+            if (rev > toRevision) toRevision = rev;
+            if (rev < fromRevision) fromRevision = rev;
+            List<RepositoryRevision.Event> evs = revision.getEvents();
+            for (RepositoryRevision.Event event : evs) {
+                File file = event.getFile();
+                if (file != null) {
+                    filesToDiff.add(file);
                 }
-                prev = rev;
             }
-*/
+        }
 
-            if (atomicRange == false) {
-                return Collections.EMPTY_SET;
+        for (RepositoryRevision.Event event : events) {
+            long rev = event.getLogInfoHeader().getLog().getRevision().getNumber();
+            if (rev > toRevision) toRevision = rev;
+            if (rev < fromRevision) fromRevision = rev;
+            if (event.getFile() != null) {
+                filesToDiff.add(event.getFile());
             }
+        }
 
-//            String eldest = entry.getEldestRevision();
-//            String newest = entry.getNewestRevision();
-//            Setup setup = new Setup(file, eldest, newest);
-//            setups.add(setup);
+        List<Setup> setups = new ArrayList<Setup>();
+        for (File file : filesToDiff) {
+            Setup setup = new Setup(file, Long.toString(fromRevision - 1), Long.toString(toRevision));
+            setups.add(setup);
         }
         return setups;
     }
-
+    
     public String getSetupDisplayName() {
         return null;
     }

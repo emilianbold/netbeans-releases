@@ -24,10 +24,12 @@ import org.openide.util.Cancellable;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.ErrorManager;
+import org.openide.windows.TopComponent;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Diff;
 import org.netbeans.modules.subversion.util.NoContentPanel;
 import org.netbeans.modules.subversion.ui.diff.DiffStreamSource;
+import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
@@ -43,7 +45,7 @@ import java.io.IOException;
  * 
  * @author Maros Sandor
  */
-class DiffResultsView implements AncestorListener, PropertyChangeListener {
+class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffSetupSource {
 
     private final SearchHistoryPanel parent;
 
@@ -57,9 +59,11 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     private int                     currentDifferenceIndex;
     private int                     currentIndex;
     private boolean                 dividerSet;
+    private List<RepositoryRevision> results;
 
-    public DiffResultsView(SearchHistoryPanel parent, List results) {
+    public DiffResultsView(SearchHistoryPanel parent, List<RepositoryRevision> results) {
         this.parent = parent;
+        this.results = results;
         treeView = new DiffTreeTable(parent);
         treeView.setResults(results);
         treeView.addAncestorListener(this);
@@ -139,6 +143,29 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             };
             SwingUtilities.invokeLater(runnable);
         }
+    }
+
+    public Collection getSetups() {
+        Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
+        if (nodes.length == 0) {
+            return parent.getSetups(results.toArray(new RepositoryRevision[results.size()]), new RepositoryRevision.Event[0]);
+        }
+        
+        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
+        Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
+        for (Node n : nodes) {
+            RevisionNode node = (RevisionNode) n;
+            if (node.getEvent() != null) {
+                events.add(node.getEvent());
+            } else {
+                revisions.add(node.getContainer());
+            }
+        }
+        return parent.getSetups(revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
+    }
+
+    public String getSetupDisplayName() {
+        return null;
     }
 
     private void showDiffError(String s) {

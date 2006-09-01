@@ -84,6 +84,10 @@ class RevisionNode extends AbstractNode {
         return container;
     }
 
+    RepositoryRevision.Event getEvent() {
+        return event;
+    }
+
     public String getShortDescription() {
         return path;
     }

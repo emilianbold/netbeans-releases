@@ -21,6 +21,8 @@ package org.netbeans.modules.subversion.ui.history;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
+import org.openide.windows.TopComponent;
+import org.openide.nodes.Node;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -32,6 +34,8 @@ import org.netbeans.modules.subversion.VersionsCache;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
+import org.netbeans.modules.subversion.ui.diff.ExportDiffAction;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
@@ -54,7 +58,7 @@ import java.text.DateFormat;
  * 
  * @author Maros Sandor
  */
-class SummaryView implements MouseListener, ComponentListener, MouseMotionListener {
+class SummaryView implements MouseListener, ComponentListener, MouseMotionListener, DiffSetupSource {
 
     private static final String SUMMARY_REVERT_PROPERTY = "Summary-Revert-";
 
@@ -66,9 +70,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     private final List  dispResults;
     private String      message;
     private AttributeSet searchHiliteAttrs;
+    private List<RepositoryRevision> results;
 
     public SummaryView(SearchHistoryPanel master, List<RepositoryRevision> results) {
         this.master = master;
+        this.results = results;
         this.dispResults = expandResults(results);
         FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class); // NOI18N
         searchHiliteAttrs = fcs.getFontColors("highlight-search"); // NOI18N
@@ -168,6 +174,31 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             return;
         }
         resultsList.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    }
+
+    public Collection getSetups() {
+        Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
+        if (nodes.length == 0) {
+            return master.getSetups(results.toArray(new RepositoryRevision[results.size()]), new RepositoryRevision.Event[0]);
+        }
+    
+        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
+        Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
+
+        int [] sel = resultsList.getSelectedIndices();
+        for (int i : sel) {
+            Object revCon = dispResults.get(i);            
+            if (revCon instanceof RepositoryRevision) {
+                revisions.add((RepositoryRevision) revCon);
+            } else {
+                events.add((RepositoryRevision.Event) revCon);
+            }
+        }
+        return master.getSetups(revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
+    }
+
+    public String getSetupDisplayName() {
+        return null;
     }
 
     private void onPopup(MouseEvent e) {
@@ -440,7 +471,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             } else {
                 foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
                 backgroundColor = UIManager.getColor("List.background"); // NOI18N
-                backgroundColor = (index & 1) == 0 ? backgroundColor : darker(backgroundColor); 
+                backgroundColor = darker(backgroundColor); 
                 style = normalStyle;
             }
             textPane.setBackground(backgroundColor);
@@ -509,7 +540,6 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             } else {
                 foregroundColor = UIManager.getColor("List.foreground"); // NOI18N
                 backgroundColor = UIManager.getColor("List.background"); // NOI18N
-                backgroundColor = (index & 1) == 0 ? backgroundColor : darker(backgroundColor); 
                 style = normalStyle;
             }
             textPane.setBackground(backgroundColor);
