@@ -21,6 +21,9 @@ package org.netbeans.modules.subversion.ui.history;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.NodeAction;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -37,6 +40,7 @@ import java.awt.event.ActionEvent;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.text.DateFormat;
+import java.util.*;
 
 /**
  * Visible in the Search History Diff view.
@@ -54,8 +58,8 @@ class RevisionNode extends AbstractNode {
     private RepositoryRevision          container;
     private String                      path;
 
-    public RevisionNode(RepositoryRevision container) {
-        super(new RevisionNodeChildren(container), Lookups.singleton(container));
+    public RevisionNode(RepositoryRevision container, SearchHistoryPanel master) {
+        super(new RevisionNodeChildren(container, master), Lookups.fixed(new Object [] { master, container }));
         this.container = container;
         this.event = null;
         this.path = null;
@@ -64,8 +68,8 @@ class RevisionNode extends AbstractNode {
         initProperties();
     }
 
-    public RevisionNode(RepositoryRevision.Event revision) {
-        super(Children.LEAF, Lookups.fixed(new Object [] { revision }));
+    public RevisionNode(RepositoryRevision.Event revision, SearchHistoryPanel master) {
+        super(Children.LEAF, Lookups.fixed(new Object [] { master, revision }));
         this.path = revision.getChangedPath().getPath();
         this.event = revision;
         setName(revision.getName());
@@ -89,12 +93,12 @@ class RevisionNode extends AbstractNode {
         // TODO: reuse action code from SummaryView
         if (event == null) {
             return new Action [] {
-                new RevertModificationsAction()
+                SystemAction.get(RevertModificationsAction.class)
             };
         } else {
             return new Action [] {
                 new RollbackAction(),
-                new RevertModificationsAction(),
+                SystemAction.get(RevertModificationsAction.class)
             };
         }
     }
@@ -270,19 +274,33 @@ class RevisionNode extends AbstractNode {
         }
     }
 
-    private class RevertModificationsAction extends AbstractAction {
+    private static class RevertModificationsAction extends NodeAction {
 
-        public RevertModificationsAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange")); // NOI18N
-            setEnabled(true);
+        protected void performAction(Node[] activatedNodes) {
+            Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
+            Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
+            for (Node n : activatedNodes) {
+                RevisionNode node = (RevisionNode) n;
+                if (node.event != null) {
+                    events.add(node.event);
+                } else {
+                    revisions.add(node.container);
+                }
+            }
+            SearchHistoryPanel master = (SearchHistoryPanel) activatedNodes[0].getLookup().lookup(SearchHistoryPanel.class);
+            SummaryView.revert(master, revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
         }
 
-        public void actionPerformed(ActionEvent e) {
-            if (event != null) {
-                SummaryView.revertModifications(event);
-            } else {
-                SummaryView.revertModifications(container);
-            }
+        protected boolean enable(Node[] activatedNodes) {
+            return true;
+        }
+
+        public String getName() {
+            return NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"); // NOI18N
+        }
+
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(RevertModificationsAction.class);
         }
     }
     

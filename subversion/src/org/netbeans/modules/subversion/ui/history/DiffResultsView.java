@@ -60,7 +60,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     public DiffResultsView(SearchHistoryPanel parent, List results) {
         this.parent = parent;
-        treeView = new DiffTreeTable();
+        treeView = new DiffTreeTable(parent);
         treeView.setResults(results);
         treeView.addAncestorListener(this);
 

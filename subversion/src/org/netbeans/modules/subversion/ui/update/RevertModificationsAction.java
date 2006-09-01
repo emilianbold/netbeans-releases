@@ -91,7 +91,6 @@ public class RevertModificationsAction extends ContextAction {
             ErrorManager.getDefault().notify(ex);
             return;
         }
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
 
         Set filesystems = new HashSet(2);
         File files[] = ctx.getFiles();
@@ -116,6 +115,7 @@ public class RevertModificationsAction extends ContextAction {
                         SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
                         revisions = recountStartRevision(client, url, revisions);
                         client.merge(url, revisions.endRevision, url, revisions.startRevision, files[i], false, recursive);
+                        refresh(files[i], recursive, filesystems);
                     }
                 } else {
                     for (int i= 0; i<files.length; i++) {
@@ -123,12 +123,7 @@ public class RevertModificationsAction extends ContextAction {
                             return;
                         }
                         client.revert(files[i], recursive);
-                        if (recursive) {
-                            refreshRecursively(files[i]);
-                        } else {
-                            cache.refreshCached(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                        }
-                        addFileSystem(filesystems, files[i]);
+                        refresh(files[i], recursive, filesystems);
                     }
                 }
             } catch (SVNClientException ex) {
@@ -140,6 +135,15 @@ public class RevertModificationsAction extends ContextAction {
             FileSystem fileSystem = (FileSystem) i.next();
             fileSystem.refresh(true);
         }
+    }
+    
+    private static void refresh(File file, boolean recursive, Set filesystems) {
+        if (recursive) {
+            refreshRecursively(file);
+        } else {
+            Subversion.getInstance().getStatusCache().refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        }
+        addFileSystem(filesystems, file);
     }
 
     /**

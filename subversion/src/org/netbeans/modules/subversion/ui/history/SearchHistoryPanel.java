@@ -28,6 +28,7 @@ import org.openide.awt.Mnemonics;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.NoContentPanel;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 import javax.swing.*;
@@ -226,6 +227,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     public SVNUrl getRepositoryUrl() {
         return repositoryUrl;
+    }
+
+    public SVNUrl getSearchRepositoryRootUrl() {
+        if (repositoryUrl != null) return repositoryUrl;
+        return SvnUtils.getRepositoryRootUrl(roots[0]);
     }
 
     public File[] getRoots() {

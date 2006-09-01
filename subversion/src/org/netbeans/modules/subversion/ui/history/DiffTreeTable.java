@@ -43,8 +43,10 @@ class DiffTreeTable extends TreeTableView {
     
     private RevisionsRootNode rootNode;
     private List results;
+    private final SearchHistoryPanel master;
 
-    public DiffTreeTable() {
+    public DiffTreeTable(SearchHistoryPanel master) {
+        this.master = master;
         treeTable.setShowHorizontalLines(true);
         treeTable.setShowVerticalLines(false);
         setRootVisible(false);
@@ -196,9 +198,9 @@ class DiffTreeTable extends TreeTableView {
         protected Node[] createNodes(Object key) {
             RevisionNode node;
             if (key instanceof RepositoryRevision) {
-                node = new RevisionNode((RepositoryRevision) key);
+                node = new RevisionNode((RepositoryRevision) key, master);
             } else { // key instanceof RepositoryRevision.Event
-                node = new RevisionNode(((RepositoryRevision.Event) key));
+                node = new RevisionNode(((RepositoryRevision.Event) key), master);
             }
             return new Node[] { node };
         }

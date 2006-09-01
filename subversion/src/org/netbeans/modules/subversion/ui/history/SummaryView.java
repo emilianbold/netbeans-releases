@@ -235,7 +235,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }));
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
                 {
-                    setEnabled(selection.length == 1 && !revisionSelected);
+                    setEnabled(selection.length == 1 && !revisionSelected && drev.getFile() != null);
                 }
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -280,76 +280,50 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
     }
 
-    static void revertModifications(RepositoryRevision.Event event) {
-        revertRevision(event.getLogInfoHeader(), new File [] { event.getFile() });
-    }
-
-    static void revertModifications(RepositoryRevision rev) {
-        File [] files = new File[rev.getEvents().size()];
-        int idx = 0;
-        for (RepositoryRevision.Event event : rev.getEvents()) {
-            files[idx] = event.getFile();
-        }
-        revertRevision(rev, files);
-    }
-
     private void revertModifications(int[] selection) {
-        // if the selection is from a single Revision, we can present the Revert dialog
-        Map<RepositoryRevision, Set<File>> revisionsToRevert = new HashMap<RepositoryRevision, Set<File>>(1);
+        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
+        Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
         for (int idx : selection) {
             Object o = dispResults.get(idx);
             if (o instanceof RepositoryRevision) {
-                RepositoryRevision rev = (RepositoryRevision) o;
-                Set<File> files = new HashSet<File>(rev.getEvents().size());
-                for (RepositoryRevision.Event event : rev.getEvents()) {
-                    files.add(event.getFile());
-                }
-                revisionsToRevert.put(rev, files);
+                revisions.add((RepositoryRevision) o);
             } else {
-                RepositoryRevision.Event event = (RepositoryRevision.Event) o;
-                RepositoryRevision rev = event.getLogInfoHeader();
-                Set<File> files = revisionsToRevert.get(rev);
-                if (files == null) {
-                    files = new HashSet<File>(1);
-                    revisionsToRevert.put(rev, files);
-                }
-                files.add(event.getFile());
-
+                events.add((RepositoryRevision.Event) o);
             }
         }
-        for (RepositoryRevision revision : revisionsToRevert.keySet()) {
-            Set<File> files = revisionsToRevert.get(revision);
-            revertRevision(revision, files.toArray(new File[files.size()]));
-        }
+        revert(master, revisions.toArray(new RepositoryRevision[revisions.size()]), (RepositoryRevision.Event[]) events.toArray(new RepositoryRevision.Event[events.size()]));
     }
 
-    private static void revertRevision(RepositoryRevision revision, File [] files) {
-        String revisionStr = Long.toString(revision.getLog().getRevision().getNumber());
-
-        final SVNUrl url = revision.getRepositoryRootUrl();
-
-        final Context ctx = new Context(files);
-        final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
-
-        final RevertModifications revertModifications = new RevertModifications(repositoryFile, revisionStr);
-        if(!revertModifications.showDialog()) {
-            return;
-        }
-
-        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
+    static void revert(final SearchHistoryPanel master, final RepositoryRevision [] revisions, final RepositoryRevision.Event [] events) {
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getSearchRepositoryRootUrl());
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {
-                RevertModificationsAction.performRevert(ctx, revertModifications, this);
+                revertImpl(master, revisions, events, this);
             }
         };
-        support.start(rp, url, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
+        support.start(rp, master.getSearchRepositoryRootUrl(), NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); // NOI18N
+    }
+
+    private static void revertImpl(SearchHistoryPanel master, RepositoryRevision[] revisions, RepositoryRevision.Event[] events, SvnProgressSupport progress) {
+        final RepositoryFile repositoryFile = new RepositoryFile(master.getSearchRepositoryRootUrl(), master.getSearchRepositoryRootUrl(), SVNRevision.HEAD);
+        for (RepositoryRevision revision : revisions) {
+            RevertModifications revertModifications = new RevertModifications(repositoryFile, Long.toString(revision.getLog().getRevision().getNumber()));
+            final Context ctx = new Context(master.getRoots());
+            RevertModificationsAction.performRevert(ctx, revertModifications, progress);
+        }
+        for (RepositoryRevision.Event event : events) {
+            if (event.getFile() == null) continue;
+            RevertModifications revertModifications = new RevertModifications(repositoryFile, Long.toString(event.getLogInfoHeader().getLog().getRevision().getNumber()));
+            final Context ctx = new Context(event.getFile());
+            RevertModificationsAction.performRevert(ctx, revertModifications, progress);
+        }
     }
 
     private void view(int idx) {
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision.Event) {
             RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-            ViewCookie view = (ViewCookie) new RevisionNode(drev).getCookie(ViewCookie.class);
+            ViewCookie view = (ViewCookie) new RevisionNode(drev, master).getCookie(ViewCookie.class);
             if (view != null) {
                 view.view();
             }

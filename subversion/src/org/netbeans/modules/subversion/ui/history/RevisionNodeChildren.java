@@ -31,9 +31,11 @@ import java.util.*;
 class RevisionNodeChildren extends Children.Keys {
 
     private RepositoryRevision container;
+    private SearchHistoryPanel master;
 
-    public RevisionNodeChildren(RepositoryRevision container) {
+    public RevisionNodeChildren(RepositoryRevision container, SearchHistoryPanel master) {
         this.container = container;
+        this.master = master;
     }
 
     protected void addNotify() {
@@ -50,7 +52,7 @@ class RevisionNodeChildren extends Children.Keys {
     
     protected Node[] createNodes(Object key) {
         RepositoryRevision.Event fn = (RepositoryRevision.Event) key;
-        RevisionNode node = new RevisionNode(fn);
+        RevisionNode node = new RevisionNode(fn, master);
         return new Node[] { node };
     }
 
