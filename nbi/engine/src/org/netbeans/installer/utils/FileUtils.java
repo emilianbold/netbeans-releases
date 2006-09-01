@@ -171,15 +171,14 @@ public abstract class FileUtils {
     
     
     //(dd)
-    public static void transferData(File in, File out) throws IOException {
-        if (!in.exists() && !in.isFile()) throw new IllegalArgumentException("check in arg");
+    public static void copyFile(File in, File out) throws IOException {
+        if (!in.isFile()) throw new IllegalArgumentException("check in arg");
         if (!out.exists()) {
             if (!out.getParentFile().exists()) {
                 out.getParentFile().mkdirs();
             }
         }
         out.createNewFile();
-        if (!out.isFile()) throw new IllegalArgumentException("check out arg");
         FileChannel inChannel = new FileInputStream(in).getChannel();
         FileChannel outChannel = new FileOutputStream(out).getChannel();
         inChannel.transferTo(0, inChannel.size(),outChannel);
