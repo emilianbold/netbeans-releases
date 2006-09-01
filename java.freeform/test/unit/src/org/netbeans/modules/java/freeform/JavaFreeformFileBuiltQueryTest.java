@@ -78,6 +78,7 @@ public class JavaFreeformFileBuiltQueryTest extends TestBase {
             JavaFreeformFileBuiltQueryTest.class.getResource("/META-INF/services/org.openide.modules.InstalledFileLocator"));
         
         FileObject root = simple.getProjectDirectory();
+        clearWorkDir();
         File workdir = getWorkDir();
         FileObject workdirFO = FileUtil.toFileObject(workdir);
         FileObject simpleFO = workdirFO.createFolder("simple");
