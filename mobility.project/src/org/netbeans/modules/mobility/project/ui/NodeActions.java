@@ -518,8 +518,11 @@ class SetConfigurationAction extends ContextAction
         {
             final J2MEProject project=activatedNodes[0].getLookup().lookup(J2MEProject.class);
             final ProjectConfiguration conf=activatedNodes[0].getLookup().lookup(ProjectConfiguration.class);
-            if (!project.getConfigurationHelper().getActiveConfiguration().equals(conf))
-                return true;
+            if (project != null)
+            {
+                if (!project.getConfigurationHelper().getActiveConfiguration().equals(conf))
+                    return true;
+            }         
         }
         return false;
     }
