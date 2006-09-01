@@ -51,7 +51,6 @@ import org.xml.sax.XMLReader;
  * Parser and interpreter for automatic module dependencies.
  * Public for possible access from AU (see #29577).
  * Usage: see implementation of {@link ModuleInstaller#refineDependencies}.
- * <p>You may run this class standalone, with just openide.jar and core.jarin the classpath.
  * @author Jesse Glick, with help from NB XML module
  * @see "#30161"
  * @see <a href="module-auto-deps-1_0.dtd"><samp>-//NetBeans//DTD Module Automatic Dependencies 1.0//EN</samp></a>
@@ -82,12 +81,12 @@ public final class AutomaticDependencies {
     public static AutomaticDependencies parse(URL[] urls) throws SAXException, IOException {
         AutomaticDependencies h = new AutomaticDependencies();
         Parser p = new Parser(h.new Handler());
-        for (int i = 0; i < urls.length; i++) {
-            String id = urls[i].toExternalForm();
+        for (URL url : urls) {
+            String id = url.toExternalForm();
 	    InputStream inS = null;
             try {
 		InputSource is = new InputSource(id);
-		inS = new BufferedInputStream(urls[i].openStream());
+		inS = new BufferedInputStream(url.openStream());
 		is.setByteStream(inS);
                 p.parse(is);
             } catch (SAXException e) {
@@ -130,10 +129,10 @@ public final class AutomaticDependencies {
      * @since org.netbeans.core/1 1.19
      */
     public static final class Report {
-        private final Set/*<Dependency>*/ added;
-        private final Set/*<Dependency>*/ removed;
-        private final Set/*<String>*/ messages;
-        Report(Set added, Set removed, Set messages) {
+        private final Set<Dependency> added;
+        private final Set<Dependency> removed;
+        private final Set<String> messages;
+        Report(Set<Dependency> added, Set<Dependency> removed, Set<String> messages) {
             this.added = added;
             this.removed = removed;
             this.messages = messages;
@@ -142,14 +141,14 @@ public final class AutomaticDependencies {
          * Get a set of dependencies that were added.
          * @return a set of {@link Dependency} (may be empty)
          */
-        public Set/*<Dependency>*/ getAdded() {
+        public Set<Dependency> getAdded() {
             return added;
         }
         /**
          * Get a set of dependencies that were removed.
          * @return a set of {@link Dependency} (may be empty)
          */
-        public Set/*<Dependency>*/ getRemoved() {
+        public Set<Dependency> getRemoved() {
             return removed;
         }
         /**
@@ -157,7 +156,7 @@ public final class AutomaticDependencies {
          * These messages are not necessarily localized but are intended for developers.
          * @return a set of <code>String</code> messages (may be empty)
          */
-        public Set/*<String>*/ getMessages() {
+        public Set<String> getMessages() {
             return messages;
         }
         /**
@@ -229,7 +228,7 @@ public final class AutomaticDependencies {
             return new Report(added, oldDependencies, messages);
         } else {
             assert messages.isEmpty();
-            return new Report(Collections.EMPTY_SET, Collections.EMPTY_SET, Collections.EMPTY_SET);
+            return new Report(Collections.<Dependency>emptySet(), Collections.<Dependency>emptySet(), Collections.<String>emptySet());
         }
     }
     
