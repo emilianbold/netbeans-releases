@@ -70,7 +70,7 @@ public class JavaActionsTest extends TestBase {
         assertNotNull(ideActions);
         Iterator<Element> actionsIt = Util.findSubElements(ideActions).iterator();
         while (actionsIt.hasNext()) {
-            Element action = (Element) actionsIt.next();
+            Element action = actionsIt.next();
             assertEquals("action", action.getLocalName());
             if (Util.findElement(action, "context", FreeformProjectType.NS_GENERAL) != null) {
                 ideActions.removeChild(action);
@@ -78,7 +78,7 @@ public class JavaActionsTest extends TestBase {
         }
         prj.helper().putPrimaryConfigurationData(data, true);
         ProjectManager.getDefault().saveProject(prj);
-        AuxiliaryConfiguration origAux = (AuxiliaryConfiguration) prj.getLookup().lookup(AuxiliaryConfiguration.class);
+        AuxiliaryConfiguration origAux = prj.getLookup().lookup(AuxiliaryConfiguration.class);
         AuxiliaryConfiguration aux = new JavaProjectNature.UpgradingAuxiliaryConfiguration(origAux);
         ja = new JavaActions(prj, prj.helper(), prj.evaluator(), aux);
         src = prj.getProjectDirectory().getFileObject("src");
@@ -182,7 +182,7 @@ public class JavaActionsTest extends TestBase {
         Element ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull(ideActions);
         List<Element> actions = Util.findSubElements(ideActions);
-        Element lastAction = (Element) actions.get(actions.size() - 1);
+        Element lastAction = actions.get(actions.size() - 1);
         String expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"some.action\">\n" +
@@ -203,7 +203,7 @@ public class JavaActionsTest extends TestBase {
         data = prj.helper().getPrimaryConfigurationData(true);
         ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
         actions = Util.findSubElements(ideActions);
-        lastAction = (Element) actions.get(actions.size() - 1);
+        lastAction = actions.get(actions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"some.other.action\">\n" +
@@ -224,7 +224,7 @@ public class JavaActionsTest extends TestBase {
         data = prj.helper().getPrimaryConfigurationData(true);
         ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
         actions = Util.findSubElements(ideActions);
-        lastAction = (Element) actions.get(actions.size() - 1);
+        lastAction = actions.get(actions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"general.action\">\n" +
@@ -238,7 +238,7 @@ public class JavaActionsTest extends TestBase {
         assertNotNull(contextMenu);
         // Currently (no FPG to help) it is always added as the last item.
         List<Element> contextMenuActions = Util.findSubElements(contextMenu);
-        Element lastContextMenuAction = (Element) contextMenuActions.get(contextMenuActions.size() - 1);
+        Element lastContextMenuAction = contextMenuActions.get(contextMenuActions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<ide-action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"general.action\"/>\n";
@@ -253,7 +253,7 @@ public class JavaActionsTest extends TestBase {
         data = prj.helper().getPrimaryConfigurationData(true);
         ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
         actions = Util.findSubElements(ideActions);
-        lastAction = (Element) actions.get(actions.size() - 1);
+        lastAction = actions.get(actions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<action xmlns=\"http://www.netbeans.org/ns/freeform-project/1\" name=\"some.other.action\">\n" +

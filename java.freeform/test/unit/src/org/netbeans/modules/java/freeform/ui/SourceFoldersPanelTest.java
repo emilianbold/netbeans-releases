@@ -21,6 +21,7 @@ package org.netbeans.modules.java.freeform.ui;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -93,13 +94,15 @@ public class SourceFoldersPanelTest extends TestBase {
         
         model = ProjectModel.createEmptyModel(baseFolder, projectFolder, evaluator);
         
-        assertEquals("should  reject invalid location", new HashSet(Arrays.asList(new File[] {invalidFile1})), SourceFoldersPanel.processRoots(model, new File[] {invalidFile1, invalidFile2}, false, true));
+        assertEquals("should  reject invalid location", Collections.singleton(invalidFile1),
+                SourceFoldersPanel.processRoots(model, new File[] {invalidFile1, invalidFile2}, false, true));
         
         FileOwnerQuery.markExternalOwner(FileUtil.toFileObject(invalidFile2), upper, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         
         model = ProjectModel.createEmptyModel(baseFolder, projectFolder, evaluator);
         
-        assertEquals("should reject invalid location", new HashSet(Arrays.asList(new File[] {invalidFile1, invalidFile2})), SourceFoldersPanel.processRoots(model, new File[] {invalidFile1, invalidFile2}, false, true));
+        assertEquals("should reject invalid location", new HashSet<File>(Arrays.asList(invalidFile1, invalidFile2)),
+                SourceFoldersPanel.processRoots(model, new File[] {invalidFile1, invalidFile2}, false, true));
         
         //test isTests option:
         File tests1 = new File(egdir, "tests1");
@@ -111,8 +114,10 @@ public class SourceFoldersPanelTest extends TestBase {
         
         assertEquals("should accept free location", 0, SourceFoldersPanel.processRoots(model, new File[] {tests1}, true, true).size());
         assertEquals("should accept free location", 0, SourceFoldersPanel.processRoots(model, new File[] {src1}, false, true).size());
-        assertEquals("should reject reregistration as test", new HashSet(Arrays.asList(new File[] {src1})), SourceFoldersPanel.processRoots(model, new File[] {tests1, src1, tests2}, true, true));
-        assertEquals("should reject reregistration as src", new HashSet(Arrays.asList(new File[] {tests1})), SourceFoldersPanel.processRoots(model, new File[] {tests1, src1, src2}, false, true));
+        assertEquals("should reject reregistration as test", Collections.singleton(src1),
+                SourceFoldersPanel.processRoots(model, new File[] {tests1, src1, tests2}, true, true));
+        assertEquals("should reject reregistration as src", Collections.singleton(tests1),
+                SourceFoldersPanel.processRoots(model, new File[] {tests1, src1, src2}, false, true));
     }
 
     protected void setUp() throws Exception {
@@ -145,7 +150,7 @@ public class SourceFoldersPanelTest extends TestBase {
             // NOP
         }
 
-        public Map getProperties() {
+        public Map<String,String> getProperties() {
             return properties;
         }
         

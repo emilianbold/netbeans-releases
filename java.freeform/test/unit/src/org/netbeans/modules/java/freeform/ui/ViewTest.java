@@ -39,7 +39,7 @@ public class ViewTest extends TestBase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        lvp = (LogicalViewProvider) extsrcroot.getLookup().lookup(LogicalViewProvider.class);
+        lvp = extsrcroot.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("found a LogicalViewProvider", lvp);
     }
     
@@ -60,7 +60,7 @@ public class ViewTest extends TestBase {
     }
     
     public void testFindPath() throws Exception {
-        LogicalViewProvider lvp2 = (LogicalViewProvider) simple.getLookup().lookup(LogicalViewProvider.class);
+        LogicalViewProvider lvp2 = simple.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull(lvp2);
         Node root = lvp2.createLogicalView();
         org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lvp2, root, simple, "src/org/foo/myapp/MyApp.java");

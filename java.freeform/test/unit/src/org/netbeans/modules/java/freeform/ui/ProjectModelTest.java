@@ -50,13 +50,13 @@ public class ProjectModelTest extends NbTestCase {
         File nbProjectFolder = new File(getWorkDir(), "nbprojfolder/");
         Map<String,String> p = new HashMap<String,String>();
         p.put("key", "value");
-        PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{PropertyUtils.fixedPropertyProvider(p)});
+        PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.fixedPropertyProvider(p));
         ProjectModel pm = ProjectModel.createEmptyModel(baseFolder, nbProjectFolder, evaluator);
         assertNotNull(pm);
         assertEquals("Base folder incorrect", baseFolder, pm.getBaseFolder());
         assertEquals("NB project folder incorrect", nbProjectFolder, pm.getNBProjectFolder());
         assertEquals("Evaluator incorrect", evaluator, pm.getEvaluator());
-        assertEquals("Evaluator is different", 1, pm.getEvaluator().getProperties().keySet().size());
+        assertEquals("Evaluator is different", 1, pm.getEvaluator().getProperties().size());
     }
 
     // tests: addSourceFolder, removeSourceFolder, setSourceLevel, getCompilationUnit
@@ -71,10 +71,10 @@ public class ProjectModelTest extends NbTestCase {
         assertEquals("Number of source folders does not match", 1, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 1, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 1, pm.createCompilationUnitKeys().size());
-        List keys = generateKeys(new Object[]{"loc1"}, new String[]{"label_loc1"});
+        List<ProjectModel.CompilationUnitKey> keys = generateKeys(new Object[]{"loc1"}, new String[]{"label_loc1"});
         assertKeyEquals(keys, pm.createCompilationUnitKeys());
-        JavaProjectGenerator.JavaCompilationUnit cu1 = (JavaProjectGenerator.JavaCompilationUnit)pm.getJavaCompilationUnits().get(0);
-        JavaProjectGenerator.JavaCompilationUnit cu2 = pm.getCompilationUnit((ProjectModel.CompilationUnitKey)keys.get(0), false);
+        JavaProjectGenerator.JavaCompilationUnit cu1 = pm.getJavaCompilationUnits().get(0);
+        JavaProjectGenerator.JavaCompilationUnit cu2 = pm.getCompilationUnit(keys.get(0), false);
         assertEquals("Must be the same instance", cu1, cu2);
 
         sf = new JavaProjectGenerator.SourceFolder();
@@ -87,22 +87,22 @@ public class ProjectModelTest extends NbTestCase {
         assertEquals("Number of comp unit keys does not match", 2, pm.createCompilationUnitKeys().size());
         keys = generateKeys(new Object[]{"loc1", "loc2"}, new String[]{"label_loc1", "label_loc2"});
         assertKeyEquals(keys, pm.createCompilationUnitKeys());
-        cu1 = (JavaProjectGenerator.JavaCompilationUnit)pm.getJavaCompilationUnits().get(0);
-        cu2 = pm.getCompilationUnit((ProjectModel.CompilationUnitKey)keys.get(0), false);
+        cu1 = pm.getJavaCompilationUnits().get(0);
+        cu2 = pm.getCompilationUnit(keys.get(0), false);
         assertEquals("Must be the same instance", cu1, cu2);
-        cu1 = (JavaProjectGenerator.JavaCompilationUnit)pm.getJavaCompilationUnits().get(1);
-        cu2 = pm.getCompilationUnit((ProjectModel.CompilationUnitKey)keys.get(1), false);
+        cu1 = pm.getJavaCompilationUnits().get(1);
+        cu2 = pm.getCompilationUnit(keys.get(1), false);
         assertEquals("Must be the same instance", cu1, cu2);
         
         assertEquals("Source level does not match", "custom_source_level", 
-            ((JavaProjectGenerator.JavaCompilationUnit)(pm.getJavaCompilationUnits().get(0))).sourceLevel);
+            pm.getJavaCompilationUnits().get(0).sourceLevel);
         assertEquals("Source level does not match", "custom_source_level", 
-            ((JavaProjectGenerator.JavaCompilationUnit)(pm.getJavaCompilationUnits().get(1))).sourceLevel);
+            pm.getJavaCompilationUnits().get(1).sourceLevel);
         pm.setSourceLevel("jdk15");
         assertEquals("Source level does not match", "jdk15", 
-            ((JavaProjectGenerator.JavaCompilationUnit)(pm.getJavaCompilationUnits().get(0))).sourceLevel);
+            pm.getJavaCompilationUnits().get(0).sourceLevel);
         assertEquals("Source level does not match", "jdk15", 
-            ((JavaProjectGenerator.JavaCompilationUnit)(pm.getJavaCompilationUnits().get(1))).sourceLevel);
+            pm.getJavaCompilationUnits().get(1).sourceLevel);
         
         pm.removeSourceFolder(0);
         assertEquals("Number of source folders does not match", 1, pm.getSourceFoldersCount());
@@ -159,7 +159,7 @@ public class ProjectModelTest extends NbTestCase {
         assertEquals("Number of source folders does not match", 2, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 1, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 1, pm.createCompilationUnitKeys().size());
-        keys = generateKeys(new Object[]{Arrays.asList(new String[]{"loc1", "loc2"})}, new String[]{null});
+        keys = generateKeys(new Object[]{Arrays.asList("loc1", "loc2")}, new String[]{null});
         assertKeyEquals(keys, pm.createCompilationUnitKeys());
         
         sf = new JavaProjectGenerator.SourceFolder();
@@ -170,7 +170,7 @@ public class ProjectModelTest extends NbTestCase {
         assertEquals("Number of source folders does not match", 3, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 1, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 1, pm.createCompilationUnitKeys().size());
-        keys = generateKeys(new Object[]{Arrays.asList(new String[]{"loc1", "loc2", "loc3"})}, new String[]{null});
+        keys = generateKeys(new Object[]{Arrays.asList("loc1", "loc2", "loc3")}, new String[]{null});
         assertKeyEquals(keys, pm.createCompilationUnitKeys());
         
         sf = new JavaProjectGenerator.SourceFolder();
@@ -181,7 +181,7 @@ public class ProjectModelTest extends NbTestCase {
         assertEquals("Number of source folders does not match", 4, pm.getSourceFoldersCount());
         assertEquals("Number of comp units does not match", 1, pm.getJavaCompilationUnits().size());
         assertEquals("Number of comp unit keys does not match", 1, pm.createCompilationUnitKeys().size());
-        keys = generateKeys(new Object[]{Arrays.asList(new String[]{"loc1", "loc2", "loc3"})}, new String[]{null});
+        keys = generateKeys(new Object[]{Arrays.asList("loc1", "loc2", "loc3")}, new String[]{null});
         assertKeyEquals(keys, pm.createCompilationUnitKeys());
         
         pm.removeSourceFolder(0);
@@ -194,17 +194,17 @@ public class ProjectModelTest extends NbTestCase {
     }
 
     public void testCreateCompilationUnitKeys() throws Exception {
-        List sources;
-        List units;
-        List keys;
-        List createdKeys;
+        List<JavaProjectGenerator.SourceFolder> sources;
+        List<JavaProjectGenerator.JavaCompilationUnit> units;
+        List<ProjectModel.CompilationUnitKey> keys;
+        List<ProjectModel.CompilationUnitKey> createdKeys;
         
         ProjectModel pm = createEmptyProjectModel();
         
         // case: some source folders; no comp unit
         // expected result: one key for each source folder
         sources = generateSources(new String[]{"src1", "src2", "src3"});
-        units = new ArrayList();
+        units = new ArrayList<JavaProjectGenerator.JavaCompilationUnit>();
         keys = generateKeys(new Object[]{"src1", "src2", "src3"}, new String[]{"src1", "src2", "src3"});
         pm.setSourceFolders(sources);
         pm.setJavaCompilationUnits(units);
@@ -234,8 +234,8 @@ public class ProjectModelTest extends NbTestCase {
         // case: two source folders; one comp unit for both sources
         // expected result: one key with null as location
         sources = generateSources(new String[]{"src1", "src2"});
-        units = generateUnits(new Object[]{Arrays.asList(new String[]{"src1", "src2"})});
-        keys = generateKeys(new Object[]{Arrays.asList(new String[]{"src1", "src2"})}, new String[]{null});
+        units = generateUnits(new Object[]{Arrays.asList("src1", "src2")});
+        keys = generateKeys(new Object[]{Arrays.asList("src1", "src2")}, new String[]{null});
         pm.setSourceFolders(sources);
         pm.setJavaCompilationUnits(units);
         createdKeys = pm.createCompilationUnitKeys();
@@ -252,9 +252,9 @@ public class ProjectModelTest extends NbTestCase {
         assertKeyEquals(keys, createdKeys);
         
         sources = generateSources(new String[]{"src1", "src2"});
-        units = generateUnits(new Object[]{Arrays.asList(new String[]{"src2", "src3"})});
+        units = generateUnits(new Object[]{Arrays.asList("src2", "src3")});
         // XXX: impl dependency: the result will first contain comp units and then source folders:
-        keys = generateKeys(new Object[]{Arrays.asList(new String[]{"src2", "src3"}), "src1"}, new String[]{null, "src1"});
+        keys = generateKeys(new Object[]{Arrays.asList("src2", "src3"), "src1"}, new String[]{null, "src1"});
         pm.setSourceFolders(sources);
         pm.setJavaCompilationUnits(units);
         createdKeys = pm.createCompilationUnitKeys();
@@ -296,7 +296,7 @@ public class ProjectModelTest extends NbTestCase {
         assertTrue("Missing expected package root: src2", cu.packageRoots.contains("src2"));
         assertEquals("Compilation unit has to have three classpath items", 
             "cp1"+File.pathSeparatorChar+"cp2"+File.pathSeparatorChar+"cp3", 
-            ((JavaProjectGenerator.JavaCompilationUnit.CP)cu.classpath.get(0)).classpath);
+            cu.classpath.get(0).classpath);
         assertEquals("Compilation unit has to have three output items", 3, cu.output.size());
         assertTrue("Missing expected package root: out1", cu.output.contains("out1"));
         assertTrue("Missing expected package root: out2", cu.output.contains("out2"));
@@ -313,7 +313,7 @@ public class ProjectModelTest extends NbTestCase {
         assertTrue("Missing expected package root", cu.packageRoots.contains("src1"));
         assertEquals("Compilation unit has to have three classpath items", 
             "cp1"+File.pathSeparatorChar+"cp2"+File.pathSeparatorChar+"cp3", 
-            ((JavaProjectGenerator.JavaCompilationUnit.CP)cu.classpath.get(0)).classpath);
+            cu.classpath.get(0).classpath);
         assertEquals("Compilation unit has to have three output items", 3, cu.output.size());
         assertTrue("Missing expected package root: out1", cu.output.contains("out1"));
         assertTrue("Missing expected package root: out2", cu.output.contains("out2"));
@@ -324,7 +324,7 @@ public class ProjectModelTest extends NbTestCase {
         assertTrue("Missing expected package root", cu.packageRoots.contains("src2"));
         assertEquals("Compilation unit has to have three classpath items", 
             "cp1"+File.pathSeparatorChar+"cp2"+File.pathSeparatorChar+"cp3", 
-            ((JavaProjectGenerator.JavaCompilationUnit.CP)cu.classpath.get(0)).classpath);
+            cu.classpath.get(0).classpath);
         assertEquals("Compilation unit has to have three output items", 3, cu.output.size());
         assertTrue("Missing expected package root: out1", cu.output.contains("out1"));
         assertTrue("Missing expected package root: out2", cu.output.contains("out2"));
@@ -335,9 +335,9 @@ public class ProjectModelTest extends NbTestCase {
     
     public void testUpdatePrincipalSourceFolders() throws Exception {
         ProjectModel pm = createEmptyProjectModel();
-        List l = pm.getSourceFolders();
+        List<JavaProjectGenerator.SourceFolder> l = pm.getSourceFolders();
         // base folder and proj folder are different
-        List l2 = pm.updatePrincipalSourceFolders(l, true);
+        List<JavaProjectGenerator.SourceFolder> l2 = pm.updatePrincipalSourceFolders(l, true);
         assertEquals("Principal source for base directory must be added", 1, l2.size());
         l2 = pm.updatePrincipalSourceFolders(l, false);
         assertEquals("There are no external java source folders", 0, l2.size());
@@ -368,11 +368,11 @@ public class ProjectModelTest extends NbTestCase {
         l = pm.getSourceFolders();
         l2 = pm.updatePrincipalSourceFolders(l, false);
         assertEquals("Two principal sources must be added", 4, l2.size());
-        JavaProjectGenerator.SourceFolder addedSF = (JavaProjectGenerator.SourceFolder)l2.get(2);
+        JavaProjectGenerator.SourceFolder addedSF = l2.get(2);
         assertEquals("Added principal source must have the same label", addedSF.label, sf.label);
         assertEquals("Added principal source must have the same location", addedSF.location, sf.location);
         assertNull("Added principal source must have type==null", addedSF.type);
-        addedSF = (JavaProjectGenerator.SourceFolder)l2.get(3);
+        addedSF = l2.get(3);
         assertEquals("Added principal source must have the same label", addedSF.label, sf2.label);
         assertEquals("Added principal source must have the same location", addedSF.location, sf2.location);
         assertNull("Added principal source must have type==null", addedSF.type);
@@ -393,12 +393,12 @@ public class ProjectModelTest extends NbTestCase {
         assertEquals("No principal sources added in this case because it already exist", l.size(), l2.size());
     }
     
-    private List generateSources(String[] locations) {
-        List l = new ArrayList(locations.length);
-        for (int i=0; i<locations.length; i++) {
+    private List<JavaProjectGenerator.SourceFolder> generateSources(String[] locations) {
+        List<JavaProjectGenerator.SourceFolder> l = new ArrayList<JavaProjectGenerator.SourceFolder>(locations.length);
+        for (String loc : locations) {
             JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
-            sf.location = locations[i];
-            sf.label = locations[i];
+            sf.location = loc;
+            sf.label = loc;
             sf.type = "java";
             l.add(sf);
         }
@@ -425,8 +425,8 @@ public class ProjectModelTest extends NbTestCase {
     /**
      * @param locations can be either String or List instance
      */
-    private List generateKeys(Object[] locations, String[] labels) {
-        List l = new ArrayList(locations.length);
+    private List<ProjectModel.CompilationUnitKey> generateKeys(Object[] locations, String[] labels) {
+        List<ProjectModel.CompilationUnitKey> l = new ArrayList<ProjectModel.CompilationUnitKey>(locations.length);
         for (int i=0; i<locations.length; i++) {
             ProjectModel.CompilationUnitKey key = new ProjectModel.CompilationUnitKey();
             if (locations[i] instanceof List) {
@@ -440,14 +440,14 @@ public class ProjectModelTest extends NbTestCase {
         return l;
     }
     
-    private void assertKeyEquals(List l1, List l2) throws Exception {
+    private void assertKeyEquals(List<ProjectModel.CompilationUnitKey> l1, List<ProjectModel.CompilationUnitKey> l2) throws Exception {
         String param = "Keys do not match: Expected: "+l1+" Result:"+l2; // NOI18N
         assertEquals(param,  l1, l2);
-        Iterator i1 = l1.iterator();
-        Iterator i2 = l2.iterator();
+        Iterator<ProjectModel.CompilationUnitKey> i1 = l1.iterator();
+        Iterator<ProjectModel.CompilationUnitKey> i2 = l2.iterator();
         while (i1.hasNext()) {
-            ProjectModel.CompilationUnitKey k1 = (ProjectModel.CompilationUnitKey)i1.next();
-            ProjectModel.CompilationUnitKey k2 = (ProjectModel.CompilationUnitKey)i2.next();
+            ProjectModel.CompilationUnitKey k1 = i1.next();
+            ProjectModel.CompilationUnitKey k2 = i2.next();
             assertEquals(param, k1.label, k2.label);
         }
     }
@@ -457,7 +457,7 @@ public class ProjectModelTest extends NbTestCase {
         File nbProjectFolder = new File(getWorkDir(), "nbprojfolder/");
         Map<String,String> p = new HashMap<String,String>();
         p.put("key", "value");
-        PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{PropertyUtils.fixedPropertyProvider(p)});
+        PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.fixedPropertyProvider(p));
         return ProjectModel.createEmptyModel(baseFolder, nbProjectFolder, evaluator);
     }
     

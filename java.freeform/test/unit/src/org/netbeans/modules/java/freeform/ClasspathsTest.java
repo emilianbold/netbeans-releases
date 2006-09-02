@@ -113,7 +113,7 @@ public class ClasspathsTest extends TestBase {
     public void testExecuteClasspath() throws Exception {
         ClassPath cp = ClassPath.getClassPath(myAppJava, ClassPath.EXECUTE);
         assertNotNull("have some EXECUTE classpath for src/", cp);
-        Set<String> roots = new TreeSet();
+        Set<String> roots = new TreeSet<String>();
         roots.add(urlForJar("lib/lib1.jar"));
         roots.add(urlForJar("lib/lib2.jar"));
         // #49113: includes built-to dirs as well.
@@ -148,7 +148,7 @@ public class ClasspathsTest extends TestBase {
         if (entries.size() != 1) {
             return null;
         }
-        ClassPath.Entry entry = (ClassPath.Entry)entries.get(0);
+        ClassPath.Entry entry = entries.get(0);
         String u = entry.getURL().toExternalForm();
         // Cf. DummyJavaPlatformProvider.
         Pattern p = Pattern.compile("jar:file:/c:/java/([0-9.]+)/jre/lib/rt\\.jar!/");
@@ -166,34 +166,34 @@ public class ClasspathsTest extends TestBase {
         assertEquals("no COMPILE classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.COMPILE));
         assertEquals("no EXECUTE classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.EXECUTE));
         assertEquals("no SOURCE classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.SOURCE));
-        ProjectOpenedHook hook = (ProjectOpenedHook) simple.getLookup().lookup(ProjectOpenedHook.class);
+        ProjectOpenedHook hook = simple.getLookup().lookup(ProjectOpenedHook.class);
         assertNotNull("have a ProjectOpenedHook", hook);
-        Method opened = ProjectOpenedHook.class.getDeclaredMethod("projectOpened", null);
+        Method opened = ProjectOpenedHook.class.getDeclaredMethod("projectOpened");
         opened.setAccessible(true);
-        opened.invoke(hook, null);
+        opened.invoke(hook);
         Set<ClassPath> boot = gpr.getPaths(ClassPath.BOOT);
         Set<ClassPath> compile = gpr.getPaths(ClassPath.COMPILE);
         Set<ClassPath> execute = gpr.getPaths(ClassPath.EXECUTE);
         Set<ClassPath> source = gpr.getPaths(ClassPath.SOURCE);
-        Set<ClassPath> expected = new HashSet();
+        Set<ClassPath> expected = new HashSet<ClassPath>();
         expected.add(ClassPath.getClassPath(myAppJava, ClassPath.BOOT));
         expected.add(ClassPath.getClassPath(specialTaskJava, ClassPath.BOOT));
         assertEquals("correct set of BOOT classpaths", expected, boot);
-        expected = new HashSet();
+        expected = new HashSet<ClassPath>();
         expected.add(ClassPath.getClassPath(myAppJava, ClassPath.COMPILE));
         expected.add(ClassPath.getClassPath(specialTaskJava, ClassPath.COMPILE));
         assertEquals("correct set of COMPILE classpaths", expected, compile);
-        expected = new HashSet();
+        expected = new HashSet<ClassPath>();
         expected.add(ClassPath.getClassPath(myAppJava, ClassPath.EXECUTE));
         expected.add(ClassPath.getClassPath(specialTaskJava, ClassPath.EXECUTE));
         assertEquals("correct set of EXECUTE classpaths", expected, execute);
-        expected = new HashSet();
+        expected = new HashSet<ClassPath>();
         expected.add(ClassPath.getClassPath(myAppJava, ClassPath.SOURCE));
         expected.add(ClassPath.getClassPath(specialTaskJava, ClassPath.SOURCE));
         assertEquals("correct set of SOURCE classpaths", expected, source);
-        Method closed = ProjectOpenedHook.class.getDeclaredMethod("projectClosed", null);
+        Method closed = ProjectOpenedHook.class.getDeclaredMethod("projectClosed");
         closed.setAccessible(true);
-        closed.invoke(hook, null);
+        closed.invoke(hook);
         assertEquals("again no BOOT classpaths", Collections.EMPTY_SET, gpr.getPaths(ClassPath.BOOT));
         assertEquals("again no COMPILE classpaths", Collections.EMPTY_SET, gpr.getPaths(ClassPath.COMPILE));
         assertEquals("again no EXECUTE classpaths", Collections.EMPTY_SET, gpr.getPaths(ClassPath.EXECUTE));
@@ -231,8 +231,8 @@ public class ClasspathsTest extends TestBase {
                 props.store(os);
             } finally {
                 // close file under ProjectManager.readAccess so that events are fired synchronously
-                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
-                    public Object run() throws Exception {
+                ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                    public Void run() throws Exception {
                         os.close();
                         return null;
                     }
@@ -241,7 +241,7 @@ public class ClasspathsTest extends TestBase {
         } finally {
             lock.releaseLock();
         }
-        assertEquals("ROOTS fired", new HashSet(Arrays.asList(new String[] {ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS})), l.changed);
+        assertEquals("ROOTS fired", new HashSet<String>(Arrays.asList(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS)), l.changed);
         assertEquals("have one entry in " + cp, 1, cp.entries().size());
         assertEquals("have one root in " + cp, 1, cp.getRoots().length);
         assertNotNull("found WeakSet in " + cp, cp.findResource("org/openide/util/WeakSet.class"));
@@ -267,32 +267,32 @@ public class ClasspathsTest extends TestBase {
         TestPCL antL = new TestPCL();
         cpAnt.addPropertyChangeListener(antL);
         
-        ProjectOpenedHook hook = (ProjectOpenedHook) simple2.getLookup().lookup(ProjectOpenedHook.class);
+        ProjectOpenedHook hook = simple2.getLookup().lookup(ProjectOpenedHook.class);
         assertNotNull("have a ProjectOpenedHook", hook);
         GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
         assertEquals("no COMPILE classpaths yet", Collections.EMPTY_SET, gpr.getPaths(ClassPath.COMPILE));
-        Method opened = ProjectOpenedHook.class.getDeclaredMethod("projectOpened", null);
+        Method opened = ProjectOpenedHook.class.getDeclaredMethod("projectOpened");
         opened.setAccessible(true);
-        opened.invoke(hook, null);
+        opened.invoke(hook);
         Set<ClassPath> compile = gpr.getPaths(ClassPath.COMPILE);
-        Set<ClassPath> expected = new HashSet();
+        Set<ClassPath> expected = new HashSet<ClassPath>();
         expected.add(cpSrc);
         expected.add(cpAnt);
         assertEquals("correct set of COMPILE classpaths", expected, compile);
         
         AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(helper2);
-        List units = JavaProjectGenerator.getJavaCompilationUnits(helper2, aux);
+        List<JavaProjectGenerator.JavaCompilationUnit> units = JavaProjectGenerator.getJavaCompilationUnits(helper2, aux);
         assertEquals("two compilation units", 2, units.size());
         JavaProjectGenerator.JavaCompilationUnit cu = new JavaProjectGenerator.JavaCompilationUnit();
-        cu.packageRoots = new ArrayList();
+        cu.packageRoots = new ArrayList<String>();
         cu.packageRoots.add("${src.dir}");
         cu.packageRoots.add("${ant.src.dir}");
-        cu.classpath = new ArrayList();
+        cu.classpath = new ArrayList<JavaProjectGenerator.JavaCompilationUnit.CP>();
         JavaProjectGenerator.JavaCompilationUnit.CP cucp = new JavaProjectGenerator.JavaCompilationUnit.CP();
         cucp.mode = "compile";
         cucp.classpath = "${src.cp}:${ant.src.cp}";
         cu.classpath.add(cucp);
-        List newUnits = new ArrayList();
+        List<JavaProjectGenerator.JavaCompilationUnit> newUnits = new ArrayList<JavaProjectGenerator.JavaCompilationUnit>();
         newUnits.add(cu);
         JavaProjectGenerator.putJavaCompilationUnits(helper2, aux, newUnits);
 
@@ -306,13 +306,13 @@ public class ClasspathsTest extends TestBase {
         assertEquals("original classpath is empty now", 0, cpAnt.entries().size());
         assertEquals("classpath for src/ and antsrc/ are the same. " + cpAnt2 + " "+cpSrc2, cpAnt2, cpSrc2);
         
-        assertEquals("ROOTS fired", new HashSet(Arrays.asList(new String[] {ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS})), srcL.changed);
+        assertEquals("ROOTS fired", new HashSet<String>(Arrays.asList(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS)), srcL.changed);
         srcL.reset();
-        assertEquals("ROOTS fired", new HashSet(Arrays.asList(new String[] {ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS})), antL.changed);
+        assertEquals("ROOTS fired", new HashSet<String>(Arrays.asList(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS)), antL.changed);
         antL.reset();
         
         compile = gpr.getPaths(ClassPath.COMPILE);
-        expected = new HashSet();
+        expected = new HashSet<ClassPath>();
         expected.add(cpSrc);
         expected.add(cpAnt);
         expected.add(cpAnt2);
@@ -341,9 +341,9 @@ public class ClasspathsTest extends TestBase {
         
         compile = gpr.getPaths(ClassPath.COMPILE);
         assertEquals("all three classpaths still there", expected, compile);
-        Method closed = ProjectOpenedHook.class.getDeclaredMethod("projectClosed", null);
+        Method closed = ProjectOpenedHook.class.getDeclaredMethod("projectClosed");
         closed.setAccessible(true);
-        closed.invoke(hook, null);
+        closed.invoke(hook);
         compile = gpr.getPaths(ClassPath.COMPILE);
         expected = new HashSet();
         assertEquals("correct set of COMPILE classpaths", expected, compile);
@@ -362,11 +362,11 @@ public class ClasspathsTest extends TestBase {
 
         Thread t = new Thread() {
             public void run() {
-                ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                    public Object run() {
+                ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                    public Void run() {
                         AntProjectHelper helper = simple.helper();
                         Element el = helper.getPrimaryConfigurationData(true);
-                        AuxiliaryConfiguration c = (AuxiliaryConfiguration) simple.getLookup().lookup(AuxiliaryConfiguration.class);
+                        AuxiliaryConfiguration c = simple.getLookup().lookup(AuxiliaryConfiguration.class);
                         
                         l.countDown();
                         try {
@@ -400,10 +400,9 @@ public class ClasspathsTest extends TestBase {
         }
     }
     private Set<String> urlsOfCp(ClassPath cp) {
-        Set<String> s = new TreeSet();
-        Iterator it = cp.entries().iterator();
-        while (it.hasNext()) {
-            s.add(((ClassPath.Entry) it.next()).getURL().toExternalForm());
+        Set<String> s = new TreeSet<String>();
+        for (ClassPath.Entry entry : cp.entries()) {
+            s.add(entry.getURL().toExternalForm());
         }
         return s;
     }
