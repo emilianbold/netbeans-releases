@@ -68,7 +68,7 @@ public class JavaActionsTest extends TestBase {
         Element data = prj.helper().getPrimaryConfigurationData(true);
         Element ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull(ideActions);
-        Iterator/*<Element>*/ actionsIt = Util.findSubElements(ideActions).iterator();
+        Iterator<Element> actionsIt = Util.findSubElements(ideActions).iterator();
         while (actionsIt.hasNext()) {
             Element action = (Element) actionsIt.next();
             assertEquals("action", action.getLocalName());
@@ -181,7 +181,7 @@ public class JavaActionsTest extends TestBase {
         assertNotNull(data);
         Element ideActions = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL);
         assertNotNull(ideActions);
-        List/*<Element>*/ actions = Util.findSubElements(ideActions);
+        List<Element> actions = Util.findSubElements(ideActions);
         Element lastAction = (Element) actions.get(actions.size() - 1);
         String expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -237,7 +237,7 @@ public class JavaActionsTest extends TestBase {
         Element contextMenu = Util.findElement(view, "context-menu", FreeformProjectType.NS_GENERAL);
         assertNotNull(contextMenu);
         // Currently (no FPG to help) it is always added as the last item.
-        List/*<Element>*/ contextMenuActions = Util.findSubElements(contextMenu);
+        List<Element> contextMenuActions = Util.findSubElements(contextMenu);
         Element lastContextMenuAction = (Element) contextMenuActions.get(contextMenuActions.size() - 1);
         expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

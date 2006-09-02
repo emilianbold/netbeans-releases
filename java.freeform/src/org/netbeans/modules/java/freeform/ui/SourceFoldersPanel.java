@@ -24,9 +24,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
@@ -616,7 +614,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         chooser.setMultiSelectionEnabled(true);
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File files[] = chooser.getSelectedFiles();
-            Set invalidRoots = processRoots(model, files, isTests, isWizard);
+            Set<File> invalidRoots = processRoots(model, files, isTests, isWizard);
             if (isTests) {
                 testFoldersModel.fireTableDataChanged();
             } else {
@@ -632,20 +630,19 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         }
     }
     
-    /*package private for tests*/static Set processRoots(ProjectModel model, File[] files, boolean isTests, boolean isWizard) {
-        Set/*<File>*/ invalidRoots = new HashSet ();
+    /*package private for tests*/static Set<File> processRoots(ProjectModel model, File[] files, boolean isTests, boolean isWizard) {
+        Set<File> invalidRoots = new HashSet<File>();
         
-        for (int i=0; i<files.length; i++) {
-            File sourceLoc = FileUtil.normalizeFile(files[i]);
+        for (File file : files) {
+            File sourceLoc = FileUtil.normalizeFile(file);
             String location = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), sourceLoc);
             Project p, thisProject = isWizard ? null : FileOwnerQuery.getOwner(model.getNBProjectFolder().toURI());
             if ((p = FileOwnerQuery.getOwner(sourceLoc.toURI())) != null && (thisProject == null || !thisProject.equals(p)) && !isParentOf(model.getNBProjectFolder(), sourceLoc) && !isParentOf(model.getBaseFolder(), sourceLoc)) {
                 invalidRoots.add(sourceLoc);
             } else {
-                List/*JavaProjectGenerator.SourceFolder*/ sourceFolders = model.getSourceFolders();
+                List<JavaProjectGenerator.SourceFolder> sourceFolders = model.getSourceFolders();
                 boolean nextRoot = false;
-                for (Iterator it = sourceFolders.iterator(); it.hasNext();) {
-                    JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder) it.next();
+                for (JavaProjectGenerator.SourceFolder sf : sourceFolders) {
                     if (location.equals(sf.location)) {
                         if ((isTests && !model.isTestSourceFolder(sf))
                         ||  (!isTests && model.isTestSourceFolder(sf))) {
@@ -678,7 +675,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         return child != null && child.equals(parent);
     }
     
-    private void showInvalidRootsWarning (Set/*<File>*/ invalidRoots) {
+    private void showInvalidRootsWarning (Set<File> invalidRoots) {
         JButton closeOption = new JButton (NbBundle.getMessage(SourceFoldersPanel.class,"CTL_SourceFolderPanel_Close"));
         closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(SourceFoldersPanel.class,"AD_SourceFolderPanel_Close"));        
         JPanel warning = new WarningDlg (invalidRoots);                
@@ -735,13 +732,13 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
     }
     
     private JavaProjectGenerator.SourceFolder getItem(int index, boolean tests) {
-        return (JavaProjectGenerator.SourceFolder)model.getSourceFolder(calcRealSourceIndex(index, tests));
+        return model.getSourceFolder(calcRealSourceIndex(index, tests));
     }
 
     private int calcRealSourceIndex(int index, boolean tests) {
         int realIndex = 0;
         for (int i=0; i<model.getSourceFoldersCount(); i++) {
-            JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)model.getSourceFolder(i);
+            JavaProjectGenerator.SourceFolder sf = model.getSourceFolder(i);
             boolean isTest = model.isTestSourceFolder(sf);
             if (tests && !isTest) {
                 continue;
@@ -880,7 +877,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
                 return 0;
             int count = 0;
             for (int i=0; i<model.getSourceFoldersCount(); i++) {
-                JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)model.getSourceFolder(i);
+                JavaProjectGenerator.SourceFolder sf = model.getSourceFolder(i);
                 boolean isTest = model.isTestSourceFolder(sf);
                 if (tests && isTest) {
                     count++;
@@ -1002,9 +999,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
                     if (p!=null) {
                         ProjectInformation pi = ProjectUtils.getInformation(p);
                         String projectName = pi.getDisplayName();
-                        message = MessageFormat.format (NbBundle.getMessage(SourceFoldersPanel.class,"TXT_RootOwnedByProject"), new Object[] {
-                            message,
-                            projectName});
+                        message = NbBundle.getMessage(SourceFoldersPanel.class,"TXT_RootOwnedByProject", message, projectName);
                     }
                 }
                 return super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);

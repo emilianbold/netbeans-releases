@@ -22,6 +22,8 @@ package org.netbeans.modules.java.freeform.ui;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -60,27 +62,27 @@ public class ProjectModel  {
     private String sourceLevel;
     
     /** List of JavaProjectGenerator.SourceFolders instances of type "java". */
-    private List/*<JavaProjectGenerator.SourceFolder>*/ sourceFolders;
+    private List<JavaProjectGenerator.SourceFolder> sourceFolders;
     
-    /** List of <JavaProjectGenerator.JavaCompilationUnit> */
-    public List/*<JavaProjectGenerator.JavaCompilationUnit>*/ javaCompilationUnitsList;
+    public List<JavaProjectGenerator.JavaCompilationUnit> javaCompilationUnitsList;
 
-    private Set/*<String>*/ addedSourceFolders;
-    private Set/*<String>*/ removedSourceFolders;
+    private Set<String> addedSourceFolders;
+    private Set<String> removedSourceFolders;
     
     public static final String TYPE_JAVA = "java"; // NOI18N
     public static final String CLASSPATH_MODE_COMPILE = "compile"; // NOI18N
     //Upper bound of sourse level supported by the java freeform project
     private static final SpecificationVersion JDK_MAX_SUPPORTED_VERSION = new SpecificationVersion ("1.5"); //NOI18N
     
-    private ProjectModel(File baseFolder, File nbProjectFolder, PropertyEvaluator evaluator, List sourceFolders, List compUnits) {
+    private ProjectModel(File baseFolder, File nbProjectFolder, PropertyEvaluator evaluator,
+            List<JavaProjectGenerator.SourceFolder> sourceFolders, List<JavaProjectGenerator.JavaCompilationUnit> compUnits) {
         this.baseFolder = baseFolder;
         this.nbProjectFolder = nbProjectFolder;
         this.evaluator = evaluator;
         this.sourceFolders = sourceFolders;
         this.javaCompilationUnitsList = compUnits;
         if (javaCompilationUnitsList.size() > 0) {
-            sourceLevel = ((JavaProjectGenerator.JavaCompilationUnit)javaCompilationUnitsList.get(0)).sourceLevel;
+            sourceLevel = javaCompilationUnitsList.get(0).sourceLevel;
         }
         if (sourceLevel == null) {
             setSourceLevel(getDefaultSourceLevel());
@@ -88,7 +90,7 @@ public class ProjectModel  {
         resetState();
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -105,30 +107,32 @@ public class ProjectModel  {
      * Notifies only about change in source folders and compilation units.
      */
     protected final void fireChangeEvent() {
-        Iterator it;
+        Collection<ChangeListener> ls;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            ls = new HashSet<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
     
     private void resetState() {
-        addedSourceFolders = new HashSet();
-        removedSourceFolders = new HashSet();
+        addedSourceFolders = new HashSet<String>();
+        removedSourceFolders = new HashSet<String>();
     }
 
     /** Create empty project model. Useful for new project creation. */
     public static ProjectModel createEmptyModel(File baseFolder, File nbProjectFolder, PropertyEvaluator evaluator) {
-        return new ProjectModel(baseFolder, nbProjectFolder, evaluator, new ArrayList(), new ArrayList());
+        return new ProjectModel(baseFolder, nbProjectFolder, evaluator,
+                new ArrayList<JavaProjectGenerator.SourceFolder>(),
+                new ArrayList<JavaProjectGenerator.JavaCompilationUnit>());
     }
 
     /** Create project model of existing project. Useful for project customization. */
     public static ProjectModel createModel(final File baseFolder, final File nbProjectFolder, final PropertyEvaluator evaluator, final AntProjectHelper helper) {
-        return (ProjectModel) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<ProjectModel>() {
+            public ProjectModel run() {
                 ProjectModel pm = new ProjectModel(
                         baseFolder, 
                         nbProjectFolder, 
@@ -147,7 +151,7 @@ public class ProjectModel  {
 
     /** Instantiate project model as new Java project. */
     public static void instantiateJavaProject(AntProjectHelper helper, ProjectModel model) throws IOException {
-        List sourceFolders = model.updatePrincipalSourceFolders(model.sourceFolders, true);
+        List<JavaProjectGenerator.SourceFolder> sourceFolders = model.updatePrincipalSourceFolders(model.sourceFolders, true);
 
         if (sourceFolders.size() > 0) {
             JavaProjectGenerator.putSourceFolders(helper, sourceFolders, null);
@@ -156,11 +160,12 @@ public class ProjectModel  {
             JavaProjectGenerator.putSourceViews(helper, sourceFolders, null);
         }
         JavaProjectGenerator.putJavaCompilationUnits(helper, Util.getAuxiliaryConfiguration(helper), model.javaCompilationUnitsList);        
-        List exports = JavaProjectGenerator.guessExports(model.evaluator, model.baseFolder, JavaProjectGenerator.getTargetMappings(helper), model.javaCompilationUnitsList);
+        List<JavaProjectGenerator.Export> exports = JavaProjectGenerator.guessExports(
+                model.evaluator, model.baseFolder, JavaProjectGenerator.getTargetMappings(helper), model.javaCompilationUnitsList);
         if (exports.size() > 0) {
             JavaProjectGenerator.putExports(helper, exports);
         }
-        List subprojects = JavaProjectGenerator.guessSubprojects(model.evaluator, model.javaCompilationUnitsList, model.baseFolder, model.nbProjectFolder);
+        List<String> subprojects = JavaProjectGenerator.guessSubprojects(model.evaluator, model.javaCompilationUnitsList, model.baseFolder, model.nbProjectFolder);
         if (subprojects.size() > 0) {
             JavaProjectGenerator.putSubprojects(helper, subprojects);
         }
@@ -170,13 +175,13 @@ public class ProjectModel  {
     
     /** Persist modifications of project. */
     public static void saveProject(final AntProjectHelper helper, final ProjectModel model) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 // stores only "java" type because other types was not read
                 JavaProjectGenerator.putSourceFolders(helper, model.sourceFolders, TYPE_JAVA);
                 JavaProjectGenerator.putSourceViews(helper, model.sourceFolders, JavaProjectNature.STYLE_PACKAGES);
 
-                List sourceFolders = JavaProjectGenerator.getSourceFolders(helper, null);
+                List<JavaProjectGenerator.SourceFolder> sourceFolders = JavaProjectGenerator.getSourceFolders(helper, null);
                 sourceFolders = model.updatePrincipalSourceFolders(sourceFolders, false);
                 JavaProjectGenerator.putSourceFolders(helper, sourceFolders, null);
 
@@ -184,15 +189,15 @@ public class ProjectModel  {
                 JavaProjectGenerator.putJavaCompilationUnits(helper, aux, model.javaCompilationUnitsList);
                 model.resetState();
 
-                List exports = JavaProjectGenerator.guessExports(model.getEvaluator(), model.baseFolder,
+                List<JavaProjectGenerator.Export> exports = JavaProjectGenerator.guessExports(model.getEvaluator(), model.baseFolder,
                     JavaProjectGenerator.getTargetMappings(helper), model.javaCompilationUnitsList);
                 JavaProjectGenerator.putExports(helper, exports);
 
-                List/*<String>*/ subprojects = JavaProjectGenerator.guessSubprojects(model.getEvaluator(), 
+                List<String> subprojects = JavaProjectGenerator.guessSubprojects(model.getEvaluator(), 
                     model.javaCompilationUnitsList, model.baseFolder, model.nbProjectFolder);
                 JavaProjectGenerator.putSubprojects(helper, subprojects);
                 
-                List/*<String>*/ buildFolders = JavaProjectGenerator.guessBuildFolders(model.getEvaluator(), 
+                List<String> buildFolders = JavaProjectGenerator.guessBuildFolders(model.getEvaluator(), 
                     model.javaCompilationUnitsList, model.baseFolder, model.nbProjectFolder);
                 JavaProjectGenerator.putBuildFolders(helper, buildFolders);
                 
@@ -217,12 +222,10 @@ public class ProjectModel  {
      * and added as principal source folder if needed or not
      * @return copy of allSourceFolders items plus added principal source folders
      */
-    /*private*/ List/*<JavaProjectGenerator.SourceFolder>*/ updatePrincipalSourceFolders(
-            List/*<JavaProjectGenerator.SourceFolder>*/ allSourceFolders, boolean checkProjectDir) {
-        List allSF = new ArrayList(allSourceFolders);
-        Iterator it = addedSourceFolders.iterator();
-        while (it.hasNext()) {
-            String location = (String)it.next();
+    /*private*/ List<JavaProjectGenerator.SourceFolder> updatePrincipalSourceFolders(
+            List<JavaProjectGenerator.SourceFolder> allSourceFolders, boolean checkProjectDir) {
+        List<JavaProjectGenerator.SourceFolder> allSF = new ArrayList<JavaProjectGenerator.SourceFolder>(allSourceFolders);
+        for (String location : addedSourceFolders) {
             
             if (!isExternalSourceRoot(location)) {
                 continue;
@@ -230,9 +233,7 @@ public class ProjectModel  {
             
             boolean exist = false;
             String label = ""; // NOI18N
-            Iterator it2 = allSF.iterator();
-            while (it2.hasNext()) {
-                JavaProjectGenerator.SourceFolder _sf = (JavaProjectGenerator.SourceFolder)it2.next();
+            for (JavaProjectGenerator.SourceFolder _sf : allSF) {
                 if (_sf.location.equals(location) && _sf.type == null) {
                     exist = true;
                     break;
@@ -250,20 +251,18 @@ public class ProjectModel  {
                 allSF.add(_sf);
             }
         }
-        
-        it = removedSourceFolders.iterator();
-        while (it.hasNext()) {
-            String location = (String)it.next();
+
+        for (String location : removedSourceFolders) {
             
             if (!isExternalSourceRoot(location)) {
                 continue;
             }
             
-            Iterator it2 = allSF.iterator();
-            while (it2.hasNext()) {
-                JavaProjectGenerator.SourceFolder _sf = (JavaProjectGenerator.SourceFolder)it2.next();
+            Iterator<JavaProjectGenerator.SourceFolder> it = allSF.iterator();
+            while (it.hasNext()) {
+                JavaProjectGenerator.SourceFolder _sf = it.next();
                 if (_sf.location.equals(location) && _sf.type == null) {
-                    it2.remove();
+                    it.remove();
                 }
             }
         }
@@ -316,21 +315,21 @@ public class ProjectModel  {
     }
     
     public JavaProjectGenerator.SourceFolder getSourceFolder(int index) {
-        return (JavaProjectGenerator.SourceFolder)sourceFolders.get(index);
+        return sourceFolders.get(index);
     }
     
     public void moveSourceFolder(int fromIndex, int toIndex) {
-        JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)sourceFolders.remove(fromIndex);
+        JavaProjectGenerator.SourceFolder sf = sourceFolders.remove(fromIndex);
         sourceFolders.add(toIndex, sf);
     }
     
     public void addSourceFolder(JavaProjectGenerator.SourceFolder sf, boolean isTests) {
-        List keys = createCompilationUnitKeys();
+        List<CompilationUnitKey> keys = createCompilationUnitKeys();
         boolean singleCU = isSingleCompilationUnit(keys);
         if (singleCU) {
             // Check that source being added is part of the compilation unit.
             // If it is not then switch to multiple compilation unit mode.
-            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)javaCompilationUnitsList.get(0);
+            JavaProjectGenerator.JavaCompilationUnit cu = javaCompilationUnitsList.get(0);
             if (cu.isTests != isTests) {
                 updateCompilationUnits(true);
                 singleCU = false;
@@ -340,14 +339,12 @@ public class ProjectModel  {
         if (singleCU) {
             if (TYPE_JAVA.equals(sf.type)) {
                 // update existing single compilation unit
-                JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)javaCompilationUnitsList.get(0);
+                JavaProjectGenerator.JavaCompilationUnit cu = javaCompilationUnitsList.get(0);
                 cu.packageRoots.add(sf.location);
             }
         } else {
             // make sure new compilation unit is created for the source folder
-            Iterator it = createCompilationUnitKeys().iterator();
-            while (it.hasNext()) {
-                CompilationUnitKey key = (CompilationUnitKey)it.next();
+            for (CompilationUnitKey key : createCompilationUnitKeys()) {
                 getCompilationUnit(key, isTests);
             }
         }
@@ -361,7 +358,7 @@ public class ProjectModel  {
     }
 
     public void removeSourceFolder(int index) {
-        JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)sourceFolders.get(index);
+        JavaProjectGenerator.SourceFolder sf = sourceFolders.get(index);
         if (TYPE_JAVA.equals(sf.type)) {
             removeSourceLocation(sf.location);
         }
@@ -391,9 +388,7 @@ public class ProjectModel  {
             return;
         }
         this.sourceLevel = sourceLevel;
-        Iterator it = javaCompilationUnitsList.iterator();
-        while (it.hasNext()) {
-            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
+        for (JavaProjectGenerator.JavaCompilationUnit cu : javaCompilationUnitsList) {
             cu.sourceLevel = sourceLevel;
         }
     }
@@ -409,9 +404,7 @@ public class ProjectModel  {
         // single compilation unit for them:
         boolean testCU = false;
         boolean sourceCU = false;
-        Iterator it = javaCompilationUnitsList.iterator();
-        while (it.hasNext()) {
-            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
+        for (JavaProjectGenerator.JavaCompilationUnit cu : javaCompilationUnitsList) {
             if (cu.isTests) {
                 testCU = true;
             } else {
@@ -421,54 +414,47 @@ public class ProjectModel  {
         return !(testCU && sourceCU);
     }
 
-    public static boolean isSingleCompilationUnit(List/*<ProjectModel.CompilationUnitKey>*/ compilationUnitKeys) {
-        return compilationUnitKeys.size() == 1 &&
-            ((ProjectModel.CompilationUnitKey)compilationUnitKeys.get(0)).label == null;
+    public static boolean isSingleCompilationUnit(List<ProjectModel.CompilationUnitKey> compilationUnitKeys) {
+        return compilationUnitKeys.size() == 1 && compilationUnitKeys.get(0).label == null;
     }
 
     /**
-     * This methos checks Java source foldes and compilation units and returns 
+     * This method checks Java source folders and compilation units and returns
      * list of CompilationUnitKey which represent them. The problem solved by
      * this method is that although usually there is 1:1 mapping between
-     * source folders and copilation units, there can be also N:1 mapping when
+     * source folders and compilation units, there can be also N:1 mapping when
      * one classpath is used for all source folders. Also user's customization
      * of project.xml can result in other combinations and they cannot be
      * clobbered by opening such a project in UI.
      */
-    public List/*<CompilationUnitKey>*/ createCompilationUnitKeys() {
+    public List<CompilationUnitKey> createCompilationUnitKeys() {
         // XXX: cache result of this method?
-        ArrayList l = new ArrayList();
-        Iterator it = javaCompilationUnitsList.iterator();
-        while (it.hasNext()) {
-            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
+        List<CompilationUnitKey> l = new ArrayList<CompilationUnitKey>();
+        for (JavaProjectGenerator.JavaCompilationUnit cu : javaCompilationUnitsList) {
             CompilationUnitKey cul = new CompilationUnitKey();
             cul.locations = cu.packageRoots;
             cul.label = null;
             l.add(cul);
         }
-        it = sourceFolders.iterator();
-        while (it.hasNext()) {
-            JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)it.next();
+        for (JavaProjectGenerator.SourceFolder sf : sourceFolders) {
             if (!TYPE_JAVA.equals(sf.type)) {
                 continue;
             }
             CompilationUnitKey cul = new CompilationUnitKey();
-            cul.locations = new ArrayList();
+            cul.locations = new ArrayList<String>();
             cul.locations.add(sf.location);
             cul.label = sf.label;
             // try to find corresponding JavaCompilationUnit
             int index = l.indexOf(cul);
             if (index != -1) {
                 // use this key intead because it has label
-                CompilationUnitKey cul_ = (CompilationUnitKey)l.get(index);
+                CompilationUnitKey cul_ = l.get(index);
                 cul_.label = sf.label;
                 continue;
             }
             // check whether this SourceFolder.location is not part of an existing JavaCompilationUnit
             boolean found = false;
-            Iterator it2 = javaCompilationUnitsList.iterator();
-            while (it2.hasNext()) {
-                JavaProjectGenerator.JavaCompilationUnit cu_ = (JavaProjectGenerator.JavaCompilationUnit)it2.next();
+            for (JavaProjectGenerator.JavaCompilationUnit cu_ : javaCompilationUnitsList) {
                 if (cu_.packageRoots.contains(sf.location)) {
                     // found: skip it
                     found = true;
@@ -495,40 +481,36 @@ public class ProjectModel  {
             // This means that there was one compilation unit for all sources.
             // So create compilation unit per source folder.
             String classpath = null;
-            List output = null;
+            List<String> output = null;
             // Copy classpath and output from the first compilation unit
             // to all compilation units - should be easier to customize for user.
             if (javaCompilationUnitsList.size() > 0) {
-                List classpaths = ((JavaProjectGenerator.JavaCompilationUnit)javaCompilationUnitsList.get(0)).classpath;
+                List<JavaProjectGenerator.JavaCompilationUnit.CP> classpaths = javaCompilationUnitsList.get(0).classpath;
                 if (classpaths != null) {
                     // find first "compile" mode classpath and use it
-                    Iterator it = classpaths.iterator();
-                    while (it.hasNext()) {
-                        JavaProjectGenerator.JavaCompilationUnit.CP cp = (JavaProjectGenerator.JavaCompilationUnit.CP)it.next();
+                    for (JavaProjectGenerator.JavaCompilationUnit.CP cp : classpaths) {
                         if (cp.mode.equals(CLASSPATH_MODE_COMPILE)) {
                             classpath = cp.classpath;
                             break;
                         }
                     }
                 }
-                output = ((JavaProjectGenerator.JavaCompilationUnit)javaCompilationUnitsList.get(0)).output;
+                output = javaCompilationUnitsList.get(0).output;
             }
             javaCompilationUnitsList.clear();
-            Iterator it = sourceFolders.iterator();
-            while (it.hasNext()) {
-                JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)it.next();
+            for (JavaProjectGenerator.SourceFolder sf : sourceFolders) {
                 JavaProjectGenerator.JavaCompilationUnit cu = new JavaProjectGenerator.JavaCompilationUnit();
-                cu.packageRoots = new ArrayList();
+                cu.packageRoots = new ArrayList<String>();
                 cu.packageRoots.add(sf.location);
                 if (classpath != null) {
                     JavaProjectGenerator.JavaCompilationUnit.CP cp = new JavaProjectGenerator.JavaCompilationUnit.CP();
                     cp.mode = CLASSPATH_MODE_COMPILE;
                     cp.classpath = classpath;
-                    cu.classpath = new ArrayList();
+                    cu.classpath = new ArrayList<JavaProjectGenerator.JavaCompilationUnit.CP>();
                     cu.classpath.add(cp);
                 }
                 if (output != null) {
-                    cu.output = new ArrayList();
+                    cu.output = new ArrayList<String>();
                     cu.output.addAll(output);
                 }
                 cu.sourceLevel = sourceLevel;
@@ -537,31 +519,22 @@ public class ProjectModel  {
         } else {
             // This means that there are some compilation units which should be
             // merged into one which will be used for all sources.
-            List packageRoots = new ArrayList();
+            List<String> packageRoots = new ArrayList<String>();
             // First list of source roots
-            Iterator it = sourceFolders.iterator();
-            while (it.hasNext()) {
-                JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)it.next();
+            for (JavaProjectGenerator.SourceFolder sf : sourceFolders) {
                 packageRoots.add(sf.location);
             }
             // Now try to merge all classpaths and outputs. Might be easier to customize
-            Set classpath = new LinkedHashSet();
-            Set output = new LinkedHashSet();
-            it = javaCompilationUnitsList.iterator();
-            while (it.hasNext()) {
-                JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
+            Set<String> classpath = new LinkedHashSet<String>();
+            Set<String> output = new LinkedHashSet<String>();
+            for (JavaProjectGenerator.JavaCompilationUnit cu : javaCompilationUnitsList) {
                 if (cu.output != null) {
                     output.addAll(cu.output);
                 }
                 if (cu.classpath != null) {
-                    Iterator it2 = cu.classpath.iterator();
-                    while (it2.hasNext()) {
-                        JavaProjectGenerator.JavaCompilationUnit.CP cp = (JavaProjectGenerator.JavaCompilationUnit.CP)it2.next();
+                    for (JavaProjectGenerator.JavaCompilationUnit.CP cp : cu.classpath) {
                         if (cp.mode.equals(CLASSPATH_MODE_COMPILE)) {
-                            String[] cpa = PropertyUtils.tokenizePath(cp.classpath);
-                            for (int i=0; i<cpa.length; i++) {
-                                classpath.add(cpa[i]);
-                            }
+                            classpath.addAll(Arrays.asList(PropertyUtils.tokenizePath(cp.classpath)));
                         }
                     }
                 }
@@ -572,20 +545,19 @@ public class ProjectModel  {
             JavaProjectGenerator.JavaCompilationUnit.CP cp = new JavaProjectGenerator.JavaCompilationUnit.CP();
             if (classpath.size() > 0) {
                 StringBuffer cp_ = new StringBuffer();
-                it = classpath.iterator();
+                Iterator<String> it = classpath.iterator();
                 while (it.hasNext()) {
-                    String item = (String)it.next();
-                    cp_.append(item);
+                    cp_.append(it.next());
                     if (it.hasNext()) {
                         cp_.append(File.pathSeparatorChar);
                     }
                 }
                 cp.classpath = cp_.toString();
                 cp.mode = CLASSPATH_MODE_COMPILE;
-                cu.classpath = new ArrayList();
+                cu.classpath = new ArrayList<JavaProjectGenerator.JavaCompilationUnit.CP>();
                 cu.classpath.add(cp);
             }
-            cu.output = new ArrayList(output);
+            cu.output = new ArrayList<String>(output);
             cu.sourceLevel = sourceLevel;
             javaCompilationUnitsList.add(cu);
         }
@@ -597,9 +569,7 @@ public class ProjectModel  {
      * The isTests is used only to initialize newly created compilation unit.
      */
     public JavaProjectGenerator.JavaCompilationUnit getCompilationUnit(CompilationUnitKey key, boolean isTests) {
-        Iterator it = javaCompilationUnitsList.iterator();
-        while (it.hasNext()) {
-            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
+        for (JavaProjectGenerator.JavaCompilationUnit cu : javaCompilationUnitsList) {
             if (cu.packageRoots.equals(key.locations)) {
                 return cu;
             }
@@ -613,9 +583,9 @@ public class ProjectModel  {
     }
 
     private void removeSourceLocation(String location) {
-        Iterator it = javaCompilationUnitsList.iterator();
+        Iterator<JavaProjectGenerator.JavaCompilationUnit> it = javaCompilationUnitsList.iterator();
         while (it.hasNext()) {
-            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
+            JavaProjectGenerator.JavaCompilationUnit cu = it.next();
             if (cu.packageRoots.contains(location)) {
                 cu.packageRoots.remove(location);
             }
@@ -626,32 +596,30 @@ public class ProjectModel  {
     }
 
     /** Update style of loaded source folders of type "java" to packages. */
-    private static void updateStyle(List/*<JavaProjectGenerator.SourceFolder>*/ sources) {
-        Iterator it = sources.iterator();
-        while (it.hasNext()) {
-            JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder)it.next();
+    private static void updateStyle(List<JavaProjectGenerator.SourceFolder> sources) {
+        for (JavaProjectGenerator.SourceFolder sf : sources) {
             assert sf.type.equals(TYPE_JAVA);
             sf.style = JavaProjectNature.STYLE_PACKAGES;
         }
     }
     
     // only for unit testing
-    void setSourceFolders(List list) {
+    void setSourceFolders(List<JavaProjectGenerator.SourceFolder> list) {
         sourceFolders = list;
     }
     
     // only for unit testing
-    List getSourceFolders() {
+    List<JavaProjectGenerator.SourceFolder> getSourceFolders() {
         return sourceFolders;
     }
     
     // only for unit testing
-    void setJavaCompilationUnits(List list) {
+    void setJavaCompilationUnits(List<JavaProjectGenerator.JavaCompilationUnit> list) {
         javaCompilationUnitsList = list;
     }
     
     // only for unit testing
-    List getJavaCompilationUnits() {
+    List<JavaProjectGenerator.JavaCompilationUnit> getJavaCompilationUnits() {
         return javaCompilationUnitsList;
     }
     
@@ -673,9 +641,7 @@ public class ProjectModel  {
     }
     
     public boolean isTestSourceFolder(JavaProjectGenerator.SourceFolder sf) {
-        Iterator it = javaCompilationUnitsList.iterator();
-        while (it.hasNext()) {
-            JavaProjectGenerator.JavaCompilationUnit cu = (JavaProjectGenerator.JavaCompilationUnit)it.next();
+        for (JavaProjectGenerator.JavaCompilationUnit cu : javaCompilationUnitsList) {
             if (cu.packageRoots.contains(sf.location)) {
                 return cu.isTests;
             }
@@ -684,7 +650,7 @@ public class ProjectModel  {
     }
     
     public static class CompilationUnitKey {
-        public List locations;
+        public List<String> locations;
         public String label;
         
         public boolean equals(Object o) {
@@ -706,6 +672,5 @@ public class ProjectModel  {
             return "PM.CUK:[label="+label+", locations="+locations+", this="+super.toString()+"]"; // NOI18N
         }
     }
-    
     
 }

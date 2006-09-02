@@ -54,14 +54,10 @@ final class JavadocQuery implements JavadocForBinaryQueryImplementation {
     public JavadocForBinaryQuery.Result findJavadoc(URL binaryRoot) {
         Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
         if (data != null) {
-            Iterator/*<Element>*/ cus = Util.findSubElements(data).iterator();
-            while (cus.hasNext()) {
-                Element cu = (Element) cus.next();
+            for (Element cu : Util.findSubElements(data)) {
                 assert cu.getLocalName().equals("compilation-unit") : cu;
                 boolean rightCU = false;
-                Iterator/*<Element>*/ builtTos = Util.findSubElements(cu).iterator();
-                while (builtTos.hasNext()) {
-                    Element builtTo = (Element) builtTos.next();
+                for (Element builtTo : Util.findSubElements(cu)) {
                     if (builtTo.getLocalName().equals("built-to")) { // NOI18N
                         String rawtext = Util.findText(builtTo);
                         assert rawtext != null;
@@ -75,10 +71,8 @@ final class JavadocQuery implements JavadocForBinaryQueryImplementation {
                     }
                 }
                 if (rightCU) {
-                    List/*<URL>*/ resultURLs = new ArrayList();
-                    Iterator/*<Element>*/ javadocTos = Util.findSubElements(cu).iterator();
-                    while (javadocTos.hasNext()) {
-                        Element javadocTo = (Element) javadocTos.next();
+                    List<URL> resultURLs = new ArrayList<URL>();
+                    for (Element javadocTo : Util.findSubElements(cu)) {
                         if (javadocTo.getLocalName().equals("javadoc-built-to")) { // NOI18N
                             String rawtext = Util.findText(javadocTo);
                             assert rawtext != null;
@@ -121,14 +115,14 @@ final class JavadocQuery implements JavadocForBinaryQueryImplementation {
     
     private static final class FixedResult implements JavadocForBinaryQuery.Result {
         
-        private final List/*<URL>*/ urls;
+        private final List<URL> urls;
         
-        public FixedResult(List/*<URL>*/ urls) {
+        public FixedResult(List<URL> urls) {
             this.urls = urls;
         }
 
         public URL[] getRoots() {
-            return (URL[]) urls.toArray(new URL[urls.size()]);
+            return urls.toArray(new URL[urls.size()]);
         }
         
         public void addChangeListener(ChangeListener l) {}

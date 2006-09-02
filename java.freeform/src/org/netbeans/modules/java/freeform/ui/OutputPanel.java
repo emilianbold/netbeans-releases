@@ -49,7 +49,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private DefaultListModel listModel;
     private File lastChosenFile = null;
     private boolean isSeparateClasspath = true;
-    private List compUnitsKeys;
+    private List<ProjectModel.CompilationUnitKey> compUnitsKeys;
     private boolean ignoreEvent;
     private ProjectModel model;
     
@@ -79,7 +79,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private void update() {
         int index = sourceFolder.getSelectedIndex();
         assert index >= 0;
-        ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
+        ProjectModel.CompilationUnitKey key = compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateCompilationUnitJavadoc(cu);
     }
@@ -93,10 +93,8 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         sourceFolder.removeAllItems();
         compUnitsKeys = model.createCompilationUnitKeys();
         isSeparateClasspath = !ProjectModel.isSingleCompilationUnit(compUnitsKeys);
-        List names = ClasspathPanel.createComboContent(compUnitsKeys, model.getEvaluator(), model.getNBProjectFolder());
-        Iterator it = names.iterator();
-        while (it.hasNext()) {
-            String nm = (String)it.next();
+        List<String> names = ClasspathPanel.createComboContent(compUnitsKeys, model.getEvaluator(), model.getNBProjectFolder());
+        for (String nm : names) {
             sourceFolder.addItem(nm);
         }
         if (names.size() > 0) {
@@ -359,7 +357,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     /** Source package combo is changing - take output from the listbox and
      * store it in compilaiton unit identified by the index.*/
     private void saveOutput(int index) {
-        ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
+        ProjectModel.CompilationUnitKey key = compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateCompilationUnitOutput(cu);
         updateCompilationUnitJavadoc(cu);
@@ -377,13 +375,13 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         } else {
             index = 0;
         }
-        ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
+        ProjectModel.CompilationUnitKey key = compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateJListOutput(cu.output);
         updateJavadocField(cu.javadoc);
     }
     
-    private void updateJavadocField(List jd) {
+    private void updateJavadocField(List<String> jd) {
         String value = "";
         boolean enabled = true;
         if (jd != null) {
@@ -391,7 +389,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                 value = getListAsString(jd);
                 enabled = false;
             } else if (jd.size() == 1) {
-                File f = Util.resolveFile(model.getEvaluator(), model.getNBProjectFolder(), (String)jd.get(0));
+                File f = Util.resolveFile(model.getEvaluator(), model.getNBProjectFolder(), jd.get(0));
                 if (f != null) {
                     value = f.getAbsolutePath();
                 }
@@ -402,12 +400,11 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         javadoc.setText(value);
     }
     
-    private String getListAsString(List list) {
+    private String getListAsString(List<String> list) {
         assert list != null;
         StringBuffer sb = new StringBuffer();
-        Iterator it = list.iterator();
-        while (it.hasNext()) {            
-            File f = Util.resolveFile(model.getEvaluator(), model.getNBProjectFolder(), (String)it.next());
+        for (String s : list) {
+            File f = Util.resolveFile(model.getEvaluator(), model.getNBProjectFolder(), s);
             if (f != null) {
                 if (sb.length()>0) {
                     sb.append(", "); // NOI18N
@@ -421,10 +418,9 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private void updateCompilationUnitJavadoc(JavaProjectGenerator.JavaCompilationUnit cu) {
         if (javadoc.isEnabled()) {
             if (javadoc.getText().length() > 0) {
-                cu.javadoc = new ArrayList();
-                String[] parts = javadoc.getText().split(",");
-                for (int i=0; i<parts.length; i++) {
-                    File f = FileUtil.normalizeFile(new File (parts[i].trim()));
+                cu.javadoc = new ArrayList<String>();
+                for (String part : javadoc.getText().split(",")) {
+                    File f = FileUtil.normalizeFile(new File(part.trim()));
                     String path = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), f);
                     cu.javadoc.add (path);
                 }                
@@ -440,7 +436,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             cu.output = null;
             return;
         }
-        ArrayList l = new ArrayList();
+        List<String> l = new ArrayList<String>();
         for (int i=0; i<output.getModel().getSize(); i++) {
             File f = new File((String)output.getModel().getElementAt(i));
             String path = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), f);
@@ -450,12 +446,10 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     }
 
     /** Update panel's listbox with given output list. */
-    private void updateJListOutput(List/*<String>*/ l) {
+    private void updateJListOutput(List<String> l) {
         listModel.removeAllElements();
         if (l != null) {
-            Iterator it = l.iterator();
-            while (it.hasNext()) {
-                String out = (String)it.next();
+            for (String out : l) {
                 File f = Util.resolveFile(model.getEvaluator(), model.getNBProjectFolder(), out);
                 if (f != null) {
                     listModel.addElement(f.getAbsolutePath());
@@ -495,9 +489,8 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         }
         chooser.setDialogTitle(NbBundle.getMessage(OutputPanel.class, "LBL_Browse_Output")); // NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File files[] = chooser.getSelectedFiles();
-            for (int i=0; i<files.length; i++) {
-                File file = FileUtil.normalizeFile(files[i]);
+            for (File file : chooser.getSelectedFiles()) {
+                file = FileUtil.normalizeFile(file);
                 listModel.addElement(file.getAbsolutePath());
                 lastChosenFile = file;
             }

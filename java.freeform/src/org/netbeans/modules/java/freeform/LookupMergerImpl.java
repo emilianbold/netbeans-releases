@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.java.freeform;
 
-import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.ant.freeform.spi.LookupMerger;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -35,8 +34,8 @@ public class LookupMergerImpl implements LookupMerger {
 
     public LookupMergerImpl() {}
 
-    public Class[] getMergeableClasses() {
-        return new Class[]{ClassPathProvider.class};
+    public Class<?>[] getMergeableClasses() {
+        return new Class<?>[] {ClassPathProvider.class};
     }
     
     public Object merge(Lookup lookup, Class clazz) {
@@ -55,9 +54,7 @@ public class LookupMergerImpl implements LookupMerger {
         }
         
         public ClassPath findClassPath(FileObject file, String type) {
-            Iterator it = lkp.lookup(new Lookup.Template(ClassPathProvider.class)).allInstances().iterator();
-            while (it.hasNext()) {
-                ClassPathProvider cpp = (ClassPathProvider)it.next();
+            for (ClassPathProvider cpp : lkp.lookupAll(ClassPathProvider.class)) {
                 ClassPath cp = cpp.findClassPath(file, type);
                 if (cp != null) {
                     return cp;

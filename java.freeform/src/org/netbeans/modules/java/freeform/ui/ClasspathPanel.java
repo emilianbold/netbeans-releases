@@ -52,7 +52,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private DefaultListModel listModel;
     private File lastChosenFile = null;
     private boolean isSeparateClasspath = true;
-    private List/*<ProjectModel.CompilationUnitKey>*/ compUnitsKeys;
+    private List<ProjectModel.CompilationUnitKey> compUnitsKeys;
     private boolean ignoreEvent;
     private ProjectModel model;
     
@@ -80,10 +80,8 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         sourceFolder.removeAllItems();
         compUnitsKeys = model.createCompilationUnitKeys();
         isSeparateClasspath = !ProjectModel.isSingleCompilationUnit(compUnitsKeys);
-        List names = createComboContent(compUnitsKeys, model.getEvaluator(), model.getNBProjectFolder());
-        Iterator it = names.iterator();
-        while (it.hasNext()) {
-            String nm = (String)it.next();
+        List<String> names = createComboContent(compUnitsKeys, model.getEvaluator(), model.getNBProjectFolder());
+        for (String nm : names) {
             sourceFolder.addItem(nm);
         }
         if (names.size() > 0) {
@@ -118,31 +116,29 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     
-    static List/*<String>*/ createComboContent(List/*<ProjectModel.CompilationUnitKey>*/ compilationUnitKeys, PropertyEvaluator evaluator, File nbProjectFolder) {
-        List l = new ArrayList();
-        Iterator it = compilationUnitKeys.iterator();
-        while (it.hasNext()) {
-            ProjectModel.CompilationUnitKey cul = (ProjectModel.CompilationUnitKey)it.next();
+    static List<String> createComboContent(List<ProjectModel.CompilationUnitKey> compilationUnitKeys, PropertyEvaluator evaluator, File nbProjectFolder) {
+        List<String> l = new ArrayList<String>();
+        for (ProjectModel.CompilationUnitKey cul : compilationUnitKeys) {
             String name;
             if (cul.locations.size() == 1) {
                 if (cul.label != null) {
-                    name = cul.label + " ["+SourceFoldersPanel.getLocationDisplayName(evaluator, nbProjectFolder, (String)cul.locations.get(0))+"]"; // NOI18N
+                    name = cul.label + " [" + SourceFoldersPanel.getLocationDisplayName(evaluator, nbProjectFolder, cul.locations.get(0)) + "]"; // NOI18N
                 } else {
                     name = convertListToString(cul.locations);
                 }
             } else {
-                    name = convertListToString(cul.locations);
+                name = convertListToString(cul.locations);
             }
             l.add(name);
         }
         return l;
     }
     
-    private static String convertListToString(List/*<String>*/ l) {
+    private static String convertListToString(List<String> l) {
         StringBuffer sb = new StringBuffer();
-        Iterator it = l.iterator();
+        Iterator<String> it = l.iterator();
         while (it.hasNext()) {
-            String s = (String)it.next();
+            String s = it.next();
             sb.append(s);
             if (it.hasNext()) {
                 sb.append(File.pathSeparatorChar+" "); // NOI18N
@@ -411,7 +407,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
     /** Source package combo is changing - take classpath from the listbox and
      * store it in compilaiton unit identified by the index.*/
     private void saveClasspath(int index) {
-        ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
+        ProjectModel.CompilationUnitKey key = compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateCompilationUnitCompileClasspath(cu);
     }
@@ -428,7 +424,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         } else {
             index = 0;
         }
-        ProjectModel.CompilationUnitKey key = (ProjectModel.CompilationUnitKey)compUnitsKeys.get(index);
+        ProjectModel.CompilationUnitKey key = compUnitsKeys.get(index);
         JavaProjectGenerator.JavaCompilationUnit cu = model.getCompilationUnit(key, model.isTestSourceFolder(index));
         updateJListClassPath(cu.classpath);
     }
@@ -436,11 +432,11 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
     /** Update compilation unit classpath list with the classpath specified
      * in classpath list box. */
     private void updateCompilationUnitCompileClasspath(JavaProjectGenerator.JavaCompilationUnit cu) {
-        List cps = cu.classpath;
+        List<JavaProjectGenerator.JavaCompilationUnit.CP> cps = cu.classpath;
         if (cps != null) {
-            Iterator it = cps.iterator();
+            Iterator<JavaProjectGenerator.JavaCompilationUnit.CP> it = cps.iterator();
             while (it.hasNext()) {
-                JavaProjectGenerator.JavaCompilationUnit.CP cp = (JavaProjectGenerator.JavaCompilationUnit.CP)it.next();
+                JavaProjectGenerator.JavaCompilationUnit.CP cp = it.next();
                 if (cp.mode.equals(ProjectModel.CLASSPATH_MODE_COMPILE)) {
                     it.remove();
                     // there should be only one, but go on
@@ -462,7 +458,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         if (sb.length() > 0) {
             if (cps == null) {
-                cps = new ArrayList();
+                cps = new ArrayList<JavaProjectGenerator.JavaCompilationUnit.CP>();
                 cu.classpath = cps;
             }
             JavaProjectGenerator.JavaCompilationUnit.CP cp = new JavaProjectGenerator.JavaCompilationUnit.CP();
@@ -473,18 +469,14 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     /** Reads "compile" mode classpath and updates panel's list box.*/
-    private void updateJListClassPath(List/*<JavaProjectGenerator.JavaCompilationUnit.CP>*/ cps) {
+    private void updateJListClassPath(List<JavaProjectGenerator.JavaCompilationUnit.CP> cps) {
         listModel.removeAllElements();
         if (cps == null) {
             return;
         }
-        Iterator it = cps.iterator();
-        while (it.hasNext()) {
-            JavaProjectGenerator.JavaCompilationUnit.CP cp = (JavaProjectGenerator.JavaCompilationUnit.CP)it.next();
+        for (JavaProjectGenerator.JavaCompilationUnit.CP cp : cps) {
             if (cp.mode.equals(ProjectModel.CLASSPATH_MODE_COMPILE)) {
-                String[] cpa = PropertyUtils.tokenizePath(model.getEvaluator().evaluate(cp.classpath));
-                for (int i=0; i<cpa.length; i++) {
-                    String path = cpa[i];
+                for (String path : PropertyUtils.tokenizePath(model.getEvaluator().evaluate(cp.classpath))) {
                     path = PropertyUtils.resolveFile(model.getNBProjectFolder(), path).getAbsolutePath();
                     if (path != null) {
                         listModel.addElement(path);
@@ -537,9 +529,8 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         chooser.setFileFilter(fileFilter);                                                                 
             
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File files[] = chooser.getSelectedFiles();
-            for (int i=0; i<files.length; i++) {
-                File file = FileUtil.normalizeFile(files[i]);
+            for (File file : chooser.getSelectedFiles()) {
+                file = FileUtil.normalizeFile(file);
                 
                 //Check if the file is acceted by the FileFilter,
                 //user may enter the name of non displayed file into JFileChooser

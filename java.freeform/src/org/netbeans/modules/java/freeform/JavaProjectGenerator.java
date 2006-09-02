@@ -82,18 +82,15 @@ public class JavaProjectGenerator {
      *    Source folders without type are read only when type == null.
      * @return list of SourceFolder instances; style value will be always null
      */
-    public static List/*<SourceFolder>*/ getSourceFolders(AntProjectHelper helper, String type) {
+    public static List<SourceFolder> getSourceFolders(AntProjectHelper helper, String type) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
+        List<SourceFolder> list = new ArrayList<SourceFolder>();
         Element data = helper.getPrimaryConfigurationData(true);
         Element foldersEl = Util.findElement(data, "folders", NS_GENERAL); // NOI18N
         if (foldersEl == null) {
             return list;
         }
-        List/*<Element>*/ sourceFolders = Util.findSubElements(foldersEl);
-        Iterator it = sourceFolders.iterator();
-        while (it.hasNext()) {
-            Element sourceFolderEl = (Element)it.next();
+        for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
             if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
                 continue;
             }
@@ -133,9 +130,8 @@ public class JavaProjectGenerator {
      *    Useful for overriding just one type of source folders. Source folders
      *    without type are overriden only when type == null.
      */
-    public static void putSourceFolders(AntProjectHelper helper, List/*<SourceFolder>*/ sources, String type) {
+    public static void putSourceFolders(AntProjectHelper helper, List<SourceFolder> sources, String type) {
         //assert ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element foldersEl = Util.findElement(data, "folders", NS_GENERAL); // NOI18N
@@ -143,10 +139,7 @@ public class JavaProjectGenerator {
             foldersEl = doc.createElementNS(NS_GENERAL, "folders"); // NOI18N
             Util.appendChildElement(data, foldersEl, rootElementsOrder);
         } else {
-            List/*<Element>*/ sourceFolders = Util.findSubElements(foldersEl);
-            Iterator it = sourceFolders.iterator();
-            while (it.hasNext()) {
-                Element sourceFolderEl = (Element)it.next();
+            for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
                 if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
                     continue;
                 }
@@ -163,9 +156,7 @@ public class JavaProjectGenerator {
                 }
             }
         }
-        Iterator it2 = sources.iterator();
-        while (it2.hasNext()) {
-            SourceFolder sf = (SourceFolder)it2.next();
+        for (SourceFolder sf : sources) {
             Element sourceFolderEl = doc.createElementNS(NS_GENERAL, "source-folder"); // NOI18N
             Element el;
             if (sf.label != null && sf.label.length() > 0) {
@@ -202,7 +193,7 @@ public class JavaProjectGenerator {
      */
     public static List getSourceViews(AntProjectHelper helper, String style) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
+        List<SourceFolder> list = new ArrayList<SourceFolder>();
         Element data = helper.getPrimaryConfigurationData(true);
         Element viewEl = Util.findElement(data, "view", NS_GENERAL); // NOI18N
         if (viewEl == null) {
@@ -212,9 +203,7 @@ public class JavaProjectGenerator {
         if (itemsEl == null) {
             return list;
         }
-        Iterator/*<Element>*/ it = Util.findSubElements(itemsEl).iterator();
-        while (it.hasNext()) {
-            Element sourceFolderEl = (Element)it.next();
+        for (Element sourceFolderEl : Util.findSubElements(itemsEl)) {
             if (!sourceFolderEl.getLocalName().equals("source-folder")) { // NOI18N
                 continue;
             }
@@ -247,7 +236,7 @@ public class JavaProjectGenerator {
      *    Can be null in which case all styles will be overriden.
      *    Useful for overriding just one style of source view.
      */
-    public static void putSourceViews(AntProjectHelper helper, List/*<SourceFolder>*/ sources, String style) {
+    public static void putSourceViews(AntProjectHelper helper, List<SourceFolder> sources, String style) {
         //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
@@ -262,7 +251,7 @@ public class JavaProjectGenerator {
             itemsEl = doc.createElementNS(NS_GENERAL, "items"); // NOI18N
             Util.appendChildElement(viewEl, itemsEl, viewElementsOrder);
         }
-        List/*<Element>*/ sourceViews = Util.findSubElements(itemsEl);
+        List<Element> sourceViews = Util.findSubElements(itemsEl);
         Iterator it = sourceViews.iterator();
         while (it.hasNext()) {
             Element sourceViewEl = (Element)it.next();
@@ -306,10 +295,10 @@ public class JavaProjectGenerator {
      * @param aux AuxiliaryConfiguration instance
      * @return list of JavaCompilationUnit instances; never null;
      */
-    public static List/*<JavaCompilationUnit>*/ getJavaCompilationUnits(
+    public static List<JavaCompilationUnit> getJavaCompilationUnits(
             AntProjectHelper helper, AuxiliaryConfiguration aux) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
+        List<JavaCompilationUnit> list = new ArrayList<JavaCompilationUnit>();
         Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
         if (data == null) {
             data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
@@ -317,18 +306,13 @@ public class JavaProjectGenerator {
         if (data == null) {
             return list;
         }
-        List/*<Element>*/ cus = Util.findSubElements(data);
-        Iterator it = cus.iterator();
-        while (it.hasNext()) {
-            Element cuEl = (Element)it.next();
+        for (Element cuEl : Util.findSubElements(data)) {
             JavaCompilationUnit cu = new JavaCompilationUnit();
-            List outputs = new ArrayList();
-            List/*<String>*/ javadoc = new ArrayList();
-            List cps = new ArrayList();
-            List packageRoots = new ArrayList();
-            Iterator it2 = Util.findSubElements(cuEl).iterator();
-            while (it2.hasNext()) {
-                Element el = (Element)it2.next();
+            List<String> outputs = new ArrayList<String>();
+            List<String> javadoc = new ArrayList<String>();
+            List<JavaCompilationUnit.CP> cps = new ArrayList<JavaCompilationUnit.CP>();
+            List<String> packageRoots = new ArrayList<String>();
+            for (Element el : Util.findSubElements(cuEl)) {
                 if (el.getLocalName().equals("package-root")) { // NOI18N
                     packageRoots.add(Util.findText(el));
                     continue;
@@ -374,13 +358,11 @@ public class JavaProjectGenerator {
      * @param compUnits list of JavaCompilationUnit instances
      */
     public static void putJavaCompilationUnits(AntProjectHelper helper, 
-            AuxiliaryConfiguration aux, List/*<JavaCompilationUnit>*/ compUnits) {
+            AuxiliaryConfiguration aux, List<JavaCompilationUnit> compUnits) {
         //assert ProjectManager.mutex().isWriteAccess();
         // First check whether we need /2 data.
         boolean need2 = false;
-        Iterator/*<JavaCompilationUnit>*/ cuIt = compUnits.iterator();
-        while (cuIt.hasNext()) {
-            JavaCompilationUnit unit = (JavaCompilationUnit) cuIt.next();
+        for (JavaCompilationUnit unit : compUnits) {
             if (unit.isTests || (unit.javadoc != null && !unit.javadoc.isEmpty())) {
                 need2 = true;
                 break;
@@ -410,22 +392,15 @@ public class JavaProjectGenerator {
             }
         }
         Document doc = data.getOwnerDocument();
-        List cus = Util.findSubElements(data); // NOI18N
-        Iterator it = cus.iterator();
-        while (it.hasNext()) {
-            Element cuEl = (Element)it.next();
+        for (Element cuEl : Util.findSubElements(data)) {
             data.removeChild(cuEl);
         }
-        Iterator it2 = compUnits.iterator();
-        while (it2.hasNext()) {
+        for (JavaCompilationUnit cu : compUnits) {
             Element cuEl = doc.createElementNS(namespace, "compilation-unit"); // NOI18N
             data.appendChild(cuEl);
-            JavaCompilationUnit cu = (JavaCompilationUnit)it2.next();
             Element el;
             if (cu.packageRoots != null) {
-                Iterator it3 = cu.packageRoots.iterator();
-                while (it3.hasNext()) {
-                    String packageRoot = (String)it3.next();
+                for (String packageRoot : cu.packageRoots) {
                     el = doc.createElementNS(namespace, "package-root"); // NOI18N
                     el.appendChild(doc.createTextNode(packageRoot));
                     cuEl.appendChild(el);
@@ -436,9 +411,7 @@ public class JavaProjectGenerator {
                 cuEl.appendChild(doc.createElementNS(namespace, "unit-tests")); // NOI18N
             }
             if (cu.classpath != null) {
-                Iterator it3 = cu.classpath.iterator();
-                while (it3.hasNext()) {
-                    JavaCompilationUnit.CP cp = (JavaCompilationUnit.CP)it3.next();
+                for (JavaCompilationUnit.CP cp : cu.classpath) {
                     el = doc.createElementNS(namespace, "classpath"); // NOI18N
                     el.appendChild(doc.createTextNode(cp.classpath));
                     el.setAttribute("mode", cp.mode); // NOI18N
@@ -479,10 +452,10 @@ public class JavaProjectGenerator {
      * Data in the struct are in the same format as they are stored in XML.
      */
     public static final class JavaCompilationUnit {
-        public List/*<String>*/ packageRoots;
-        public List/*<CP>*/ classpath;
-        public List/*<String>*/ output;
-        public List/*<String>*/ javadoc;
+        public List<String> packageRoots;
+        public List<CP> classpath;
+        public List<String> output;
+        public List<String> javadoc;
         public String sourceLevel;
         public boolean isTests;
         
@@ -517,34 +490,28 @@ public class JavaProjectGenerator {
     /**
      * Try to guess project's exports. See issue #49221 for more details.
      */
-    public static List/*<Export>*/ guessExports(PropertyEvaluator evaluator, File baseFolder,
-            List/*<TargetMapping>*/ targetMappings, List/*<JavaCompilationUnit>*/ javaCompilationUnits) {
+    public static List<Export> guessExports(PropertyEvaluator evaluator, File baseFolder,
+            List<TargetMapping> targetMappings, List<JavaCompilationUnit> javaCompilationUnits) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        List/*<Export>*/ exports = new ArrayList();
+        List<Export> exports = new ArrayList<Export>();
         String targetName = null;
         String scriptName = null;
-        Iterator it = targetMappings.iterator();
-        while (it.hasNext()) {
-            TargetMapping tm = (TargetMapping)it.next();
+        for (TargetMapping tm : targetMappings) {
             if (tm.name.equals("build")) { // NOI18N
                 if (tm.targets.size() == 1) {
-                    targetName = (String)tm.targets.get(0);
+                    targetName = tm.targets.get(0);
                     scriptName = tm.script;
                 } else {
-                    return new ArrayList();
+                    return new ArrayList<Export>();
                 }
             }
         }
         if (targetName == null) {
-            return new ArrayList();
+            return new ArrayList<Export>();
         }
-        it = javaCompilationUnits.iterator();
-        while (it.hasNext()) {
-            JavaCompilationUnit cu = (JavaCompilationUnit)it.next();
+        for (JavaCompilationUnit cu : javaCompilationUnits) {
             if (cu.output != null) {
-                Iterator it2 = cu.output.iterator();
-                while (it2.hasNext()) {
-                    String output = (String)it2.next();
+                for (String output : cu.output) {
                     String output2 = evaluator.evaluate(output);
                     if (output2.endsWith(".jar")) { // NOI18N
                         Export e = new Export();
@@ -574,7 +541,7 @@ public class JavaProjectGenerator {
      * @param helper AntProjectHelper instance
      * @param exports list of Export instances
      */
-    public static void putExports(AntProjectHelper helper, List/*<Export>*/ exports) {
+    public static void putExports(AntProjectHelper helper, List<Export> exports) {
         //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
@@ -619,17 +586,13 @@ public class JavaProjectGenerator {
     /**
      * Try to guess project's subprojects. See issue #49640 for more details.
      */
-    public static List/*<String>*/ guessSubprojects(PropertyEvaluator evaluator,
-            List/*<JavaCompilationUnit>*/ javaCompilationUnits, File projectBase, File freeformBase) {
+    public static List<String> guessSubprojects(PropertyEvaluator evaluator,
+            List<JavaCompilationUnit> javaCompilationUnits, File projectBase, File freeformBase) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        Set/*<String>*/ subprojs = new HashSet();
-        Iterator it = javaCompilationUnits.iterator();
-        while (it.hasNext()) {
-            JavaCompilationUnit cu = (JavaCompilationUnit)it.next();
+        Set<String> subprojs = new HashSet<String>();
+        for (JavaCompilationUnit cu : javaCompilationUnits) {
             if (cu.classpath != null) {
-                Iterator it2 = cu.classpath.iterator();
-                while (it2.hasNext()) {
-                    JavaCompilationUnit.CP cp = (JavaCompilationUnit.CP)it2.next();
+                for (JavaCompilationUnit.CP cp : cu.classpath) {
                     if (!"compile".equals(cp.mode))  { // NOI18N
                         continue;
                     }
@@ -637,9 +600,8 @@ public class JavaProjectGenerator {
                     if (classpath == null) {
                         continue;
                     }
-                    String[] path = PropertyUtils.tokenizePath(classpath);
-                    for (int i=0; i<path.length; i++) {
-                        File file = FileUtil.normalizeFile(new File(path[i]));
+                    for (String s : PropertyUtils.tokenizePath(classpath)) {
+                        File file = FileUtil.normalizeFile(new File(s));
                         AntArtifact aa = AntArtifactQuery.findArtifactFromFile(file);
                         if (aa != null) {
                             File proj = FileUtil.toFile(aa.getProject().getProjectDirectory());
@@ -650,7 +612,7 @@ public class JavaProjectGenerator {
                 }
             }
         }
-        return new ArrayList(subprojs);
+        return new ArrayList<String>(subprojs);
     }
     
     /**
@@ -659,7 +621,7 @@ public class JavaProjectGenerator {
      * @param helper AntProjectHelper instance
      * @param subprojects list of paths to subprojects
      */
-    public static void putSubprojects(AntProjectHelper helper, List/*<String>*/ subprojects) {
+    public static void putSubprojects(AntProjectHelper helper, List<String> subprojects) {
         //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
@@ -684,17 +646,13 @@ public class JavaProjectGenerator {
     /**
      * Try to guess project's build folders. See issue #50934 for more details.
      */
-    public static List/*<String>*/ guessBuildFolders(PropertyEvaluator evaluator,
-            List/*<JavaCompilationUnit>*/ javaCompilationUnits, File projectBase, File freeformBase) {
+    public static List<String> guessBuildFolders(PropertyEvaluator evaluator,
+            List<JavaCompilationUnit> javaCompilationUnits, File projectBase, File freeformBase) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        List/*<String>*/ buildFolders = new ArrayList();
-        Iterator it = javaCompilationUnits.iterator();
-        while (it.hasNext()) {
-            JavaCompilationUnit cu = (JavaCompilationUnit)it.next();
+        List<String> buildFolders = new ArrayList<String>();
+        for (JavaCompilationUnit cu : javaCompilationUnits) {
             if (cu.output != null) {
-                Iterator it2 = cu.output.iterator();
-                while (it2.hasNext()) {
-                    String output = (String)it2.next();
+                for (String output : cu.output) {
                     File f = Util.resolveFile(evaluator, freeformBase, output);
                     if (f.exists()) {
                         if (f.isFile()) {
@@ -717,9 +675,9 @@ public class JavaProjectGenerator {
                         continue;
                     }
                     boolean add = true;
-                    Iterator it3 = buildFolders.iterator();
-                    while (it3.hasNext()) {
-                        String path = (String)it3.next();
+                    Iterator<String> it = buildFolders.iterator();
+                    while (it.hasNext()) {
+                        String path = it.next();
                         if (!path.endsWith(File.separator)) {
                             path += File.separatorChar;
                         }
@@ -732,7 +690,7 @@ public class JavaProjectGenerator {
                             add = false;
                             break;
                         } else if (path.startsWith(output)) {
-                            it3.remove();
+                            it.remove();
                         }
                     }
                     if (add) {
@@ -750,7 +708,7 @@ public class JavaProjectGenerator {
      * @param helper AntProjectHelper instance
      * @param buildFolders list of build folder locations
      */
-    public static void putBuildFolders(AntProjectHelper helper, List/*<String>*/ buildFolders) {
+    public static void putBuildFolders(AntProjectHelper helper, List<String> buildFolders) {
         //assert ProjectManager.mutex().isWriteAccess();
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
@@ -760,7 +718,7 @@ public class JavaProjectGenerator {
             foldersEl = doc.createElementNS(NS_GENERAL, "folders"); // NOI18N
             Util.appendChildElement(data, foldersEl, rootElementsOrder);
         } else {
-            List/*<Element>*/ folders = Util.findSubElements(foldersEl);
+            List<Element> folders = Util.findSubElements(foldersEl);
             Iterator it = folders.iterator();
             while (it.hasNext()) {
                 Element buildFolderEl = (Element)it.next();
@@ -788,26 +746,20 @@ public class JavaProjectGenerator {
      * @param helper AntProjectHelper instance
      * @return list of TargetMapping instances
      */
-    public static List/*<TargetMapping>*/ getTargetMappings(AntProjectHelper helper) {
+    public static List<TargetMapping> getTargetMappings(AntProjectHelper helper) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
+        List<TargetMapping> list = new ArrayList<TargetMapping>();
         Element genldata = helper.getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", NS_GENERAL); // NOI18N
         if (actionsEl == null) {
             return list;
         }
-        List/*<Element>*/ actions = Util.findSubElements(actionsEl);
-        Iterator it = actions.iterator();
-        while (it.hasNext()) {
-            Element actionEl = (Element)it.next();
+        for (Element actionEl : Util.findSubElements(actionsEl)) {
             TargetMapping tm = new TargetMapping();
             tm.name = actionEl.getAttribute("name"); // NOI18N
-            List/*<Element>*/ subElems = Util.findSubElements(actionEl);
-            List/*<String>*/ targetNames = new ArrayList(subElems.size());
+            List<String> targetNames = new ArrayList<String>();
             EditableProperties props = new EditableProperties(false);
-            Iterator it2 = subElems.iterator();
-            while (it2.hasNext()) {
-                Element subEl = (Element)it2.next();
+            for (Element subEl : Util.findSubElements(actionEl)) {
                 if (subEl.getLocalName().equals("target")) { // NOI18N
                     targetNames.add(Util.findText(subEl));
                     continue;
@@ -818,9 +770,7 @@ public class JavaProjectGenerator {
                 }
                 if (subEl.getLocalName().equals("context")) { // NOI18N
                     TargetMapping.Context ctx = new TargetMapping.Context();
-                    Iterator it3 = Util.findSubElements(subEl).iterator();
-                    while (it3.hasNext()) {
-                        Element contextSubEl = (Element)it3.next();
+                    for (Element contextSubEl : Util.findSubElements(subEl)) {
                         if (contextSubEl.getLocalName().equals("property")) { // NOI18N
                             ctx.property = Util.findText(contextSubEl);
                             continue;
@@ -878,7 +828,7 @@ public class JavaProjectGenerator {
      */
     public static final class TargetMapping {
         public String script;
-        public List/*<String>*/ targets;
+        public List<String> targets;
         public String name;
         public EditableProperties properties;
         public Context context; // may be null

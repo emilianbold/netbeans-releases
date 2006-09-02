@@ -20,17 +20,14 @@
 package org.netbeans.modules.java.freeform.ui;
 
 import java.awt.Component;
-import java.io.File;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,7 +59,7 @@ public class ClasspathWizardPanel implements WizardDescriptor.Panel {
         return true;
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -74,13 +71,13 @@ public class ClasspathWizardPanel implements WizardDescriptor.Panel {
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        Collection<ChangeListener> ls;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            ls = new HashSet<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
     

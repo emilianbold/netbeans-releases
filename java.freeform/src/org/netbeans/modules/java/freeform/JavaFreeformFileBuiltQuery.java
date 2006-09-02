@@ -71,31 +71,31 @@ final class JavaFreeformFileBuiltQuery implements FileBuiltQueryImplementation, 
         }
         
         Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-        List from = new ArrayList();
-        List to   = new ArrayList();
+        List<String> from = new ArrayList<String>();
+        List<String> to   = new ArrayList<String>();
         
         if (java != null) {
-            List/*<Element>*/ compilationUnits = Util.findSubElements(java);
+            List<Element> compilationUnits = Util.findSubElements(java);
             Iterator it = compilationUnits.iterator();
             while (it.hasNext()) {
                 Element compilationUnitEl = (Element)it.next();
                 assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
-                List rootNames = Classpaths.findPackageRootNames(compilationUnitEl);
-                List builtToName = findBuiltToNames(compilationUnitEl);
+                List<String> rootNames = Classpaths.findPackageRootNames(compilationUnitEl);
+                List<String> builtToNames = findBuiltToNames(compilationUnitEl);
                 
-                List rootPatterns = new ArrayList();
+                List<String> rootPatterns = new ArrayList<String>();
                 String builtToPattern = null;
                 
-                for (int cntr = 0; cntr < rootNames.size(); cntr++) {
-                    rootPatterns.add(projectEvaluator.evaluate((String) rootNames.get(cntr)) + "/*.java"); // NOI18N
+                for (String n : rootNames) {
+                    rootPatterns.add(projectEvaluator.evaluate(n) + "/*.java"); // NOI18N
                 }
                 
                 if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                     ERR.log(ErrorManager.INFORMATIONAL, "Looking for a suitable built-to:"); // NOI18N
                 }
                 
-                for (int cntr = 0; cntr < builtToName.size(); cntr++) {
-                    String builtTo = projectEvaluator.evaluate((String) builtToName.get(cntr));
+                for (String n : builtToNames) {
+                    String builtTo = projectEvaluator.evaluate(n);
                     if (builtTo == null) {
                         continue;
                     }
@@ -111,8 +111,8 @@ final class JavaFreeformFileBuiltQuery implements FileBuiltQueryImplementation, 
                     if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                         ERR.log(ErrorManager.INFORMATIONAL, "Found built to pattern=" + builtToPattern + ", rootPatterns=" + rootPatterns); // NOI18N
                     }
-                    for (int rootIndex = 0; rootIndex < rootPatterns.size(); rootIndex++) {
-                        from.add(rootPatterns.get(rootIndex));
+                    for (String p : rootPatterns) {
+                        from.add(p);
                         to.add(builtToPattern);
                     }
                 } else {
@@ -127,8 +127,8 @@ final class JavaFreeformFileBuiltQuery implements FileBuiltQueryImplementation, 
             ERR.log(ErrorManager.INFORMATIONAL, "JavaFreeformFileBuiltQuery from=" + from + " to=" + to); // NOI18N
         }
         
-        String[] fromStrings = (String[] ) from.toArray(new String[from.size()]);
-        String[] toStrings = (String[] ) to.toArray(new String[to.size()]);
+        String[] fromStrings = from.toArray(new String[from.size()]);
+        String[] toStrings = to.toArray(new String[to.size()]);
         
         FileBuiltQueryImplementation fbqi = projectHelper.createGlobFileBuiltQuery(projectEvaluator, fromStrings, toStrings);
         
@@ -156,11 +156,9 @@ final class JavaFreeformFileBuiltQuery implements FileBuiltQueryImplementation, 
         return delegateTo.getStatus(fo);
     }
     
-    static List/*<String>*/ findBuiltToNames(Element compilationUnitEl) {
-        List/*<String>*/ names = new ArrayList();
-        Iterator it = Util.findSubElements(compilationUnitEl).iterator();
-        while (it.hasNext()) {
-            Element e = (Element) it.next();
+    static List<String> findBuiltToNames(Element compilationUnitEl) {
+        List<String> names = new ArrayList<String>();
+        for (Element e : Util.findSubElements(compilationUnitEl)) {
             if (!e.getLocalName().equals("built-to")) { // NOI18N
                 continue;
             }

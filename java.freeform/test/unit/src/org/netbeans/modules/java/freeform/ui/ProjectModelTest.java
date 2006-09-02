@@ -412,10 +412,10 @@ public class ProjectModelTest extends NbTestCase {
         List l = new ArrayList(locations.length);
         for (int i=0; i<locations.length; i++) {
             JavaProjectGenerator.JavaCompilationUnit cu = new JavaProjectGenerator.JavaCompilationUnit();
-            if (locations[i] instanceof List) {
+            if (locations[i] instanceof List) { // XXX use Union2
                 cu.packageRoots = (List)locations[i];
             } else {
-                cu.packageRoots = Collections.singletonList(locations[i]);
+                cu.packageRoots = Collections.singletonList((String) locations[i]);
             }
             l.add(cu);
         }
@@ -432,7 +432,7 @@ public class ProjectModelTest extends NbTestCase {
             if (locations[i] instanceof List) {
                 key.locations = (List)locations[i];
             } else {
-                key.locations = Collections.singletonList(locations[i]);
+                key.locations = Collections.singletonList((String) locations[i]);
             }
             key.label = labels[i];
             l.add(key);

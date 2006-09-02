@@ -113,7 +113,7 @@ public class ClasspathsTest extends TestBase {
     public void testExecuteClasspath() throws Exception {
         ClassPath cp = ClassPath.getClassPath(myAppJava, ClassPath.EXECUTE);
         assertNotNull("have some EXECUTE classpath for src/", cp);
-        Set/*<String>*/ roots = new TreeSet();
+        Set<String> roots = new TreeSet();
         roots.add(urlForJar("lib/lib1.jar"));
         roots.add(urlForJar("lib/lib2.jar"));
         // #49113: includes built-to dirs as well.
@@ -144,7 +144,7 @@ public class ClasspathsTest extends TestBase {
     }
     
     private static String specOfBootClasspath(ClassPath cp) {
-        List/*<ClassPath.Entry>*/ entries = cp.entries();
+        List<ClassPath.Entry> entries = cp.entries();
         if (entries.size() != 1) {
             return null;
         }
@@ -171,11 +171,11 @@ public class ClasspathsTest extends TestBase {
         Method opened = ProjectOpenedHook.class.getDeclaredMethod("projectOpened", null);
         opened.setAccessible(true);
         opened.invoke(hook, null);
-        Set/*<ClassPath>*/ boot = gpr.getPaths(ClassPath.BOOT);
-        Set/*<ClassPath>*/ compile = gpr.getPaths(ClassPath.COMPILE);
-        Set/*<ClassPath>*/ execute = gpr.getPaths(ClassPath.EXECUTE);
-        Set/*<ClassPath>*/ source = gpr.getPaths(ClassPath.SOURCE);
-        Set/*<ClassPath>*/ expected = new HashSet();
+        Set<ClassPath> boot = gpr.getPaths(ClassPath.BOOT);
+        Set<ClassPath> compile = gpr.getPaths(ClassPath.COMPILE);
+        Set<ClassPath> execute = gpr.getPaths(ClassPath.EXECUTE);
+        Set<ClassPath> source = gpr.getPaths(ClassPath.SOURCE);
+        Set<ClassPath> expected = new HashSet();
         expected.add(ClassPath.getClassPath(myAppJava, ClassPath.BOOT));
         expected.add(ClassPath.getClassPath(specialTaskJava, ClassPath.BOOT));
         assertEquals("correct set of BOOT classpaths", expected, boot);
@@ -274,8 +274,8 @@ public class ClasspathsTest extends TestBase {
         Method opened = ProjectOpenedHook.class.getDeclaredMethod("projectOpened", null);
         opened.setAccessible(true);
         opened.invoke(hook, null);
-        Set/*<ClassPath>*/ compile = gpr.getPaths(ClassPath.COMPILE);
-        Set/*<ClassPath>*/ expected = new HashSet();
+        Set<ClassPath> compile = gpr.getPaths(ClassPath.COMPILE);
+        Set<ClassPath> expected = new HashSet();
         expected.add(cpSrc);
         expected.add(cpAnt);
         assertEquals("correct set of COMPILE classpaths", expected, compile);
@@ -399,8 +399,8 @@ public class ClasspathsTest extends TestBase {
             return s + "/";
         }
     }
-    private Set/*<String>*/ urlsOfCp(ClassPath cp) {
-        Set/*<String>*/ s = new TreeSet();
+    private Set<String> urlsOfCp(ClassPath cp) {
+        Set<String> s = new TreeSet();
         Iterator it = cp.entries().iterator();
         while (it.hasNext()) {
             s.add(((ClassPath.Entry) it.next()).getURL().toExternalForm());

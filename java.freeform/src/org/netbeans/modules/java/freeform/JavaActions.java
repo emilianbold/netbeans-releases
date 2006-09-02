@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -204,7 +205,7 @@ final class JavaActions implements ActionProvider {
         d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);        
         d.setOptions(new Object[] {setOutputOption, NotifyDescriptor.CANCEL_OPTION});
         if (DialogDisplayer.getDefault().notify (d) == setOutputOption) {
-            CustomizerProvider customizerProvider = (CustomizerProvider) project.getLookup().lookup (CustomizerProvider.class);
+            CustomizerProvider customizerProvider = project.getLookup().lookup(CustomizerProvider.class);
             assert customizerProvider != null;
             customizerProvider.showCustomizer();
             return true;
@@ -278,7 +279,7 @@ final class JavaActions implements ActionProvider {
         if (!this.setOutputsNotified) {
             ProjectModel pm = ProjectModel.createModel(Util.getProjectLocation(this.helper, this.evaluator),
                 FileUtil.toFile(project.getProjectDirectory()), this.evaluator, this.helper);        
-            List/*<ProjectModel.CompilationUnitKey>*/ cuKeys = pm.createCompilationUnitKeys();
+            List<ProjectModel.CompilationUnitKey> cuKeys = pm.createCompilationUnitKeys();
             assert cuKeys != null;
             boolean hasOutputs = false;
             for (Iterator it = cuKeys.iterator(); it.hasNext();) {
@@ -477,9 +478,7 @@ final class JavaActions implements ActionProvider {
         Element data = helper.getPrimaryConfigurationData(true);
         Element properties = Util.findElement(data, "properties", NS_GENERAL);
         if (properties != null) {
-            Iterator/*<Element>*/ propertiesIt = Util.findSubElements(properties).iterator();
-            while (propertiesIt.hasNext()) {
-                Element el = (Element) propertiesIt.next();
+            for (Element el : Util.findSubElements(properties)) {
                 Element nue = antProject.getOwnerDocument().createElement("property"); // NOI18N
                 if (el.getLocalName().equals("property")) { // NOI18N
                     String name = el.getAttribute("name"); // NOI18N
@@ -581,13 +580,12 @@ final class JavaActions implements ActionProvider {
         }
     }
     
-    private Iterator/*<Element>*/ compilationUnitsIterator() {
+    private List<Element> compilationUnits() {
         Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
         if (java == null) {
-            return Collections.EMPTY_SET.iterator();
+            return Collections.emptyList();
         }
-        List/*<Element>*/ compilationUnits = Util.findSubElements(java);
-        return compilationUnits.iterator();
+        return Util.findSubElements(java);
     }
     
     /**
@@ -596,18 +594,14 @@ final class JavaActions implements ActionProvider {
      * @return the package root if there is one, or null if the lookup is empty, has junk, or has multiple roots
      */
     AntLocation findPackageRoot(Lookup context) {
-        Iterator/*<Element>*/ cuIt = compilationUnitsIterator();
-        while (cuIt.hasNext()) {
-            Element compilationUnitEl = (Element) cuIt.next();
+        for (Element compilationUnitEl : compilationUnits()) {
             assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
-            List/*<String>*/ packageRootNames = Classpaths.findPackageRootNames(compilationUnitEl);
-            Map/*<String,FileObject>*/ packageRootsByName = Classpaths.findPackageRootsByName(helper, evaluator, packageRootNames);
-            Iterator/*<Map.Entry<String,FileObject>>*/ it = packageRootsByName.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry/*<String,FileObject>*/ entry = (Map.Entry) it.next();
-                FileObject root = (FileObject) entry.getValue();
+            List<String> packageRootNames = Classpaths.findPackageRootNames(compilationUnitEl);
+            Map<String,FileObject> packageRootsByName = Classpaths.findPackageRootsByName(helper, evaluator, packageRootNames);
+            for (Map.Entry<String,FileObject> entry : packageRootsByName.entrySet()) {
+                FileObject root = entry.getValue();
                 if (containsSelectedJavaSources(root, context)) {
-                    return new AntLocation((String) entry.getKey(), root);
+                    return new AntLocation(entry.getKey(), root);
                 }
             }
         }
@@ -619,18 +613,14 @@ final class JavaActions implements ActionProvider {
      * Check to see if a (node-like) selection contains one or more Java sources (or folders) inside the root.
      */
     static boolean containsSelectedJavaSources(FileObject root, Lookup context) {
-        Set/*<FileObject>*/ selection = new HashSet(context.lookup(new Lookup.Template(FileObject.class)).allInstances());
-        Iterator/*<DataObject>*/ selectionDO = context.lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
-        while (selectionDO.hasNext()) {
-            DataObject dob = (DataObject) selectionDO.next();
+        Set<FileObject> selection = new HashSet<FileObject>(context.lookupAll(FileObject.class));
+        for (DataObject dob : context.lookupAll(DataObject.class)) {
             selection.add(dob.getPrimaryFile());
         }
         if (selection.isEmpty()) {
             return false;
         }
-        Iterator/*<FileObject>*/ selIt = selection.iterator();
-        while (selIt.hasNext()) {
-            FileObject f = (FileObject) selIt.next();
+        for (FileObject f : selection) {
             if (f.isData() && !f.hasExt("java")) { // NOI18N
                 return false;
             }
@@ -663,12 +653,8 @@ final class JavaActions implements ActionProvider {
      * @return the compilation unit owning it, or null if not found
      */
     private Element findCompilationUnit(String sources) {
-        Iterator/*<Element>*/ cuIt = compilationUnitsIterator();
-        while (cuIt.hasNext()) {
-            Element compilationUnitEl = (Element) cuIt.next();
-            Iterator/*<Element>*/ packageRoots = Util.findSubElements(compilationUnitEl).iterator();
-            while (packageRoots.hasNext()) {
-                Element packageRoot = (Element) packageRoots.next();
+        for (Element compilationUnitEl : compilationUnits()) {
+            for (Element packageRoot : Util.findSubElements(compilationUnitEl)) {
                 if (packageRoot.getLocalName().equals("package-root")) { // NOI18N
                     if (Util.findText(packageRoot).equals(sources)) {
                         return compilationUnitEl;
@@ -698,9 +684,7 @@ final class JavaActions implements ActionProvider {
      */
     private String findClassesOutputDir(Element compilationUnitEl) {
         // Look for an appropriate <built-to>.
-        Iterator/*<Element>*/ builtTos = Util.findSubElements(compilationUnitEl).iterator();
-        while (builtTos.hasNext()) {
-            Element builtTo = (Element) builtTos.next();
+        for (Element builtTo : Util.findSubElements(compilationUnitEl)) {
             if (builtTo.getLocalName().equals("built-to")) { // NOI18N
                 String rawtext = Util.findText(builtTo);
                 // Check that it is not an archive.
@@ -747,9 +731,7 @@ final class JavaActions implements ActionProvider {
     String findCUClasspath(String sources, String moud) {
         Element compilationUnitEl = findCompilationUnit(sources);
         if (compilationUnitEl != null) {
-            Iterator/*<Element>*/ classpaths = Util.findSubElements(compilationUnitEl).iterator();
-            while (classpaths.hasNext()) {
-                Element classpath = (Element) classpaths.next();
+            for (Element classpath : Util.findSubElements(compilationUnitEl)) {
                 if (classpath.getLocalName().equals("classpath")) { // NOI18N
                     String mode = classpath.getAttribute("mode"); // NOI18N
                     if (mode.equals(moud)) {
@@ -767,7 +749,7 @@ final class JavaActions implements ActionProvider {
      * @return array with content of all <built-to> elements built by CU containing the srcRoot
      */
     private String[] findCUOutputs(String srcRoot) {
-        ArrayList outputs = new ArrayList();
+        List<String> outputs = new ArrayList<String>();
         Element cuElem = findCompilationUnit(srcRoot);
         if (cuElem != null) {
             NodeList builts = cuElem.getElementsByTagName("built-to"); // NOI18N
@@ -775,12 +757,12 @@ final class JavaActions implements ActionProvider {
                 outputs.add(builts.item(i).getTextContent());
             }
         }
-        return (String[]) outputs.toArray(new String[] {});
+        return outputs.toArray(new String[outputs.size()]);
     }
 
     //The order of the root elements as specified in the schema.
     //Used to add <ide-actions> at the correct place.
-    private static final String[] rootElementsOrder = new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}; // NOI18N
+    private static final String[] rootElementsOrder = {"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}; // NOI18N
     
     /**
      * Add an action binding to project.xml.
@@ -903,7 +885,7 @@ final class JavaActions implements ActionProvider {
         } catch (DataObjectNotFoundException e) {
             throw new AssertionError(e);
         }
-        LineCookie lines = (LineCookie) fileDO.getCookie(LineCookie.class);
+        LineCookie lines = fileDO.getCookie(LineCookie.class);
         if (lines != null) {
             try {
                 lines.getLineSet().getCurrent(line).show(Line.SHOW_GOTO);
@@ -982,9 +964,7 @@ final class JavaActions implements ActionProvider {
                 return null;
             }
         }
-        Iterator/*<Element>*/ targets = Util.findSubElements(doc.getDocumentElement()).iterator();
-        while (targets.hasNext()) {
-            Element target = (Element) targets.next();
+        for (Element target : Util.findSubElements(doc.getDocumentElement())) {
             if (target.getLocalName().equals("target") && targetName.equals(target.getAttribute("name"))) { // NOI18N
                 return target;
             }
@@ -1005,25 +985,21 @@ final class JavaActions implements ActionProvider {
             return null;
         }
         String scriptName = "build.xml"; // NOI18N
-        Iterator/*<Element>*/ actions = Util.findSubElements(ideActions).iterator();
-        while (actions.hasNext()) {
-            Element action = (Element) actions.next();
+        for (Element action : Util.findSubElements(ideActions)) {
             assert action.getLocalName().equals("action");
             if (action.getAttribute("name").equals(command)) {
                 Element script = Util.findElement(action, "script", NS_GENERAL); // NOI18N
                 if (script != null) {
                     scriptName = Util.findText(script);
                 }
-                List/*<String>*/ scriptPlusTargetNames = new ArrayList();
+                List<String> scriptPlusTargetNames = new ArrayList<String>();
                 scriptPlusTargetNames.add(scriptName);
-                Iterator/*<Element>*/ targets = Util.findSubElements(action).iterator();
-                while (targets.hasNext()) {
-                    Element target = (Element) targets.next();
+                for (Element target : Util.findSubElements(action)) {
                     if (target.getLocalName().equals("target")) { // NOI18N
                         scriptPlusTargetNames.add(Util.findText(target));
                     }
                 }
-                return (String[]) scriptPlusTargetNames.toArray(new String[scriptPlusTargetNames.size()]);
+                return scriptPlusTargetNames.toArray(new String[scriptPlusTargetNames.size()]);
             }
         }
         return null;
@@ -1037,10 +1013,8 @@ final class JavaActions implements ActionProvider {
      */
     Element targetUsesTaskExactlyOnce(Element target, String taskName) {
         // XXX should maybe also look for any other usage of the task in the same script in case there is none in the mentioned target
-        Iterator/*<Element>*/ tasks = Util.findSubElements(target).iterator();
         Element foundTask = null;
-        while (tasks.hasNext()) {
-            Element task = (Element) tasks.next();
+        for (Element task : Util.findSubElements(target)) {
             if (task.getLocalName().equals(taskName)) {
                 if (foundTask != null) {
                     // Duplicate.
@@ -1263,8 +1237,8 @@ final class JavaActions implements ActionProvider {
     }
 
     private boolean isSingleJavaFileSelected(Lookup context) {
-        List selectedDO = (List) context.lookup(new Lookup.Template(DataObject.class)).allInstances();
-        if (selectedDO.size() == 1 && ((FileObject) ((DataObject) selectedDO.get(0)).getPrimaryFile()).hasExt("java")) {
+        Collection<? extends DataObject> selectedDO = context.lookupAll(DataObject.class);
+        if (selectedDO.size() == 1 && selectedDO.iterator().next().getPrimaryFile().hasExt("java")) {
             return true;
         }
         return false;

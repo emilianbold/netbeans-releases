@@ -24,7 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
@@ -93,18 +92,14 @@ final class TestQuery implements MultipleRootsUnitTestForSourceQueryImplementati
      * @return two-element array: first source roots, then test source roots
      */
     private URL[][] findSourcesAndTests() {
-        List/*<URL>*/ sources = new ArrayList();
-        List/*<URL>*/ tests = new ArrayList();
+        List<URL> sources = new ArrayList<URL>();
+        List<URL> tests = new ArrayList<URL>();
         Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
         if (data != null) {
-            Iterator/*<Element>*/ cus = Util.findSubElements(data).iterator();
-            while (cus.hasNext()) {
-                Element cu = (Element) cus.next();
+            for (Element cu : Util.findSubElements(data)) {
                 assert cu.getLocalName().equals("compilation-unit") : cu;
                 boolean isTests = Util.findElement(cu, "unit-tests", JavaProjectNature.NS_JAVA_2) != null; // NOI18N
-                Iterator/*<Element>*/ prs = Util.findSubElements(cu).iterator();
-                while (prs.hasNext()) {
-                    Element pr = (Element) prs.next();
+                for (Element pr : Util.findSubElements(cu)) {
                     if (pr.getLocalName().equals("package-root")) { // NOI18N
                         String rawtext = Util.findText(pr);
                         assert rawtext != null;
@@ -117,8 +112,8 @@ final class TestQuery implements MultipleRootsUnitTestForSourceQueryImplementati
             }
         }
         return new URL[][] {
-            (URL[]) sources.toArray(new URL[sources.size()]),
-            (URL[]) tests.toArray(new URL[tests.size()]),
+            sources.toArray(new URL[sources.size()]),
+            tests.toArray(new URL[tests.size()]),
         };
     }
 

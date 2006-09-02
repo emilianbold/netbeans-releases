@@ -22,7 +22,6 @@ package org.netbeans.modules.java.freeform.ui;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -37,11 +36,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.netbeans.modules.java.freeform.spi.support.NewJavaFreeformProjectSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -64,17 +65,17 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
     private WizardDescriptor.Panel[] createPanels () {
         return new WizardDescriptor.Panel[] {
                 NewFreeformProjectSupport.createBasicProjectInfoWizardPanel(),
-                NewFreeformProjectSupport.createTargetMappingWizardPanel(new ArrayList()), // NOI18N
+                NewFreeformProjectSupport.createTargetMappingWizardPanel(new ArrayList<TargetDescriptor>()), // NOI18N
                 new SourceFoldersWizardPanel(),
                 new ClasspathWizardPanel(),
             };
     }
     
-    public Set/*<FileObject>*/ instantiate () throws IOException {
+    public Set<?/*FileObject*/> instantiate() throws IOException {
         throw new AssertionError();
     }
 
-    public Set/*<FileObject>*/ instantiate(final ProgressHandle handle) throws IOException {
+    public Set<?/*FileObject*/> instantiate(final ProgressHandle handle) throws IOException {
         handle.start(6);
         final WizardDescriptor wiz = this.wiz;
         final IOException[] ioe = new IOException[1];
@@ -102,7 +103,7 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
         }
         ProjectModel pm = (ProjectModel)wiz.getProperty(PROP_PROJECT_MODEL);
         File nbProjectFolder = pm.getNBProjectFolder();
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         resultSet.add(FileUtil.toFileObject(nbProjectFolder));
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(nbProjectFolder));
         if (p != null) {
@@ -129,14 +130,14 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
         index = 0;
         panels = createPanels();
         
-        List l = new ArrayList();
+        List<String> l = new ArrayList<String>();
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             assert c instanceof JComponent;
             JComponent jc = (JComponent)c;
             l.add(jc.getName());
         }
-        String[] steps = (String[])l.toArray(new String[l.size()]);
+        String[] steps = l.toArray(new String[l.size()]);
         
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
@@ -160,8 +161,7 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
     }
     
     public String name() {
-        return MessageFormat.format (NbBundle.getMessage (NewJ2SEFreeformProjectWizardIterator.class, "TXT_NewJ2SEFreeformProjectWizardIterator_TitleFormat"), // NOI18N
-            new Object[] {new Integer (index + 1), new Integer (panels.length) });
+        return NbBundle.getMessage(NewJ2SEFreeformProjectWizardIterator.class, "TXT_NewJ2SEFreeformProjectWizardIterator_TitleFormat", index + 1, panels.length);
     }
     
     public boolean hasNext() {

@@ -62,12 +62,12 @@ public class JavadocQueryTest extends TestBase {
         return FileUtil.getArchiveRoot(simple2.helper().resolveFile(path).toURI().toURL());
     }
     
-    private List/*<URL>*/ javadocFor(URL binary) {
+    private List<URL> javadocFor(URL binary) {
         return Arrays.asList(JavadocForBinaryQuery.findJavadoc(binary).getRoots());
     }
     
     public void testFindJavadoc() throws Exception {
-        List/*<URL>*/ both = Arrays.asList(new URL[] {javadoc1Dir, javadoc2Zip});
+        List<URL> both = Arrays.asList(new URL[] {javadoc1Dir, javadoc2Zip});
         assertEquals("both Javadoc found for " + classes1Dir, both, javadocFor(classes1Dir));
         assertEquals("both Javadoc found for " + classes1Jar, both, javadocFor(classes1Jar));
         assertEquals("no Javadoc found for " + classes2Dir, Collections.EMPTY_LIST, javadocFor(classes2Dir));

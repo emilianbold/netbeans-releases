@@ -48,6 +48,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -59,7 +60,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Mutex.Action;
+import org.openide.util.Mutex;
 import org.w3c.dom.Element;
 
 /**
@@ -98,19 +99,19 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     /**
      * Map from classpath types to maps from package roots to classpaths.
      */
-    private final Map/*<String,Map<FileObject,Classpath>>*/ classpaths = new HashMap();
+    private final Map<String,Map<FileObject,ClassPath>> classpaths = new HashMap<String,Map<FileObject,ClassPath>>();
     
     /**
      * Map from classpath types to maps from lists of package root names to classpath impls.
      */
-    private final Map/*<String,Map<List<String>,MutableClassPathImplementation>>*/ mutablePathImpls = new HashMap();
+    private final Map<String,Map<List<String>,MutableClassPathImplementation>> mutablePathImpls = new HashMap<String,Map<List<String>,MutableClassPathImplementation>>();
     
-    private final Map/*<MutableClassPathImplementation, Classpath>*/ mutableClassPathImpl2ClassPath = new HashMap();
+    private final Map<MutableClassPathImplementation,ClassPath> mutableClassPathImpl2ClassPath = new HashMap<MutableClassPathImplementation,ClassPath>();
     
     /**
      * Map from classpath types to sets of classpaths we last registered to GlobalPathRegistry.
      */
-    private Map/*<String,Set<Classpath>>*/ registeredClasspaths = null;
+    private Map<String,Set<ClassPath>> registeredClasspaths = null;
     
     public Classpaths(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
         this.helper = helper;
@@ -123,8 +124,8 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     public ClassPath findClassPath(final FileObject file, final String type) {
         //#77015: the findClassPathImpl method takes read access on ProjectManager.mutex
         //taking the read access before the private lock to prevent deadlocks.
-        return (ClassPath) ProjectManager.mutex().readAccess(new Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<ClassPath>() {
+            public ClassPath run() {
                 return findClassPathImpl(file, type);
             }
         });
@@ -143,9 +144,9 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             classpaths.clear();
         }
         
-        Map/*<FileObject,ClassPath>*/ classpathsByType = (Map)classpaths.get(type);
+        Map<FileObject,ClassPath> classpathsByType = classpaths.get(type);
         if (classpathsByType == null) {
-            classpathsByType = new WeakHashMap();
+            classpathsByType = new WeakHashMap<FileObject,ClassPath>();
             classpaths.put(type, classpathsByType);
         }
         // Check for cached value.
@@ -163,12 +164,12 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         if (java == null) {
             return null;
         }
-        List/*<Element>*/ compilationUnits = Util.findSubElements(java);
+        List<Element> compilationUnits = Util.findSubElements(java);
         it = compilationUnits.iterator();
         while (it.hasNext()) {
             Element compilationUnitEl = (Element)it.next();
             assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
-            List/*<FileObject>*/ packageRoots = findPackageRoots(helper, evaluator, compilationUnitEl);
+            List<FileObject> packageRoots = findPackageRoots(helper, evaluator, compilationUnitEl);
             Iterator it2 = packageRoots.iterator();
             while (it2.hasNext()) {
                 FileObject root = (FileObject)it2.next();
@@ -204,45 +205,39 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         if (registeredClasspaths != null) {
             return;
         }
-        Map/*<String,Set<Classpath>>*/ _registeredClasspaths = new HashMap();
-        for (int i = 0; i < TYPES.length; i++) {
-            String type = TYPES[i];
-            _registeredClasspaths.put(type, new HashSet());
+        Map<String,Set<ClassPath>> _registeredClasspaths = new HashMap<String,Set<ClassPath>>();
+        for (String type : TYPES) {
+            _registeredClasspaths.put(type, new HashSet<ClassPath>());
         }
         Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
         if (java == null) {
             return;
         }
-        List/*<Element>*/ compilationUnits = Util.findSubElements(java);
-        Iterator it = compilationUnits.iterator();
-        while (it.hasNext()) {
-            Element compilationUnitEl = (Element)it.next();
+        for (Element compilationUnitEl : Util.findSubElements(java)) {
             assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
             // For each compilation unit, find the package roots first.
-            List/*<FileObject>*/ packageRoots = findPackageRoots(helper, evaluator, compilationUnitEl);
-            for (int i = 0; i < TYPES.length; i++) {
-                String type = TYPES[i];
+            List<FileObject> packageRoots = findPackageRoots(helper, evaluator, compilationUnitEl);
+            for (String type : TYPES) {
                 // Then for each type, collect the classpath (creating it as needed).
-                Map/*<FileObject,ClassPath>*/ classpathsByType = (Map)classpaths.get(type);
+                Map<FileObject,ClassPath> classpathsByType = classpaths.get(type);
                 if (classpathsByType == null) {
-                    classpathsByType = new WeakHashMap();
+                    classpathsByType = new WeakHashMap<FileObject,ClassPath>();
                     classpaths.put(type, classpathsByType);
                 }
-                Set/*<ClassPath>*/ registeredClasspathsOfType = (Set) _registeredClasspaths.get(type);
+                Set<ClassPath> registeredClasspathsOfType = _registeredClasspaths.get(type);
                 assert registeredClasspathsOfType != null;
                 // Check if there is already a ClassPath registered to one of these roots.
                 ClassPath cp = null;
-                Iterator it2 = packageRoots.iterator();
-                while (cp == null && it2.hasNext()) {
-                    FileObject root = (FileObject)it2.next();
-                    cp = (ClassPath)classpathsByType.get(root);
+                for (FileObject root : packageRoots) {
+                    cp = classpathsByType.get(root);
+                    if (cp != null) {
+                        break;
+                    }
                 }
                 if (cp == null) {
                     // Nope. Calculate and register it now.
                     cp = getPath(compilationUnitEl, packageRoots, type);
-                    it2 = packageRoots.iterator();
-                    while (it2.hasNext()) {
-                        FileObject root = (FileObject)it2.next();
+                    for (FileObject root : packageRoots) {
                         classpathsByType.put(root, cp);
                     }
                 }
@@ -257,10 +252,9 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         this.registeredClasspaths = _registeredClasspaths;
         // Register all of the classpaths we found.
         GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
-        for (int i = 0; i < TYPES.length; i++) {
-            String type = TYPES[i];
-            Set/*<ClassPath>*/ registeredClasspathsOfType = (Set)registeredClasspaths.get(type);
-            gpr.register(type, (ClassPath[])registeredClasspathsOfType.toArray(new ClassPath[registeredClasspathsOfType.size()]));
+        for (String type : TYPES) {
+            Set<ClassPath> registeredClasspathsOfType = registeredClasspaths.get(type);
+            gpr.register(type, registeredClasspathsOfType.toArray(new ClassPath[registeredClasspathsOfType.size()]));
         }
     }
     
@@ -268,9 +262,9 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         if (registeredClasspaths == null) {
             return;
         }
-        Set s = (Set)registeredClasspaths.get(type);
+        Set<ClassPath> s = registeredClasspaths.get(type);
         s.add(cp);
-        GlobalPathRegistry.getDefault().register(type, (ClassPath[])new ClassPath[]{cp});
+        GlobalPathRegistry.getDefault().register(type, new ClassPath[] {cp});
     }
     
     /**
@@ -284,14 +278,14 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
         for (int i = 0; i < TYPES.length; i++) {
             String type = TYPES[i];
-            Set/*<ClassPath>*/ registeredClasspathsOfType = (Set)registeredClasspaths.get(type);
-            gpr.unregister(type, (ClassPath[])registeredClasspathsOfType.toArray(new ClassPath[registeredClasspathsOfType.size()]));
+            Set<ClassPath> registeredClasspathsOfType = registeredClasspaths.get(type);
+            gpr.unregister(type, registeredClasspathsOfType.toArray(new ClassPath[registeredClasspathsOfType.size()]));
         }
         registeredClasspaths = null;
     }
     
-    static List/*<String>*/ findPackageRootNames(Element compilationUnitEl) {
-        List/*<String>*/ names = new ArrayList();
+    static List<String> findPackageRootNames(Element compilationUnitEl) {
+        List<String> names = new ArrayList<String>();
         Iterator it = Util.findSubElements(compilationUnitEl).iterator();
         while (it.hasNext()) {
             Element e = (Element) it.next();
@@ -304,8 +298,8 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         return names;
     }
     
-    static Map/*<String,FileObject>*/ findPackageRootsByName(AntProjectHelper helper, PropertyEvaluator evaluator, List/*<String>*/ packageRootNames) {
-        Map/*<String,FileObject>*/ roots = new LinkedHashMap();
+    static Map<String,FileObject> findPackageRootsByName(AntProjectHelper helper, PropertyEvaluator evaluator, List<String> packageRootNames) {
+        Map<String,FileObject> roots = new LinkedHashMap<String,FileObject>();
         Iterator it = packageRootNames.iterator();
         while (it.hasNext()) {
             String location = (String) it.next();
@@ -324,30 +318,30 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         return roots;
     }
     
-    private static List/*<FileObject>*/ findPackageRoots(AntProjectHelper helper, PropertyEvaluator evaluator, List/*<String>*/ packageRootNames) {
-        return new ArrayList(findPackageRootsByName(helper, evaluator, packageRootNames).values());
+    private static List<FileObject> findPackageRoots(AntProjectHelper helper, PropertyEvaluator evaluator, List<String> packageRootNames) {
+        return new ArrayList<FileObject>(findPackageRootsByName(helper, evaluator, packageRootNames).values());
     }
     
-    public static List/*<FileObject>*/ findPackageRoots(AntProjectHelper helper, PropertyEvaluator evaluator, Element compilationUnitEl) {
+    public static List<FileObject> findPackageRoots(AntProjectHelper helper, PropertyEvaluator evaluator, Element compilationUnitEl) {
         return findPackageRoots(helper, evaluator, findPackageRootNames(compilationUnitEl));
     }
     
-    private ClassPath getPath(Element compilationUnitEl, List/*<FileObject>*/ packageRoots, String type) {
+    private ClassPath getPath(Element compilationUnitEl, List<FileObject> packageRoots, String type) {
         if (type.equals(ClassPath.SOURCE) || type.equals(ClassPath.COMPILE) ||
                 type.equals(ClassPath.EXECUTE) || type.equals(ClassPath.BOOT)) {
-            List/*<String>*/ packageRootNames = findPackageRootNames(compilationUnitEl);
-            Map/*<List<String>,MutableClassPathImplementation>*/ mutablePathImplsByType = (Map) mutablePathImpls.get(type);
+            List<String> packageRootNames = findPackageRootNames(compilationUnitEl);
+            Map<List<String>,MutableClassPathImplementation> mutablePathImplsByType = mutablePathImpls.get(type);
             if (mutablePathImplsByType == null) {
-                mutablePathImplsByType = new HashMap();
+                mutablePathImplsByType = new HashMap<List<String>,MutableClassPathImplementation>();
                 mutablePathImpls.put(type, mutablePathImplsByType);
             }
-            MutableClassPathImplementation impl = (MutableClassPathImplementation) mutablePathImplsByType.get(packageRootNames);
+            MutableClassPathImplementation impl = mutablePathImplsByType.get(packageRootNames);
             if (impl == null) {
                 // XXX will it ever not be null?
                 impl = new MutableClassPathImplementation(packageRootNames, type, compilationUnitEl);
                 mutablePathImplsByType.put(packageRootNames, impl);
             }
-            ClassPath cp = (ClassPath)mutableClassPathImpl2ClassPath.get(impl);
+            ClassPath cp = mutableClassPathImpl2ClassPath.get(impl);
             if (cp == null) {
                 cp = ClassPathFactory.createClassPath(impl);
                 mutableClassPathImpl2ClassPath.put(impl, cp);
@@ -360,11 +354,9 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         }
     }
     
-    private List/*<URL>*/ createSourcePath(List/*<String>*/ packageRootNames) {
-        List/*<URL>*/ roots = new ArrayList(packageRootNames.size());
-        Iterator it = packageRootNames.iterator();
-        while (it.hasNext()) {
-            String location = (String) it.next();
+    private List<URL> createSourcePath(List<String> packageRootNames) {
+        List<URL> roots = new ArrayList<URL>(packageRootNames.size());
+        for (String location : packageRootNames) {
             String locationEval = evaluator.evaluate(location);
             if (locationEval != null) {
                 roots.add(createClasspathEntry(locationEval));
@@ -373,29 +365,27 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         return roots;
     }
     
-    private List/*<URL>*/ createCompileClasspath(Element compilationUnitEl) {
-        Iterator/*<Element>*/ it = Util.findSubElements(compilationUnitEl).iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
+    private List<URL> createCompileClasspath(Element compilationUnitEl) {
+        for (Element e : Util.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("compile")) { // NOI18N
                 return createClasspath(e);
             }
         }
         // None specified; assume it is empty.
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
     
     /**
      * Create a classpath from a &lt;classpath&gt; element.
      */
-    private List/*<URL>*/ createClasspath(Element classpathEl) {
+    private List<URL> createClasspath(Element classpathEl) {
         String cp = Util.findText(classpathEl);
         if (cp == null) {
             cp = "";
         }
         String cpEval = evaluator.evaluate(cp);
         if (cpEval == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         String[] path = PropertyUtils.tokenizePath(cpEval);
         URL[] pathURL = new URL[path.length];
@@ -430,22 +420,18 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         }
     }
     
-    private List/*<URL>*/ createExecuteClasspath(List/*<String>*/ packageRoots, Element compilationUnitEl) {
-        Iterator/*<Element>*/ it = Util.findSubElements(compilationUnitEl).iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
+    private List<URL> createExecuteClasspath(List<String> packageRoots, Element compilationUnitEl) {
+        for (Element e : Util.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("execute")) { // NOI18N
                 return createClasspath(e);
             }
         }
         // None specified; assume it is same as compile classpath plus (cf. #49113) <built-to> dirs/JARs
         // if there are any (else include the source dir(s) as a fallback for the I18N wizard to work).
-        List/*<URL>*/ urls = new ArrayList();
+        List<URL> urls = new ArrayList<URL>();
         urls.addAll(createCompileClasspath(compilationUnitEl));
         boolean foundBuiltTos = false;
-        Iterator/*<Element>*/ builtTos = Util.findSubElements(compilationUnitEl).iterator();
-        while (builtTos.hasNext()) {
-            Element builtTo = (Element) builtTos.next();
+        for (Element builtTo : Util.findSubElements(compilationUnitEl)) {
             if (!builtTo.getLocalName().equals("built-to")) { // NOI18N
                 continue;
             }
@@ -464,10 +450,8 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         return urls;
     }
     
-    private List/*<URL>*/ createBootClasspath(Element compilationUnitEl) {
-        Iterator/*<Element>*/ it = Util.findSubElements(compilationUnitEl).iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
+    private List<URL> createBootClasspath(Element compilationUnitEl) {
+        for (Element e : Util.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("classpath") && e.getAttribute("mode").equals("boot")) { // NOI18N
                 return createClasspath(e);
             }
@@ -475,9 +459,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         // None specified; try to find a matching Java platform.
         JavaPlatformManager jpm = JavaPlatformManager.getDefault();
         JavaPlatform platform = jpm.getDefaultPlatform(); // fallback
-        it = Util.findSubElements(compilationUnitEl).iterator();
-        while (it.hasNext()) {
-            Element e = (Element)it.next();
+        for (Element e : Util.findSubElements(compilationUnitEl)) {
             if (e.getLocalName().equals("source-level")) { // NOI18N
                 String level = Util.findText(e);
                 Specification spec = new Specification("j2se", new SpecificationVersion(level)); // NOI18N
@@ -485,15 +467,15 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                 if (matchingPlatforms.length > 0) {
                     // Pick one. Prefer one with sources if there is a choice, else with Javadoc.
                     platform = matchingPlatforms[0];
-                    for (int i = 0; i < matchingPlatforms.length; i++) {
-                        if (!matchingPlatforms[i].getJavadocFolders().isEmpty()) {
-                            platform = matchingPlatforms[i];
+                    for (JavaPlatform matchingPlatform : matchingPlatforms) {
+                        if (!matchingPlatform.getJavadocFolders().isEmpty()) {
+                            platform = matchingPlatform;
                             break;
                         }
                     }
-                    for (int i = 0; i < matchingPlatforms.length; i++) {
-                        if (matchingPlatforms[i].getSourceFolders().getRoots().length > 0) {
-                            platform = matchingPlatforms[i];
+                    for (JavaPlatform matchingPlatform : matchingPlatforms) {
+                        if (matchingPlatform.getSourceFolders().getRoots().length > 0) {
+                            platform = matchingPlatform;
                             break;
                         }
                     }
@@ -504,17 +486,15 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         if (platform != null) {
             // XXX this is not ideal; should try to reuse the ClassPath as is?
             // The current impl will not listen to changes in the platform classpath correctly.
-            List/*<ClassPath.Entry>*/ entries = platform.getBootstrapLibraries().entries();
-            List/*<URL>*/ urls = new ArrayList(entries.size());
-            Iterator it2 = entries.iterator();
-            while (it2.hasNext()) {
-                ClassPath.Entry entry = (ClassPath.Entry) it2.next();
+            List<ClassPath.Entry> entries = platform.getBootstrapLibraries().entries();
+            List<URL> urls = new ArrayList<URL>(entries.size());
+            for (ClassPath.Entry entry : entries) {
                 urls.add(entry.getURL());
             }
             return urls;
         } else {
             assert false : "JavaPlatformManager has no default platform";
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
 
@@ -535,12 +515,8 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             classpaths.clear();
         }
         //System.err.println("pathsChanged: " + mutablePathImpls);
-        Iterator/*<Map<List<String>,MutableClassPathImplementation>>*/ it1 = mutablePathImpls.values().iterator();
-        while (it1.hasNext()) {
-            Map/*<List<String>,MutableClassPathImplementation>*/ m = (Map) it1.next();
-            Iterator/*<MutableClassPathImplementation>*/ it2 = m.values().iterator();
-            while (it2.hasNext()) {
-                MutableClassPathImplementation impl = (MutableClassPathImplementation) it2.next();
+        for (Map<List<String>,MutableClassPathImplementation> m : mutablePathImpls.values()) {
+            for (MutableClassPathImplementation impl : m.values()) {
                 impl.change();
             }
         }
@@ -552,12 +528,12 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
      */
     private final class MutableClassPathImplementation implements ClassPathImplementation {
         
-        private final List/*<String>*/ packageRootNames;
+        private final List<String> packageRootNames;
         private final String type;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        private List/*<URL>*/ roots; // should always be non-null
+        private List<URL> roots; // should always be non-null
         
-        public MutableClassPathImplementation(List/*<String>*/ packageRootNames, String type, Element initialCompilationUnit) {
+        public MutableClassPathImplementation(List<String> packageRootNames, String type, Element initialCompilationUnit) {
             this.packageRootNames = packageRootNames;
             this.type = type;
             initRoots(initialCompilationUnit);
@@ -568,7 +544,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             if (java == null) {
                 return null;
             }
-            List/*<Element>*/ compilationUnits = Util.findSubElements(java);
+            List<Element> compilationUnits = Util.findSubElements(java);
             Iterator it = compilationUnits.iterator();
             while (it.hasNext()) {
                 Element compilationUnitEl = (Element)it.next();
@@ -588,7 +564,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         private void initRoots(Element compilationUnitEl) {
             if (compilationUnitEl == null) {
                 // Dead.
-                roots = Collections.EMPTY_LIST;
+                roots = Collections.emptyList();
                 return;
             }
             if (type.equals(ClassPath.SOURCE)) {
@@ -604,11 +580,9 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             assert roots != null;
         }
 
-        public List/*<PathResourceImplementation>*/ getResources() {
-            List/*<PathResourceImplementation>*/ impls = new ArrayList(roots.size());
-            Iterator it = roots.iterator();
-            while (it.hasNext()) {
-                URL root = (URL) it.next();
+        public List<PathResourceImplementation> getResources() {
+            List<PathResourceImplementation> impls = new ArrayList<PathResourceImplementation>(roots.size());
+            for (URL root : roots) {
                 assert root.toExternalForm().endsWith("/") : "Had bogus roots " + roots + " for type " + type + " in " + helper.getProjectDirectory();
                 impls.add(ClassPathSupport.createResource(root));
             }
@@ -619,7 +593,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
          * Notify impl of a possible change in data.
          */
         public void change() {
-            List/*<URL>*/ oldRoots = roots;
+            List<URL> oldRoots = roots;
             initRoots(findCompilationUnit());
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 err.log("MutableClassPathImplementation.change: packageRootNames=" + packageRootNames + " type=" + type + " oldRoots=" + oldRoots + " roots=" + roots);

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.java.freeform;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -32,7 +31,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex.Action;
+import org.openide.util.Mutex;
 import org.w3c.dom.Element;
 
 /**
@@ -48,7 +47,7 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
     /**
      * Map from package roots to source levels.
      */
-    private final Map/*<FileObject,String>*/ sourceLevels = new WeakHashMap();
+    private final Map<FileObject,String> sourceLevels = new WeakHashMap<FileObject,String>();
     
     public SourceLevelQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
         this.helper = helper;
@@ -60,8 +59,8 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
     public String getSourceLevel(final FileObject file) {
         //#60638: the getSourceLevelImpl method takes read access on ProjectManager.mutex
         //taking the read access before the private lock to prevent deadlocks.
-        return (String) ProjectManager.mutex().readAccess(new Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
                 return getSourceLevelImpl(file);
             }
         });
@@ -69,13 +68,11 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
     
     private synchronized String getSourceLevelImpl(FileObject file) {
         // Check for cached value.
-        Iterator it = sourceLevels.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            FileObject root = (FileObject)entry.getKey();
+        for (Map.Entry<FileObject,String> entry : sourceLevels.entrySet()) {
+            FileObject root = entry.getKey();
             if (root == file || FileUtil.isParentOf(root, file)) {
                 // Already have it.
-                return (String)entry.getValue();
+                return entry.getValue();
             }
         }
         // Need to compute it.
@@ -83,21 +80,14 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
         if (java == null) {
             return null;
         }
-        List/*<Element>*/ compilationUnits = Util.findSubElements(java);
-        it = compilationUnits.iterator();
-        while (it.hasNext()) {
-            Element compilationUnitEl = (Element)it.next();
+        for (Element compilationUnitEl : Util.findSubElements(java)) {
             assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
-            List/*<FileObject>*/ packageRoots = Classpaths.findPackageRoots(helper, evaluator, compilationUnitEl);
-            Iterator it2 = packageRoots.iterator();
-            while (it2.hasNext()) {
-                FileObject root = (FileObject)it2.next();
+            List<FileObject> packageRoots = Classpaths.findPackageRoots(helper, evaluator, compilationUnitEl);
+            for (FileObject root : packageRoots) {
                 if (root == file || FileUtil.isParentOf(root, file)) {
                     // Got it. Retrieve source level and cache it (for each root).
                     String lvl = getLevel(compilationUnitEl);
-                    it2 = packageRoots.iterator();
-                    while (it2.hasNext()) {
-                        FileObject root2 = (FileObject)it2.next();
+                    for (FileObject root2 : packageRoots) {
                         sourceLevels.put(root2, lvl);
                     }
                     return lvl;

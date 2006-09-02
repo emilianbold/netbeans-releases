@@ -19,18 +19,21 @@
 
 package org.netbeans.modules.java.freeform;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ant.freeform.spi.HelpIDFragmentProvider;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
+import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.java.freeform.ui.ClasspathPanel;
 import org.netbeans.modules.java.freeform.ui.OutputPanel;
@@ -73,22 +76,22 @@ public class JavaProjectNature implements ProjectNature {
     
     private static final String HELP_ID_FRAGMENT = "java"; // NOI18N
     
-    private static final WeakHashMap/*<Project,WeakReference<Lookup>>*/ lookupCache = new WeakHashMap();
+    private static final Map<Project,Reference<Lookup>> lookupCache = new WeakHashMap<Project,Reference<Lookup>>();
     
     public JavaProjectNature() {}
 
     public Lookup getLookup(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
-        WeakReference wr = (WeakReference)lookupCache.get(project);
-        Lookup lookup = wr != null ? (Lookup)wr.get() : null;
+        Reference<Lookup> wr = lookupCache.get(project);
+        Lookup lookup = wr != null ? wr.get() : null;
         if (lookup == null) {
             lookup = new ProjectLookup(project, projectHelper, projectEvaluator, aux);
-            lookupCache.put(project, new WeakReference(lookup));
+            lookupCache.put(project, new WeakReference<Lookup>(lookup));
         }
         return lookup;
     }
     
-    public Set getCustomizerPanels(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
-        HashSet l = new HashSet();
+    public Set<ProjectPropertiesPanel> getCustomizerPanels(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
+        Set<ProjectPropertiesPanel> l = new HashSet<ProjectPropertiesPanel>();
         if (!isMyProject(aux)) {
             return l;
         }
@@ -102,15 +105,15 @@ public class JavaProjectNature implements ProjectNature {
         return l;
     }
     
-    public List getExtraTargets(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
-        return new ArrayList();
+    public List<TargetDescriptor> getExtraTargets(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
+        return new ArrayList<TargetDescriptor>();
     }
 
-    public Set/*<String>*/ getSchemas() {
-        return new HashSet(Arrays.asList(new String[] {SCHEMA_1, SCHEMA_2}));
+    public Set<String> getSchemas() {
+        return new HashSet<String>(Arrays.asList(SCHEMA_1, SCHEMA_2));
     }
 
-    public Set/*<String>*/ getSourceFolderViewStyles() {
+    public Set<String> getSourceFolderViewStyles() {
         return Collections.singleton(STYLE_PACKAGES);
     }
     
@@ -132,7 +135,7 @@ public class JavaProjectNature implements ProjectNature {
 
     private static Lookup initLookup(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
         Classpaths cp = new Classpaths(projectHelper, projectEvaluator, aux);
-        return Lookups.fixed(new Object[] {
+        return Lookups.fixed(
             cp, // ClassPathProvider
             new SourceLevelQueryImpl(projectHelper, projectEvaluator, aux), // SourceLevelQueryImplementation
             new SourceForBinaryQueryImpl(projectHelper, projectEvaluator, aux), // SourceForBinaryQueryImplementation
@@ -143,8 +146,7 @@ public class JavaProjectNature implements ProjectNature {
             new JavaActions(project, projectHelper, projectEvaluator, aux), // ActionProvider
             new LookupMergerImpl(), // LookupMerger
             new JavaFreeformFileBuiltQuery(project, projectHelper, projectEvaluator, aux), // FileBuiltQueryImplementation
-            new HelpIDFragmentProviderImpl(),
-        });
+            new HelpIDFragmentProviderImpl());
     }
     
     private static boolean isMyProject(AuxiliaryConfiguration aux) {

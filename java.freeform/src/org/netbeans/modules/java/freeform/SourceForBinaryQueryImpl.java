@@ -54,7 +54,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     /**
      * Map from known binary roots to lists of source roots.
      */
-    private Map/*<URL,FileObject[]*/ roots = null;
+    private Map<URL,FileObject[]> roots = null;
     
     public SourceForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
         this.helper = helper;
@@ -70,24 +70,19 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     public synchronized SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         if (roots == null) {
             // Need to compute it. Easiest to compute them all at once.
-            roots = new HashMap();
+            roots = new HashMap<URL,FileObject[]>();
             Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
             if (java == null) {
                 return null;
             }
-            List/*<Element>*/ compilationUnits = Util.findSubElements(java);
-            Iterator it = compilationUnits.iterator();
-            while (it.hasNext()) {
-                Element compilationUnitEl = (Element)it.next();
-                assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
-                List/*<URL>*/ binaries = findBinaries(compilationUnitEl);
+            for (Element compilationUnit : Util.findSubElements(java)) {
+                assert compilationUnit.getLocalName().equals("compilation-unit") : compilationUnit;
+                List<URL> binaries = findBinaries(compilationUnit);
                 if (!binaries.isEmpty()) {
-                    List/*<FileObject>*/ packageRoots = Classpaths.findPackageRoots(helper, evaluator, compilationUnitEl);
-                    FileObject[] sources = (FileObject[])packageRoots.toArray(new FileObject[packageRoots.size()]);
-                    Iterator it2 = binaries.iterator();
-                    while (it2.hasNext()) {                        
-                        URL u = (URL)it2.next();
-                        FileObject[] orig = (FileObject[]) roots.get (u);
+                    List<FileObject> packageRoots = Classpaths.findPackageRoots(helper, evaluator, compilationUnit);
+                    FileObject[] sources = packageRoots.toArray(new FileObject[packageRoots.size()]);
+                    for (URL u : binaries) {
+                        FileObject[] orig = roots.get(u);
                         //The case when sources are in the separate compilation units but
                         //the output is built into a single archive is not very common.
                         //It is better to recreate arrays rather then to add source roots 
@@ -104,7 +99,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             }
         }
         assert roots != null;
-        FileObject[] sources = (FileObject[])roots.get(binaryRoot);
+        FileObject[] sources = roots.get(binaryRoot);
         return sources == null ? null : new Result (sources);       //TODO: Optimize it, resolution of sources should be done in the result        
     }
     
@@ -112,12 +107,9 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
      * Find a list of URLs of binaries which will be produced from a compilation unit.
      * Result may be empty.
      */
-    private List/*<URL>*/ findBinaries(Element compilationUnitEl) {
-        List/*<Element>*/ builtToEls = Util.findSubElements(compilationUnitEl);
-        List/*<URL>*/ binaries = new ArrayList(builtToEls.size());
-        Iterator it = builtToEls.iterator();
-        while (it.hasNext()) {
-            Element builtToEl = (Element)it.next();
+    private List<URL> findBinaries(Element compilationUnitEl) {
+        List<URL> binaries = new ArrayList<URL>();
+        for (Element builtToEl : Util.findSubElements(compilationUnitEl)) {
             if (!builtToEl.getLocalName().equals("built-to")) { // NOI18N
                 continue;
             }

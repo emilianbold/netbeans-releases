@@ -281,7 +281,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
      * See {@link #assertElement(Element, String, String)} for more details. This 
      * method does exactly the same just on the list of elements and expected names. 
      */
-    public static void assertElementArray(List/*<Element>*/ elements, String[] expectedNames, String[] expectedValues) {
+    public static void assertElementArray(List<Element> elements, String[] expectedNames, String[] expectedValues) {
         for (int i=0; i<elements.size(); i++) {
             assertElement((Element)elements.get(i), expectedNames[i], expectedValues[i]);
         }
@@ -312,7 +312,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
      * method does exactly the same just on the list of elements and expected names
      * and expected attributes.
      */
-    public static void assertElementArray(List/*<Element>*/ elements, String[] expectedNames, String[] expectedValues, String[] expectedAttrName, String[] expectedAttrValue) {
+    public static void assertElementArray(List<Element> elements, String[] expectedNames, String[] expectedValues, String[] expectedAttrName, String[] expectedAttrValue) {
         assertEquals(expectedNames.length, elements.size());
         for (int i=0; i<elements.size(); i++) {
             assertElement((Element)elements.get(i), expectedNames[i], expectedValues[i], expectedAttrName[i], expectedAttrValue[i]);
@@ -804,7 +804,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertNotNull("Project was not created", p);
         assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
         // Start with a /1-friendly data set.
-        List/*<JavaProjectGenerator.JavaCompilationUnit>*/ units = new ArrayList();
+        List<JavaProjectGenerator.JavaCompilationUnit> units = new ArrayList();
         JavaProjectGenerator.JavaCompilationUnit cu = new JavaProjectGenerator.JavaCompilationUnit();
         cu.packageRoots = new ArrayList();
         cu.packageRoots.add("pkgroot1");
@@ -814,7 +814,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         // Check that the correct /1 data was saved.
         Element el = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
         assertNotNull("Java compilation units were saved in /1",  el);
-        List/*<Element>*/ subElements = Util.findSubElements(el);
+        List<Element> subElements = Util.findSubElements(el);
         assertEquals(1, subElements.size());
         // compare the compilation unit
         Element el2 = (Element) subElements.get(0);

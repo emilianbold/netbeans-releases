@@ -21,6 +21,7 @@ package org.netbeans.modules.java.freeform.ui;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -81,7 +82,7 @@ public class SourceFoldersWizardPanel implements WizardDescriptor.Panel, ChangeL
         return true;
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -93,13 +94,13 @@ public class SourceFoldersWizardPanel implements WizardDescriptor.Panel, ChangeL
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        Collection<ChangeListener> ls;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            ls = new HashSet<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
     
