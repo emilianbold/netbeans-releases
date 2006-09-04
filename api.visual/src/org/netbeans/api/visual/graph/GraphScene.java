@@ -57,6 +57,7 @@ public abstract class GraphScene<N, E> extends ObjectScene {
             setEdgeTarget (edge, null);
         nodeInputEdges.remove (node);
         nodeOutputEdges.remove (node);
+        nodes.remove (node);
         Widget widget = findWidget (node);
         removeObject (node);
         detachNodeWidget (node, widget);
