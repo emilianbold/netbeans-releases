@@ -140,6 +140,21 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         closeButton.setBorderPainted(false);
         closeButton.setBorder(BorderFactory.createEmptyBorder());
         closeButton.setOpaque(false);
+        closeButton.setContentAreaFilled(false);
+        
+        Image img = (Image)UIManager.get("nb.progress.cancel.icon");
+        if( null != img ) {
+            closeButton.setIcon( new ImageIcon( img ) );
+        }
+        img = (Image)UIManager.get("nb.progress.cancel.icon.mouseover");
+        if( null != img ) {
+            closeButton.setRolloverEnabled(true);
+            closeButton.setRolloverIcon( new ImageIcon( img ) );
+        }
+        img = (Image)UIManager.get("nb.progress.cancel.icon.pressed");
+        if( null != img ) {
+            closeButton.setPressedIcon( new ImageIcon( img ) );
+        }
         
         closeButton.setToolTipText(NbBundle.getMessage(ListComponent.class, "ListComponent.btnClose.tooltip"));
     }

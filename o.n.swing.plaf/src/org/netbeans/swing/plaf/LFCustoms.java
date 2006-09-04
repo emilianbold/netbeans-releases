@@ -301,4 +301,6 @@ public abstract class LFCustoms {
     
     // keys used by the progressbar api module.
     public static final String PROGRESS_CANCEL_BUTTON_ICON = "nb.progress.cancel.icon";
+    public static final String PROGRESS_CANCEL_BUTTON_ROLLOVER_ICON = "nb.progress.cancel.icon.mouseover";
+    public static final String PROGRESS_CANCEL_BUTTON_PRESSED_ICON = "nb.progress.cancel.icon.pressed";
 }

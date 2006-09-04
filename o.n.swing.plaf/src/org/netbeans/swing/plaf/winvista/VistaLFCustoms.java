@@ -88,7 +88,7 @@ public final class VistaLFCustoms extends LFCustoms {
         Object viewTabsUI = editorTabsUI.createShared("org.netbeans.swing.tabcontrol.plaf.WinVistaViewTabDisplayerUI");
 
         //TODO change icon (copy & paste)
-        Image explorerIcon = UIUtils.loadImage("org/netbeans/swing/plaf/resources/xp-explorer-folder.gif");
+        Image explorerIcon = UIUtils.loadImage("org/netbeans/swing/plaf/resources/vista_folder.png");
 
         Object propertySheetValues = new VistaPropertySheetColorings();
 
@@ -120,12 +120,14 @@ public final class VistaLFCustoms extends LFCustoms {
             // progress component related
             "nbProgressBar.Foreground", new Color(49, 106, 197),
             "nbProgressBar.Background", Color.WHITE,
-            "nbProgressBar.popupDynaText.foreground", new Color(141, 136, 122),
+            "nbProgressBar.popupDynaText.foreground", new Color(115, 115, 115),
             "nbProgressBar.popupText.background", new Color(249, 249, 249),        
             "nbProgressBar.popupText.foreground", UIManager.getColor("TextField.foreground"),
             "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
-            PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_xp.png")
+            PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/vista_mini_close_enabled.png"),
+            PROGRESS_CANCEL_BUTTON_ROLLOVER_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/vista_mini_close_over.png"),
+            PROGRESS_CANCEL_BUTTON_PRESSED_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/vista_mini_close_pressed.png")
 
         }; //NOI18N
         
@@ -219,9 +221,9 @@ public final class VistaLFCustoms extends LFCustoms {
 
         public Object[] createKeysAndValues() {
             return new Object[] {
-                PROPSHEET_SET_BACKGROUND, new Color(49,106,197),
+                PROPSHEET_SELECTION_BACKGROUND, new Color(49,106,197),
                 PROPSHEET_SELECTION_FOREGROUND, Color.WHITE,
-                PROPSHEET_SET_BACKGROUND, new Color(212,208,200),
+                PROPSHEET_SET_BACKGROUND, new Color(213,213,213),
                 PROPSHEET_SET_FOREGROUND, Color.BLACK,
                 PROPSHEET_SELECTED_SET_BACKGROUND, new Color(49,106,197),
                 PROPSHEET_SELECTED_SET_FOREGROUND, Color.WHITE,
