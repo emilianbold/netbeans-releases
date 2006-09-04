@@ -49,7 +49,7 @@ public final class RoundedBorder implements Border {
         }
         if (drawColor != null) {
             gr.setColor (drawColor);
-            gr.draw (new RoundRectangle2D.Float (bounds.x + 0.5f, bounds.y + 0.5f, bounds.width - 1, bounds.height - 1, arcWidth, arcHeight));
+            gr.draw (new RoundRectangle2D.Float (bounds.x, bounds.y, bounds.width - 1, bounds.height - 1, arcWidth, arcHeight));
         }
     }
 
