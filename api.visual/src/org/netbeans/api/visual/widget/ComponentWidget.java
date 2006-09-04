@@ -13,8 +13,8 @@
 package org.netbeans.api.visual.widget;
 
 import java.awt.*;
-import java.awt.event.ComponentListener;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 /**
  * @author David Kaspar
@@ -28,13 +28,23 @@ public final class ComponentWidget extends Widget {
     private double zoomFactor = Double.MIN_VALUE;
     private ComponentSceneListener validateListener;
     private ComponentComponentListener componentListener;
+    private boolean paintComponent;
 
     public ComponentWidget (Scene scene, Component component) {
         super (scene);
         this.component = component;
         validateListener = null;
         componentListener = new ComponentComponentListener ();
+        paintComponent = true;
         attach ();
+    }
+
+    public boolean isPaintComponent () {
+        return paintComponent;
+    }
+
+    public void setPaintComponent (boolean paintComponent) {
+        this.paintComponent = paintComponent;
     }
 
     public final void attach () {
@@ -82,7 +92,7 @@ public final class ComponentWidget extends Widget {
             componentAdded = true;
         }
         component.removeComponentListener (componentListener);
-        component.setBounds (scene.convertSceneToView (convertLocalToScene (getBounds ())));
+        component.setBounds (scene.convertSceneToView (convertLocalToScene (getClientArea ())));
         component.addComponentListener (componentListener);
     }
 
@@ -92,6 +102,16 @@ public final class ComponentWidget extends Widget {
             component.removeComponentListener (componentListener);
             scene.getComponent ().remove (component);
             componentAdded = false;
+        }
+    }
+
+    protected void paintWidget () {
+        if (paintComponent) {
+            Graphics2D graphics = getGraphics ();
+            Rectangle bounds = getClientArea ();
+            graphics.translate (bounds.x, bounds.y);
+            component.paint (graphics);
+            graphics.translate (- bounds.x, - bounds.y);
         }
     }
 

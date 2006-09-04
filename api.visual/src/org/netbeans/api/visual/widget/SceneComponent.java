@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * @author David Kaspar
  */
-final class SceneComponent extends JPanel implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener,FocusListener, DropTargetListener {
+final class SceneComponent extends JComponent implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener,FocusListener, DropTargetListener {
 
     private Scene scene;
     private Widget lockedWidget;
