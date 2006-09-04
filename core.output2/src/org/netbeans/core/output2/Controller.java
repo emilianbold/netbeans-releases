@@ -1140,6 +1140,9 @@ public class Controller { //XXX public only for debug access to logging code
                 // Undesirable in practice: win.requestVisibleForNewTab();
                 if (log) log ("Reset on " + tab + " tab displayable " + tab.isDisplayable() + " io " + io + " io.out " + io.out());
                 break;
+            case IOEvent.CMD_ICON :
+                win.setTabIcon(tab, io.getIcon());
+                break;
         }
     }
 

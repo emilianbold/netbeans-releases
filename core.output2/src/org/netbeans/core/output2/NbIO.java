@@ -48,6 +48,9 @@ class NbIO implements InputOutput {
     private Action[] actions;
 
     private NbWriter out = null;
+
+    private Icon icon;
+
     /** Creates a new instance of NbIO 
      * @param name The name of the IO
      * @param toolbarActions an optional set of toolbar actions
@@ -245,6 +248,16 @@ class NbIO implements InputOutput {
     public Reader flushReader() {
         return getIn();
     }    
+
+    public void setIcon(Icon icn) {
+        icon = icn;
+        post (this, IOEvent.CMD_ICON, icn);
+        
+    }
+    
+    public Icon getIcon() {
+        return icon;
+    }
     
     class IOReader extends Reader {
         private boolean pristine = true;

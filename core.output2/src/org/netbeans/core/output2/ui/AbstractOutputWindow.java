@@ -45,13 +45,14 @@ import javax.swing.plaf.TabbedPaneUI;
  */
 public abstract class AbstractOutputWindow extends TopComponent implements ChangeListener, PropertyChangeListener {
     protected JTabbedPane pane = new CloseButtonTabbedPane();
+    private static final String ICON_PROP = "tabIcon"; //NOI18N
 
     /** Creates a new instance of AbstractOutputWindow */
     public AbstractOutputWindow() {
         pane.addChangeListener (this);
         pane.addPropertyChangeListener (CloseButtonTabbedPane.PROP_CLOSE, this);
         setFocusable(true);
-        setBackground (UIManager.getColor("text"));
+        setBackground (UIManager.getColor("text")); //NOI18N
     }
 
     public void propertyChange (PropertyChangeEvent pce) {
@@ -81,18 +82,23 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     super.remove (aop);
                     assert pane.getParent() != this;
                     pane.add (aop);
+                    setTabIcon(aop, (Icon)aop.getClientProperty(ICON_PROP));
                     pane.add (c);
+                    setTabIcon((AbstractOutputTab)c, (Icon)((AbstractOutputTab)c).getClientProperty(ICON_PROP));
                     
                     super.addImpl (pane, constraints, idx);
                     updateSingletonName(null);
                     revalidate();
                 } else if (pane.getParent() == this) {
                     pane.add (c);
+                    setTabIcon((AbstractOutputTab) c, (Icon)((AbstractOutputTab)c).getClientProperty(ICON_PROP));
                     revalidate();
                 } else {
                     super.addImpl (c, constraints, idx);
+                    setTabIcon((AbstractOutputTab) c, (Icon)((AbstractOutputTab)c).getClientProperty(ICON_PROP));
                     //#48819 - a bit obscure usecase, but revalidate() is call in the if branches above as well..
                     revalidate();
+                    
                 }
                 if (hadFocus) {
                     //Do not call c.requestFocus() directly, it can be 
@@ -211,6 +217,16 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             updateSingletonName(name);
         }
         tab.setName(name);
+    }
+    
+    public void setTabIcon(AbstractOutputTab tab, Icon icon) {
+        if (icon != null) {
+            tab.putClientProperty(ICON_PROP, icon);
+            if (pane.indexOfComponent(tab) != -1) {
+                pane.setIconAt(pane.indexOfComponent(tab), icon);
+                pane.setDisabledIconAt(pane.indexOfComponent(tab), icon);
+            }
+        }
     }
     
     public void requestFocus() {

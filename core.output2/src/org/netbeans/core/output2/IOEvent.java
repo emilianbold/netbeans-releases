@@ -108,6 +108,12 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
     static final int CMD_DETACH = 11;
     
     /**
+     * change the icon on the tab..
+     */
+    static final int CMD_ICON = 12;
+
+    
+    /**
      * Array of IDs for checking legal values and generating a string representing the event.
      */
     private static final int[] IDS = new int[] {
@@ -123,6 +129,7 @@ final class IOEvent extends AWTEvent implements ActiveEvent {
         CMD_RESET,
         CMD_SET_TOOLBAR_ACTIONS,
         CMD_DETACH,
+        CMD_ICON
     };
 
     /**
