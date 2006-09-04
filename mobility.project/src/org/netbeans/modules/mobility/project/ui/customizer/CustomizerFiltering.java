@@ -84,11 +84,7 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         manager = sourceExplorer.getExplorerManager();
         
         treeView = new CheckedTreeBeanView();
-        try {
-            Field f = CheckedTreeBeanView.class.getDeclaredField("tree");//NOI18N
-            f.setAccessible(true);
-            jLabelTree.setLabelFor((Component)f.get(treeView));
-        } catch (Exception e){}
+        jLabelTree.setLabelFor(treeView);
         treeView.setPopupAllowed(false);
         treeView.setRootVisible(false);
         treeView.setDefaultActionAllowed(false);
