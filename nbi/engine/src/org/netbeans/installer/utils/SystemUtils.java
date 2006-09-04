@@ -20,13 +20,15 @@
  */
 package org.netbeans.installer.utils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
-import org.netbeans.installer.utils.LogManager;
 
 /**
  *
@@ -51,9 +53,13 @@ public abstract class SystemUtils {
     
     public abstract String parsePath(String path);
     
-    public abstract String getDefaultApplicationsLocation();
+    public abstract File resolvePath(String path);
+    
+    public abstract File getDefaultApplicationsLocation();
     
     public abstract Platform getCurrentPlatform();
+    
+    public abstract boolean isWindows();
     
     public abstract boolean isMacOS();
     
@@ -61,13 +67,30 @@ public abstract class SystemUtils {
     
     public abstract String getLineSeparator();
     
+    public abstract File getUserHomeDirectory();
+    
+    public abstract File getCurrentDirectory();
+    
+    public abstract File getTempDirectory();
+    
+    public abstract File getSystemDrive();
+    
+    public abstract ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException;
+    
+    public abstract ExecutionResults executeCommand(String... command) throws IOException;
+    
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private static class GenericSystemUtils extends SystemUtils {
         public String parseString(String string) {
             String parsedString = string;
             
-            parsedString = parsedString.replace("${install}", getDefaultApplicationsLocation());
+            parsedString = parsedString.replaceAll("(?<!\\\\)\\$\\{install\\}", escapeForRE(getDefaultApplicationsLocation().getAbsolutePath()));
+            parsedString = parsedString.replaceAll("(?<!\\\\)\\$\\{home\\}", escapeForRE(getUserHomeDirectory().getAbsolutePath()));
+            parsedString = parsedString.replaceAll("(?<!\\\\)\\$\\{systemdrive\\}", escapeForRE(getSystemDrive().getAbsolutePath()));
+            
+            parsedString.replace("\\$", "$");
+            parsedString.replace("\\\\", "\\");
             
             return parsedString;
         }
@@ -83,12 +106,20 @@ public abstract class SystemUtils {
             return parsedPath;
         }
         
-        public String getDefaultApplicationsLocation() {
+        public File resolvePath(String path) {
+            return new File(parsePath(path));
+        }
+        
+        private String escapeForRE(String string) {
+            return string.replace("\\", "\\\\");
+        }
+        
+        public File getDefaultApplicationsLocation() {
             switch (getCurrentPlatform()) {
                 case WINDOWS:
-                    return System.getenv("ProgramFiles");
+                    return new File(System.getenv("ProgramFiles"));
                 default:
-                    return System.getProperty("user.home");
+                    return new File(System.getProperty("user.home"));
             }
         }
         
@@ -115,6 +146,10 @@ public abstract class SystemUtils {
             return null;
         }
         
+        public boolean isWindows() {
+            return getCurrentPlatform() == Platform.WINDOWS;
+        }
+        
         public boolean isMacOS() {
             return (getCurrentPlatform() == Platform.MACOS_X_X86) ||
                     (getCurrentPlatform() == Platform.MACOS_X_PPC);
@@ -130,6 +165,118 @@ public abstract class SystemUtils {
         
         public String getLineSeparator() {
             return System.getProperty("line.separator");
+        }
+        
+        public File getUserHomeDirectory() {
+            return new File(System.getProperty("user.home"));
+        }
+        
+        public File getCurrentDirectory() {
+            return new File(".");
+        }
+        
+        public File getTempDirectory() {
+            return new File(System.getProperty("java.io.tmpdir"));
+        }
+        
+        public File getSystemDrive() {
+            switch (getCurrentPlatform()) {
+                case WINDOWS:
+                    return new File(System.getenv("SystemDrive") + "\\");
+                default:
+                    return new File("/");
+            }
+        }
+        
+        public ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException {
+            // construct the initial log message
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String temp: command) {
+                stringBuilder.append(temp).append(" "); //NOI18N
+            }
+            
+            if (workingDirectory == null) {
+                workingDirectory = getCurrentDirectory();
+            }
+            
+            LogManager.getInstance().log(ErrorLevel.MESSAGE, "executing command: " + stringBuilder + ", in directory: " + workingDirectory);
+            LogManager.getInstance().indent();
+            
+            StringBuilder processStdOut = new StringBuilder();
+            StringBuilder processStdErr = new StringBuilder();
+            int           errorLevel    = Integer.MAX_VALUE;
+            
+            Process process = new ProcessBuilder(command).directory(workingDirectory).start();
+            
+            long runningTime;
+            for (runningTime = 0; runningTime < MAX_EXECUTION_TIME; runningTime += DELAY) {
+                StringBuilder builder;
+                
+                builder = readStream(process.getInputStream());
+                if (builder.length() > 0) {
+                    BufferedReader reader = new BufferedReader(new StringReader(builder.toString()));
+                    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                        LogManager.getInstance().log(ErrorLevel.MESSAGE, "[stdout]: " + line);
+                    }
+                    
+                    processStdOut.append(builder);
+                }
+                
+                builder = readStream(process.getErrorStream());
+                if (builder.length() > 0) {
+                    BufferedReader reader = new BufferedReader(new StringReader(builder.toString()));
+                    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                        LogManager.getInstance().log(ErrorLevel.MESSAGE, "[stdout]: " + line);
+                    }
+                    
+                    processStdErr.append(builder);
+                }
+                
+                try {
+                    errorLevel = process.exitValue();
+                    break;
+                } catch (IllegalThreadStateException e) {
+                    ; // do nothing - the process is still running
+                }
+                
+                try {
+                    Thread.sleep(DELAY);
+                } catch (InterruptedException e) {
+                    ErrorManager.getInstance().notify(ErrorLevel.DEBUG, e);
+                }
+            }
+            
+            if (runningTime >= MAX_EXECUTION_TIME) {
+                process.destroy();
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "[return]: killed by timeout");
+            } else {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "[return]: " + errorLevel);
+            }
+            
+            LogManager.getInstance().unindent();
+            LogManager.getInstance().log(ErrorLevel.MESSAGE, "... command execution finished");
+            
+            return new ExecutionResults(errorLevel, processStdOut.toString(), processStdErr.toString());
+        }
+        
+        public ExecutionResults executeCommand(String... command) throws IOException {
+            return executeCommand(null, command);
+        }
+        
+        private StringBuilder readStream(InputStream stream) throws IOException {
+            StringBuilder builder = new StringBuilder();
+            
+            byte[] buffer = new byte[BUFFER_SIZE];
+            while (stream.available() > 0) {
+                int read = stream.read(buffer);
+                
+                String readString = new String(buffer, 0, read);
+                for (String string: readString.split("(?:\n\r|\r\n|\n|\r)")) {
+                    builder.append(string).append("\n");
+                }
+            }
+            
+            return builder;
         }
     }
     
@@ -187,4 +334,36 @@ public abstract class SystemUtils {
             return displayName;
         }
     }
+    
+    public static class ExecutionResults {
+        private int    errorCode = Integer.MAX_VALUE;
+        private String stdOut    = "";
+        private String stdErr    = "";
+        
+        public ExecutionResults() {
+            // do nothing
+        }
+        
+        public ExecutionResults(final int errorCode, final String stdOut, final String stdErr) {
+            this.errorCode = errorCode;
+            this.stdOut    = stdOut;
+            this.stdErr    = stdErr;
+        }
+        
+        public int getErrorCode() {
+            return errorCode;
+        }
+        
+        public String getStdOut() {
+            return stdOut;
+        }
+        
+        public String getStdErr() {
+            return stdErr;
+        }
+    }
+    
+    public static final long MAX_EXECUTION_TIME = 30000; //30 seconds
+    public static final int  BUFFER_SIZE        = 4096; // 4 kilobytes
+    public static final int  DELAY              = 50; //50 milliseconds
 }

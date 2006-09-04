@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 
 /**
@@ -40,39 +41,43 @@ import org.netbeans.installer.utils.SystemUtils;
  * @author Kirill Sorokin
  */
 public class DestinationPanel extends DefaultWizardPanel {
-    private JTextPane textPane;
-    private JLabel destinationLabel;
-    private JTextField destinationField;
-    private JButton destinationButton;
+    private JTextPane    textPane;
+    private JLabel       destinationFieldLabel;
+    private JTextField   destinationField;
+    private JButton      browseButton;
     
-    private JPanel spacer;
+    private JPanel       spacer;
     
     private JFileChooser fileChooser;
     
     public DestinationPanel() {
         setProperty(TEXT_PROPERTY, DEFAULT_TEXT);
-        setProperty(DESTINATION_LABEL_PROPERTY, DEFAULT_DESTINATION_LABEL);
-        setProperty(DESTINATION_BUTTON_TEXT_PROPERTY, DEFAULT_DESTINATION_BUTTON_TEXT);
+        setProperty(DESTINATION_FIELD_LABEL_PROPERTY, DEFAULT_DESTINATION_FIELD_LABEL);
+        setProperty(BROWSE_BUTTON_LABEL_PROPERTY, DEFAULT_BROWSE_BUTTON_LABEL);
     }
     
     public void initialize() {
-        getBackButton().setEnabled(false);
+        StringUtils stringUtils = StringUtils.getInstance();
         
         textPane.setText(getProperty(TEXT_PROPERTY));
-        destinationLabel.setText(getProperty(DESTINATION_LABEL_PROPERTY));
-        destinationButton.setText(getProperty(DESTINATION_BUTTON_TEXT_PROPERTY));
+        
+        destinationFieldLabel.setText(stringUtils.stripMnemonic(getProperty(DESTINATION_FIELD_LABEL_PROPERTY)));
+        destinationFieldLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(getProperty(DESTINATION_FIELD_LABEL_PROPERTY)));
+        
+        browseButton.setText(stringUtils.stripMnemonic(getProperty(BROWSE_BUTTON_LABEL_PROPERTY)));
+        browseButton.setMnemonic(stringUtils.fetchMnemonic(getProperty(BROWSE_BUTTON_LABEL_PROPERTY)));
         
         String location = getWizard().getProductComponent().getProperty(ProductComponent.INSTALLATION_LOCATION_PROPERTY);
         if (location == null) {
             String defaultLocation = getWizard().getProductComponent().getProperty(ProductComponent.DEFAULT_INSTALLATION_LOCATION_PROPERTY);
-            if (defaultLocation == null) {
-                destinationField.setText(DEFAULT_INSTALLATION_LOCATION);
+            if (defaultLocation != null) {
+                location = SystemUtils.getInstance().parsePath(defaultLocation);
             } else {
-                destinationField.setText(SystemUtils.getInstance().parsePath(defaultLocation));
+                location = DEFAULT_LOCATION;
             }
-        } else {
-            destinationField.setText(location);
         }
+        
+        destinationField.setText(location);
     }
 
     public void initComponents() {
@@ -84,16 +89,16 @@ public class DestinationPanel extends DefaultWizardPanel {
         
         destinationField = new JTextField();
         
-        destinationLabel = new JLabel();
-        destinationLabel.setLabelFor(destinationField);
+        destinationFieldLabel = new JLabel();
+        destinationFieldLabel.setLabelFor(destinationField);
         
-        destinationButton = new JButton();
+        browseButton = new JButton();
         if (SystemUtils.getInstance().isMacOS()) {
-            destinationButton.setOpaque(false);
+            browseButton.setOpaque(false);
         }
-        destinationButton.addActionListener(new ActionListener() {
+        browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                destinationButtonPressed();
+                browseButtonPressed();
             }
         });
         
@@ -101,9 +106,9 @@ public class DestinationPanel extends DefaultWizardPanel {
         spacer.setOpaque(false);
         
         add(textPane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
-        add(destinationLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
+        add(destinationFieldLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
         add(destinationField, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 11, 0, 4), 0, 0));
-        add(destinationButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(4, 0, 0, 11), 0, 0));
+        add(browseButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(4, 0, 0, 11), 0, 0));
         add(spacer, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.7, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 11, 11), 0, 0));
         
         fileChooser = new JFileChooser();
@@ -116,7 +121,7 @@ public class DestinationPanel extends DefaultWizardPanel {
         getWizard().next();
     }
     
-    private void destinationButtonPressed() {
+    private void browseButtonPressed() {
         fileChooser.setSelectedFile(new File(destinationField.getText()));
         
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -125,12 +130,12 @@ public class DestinationPanel extends DefaultWizardPanel {
     }
     
     public static final String TEXT_PROPERTY = "text";
-    public static final String DESTINATION_LABEL_PROPERTY = "destination.label";
-    public static final String DESTINATION_BUTTON_TEXT_PROPERTY = "destination.button";
+    public static final String DESTINATION_FIELD_LABEL_PROPERTY = "destination.field.label";
+    public static final String BROWSE_BUTTON_LABEL_PROPERTY = "browse.button.label";
     
     public static final String DEFAULT_TEXT = "";
-    public static final String DEFAULT_DESTINATION_LABEL = "";
-    public static final String DEFAULT_DESTINATION_BUTTON_TEXT = "";
+    public static final String DEFAULT_DESTINATION_FIELD_LABEL = "";
+    public static final String DEFAULT_BROWSE_BUTTON_LABEL = "";
     
-    public static final String DEFAULT_INSTALLATION_LOCATION = "";
+    public static final String DEFAULT_LOCATION = "";
 }

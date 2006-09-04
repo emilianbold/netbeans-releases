@@ -130,7 +130,7 @@ public class Wizard extends SubWizard {
             
             Document document = documentBuilder.parse(componentsFile);
             
-            return loadWizardComponents(document.getDocumentElement());
+            return loadWizardComponents(document.getDocumentElement(), loader);
         } catch (DownloadException e) {
             throw new InitializationException(
                     "Could not load components", e);
@@ -146,7 +146,7 @@ public class Wizard extends SubWizard {
         }
     }
     
-    private static List<WizardComponent> loadWizardComponents(Node node)
+    private static List<WizardComponent> loadWizardComponents(Node node, ClassLoader loader)
             throws InitializationException {
         List<WizardComponent> wizardComponents = new ArrayList<WizardComponent>();
         
@@ -157,7 +157,7 @@ public class Wizard extends SubWizard {
             
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node componentNode = nodeList.item(i);
-                wizardComponents.add(loadWizardComponent(componentNode));
+                wizardComponents.add(loadWizardComponent(componentNode, loader));
             }
         } catch (XPathException e) {
             throw new InitializationException(
@@ -167,7 +167,7 @@ public class Wizard extends SubWizard {
         return wizardComponents;
     }
     
-    private static WizardComponent loadWizardComponent(Node node)
+    private static WizardComponent loadWizardComponent(Node node, ClassLoader loader)
             throws InitializationException {
         WizardComponent component = null;
         
@@ -177,14 +177,14 @@ public class Wizard extends SubWizard {
             String classname = (String) xpath.evaluate(
                     "./@class", node, XPathConstants.STRING);
             
-            component = (WizardComponent) Class.forName(classname).newInstance();
+            component = (WizardComponent) loader.loadClass(classname).newInstance();
             
             Node componentsNode =
                     (Node) xpath.evaluate("./components", node, XPathConstants.NODE);
             
             if (componentsNode != null) {
                 List<WizardComponent> childComponents =
-                        loadWizardComponents(componentsNode);
+                        loadWizardComponents(componentsNode, loader);
                 for (WizardComponent childComponent: childComponents) {
                     component.addChildComponent(childComponent);
                 }
@@ -194,7 +194,7 @@ public class Wizard extends SubWizard {
                     (Node) xpath.evaluate("./conditions", node, XPathConstants.NODE);
             
             if (conditionsNode != null) {
-                List<WizardCondition> conditions = loadWizardConditions(conditionsNode);
+                List<WizardCondition> conditions = loadWizardConditions(conditionsNode, loader);
                 for (WizardCondition condition: conditions) {
                     component.addCondition(condition);
                 }
@@ -203,7 +203,7 @@ public class Wizard extends SubWizard {
             Node propertiesNode =
                     (Node) xpath.evaluate("./properties", node, XPathConstants.NODE);
             if (propertiesNode != null) {
-                loadProperties(propertiesNode, component);
+                loadProperties(propertiesNode, component, loader);
             }
         } catch (XPathException e) {
             throw new InitializationException(
@@ -222,7 +222,7 @@ public class Wizard extends SubWizard {
         return component;
     }
     
-    private static List<WizardCondition> loadWizardConditions(Node node)
+    private static List<WizardCondition> loadWizardConditions(Node node, ClassLoader loader)
             throws InitializationException {
         List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
         
@@ -243,7 +243,7 @@ public class Wizard extends SubWizard {
                 
                 Node propertiesNode = (Node)
                         xpath.evaluate("./properties", node, XPathConstants.NODE);
-                loadProperties(propertiesNode, condition);
+                loadProperties(propertiesNode, condition, loader);
                 wizardConditions.add(condition);
             }
         } catch (XPathException e) {
@@ -263,7 +263,7 @@ public class Wizard extends SubWizard {
         return wizardConditions;
     }
     
-    private static void loadProperties(Node node, Object component)
+    private static void loadProperties(Node node, Object component, ClassLoader loader)
             throws InitializationException {
         try {
             XPath xpath = XPathFactory.newInstance().newXPath();

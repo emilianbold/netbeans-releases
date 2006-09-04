@@ -109,7 +109,6 @@ public class LogManager {
             
             try {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    
                     String string = "[" + DateUtils.getInstance().getFormattedTimestamp() + "]: " + StringUtils.getInstance().pad(INDENT, indent) + line + SystemUtils.getInstance().getLineSeparator();
                     
                     if (loggingAvailable) {

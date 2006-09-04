@@ -29,9 +29,11 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Vector;
 import java.util.zip.CRC32;
-import org.netbeans.installer.utils.LogManager;
 import java.io.*;
 import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -169,8 +171,6 @@ public abstract class FileUtils {
     
     public abstract File createTempFile(File parent) throws IOException;
     
-    
-    //(dd)
     public static void copyFile(File in, File out) throws IOException {
         if (!in.isFile()) throw new IllegalArgumentException("check in arg");
         if (!out.exists()) {
@@ -183,7 +183,18 @@ public abstract class FileUtils {
         FileChannel outChannel = new FileOutputStream(out).getChannel();
         inChannel.transferTo(0, inChannel.size(),outChannel);
     }
-    //(end dd)
+    
+    public abstract void modifyFile(File file, String token, String replacement) throws IOException;
+    
+    public abstract void modifyFile(File file, String token, String replacement, boolean useRE) throws IOException;
+    
+    public abstract void modifyFile(File file, Map<String, String> replacementMap, boolean useRE) throws IOException;
+    
+    public abstract void modifyFile(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException;
+
+    public void setInstance(FileUtils instance) {
+        this.instance = instance;
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
@@ -386,10 +397,10 @@ public abstract class FileUtils {
                 type = "file"; //NOI18N
             }
             
-            //LogUtils.log("    deleting " + type + ": " + file); //NOI18N
+            //LogManager.getInstance().log(ErrorLevel.MESSAGE, "    deleting " + type + ": " + file); //NOI18N
             
             if (!file.exists()) {
-                //LogUtils.log("    ... " + type + " does not exist"); //NOI18N
+                //LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + type + " does not exist"); //NOI18N
             }
             
             file.delete();
@@ -446,6 +457,71 @@ public abstract class FileUtils {
             file.deleteOnExit();
             
             return file;
+        }
+        
+        public void modifyFile(File file, String token, String replacement) throws IOException {
+            modifyFile(file, token, replacement, false);
+        }
+        
+        public void modifyFile(File file, String token, String replacement, boolean useRE) throws IOException {
+            Map<String, String> replacementMap = new HashMap<String, String>();
+            
+            replacementMap.put(token, replacement);
+            
+            modifyFile(file, replacementMap, useRE);
+        }
+        
+        public void modifyFile(File file, Map<String, String> replacementMap, boolean useRE) throws IOException {
+            if (!file.exists()) {
+                return;
+            }
+            
+            if (file.isDirectory()) {
+                File[] children = file.listFiles();
+                
+                for (File child: children) {
+                    modifyFile(child, replacementMap, useRE);
+                }
+            } else {
+                // if the file is larger than 100 Kb - skip it
+                if (file.length() > 1024*100) {
+                    return;
+                }
+                
+                String originalContents = "";
+                
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+                char[] buffer = new char[1024];
+                while (reader.ready()) {
+                    originalContents += new String(buffer, 0, reader.read(buffer));
+                }
+                reader.close();
+                
+                String modifiedContents = new String(originalContents);
+                for (String token: replacementMap.keySet()) {
+                    String replacement = replacementMap.get(token);
+                    if (useRE) {
+                        modifiedContents = Pattern.compile(token, Pattern.MULTILINE).matcher(modifiedContents).replaceAll(replacement);
+                    } else {
+                        modifiedContents = modifiedContents.toString().replace(token, replacement);
+                    }
+                }
+                
+                if (!modifiedContents.equals(originalContents)) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE, "    modifying file: " + file.getAbsolutePath());
+                    
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                            new FileOutputStream(file)));
+                    writer.write(modifiedContents);
+                    writer.close();
+                }
+            }
+        }
+        
+        public void modifyFile(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException {
+            for (File file: files) {
+                modifyFile(file, replacementMap, useRE);
+            }
         }
     }
     

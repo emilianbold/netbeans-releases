@@ -58,7 +58,7 @@ public abstract class StringUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     // Instance
-    public abstract String formatMessage(String message, Object[] arguments);
+    public abstract String formatMessage(String message, Object... arguments);
     
     public abstract String leftTrim(String string);
     
@@ -95,6 +95,8 @@ public abstract class StringUtils {
     public abstract String base64Decode(String string, String charset) throws UnsupportedEncodingException;
     
     public abstract String pad(String string, int number);
+    
+    public abstract String escapeForRE(String string);
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
@@ -141,7 +143,7 @@ public abstract class StringUtils {
         private static final int BIN_00111100 = 0x3c;
         private static final int BIN_00111111 = 0x3f;
         
-        public String formatMessage(String message, Object[] arguments) {
+        public String formatMessage(String message, Object... arguments) {
             return MessageFormat.format(message, arguments);
         }
         
@@ -363,6 +365,10 @@ public abstract class StringUtils {
             }
             
             return builder.toString();
+        }
+        
+        public String escapeForRE(String string) {
+            return string.replace(BACK_SLASH, BACK_SLASH + BACK_SLASH);
         }
     }
     
