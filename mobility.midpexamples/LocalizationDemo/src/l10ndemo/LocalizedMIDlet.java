@@ -42,15 +42,15 @@ public class LocalizedMIDlet extends MIDlet implements CommandListener {
     
     public void startApp() {
         
-/*#Chinese#*///<editor-fold>
-//--        /* This is used only for chinese configuration 
-//--         * we want the application to run always in Chinese
-//--         * no matter what the microedition.locale property is set.
-//--         * Otherwise the localization support is initialized
-//--         * when a getMessage() method is called for the first time.            
-//--         */
-//--        LocalizationSupport.initLocalizationSupport("zh_CN");
-/*$Chinese$*///</editor-fold>
+//#if Chinese
+//#         /* This is used only for chinese configuration 
+//#          * we want the application to run always in Chinese
+//#          * no matter what the microedition.locale property is set.
+//#          * Otherwise the localization support is initialized
+//#          * when a getMessage() method is called for the first time.            
+//#          */
+//#         LocalizationSupport.initLocalizationSupport("zh_CN");
+//#endif
         
         d = Display.getDisplay(this);
         
