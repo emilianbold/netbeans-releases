@@ -90,7 +90,7 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         setLayout(new java.awt.GridBagLayout());
 
         defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_Use_Default"));
+        defaultCheck.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -99,11 +99,11 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(defaultCheck, gridBagConstraints);
-        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_UseDefault"));
+        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_UseDefault")); // NOI18N
 
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_CustLibs_Libraries").charAt(0));
         jLabel1.setLabelFor(jListClasspath);
-        jLabel1.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Libraries"));
+        jLabel1.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Libraries")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -114,7 +114,7 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         add(jLabel1, gridBagConstraints);
 
         jScrollClasspath.setViewportView(jListClasspath);
-        jListClasspath.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Libs"));
+        jListClasspath.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Libs")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -127,7 +127,7 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         add(jScrollClasspath, gridBagConstraints);
 
         jButtonAddArtifact.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_CustLibs_Add_Project").charAt(0));
-        jButtonAddArtifact.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Add_Project"));
+        jButtonAddArtifact.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Add_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -136,10 +136,10 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 11, 0);
         add(jButtonAddArtifact, gridBagConstraints);
-        jButtonAddArtifact.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_AddProject"));
+        jButtonAddArtifact.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_AddProject")); // NOI18N
 
         jButtonAddLibrary.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_CustLibs_Add_Library").charAt(0));
-        jButtonAddLibrary.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Add_Library"));
+        jButtonAddLibrary.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Add_Library")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -148,10 +148,10 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonAddLibrary, gridBagConstraints);
-        jButtonAddLibrary.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_AddLib"));
+        jButtonAddLibrary.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_AddLib")); // NOI18N
 
         jButtonAddJar.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_CustLibs_Add_Jar").charAt(0));
-        jButtonAddJar.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Add_Jar"));
+        jButtonAddJar.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Add_Jar")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -160,10 +160,10 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonAddJar, gridBagConstraints);
-        jButtonAddJar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Jar"));
+        jButtonAddJar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Jar")); // NOI18N
 
         jButtonAddFolder.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_CustLibs_Add_Folder").charAt(0));
-        jButtonAddFolder.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Add_Folder"));
+        jButtonAddFolder.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Add_Folder")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -172,10 +172,10 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 23, 0);
         add(jButtonAddFolder, gridBagConstraints);
-        jButtonAddFolder.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Folder"));
+        jButtonAddFolder.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Folder")); // NOI18N
 
         jButtonRemove.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_CustLibs_Remove").charAt(0));
-        jButtonRemove.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Remove"));
+        jButtonRemove.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Remove")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -184,10 +184,10 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 23, 0);
         add(jButtonRemove, gridBagConstraints);
-        jButtonRemove.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Remove"));
+        jButtonRemove.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_Remove")); // NOI18N
 
         jButtonMoveUp.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_CustLibs_Move_Up").charAt(0));
-        jButtonMoveUp.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Move_Up"));
+        jButtonMoveUp.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Move_Up")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -196,9 +196,10 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonMoveUp, gridBagConstraints);
-        jButtonMoveUp.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_MoveUp"));
+        jButtonMoveUp.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_MoveUp")); // NOI18N
 
-        jButtonMoveDown.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Move_Down"));
+        jButtonMoveDown.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerLibraries.class).getString("MNM_CustLibs_Move_Down").charAt(0));
+        jButtonMoveDown.setText(NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustLibs_Move_Down")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -207,10 +208,9 @@ public class CustomizerLibraries extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
         add(jButtonMoveDown, gridBagConstraints);
-        jButtonMoveDown.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_MoveDown"));
+        jButtonMoveDown.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerLibraries.class, "ACSD_CustLibs_MoveDown")); // NOI18N
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerLibraries.class, "ACSN_CustLibs"));
