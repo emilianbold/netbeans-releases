@@ -46,13 +46,43 @@ import javax.swing.plaf.TabbedPaneUI;
 public abstract class AbstractOutputWindow extends TopComponent implements ChangeListener, PropertyChangeListener {
     protected JTabbedPane pane = new CloseButtonTabbedPane();
     private static final String ICON_PROP = "tabIcon"; //NOI18N
-
+    private JToolBar toolbar = null;
+    
     /** Creates a new instance of AbstractOutputWindow */
     public AbstractOutputWindow() {
         pane.addChangeListener (this);
-        pane.addPropertyChangeListener (CloseButtonTabbedPane.PROP_CLOSE, this);
+        pane.addPropertyChangeListener(CloseButtonTabbedPane.PROP_CLOSE, this);
         setFocusable(true);
-        setBackground (UIManager.getColor("text")); //NOI18N
+        setBackground(UIManager.getColor("text")); //NOI18N
+        toolbar = new JToolBar();
+        toolbar.setOrientation(JToolBar.VERTICAL);
+        toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
+        toolbar.setFloatable(false);
+        
+        Insets ins = toolbar.getMargin();
+        JButton sample = new JButton();
+        sample.setBorderPainted(false);
+        sample.setOpaque(false);
+        sample.setText(null);
+        sample.setIcon(new Icon() {
+            public int getIconHeight() {
+                return 16;
+            }
+            public int getIconWidth() {
+                return 16;
+            }
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+            }
+        });
+        toolbar.add(sample);
+        Dimension buttonPref = sample.getPreferredSize();
+        Dimension minDim = new Dimension(buttonPref.width + ins.left + ins.right, buttonPref.height + ins.top + ins.bottom);
+        toolbar.setMinimumSize(minDim);
+        toolbar.setPreferredSize(minDim);
+        toolbar.remove(sample);
+        setLayout(new BorderLayout());
+        add(toolbar, BorderLayout.WEST);
+
     }
 
     public void propertyChange (PropertyChangeEvent pce) {
@@ -96,9 +126,9 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                 } else {
                     super.addImpl (c, constraints, idx);
                     setTabIcon((AbstractOutputTab) c, (Icon)((AbstractOutputTab)c).getClientProperty(ICON_PROP));
+                    setToolbarButtons(((AbstractOutputTab)c).getToolbarButtons());
                     //#48819 - a bit obscure usecase, but revalidate() is call in the if branches above as well..
                     revalidate();
-                    
                 }
                 if (hadFocus) {
                     //Do not call c.requestFocus() directly, it can be 
@@ -111,8 +141,8 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             }
             super.addImpl(c, constraints, idx);
         }
-        if (getComponentCount() == 1 && getComponent(0) instanceof AbstractOutputTab) {
-            updateSingletonName(getComponent(0).getName());
+        if (getComponentCount() == 2 && getComponent(1) instanceof AbstractOutputTab) {
+            updateSingletonName(getComponent(1).getName());
         }
         revalidate();
     }
@@ -157,6 +187,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     super.remove(pane);
                     add(comp);
                     updateSingletonName(c.getName());
+                    setToolbarButtons(((AbstractOutputTab)comp).getToolbarButtons());
                     revalidate();
                 }
             } else {
@@ -164,6 +195,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     removedSelectedView = (AbstractOutputTab) c;
                 }
                 super.remove(c);
+                setToolbarButtons(new JButton[0]);
                 updateSingletonName(null);
             }
             if (removedSelectedView != null) {
@@ -173,11 +205,11 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         if (c instanceof AbstractOutputTab && c.getParent() == null) {
             removed ((AbstractOutputTab) c);
         } 
-        if (getComponentCount() == 1 && getComponent(0) instanceof AbstractOutputTab) {
-            updateSingletonName(getComponent(0).getName());
+        if (getComponentCount() == 2 && getComponent(1) instanceof AbstractOutputTab) {
+            updateSingletonName(getComponent(1).getName());
         }        
         revalidate();
-        setFocusable (getComponentCount() == 0);
+        setFocusable (getComponentCount() == 1);
     }
     
     private AbstractOutputTab getInternalTab() {
@@ -263,20 +295,6 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
      */
     protected abstract void updateSingletonName(String name);
 
-    public void doLayout() {
-        Insets ins = getInsets();
-        Component c = null;
-        
-        if (pane.getParent() == this) {
-            c = pane;
-        } else if (getComponentCount() > 0) {
-            c = getComponent(0);
-        }
-        if (c != null) {
-            c.setBounds (ins.left, ins.top, getWidth() - (ins.left + ins.right),
-                getHeight() - (ins.top + ins.bottom));
-        }
-    }
 
     private AbstractOutputTab lastKnownSelection = null;
     protected void fire(AbstractOutputTab formerSelection) {
@@ -284,7 +302,22 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         if (formerSelection != selection) {
             selectionChanged (formerSelection, selection);
             lastKnownSelection = selection;
+            if (selection != null) {
+                setToolbarButtons(selection.getToolbarButtons());
+            } else {
+                setToolbarButtons(new JButton[0]);
+            }
         }
+    }
+    
+    private void setToolbarButtons(JButton[] buttons) {
+        toolbar.removeAll();
+        for (int i = 0; i < buttons.length; i++) {
+            toolbar.add(buttons[i]);
+        }
+        toolbar.revalidate();
+        toolbar.repaint();
+                
     }
 
     public void stateChanged(ChangeEvent e) {

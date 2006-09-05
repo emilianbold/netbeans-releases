@@ -41,10 +41,10 @@ import java.awt.event.ActionListener;
  * @author  Tim Boudreau
  */
 public abstract class AbstractOutputTab extends JComponent implements ActionListener, Accessible {
-    private JToolBar toolbar = null;
     private InputPanel input = null;
     private AbstractOutputPane outputPane;
-    private Action[] actions = new Action[0];    
+    private Action[] actions = new Action[0];  
+    private JButton[] buttons = new JButton[0];
     
     private Component toFocus;
     
@@ -123,34 +123,30 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
 
     public final void setToolbarActions (Action[] a) {
         if (a == null || a.length == 0) {
-            setToolbarVisible(false);
+            actions = new Action[0];
+            buttons = new JButton[0];
             return;
         }
         if (a.length > 5) {
             throw new IllegalArgumentException ("No more than 5 actions allowed" //NOI18N
                 + "in the output window toolbar"); //NOI18N
         }
-        setToolbarVisible(true);
-        if (toolbar.getComponentCount() > 0) {
-            toolbar.removeAll();
-        }
         actions = new Action[a.length];
-        JButton[] jb = new JButton[a.length];
-        for (int i=0; i < jb.length; i++) {
+        buttons = new JButton[a.length];
+        for (int i=0; i < buttons.length; i++) {
             actions[i] = a[i];
             // mkleint - ignore the WeakAction referencing as it introduces
             // additional non obvious contract to using the the toolbar actions.
 //            actions[i] = new WeakAction(a[i]);
             installKeyboardAction (actions[i]);
-            jb[i] = new JButton(actions[i]);
-            jb[i].setBorderPainted(false);
-            jb[i].setOpaque(false);
-            jb[i].setText(null);
-            jb[i].putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
+            buttons[i] = new JButton(actions[i]);
+            buttons[i].setBorderPainted(false);
+            buttons[i].setOpaque(false);
+            buttons[i].setText(null);
+            buttons[i].putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
             if (a[i].getValue (Action.SMALL_ICON) == null) {
                 throw new IllegalStateException ("No icon provided for " + a); //NOI18N
             }
-            toolbar.add(jb[i]);
         }
     }
 
@@ -201,11 +197,6 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
         return input != null && input.getParent() == this && input.isVisible();
     }
     
-    public final boolean isToolbarVisible() {
-        return toolbar != null && toolbar.getParent() == this && 
-            toolbar.isVisible();
-    }
-    
     public final void setInputVisible (boolean val) {
         if (val == isInputVisible()) {
             return;
@@ -225,24 +216,6 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
         getOutputPane().ensureCaretPosition();
     }
     
-    public final void setToolbarVisible (boolean val) {
-        if (val == isToolbarVisible()) {
-            return;
-        }
-        if (val) {
-            if (toolbar == null) {
-                toolbar = new JToolBar();
-                toolbar.setOrientation(JToolBar.VERTICAL);
-                toolbar.setLayout (new BoxLayout(toolbar, BoxLayout.Y_AXIS));
-                toolbar.setFloatable(false);
-            }
-            if (toolbar.getParent() != this) {
-                add (toolbar);
-            }
-        }
-        toolbar.setVisible (val);
-    }    
-
     public void actionPerformed(ActionEvent ae) {
         InputPanel ip = (InputPanel) ae.getSource();
         if (InputPanel.ACTION_EOF.equals(ae.getActionCommand())) {
@@ -255,18 +228,12 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
     protected abstract void inputEof();
 
     public void doLayout() {
-        boolean hasToolbar = isToolbarVisible();
         boolean hasInput = isInputVisible();
         Insets ins = getInsets();
         int left = ins.left;
         int bottom = hasInput ? (getHeight() - ins.bottom - 
             (input.getPreferredSize().height)) - 3 : getHeight() - ins.bottom;
         
-        if (hasToolbar) {
-            left = ins.left + Math.max(32, toolbar.getPreferredSize().width);
-            toolbar.setBounds (ins.left, ins.top, left, getHeight() 
-                - (ins.top + ins.bottom));
-        }
         Component main = outputPane;
         
         if (main != null) {
@@ -284,6 +251,10 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
     void notifyInputFocusGained(){
         getOutputPane().lockScroll();
         getOutputPane().ensureCaretPosition();
+    }
+
+    JButton[] getToolbarButtons() {
+        return buttons;
     }
 
 }
