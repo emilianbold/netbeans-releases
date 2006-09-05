@@ -350,8 +350,6 @@ class RemoveResourceAction extends NodeAction<Object>
             Action.ACCELERATOR_KEY,
             KeyStroke.getKeyStroke ("DELETE")
         );
-
-        //this.putValue("ACCELERATOR_KEY",KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
     }
     
     public static Action getStaticInstance()

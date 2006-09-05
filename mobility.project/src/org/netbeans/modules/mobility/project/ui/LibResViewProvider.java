@@ -40,9 +40,12 @@ import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.actions.CopyAction;
+import org.openide.actions.PasteAction;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
@@ -200,10 +203,10 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                             new Action[] {
                                           SetConfigurationAction.getStaticInstance(),
                                           null,
+                                          SystemAction.get(CopyAction.class),
                                           RemoveConfigurationAction.getStaticInstance(),
                                          });
                     node.getChildren().add(new Node[] {n});
-                    n.setValue("bold",Boolean.TRUE);
                     n.setName(cfg.getName());
                 }
                 
@@ -274,6 +277,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                     new Action[] {
                                   SetConfigurationAction.getStaticInstance(),
                                   null,
+                                  SystemAction.get(CopyAction.class),
                                   RemoveConfigurationAction.getStaticInstance(),
                                   });
             nodeArray.add(node);
@@ -313,9 +317,10 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
             }
         });
         
-        final Node node=NodeFactory.createNode(createActionNodes(project), Lookups.singleton(project),
+        final Node node=NodeFactory.createProjCfgsNode(createActionNodes(project), Lookups.singleton(project),
                 NbBundle.getMessage(LibResViewProvider.class,"LBL_ProjectConfigurations"),
-                ARCHIVE_ICON, new Action[] {AddConfigurationAction.getStaticInstance()});
+                ARCHIVE_ICON, new Action[] {AddConfigurationAction.getStaticInstance(),null,
+                                          SystemAction.get(PasteAction.class),});
         project.getConfigurationHelper().addPropertyChangeListener(new ConfChangeListener(node));        
         return new Node[] {node};
     }

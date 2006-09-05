@@ -136,12 +136,12 @@ class NodeCache implements PropertyChangeListener
         Lookup lookup=Lookups.fixed( new Object[] {project,cfg});
         if (gray)
         {
-            resNode=NodeFactory.createNode(resNodes.toArray(subNodes), lookup,
+            resNode=NodeFactory.resourcesNode(resNodes.toArray(subNodes), lookup,
                     "Resources","Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getName(),PLATFORM_ICON);
         }
         else
         {
-            resNode=NodeFactory.createNode(resNodes.toArray(subNodes), lookup, "Resources","Resources",PLATFORM_ICON,pActions);
+            resNode=NodeFactory.resourcesNode(resNodes.toArray(subNodes), lookup, "Resources","Resources",PLATFORM_ICON,pActions);
         }
         resNode.setValue("gray",gray);
         allNodes.add(resNode);        
