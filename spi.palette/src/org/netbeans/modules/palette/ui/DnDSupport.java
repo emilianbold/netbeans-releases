@@ -36,18 +36,19 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.InvalidDnDOperationException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.JComponent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
-import org.netbeans.modules.palette.Model;
 
 /**
  * Drag and drop support for palette items and categories.
@@ -76,6 +77,8 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
     private PalettePanel palette;
     
     private Timer timer;
+    
+    private static Logger ERR = Logger.getLogger("org.netbeans.modules.palette"); // NOI18N
     
     /** Creates a new instance of DnDSupport */
     public DnDSupport( PalettePanel palette ) {
@@ -139,7 +142,11 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
         }
         if( null != t ) {
             dge.getDragSource().addDragSourceListener( getDragSourceListener() );
-            dge.startDrag( null, t );
+            try {
+                dge.startDrag( null, t );
+            } catch( InvalidDnDOperationException idndE ) {
+                ERR.log( Level.INFO, idndE.getMessage(), idndE );
+            }
         }
     }
 
