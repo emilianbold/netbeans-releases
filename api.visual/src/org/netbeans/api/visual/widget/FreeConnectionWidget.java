@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author David Kaspar
+ * @author Alex
  */
 // TODO - control points can be modified by accessing: getControlPoints ().get (0).x or y
 public class FreeConnectionWidget extends ConnectionWidget {
