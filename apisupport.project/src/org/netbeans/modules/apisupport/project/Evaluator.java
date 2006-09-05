@@ -331,6 +331,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         defaults.put("test.qa-performance.src.dir", "test/qa-performance/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
         defaults.put("javac.source", "1.4"); // NOI18N
+        defaults.put("test.user.dir", new File(dir, "build/testuserdir").getAbsolutePath()); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
         if (ml != null) {
             providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("module.classpath", computeModuleClasspath(ml)))); // NOI18N

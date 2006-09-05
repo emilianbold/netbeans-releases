@@ -299,7 +299,7 @@ Microsystems, Inc. All Rights Reserved.
                       <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                   </test-dependency>
                   <test-dependency>
-                      <code-name-base>org.netbeans.api.progress</code-name-base>
+                      <code-name-base>org.netbeans.modules.progress.ui</code-name-base>
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.netbeans.modules.apisupport.feedreader</code-name-base>

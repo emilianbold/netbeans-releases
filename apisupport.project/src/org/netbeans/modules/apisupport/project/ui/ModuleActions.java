@@ -319,16 +319,24 @@ public final class ModuleActions implements ActionProvider {
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (ActionProvider.COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            if (ModuleOperations.canRun(project, true)) {
+                DefaultProjectOperations.performDefaultDeleteOperation(project);
+            }
             return;
         } else if (ActionProvider.COMMAND_RENAME.equals(command)) {
-            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            if (ModuleOperations.canRun(project, true)) {
+                DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            }
             return;
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
-            DefaultProjectOperations.performDefaultMoveOperation(project);
+            if (ModuleOperations.canRun(project, true)) {
+                DefaultProjectOperations.performDefaultMoveOperation(project);
+            }
             return;
         } else if (ActionProvider.COMMAND_COPY.equals(command)) {
-            DefaultProjectOperations.performDefaultCopyOperation(project);
+            if (ModuleOperations.canRun(project, true)) {
+                DefaultProjectOperations.performDefaultCopyOperation(project);
+            }
             return;
         }
         Properties p;

@@ -40,7 +40,10 @@ import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  * @author Martin Krauskopf
@@ -184,6 +187,23 @@ public final class ModuleOperations implements DeleteOperationImplementation,
                 info.store();
             }
         }
+    }
+    
+    static boolean canRun(final NbModuleProject project, final boolean emitWarningToUser) {
+        boolean result = true;
+        String testUserDir = project.evaluator().getProperty("test.user.dir"); // NOI18N
+        FileObject testUserDirFO = project.getHelper().resolveFileObject(testUserDir);
+        if (testUserDirFO != null && testUserDirFO.isFolder()) {
+            FileObject lock = testUserDirFO.getFileObject("lock"); // NOI18N
+            if (lock != null && lock.isData()) {
+                if (emitWarningToUser) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(ModuleOperations.class, "ERR_ModuleIsBeingRun")));
+                }
+                result = false;
+            }
+        }
+        return result;
     }
     
 }

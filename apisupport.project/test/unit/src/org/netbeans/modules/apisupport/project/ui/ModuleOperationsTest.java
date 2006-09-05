@@ -19,8 +19,12 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.EventQueue;
 import java.util.Arrays;
+import javax.swing.JDialog;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
@@ -28,7 +32,15 @@ import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextGlobalProvider;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Test ModuleOperations.
@@ -37,10 +49,14 @@ import org.openide.filesystems.FileObject;
  */
 public class ModuleOperationsTest extends TestBase {
     
+    private static ContextGlobalProviderImpl cgpi = new ContextGlobalProviderImpl();
+    
     static {
-        // #65461: do not try to load ModuleInfo instances from ant module
         System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
-        LayerTestBase.Lkp.setLookup(new Object[0]);
+        LayerTestBase.Lkp.setLookup(new Object[] {
+            cgpi,
+        });
+        DialogDisplayerImpl.returnFromNotify(DialogDescriptor.NO_OPTION);
     }
     
     public ModuleOperationsTest(String name) {
@@ -86,6 +102,46 @@ public class ModuleOperationsTest extends TestBase {
         ProjectOperations.notifyDeleting(project);
         prjDir.getFileSystem().refresh(true);
         assertNull(prjDir.getFileObject("build"));
+    }
+    
+    public void testOperationActions() throws Exception { // #72397
+        NbModuleProject project = generateStandaloneModule("module");
+        cgpi.setProject(project);
+        DialogDisplayerImpl dd = (DialogDisplayerImpl) Lookup.getDefault().lookup(DialogDisplayer.class);
+        dd.setDialog(new JDialog() {
+            public void setVisible(boolean b) { /* do not show during test-run */ }
+        });
+        FileObject lock = FileUtil.createData(project.getProjectDirectory(), "build/testuserdir/lock");
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                CommonProjectActions.deleteProjectAction().actionPerformed(null);
+            }
+        });
+        assertNotNull("warning message emitted", dd.getLastNotifyDescriptor());
+        assertEquals("warning message emitted", dd.getLastNotifyDescriptor().getMessage(),
+                NbBundle.getMessage(ModuleOperationsTest.class, "ERR_ModuleIsBeingRun"));
+        dd.reset();
+        lock.delete();
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                CommonProjectActions.deleteProjectAction().actionPerformed(null);
+            }
+        });
+        assertNull("no warning message", dd.getLastNotifyDescriptor());
+    }
+    
+    static final class ContextGlobalProviderImpl implements ContextGlobalProvider {
+        
+        private Lookup contextLookup;
+        
+        void setProject(final Project project) {
+            contextLookup = Lookups.singleton(project);
+        }
+        
+        public Lookup createGlobalContext() {
+            return contextLookup;
+        }
+        
     }
     
 }

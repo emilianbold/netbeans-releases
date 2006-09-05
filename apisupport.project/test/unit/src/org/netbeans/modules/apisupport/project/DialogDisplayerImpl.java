@@ -30,13 +30,11 @@ import org.openide.NotifyDescriptor;
  * @author Jaroslav Tulach
  */
 public class DialogDisplayerImpl extends DialogDisplayer {
+    
     private static Object toReturn;
-
-
-    /** Creates a new instance of DialogDisplayerImpl */
-    public DialogDisplayerImpl() {
-    }
-
+    private NotifyDescriptor lastNotifyDescriptor;
+    private Dialog dialog;
+    
     public static void returnFromNotify(Object value) {
         Object o = DialogDisplayer.getDefault();
         Assert.assertEquals("My class", DialogDisplayerImpl.class, o.getClass());
@@ -44,18 +42,33 @@ public class DialogDisplayerImpl extends DialogDisplayer {
         Assert.assertNull("No previous value", toReturn);
         toReturn = value;
     }
-
+    
     public Object notify(NotifyDescriptor descriptor) {
+        lastNotifyDescriptor = descriptor;
         Object r = toReturn;
         toReturn = null;
         
         Assert.assertNotNull("We are supposed to return a value", r);
         return r;
     }
-
+    
     public Dialog createDialog(DialogDescriptor descriptor) {
-        Assert.fail("Not implemented");
-        return null;
+        if (dialog == null) {
+            Assert.fail("Not implemented");
+        }
+        return dialog;
+    }
+    
+    public NotifyDescriptor getLastNotifyDescriptor() {
+        return lastNotifyDescriptor;
+    }
+    
+    public void reset() {
+        this.lastNotifyDescriptor = null;
+    }
+
+    public void setDialog(Dialog dialog) {
+        this.dialog = dialog;
     }
     
 }
