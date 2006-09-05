@@ -37,13 +37,20 @@ import java.util.List;
 // TODO - control points can be modified by accessing: getControlPoints ().get (0).x or y
 public class FreeConnectionWidget extends ConnectionWidget {
 
+    private double createSensitivity=1.00, deleteSensitivity=5.00;
+    
     public FreeConnectionWidget (Scene scene) {
         super (scene);
     }
+    public FreeConnectionWidget (Scene scene,double createSensitivity, double deleteSensitivity) {
+        super (scene);
+        this.createSensitivity=createSensitivity; 
+        this.deleteSensitivity=deleteSensitivity;
+    }
 
-    public void addDeleteControlPoint (Point point,double createSensitivity, double deleteSensitivity) {
+    public void addDeleteControlPoint (Point point) {
         ArrayList<Point> list = new ArrayList<Point> (getControlPoints());
-            if(!removePoint(point,list,deleteSensitivity)){
+            if(!removeControlPoint(point,list,deleteSensitivity)){
                 Point exPoint=null;int index=0;
                 for (Point elem : list) {
                     if(exPoint!=null){
@@ -59,7 +66,7 @@ public class FreeConnectionWidget extends ConnectionWidget {
             setControlPoints(list,false);
     }
     
-    private boolean removePoint(Point point, ArrayList<Point> list, double deleteSensitivity){
+    private boolean removeControlPoint(Point point, ArrayList<Point> list, double deleteSensitivity){
         for (Point elem : list) {
             if(elem.distance(point)<deleteSensitivity){
                 list.remove(elem);
@@ -75,6 +82,9 @@ public class FreeConnectionWidget extends ConnectionWidget {
         return new Point (controlPoints.get (count));
     }
     
-    
+    public void setSensitivity(double createSensitivity, double deleteSensitivity){
+        this.createSensitivity=createSensitivity; 
+        this.deleteSensitivity=deleteSensitivity;
+    } 
    
 }
