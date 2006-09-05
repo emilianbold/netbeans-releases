@@ -34,6 +34,8 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
@@ -70,6 +72,24 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private final String CHARSET_NAME = "ASCII7"; // NOI18N
 
+    private class Failure {
+        int mask;
+        String error;
+        String message;
+        Failure(int mask, String error, String message) {
+            this.mask = mask;
+            this.error = error;
+            this.message = message;
+        }
+    };
+   
+    private Failure[] failures = new Failure[] {       
+        new Failure (1, "certificate is not yet valid" ,                 NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotYetValid")),       // NOI18N
+        new Failure (2, "certificate has expired" ,                      NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureHasExpired")),        // NOI18N
+        new Failure (4, "certificate issued for a different hostname" ,  NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureWrongHostname")),     // NOI18N
+        new Failure (8, "issuer is not trusted" ,                        NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotTrusted"))         // NOI18N
+    };
+    
     public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client) {
         super(exception);
         this.adapter = adapter;
@@ -79,7 +99,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     public boolean handleException() throws Exception {
         if(isAuthentication(getException())) {
             return handleRepositoryConnectError(false);
-        } if(isNoCertificate(getException())) {
+        } if(isNoCertificate(getException())) {                        
             return handleNoCertificateError();
         } 
 
@@ -222,7 +242,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         CertificateFile cf = null;
         try {
             boolean temporarily = dialogDescriptor.getValue() == temporarilyButton;
-            cf = new CertificateFile(cert, url.getProtocol() + "://" + hostString + ":" + url.getPort(), 10, temporarily); // XXX how to get the value for failures  // NOI18N
+            cf = new CertificateFile(cert, url.getProtocol() + "://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
             ErrorManager.getDefault().notify(ex);
@@ -294,13 +314,46 @@ class SvnClientExceptionHandler extends ExceptionHandler {
       }      
    }
     
-   private String getCertMessage(X509Certificate cert, String host) {
-       return NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_BadCertificate", new Object [] { // NOI18N
-           host, cert.getNotBefore(), cert.getNotAfter(), cert.getIssuerDN().getName(),
-           getFingerprint(cert, "SHA1"), getFingerprint(cert, "MD5") // NOI18N
-       });
-   }
+    private String getCertMessage(X509Certificate cert, String host) { 
+        Failure[] certFailures = getCertFailures();
+        Object[] param = new Object[6];
+        param[0] = host;
+        param[1] = cert.getNotBefore();
+        param[2] = cert.getNotAfter();
+        param[3] = cert.getIssuerDN().getName();
+        param[4] = getFingerprint(cert, "SHA1");      // NOI18N
+        param[5] = getFingerprint(cert, "MD5");       // NOI18N
 
+        String message = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_BadCertificate", param); // NOI18N
+        for (int i = 0; i < certFailures.length; i++) {
+            message = certFailures[i].message + message;
+        }
+        return message;
+    }
+
+    private Failure[] getCertFailures() {
+        List<Failure> ret = new ArrayList<Failure>();
+        String exceptionMessage = getException().getMessage();
+        for (int i = 0; i < failures.length; i++) {
+            if(exceptionMessage.indexOf(failures[i].error) > -1) {
+                ret.add(failures[i]);
+            }
+        }
+        return ret.toArray(new Failure[ret.size()]);
+    }
+   
+    private int getFailuresMask() {
+        Failure[] certFailures = getCertFailures();
+        if(certFailures.length == 0) {
+            return 15; // something went wrong, 15 should work for everything
+        }
+        int mask = 0;
+        for (int i = 0; i < certFailures.length; i++) {
+            mask |= certFailures[i].mask;
+        }
+        return mask;
+    }
+    
     private String getFingerprint(X509Certificate cert, String alg) {
         String str;
         try {
