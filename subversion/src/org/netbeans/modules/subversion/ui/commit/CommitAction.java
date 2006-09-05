@@ -312,31 +312,24 @@ public class CommitAction extends ContextAction {
             }
 
             Iterator<File> itFiles = addDirs.iterator();
-            Set<File> addedDirs = new HashSet<File>();
+            List<File> dirsToAdd = new ArrayList<File>();
             while (itFiles.hasNext()) {
-                if(support.isCanceled()) {
-                    return;
-                }
                 File dir = itFiles.next();
-                if (addedDirs.contains(dir)) {
-                    continue;
+                if (!dirsToAdd.contains(dir)) {
+                    dirsToAdd.add(dir);
                 }
-                client.addDirectory(dir, false);
-                addedDirs.add(dir);
+            }
+            if(dirsToAdd.size() > 0) {
+                client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
             }
             if(support.isCanceled()) {
                 return;
             }
 
-            itFiles = addFiles.iterator();
-            while (itFiles.hasNext()) {
-                if(support.isCanceled()) {
-                    return;
-                }
-                File file = itFiles.next();
-                client.addFile(file);
+            if(addFiles.size() > 0) {
+                client.addFile(addFiles.toArray(new File[addFiles.size()]), false);       
             }
-
+            
             // TODO perform removes. especialy package removes where
             // metadata must be replied from SvnMetadata (hold by FileSyatemHandler)
 
