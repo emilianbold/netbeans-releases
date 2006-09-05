@@ -1,4 +1,4 @@
-/*
+d/*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
@@ -42,6 +42,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -369,7 +370,7 @@ public final class CreatedModifiedFilesFactory {
                     safe.save();
                 }
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
+                Util.err.notify(ErrorManager.WARNING, ex);
             }
             
             EditableManifest em = Util.loadManifest(mfFO);
@@ -685,7 +686,7 @@ public final class CreatedModifiedFilesFactory {
                     safe.save();
                 }
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
+                Util.err.notify(ErrorManager.WARNING, ex);
             }
         }
     }
