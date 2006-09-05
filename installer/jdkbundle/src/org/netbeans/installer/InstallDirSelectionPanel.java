@@ -525,31 +525,38 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	String dialogTitle = resolveString(BUNDLE + "InstallLocationPanel.directoryDialogTitle)");
         String dialogMsg = "";
         
-        //#49348: Do not allow the same dir for JDK and NB.
-        if (nbDir.equals(j2seDir)) {
-            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.directoryNBJDKTheSame)");
-            showErrorMsg(dialogTitle,dialogMsg);
-            return false;
-        }
         //Check if one dir is not inside another dir
         //First check if JDK install dir is not inside of NB install dir
         String nbAbsolutePath = new File(nbDir).getAbsolutePath();
         String j2seAbsolutePath = new File(j2seDir).getAbsolutePath();
         logEvent(this,Log.DBG,"nbAbsolutePath: " + nbAbsolutePath);
         logEvent(this,Log.DBG,"j2seAbsolutePath: " + j2seAbsolutePath);
-        if (j2seAbsolutePath.startsWith(nbAbsolutePath)) {
-            //JDK is inside NB
-            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.JDKDirCannotBeInNBDir)");
+        if (nbAbsolutePath.equals(j2seAbsolutePath)) {
+            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.directoryNBJDKTheSame)");
             showErrorMsg(dialogTitle,dialogMsg);
             return false;
+        } else {
+            String nbParent = new File(nbAbsolutePath).getParent();
+            String j2seParent = new File(j2seAbsolutePath).getParent();
+            if (nbParent.equals(j2seParent)) {
+                //nbDir and asDir are not the same (checked above) but they have
+                //the same parent. It is ok.
+                return true;
+            }
+            if (j2seAbsolutePath.startsWith(nbAbsolutePath)) {
+                //JDK is inside NB
+                dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.JDKDirCannotBeInNBDir)");
+                showErrorMsg(dialogTitle,dialogMsg);
+                return false;
+            }
+            if (nbAbsolutePath.startsWith(j2seAbsolutePath)) {
+                //NB is inside JDK
+                dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.NBDirCannotBeInJDKDir)");
+                showErrorMsg(dialogTitle,dialogMsg);
+                return false;
+            }
+            return true;
         }
-        if (nbAbsolutePath.startsWith(j2seAbsolutePath)) {
-            //NB is inside JDK
-            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.NBDirCannotBeInJDKDir)");
-            showErrorMsg(dialogTitle,dialogMsg);
-            return false;
-        }
-        return true;
     }
     
     public void exited (WizardBeanEvent event) {

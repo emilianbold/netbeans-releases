@@ -630,30 +630,38 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	String dialogTitle = resolveString(BUNDLE + "InstallLocationPanel.directoryDialogTitle)");
         String dialogMsg = "";
         
-        if (nbDir.equals(asDir)) {
-            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.directoryNBASTheSame)");
-            showErrorMsg(dialogTitle,dialogMsg);
-            return false;
-        }
         //Check if one dir is not inside another dir
         //First check if AS install dir is not inside of NB install dir
         String nbAbsolutePath = new File(nbDir).getAbsolutePath();
         String asAbsolutePath = new File(asDir).getAbsolutePath();
         logEvent(this,Log.DBG,"nbAbsolutePath: " + nbAbsolutePath);
         logEvent(this,Log.DBG,"asAbsolutePath: " + asAbsolutePath);
-        if (asAbsolutePath.startsWith(nbAbsolutePath)) {
-            //AS is inside NB
-            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.ASDirCannotBeInNBDir)");
+        if (nbAbsolutePath.equals(asAbsolutePath)) {
+            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.directoryNBASTheSame)");
             showErrorMsg(dialogTitle,dialogMsg);
             return false;
+        } else {
+            String nbParent = new File(nbAbsolutePath).getParent();
+            String asParent = new File(asAbsolutePath).getParent();
+            if (nbParent.equals(asParent)) {
+                //nbDir and asDir are not the same (checked above) but they have
+                //the same parent. It is ok.
+                return true;
+            }
+            if (asAbsolutePath.startsWith(nbAbsolutePath)) {
+                //AS is inside NB
+                dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.ASDirCannotBeInNBDir)");
+                showErrorMsg(dialogTitle,dialogMsg);
+                return false;
+            }
+            if (nbAbsolutePath.startsWith(asAbsolutePath)) {
+                //NB is inside AS
+                dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.NBDirCannotBeInASDir)");
+                showErrorMsg(dialogTitle,dialogMsg);
+                return false;
+            }
+            return true;
         }
-        if (nbAbsolutePath.startsWith(asAbsolutePath)) {
-            //NB is inside AS
-            dialogMsg = resolveString(BUNDLE + "InstallLocationPanel.NBDirCannotBeInASDir)");
-            showErrorMsg(dialogTitle,dialogMsg);
-            return false;
-        }
-        return true;
     }
     
     /** Create directory. Do not ask user. Report only error when it fails. */
