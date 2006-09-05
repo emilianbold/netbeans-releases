@@ -30,12 +30,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="Help">
-            <attr name="quick-start.url/quick-start-mobility.url" boolvalue="true"/>
-            <file name="quick-start-mobility.url" url="nbresloc:/org/netbeans/modules/mobility/javahelp/quick-start-mobility.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.javahelp.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
-            </file>
-            <attr name="quick-start-mobility.url/using-netbeans.url" boolvalue="true"/>
+            <folder name="Tutorials">
+                <attr name="quick-start.url/quick-start-mobility.url" boolvalue="true"/>
+                <file name="quick-start-mobility.url" url="nbresloc:/org/netbeans/modules/mobility/javahelp/quick-start-mobility.url">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.javahelp.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
+                </file>
+                <attr name="quick-start-mobility.url/using-netbeans.url" boolvalue="true"/>
+            </folder> 
         </folder>
     </folder>
 
