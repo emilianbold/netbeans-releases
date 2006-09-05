@@ -184,7 +184,7 @@ public class ConnectionWidget extends Widget {
     }
 
     public List<Point> getControlPoints () {
-        return controlPointsUm;
+        return controlPointsUm!=null?controlPointsUm:Collections.unmodifiableList (new ArrayList<Point>());
     }
 
     public void setControlPoints (Collection<Point> controlPoints, boolean sceneLocations) {
