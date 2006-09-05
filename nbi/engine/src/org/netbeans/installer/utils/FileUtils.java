@@ -188,6 +188,8 @@ public abstract class FileUtils {
     
     public abstract void modifyFile(File file, String token, String replacement, boolean useRE) throws IOException;
     
+    public abstract void modifyFile(File file, Map<String, String> replacementMap) throws IOException;
+    
     public abstract void modifyFile(File file, Map<String, String> replacementMap, boolean useRE) throws IOException;
     
     public abstract void modifyFile(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException;
@@ -469,6 +471,10 @@ public abstract class FileUtils {
             replacementMap.put(token, replacement);
             
             modifyFile(file, replacementMap, useRE);
+        }
+        
+        public void modifyFile(File file, Map<String, String> replacementMap) throws IOException {
+            modifyFile(file, replacementMap, false);
         }
         
         public void modifyFile(File file, Map<String, String> replacementMap, boolean useRE) throws IOException {
