@@ -23,7 +23,6 @@ package org.netbeans.installer.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -32,6 +31,8 @@ import java.util.zip.CRC32;
 import java.io.*;
 import java.security.MessageDigest;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -86,10 +87,6 @@ public abstract class FileUtils {
      */
     public abstract void writeFile(File file, String string, boolean append) throws IOException;
     
-    public abstract String[] readStringList(File file) throws IOException;
-    
-    public abstract String[] readStringList(URL url) throws IOException;
-    
     public abstract Date getLastModified(String fname);
     
     public abstract Date getLastModified(File f);
@@ -122,10 +119,11 @@ public abstract class FileUtils {
     
     public abstract String getFileMD5String(File file) throws IOException, NoSuchAlgorithmException;
     
-    /**
-     * Load strings from file
-     */
-    public abstract Vector <String> getStrings(File file) throws IOException;
+    public abstract List<String> readStringList(File file) throws IOException;
+    
+    public abstract void writeStringList(File file, List<String> list) throws IOException;
+    
+    public abstract void writeStringList(File file, List<String> list, boolean append) throws IOException;
     
     /**
      * Deteles a file.
@@ -150,22 +148,6 @@ public abstract class FileUtils {
      * @param mask The mask for the filename
      */
     public abstract void deleteFile(File file, String mask);
-    
-    /**
-     *  Write strings list to the file
-     *   @param stringList list of strings to save
-     *   @param file File to be saved in
-     *   @param append If true then append string list to the end of file
-     */
-    public abstract void writeList(Vector stringList, File file, boolean append);
-    
-    /**
-     *  Write strings list to the file
-     *   @param stringList list of strings to save
-     *   @param filename File name to be saved in
-     *   @param append If true then append string list to the end of file
-     */
-    public abstract void writeList(Vector stringList, String filename, boolean append);
     
     public abstract File createTempFile() throws IOException;
     
@@ -239,35 +221,6 @@ public abstract class FileUtils {
             outputStream.write(newContents.getBytes());
             
             outputStream.close();
-        }
-        
-        public String[] readStringList(File file) throws IOException {
-            return readStringList(file.toURL());
-        }
-        
-        public String[] readStringList(URL url) throws IOException {
-            if (url == null) {
-                throw new IllegalArgumentException("The supplied URL cannot be null");
-            }
-            
-            LogManager.getInstance().log("    reading string list from URL: " + url);
-            
-            BufferedReader reader = null;
-            Vector<String> lines  = new Vector<String>();
-            
-            try {
-                reader = new BufferedReader(new InputStreamReader(url.openStream()));
-                
-                while (reader.ready()) {
-                    String line = reader.readLine();
-                }
-            } finally {
-                if (reader != null) {
-                    reader.close();
-                }
-            }
-            
-            return lines.toArray(new String[lines.size()]);
         }
         
         public Date getLastModified(String fname) {
@@ -360,23 +313,37 @@ public abstract class FileUtils {
             return StringUtils.getInstance().asHexString(getFileMD5(file));
         }
         
-        public Vector<String> getStrings(File file) throws IOException {
-            Vector <String> vector = new Vector <String> ();
+        public List<String> readStringList(File file) throws IOException {
+            List<String> vector = new LinkedList<String> ();
+            
             try {
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(
-                        new FileInputStream(file)));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
                 
                 String string;
                 while ((string = reader.readLine()) != null) {
                     vector.add(string);
                 }
+                
                 reader.close();
-            } catch (IOException ex) {
-                throw ex;
+            } catch (IOException e) {
+                throw e;
             }
             
             return vector;
+        }
+        
+        public void writeStringList(File file, List<String> list) throws IOException {
+            writeStringList(file, list, false);
+        }
+        
+        public void writeStringList(File file, List<String> list, boolean append) throws IOException {
+            StringBuilder builder = new StringBuilder();
+            
+            for (String string: list) {
+                builder.append(string).append(System.getProperty("line.separator"));
+            }
+            
+            writeFile(file, builder.toString(), append);
         }
         
         public void deleteFile(File file) {
@@ -421,28 +388,6 @@ public abstract class FileUtils {
                     deleteFile(file);
                 }
             }
-        }
-        
-        public void writeList(Vector stringList,File file,boolean append) {
-            if(stringList == null) {
-                return;
-            }
-            //save unzipped and unpacked file list to the file
-            try {
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-                        new FileOutputStream(file,append)));
-                for(Object s: stringList.toArray()) {
-                    writer.write((String) s);
-                    writer.newLine();
-                }
-                writer.close();
-            } catch (IOException ex) {
-                LogManager.getInstance().log("Can`t write string list to " + file); //NOI18N
-            }
-        }
-        
-        public void writeList(Vector stringList,String filename,boolean append) {
-            writeList(stringList,new File(filename),append);
         }
         
         public File createTempFile() throws IOException {
