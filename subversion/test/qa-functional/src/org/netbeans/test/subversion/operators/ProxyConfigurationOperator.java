@@ -49,7 +49,7 @@ public class ProxyConfigurationOperator extends NbDialogOperator {
      */
     public JRadioButtonOperator rbUseSystemProxySettings() {
         if (_rbUseSystemProxySettings==null) {
-            _rbUseSystemProxySettings = new JRadioButtonOperator(this, "Use System Proxy Settings");
+            _rbUseSystemProxySettings = new JRadioButtonOperator(this, "Use NetBeans Proxy Settings");
         }
         return _rbUseSystemProxySettings;
     }
