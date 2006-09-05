@@ -879,9 +879,9 @@ public final class SingleModuleProperties extends ModuleProperties {
     ModuleList getModuleList() throws IOException {
         if (getActivePlatform() != this.originalPlatform) {
             return ModuleList.getModuleList(
-                    FileUtil.toFile(getHelper().getProjectDirectory()), getActivePlatform().getDestDir());
+                    getProjectDirectoryFile(), getActivePlatform().getDestDir());
         } else {
-            return ModuleList.getModuleList(FileUtil.toFile(getHelper().getProjectDirectory()));
+            return ModuleList.getModuleList(getProjectDirectoryFile());
         }
     }
     

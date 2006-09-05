@@ -37,7 +37,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
@@ -199,7 +198,7 @@ public class SuitePropertiesTest extends TestBase {
         SuiteProvider sp = (SuiteProvider) module2a.getLookup().lookup(SuiteProvider.class);
         assertNotNull(sp);
         assertNotNull(sp.getSuiteDirectory());
-        assertEquals("module2a has suite1 as a SuiteProvider", FileUtil.toFile(suite1.getProjectDirectory()), sp.getSuiteDirectory());
+        assertEquals("module2a has suite1 as a SuiteProvider", suite1.getProjectDirectoryFile(), sp.getSuiteDirectory());
         
         // assert module2a is not part of suite2 (has moved to suite1)....
         SubprojectProvider suite2spp = getSubProjectProvider(suite2);

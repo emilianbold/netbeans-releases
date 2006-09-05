@@ -35,7 +35,6 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileUtil;
 
 /**
  * @author Martin Krauskopf
@@ -116,7 +115,7 @@ public class ModuleDependencyTest extends TestBase {
     public void testSpecVersionBaseSourceEntries() throws Exception { // #72463
         SuiteProject suite = generateSuite("suite");
         NbModuleProject p = TestBase.generateSuiteComponent(suite, "module");
-        ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(p.getProjectDirectory()));
+        ModuleList ml = ModuleList.getModuleList(p.getProjectDirectoryFile());
         ModuleEntry e = ml.getEntry("org.example.module");
         assertNotNull("have entry", e);
         ModuleDependency dep = new ModuleDependency(e);
@@ -141,7 +140,7 @@ public class ModuleDependencyTest extends TestBase {
     
     public void testAppropriateDefaultCompileDependency() throws Exception { // #73666
         NbModuleProject p = generateStandaloneModule("module");
-        ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(p.getProjectDirectory()));
+        ModuleList ml = ModuleList.getModuleList(p.getProjectDirectoryFile());
         ModuleDependency d = new ModuleDependency(ml.getEntry("org.example.module"));
         assertFalse("no public packages -> no compile dependency by default", d.hasCompileDependency());
     }

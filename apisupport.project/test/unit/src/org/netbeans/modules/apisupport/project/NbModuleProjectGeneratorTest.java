@@ -69,10 +69,6 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         "nbproject/suite.properties",
     };
     
-    private static final String[] SUITE_COMP_ABS_CREATED_FILES = {
-        "nbproject/private/suite-private.properties",
-    };
-    
     public void testCreateStandAloneModule() throws Exception {
         File targetPrjDir = new File(getWorkDir(), "testModule");
         NbModuleProjectGenerator.createStandAloneModule(
@@ -166,7 +162,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
         File moduleDir = new File(getWorkDir(), "module");
         NbModuleProjectGenerator.createSuiteLibraryModule(
                 moduleDir, "module", "Module", "module/Bundle.properties",
-                FileUtil.toFile(sweet.getProjectDirectory()), null, new File[] {jar});
+                sweet.getProjectDirectoryFile(), null, new File[] {jar});
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(moduleDir));
         ManifestManager.PackageExport[] exports = new ProjectXMLManager(p).getPublicPackages();
         Set/*<String>*/ packages = new TreeSet();

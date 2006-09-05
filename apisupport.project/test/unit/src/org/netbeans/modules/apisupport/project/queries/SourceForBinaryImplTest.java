@@ -22,9 +22,7 @@ package org.netbeans.modules.apisupport.project.queries;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.jar.Manifest;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -34,7 +32,6 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -93,7 +90,7 @@ public class SourceForBinaryImplTest extends TestBase {
         FileObject yyJar = FileUtil.copyFile(libraryFO, FileUtil.toFileObject(getWorkDir()), "yy");
         
         // library wrapper
-        File suiteDir = FileUtil.toFile(suite.getProjectDirectory());
+        File suiteDir = suite.getProjectDirectoryFile();
         File wrapperDirF = new File(new File(getWorkDir(), "suite"), "wrapper");
         NbModuleProjectGenerator.createSuiteLibraryModule(
                 wrapperDirF,

@@ -115,7 +115,7 @@ public final class NbModuleProject implements Project {
             throw new IOException("Misconfigured project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " has no defined <code-name-base>"); // NOI18N
         }
         typeProvider = new NbModuleTypeProviderImpl();
-        if (typeProvider.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG && ModuleList.findNetBeansOrg(FileUtil.toFile(getProjectDirectory())) == null) {
+        if (typeProvider.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG && ModuleList.findNetBeansOrg(getProjectDirectoryFile()) == null) {
             // #69097: preferable to throwing an assertion error later...
             throw new IOException("netbeans.org-type module not in a complete netbeans.org source root: " + this); // NOI18N
         }
@@ -231,8 +231,11 @@ public final class NbModuleProject implements Project {
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
-
-
+    
+    public File getProjectDirectoryFile() {
+        return FileUtil.toFile(getProjectDirectory());
+    }
+    
     /**
      * Replacement for {@link AntProjectHelper#getPrimaryConfigurationData}
      * taking into account the /2 -> /3 upgrade.
@@ -409,7 +412,7 @@ public final class NbModuleProject implements Project {
         return getNbroot(null);
     }
     private File getNbroot(PropertyEvaluator eval) {
-        File dir = FileUtil.toFile(getProjectDirectory());
+        File dir = getProjectDirectoryFile();
         File nbroot = ModuleList.findNetBeansOrg(dir);
         if (nbroot != null) {
             return nbroot;
@@ -457,12 +460,12 @@ public final class NbModuleProject implements Project {
         NbPlatform p = getPlatform(false);
         if (p == null) {
             // #67148: have to use something... (and getEntry(codeNameBase) will certainly fail!)
-            return ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()), NbPlatform.getDefaultPlatform().getDestDir());
+            return ModuleList.getModuleList(getProjectDirectoryFile(), NbPlatform.getDefaultPlatform().getDestDir());
         }
-        ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()), p.getDestDir());
+        ModuleList ml = ModuleList.getModuleList(getProjectDirectoryFile(), p.getDestDir());
         if (ml.getEntry(getCodeNameBase()) == null) {
             ModuleList.refresh();
-            ml = ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
+            ml = ModuleList.getModuleList(getProjectDirectoryFile());
             if (ml.getEntry(getCodeNameBase()) == null) {
                 // XXX try to give better diagnostics - as examples are discovered
                 Util.err.log(ErrorManager.WARNING, "Project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " does not appear to be listed in its own module list; some sort of misconfiguration (e.g. not listed in its own suite)"); // NOI18N
@@ -506,7 +509,7 @@ public final class NbModuleProject implements Project {
                     throw e;
                 }
                 // Try again!
-                return ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
+                return ModuleList.getModuleList(getProjectDirectoryFile());
             }
             throw e;
         }
@@ -805,7 +808,9 @@ public final class NbModuleProject implements Project {
             }
         }
 
-        public void propertiesChanged(AntProjectEvent ev) {}
+        public void propertiesChanged(AntProjectEvent ev) {
+            // do not need to react here, type is encoded in project.xml
+        }
         
     }
     

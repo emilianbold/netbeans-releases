@@ -193,7 +193,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     
     private ClassPathImplementation createPathFromProperty(String prop) {
         return ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-            FileUtil.toFile(project.getProjectDirectory()), project.evaluator(), new String[] {prop});
+            project.getProjectDirectoryFile(), project.evaluator(), new String[] {prop});
     }
     
     /** &lt;compile-dependency&gt; is what we care about. */

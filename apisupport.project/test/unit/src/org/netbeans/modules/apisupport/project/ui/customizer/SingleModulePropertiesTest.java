@@ -277,7 +277,7 @@ public class SingleModulePropertiesTest extends TestBase {
         File moduleDir = new File(getWorkDir(), "module");
         NbModuleProjectGenerator.createSuiteLibraryModule(
                 moduleDir, "module", "Module", "module/Bundle.properties",
-                FileUtil.toFile(sweet.getProjectDirectory()), null, new File[] {jar});
+                sweet.getProjectDirectoryFile(), null, new File[] {jar});
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(moduleDir));
         FileObject srcDir = p.getProjectDirectory().getFileObject("src");
         FileUtil.createData(srcDir, "pkg1/Clazz1.java");
@@ -469,11 +469,11 @@ public class SingleModulePropertiesTest extends TestBase {
         ProjectManager.getDefault().saveProject(friendPrj);
         
         generateSuiteComponent(suite, "nonApiPrj");
-        ModuleEntry apiPrjME = ModuleList.getModuleList(FileUtil.toFile(testPrj.getProjectDirectory())).getEntry("org.example.apiPrj");
+        ModuleEntry apiPrjME = ModuleList.getModuleList(testPrj.getProjectDirectoryFile()).getEntry("org.example.apiPrj");
         ModuleDependency apiPrjDep = new ModuleDependency(apiPrjME);
-        ModuleEntry friendPrjME = ModuleList.getModuleList(FileUtil.toFile(testPrj.getProjectDirectory())).getEntry("org.example.friendPrj");
+        ModuleEntry friendPrjME = ModuleList.getModuleList(testPrj.getProjectDirectoryFile()).getEntry("org.example.friendPrj");
         ModuleDependency friendPrjDep = new ModuleDependency(friendPrjME);
-        ModuleEntry nonApiPrjME = ModuleList.getModuleList(FileUtil.toFile(testPrj.getProjectDirectory())).getEntry("org.example.nonApiPrj");
+        ModuleEntry nonApiPrjME = ModuleList.getModuleList(testPrj.getProjectDirectoryFile()).getEntry("org.example.nonApiPrj");
         ModuleDependency nonApiPrjDep = new ModuleDependency(nonApiPrjME);
         
         SingleModuleProperties testProps = SingleModulePropertiesTest.loadProperties(testPrj);

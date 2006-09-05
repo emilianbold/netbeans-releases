@@ -71,7 +71,7 @@ public final class BrandingSupport {
     private BrandingSupport(final SuiteProperties suiteProperties) throws IOException {
         this.suiteProperties = suiteProperties;
         this.suiteProject = suiteProperties.getProject();
-        File suiteDir = FileUtil.toFile(suiteProject.getProjectDirectory());
+        File suiteDir = suiteProject.getProjectDirectoryFile();
         assert suiteDir != null && suiteDir.exists();
         brandingDir = new File(suiteDir, getNameOfBrandingFolder());//NOI18N
         init();        
@@ -81,7 +81,7 @@ public final class BrandingSupport {
      * @return the project directory beneath which everything in the project lies
      */
     public File getProjectDirectory() {
-        return FileUtil.toFile(suiteProject.getProjectDirectory());
+        return suiteProject.getProjectDirectoryFile();
     }
     
     /**

@@ -38,7 +38,6 @@ import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
 
 /**
@@ -46,8 +45,9 @@ import org.w3c.dom.Element;
  * @author Radek Matous
  */
 public class BasicBrandingModel {
+    
     private BrandingSupport branding;
-    private SuiteProperties suiteProps;
+    private final SuiteProperties suiteProps;
     
     /** generated properties*/
     public static final String NAME_PROPERTY = "app.name";//NOI18N
@@ -58,7 +58,6 @@ public class BasicBrandingModel {
     
     static final int ICON_WIDTH = 48;
     static final int ICON_HEIGHT = 48;    
-    
     
     /** for generating property branding.token*/
     private boolean brandingEnabled;
@@ -91,8 +90,7 @@ public class BasicBrandingModel {
     private final Set/*<ChangeListener>*/ listeners = new HashSet();
     
     /**all above splash BundleKeys in set*/
-    private Set splashKeys = new HashSet();
-    
+    private final Set splashKeys = new HashSet();
     
     /** Creates a new instance of ApplicationDetails */
     public BasicBrandingModel(final SuiteProperties suiteProps) {
@@ -178,14 +176,14 @@ public class BasicBrandingModel {
     }
     
     public String getIconLocation() {
-        File prj = FileUtil.toFile(suiteProps.getProject().getProjectDirectory());
+        File prj = suiteProps.getProjectDirectoryFile();
         String relativePath = PropertyUtils.relativizeFile(prj ,icon.getFileLocation());
         
         return relativePath;
     }
     
     public String getSplashLocation() {
-        File prj = FileUtil.toFile(suiteProps.getProject().getProjectDirectory());
+        File prj = suiteProps.getProjectDirectoryFile();
         String relativePath = PropertyUtils.relativizeFile(prj ,splash.getFileLocation());
         
         return relativePath;

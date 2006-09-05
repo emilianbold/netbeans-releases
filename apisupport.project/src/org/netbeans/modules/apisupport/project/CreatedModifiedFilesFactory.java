@@ -215,7 +215,7 @@ public final class CreatedModifiedFilesFactory {
          */
         private String getProjectPath(FileObject file) {
             return PropertyUtils.relativizeFile(
-                    FileUtil.toFile(getProject().getProjectDirectory()),
+                    getProject().getProjectDirectoryFile(),
                     FileUtil.normalizeFile(FileUtil.toFile(file)));
         }
         

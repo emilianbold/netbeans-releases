@@ -36,7 +36,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
 /**
@@ -262,7 +261,7 @@ public class ModuleListTest extends TestBase {
         SuiteProject suite1 = generateSuite("suite1");
         final NbModuleProject p = TestBase.generateSuiteComponent(suite1, "module1a");
         ModuleList ml = ModuleList.getModuleList(
-                FileUtil.toFile(p.getProjectDirectory()),
+                p.getProjectDirectoryFile(),
                 NbPlatform.getDefaultPlatform().getDestDir());
         assertNotNull("module1a is in the suite1's module list", ml.getEntry("org.example.module1a"));
         assertEquals("no public packages in the ModuleEntry", 0, ml.getEntry("org.example.module1a").getPublicPackages().length);
@@ -279,9 +278,8 @@ public class ModuleListTest extends TestBase {
         assertTrue("replace public packages", result.booleanValue());
         ProjectManager.getDefault().saveProject(p);
         
-        ModuleList.refreshSuiteModuleList(FileUtil.toFile(suite1.getProjectDirectory()));
-        ml = ModuleList.getModuleList(
-                FileUtil.toFile(p.getProjectDirectory()),
+        ModuleList.refreshSuiteModuleList(suite1.getProjectDirectoryFile());
+        ml = ModuleList.getModuleList(p.getProjectDirectoryFile(),
                 NbPlatform.getDefaultPlatform().getDestDir());
         assertEquals("one public packages in the refreshed ModuleEntry", 1, ml.getEntry("org.example.module1a").getPublicPackages().length);
     }
@@ -289,7 +287,7 @@ public class ModuleListTest extends TestBase {
     public void testSpecVersionBaseSourceEntries() throws Exception { // #72463
         SuiteProject suite = generateSuite("suite");
         NbModuleProject p = TestBase.generateSuiteComponent(suite, "module");
-        ModuleList ml = ModuleList.getModuleList(FileUtil.toFile(p.getProjectDirectory()));
+        ModuleList ml = ModuleList.getModuleList(p.getProjectDirectoryFile());
         ModuleEntry e = ml.getEntry("org.example.module");
         assertNotNull("have entry", e);
         assertEquals("right initial spec vers from manifest", "1.0", e.getSpecificationVersion());

@@ -239,7 +239,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         // XXX a lot of this duplicates ModuleList.parseProperties... can they be shared?
         PropertyProvider predefs = project.getHelper().getStockPropertyPreprovider();
         Map/*<String,String>*/ stock = new HashMap();
-        File dir = FileUtil.toFile(project.getProjectDirectory());
+        File dir = project.getProjectDirectoryFile();
         NbModuleTypeProvider.NbModuleType type = typeProvider.getModuleType();
         File nbroot;
         if (type == NbModuleTypeProvider.NETBEANS_ORG) {

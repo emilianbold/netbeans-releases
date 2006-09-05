@@ -378,7 +378,7 @@ public abstract class TestBase extends NbTestCase {
      * what is generated.
      */
     public static NbModuleProject generateSuiteComponent(SuiteProject suiteProject, String prjDir) throws Exception {
-        File suiteDir = FileUtil.toFile(suiteProject.getProjectDirectory());
+        File suiteDir = suiteProject.getProjectDirectoryFile();
         return generateSuiteComponent(suiteProject, suiteDir, prjDir);
     }
     
@@ -391,7 +391,7 @@ public abstract class TestBase extends NbTestCase {
      */
     public static NbModuleProject generateSuiteComponent(SuiteProject suiteProject, File parentDir, String prjDir) throws Exception {
         String prjDirDotted = prjDir.replace('/', '.');
-        File suiteDir = FileUtil.toFile(suiteProject.getProjectDirectory());
+        File suiteDir = suiteProject.getProjectDirectoryFile();
         File prjDirF = file(parentDir, prjDir);
         NbModuleProjectGenerator.createSuiteComponentModule(
                 prjDirF,

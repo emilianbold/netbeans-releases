@@ -99,7 +99,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
      */
     public static NewNbModuleWizardIterator createSuiteComponentIterator(final SuiteProject suite) {
         NewNbModuleWizardIterator iterator = new NewNbModuleWizardIterator(TYPE_SUITE_COMPONENT);
-        iterator.preferredSuiteDir = FileUtil.toFile(suite.getProjectDirectory()).getAbsolutePath();
+        iterator.preferredSuiteDir = suite.getProjectDirectoryFile().getAbsolutePath();
         iterator.suiteDedicated = Boolean.TRUE;
         return iterator;
     }

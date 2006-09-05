@@ -111,6 +111,10 @@ public final class SuiteProject implements Project {
         return helper.getProjectDirectory();
     }
     
+    public File getProjectDirectoryFile() {
+        return FileUtil.toFile(getProjectDirectory());
+    }
+    
     /** For unit tests purpose only. */
     public AntProjectHelper getHelper() {
         return helper;
@@ -145,7 +149,7 @@ public final class SuiteProject implements Project {
     
     private PropertyEvaluator createEvaluator() {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
-        File dir = FileUtil.toFile(getProjectDirectory());
+        File dir = getProjectDirectoryFile();
         List/*<PropertyProvider>*/ providers = new ArrayList();
         providers.add(helper.getPropertyProvider("nbproject/private/platform-private.properties")); // NOI18N
         providers.add(helper.getPropertyProvider("nbproject/platform.properties")); // NOI18N
@@ -306,7 +310,7 @@ public final class SuiteProject implements Project {
     private final class SuiteProviderImpl implements SuiteProvider {
         
         public File getSuiteDirectory() {
-            return FileUtil.toFile(getProjectDirectory());
+            return getProjectDirectoryFile();
         }
         
     }

@@ -30,7 +30,6 @@ import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Provide the module JAR as an exported artifact that other projects could import.
@@ -72,7 +71,7 @@ public final class AntArtifactProviderImpl implements AntArtifactProvider {
         public URI[] getArtifactLocations() {
             String jarloc = eval.evaluate("${cluster}/${module.jar}"); // NOI18N
             File jar = helper.resolveFile(jarloc); // probably absolute anyway, now
-            String reldir = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), jar);
+            String reldir = PropertyUtils.relativizeFile(project.getProjectDirectoryFile(), jar);
             if (reldir != null) {
                 try {
                     return new URI[] {new URI(null, null, reldir, null)};

@@ -32,7 +32,6 @@ import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 /**
@@ -73,7 +72,7 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
             if (type == NbModuleTypeProvider.NETBEANS_ORG) {
                 dir = project.getNbrootFile(NB_ALL_INFIX + cnbdashes);
             } else {
-                dir = new File(FileUtil.toFile(project.getProjectDirectory()), EXT_INFIX + cnbdashes);
+                dir = new File(project.getProjectDirectoryFile(), EXT_INFIX + cnbdashes);
             }
             candidates.add(Util.urlForDir(dir));
             if (ignoreNonexistentRoots) {

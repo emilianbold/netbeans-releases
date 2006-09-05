@@ -184,7 +184,7 @@ public final class ProjectXMLManager {
         Element moduleDependencies = findModuleDependencies(getConfData());
         assert moduleDependencies != null : "Cannot find <module-dependencies> for: " + project;
         List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
-        File prjDirF = FileUtil.toFile(project.getProjectDirectory());
+        File prjDirF = project.getProjectDirectoryFile();
         ModuleList ml;
         if (customPlaf != null) {
             ml = ModuleList.getModuleList(prjDirF, customPlaf.getDestDir());

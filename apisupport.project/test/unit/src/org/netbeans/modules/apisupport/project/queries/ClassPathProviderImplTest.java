@@ -659,7 +659,7 @@ public class ClassPathProviderImplTest extends TestBase {
         // Dialogs API depends on Progress API
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-netbeans-api-progress.jar"));
         // And the usual:
-        expectedRoots.add(Util.urlForDir(new File(FileUtil.toFile(p.getProjectDirectory()), "build/classes")).toExternalForm());
+        expectedRoots.add(Util.urlForDir(new File(p.getProjectDirectoryFile(), "build/classes")).toExternalForm());
         assertEquals("right EXECUTE classpath incl. transitive deps",
             expectedRoots.toString(), urlsOfCp(cp).toString());
     }
