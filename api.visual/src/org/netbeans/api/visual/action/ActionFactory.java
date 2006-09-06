@@ -119,12 +119,12 @@ public final class ActionFactory {
         return new AcceptAction (provider);
     }
 
-    public static WidgetAction createAddDeleteControlPointAction () {
-        return createAddDeleteControlPointAction (3.0, 5.0);
+    public static WidgetAction createAddRemoveControlPointAction () {
+        return createAddRemoveControlPointAction (3.0, 5.0);
     }
 
-    public static WidgetAction createAddDeleteControlPointAction (double createSensitivity, double deleteSensitivity) {
-        return new AddDeleteControlPointAction (createSensitivity, deleteSensitivity);
+    public static WidgetAction createAddRemoveControlPointAction (double createSensitivity, double deleteSensitivity) {
+        return new AddRemoveControlPointAction (createSensitivity, deleteSensitivity);
     }
 
     public static WidgetAction createAlignWithMoveAction (LayerWidget collectionLayer, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
