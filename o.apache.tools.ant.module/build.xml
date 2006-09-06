@@ -230,7 +230,7 @@ Microsystems, Inc. All Rights Reserved.
     ant -f ${here}/test/build.xml cleanresults runtests
     ant -f ${here}/../java/project/test/build.xml cleanresults runtests
     ant -f ${here}/../nbbuild/build.xml commit-verification
-10. Submit a patch for cvs://cvs.apache.org/ant/xdocs/external.xml
+10. Submit a patch for https://svn.apache.org/repos/asf/ant/core/trunk/xdocs/external.xml
     mentioning that the bundled version in NB is now ${release.version}.
 
 After that you should be done!
