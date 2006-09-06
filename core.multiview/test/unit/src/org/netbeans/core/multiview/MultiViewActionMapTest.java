@@ -48,6 +48,7 @@ import org.openide.util.LookupEvent;
 
 import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 
 import org.openide.windows.TopComponent;
@@ -181,6 +182,31 @@ public class MultiViewActionMapTest extends NbTestCase {
         Accessor.DEFAULT.createPerspective(desc3);
         handler.requestVisible(Accessor.DEFAULT.createPerspective(desc3));
         assertEquals(3, list.getCount());
+    }
+    
+    public void testSimplifiedActionMapChanges81117() {
+        MultiViewTopComponentLookup.InitialProxyLookup lookup = new MultiViewTopComponentLookup.InitialProxyLookup(new ActionMap());
+        Lookup.Result res = lookup.lookup(new Lookup.Template(ActionMap.class));
+        LookListener list = new LookListener();
+        list.resetCount();
+        res.addLookupListener(list);
+//        assertEquals(1, res.allInstances().size());
+        assertEquals(0, list.getCount());
+        lookup.refreshLookup();
+        assertEquals(1, list.getCount());
+//        assertEquals(1, res.allInstances().size());
+        
+        MultiViewTopComponentLookup lookup2 = new MultiViewTopComponentLookup(new ActionMap());
+        res = lookup2.lookup(new Lookup.Template(ActionMap.class));
+        list = new LookListener();
+        list.resetCount();
+        res.addLookupListener(list);
+//        assertEquals(1, res.allInstances().size());
+        assertEquals(0, list.getCount());
+        lookup2.setElementLookup(Lookups.fixed(new Object[] {new Object()} ));
+        assertEquals(1, list.getCount());
+//        assertEquals(1, res.allInstances().size());
+        
     }
     
     

@@ -179,7 +179,7 @@ class MultiViewTopComponentLookup extends Lookup {
         }
     }
     
-    private static class InitialProxyLookup extends ProxyLookup {
+    static class InitialProxyLookup extends ProxyLookup {
         private ActionMap initObject;
         public InitialProxyLookup(ActionMap obj) {
             super(new Lookup[] {Lookups.fixed(new Object[] {new LookupProxyActionMap(obj)})});
