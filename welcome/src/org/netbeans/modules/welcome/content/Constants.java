@@ -34,19 +34,19 @@ import org.openide.util.Utilities;
  */
 public interface Constants {
 
-    static final Color DEFAULT_BACKGROUND_COLOR = new Color( 255,255,255 );
-    static final Color SCREEN_BACKGROUND_COLOR = new Color( 232,221,194 );
-    static final Color SECTION_BACKGROUND_COLOR = new Color( 235,235,235 );
+    static final String DEFAULT_BACKGROUND_COLOR = "DefaultBackgroundColor"; //NOI18N
+    static final String SCREEN_BACKGROUND_COLOR = "ScreenBackgrouncColor"; //NOI18N
+    static final String SECTION_BACKGROUND_COLOR = "SectionBackgroundColor"; //NOI18N
 
-    static final Color HEADER_FILL_COLOR = new Color( 251,252,253 );
-    static final Color FOOTER_FILL_COLOR = new Color( 255,255,255 );
+    static final String HEADER_FILL_COLOR = "HeaderFillColor"; //NOI18N
+    static final String FOOTER_FILL_COLOR = "FooterFillColor"; //NOI18N
 
-    static final Color TITLE_TEXT_COLOR = new Color( 217,103,2 );
-    static final Color BUTTON_TEXT_COLOR = new Color( 22,75,123 );
-    static final Color HEADER_TEXT_COLOR = new Color( 14,27,85 );
-    static final Color SECTION_TEXT_COLOR = new Color( 96,96,96 );
-    static final Color DEFAULT_TEXT_COLOR = new Color( 0,0,0 );
-    static final Color RSS_DATETIME_COLOR = new Color( 128,128,128 );
+    static final String SEL_HEADER_TEXT_COLOR = "SelHeaderTextColor"; //NOI18N
+    static final String BUTTON_TEXT_COLOR = "ButtonTextColor"; //NOI18N
+    static final String HEADER_TEXT_COLOR = "HeaderTextColor"; //NOI18N
+    static final String SECTION_TEXT_COLOR = "SectionTextColor"; //NOI18N
+    static final String DEFAULT_TEXT_COLOR = "DefaultTextColor"; //NOI18N
+    static final String RSS_DATETIME_COLOR = "RssDateTimeColor"; //NOI18N
 
     static final String FONT_NAME = Utils.getFontName();
     static final int FONT_SIZE = Utils.getDefaultFontSize();
@@ -124,8 +124,8 @@ public interface Constants {
 
     static final Stroke LINK_IN_FOCUS_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,
         BasicStroke.JOIN_BEVEL, 0, new float[] {0, 2}, 0);
-    static final Color LINK_IN_FOCUS_COLOR = new Color(0,0,0);
-    static final Color RSS_LINK_COLOR = new Color( 22,75,123 );
+    static final String LINK_IN_FOCUS_COLOR = "LinkInFocusColor"; //NOI18N
+    static final String RSS_LINK_COLOR = "RssLinkColor"; //NOI18N
 
     static final int RSS_FEED_TIMER_RELOAD_MILLIS = 60*60*1000;
 

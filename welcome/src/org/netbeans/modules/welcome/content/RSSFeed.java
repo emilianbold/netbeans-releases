@@ -82,8 +82,8 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         setBorder(null);
         setOpaque(false);
 
-        setBackground( DEFAULT_BACKGROUND_COLOR );
-        getViewport().setBackground( DEFAULT_BACKGROUND_COLOR );
+        setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
+        getViewport().setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
         setViewportView( buildContentLoadingLabel() );
         
         setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
@@ -174,7 +174,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                         if( item.dateTime != null) {
                             JLabel label = new JLabel();
                             label.setFont( RSS_DESCRIPTION_FONT );
-                            label.setForeground( RSS_DATETIME_COLOR );
+                            label.setForeground( Utils.getColor(RSS_DATETIME_COLOR) );
                             label.setText( formatDateTime( item.dateTime ) );
                             panel.add( label, new GridBagConstraints(0,row++,1,1,0.0,0.0,
                                     GridBagConstraints.WEST,GridBagConstraints.NONE,
@@ -346,8 +346,8 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         JLabel label = new JLabel( BundleSupport.getLabel( "ContentLoading" ) ); // NOI18N
         label.setHorizontalAlignment( JLabel.CENTER );
         label.setVerticalAlignment( JLabel.CENTER );
-        label.setForeground( DEFAULT_TEXT_COLOR );
-        label.setBackground( DEFAULT_BACKGROUND_COLOR );
+        label.setForeground( Utils.getColor(DEFAULT_TEXT_COLOR) );
+        label.setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
         label.setOpaque( false );
         Component header = getContentHeader();
         if( null != header ) {

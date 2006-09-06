@@ -55,7 +55,7 @@ public class Samples extends ContentPanel implements Constants {
     public Samples() {
         super( BundleSupport.getLabel( "Samples" ) ); // NOI18N
         setOpaque( true );
-        setBackground( DEFAULT_BACKGROUND_COLOR );
+        setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
         
         setContent( buildContent() );
 
@@ -93,7 +93,7 @@ public class Samples extends ContentPanel implements Constants {
 
     protected void addLink( JPanel panel, String category, String title ) {
         SampleProjectLink link = new SampleProjectLink( category, null, title );
-        link.setForeground( HEADER_TEXT_COLOR );
+        link.setForeground( Utils.getColor(HEADER_TEXT_COLOR) );
         panel.add( link, new GridBagConstraints( 0, row++, 1, 1, 1.0, 0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
                 new Insets(row==1 ? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,

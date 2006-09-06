@@ -33,6 +33,7 @@ import javax.swing.JScrollPane;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentPanel;
 import org.netbeans.modules.welcome.content.ActionButton;
+import org.netbeans.modules.welcome.content.Utils;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -67,8 +68,8 @@ public class GetStarted extends ContentPanel {
                 String headerText = children[i].getNodeDelegate().getDisplayName();
                 JLabel lblTitle = new JLabel( headerText );
                 lblTitle.setFont( HEADER_FONT );
-                lblTitle.setForeground( SECTION_TEXT_COLOR );
-                lblTitle.setBackground( SECTION_BACKGROUND_COLOR );
+                lblTitle.setForeground( Utils.getColor(SECTION_TEXT_COLOR) );
+                lblTitle.setBackground( Utils.getColor(SECTION_BACKGROUND_COLOR) );
                 lblTitle.setHorizontalAlignment( JLabel.LEFT );
                 lblTitle.setOpaque( true );
                 lblTitle.setBorder( HEADER_TEXT_BORDER );

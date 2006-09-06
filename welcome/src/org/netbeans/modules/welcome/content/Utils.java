@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.welcome.content;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -27,6 +28,7 @@ import java.awt.Toolkit;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Map;
+import java.util.ResourceBundle;
 import javax.swing.Action;
 import javax.swing.UIManager;
 import org.openide.ErrorManager;
@@ -36,7 +38,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -122,5 +124,16 @@ public class Utils {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
         }
         return null;
+    }
+    
+    public static Color getColor( String resId ) {
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.welcome.resources.Bundle"); // NOI18N
+        try {
+            Integer rgb = Integer.decode(bundle.getString(resId));
+            return new Color(rgb.intValue());
+        } catch( NumberFormatException nfE ) {
+            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, nfE );
+            return Color.BLACK;
+        }
     }
 }

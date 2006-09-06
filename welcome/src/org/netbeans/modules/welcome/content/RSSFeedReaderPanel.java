@@ -34,7 +34,7 @@ public abstract class RSSFeedReaderPanel extends ContentPanel {
     public RSSFeedReaderPanel( String key ) {
         super( BundleSupport.getLabel( key ) );
         setOpaque( true );
-        setBackground( DEFAULT_BACKGROUND_COLOR );
+        setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
         setContent( buildContent( BundleSupport.getURL( key ) ) );
     }
 

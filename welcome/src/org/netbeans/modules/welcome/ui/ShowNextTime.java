@@ -28,6 +28,7 @@ import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
+import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
@@ -46,8 +47,8 @@ public class ShowNextTime extends JPanel implements ActionListener, Constants {
         button = new JCheckBox( BundleSupport.getLabel( "ShowOnStartup" ) ); // NOI18N
         button.setSelected( WelcomeOptions.getDefault().isShowOnStartup() );
         button.setFont( BUTTON_FONT );
-        button.setForeground( BUTTON_TEXT_COLOR );
-        button.setBackground( DEFAULT_BACKGROUND_COLOR );
+        button.setForeground( Utils.getColor(BUTTON_TEXT_COLOR) );
+        button.setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
         button.setOpaque( false );
         add( button, BorderLayout.CENTER );
         button.addActionListener( this );

@@ -51,7 +51,7 @@ public abstract class LinkButton extends JButton
 
     public LinkButton( String label, boolean showBullet ) {
         super( label );
-        setForeground( HEADER_TEXT_COLOR );
+        setForeground( Utils.getColor(HEADER_TEXT_COLOR) );
         setFont( REGULAR_FONT );
         setBorder( new EmptyBorder(1, 1, 1, 1) );
         setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
@@ -82,14 +82,14 @@ public abstract class LinkButton extends JButton
 
     public void mouseEntered(MouseEvent e) {
         underline = true;
-        setForeground( RSS_LINK_COLOR );
+        setForeground( Utils.getColor(RSS_LINK_COLOR) );
         repaint();
         onMouseEntered( e );
     }
 
     public void mouseExited(MouseEvent e) {
         underline = false;
-        setForeground( HEADER_TEXT_COLOR );
+        setForeground( Utils.getColor(HEADER_TEXT_COLOR) );
         repaint();
         onMouseExited( e );
     }
@@ -101,7 +101,7 @@ public abstract class LinkButton extends JButton
         Dimension size = getSize();
         if( hasFocus() ) {
             g2.setStroke( LINK_IN_FOCUS_STROKE );
-            g2.setColor( LINK_IN_FOCUS_COLOR );
+            g2.setColor( Utils.getColor(LINK_IN_FOCUS_COLOR) );
             g2.drawRect( 0, 0, size.width - 1, size.height - 1 );
         }
     }
