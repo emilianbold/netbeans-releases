@@ -48,7 +48,7 @@ public class FreeConnectionWidget extends ConnectionWidget {
         this.deleteSensitivity=deleteSensitivity;
     }
 
-    public void addDeleteControlPoint (Point point) {
+    public void addRemoveControlPoint (Point point) {
         ArrayList<Point> list = new ArrayList<Point> (getControlPoints());
             if(!removeControlPoint(point,list,deleteSensitivity)){
                 Point exPoint=null;int index=0;
