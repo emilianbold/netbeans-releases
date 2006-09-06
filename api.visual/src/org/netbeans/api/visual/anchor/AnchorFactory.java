@@ -58,4 +58,7 @@ public final class AnchorFactory {
         return widget != null  &&  kind != null ? new DirectionalAnchor (widget, kind) : null;
     }
 
+    public static Anchor createFreeRectangularAnchor (Widget widget, boolean includeBorders) {
+        return widget != null ? new FreeRectangularAnchor (widget, includeBorders) : null;
+    }
 }
