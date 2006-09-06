@@ -240,7 +240,7 @@ public class ComponentInspector extends TopComponent
     private void focusFormImpl(FormEditor form, int visibility) {
         focusedForm = form;
 
-        if (form == null) {
+        if ((form == null) || (form.getFormDesigner() == null)) {
             testAction.setFormDesigner(null);
             PaletteUtils.setContext(null);
 
