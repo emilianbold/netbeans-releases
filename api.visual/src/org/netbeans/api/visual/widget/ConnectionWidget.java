@@ -48,7 +48,7 @@ public class ConnectionWidget extends Widget {
     private PointShape endPointShape;
     private Router router;
     private boolean routingRequired;
-    private List<Point> controlPoints;
+    private List<Point> controlPoints=Collections.unmodifiableList (new ArrayList<Point>());
     private List<Point> controlPointsUm;
     private ConnectionWidgetLayout connectionWidgetLayout;
     private Stroke stroke;
