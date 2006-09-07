@@ -21,6 +21,7 @@ package org.netbeans.modules.mobility.project.queries;
 import java.io.File;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -84,35 +85,41 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             
             private FileObject[] createRoots() {
                 final ArrayList<FileObject> roots = new ArrayList<FileObject>();
-                final URL projectRoot = URLMapper.findURL(helper.getProjectDirectory(), URLMapper.EXTERNAL);
-                if (J2MEProjectUtils.isParentOf(projectRoot, binaryRoot)) {
-                    final String srcPath = helper.getStandardPropertyEvaluator().getProperty("src.dir"); //NOI18N
-                    final FileObject src = srcPath == null ? null : helper.resolveFileObject(srcPath);
-                    if (src != null) roots.add(src);
-                    final String cfg = J2MEProjectUtils.detectConfiguration(projectRoot, binaryRoot);
-                    String path = J2MEProjectUtils.evaluateProperty(helper, "libs.classpath", cfg); //NOI18N
-                    if (path != null) path = helper.resolvePath(path);
-                    if (path != null) {
-                        final String p[] = PropertyUtils.tokenizePath(path);
-                        for (int i=0; i<p.length; i++) try {
-                            final URL url = J2MEProjectUtils.wrapJar(new File(p[i]).toURI().toURL());
-                            if (url != null && !J2MEProjectUtils.isParentOf(projectRoot, url)) {
-                                if (threads.contains(Thread.currentThread())) {
-                                    CyclicDependencyWarningPanel.showWarning(ProjectUtils.getInformation(project).getDisplayName());
-                                    return new FileObject[0];
+                try {
+                    final URL projectRoot = URLMapper.findURL(helper.getProjectDirectory(), URLMapper.EXTERNAL);
+                    URL distRoot = helper.resolveFile("dist").toURI().toURL(); //NOI18N
+                    URL buildRoot = helper.resolveFile("build").toURI().toURL(); //NOI18N
+                    if (J2MEProjectUtils.isParentOf(distRoot, binaryRoot) || J2MEProjectUtils.isParentOf(buildRoot, binaryRoot)) {
+                        final String srcPath = helper.getStandardPropertyEvaluator().getProperty("src.dir"); //NOI18N
+                        final FileObject src = srcPath == null ? null : helper.resolveFileObject(srcPath);
+                        if (src != null) roots.add(src);
+                        final String cfg = J2MEProjectUtils.detectConfiguration(projectRoot, binaryRoot);
+                        String path = J2MEProjectUtils.evaluateProperty(helper, "libs.classpath", cfg); //NOI18N
+                        if (path != null) path = helper.resolvePath(path);
+                        if (path != null) {
+                            final String p[] = PropertyUtils.tokenizePath(path);
+                            for (int i=0; i<p.length; i++) try {
+                                final URL url = J2MEProjectUtils.wrapJar(new File(p[i]).toURI().toURL());
+                                if (url != null && !J2MEProjectUtils.isParentOf(projectRoot, url)) {
+                                    if (threads.contains(Thread.currentThread())) {
+                                        CyclicDependencyWarningPanel.showWarning(ProjectUtils.getInformation(project).getDisplayName());
+                                        return new FileObject[0];
+                                    }
+                                    try {
+                                        threads.add(Thread.currentThread());
+                                        final SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(url);
+                                        if (result != null)
+                                            roots.addAll(Arrays.asList(result.getRoots()));
+                                    } finally {
+                                        threads.remove(Thread.currentThread());
+                                    }
                                 }
-                                try {
-                                    threads.add(Thread.currentThread());
-                                    final SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(url);
-                                    if (result != null)
-                                        roots.addAll(Arrays.asList(result.getRoots()));
-                                } finally {
-                                    threads.remove(Thread.currentThread());
-                                }
+                            } catch (MalformedURLException mue) {
                             }
-                        } catch (MalformedURLException mue) {
                         }
                     }
+                } catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify(mue);
                 }
                 return roots.toArray(new FileObject[roots.size()]);
             }

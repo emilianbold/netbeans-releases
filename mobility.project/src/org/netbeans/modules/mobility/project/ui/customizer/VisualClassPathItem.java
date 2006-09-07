@@ -98,7 +98,7 @@ public final class VisualClassPathItem {
             throw new IllegalArgumentException( "library must not be null" ); // NOI18N
         }
         final String libraryName = library.getName();
-        return new VisualClassPathItem( library, TYPE_LIBRARY, "${libs."+libraryName+".classpath}", libraryName); //NOI18N
+        return new VisualClassPathItem( library, TYPE_LIBRARY, "${libs."+libraryName+".classpath}", library.getDisplayName()); //NOI18N
         
     }
     

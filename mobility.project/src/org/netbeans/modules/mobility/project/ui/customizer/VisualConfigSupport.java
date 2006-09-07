@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -255,8 +256,16 @@ public final class VisualConfigSupport {
         final String keys[] = properties.keySet().toArray(new String[properties.size()]);
         final String prefix = J2MEProjectProperties.CONFIG_PREFIX + srcCfg;
         for (int i=0; i<keys.length; i++) {
-            if (keys[i].startsWith(prefix))
-                properties.put(J2MEProjectProperties.CONFIG_PREFIX + targetCfg + keys[i].substring(prefix.length()), properties.get(keys[i]));
+            if (keys[i].startsWith(prefix)) {
+                Object backValue = properties.get(keys[i]);
+                if (backValue instanceof Cloneable) try {
+                    Method m = backValue.getClass().getMethod("clone", new Class[0]); //NOI18N
+                    if (m != null) backValue = m.invoke(backValue, new Object[0]);
+                } catch (Exception e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,e);                    	
+                }
+                properties.put(J2MEProjectProperties.CONFIG_PREFIX + targetCfg + keys[i].substring(prefix.length()), backValue);
+            }
         }
     }
     

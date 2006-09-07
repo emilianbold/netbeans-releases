@@ -188,7 +188,7 @@ public class DefaultPropertyParsers {
                     // Library from library manager
                     String eval = pei.substring( LIBRARY_PREFIX.length(), pei.lastIndexOf('.') ); //NOI18N
                     Library lib = LibraryManager.getDefault().getLibrary(eval);
-                    cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, pei, eval );
+                    cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, pei, lib.getDisplayName());
                 } else if (pei.startsWith(ARTIFACT_PREFIX)) {
                     Object o[] = refHelper.findArtifactAndLocation( pei );
                     File f = null;

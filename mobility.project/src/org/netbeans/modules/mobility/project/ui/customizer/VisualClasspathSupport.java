@@ -196,7 +196,7 @@ public final class VisualClasspathSupport {
                     new VisualClassPathItem( libraries[i],
                     VisualClassPathItem.TYPE_LIBRARY,
                     "${libs."+libraryName+".classpath}", //NOI18N
-                    libraryName));
+                    libraries[i].getDisplayName()));
         }
         fireActionPerformed();
     }

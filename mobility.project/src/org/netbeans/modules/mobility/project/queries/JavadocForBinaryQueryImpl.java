@@ -35,6 +35,7 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.openide.ErrorManager;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.WeakListeners;
 
@@ -84,36 +85,42 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
             
             private URL[] createRoots() {
                 final ArrayList<URL> roots = new ArrayList<URL>();
-                final URL projectRoot = URLMapper.findURL(helper.getProjectDirectory(), URLMapper.EXTERNAL);
-                if (J2MEProjectUtils.isParentOf(projectRoot, binaryRoot)) {
-                    final String cfg = J2MEProjectUtils.detectConfiguration(projectRoot, binaryRoot);
-                    if (cfg != null) try {
-                        roots.add(J2MEProjectUtils.wrapJar(helper.resolveFile("dist/" + cfg + "/doc").toURI().toURL())); //NOI18N
-                    } catch (MalformedURLException mue) {}
-                    try {
-                        roots.add(J2MEProjectUtils.wrapJar(helper.resolveFile("dist/doc").toURI().toURL())); //NOI18N
-                    } catch (MalformedURLException mue) {}
-                    String path = J2MEProjectUtils.evaluateProperty(helper, "libs.classpath", cfg); //NOI18N
-                    if (path != null) path = helper.resolvePath(path);
-                    if (path != null) {
-                        final String p[] = PropertyUtils.tokenizePath(path);
-                        for (int i=0; i<p.length; i++) try {
-                            final URL url = J2MEProjectUtils.wrapJar(new File(p[i]).toURI().toURL());
-                            if (url != null && !J2MEProjectUtils.isParentOf(projectRoot, url)) {
-                                if (threads.contains(Thread.currentThread())) {
-                                    CyclicDependencyWarningPanel.showWarning(ProjectUtils.getInformation(project).getDisplayName());
-                                    return new URL[0];
+                try {
+                    final URL projectRoot = URLMapper.findURL(helper.getProjectDirectory(), URLMapper.EXTERNAL);
+                    URL distRoot = helper.resolveFile("dist").toURI().toURL(); //NOI18N
+                    URL buildRoot = helper.resolveFile("build").toURI().toURL(); //NOI18N
+                    if (J2MEProjectUtils.isParentOf(distRoot, binaryRoot) || J2MEProjectUtils.isParentOf(buildRoot, binaryRoot)) {
+                        final String cfg = J2MEProjectUtils.detectConfiguration(projectRoot, binaryRoot);
+                        if (cfg != null) try {
+                            roots.add(J2MEProjectUtils.wrapJar(helper.resolveFile("dist/" + cfg + "/doc").toURI().toURL())); //NOI18N
+                        } catch (MalformedURLException mue) {}
+                        try {
+                            roots.add(J2MEProjectUtils.wrapJar(helper.resolveFile("dist/doc").toURI().toURL())); //NOI18N
+                        } catch (MalformedURLException mue) {}
+                        String path = J2MEProjectUtils.evaluateProperty(helper, "libs.classpath", cfg); //NOI18N
+                        if (path != null) path = helper.resolvePath(path);
+                        if (path != null) {
+                            final String p[] = PropertyUtils.tokenizePath(path);
+                            for (int i=0; i<p.length; i++) try {
+                                final URL url = J2MEProjectUtils.wrapJar(new File(p[i]).toURI().toURL());
+                                if (url != null && !J2MEProjectUtils.isParentOf(projectRoot, url)) {
+                                    if (threads.contains(Thread.currentThread())) {
+                                        CyclicDependencyWarningPanel.showWarning(ProjectUtils.getInformation(project).getDisplayName());
+                                        return new URL[0];
+                                    }
+                                    try {
+                                        threads.add(Thread.currentThread());
+                                        roots.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc(url).getRoots()));
+                                    } finally {
+                                        threads.remove(Thread.currentThread());
+                                    }
                                 }
-                                try {
-                                    threads.add(Thread.currentThread());
-                                    roots.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc(url).getRoots()));
-                                } finally {
-                                    threads.remove(Thread.currentThread());
-                                }
+                            } catch (MalformedURLException mue) {
                             }
-                        } catch (MalformedURLException mue) {
                         }
                     }
+                } catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify(mue);
                 }
                 return roots.toArray(new URL[roots.size()]);
             }

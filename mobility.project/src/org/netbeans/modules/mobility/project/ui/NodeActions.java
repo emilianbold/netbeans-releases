@@ -280,7 +280,7 @@ class AddLibraryAction extends NodeAction<Library>
             set.add(new VisualClassPathItem( lib,
             VisualClassPathItem.TYPE_LIBRARY,
             "${libs."+libraryName+".classpath}", //NOI18N
-            libraryName));
+            lib.getDisplayName()));
         }
         return set;
     }

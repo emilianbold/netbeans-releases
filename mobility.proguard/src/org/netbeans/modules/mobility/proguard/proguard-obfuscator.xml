@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 <library version="1.0">
     <name>proguard</name>
     <type>j2se</type>
-    <description>ProGuard obfuscator library.</description>
+    <localizing-bundle>org.netbeans.modules.mobility.proguard.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
         <resource>nbinst:///external/proguard/proguard3.5.jar</resource>

@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 <library version="1.0">
     <name>jakarta_slide_ant_webdav</name>
     <type>j2se</type>
-    <localizing-bundle>org/netbeans/modules/deployment/webdav/Bundle</localizing-bundle>
+    <localizing-bundle>org.netbeans.modules.mobility.deployment.webdav.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst:///external/commons-httpclient.jar!/</resource>
