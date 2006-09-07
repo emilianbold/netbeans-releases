@@ -72,7 +72,7 @@ public class J2MEPlatformTest extends NbTestCase {
         osarch = System.getProperty("os.name", null);
         String ossuf = null;
         assertNotNull(osarch);
-        String wtkPath=System.getProperty("wtk.test.dir");
+        String wtkPath=System.getProperty("wtk.base.dir");
         if (wtkPath == null)
         {
             if (osarch.toLowerCase().indexOf("windows") != -1) {
