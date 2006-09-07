@@ -364,9 +364,9 @@ public class ConnectionWidget extends Widget {
         for (Point point : controlPoints) {
             if (path == null) {
                 path = new GeneralPath ();
-                path.moveTo (point.x + 0.5f, point.y + 0.5f);
+                path.moveTo (point.x, point.y);
             } else {
-                path.lineTo (point.x + 0.5f, point.y + 0.5f);
+                path.lineTo (point.x, point.y);
             }
         }
         if (path != null) {
