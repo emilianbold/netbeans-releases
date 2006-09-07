@@ -41,7 +41,7 @@ public abstract class StackMapFrame {
         StackMapFrame[] entries = new StackMapFrame[n];
         for (int i = 0; i < n; i++) {
             int tag = in.readUnsignedByte();
-            StackMapFrame frame = null;
+            StackMapFrame frame;
             if (tag >= 0 && tag <= 64)
                 frame = new SameFrame(tag);
             else if (tag >= 64 && tag <= 127) {

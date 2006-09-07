@@ -67,13 +67,13 @@ public final class Parameter extends Field {
             if (visible != null)
                 Annotation.load(visible, classFile.getConstantPool(), true, annotations);
         } catch (IOException e) {
-            System.err.println("invalid RuntimeVisibleParameterAnnotations attribute");
+            throw new InvalidClassFileAttributeException("invalid RuntimeVisibleParameterAnnotations attribute", e);
         }
         try {
             if (invisible != null)
                 Annotation.load(invisible, classFile.getConstantPool(), false, annotations);
         } catch (IOException e) {
-            System.err.println("invalid RuntimeInvisibleParameterAnnotations attribute");
+            throw new InvalidClassFileAttributeException("invalid RuntimeInvisibleParameterAnnotations attribute", e);
         }
     }
 
@@ -151,13 +151,13 @@ public final class Parameter extends Field {
                 visibleAnnotations = 
                     getParamAttr(attrs, "RuntimeVisibleParameterAnnotations"); //NOI18N
             } catch (IOException e) {
-                System.err.println("invalid RuntimeVisibleParameterAnnotations attribute");
+                throw new InvalidClassFileAttributeException("invalid RuntimeVisibleParameterAnnotations attribute", e);
             }
             try {
                 invisibleAnnotations = 
                     getParamAttr(attrs, "RuntimeInvisibleParameterAnnotations"); //NOI18N
             } catch (IOException e) {
-                System.err.println("invalid RuntimeInvisibleParameterAnnotations attribute");
+                throw new InvalidClassFileAttributeException("invalid RuntimeInvisibleParameterAnnotations attribute", e);
             }
         }
         

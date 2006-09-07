@@ -65,8 +65,8 @@ public final class ExceptionTableEntry {
 	    try {
 	        catchType = pool.getClass(typeIndex);
 	    } catch (IndexOutOfBoundsException e) {
-	        System.err.println("invalid catchType (" + typeIndex +
-				   ") in exception table entry");
+	        throw new InvalidClassFileAttributeException(
+                    "invalid catchType (" + typeIndex + ") in exception table entry", e);
 	    }
     }
     

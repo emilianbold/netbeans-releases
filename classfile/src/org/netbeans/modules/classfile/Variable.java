@@ -36,7 +36,9 @@ import java.io.*;
  */
 public final class Variable extends Field {
 
-    private Object constValue;
+    private Object constValue = notLoadedConstValue;
+    
+    private static final Object notLoadedConstValue = new Object();
 
     static Variable[] loadFields(DataInputStream in, ConstantPool pool,
                                  ClassFile cls) 
@@ -78,7 +80,7 @@ public final class Variable extends Field {
      * @see #isConstant
      */
     public final Object getConstantValue() {
-	if (constValue == null) {
+	if (constValue == notLoadedConstValue) {
 	    DataInputStream in = attributes.getStream("ConstantValue"); // NOI18N
 	    if (in != null) {
 		try {
@@ -86,7 +88,7 @@ public final class Variable extends Field {
 		    CPEntry cpe = classFile.constantPool.get(index);
 		    constValue = cpe.getValue();
 		} catch (IOException e) {
-		    System.err.println("invalid ConstantValue attribute");
+		    throw new InvalidClassFileAttributeException("invalid ConstantValue attribute", e);
 		}
 	    }
 	}

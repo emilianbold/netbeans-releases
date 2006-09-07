@@ -43,9 +43,9 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 
     private final String type;
     private final transient String internalName;
-    private transient String externalName;
-    private transient String packageName;
-    private transient String simpleName;
+    private volatile transient String externalName;
+    private volatile transient String packageName;
+    private volatile transient String simpleName;
 
     private final static WeakHashMap cache = new WeakHashMap();
 
@@ -206,11 +206,9 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     }
 
     private synchronized void initPackage() {
-        if (packageName == null) {
-            int i = internalName.lastIndexOf('/');
-            packageName = (i != -1) ? 
-                internalName.substring(0, i).replace('/', '.') : "";
-        }
+        int i = internalName.lastIndexOf('/');
+        packageName = (i != -1) ? 
+            internalName.substring(0, i).replace('/', '.') : "";
     }
 
     /**
@@ -223,15 +221,13 @@ public final class ClassName implements Comparable, Comparator, Serializable {
     }
     
     private synchronized void initSimpleName() {
-        if (simpleName == null) {
-	    String pkg = getPackage();
-	    int i = pkg.length();
-	    String extName = getExternalName();
-	    if (i == 0)
-		simpleName = extName;  // no package
-	    else
-		simpleName = extName.substring(i + 1);
-	}
+        String pkg = getPackage();
+        int i = pkg.length();
+        String extName = getExternalName();
+        if (i == 0)
+            simpleName = extName;  // no package
+        else
+            simpleName = extName.substring(i + 1);
     }
 
     public boolean equals(Object obj) {

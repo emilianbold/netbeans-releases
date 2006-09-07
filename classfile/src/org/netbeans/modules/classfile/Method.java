@@ -41,7 +41,10 @@ public final class Method extends Field {
     private CPClassInfo[] exceptions;
     private Parameter[] parameters;
     private ElementValue annotationDefault;
-
+    
+    /** Marker which indicates that the annotationDefault has not been loaded yet. */
+    private static final ElementValue notloadedAnnotationDefault = new ElementValue() {};
+    
     static Method[] loadMethods(DataInputStream in, ConstantPool pool,
 				ClassFile cls, boolean includeCode) 
       throws IOException {
@@ -56,6 +59,7 @@ public final class Method extends Field {
     Method(DataInputStream in, ConstantPool pool, ClassFile cls, 
 	   boolean includeCode) throws IOException {
         super(in, pool, cls, includeCode);
+        annotationDefault = notloadedAnnotationDefault;
     }
 
     /** 
@@ -73,7 +77,7 @@ public final class Method extends Field {
 		    code = new Code(in, classFile.constantPool);
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid Code attribute");
+		    throw new InvalidClassFileAttributeException("invalid Code attribute", e);
 		}
 	    }
 	}
@@ -89,7 +93,7 @@ public final class Method extends Field {
 			ClassFile.getCPClassList(in, classFile.constantPool);
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid Exceptions attribute");
+		    throw new InvalidClassFileAttributeException("invalid Exceptions attribute", e);
 		}
 	    }
 	    if (exceptions == null)
@@ -170,7 +174,8 @@ public final class Method extends Field {
      * this method does not define an annotation type.
      */
     public ElementValue getAnnotationDefault() {
-	if (annotationDefault == null) {
+	if (annotationDefault == notloadedAnnotationDefault) {
+            annotationDefault = null;
 	    DataInputStream in = 
 		attributes.getStream("AnnotationDefault"); // NOI18N
 	    if (in != null) {
@@ -179,7 +184,7 @@ public final class Method extends Field {
 			ElementValue.load(in, classFile.constantPool, false);
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid AnnotationDefault attribute");
+		    throw new InvalidClassFileAttributeException("invalid AnnotationDefault attribute", e);
 		}
 	    }
 	}

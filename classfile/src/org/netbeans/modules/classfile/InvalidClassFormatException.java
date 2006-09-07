@@ -32,12 +32,12 @@ import java.io.IOException;
  *
  * @author Thomas Ball
  */
-public class InvalidClassFormatException extends IOException {
+public final class InvalidClassFormatException extends IOException {
     /**
      * Constructs an <code>InvalidClassFormatException</code> with
      * <code>null</code> as its error detail message.
      */
-    public InvalidClassFormatException() {
+    InvalidClassFormatException() {
 	super();
     }
 
@@ -50,8 +50,22 @@ public class InvalidClassFormatException extends IOException {
      *
      * @param   s   the detail message.
      */
-    public InvalidClassFormatException(String s) {
+    InvalidClassFormatException(String s) {
 	super(s);
+    }
+
+
+    /**
+     * Constructs an <code>InvalidClassFormatException</code> with the 
+     * specified cause, which is used to define the error message.  The 
+     * cause cannot be retrieved by <code>Throwable.getCause()</code>,
+     * since the <code>IOException(Throwable)</code> constructor was
+     * added in Java 6.
+     *
+     * @param cause   the exception which is used to define the error message.
+     */
+    InvalidClassFormatException(Throwable cause) {
+        super(cause.getLocalizedMessage());
     }
 }
 

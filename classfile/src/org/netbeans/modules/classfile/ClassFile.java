@@ -324,7 +324,7 @@ public class ClassFile {
 		    sourceFileName = entry.getName();
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid SourceFile attribute");
+		    throw new InvalidClassFileAttributeException("invalid SourceFile attribute", e);
 		}
 	    }
 	}
@@ -375,7 +375,7 @@ public class ClassFile {
 			InnerClass.loadInnerClasses(in, constantPool);
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid InnerClasses attribute");
+		    throw new InvalidClassFileAttributeException("invalid InnerClasses attribute", e);
 		}
 	    } else
 		innerClasses = new InnerClass[0];
@@ -412,7 +412,7 @@ public class ClassFile {
 		    typeSignature = entry.getName();
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid Signature attribute");
+		    throw new InvalidClassFileAttributeException("invalid Signature attribute", e);
 		}
 	    }
 	}
@@ -444,7 +444,7 @@ public class ClassFile {
 			; // JDK 1.5 beta1 bug
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid EnclosingMethod attribute");
+		    throw new InvalidClassFileAttributeException("invalid EnclosingMethod attribute", e);
 		}
 	    }
 	}
@@ -465,7 +465,7 @@ public class ClassFile {
 		Annotation.load(in, pool, true, annotations);
 		in.close();
 	    } catch (IOException e) {
-		System.err.println("invalid RuntimeVisibleAnnotations attribute");
+		throw new InvalidClassFileAttributeException("invalid RuntimeVisibleAnnotations attribute", e);
 	    }
 	}
 	in = attrs.getStream("RuntimeInvisibleAnnotations"); //NOI18N
@@ -474,7 +474,7 @@ public class ClassFile {
 		Annotation.load(in, pool, false, annotations);
 		in.close();
 	    } catch (IOException e) {
-		System.err.println("invalid RuntimeInvisibleAnnotations attribute");
+		throw new InvalidClassFileAttributeException("invalid RuntimeInvisibleAnnotations attribute", e);
 	    }
 	}
 	return annotations;

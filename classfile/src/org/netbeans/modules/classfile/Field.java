@@ -138,7 +138,7 @@ public abstract class Field {
 		    typeSignature = entry.getName();
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid Signature attribute");
+		    throw new InvalidClassFileAttributeException("invalid Signature attribute", e);
 		}
 	    }
 	}

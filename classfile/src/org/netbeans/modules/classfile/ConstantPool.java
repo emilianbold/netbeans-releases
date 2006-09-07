@@ -170,15 +170,15 @@ public final class ConstantPool {
                 entry.resolve(cpEntries);
             }
         } catch (IllegalArgumentException ioe) {
-            throw new InvalidClassFormatException();
+            throw new InvalidClassFormatException(ioe);
 	} catch (IndexOutOfBoundsException iobe) {
-            throw new InvalidClassFormatException();
+            throw new InvalidClassFormatException(iobe);
         }
     }
 
     private CPEntry getConstantPoolEntry(ConstantPoolReader cpr)
             throws IOException {
-        CPEntry newEntry = null;
+        CPEntry newEntry;
         byte type = cpr.readByte();
         switch (type) {
           case CONSTANT_Utf8:
