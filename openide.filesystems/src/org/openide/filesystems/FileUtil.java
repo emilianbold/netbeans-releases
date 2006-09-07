@@ -39,6 +39,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.jar.JarEntry;
@@ -94,11 +95,101 @@ public final class FileUtil extends Object {
     }
 
     /** Cache for {@link #isArchiveFile(FileObject)}. */
-    private static final Map<FileObject,Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
+    private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
 
     private FileUtil() {
     }
 
+    /**
+     * Returns FileObject for a folder.
+     * If such a folder does not exist then it is created, including any necessary but nonexistent parent 
+     * folders. Note that if this operation fails it may have succeeded in creating some of the necessary
+     * parent folders.
+     * @param folder folder to be created
+     * @return FileObject for a folder
+     * @throws java.io.IOException if the creation fails
+     * @since 7.0
+     */
+    public static FileObject createFolder (final File folder) throws IOException {
+        FileObject retval = null;
+        File root = getRoot(folder);
+        if (!root.exists()) {
+            throw new IOException(folder.getAbsolutePath());
+        }
+        FileObject rootFo = FileUtil.toFileObject(root);
+        assert rootFo != null : root.getAbsolutePath();
+        final String relativePath = getRelativePath(root, folder);                                
+        try {
+            retval = FileUtil.createFolder(rootFo,relativePath);        
+        } catch (IOException ex) {
+            //thus retval = null;
+        }
+        //if refresh needed because of external changes
+        if (retval == null || !retval.isValid()) {
+            rootFo.getFileSystem().refresh(false);
+            retval = FileUtil.createFolder(rootFo,relativePath);
+        }        
+        assert retval != null;        
+        return retval;
+    } 
+    
+    /**Returns FileObject for a data file.
+     * If such a data file does not exist then it is created, including any necessary but nonexistent parent
+     * folders. Note that if this operation fails it may have succeeded in creating some of the necessary
+     * parent folders.
+     * @param data data file to be created
+     * @return FileObject for a data file
+     * @throws java.io.IOException if the creation fails
+     * @since 7.0
+     */
+    public static FileObject createData (final File data) throws IOException {        
+        FileObject retval = null;
+        File root = getRoot(data);
+        if (!root.exists()) {
+            throw new IOException(data.getAbsolutePath());
+        }        
+        FileObject rootFo = FileUtil.toFileObject(root);        
+        assert rootFo != null : root.getAbsolutePath();
+        final String relativePath = getRelativePath(root, data);        
+        try {
+            retval = FileUtil.createData(rootFo,relativePath);        
+        } catch (IOException ex) {
+            //thus retval = null;
+        }
+        //if refresh needed because of external changes        
+        if (retval == null || !retval.isValid()) {
+            rootFo.getFileSystem().refresh(false);
+            retval = FileUtil.createData(rootFo,relativePath);
+        }        
+        assert retval != null;        
+        return retval;
+    } 
+        
+    private static File getRoot(final File dir) {
+        File retval = dir;        
+        for (; retval.getParentFile() != null; retval = retval.getParentFile());
+        assert retval != null;
+        return retval;
+    }
+    
+    private static String getRelativePath(final File dir, final File file) {
+        Stack stack = new Stack ();                
+        File tempFile = file;
+        while(tempFile != null && !tempFile.equals(dir)) {
+            stack.push (tempFile.getName());
+            tempFile = tempFile.getParentFile();
+        }
+        assert tempFile != null : file.getAbsolutePath() + "not found in " + dir.getAbsolutePath();//NOI18N
+        StringBuilder retval = new StringBuilder();
+        while (!stack.isEmpty()) {
+            retval.append((String)stack.pop());
+            if (!stack.isEmpty()) {
+                retval.append("/");//NOI18N
+            }
+        }                        
+        return retval.toString();
+    }
+    
     /** Copies stream of files.
     * <P>
     * Please be aware, that this method doesn't close any of passed streams.

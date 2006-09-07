@@ -23,6 +23,26 @@ Microsystems, Inc. All Rights Reserved.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="createData-and-createFolder-take-File-as-parameter">
+            <api name="filesystems"/>
+            <summary>Added additional methods <code>FileUtil.createData</code>
+                and <code>FileUtil.createFolder</code> that take <code>java.io.File</code> as a parameter.
+            </summary>
+            <version major="7" minor="0"/>
+            <date day="7" month="9" year="2006"/>
+            <author login="rmatous"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    Added two utility methods for creation of folders and data files 
+                    that take <code>java.io.File</code> as a parameter:
+                    <code>public static FileObject createFolder (final File folder) throws IOException</code> and
+                    <code>public static FileObject createData (final File folder) throws IOException</code>
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="81527"/>            
+        </change>                
         <change id="method-value-with-map">
             <api name="filesystems"/>
             <summary>Semantics of XMLFileSystem's methodvalue extended to
