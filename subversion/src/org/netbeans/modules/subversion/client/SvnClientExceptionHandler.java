@@ -306,14 +306,18 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         ret = new String(reply, 0, replyLen, CHARSET_NAME);
       } catch (UnsupportedEncodingException ignored) {
         ret = new String(reply, 0, replyLen);
-      }      
-      if(ret.toLowerCase().indexOf("200 connection established") == -1) { // NOI18N
-         throw new IOException("Unable to connect through proxy " // NOI18N
-                              + proxyHost + ":" + proxyPort // NOI18N
-                              + ".  Proxy returns \"" + ret + "\""); // NOI18N
-      }      
+      }
+        if (!isOKresponse(ret.toLowerCase())) {
+            throw new IOException("Unable to connect through proxy " // NOI18N
+                                 + proxyHost + ":" + proxyPort // NOI18N
+                                 + ".  Proxy returns \"" + ret + "\""); // NOI18N
+        }
    }
     
+    private boolean isOKresponse(String ret) {
+        return ret.startsWith("http/1.1 200") || ret.startsWith("http/1.0 200");
+    }
+
     private String getCertMessage(X509Certificate cert, String host) { 
         Failure[] certFailures = getCertFailures();
         Object[] param = new Object[6];
