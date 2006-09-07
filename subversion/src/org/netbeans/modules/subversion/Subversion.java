@@ -77,6 +77,7 @@ public class Subversion {
     private void init() {
         try {
             Diagnostics.init();
+            loadIniParserClassesWorkaround();
             CmdLineClientAdapterFactory.setup();
         } catch (SVNClientException ex) {
             ErrorManager.getDefault().annotate(ex, UnsupportedSvnClientAdapter.getMessage());
@@ -89,6 +90,19 @@ public class Subversion {
         annotator = new Annotator(this);
         filesystemHandler  = new FilesystemHandler(this);
         cleanup();
+    }
+    
+    /**
+     * Ini4j uses context classloader to load classes, use this as a workaround. 
+     */ 
+    private void loadIniParserClassesWorkaround() {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+        try {
+            SvnConfigFiles.getInstance();   // triggers ini4j initialization
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
     }
 
     private void cleanup() {
