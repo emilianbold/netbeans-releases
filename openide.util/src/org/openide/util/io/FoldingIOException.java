@@ -32,7 +32,7 @@ public class FoldingIOException extends IOException {
     private Throwable t;
 
     /**
-    * @deprecated Better to create a new <code>IOException</code> and use its {@link initCause} method.
+    * @deprecated Better to create a new <code>IOException</code> and use its {@link #initCause} method.
     * @param t a foreign folded Throwable
     */
     @Deprecated

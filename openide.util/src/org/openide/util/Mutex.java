@@ -1304,11 +1304,11 @@ public final class Mutex extends Object {
 
     /** Action to be executed in a mutex without throwing any checked exceptions.
     * Unchecked exceptions will be propagated to calling code.
+     * @param T the type of object to return
     */
     public interface Action<T> extends ExceptionAction<T> {
         /** Execute the action.
         * @return any object, then returned from {@link Mutex#readAccess(Mutex.Action)} or {@link Mutex#writeAccess(Mutex.Action)}
-         * @param T the type of object to return
         */
         T run();
     }

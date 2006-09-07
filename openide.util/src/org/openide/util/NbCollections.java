@@ -283,13 +283,14 @@ public class NbCollections {
      * {@link Map#get}, {@link Map#containsKey}, and {@link Map#containsValue} also perform a type check
      * and will throw {@link ClassCastException} for an illegal argument.
      * The view is serializable if the underlying map is.
-     * @param rawSet an unchecked set
-     * @param type the desired element type
+     * @param rawMap an unchecked map
+     * @param keyType the desired entry key type
+     * @param valueType the desired entry value type
      * @param strict if false, entries in the underlying map for which the key is not null but not assignable
      *               to the requested key type, and/or the value is not null but not assignable to
      *               the requested value type, are omitted from the view;
      *               if true, a {@link ClassCastException} may arise during some map operation
-     * @return a view over the raw set guaranteed to match the specified type
+     * @return a view over the raw map guaranteed to match the specified type
      */
     public static <K,V> Map<K,V> checkedMapByFilter(Map rawMap, Class<K> keyType, Class<V> valueType, boolean strict) {
         return new CheckedMap<K,V>(rawMap, keyType, valueType, strict);

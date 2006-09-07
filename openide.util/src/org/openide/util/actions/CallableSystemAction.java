@@ -109,7 +109,7 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
      * <p>The default value is true for compatibility reasons; subclasses are strongly
      * encouraged to override it to be false, and to either do their work promptly
      * in the event thread and return, or to somehow do work asynchronously (for example
-     * using {@link RequestProcessor#getDefault}).
+     * using {@link org.openide.util.RequestProcessor#getDefault}).
      * <p class="nonnormative">You may currently set the global default to false
      * by setting the system property
      * <code>org.openide.util.actions.CallableSystemAction.synchronousByDefault</code>

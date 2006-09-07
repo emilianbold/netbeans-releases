@@ -63,7 +63,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
     /** Default human-presentable name of the service type.
     * In the default implementation, taken from the bean descriptor.
     * @return initial value of the human-presentable name
-    * @see FeatureDescriptor#getDisplayName
+    * @see java.beans.FeatureDescriptor#getDisplayName
     */
     protected String displayName() {
         try {
@@ -141,7 +141,7 @@ public abstract class ServiceType extends Object implements Serializable, HelpCt
 
     /** Set the name of the service type.
     * Usually it suffices to override {@link #displayName},
-    * or just to provide a {@link BeanDescriptor} for the class.
+    * or just to provide a {@link java.beans.BeanDescriptor} for the class.
     * @param name the new human-presentable name
     */
     public void setName(String name) {

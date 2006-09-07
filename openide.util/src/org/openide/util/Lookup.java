@@ -19,7 +19,6 @@
 
 package org.openide.util;
 
-import com.sun.org.apache.bcel.internal.generic.LOOKUPSWITCH;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -194,7 +193,7 @@ public abstract class Lookup {
 
     /**
      * Find a result corresponding to a given class.
-     * Equivalent to calling {@link lookup(Lookup.Template)} but slightly more convenient.
+     * Equivalent to calling {@link #lookup(Lookup.Template)} but slightly more convenient.
      * Subclasses may override this method to produce the same semantics more efficiently.
      * @param clazz the supertype of the result
      * @return a live object representing instances of that type
@@ -206,7 +205,7 @@ public abstract class Lookup {
 
     /**
      * Find all instances corresponding to a given class.
-     * Equivalent to calling {@link lookupResult} and asking for {@link Lookup.Result#allInstances} but slightly more convenient.
+     * Equivalent to calling {@link #lookupResult} and asking for {@link Lookup.Result#allInstances} but slightly more convenient.
      * Subclasses may override this method to produce the same semantics more efficiently.
      * @param clazz the supertype of the result
      * @return all currently available instances of that type

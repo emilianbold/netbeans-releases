@@ -60,10 +60,10 @@ public final class Exceptions extends Object {
     }
 
     /** Attaches additional localized message to given exception. This message 
-     * can be extracted later by using {@link Exceptions.findLocalizedMessage}.
+     * can be extracted later by using {@link #findLocalizedMessage}.
      *
      * @param e exception to annotate
-     * @param msg the localized message to add to the exception
+     * @param localizedMessage the localized message to add to the exception
      * @return the exception <code>e</code>
      */
     public static <E extends Throwable> E attachLocalizedMessage(E e, final String localizedMessage) {
@@ -88,7 +88,7 @@ public final class Exceptions extends Object {
     }
 
     /** Extracts previously attached localized message for a given throwable.
-     * Complements the {@link Exceptions.attachLocalizedMessage} method.
+     * Complements {@link #attachLocalizedMessage}.
      *
      * @param t the exception to search for a message in
      * @return localized message attached to provided exception or <code>null</code>
