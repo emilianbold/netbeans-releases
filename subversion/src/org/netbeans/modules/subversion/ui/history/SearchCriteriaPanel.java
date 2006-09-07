@@ -272,10 +272,14 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         final SVNUrl repositoryUrl = url != null ? url : SvnUtils.getRepositoryRootUrl(roots[0]); 
 
         String title = destination == tfFrom ? NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_StartTag") : NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_EndTag"); // NOI18N
-        final Browser browser = new Browser(title, false, true, false);
+        final Browser browser;
+        if(roots[0].isFile()) {
+            browser = new Browser(title, true, true, false);
+        } else {
+            browser = new Browser(title, false, true, false);
+        }
         RepositoryFile repoFile = new RepositoryFile(repositoryUrl, SVNRevision.HEAD);
         browser.setup(repoFile, null, null);
-
         
         final DialogDescriptor dialogDescriptor = 
                 new DialogDescriptor(browser.getBrowserPanel(), NbBundle.getMessage(SearchCriteriaPanel.class, "LBL_Search_BrowseRepository")); // NOI18N 
