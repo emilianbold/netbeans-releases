@@ -77,7 +77,10 @@ class SearchExecutor implements Runnable {
             workFiles = new HashMap<SVNUrl, Set<File>>();
             for (File file : master.getRoots()) {
                 String rootPath = SvnUtils.getRepositoryPath(file);
-                pathToRoot.put(rootPath, file);
+                String fileAbsPath = file.getAbsolutePath().replace(File.separatorChar, '/');
+                int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
+                pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength), 
+                               new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
                 SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
                 Set<File> set = workFiles.get(rootUrl);
                 if (set == null) {
@@ -87,6 +90,17 @@ class SearchExecutor implements Runnable {
                 set.add(file);
             }
         }
+    }
+
+    private int getCommonPostfixLength(String a, String b) {
+        int ai = a.length() - 1;
+        int bi = b.length() - 1;
+        for (;;) {
+            if (ai < 0 || bi < 0) break;
+            if (a.charAt(ai) != b.charAt(bi)) break;
+            ai--; bi--;
+        }
+        return a.length() - ai - 1;
     }
 
     private SVNRevision toRevision(String s, SVNRevision def) {
