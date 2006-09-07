@@ -84,14 +84,18 @@ public class CommitAction extends ContextAction {
                 for (int i= 0; i < files.length; i++) {
                     for(int r = 0; r < roots.length; r++) {
                         if( SvnUtils.isParentOrEqual(roots[r], files[i]) ) {
-                            fileList.add(files[i]);
+                            if(!fileList.contains(files[i])) {
+                                fileList.add(files[i]);
+                            }
                         }                    
                     }                    
                 }
             } else {
                 File[] files = SvnUtils.flatten(roots, FileInformation.STATUS_LOCAL_CHANGE);
                 for (int i= 0; i<files.length; i++) {
-                    fileList.add(files[i]);
+                    if(!fileList.contains(files[i])) {
+                        fileList.add(files[i]);
+                    }
                 }                
             }
         }       
