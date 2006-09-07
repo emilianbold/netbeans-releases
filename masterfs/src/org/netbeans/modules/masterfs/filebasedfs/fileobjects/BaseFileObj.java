@@ -138,6 +138,10 @@ public abstract class BaseFileObj extends FileObject {
 
 
     public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
+        if (!checkLock(lock)) {
+            FSException.io("EXC_InvalidLock", lock, getPath()); // NOI18N
+        }
+        
         final File file = getFileName().getFile();
         final File parent = file.getParentFile();
 

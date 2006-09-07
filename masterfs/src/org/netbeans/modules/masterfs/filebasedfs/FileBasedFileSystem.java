@@ -42,7 +42,7 @@ public final class FileBasedFileSystem extends FileSystem {
 
     //only for tests purposes
     public static void reinitForTests() {
-        //FileBasedFileSystem.allInstances = new HashMap();
+        FileBasedFileSystem.allInstances = new HashMap();
     }
     
     public static FileBasedFileSystem getInstance(final File file) {
