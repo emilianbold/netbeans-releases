@@ -230,10 +230,24 @@ public class TestAction extends CallableSystemAction implements Runnable {
                         }
                         for (int j=0; j<items.length; j++) {
                             PaletteItem pitem = (PaletteItem)items[j].getLookup().lookup(PaletteItem.class);
-                            mi = new JMenuItem(items[j].getDisplayName());
-                            mi.putClientProperty("lafInfo", new LookAndFeelItem(pitem)); // NOI18N
-                            mi.addActionListener(this);
-                            popup.add(mi);
+                            boolean supported = false;
+                            try {
+                                Class clazz = pitem.getComponentClass();
+                                if ((clazz != null) && (LookAndFeel.class.isAssignableFrom(clazz))) {
+                                    LookAndFeel laf = (LookAndFeel)clazz.newInstance();
+                                    supported = laf.isSupportedLookAndFeel();
+                                }
+                            } catch (Exception ex) {
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                            } catch (LinkageError ex) {
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                            }
+                            if (supported) {
+                                mi = new JMenuItem(items[j].getDisplayName());
+                                mi.putClientProperty("lafInfo", new LookAndFeelItem(pitem)); // NOI18N
+                                mi.addActionListener(this);
+                                popup.add(mi);
+                            }
                         }
                     }
                 }
