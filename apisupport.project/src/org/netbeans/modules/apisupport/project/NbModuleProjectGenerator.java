@@ -42,7 +42,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -70,7 +69,7 @@ public class NbModuleProjectGenerator {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+                    final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
@@ -101,7 +100,7 @@ public class NbModuleProjectGenerator {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+                    final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
@@ -133,7 +132,7 @@ public class NbModuleProjectGenerator {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+                    final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
@@ -235,7 +234,7 @@ public class NbModuleProjectGenerator {
                         throw new IllegalArgumentException(projectDir + " doesn't " + // NOI18N
                                 "point to directory within the netbeans.org CVS tree"); // NOI18N
                     }
-                    final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+                    final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
                         throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
                     }
@@ -425,61 +424,6 @@ public class NbModuleProjectGenerator {
     
     private static void createEmptyTestDir(FileObject projectDir) throws IOException {
         FileUtil.createFolder(projectDir, "test/unit/src"); // NOI18N
-    }
-    
-    /**
-     * Creates project projectDir if it doesn't already exist and returns representing
-     * <code>FileObject</code>.
-     */
-    private static FileObject createProjectDir(File dir) throws IOException {
-        // XXX Hmmm, inspired by J2SEProject, probably just call FO|FU.createFolder
-        if(!dir.exists()) {
-            refreshFolder(dir);
-            if (!dir.mkdirs()) {
-                throw new IOException("Can not create project folder \"" // NOI18N
-                        + dir.getAbsolutePath() + "\"");   //NOI18N
-            }
-            refreshFileSystem(dir);
-        }
-        FileObject dirFO = FileUtil.toFileObject(dir);
-        if (dirFO == null) {
-            throw new IOException("No such dir on disk: " + dir); // NOI18N
-        }
-        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
-        return dirFO;
-    }
-    
-    /**
-     * Refreshes the given <code>projectDir</code> or a nearest existing directory.
-     */
-    private static void refreshFolder(File dir) {
-        // XXX Hmmm, inspired by J2SEProject, probably just call FO|FU.createFolder
-        while (!dir.exists()) {
-            dir = dir.getParentFile();
-            if (dir == null) {
-                return;
-            }
-        }
-        FileObject fo = FileUtil.toFileObject(dir);
-        if (fo != null) {
-            fo.refresh(false);
-        }
-    }
-    
-    private static void refreshFileSystem(final File dir) throws FileStateInvalidException {
-        // XXX Hmmm, inspired by J2SEProject, probably just call FO|FU.createFolder
-        File root = dir;
-        while (root.getParentFile() != null) {
-            root = root.getParentFile();
-        }
-        FileObject rootFO = FileUtil.toFileObject(root);
-        if (rootFO != null) {
-            rootFO.getFileSystem().refresh(false);
-        } else {
-            assert false : "At least disk roots must be mounted! " + root; // NOI18N
-            Util.err.log(ErrorManager.WARNING, "Cannot resolve" + // NOI18N
-                    "file object for " + root.getAbsolutePath()); // NOI18N
-        }
     }
     
     /**
