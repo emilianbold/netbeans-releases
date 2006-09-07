@@ -170,7 +170,7 @@ public class SyncFileNode extends AbstractNode {
         }
 
         public Object getValue() {
-            String copyName = SvnUtils.getCopy(node.getFile());
+            String copyName = SvnUtils.getBranch(node.getFile());
             return copyName == null ? "" : copyName;
         }
     }

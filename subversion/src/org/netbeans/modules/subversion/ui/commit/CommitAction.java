@@ -170,7 +170,7 @@ public class CommitAction extends ContextAction {
         for (SvnFileNode fileNode : files.keySet()) {
             CommitOptions options = files.get(fileNode);
             if (options == CommitOptions.EXCLUDE) continue;
-            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
+            stickyTags.add(SvnUtils.getBranch(fileNode.getFile()));
             int status = fileNode.getInformation().getStatus();
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                 commit.setEnabled(false);
@@ -180,7 +180,7 @@ public class CommitAction extends ContextAction {
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
             }
-            stickyTags.add(SvnUtils.getCopy(fileNode.getFile()));
+            stickyTags.add(SvnUtils.getBranch(fileNode.getFile()));
         }
         
         if (stickyTags.size() > 1) {

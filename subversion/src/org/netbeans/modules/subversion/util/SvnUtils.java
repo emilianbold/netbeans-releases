@@ -768,7 +768,8 @@ public class SvnUtils {
         }
     }         
 
-    static Pattern branchTagPattern = Pattern.compile(".*/(branches|tags)/(.+?)(/.*|$)"); // NOI18N
+    static final Pattern branchTagPattern = Pattern.compile(".*/(branches|tags)/(.+?)/.*"); // NOI18N
+    static final Pattern branchPattern = Pattern.compile(".*/(branches)/(.+?)/.*"); // NOI18N
 
     /**
      * Returns copy branch or tag name if lives
@@ -787,6 +788,22 @@ public class SvnUtils {
             if (m.matches()) {
                 String paren = m.group(2);
                 return paren;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Returns branch name if the file is inside 'branches' folder.
+     *
+     * @return branch name or null
+     */
+    public static String getBranch(File file) {
+        SVNUrl url = getRepositoryUrl(file);
+        if (url != null) {
+            Matcher m = branchPattern.matcher(url.toString());
+            if (m.matches()) {
+                return m.group(2);
             }
         }
         return null;
