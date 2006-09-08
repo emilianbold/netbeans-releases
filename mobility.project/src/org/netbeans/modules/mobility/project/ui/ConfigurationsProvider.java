@@ -70,6 +70,8 @@ import org.openide.util.lookup.Lookups;
  */
 class ConfigurationsProvider
 {
+    static final String ARCHIVE_ICON = "org/netbeans/modules/mobility/project/ui/resources/libraries.gif";
+    
     static private List<Node> createPackage(final J2MEProject project,final ProjectConfiguration conf,final ClassPath path, final HashMap<FileObject,VisualClassPathItem> map, final boolean actions)
     {
         final FileObject[] roots = path == null ? new FileObject[] {} : path.getRoots();
@@ -89,7 +91,7 @@ class ConfigurationsProvider
                     if ("jar".equals(roots[i].getURL().getProtocol()))
                     { //NOI18N
                         file = FileUtil.getArchiveFile(roots[i]);
-                        icon = openedIcon = new ImageIcon(Utilities.loadImage(LibResViewProvider.ARCHIVE_ICON));
+                        icon = openedIcon = new ImageIcon(Utilities.loadImage(ARCHIVE_ICON));
                         node=PackageView.createPackageView(GenericSources.group(project,roots[i],file.getNameExt(),file.getNameExt(),icon, openedIcon));
                     }
                     //Add a file or folder
