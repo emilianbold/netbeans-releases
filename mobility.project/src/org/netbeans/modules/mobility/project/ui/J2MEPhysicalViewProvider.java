@@ -301,7 +301,14 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
                 if (sg.length > 0) {
                     final Set<FileObject> files = new HashSet<FileObject>();
                     for (int i=0; i<sg.length; i++) {
-                        files.add(sg[i].getRootFolder());
+                        FileObject ch[] = sg[i].getRootFolder().getChildren();
+                        if (ch.length == 0) {
+                            files.add(sg[i].getRootFolder());
+                        } else {
+                            for (int j=0; j<ch.length; j++) {
+                                if (FileOwnerQuery.getOwner(ch[j]) == J2MEPhysicalViewProvider.this.project) files.add(ch[j]);
+                            }
+                        }
                     }
                     try {
                         final FileSystem.Status ann = sg[0].getRootFolder().getFileSystem().getStatus();
