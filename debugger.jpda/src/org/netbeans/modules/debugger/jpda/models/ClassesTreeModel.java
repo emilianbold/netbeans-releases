@@ -115,15 +115,25 @@ public class ClassesTreeModel implements TreeModel {
     public int getChildrenCount (Object node) throws UnknownTypeException {
         try {
             if (node.equals (ROOT))
-                return getLoaders ().length;
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                //return getLoaders ().length;
             if (node instanceof Object[])
-                return getChildren ((Object[]) node).length;
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                //return getChildren ((Object[]) node).length;
             if (node instanceof ClassLoaderReference)
-                return getPackages ((ClassLoaderReference) node).length;
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                //return getPackages ((ClassLoaderReference) node).length;
             if (node == NULL_CLASS_LOADER)
-                return getPackages (null).length;
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                //return getPackages (null).length;
             if (node instanceof ReferenceType) {
-                return ((ReferenceType) node).nestedTypes ().size ();
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                //return ((ReferenceType) node).nestedTypes ().size ();
             }
             throw new UnknownTypeException (node);
         } catch (VMDisconnectedException ex) {
@@ -235,11 +245,10 @@ public class ClassesTreeModel implements TreeModel {
             String name = names.get (i);
             ReferenceType rt = classes.get (i);
             if (rt.classLoader () != clr) continue;
-            int start = 0;
-            int end = name.indexOf ('.', start);
+            int end = name.lastIndexOf ('.');
             if (end < 0) {
                 // ReferenceType found
-                if (name.indexOf ('$', start) < 0) {
+                if (name.indexOf ('$') < 0) {
                     ReferenceType tr = classes.get (i);
                     objects.add (tr);
                 }
@@ -267,14 +276,14 @@ public class ClassesTreeModel implements TreeModel {
             String parentN = ((String) parent [0]) + '.';
             if (!name.startsWith (parentN)) continue;
             int start = (parentN).length ();
-            int end = name.indexOf ('.', start);
-            if (end < 0) {
+            //int end = name.indexOf ('.', start);
+            //if (end < 0) {
                 // ReferenceType found
                 if (name.indexOf ('$', start) < 0) {
                     objects.add (rt);
                 }
-            } else
-                objects.add (new Object[] {name.substring (0, end), rt.classLoader ()});
+            //} else
+            //    objects.add (new Object[] {name.substring (0, end), rt.classLoader ()});
         }
         ch = objects.toArray ();
         cache.put (parent, ch);

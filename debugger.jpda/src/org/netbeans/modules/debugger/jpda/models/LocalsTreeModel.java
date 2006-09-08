@@ -125,7 +125,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     }
                     return achn.getChildren();
                 } else {
-                    return abstractVariable.getFields (from, to);
+                    return abstractVariable.getFields (from, Math.min(to, abstractVariable.getFieldsCount()));
                 }
             } else
             if (o instanceof ArrayChildrenNode) {
@@ -157,6 +157,9 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
     public int getChildrenCount (Object node) throws UnknownTypeException {
         try {
             if (node.equals (ROOT)) {
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                /*
                 CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
                     getCurrentCallStackFrame ();
                 if (frame == null) 
@@ -186,21 +189,31 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 } catch (VMDisconnectedException ex) {
                 }
                 return 0;
+                 */
             } else
             if (node instanceof AbstractVariable) { // ThisVariable & FieldVariable
                 AbstractVariable abstractVariable = (AbstractVariable) node;
                 if (abstractVariable.getInnerValue () instanceof 
                     ArrayReference
-                ) 
-                    return Math.min (abstractVariable.getFieldsCount (), ARRAY_CHILDREN_NESTED_LENGTH);
-                return abstractVariable.getFieldsCount ();
+                ) {
+                    // Performance, see issue #59058.
+                    return Integer.MAX_VALUE;
+                    //return Math.min (abstractVariable.getFieldsCount (), ARRAY_CHILDREN_NESTED_LENGTH);
+                }
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                //return abstractVariable.getFieldsCount ();
             } else
             if (node instanceof ArrayChildrenNode) {
-                return ((ArrayChildrenNode) node).getChildren().length;
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                //return ((ArrayChildrenNode) node).getChildren().length;
             } else
             if (node instanceof JPDAClassType) {
-                JPDAClassType clazz = (JPDAClassType) node;
-                return 1 + clazz.staticFields().size();
+                // Performance, see issue #59058.
+                return Integer.MAX_VALUE;
+                //JPDAClassType clazz = (JPDAClassType) node;
+                //return 1 + clazz.staticFields().size();
             } else
             throw new UnknownTypeException (node);
         } catch (VMDisconnectedException ex) {

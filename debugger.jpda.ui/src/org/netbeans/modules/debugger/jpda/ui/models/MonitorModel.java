@@ -130,6 +130,9 @@ NodeActionsProviderFilter, TableModel, Constants {
         Object      o
     ) throws UnknownTypeException {
         if (o instanceof ThreadWithBordel) {
+            // Performance, see issue #59058.
+            return Integer.MAX_VALUE;
+            /*
             try {
                 JPDAThread t = ((ThreadWithBordel) o).originalThread;
                 ObjectVariable contended = t.getContendedMonitor ();
@@ -142,6 +145,7 @@ NodeActionsProviderFilter, TableModel, Constants {
             } catch (VMDisconnectedException e) {
             }
             return 0;
+             */
         }
         if (o instanceof ThreadWithBordel) {
             return model.getChildrenCount (

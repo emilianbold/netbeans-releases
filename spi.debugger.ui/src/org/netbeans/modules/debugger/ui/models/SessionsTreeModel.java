@@ -80,8 +80,10 @@ public class SessionsTreeModel implements TreeModel {
         if (node == ROOT) {
             if (listener == null)
                 listener = new Listener (this);
-            return DebuggerManager.getDebuggerManager ().
-                getSessions ().length;
+            // Performance, see issue #59058.
+            return Integer.MAX_VALUE;
+            //return DebuggerManager.getDebuggerManager ().
+            //    getSessions ().length;
         } else
         throw new UnknownTypeException (node);
     }

@@ -145,7 +145,10 @@ NodeActionsProviderFilter, NodeModelFilter {
     ) throws UnknownTypeException {
         if (parent == TreeModel.ROOT) {
             int chc = original.getChildrenCount (parent);
-            return chc + fixedWatches.size ();
+            if (chc < Integer.MAX_VALUE) {
+                chc += fixedWatches.size ();
+            }
+            return chc;
         }
         return original.getChildrenCount (parent);
     }

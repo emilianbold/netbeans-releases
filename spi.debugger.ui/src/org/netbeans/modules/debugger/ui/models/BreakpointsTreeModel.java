@@ -112,10 +112,14 @@ public class BreakpointsTreeModel implements TreeModel {
      */
     public int getChildrenCount (Object node) throws UnknownTypeException {
         if (node == ROOT) {
-            return getChildren (node, 0, 0).length;
+            // Performance, see issue #59058.
+            return Integer.MAX_VALUE;
+            //return getChildren (node, 0, 0).length;
         } else
         if (node instanceof String) {
-            return getChildren (node, 0, 0).length;
+            // Performance, see issue #59058.
+            return Integer.MAX_VALUE;
+            //return getChildren (node, 0, 0).length;
         } else
         throw new UnknownTypeException (node);
     }

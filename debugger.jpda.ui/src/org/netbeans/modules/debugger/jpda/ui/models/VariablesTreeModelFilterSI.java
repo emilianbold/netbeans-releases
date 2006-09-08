@@ -168,6 +168,9 @@ NodeModel, TableModel, NodeActionsProvider {
             if (ignore.contains (variable.getType ()))
                 return original.getChildrenCount (parent);
             int i = original.getChildrenCount (parent);
+            if (i == Integer.MAX_VALUE) {
+                return i;
+            }
             if (variable.getAllStaticFields (0, 0).length > 0) i++;
             if (variable.getInheritedFields (0, 0).length > 0) i++;
             return i;

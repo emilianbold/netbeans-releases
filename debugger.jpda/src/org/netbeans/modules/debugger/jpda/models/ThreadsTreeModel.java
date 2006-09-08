@@ -219,6 +219,9 @@ public class ThreadsTreeModel implements TreeModel {
      * @return  true if node is leaf
      */
     public int getChildrenCount (Object node) throws UnknownTypeException {
+        // Performance, see issue #59058.
+        return Integer.MAX_VALUE;
+        /*
         Object[] ch;
         synchronized (childrenCache) {
             ChildrenTree cht = childrenCache.get(node);
@@ -241,6 +244,7 @@ public class ThreadsTreeModel implements TreeModel {
             }
         }
         return ch.length;
+         */
         /*
         try {
             List ch;

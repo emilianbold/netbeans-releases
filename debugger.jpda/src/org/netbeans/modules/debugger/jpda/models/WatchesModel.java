@@ -136,7 +136,9 @@ public class WatchesModel implements TreeModel {
         if (node == ROOT) {
             if (listener == null)
                 listener = new Listener (this, debugger);
-            return DebuggerManager.getDebuggerManager ().getWatches ().length;
+            // Performance, see issue #59058.
+            return Integer.MAX_VALUE;
+            //return DebuggerManager.getDebuggerManager ().getWatches ().length;
         }
         if (node instanceof JPDAWatchImpl) {
             return getLocalsTreeModel ().getChildrenCount (node);

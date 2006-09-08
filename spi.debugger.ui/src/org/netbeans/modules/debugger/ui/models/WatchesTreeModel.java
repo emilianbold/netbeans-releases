@@ -83,7 +83,9 @@ public class WatchesTreeModel implements TreeModel {
         if (node == ROOT) {
             if (listener == null)
                 listener = new Listener (this);
-            return DebuggerManager.getDebuggerManager ().getWatches ().length;
+            // Performance, see issue #59058.
+            return Integer.MAX_VALUE;
+            //return DebuggerManager.getDebuggerManager ().getWatches ().length;
         } else
         throw new UnknownTypeException (node);
     }

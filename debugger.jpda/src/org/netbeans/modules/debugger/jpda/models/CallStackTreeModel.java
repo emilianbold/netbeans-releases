@@ -110,6 +110,9 @@ public class CallStackTreeModel implements TreeModel {
         if ( parent.equals (ROOT) ||
              (parent instanceof JPDAThread) 
         ) {
+            // Performance, see issue #59058.
+            return Integer.MAX_VALUE;
+            /*
             // 1) get Thread
             JPDAThread thread;
             if (parent.equals (ROOT)) {
@@ -122,6 +125,7 @@ public class CallStackTreeModel implements TreeModel {
             }
             
             return thread.getStackDepth();
+             */
         } else
         throw new UnknownTypeException (parent);
     }

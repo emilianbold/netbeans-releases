@@ -133,8 +133,10 @@ NodeActionsProvider {
         if (node == ROOT) {
             if (listener == null)
                 listener = new Listener (this);
-            return sourcePath.getOriginalSourceRoots ().length + 
-                filters.size ();
+            // Performance, see issue #59058.
+            return Integer.MAX_VALUE;
+            //return sourcePath.getOriginalSourceRoots ().length + 
+            //    filters.size ();
         } else
         throw new UnknownTypeException (node);
     }
