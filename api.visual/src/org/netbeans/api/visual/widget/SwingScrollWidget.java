@@ -36,8 +36,6 @@ public class SwingScrollWidget extends Widget {
     private JScrollBar verticalScroll;
     private JScrollBar horizontalScroll;
 
-    private Dimension minimalSize, maximalSize;
-
     private AdjustmentListener verticalListener = new MyAdjustmentListener (true);
     private AdjustmentListener horizontalListener = new MyAdjustmentListener (false);
 
@@ -74,24 +72,6 @@ public class SwingScrollWidget extends Widget {
             viewport.addChild (this.view);
     }
 
-    public Dimension getMinimalSize () {
-        return minimalSize;
-    }
-
-    public void setMinimalSize (Dimension minimalSize) {
-        this.minimalSize = minimalSize;
-        revalidate ();
-    }
-
-    public Dimension getMaximalSize () {
-        return maximalSize;
-    }
-
-    public void setMaximalSize (Dimension maximalSize) {
-        this.maximalSize = maximalSize;
-        revalidate ();
-    }
-
     protected Rectangle calculateClientArea () {
         return new Rectangle (calculateSize ());
     }
@@ -104,20 +84,20 @@ public class SwingScrollWidget extends Widget {
         } else {
             Dimension size = view.getBounds ().getSize ();
 
-            Dimension minimalSize = getMinimalSize ();
-            if (minimalSize != null) {
-                if (size.width < minimalSize.width)
-                    size.width = minimalSize.width;
-                if (size.height < minimalSize.height)
-                    size.height = minimalSize.height;
+            Rectangle minimumBounds = getMinimumBounds ();
+            if (minimumBounds != null) {
+                if (size.width < minimumBounds.width)
+                    size.width = minimumBounds.width;
+                if (size.height < minimumBounds.height)
+                    size.height = minimumBounds.height;
             }
 
-            Dimension maximalSize = getMaximalSize ();
-            if (maximalSize != null) {
-                if (size.width > maximalSize.width)
-                    size.width = maximalSize.width;
-                if (size.height > maximalSize.height)
-                    size.height = maximalSize.height;
+            Rectangle maximumBounds = getMaximumBounds ();
+            if (maximumBounds != null) {
+                if (size.width > maximumBounds.width)
+                    size.width = maximumBounds.width;
+                if (size.height > maximumBounds.height)
+                    size.height = maximumBounds.height;
             }
 
             return size;

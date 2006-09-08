@@ -92,19 +92,19 @@ public class ScrollWidget extends Widget {
         return new SliderWidget (getScene (), false);
     }
 
-    protected Widget createUpArrow () {
+    private Widget createUpArrow () {
         return new ButtonWidget (getScene (), IMAGE_UP);
     }
 
-    protected Widget createDownArrow () {
+    private Widget createDownArrow () {
         return new ButtonWidget (getScene (), IMAGE_DOWN);
     }
 
-    protected Widget createLeftArrow () {
+    private Widget createLeftArrow () {
         return new ButtonWidget (getScene (), IMAGE_LEFT);
     }
 
-    protected Widget createRightArrow () {
+    private Widget createRightArrow () {
         return new ButtonWidget (getScene (), IMAGE_RIGHT);
     }
 
