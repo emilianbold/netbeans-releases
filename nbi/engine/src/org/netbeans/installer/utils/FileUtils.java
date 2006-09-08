@@ -125,46 +125,15 @@ public abstract class FileUtils {
     
     public abstract void writeStringList(File file, List<String> list, boolean append) throws IOException;
     
-    /**
-     * Deteles a file.
-     *
-     * @param file The file to delete
-     */
-    public abstract void deleteFile(File file);
+    public abstract void deleteFile(File file) throws IOException;
     
-    /**
-     * Deletes a file taking into account that it can be a symlink.
-     *
-     * @param file The file to delete
-     * @param followLinks to follow symlinks or to just delete the link
-     */
-    public abstract void deleteFile(File file, boolean followLinks);
+    public abstract void deleteFile(File file, boolean followLinks) throws IOException;
     
-    /**
-     * Deletes a file if its name matches a given mask. If the given file is a
-     * directory it is recursively traversed.
-     *
-     * @param file The file to delete
-     * @param mask The mask for the filename
-     */
-    public abstract void deleteFile(File file, String mask);
+    public abstract void deleteFile(File file, String mask) throws IOException;
     
     public abstract File createTempFile() throws IOException;
     
     public abstract File createTempFile(File parent) throws IOException;
-    
-    public static void copyFile(File in, File out) throws IOException {
-        if (!in.isFile()) throw new IllegalArgumentException("check in arg");
-        if (!out.exists()) {
-            if (!out.getParentFile().exists()) {
-                out.getParentFile().mkdirs();
-            }
-        }
-        out.createNewFile();
-        FileChannel inChannel = new FileInputStream(in).getChannel();
-        FileChannel outChannel = new FileOutputStream(out).getChannel();
-        inChannel.transferTo(0, inChannel.size(),outChannel);
-    }
     
     public abstract void modifyFile(File file, String token, String replacement) throws IOException;
     
@@ -175,10 +144,12 @@ public abstract class FileUtils {
     public abstract void modifyFile(File file, Map<String, String> replacementMap, boolean useRE) throws IOException;
     
     public abstract void modifyFile(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException;
-
-    public void setInstance(FileUtils instance) {
-        this.instance = instance;
-    }
+    
+    public abstract void moveFile(File source, File destination) throws IOException;
+    
+    public abstract void copyFile(File source, File destination) throws IOException;
+    
+    public abstract void copyFile(File source, File destination, boolean recurseToSubDirs) throws IOException;
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
@@ -346,18 +317,18 @@ public abstract class FileUtils {
             writeFile(file, builder.toString(), append);
         }
         
-        public void deleteFile(File file) {
+        public void deleteFile(File file) throws IOException {
             deleteFile(file, true);
         }
         
-        public void deleteFile(File file, boolean followLinks) {
+        public void deleteFile(File file, boolean followLinks) throws IOException {
             String type = "";
             if (file.isDirectory()) {
                 if (followLinks) {
                     File[] children = file.listFiles();
                     
                     for (File child: children) {
-                        deleteFile(child);
+                        deleteFile(child, true);
                     }
                 }
                 
@@ -366,17 +337,18 @@ public abstract class FileUtils {
                 type = "file"; //NOI18N
             }
             
-            //LogManager.getInstance().log(ErrorLevel.MESSAGE, "    deleting " + type + ": " + file); //NOI18N
+            LogManager.getInstance().log(ErrorLevel.MESSAGE, "    deleting " + type + ": " + file); //NOI18N
             
             if (!file.exists()) {
-                //LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + type + " does not exist"); //NOI18N
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + type + " does not exist"); //NOI18N
             }
             
-            file.delete();
-            file.deleteOnExit();
+            if (!file.delete()) {
+                file.deleteOnExit();
+            }
         }
         
-        public void deleteFile(File file, String mask) {
+        public void deleteFile(File file, String mask) throws IOException {
             if (file.isDirectory()) {
                 File[] children = file.listFiles(new MaskFileFilter(mask));
                 
@@ -473,6 +445,86 @@ public abstract class FileUtils {
             for (File file: files) {
                 modifyFile(file, replacementMap, useRE);
             }
+        }
+        
+        public void moveFile(File source, File destination) throws IOException {
+            copyFile(source, destination);
+            deleteFile(source);
+        }
+        
+        public void copyFile(File source, File destination) throws IOException {
+            copyFile(source, destination, false);
+        }
+        
+        public void copyFile(File source, File destination, boolean recurseToSubDirs) throws IOException {
+            if (!source.exists()) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + source + " does not exist"); //NOI18N
+                return;
+            }
+            
+            if (source.isFile()) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "    copying file: " + source + " to: " + destination);//NOI18N
+                transferBytes(source, destination);
+            } else {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "    copying directory: " + source + " to: " + destination + (recurseToSubDirs ? " with recursion" : ""));//NOI18N
+                if (!destination.mkdirs()) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... cannot create " + destination); //NOI18N
+                    return;
+                }
+                
+                if (recurseToSubDirs) {
+                    for (File file: source.listFiles()) {
+                        copyFile(file, new File(destination, file.getName()), recurseToSubDirs);
+                    }
+                }
+            }
+        }
+        
+        private boolean transferBytes(File source, File destination) throws IOException {
+            if (!source.isFile()) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + source + " is not a file"); //NOI18N
+                return false;
+            }
+            
+            if (!source.canRead()) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + source + " is readable"); //NOI18N
+                return false;
+            }
+            
+            if (destination.exists() && !destination.isFile()) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + destination + " is not a file"); //NOI18N
+                return false;
+            }
+            
+            if (!destination.exists()) {
+                if (!destination.getParentFile().exists() && !destination.getParentFile().mkdirs()) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + destination.getParent() + " cannot be created"); //NOI18N
+                    return false;
+                }
+                if (!destination.createNewFile()) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + destination + " cannot be created"); //NOI18N
+                    return false;
+                }
+            }
+            
+            if (!destination.canWrite()) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE, "    ... " + destination + " is not writable"); //NOI18N
+                return false;
+            }
+            
+            FileInputStream inputStream = new FileInputStream(source);
+            FileOutputStream outputStream = new FileOutputStream(destination);
+            
+            byte[] buffer = new byte[1024];
+            
+            while (inputStream.available() > 0) {
+                outputStream.write(buffer, 0, inputStream.read(buffer));
+            }
+            
+            outputStream.close();
+            inputStream.close();
+            
+            return true;
         }
     }
     
