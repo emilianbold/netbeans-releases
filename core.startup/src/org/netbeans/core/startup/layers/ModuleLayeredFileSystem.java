@@ -115,9 +115,9 @@ public class ModuleLayeredFileSystem extends MultiFileSystem {
                 return LayerCacheManager.emptyManager();
             }
             try {
-                Class c = Class.forName(managerName);
-                Constructor ctor = c.getConstructor(new Class[] {File.class});
-                LayerCacheManager mgr = (LayerCacheManager)ctor.newInstance(new Object[] {cacheDir});
+                Class<?> c = Class.forName(managerName);
+                Constructor ctor = c.getConstructor(File.class);
+                LayerCacheManager mgr = (LayerCacheManager)ctor.newInstance(cacheDir);
                 err.fine("Using cache manager of type " + managerName + " in " + cacheDir);
                 return mgr;
             } catch (Exception e) {

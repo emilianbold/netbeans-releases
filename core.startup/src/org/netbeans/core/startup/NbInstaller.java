@@ -156,11 +156,11 @@ final class NbInstaller extends ModuleInstaller {
                     ev.log(Events.WRONG_CLASS_LOADER, m, clazz, m.getClassLoader());
                 }
                 // Search for a validate() method; if there is none, do not resolve the class now!
-                Class c;
+                Class<?> c;
                 for (c = clazz; c != ModuleInstall.class && c != Object.class; c = c.getSuperclass()) {
                     try {
                         // #13997: do not search in superclasses.
-                        c.getDeclaredMethod("validate", new Class[0]); // NOI18N
+                        c.getDeclaredMethod("validate"); // NOI18N
                         // It has one. We are permitted to resolve the class, create
                         // the installer instance, and validate it.
                         ModuleInstall install = SharedClassObject.findObject(clazz.asSubclass(ModuleInstall.class), true);

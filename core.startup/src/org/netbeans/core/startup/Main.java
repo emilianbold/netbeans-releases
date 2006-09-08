@@ -371,10 +371,10 @@ public final class Main extends Object {
                 // This module is included in our distro somewhere... may or may not be turned on.
                 // Whatever - try running some classes from it anyway.
                 try {
-                    Class clazz = getKlass (classname);
+                    Class<?> clazz = getKlass (classname);
                 
                     // Method showMethod = wizardClass.getMethod( "handleUpgrade", new Class[] { Splash.SplashOutput.class } ); // NOI18N
-                    Method showMethod = clazz.getMethod( "main", new Class[] { String[].class } ); // NOI18N
+                    Method showMethod = clazz.getMethod( "main", String[].class ); // NOI18N
                     showMethod.invoke (null, new Object[] {
                         new String[0]
                     });
@@ -456,9 +456,9 @@ public final class Main extends Object {
                 // This module is included in our distro somewhere... may or may not be turned on.
                 // Whatever - try running some classes from it anyway.
                 try {
-                    Class clazz = getKlass (classname);
+                    Class<?> clazz = getKlass (classname);
                 
-                    Method showMethod = clazz.getMethod("showLicensePanel", new Class[] {}); // NOI18N
+                    Method showMethod = clazz.getMethod("showLicensePanel"); // NOI18N
                     showMethod.invoke (null, new Object [] {});
                     executedOk = true;
                     //User accepted license => create file marker in userdir

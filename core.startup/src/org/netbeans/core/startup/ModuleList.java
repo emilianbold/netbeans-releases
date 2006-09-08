@@ -515,10 +515,10 @@ final class ModuleList {
      * e.g. overrides writeExternal.
      */
     private static boolean isReallyExternalizable(Class clazz) {
-        Class c;
+        Class<?> c;
         for (c = clazz; c != ModuleInstall.class && c != Object.class; c = c.getSuperclass()) {
             try {
-                c.getDeclaredMethod("writeExternal", new Class[] {ObjectOutput.class}); // NOI18N
+                c.getDeclaredMethod("writeExternal", ObjectOutput.class); // NOI18N
                 // [PENDING] check that m is public, nonstatic, returns Void.TYPE and includes at most
                 // IOException and unchecked exceptions in its clauses, else die
                 // OK, it does something nontrivial.
@@ -527,7 +527,7 @@ final class ModuleList {
                 // Didn't find it at this level, continue.
             }
             try {
-                c.getDeclaredMethod("writeReplace", new Class[] {}); // NOI18N
+                c.getDeclaredMethod("writeReplace"); // NOI18N
                 // [PENDING] check that m is nonstatic, returns Object, throws ObjectStreamException
                 // Designates a serializable replacer, this is special.
                 return true;
