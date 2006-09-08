@@ -89,13 +89,13 @@ public class Utils {
         List rootFileExclusions = new ArrayList(5);
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
-            CvsFileNode cvsNode = (CvsFileNode) node.getLookup().lookup(CvsFileNode.class);
+            CvsFileNode cvsNode = node.getLookup().lookup(CvsFileNode.class);
             if (cvsNode != null) {
                 files.add(cvsNode.getFile());
                 rootFiles.add(cvsNode.getFile());
                 continue;
             }
-            Project project =  (Project) node.getLookup().lookup(Project.class);
+            Project project =  node.getLookup().lookup(Project.class);
             if (project != null) {
                 addProjectFiles(files, rootFiles, rootFileExclusions, project);
                 continue;
@@ -146,7 +146,7 @@ public class Utils {
      */
     public static boolean isVersionedProject(Node node) {
         Lookup lookup = node.getLookup();
-        Project project = (Project) lookup.lookup(Project.class);
+        Project project = lookup.lookup(Project.class);
         return isVersionedProject(project);
     }
 
@@ -187,7 +187,7 @@ public class Utils {
             if (fileObjects.size() > 0) {
                 nodeFiles.addAll(toFileCollection(fileObjects));
             } else {
-                DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+                DataObject dataObject = node.getCookie(DataObject.class);
                 if (dataObject instanceof DataShadow) {
                     dataObject = ((DataShadow) dataObject).getOriginal();
                 }
@@ -363,12 +363,12 @@ public class Utils {
      */ 
     public static String getSticky(File file) {
         if (file == null) return null;
+        if (file.isDirectory()) {
+            return CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
+        }
         FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file);
         Entry entry = info.getEntry(file);
         if (entry != null) {
-            if (file.isDirectory()) {
-                return CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
-            }
             String stickyInfo = null;
             if (entry.getTag() != null) stickyInfo = "T" + entry.getTag(); // NOI18N
             else if (entry.getDate() != null) stickyInfo = "D" + entry.getDateFormatted(); // NOI18N
