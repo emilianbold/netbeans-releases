@@ -34,6 +34,8 @@ import org.openide.util.NbBundle;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Executes a given 'update' command and refreshes file statuses.
@@ -101,6 +103,17 @@ public class UpdateExecutor extends ExecutorSupport {
     protected void commandFinished(ClientRuntime.Result result) {
         
         UpdateCommand ucmd = (UpdateCommand) cmd;
+
+        // Sometimes the commandFinished() may be called before command.execute() is called. In this case, global options
+        // are not set yet and also this postprocessing does not make sense, return here to prevent NPE later
+        // See ExecutorSupport.commandTerminated and CommandRunnable.run, there is no guarantee that client.execute() precedes commandFinished()
+        if (ucmd.getGlobalOptions() == null) {
+            if (!cmd.hasFailed()) {
+                // this is somewhat unexpected, print a warning
+                Logger.getLogger("org.netbeans.modules.versioning.system.cvss").log(Level.INFO, "Warning: Update command did not fail but global options are null.");
+            }
+            return;
+        }
         
         cvs.setParameter(CvsVersioningSystem.PARAM_BATCH_REFRESH_RUNNING, Boolean.TRUE);
         
