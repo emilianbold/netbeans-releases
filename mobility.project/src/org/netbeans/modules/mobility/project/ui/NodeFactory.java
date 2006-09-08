@@ -31,6 +31,8 @@ package org.netbeans.modules.mobility.project.ui;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
@@ -42,15 +44,20 @@ import java.util.HashSet;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.openide.util.Utilities;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.customizer.CloneConfigurationPanel;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualConfigSupport;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -62,6 +69,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.xml.XMLUtil;
 
@@ -196,11 +204,79 @@ class ActionNode extends AbstractNode
     }
 }
 
-class ProjCfgNode extends ActionNode
+class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChangeListener
 {
+    private boolean broken = false;
+    
     protected ProjCfgNode(Children ch,Lookup lookup,String name,String icon, Action act[])
     {
         super(ch,lookup,name,null,icon,act);
+        JavaPlatformManager.getDefault().addPropertyChangeListener(this);
+        J2MEProject project=getLookup().lookup(J2MEProject.class);
+        AntProjectHelper antHelper=project.getLookup().lookup(AntProjectHelper.class);
+        antHelper.addAntProjectListener(this);
+        checkBroken();
+    }
+    
+    public void configurationXmlChanged(final AntProjectEvent ev) {
+        checkBroken();
+    }
+
+    public void propertiesChanged(final AntProjectEvent ev) {
+        checkBroken();
+    }
+
+    public void propertyChange(final PropertyChangeEvent evt) {
+        checkBroken();
+    }
+    
+    public String getHtmlDisplayName() {
+        J2MEPhysicalViewProvider.J2MEProjectRootNode node=(J2MEPhysicalViewProvider.J2MEProjectRootNode)getParentNode();        
+        String displayName = this.getDisplayName();
+        try {
+            displayName = XMLUtil.toElementContent(displayName);
+        } catch (CharConversionException ex) {
+            // OK, no annotation in this case
+            return null;
+        }
+                
+        if (broken) 
+            displayName = "<font color=\"#A40000\">" + displayName + "</font>"; //NOI18N
+        
+        return displayName;
+    }
+    
+    public Image getIcon( final int type ) {
+        final Image icon=super.getIcon(type);
+        return broken ? Utilities.mergeImages(icon, Utilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/brokenProjectBadge.gif" ), 8, 0) : icon; //NOI18N
+    }
+    
+    public Image getOpenedIcon( final int type ) {
+        return getIcon( type );
+    }
+        
+    private boolean hasBrokenLinks()
+    {
+        Node node=this.getParentNode();
+        if (node != null)
+        {
+            
+        }
+        return false;
+    }
+    
+    protected void checkBroken() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                J2MEPhysicalViewProvider.J2MEProjectRootNode node=(J2MEPhysicalViewProvider.J2MEProjectRootNode)ProjCfgNode.this.getParentNode();
+                if (node!= null && broken != node.isBroken()) {
+                    broken ^= true; //faster way of negation
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    fireDisplayNameChange(null, null);
+                }
+            }
+        });
     }
     
     private PasteType getPasteType (final Transferable tr, DataFlavor[] flavors ) 
@@ -505,4 +581,156 @@ class ResourcesNode extends ActionNode
         PasteType pt=getDropType(t,0,0);
         if (pt != null) s.add(pt);
     }    
+}
+
+class CfgNode extends ActionNode implements AntProjectListener, PropertyChangeListener
+{
+    protected boolean broken = false;
+    final AntProjectHelper antHelper;
+    final ReferenceHelper  refHelper;
+    final ProjectConfiguration cfg;
+    final J2MEProject project;
+    
+    protected CfgNode(Children ch,Lookup lookup,String name,String icon, Action act[])
+    {
+        super(ch,lookup,name,null,icon,act);
+        project=getLookup().lookup(J2MEProject.class);
+        cfg=getLookup().lookup(ProjectConfiguration.class);
+        refHelper=project.getLookup().lookup(ReferenceHelper.class);
+        antHelper=project.getLookup().lookup(AntProjectHelper.class);
+        
+        JavaPlatformManager.getDefault().addPropertyChangeListener(this);
+        antHelper.addAntProjectListener(this);
+        this.broken = hasBrokenLinks();
+        
+    }
+        
+    private String usedLibs(final ProjectConfiguration cfg)
+    {
+        String libs;
+        final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);        
+        
+        /* Check for default lib config */
+        if (cfg.equals(project.getConfigurationHelper().getDefaultConfiguration()))
+        {
+            libs=DefaultPropertiesDescriptor.LIBS_CLASSPATH;
+        }
+        else
+        {
+            libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+cfg.getName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+            if (libs==null)
+                libs=DefaultPropertiesDescriptor.LIBS_CLASSPATH;
+            else
+                libs=J2MEProjectProperties.CONFIG_PREFIX+cfg.getName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH;
+        }
+        return libs;
+    }
+    
+    private String[] getBreakableProperties(J2MEProject project,ProjectConfiguration cfg) {
+        String s[] = new String[3];
+        s[0] = DefaultPropertiesDescriptor.SRC_DIR;
+        s[1] = usedLibs(cfg);
+        if (project.getConfigurationHelper().getDefaultConfiguration().equals(cfg)) {
+            s[2] = DefaultPropertiesDescriptor.SIGN_KEYSTORE;
+        } else {
+            s[2] = J2MEProjectProperties.CONFIG_PREFIX + cfg.getName() + "." + DefaultPropertiesDescriptor.SIGN_KEYSTORE; //NOI18N
+        }
+        return s;
+    }
+    
+    
+    private String usedActive(final ProjectConfiguration cfg)
+    {
+        String libs;
+        final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);        
+        
+        /* Check for default lib config */
+        if (cfg.equals(project.getConfigurationHelper().getDefaultConfiguration()))
+        {
+            libs=DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
+        }
+        else
+        {
+            libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX + cfg.getName() + "." + DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
+            if (libs==null)
+                libs=DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
+            else
+                libs=J2MEProjectProperties.CONFIG_PREFIX + cfg.getName() + "." + DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
+        }
+        return libs;
+    }
+    
+    private String[] getBreakablePlatformProperties(J2MEProject project,ProjectConfiguration cfg) {
+        String s[]=new String[1];
+        s[0]=usedActive(cfg);
+        return s;
+    }
+    
+    public boolean hasBrokenLinks() {        
+        if (project != null && refHelper != null && antHelper != null)
+            return BrokenReferencesSupport.isBroken( antHelper, refHelper, getBreakableProperties(project,cfg), getBreakablePlatformProperties(project,cfg));
+        return false;
+    }
+    
+    public Image getIcon( final int type ) {
+        final Image icon=super.getIcon(type);
+        return broken ? Utilities.mergeImages(icon, Utilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/brokenProjectBadge.gif" ), 8, 0) : icon; //NOI18N
+    }
+    
+    public Image getOpenedIcon( final int type ) {
+        return getIcon( type );
+    }
+    
+    protected void checkBroken() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                if (broken != hasBrokenLinks()) {
+                    broken ^= true; //faster way of negation
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    fireDisplayNameChange(null, null);                    
+                }
+            }
+        });
+    }
+    
+    public String getHtmlDisplayName() {
+        String displayName = this.getDisplayName();
+        try {
+            displayName = XMLUtil.toElementContent(displayName);
+        } catch (CharConversionException ex) {
+            // OK, no annotation in this case
+            return null;
+        }
+        
+        if (broken) 
+            displayName = "<font color=\"#A40000\">" + displayName + "</font>"; //NOI18N
+        
+        final Boolean error=(Boolean)this.getValue("error");
+        if (error==Boolean.TRUE)
+            return "<font color=\"#A40000\">"+displayName+"</font>";
+        
+        final Boolean gray=(Boolean)this.getValue("gray");
+        if (gray==Boolean.TRUE)
+            return "<font color=\"#A0A0A0\">"+displayName+"</font>";
+
+        
+        final Boolean bold=(Boolean)this.getValue("bold");
+        if (bold==Boolean.TRUE)
+            return "<B>" + displayName + "</B>"; //NOI18N
+        
+        return displayName ; //NOI18N
+    }
+    
+    public void configurationXmlChanged(final AntProjectEvent ev) {
+        checkBroken();
+    }
+
+    public void propertiesChanged(final AntProjectEvent ev) {
+        checkBroken();
+    }
+
+    public void propertyChange(final PropertyChangeEvent evt) {
+        checkBroken();
+    }
 }

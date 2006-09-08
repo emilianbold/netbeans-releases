@@ -192,6 +192,11 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             refreshKey("Resources");
         }
         
+        public void refreshConfigurations()
+        {
+            refreshKey("Configurations");
+        }
+        
         protected Node[] createNodes(final Object key)
         {
             ChildLookup creator=keyMap.get(key);
@@ -223,7 +228,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     
     /** Filter node containin additional features for the J2ME physical
      */
-    private final class J2MEProjectRootNode extends AbstractNode implements AntProjectListener, PropertyChangeListener {
+    final class J2MEProjectRootNode extends AbstractNode implements AntProjectListener, PropertyChangeListener {
         
         private Action[] actions, actionsBroken;
         
@@ -247,8 +252,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         
         protected void checkBroken() {
             RequestProcessor.getDefault().post(new Runnable() {
-                @SuppressWarnings("synthetic-access")
-				public void run() {
+                public void run() {
                     if (brokenSources && testSourceRoot()) scheduleReOpen();
                     if (broken != hasBrokenLinks()) {
                         broken ^= true; //faster way of negation
@@ -259,6 +263,11 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
                     }
                 }
             });
+        }
+        
+        protected boolean isBroken()
+        {
+            return hasBrokenLinks();
         }
         
         protected void scheduleReOpen() {

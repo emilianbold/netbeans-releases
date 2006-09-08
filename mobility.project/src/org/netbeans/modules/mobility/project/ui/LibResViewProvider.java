@@ -197,7 +197,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                 {
                     //new Configuration
                     final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
-                    final Node n=new ActionNode(
+                    final Node n=new CfgNode(
                             new ConfigChildren(),
                             Lookups.fixed(new Object[] {project, cfg, new AbilitiesPanel.VAData()}),
                             cfg.getName(),PLATFORM_ICON,
@@ -267,12 +267,12 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         for (int i=0;i<confs.length;i++)
         {
             final Node node=confs[i].equals(project.getConfigurationHelper().getDefaultConfiguration()) ? 
-                new ActionNode(new ConfigChildren(), 
+                new CfgNode(new ConfigChildren(), 
                     Lookups.fixed(new Object[] {project, confs[i], new AbilitiesPanel.VAData()}),
                     confs[i].getName(),PLATFORM_ICON,
                     new Action[] {SetConfigurationAction.getStaticInstance(),
                                  }) :
-                new ActionNode(new ConfigChildren(),
+                new CfgNode(new ConfigChildren(),
                     Lookups.fixed(new Object[] {project, confs[i], new AbilitiesPanel.VAData()}),
                     confs[i].getName(),PLATFORM_ICON,
                     new Action[] {
