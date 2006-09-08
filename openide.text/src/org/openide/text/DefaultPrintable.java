@@ -691,7 +691,7 @@ final class DefaultPrintable extends Object implements Printable {
 
     /** @param <tt>d</tt> New value of <tt>cancellationDialog</tt>*/
     void setDialog(Dialog d) {
-        d.show();
+        d.setVisible(true);
         d.pack();
         cancellationDialog = d;
     }
