@@ -77,6 +77,8 @@ is divided into following sections:
 
             <target name="-init-private">
                 <xsl:attribute name="depends">-pre-init</xsl:attribute>
+                <property file="nbproject/private/config.properties"/>
+                <property file="nbproject/private/configs/${{config}}.properties"/>
                 <property file="nbproject/private/private.properties"/>
             </target>
 
@@ -91,6 +93,7 @@ is divided into following sections:
 
             <target name="-init-project">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user</xsl:attribute>
+                <property file="nbproject/configs/${{config}}.properties"/>
                 <property file="nbproject/project.properties"/>
             </target>
 

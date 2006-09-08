@@ -563,7 +563,6 @@ public class PropertyUtilsTest extends NbTestCase {
     }
     
     public void testDelegatingPropertyProvider() throws Exception {
-        // Used only by ProjectProperties, not publically, but still worth testing.
         TestMutablePropertyProvider mpp = new TestMutablePropertyProvider(new HashMap<String,String>());
         DPP dpp = new DPP(mpp);
         AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();

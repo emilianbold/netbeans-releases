@@ -39,6 +39,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.SystemAction;
 
 /** Factory for all kinds of actions used in projectui and
  *projectuiapi.
@@ -353,6 +354,10 @@ public class Actions implements ActionsFactory {
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugProject.gif" ) ) ); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugProject.gif"); //NOI18N
         return a;
+    }
+
+    public Action setProjectConfigurationAction() {
+        return SystemAction.get(ActiveConfigAction.class);
     }
 
 }

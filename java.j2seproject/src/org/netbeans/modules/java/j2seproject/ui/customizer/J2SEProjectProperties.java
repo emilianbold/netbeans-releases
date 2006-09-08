@@ -23,12 +23,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Vector;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
@@ -40,7 +43,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
@@ -50,7 +52,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.DialogDisplayer;
@@ -58,10 +59,10 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Petr Hrebejk
@@ -191,11 +192,8 @@ public class J2SEProjectProperties {
     Document JAVADOC_ADDITIONALPARAM_MODEL;
 
     // CustomizerRun
-    Document MAIN_CLASS_MODEL;
-    Document APPLICATION_ARGS_MODEL;
-    Document RUN_JVM_ARGS_MODEL;
-    Document RUN_WORK_DIR_MODEL;
-
+    Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
+    String activeConfig;
 
     // CustomizerRunTest
 
@@ -289,10 +287,8 @@ public class J2SEProjectProperties {
         
         JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument( evaluator, JAVADOC_ADDITIONALPARAM );
         // CustomizerRun
-        MAIN_CLASS_MODEL = projectGroup.createStringDocument( evaluator, MAIN_CLASS ); 
-        APPLICATION_ARGS_MODEL = privateGroup.createStringDocument( evaluator, APPLICATION_ARGS );
-        RUN_JVM_ARGS_MODEL = projectGroup.createStringDocument( evaluator, RUN_JVM_ARGS );
-        RUN_WORK_DIR_MODEL = privateGroup.createStringDocument( evaluator, RUN_WORK_DIR );
+        RUN_CONFIGS = readRunConfigs();
+        activeConfig = evaluator.getProperty("config");
                 
     }
     
@@ -363,6 +359,15 @@ public class J2SEProjectProperties {
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
         
+        storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
+        EditableProperties ep = updateHelper.getProperties("nbproject/private/config.properties");
+        if (activeConfig == null) {
+            ep.remove("config");
+        } else {
+            ep.setProperty("config", activeConfig);
+        }
+        updateHelper.putProperties("nbproject/private/config.properties", ep);
+        
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
         //Save javac.debug
@@ -387,10 +392,6 @@ public class J2SEProjectProperties {
             projectProperties.remove( NO_DEPENDENCIES ); // Remove the property completely if not set
         }
 
-        if ( getDocumentText( RUN_WORK_DIR_MODEL ).trim().equals( "" ) ) { // NOI18N
-            privateProperties.remove( RUN_WORK_DIR ); // Remove the property completely if not set
-        }
-                
         storeAdditionalProperties(projectProperties);
         
         // Store the property changes into the project
@@ -401,8 +402,8 @@ public class J2SEProjectProperties {
   
     private void storeAdditionalProperties(EditableProperties projectProperties) {
         for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            Object key = i.next();
-            projectProperties.put(key, additionalProperties.get(key));
+            String key = (String) i.next();
+            projectProperties.put(key, (String) additionalProperties.get(key));
         }
     }
     
@@ -464,7 +465,6 @@ public class J2SEProjectProperties {
                 changed = true;
             }
         }
-        File projDir = FileUtil.toFile(updateHelper.getAntProjectHelper().getProjectDirectory());
         for( Iterator it = added.iterator(); it.hasNext(); ) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)it.next();
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
@@ -553,6 +553,104 @@ public class J2SEProjectProperties {
         JToggleButton.ToggleButtonModel bm = new JToggleButton.ToggleButtonModel();
         bm.setSelected(isSelected );
         return bm;
+    }
+    
+    /**
+     * A mess.
+     */
+    Map<String/*|null*/,Map<String,String>> readRunConfigs() {
+        Map<String,Map<String,String>> m = new TreeMap<String,Map<String,String>>(new Comparator<String>() {
+            public int compare(String s1, String s2) {
+                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
+            }
+        });
+        Map<String,String> def = new TreeMap<String,String>();
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
+            String v = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
+            if (v == null) {
+                v = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
+            }
+            if (v != null) {
+                def.put(prop, v);
+            }
+        }
+        m.put(null, def);
+        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs");
+        if (configs != null) {
+            for (FileObject kid : configs.getChildren()) {
+                if (!kid.hasExt("properties")) {
+                    continue;
+                }
+                m.put(kid.getName(), new TreeMap<String,String>(updateHelper.getProperties(FileUtil.getRelativePath(project.getProjectDirectory(), kid))));
+            }
+        }
+        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs");
+        if (configs != null) {
+            for (FileObject kid : configs.getChildren()) {
+                if (!kid.hasExt("properties")) {
+                    continue;
+                }
+                Map<String,String> c = m.get(kid.getName());
+                if (c == null) {
+                    continue;
+                }
+                c.putAll(new HashMap<String,String>(updateHelper.getProperties(FileUtil.getRelativePath(project.getProjectDirectory(), kid))));
+            }
+        }
+        //System.err.println("readRunConfigs: " + m);
+        return m;
+    }
+
+    /**
+     * A royal mess.
+     */
+    void storeRunConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs,
+            EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
+        //System.err.println("storeRunConfigs: " + configs);
+        Map<String,String> def = configs.get(null);
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
+            String v = def.get(prop);
+            EditableProperties ep = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR)) ?
+                privateProperties : projectProperties;
+            if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
+                if (v != null && v.length() > 0) {
+                    ep.setProperty(prop, v);
+                } else {
+                    ep.remove(prop);
+                }
+            }
+        }
+        for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
+            String config = entry.getKey();
+            if (config == null) {
+                continue;
+            }
+            String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
+            String privatePath = "nbproject/private/configs/" + config + ".properties"; // NOI18N
+            Map<String,String> c = entry.getValue();
+            if (c == null) {
+                updateHelper.putProperties(sharedPath, null);
+                updateHelper.putProperties(privatePath, null);
+                continue;
+            }
+            for (Map.Entry<String,String> entry2 : c.entrySet()) {
+                String prop = entry2.getKey();
+                String v = entry2.getValue();
+                String path = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR)) ?
+                    privatePath : sharedPath;
+                EditableProperties ep = updateHelper.getProperties(path);
+                if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
+                    if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {
+                        ep.setProperty(prop, v);
+                    } else {
+                        ep.remove(prop);
+                    }
+                    updateHelper.putProperties(path, ep);
+                }
+            }
+            // Make sure the definition file is always created, even if it is empty.
+            updateHelper.putProperties(sharedPath, updateHelper.getProperties(sharedPath));
+        }
     }
     
 }

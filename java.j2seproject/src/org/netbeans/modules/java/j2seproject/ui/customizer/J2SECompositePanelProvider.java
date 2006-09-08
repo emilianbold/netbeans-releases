@@ -36,9 +36,6 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
-    // Names of categories
-    private static final String BUILD_CATEGORY = "BuildCategory";
-    private static final String RUN_CATEGORY = "RunCategory";
     
     private static final String SOURCES = "Sources";
     static final String LIBRARIES = "Libraries";
@@ -47,7 +44,7 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
 //    private static final String BUILD_TESTS = "BuildTests";
     private static final String JAR = "Jar";
     private static final String JAVADOC = "Javadoc";
-    private static final String RUN = "Run";    
+    public static final String RUN = "Run";
 //    private static final String RUN_TESTS = "RunTests";
     
     private static final String WEBSERVICECLIENTS = "WebServiceClients";

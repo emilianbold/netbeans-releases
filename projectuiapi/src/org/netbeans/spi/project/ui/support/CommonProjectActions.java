@@ -178,4 +178,20 @@ public class CommonProjectActions {
         return Utilities.getActionsFactory().newProjectAction();
     }    
 
+    /**
+     * Creates an action that sets the configuration of the selected project.
+     * It should be displayed with an action context containing
+     * exactly one {@link org.netbeans.api.project.Project}.
+     * The action itself should not be invoked but you may use its popup presenter.
+     * <p class="nonnormative">
+     * You might include this in the context menu of a logical view.
+     * </p>
+     * @return an action
+     * @since org.netbeans.modules.projectuiapi/1 1.17
+     * @see org.netbeans.spi.project.ProjectConfigurationProvider
+     */
+    public static Action setProjectConfigurationAction() {
+        return Utilities.getActionsFactory().setProjectConfigurationAction();
+    }
+
 }

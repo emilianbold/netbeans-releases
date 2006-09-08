@@ -19,8 +19,6 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -400,7 +398,8 @@ final class ProjectProperties {
             PropertyEvaluator findUserPropertiesFile = PropertyUtils.sequentialPropertyEvaluator(
                 getStockPropertyPreprovider(),
                 getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-            PropertyProvider globalProperties = new UserPropertiesProvider(findUserPropertiesFile);
+            PropertyProvider globalProperties = PropertyUtils.userPropertiesProvider(findUserPropertiesFile,
+                    "user.properties.file", FileUtil.toFile(helper.getProjectDirectory())); // NOI18N
             standardPropertyEvaluator = PropertyUtils.sequentialPropertyEvaluator(
                 getStockPropertyPreprovider(),
                 getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
@@ -408,35 +407,6 @@ final class ProjectProperties {
                 getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         }
         return standardPropertyEvaluator;
-    }
-    private PropertyProvider computeDelegate(PropertyEvaluator findUserPropertiesFile) {
-        String userPropertiesFile = findUserPropertiesFile.getProperty("user.properties.file"); // NOI18N
-        if (userPropertiesFile != null) {
-            // Have some defined global properties file, so read it and listen to changes in it.
-            File f = helper.resolveFile(userPropertiesFile);
-            if (f.equals(PropertyUtils.userBuildProperties())) {
-                // Just to share the cache.
-                return PropertyUtils.globalPropertyProvider();
-            } else {
-                return PropertyUtils.propertiesFilePropertyProvider(f);
-            }
-        } else {
-            // Use the in-IDE default.
-            return PropertyUtils.globalPropertyProvider();
-        }
-    }
-    private final class UserPropertiesProvider extends PropertyUtils.DelegatingPropertyProvider implements PropertyChangeListener {
-        private final PropertyEvaluator findUserPropertiesFile;
-        public UserPropertiesProvider(PropertyEvaluator findUserPropertiesFile) {
-            super(computeDelegate(findUserPropertiesFile));
-            this.findUserPropertiesFile = findUserPropertiesFile;
-            findUserPropertiesFile.addPropertyChangeListener(this);
-        }
-        public void propertyChange(PropertyChangeEvent ev) {
-            if ("user.properties.file".equals(ev.getPropertyName())) { // NOI18N
-                setDelegate(computeDelegate(findUserPropertiesFile));
-            }
-        }
     }
     
 }

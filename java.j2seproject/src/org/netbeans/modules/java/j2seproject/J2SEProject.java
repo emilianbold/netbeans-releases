@@ -19,10 +19,12 @@
 
 package org.netbeans.modules.java.j2seproject;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -31,8 +33,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender;
@@ -59,6 +59,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -66,6 +67,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -126,12 +128,51 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
     
     private PropertyEvaluator createEvaluator() {
-        // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
         // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
-        return helper.getStandardPropertyEvaluator();
+        // Adapted from APH.getStandardPropertyEvaluator (delegates to ProjectProperties):
+        PropertyEvaluator baseEval1 = PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(J2SEConfigurationProvider.CONFIG_PROPS_PATH));
+        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+        return PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(J2SEConfigurationProvider.CONFIG_PROPS_PATH),
+                new ConfigPropertyProvider(baseEval1, "nbproject/private/configs", helper), // NOI18N
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                PropertyUtils.userPropertiesProvider(baseEval2,
+                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
+                new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
+                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+    }
+    private static final class ConfigPropertyProvider extends PropertyUtils.DelegatingPropertyProvider implements PropertyChangeListener {
+        private final PropertyEvaluator baseEval;
+        private final String prefix;
+        private final AntProjectHelper helper;
+        public ConfigPropertyProvider(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
+            super(computeDelegate(baseEval, prefix, helper));
+            this.baseEval = baseEval;
+            this.prefix = prefix;
+            this.helper = helper;
+            baseEval.addPropertyChangeListener(this);
+        }
+        public void propertyChange(PropertyChangeEvent ev) {
+            if (J2SEConfigurationProvider.PROP_CONFIG.equals(ev.getPropertyName())) {
+                setDelegate(computeDelegate(baseEval, prefix, helper));
+            }
+        }
+        private static PropertyProvider computeDelegate(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
+            String config = baseEval.getProperty(J2SEConfigurationProvider.PROP_CONFIG);
+            if (config != null) {
+                return helper.getPropertyProvider(prefix + "/" + config + ".properties"); // NOI18N
+            } else {
+                return PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap());
+            }
+        }
     }
     
-    PropertyEvaluator evaluator() {
+    public PropertyEvaluator evaluator() {
         return eval;
     }
 
@@ -139,7 +180,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         return this.refHelper;
     }
 
-    UpdateHelper getUpdateHelper() {
+    public UpdateHelper getUpdateHelper() {
         return this.updateHelper;
     }
     
@@ -179,6 +220,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             cpMod,
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
             new J2SEProjectOperations(this),
+            new J2SEConfigurationProvider(this),
             new J2SEProjectWebServicesSupportProvider()
         });
     }

@@ -19,49 +19,145 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.text.Collator;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
-
-/**
- *
- * @author  phrebejk
- */
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
     private J2SEProject project;
     
+    private JTextField[] data;
+    private JLabel[] dataLabels;
+    private String[] keys;
+    private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
+    J2SEProjectProperties uiProperties;
+    
     public CustomizerRun( J2SEProjectProperties uiProperties ) {
+        this.uiProperties = uiProperties;
         initComponents();
 
         this.project = uiProperties.getProject();
         
-        jTextFieldMainClass.setDocument( uiProperties.MAIN_CLASS_MODEL );
-        jTextFieldArgs.setDocument( uiProperties.APPLICATION_ARGS_MODEL );
-        jTextVMOptions.setDocument( uiProperties.RUN_JVM_ARGS_MODEL );
-        jTextWorkingDirectory.setDocument( uiProperties.RUN_WORK_DIR_MODEL );
-           
+        configs = uiProperties.RUN_CONFIGS;
+        
+        data = new JTextField[] {
+            jTextFieldMainClass,
+            jTextFieldArgs,
+            jTextVMOptions,
+            jTextWorkingDirectory,
+        };
+        dataLabels = new JLabel[] {
+            jLabelMainClass,
+            jLabelArgs,
+            jLabelVMOptions,
+            jLabelWorkingDirectory,
+        };
+        keys = new String[] {
+            J2SEProjectProperties.MAIN_CLASS,
+            J2SEProjectProperties.APPLICATION_ARGS,
+            J2SEProjectProperties.RUN_JVM_ARGS,
+            J2SEProjectProperties.RUN_WORK_DIR,
+        };
+        assert data.length == keys.length;
+        
+        configChanged(uiProperties.activeConfig);
+        
+        configCombo.setRenderer(new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                String config = (String) value;
+                String label;
+                if (config == null) {
+                    // uninitialized?
+                    label = null;
+                } else if (config.length() > 0) {
+                    Map<String,String> m = configs.get(config);
+                    label = m != null ? m.get("$label") : /* temporary? */ null;
+                    if (label == null) {
+                        label = config;
+                    }
+                } else {
+                    label = NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.default");
+                }
+                return super.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
+            }
+        });
+        
+        for (int i = 0; i < data.length; i++) {
+            final JTextField field = data[i];
+            final String prop = keys[i];
+            final JLabel label = dataLabels[i];
+            field.getDocument().addDocumentListener(new DocumentListener() {
+                Font basefont = label.getFont();
+                Font boldfont = basefont.deriveFont(Font.BOLD);
+                {
+                    updateFont();
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    changed();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    changed();
+                }
+                public void changedUpdate(DocumentEvent e) {}
+                void changed() {
+                    String config = (String) configCombo.getSelectedItem();
+                    if (config.length() == 0) {
+                        config = null;
+                    }
+                    String v = field.getText();
+                    if (v != null && config != null && v.equals(configs.get(null).get(prop))) {
+                        // default value, do not store as such
+                        v = null;
+                    }
+                    configs.get(config).put(prop, v);
+                    updateFont();
+                }
+                void updateFont() {
+                    String v = field.getText();
+                    String config = (String) configCombo.getSelectedItem();
+                    if (config.length() == 0) {
+                        config = null;
+                    }
+                    String def = configs.get(null).get(prop);
+                    label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? boldfont : basefont);
+                }
+            });
+        }
+
         jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
     }
         
@@ -78,6 +174,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        configSep = new javax.swing.JSeparator();
+        configPanel = new javax.swing.JPanel();
+        configLabel = new javax.swing.JLabel();
+        configCombo = new javax.swing.JComboBox();
+        configNew = new javax.swing.JButton();
+        configDel = new javax.swing.JButton();
+        mainPanel = new javax.swing.JPanel();
         jLabelMainClass = new javax.swing.JLabel();
         jTextFieldMainClass = new javax.swing.JTextField();
         jButtonMainClass = new javax.swing.JButton();
@@ -92,50 +195,113 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         setLayout(new java.awt.GridBagLayout());
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        add(configSep, gridBagConstraints);
+
+        configPanel.setLayout(new java.awt.GridBagLayout());
+
+        configLabel.setLabelFor(configCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        configPanel.add(configLabel, gridBagConstraints);
+
+        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
+        configCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configComboActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
+        configPanel.add(configCombo, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(configNew, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configNew")); // NOI18N
+        configNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configNewActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
+        configPanel.add(configNew, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(configDel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configDelete")); // NOI18N
+        configDel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configDelActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
+        configPanel.add(configDel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        add(configPanel, gridBagConstraints);
+
+        mainPanel.setLayout(new java.awt.GridBagLayout());
+
         jLabelMainClass.setLabelFor(jTextFieldMainClass);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jLabelMainClass, gridBagConstraints);
+        mainPanel.add(jLabelMainClass, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
-        add(jTextFieldMainClass, gridBagConstraints);
-        jTextFieldMainClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jTextFieldMainClass"));
+        mainPanel.add(jTextFieldMainClass, gridBagConstraints);
+        jTextFieldMainClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jTextFieldMainClass")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
-        add(jButtonMainClass, gridBagConstraints);
-        jButtonMainClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jButtonMainClass"));
+        mainPanel.add(jButtonMainClass, gridBagConstraints);
+        jButtonMainClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jButtonMainClass")); // NOI18N
 
         jLabelArgs.setLabelFor(jTextFieldArgs);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelArgs, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelArgs, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jLabelArgs, gridBagConstraints);
+        mainPanel.add(jLabelArgs, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
-        add(jTextFieldArgs, gridBagConstraints);
-        jTextFieldArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jTextFieldArgs"));
+        mainPanel.add(jTextFieldArgs, gridBagConstraints);
+        jTextFieldArgs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jTextFieldArgs")); // NOI18N
 
         jLabelWorkingDirectory.setLabelFor(jTextWorkingDirectory);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelWorkingDirectory, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelWorkingDirectory, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jLabelWorkingDirectory, gridBagConstraints);
+        mainPanel.add(jLabelWorkingDirectory, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
@@ -143,10 +309,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
-        add(jTextWorkingDirectory, gridBagConstraints);
-        jTextWorkingDirectory.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizeRun_Run_Working_Directory "));
+        mainPanel.add(jTextWorkingDirectory, gridBagConstraints);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle"); // NOI18N
+        jTextWorkingDirectory.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_Working_Directory ")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonWorkingDirectoryBrowse, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory_Browse"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonWorkingDirectoryBrowse, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory_Browse")); // NOI18N
         jButtonWorkingDirectoryBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonWorkingDirectoryBrowseActionPerformed(evt);
@@ -158,25 +325,25 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
-        add(jButtonWorkingDirectoryBrowse, gridBagConstraints);
-        jButtonWorkingDirectoryBrowse.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizeRun_Run_Working_Directory_Browse"));
+        mainPanel.add(jButtonWorkingDirectoryBrowse, gridBagConstraints);
+        jButtonWorkingDirectoryBrowse.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_Working_Directory_Browse")); // NOI18N
 
         jLabelVMOptions.setLabelFor(jTextVMOptions);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptions, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptions, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jLabelVMOptions, gridBagConstraints);
+        mainPanel.add(jLabelVMOptions, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        add(jTextVMOptions, gridBagConstraints);
-        jTextVMOptions.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_CustomizeRun_Run_VM_Options"));
+        mainPanel.add(jTextVMOptions, gridBagConstraints);
+        jTextVMOptions.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_VM_Options")); // NOI18N
 
         jLabelVMOptionsExample.setLabelFor(jTextFieldMainClass);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptionsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_Example"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptionsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -185,11 +352,61 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
-        add(jLabelVMOptionsExample, gridBagConstraints);
-        jLabelVMOptionsExample.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("LBL_CustomizeRun_Run_VM_Options_Example"));
+        mainPanel.add(jLabelVMOptionsExample, gridBagConstraints);
+        jLabelVMOptionsExample.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
+        add(mainPanel, gridBagConstraints);
+
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        assert config != null;
+        configs.put(config, null);
+        configChanged(null);
+        uiProperties.activeConfig = null;
+    }//GEN-LAST:event_configDelActionPerformed
+
+    private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
+        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
+                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt"),
+                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title"));
+        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String name = d.getInputText();
+        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        if (configs.get(config) != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config),
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+        Map<String,String> m = new HashMap<String,String>();
+        if (!name.equals(config)) {
+            m.put("$label", name); // NOI18N
+        }
+        configs.put(config, m);
+        configChanged(config);
+        uiProperties.activeConfig = config;
+    }//GEN-LAST:event_configNewActionPerformed
+
+    private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        configChanged(config);
+        uiProperties.activeConfig = config;
+    }//GEN-LAST:event_configComboActionPerformed
 
     private void jButtonWorkingDirectoryBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWorkingDirectoryBrowseActionPerformed
         JFileChooser chooser = new JFileChooser();
@@ -208,9 +425,55 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             jTextWorkingDirectory.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_jButtonWorkingDirectoryBrowseActionPerformed
+
+    private void configChanged(String activeConfig) {
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        model.addElement("");
+        SortedSet<String> alphaConfigs = new TreeSet<String>(new Comparator<String>() {
+            Collator coll = Collator.getInstance();
+            public int compare(String s1, String s2) {
+                return coll.compare(label(s1), label(s2));
+            }
+            private String label(String c) {
+                Map<String,String> m = configs.get(c);
+                String label = m.get("$label"); // NOI18N
+                return label != null ? label : c;
+            }
+        });
+        for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
+            String config = entry.getKey();
+            if (config != null && entry.getValue() != null) {
+                alphaConfigs.add(config);
+            }
+        }
+        for (String c : alphaConfigs) {
+            model.addElement(c);
+        }
+        configCombo.setModel(model);
+        configCombo.setSelectedItem(activeConfig != null ? activeConfig : "");
+        Map<String,String> m = configs.get(activeConfig);
+        Map<String,String> def = configs.get(null);
+        if (m != null) {
+            for (int i = 0; i < data.length; i++) {
+                String v = m.get(keys[i]);
+                if (v == null) {
+                    // display default value
+                    v = def.get(keys[i]);
+                }
+                data[i].setText(v);
+            }
+        } // else ??
+        configDel.setEnabled(activeConfig != null);
+    }
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox configCombo;
+    private javax.swing.JButton configDel;
+    private javax.swing.JLabel configLabel;
+    private javax.swing.JButton configNew;
+    private javax.swing.JPanel configPanel;
+    private javax.swing.JSeparator configSep;
     private javax.swing.JButton jButtonMainClass;
     private javax.swing.JButton jButtonWorkingDirectoryBrowse;
     private javax.swing.JLabel jLabelArgs;
@@ -222,6 +485,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JTextField jTextFieldMainClass;
     private javax.swing.JTextField jTextVMOptions;
     private javax.swing.JTextField jTextWorkingDirectory;
+    private javax.swing.JPanel mainPanel;
     // End of variables declaration//GEN-END:variables
     
     

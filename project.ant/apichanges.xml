@@ -82,6 +82,25 @@ is the proper place.
 
     <changes>
         
+        <change id="PropertyUtils.userPropertiesProvider.DelegatingPropertyProvider">
+            <api name="general"/>
+            <summary>Added utilities for constructing richer property evaluators</summary>
+            <version major="1" minor="14"/>
+            <date day="8" month="9" year="2006"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a new method and nested class to <code>PropertyUtils</code> to
+                    make it easier to write a customizer version of
+                    <code>AntProjectHelper.getStandardPropertyEvaluator()</code>,
+                    among other things.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="PropertyUtils"/>
+            <issue number="49636"/>
+        </change>
+        
         <change id="ReferenceHelper.addReference-change-of-target-property-file">
             <api name="general"/>
             <summary>Semantic changes in the ReferenceHelper behavior</summary>

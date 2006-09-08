@@ -685,6 +685,13 @@ Microsystems, Inc. All Rights Reserved.
       by enhanced UI logger that track what the user is going.
       </api>
     </li>
+    <li>
+        <api name="org.netbeans.modules.project.ui.actions.MainProjectAction.SHOW_CONFIG_DROPDOWN" category="devel" group="property" type="export" url="http://www.netbeans.org/nonav/issues/show_bug.cgi?id=49652">
+            If set to <code>true</code>, main project action toolbar buttons will
+            under appropriate circumstances display pull-down buttons permitting
+            the action to be run against a particular nonactive configuration directly.
+        </api>
+    </li>
   </ul>
  </answer>
 

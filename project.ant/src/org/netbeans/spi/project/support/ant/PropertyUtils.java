@@ -710,6 +710,55 @@ public class PropertyUtils {
     public static PropertyEvaluator sequentialPropertyEvaluator(PropertyProvider preprovider, PropertyProvider... providers) {
         return new SequentialPropertyEvaluator(preprovider, providers);
     }
+
+    /**
+     * Creates a property provider similar to {@link #globalPropertyProvider}
+     * but which can use a different global properties file.
+     * If a specific file is pointed to, that is loaded; otherwise behaves like {@link #globalPropertyProvider}.
+     * Permits behavior similar to command-line Ant where not erroneous, but using the IDE's
+     * default global properties for projects which do not yet have this property registered.
+     * @param findUserPropertiesFile an evaluator in which to look up <code>propertyName</code>
+     * @param propertyName a property pointing to the global properties file (typically <code>"user.properties.file"</code>)
+     * @param basedir a base directory to use when resolving the path to the global properties file, if relative
+     * @return a provider of global properties
+     * @since org.netbeans.modules.project.ant/1 1.14
+     */
+    public static PropertyProvider userPropertiesProvider(PropertyEvaluator findUserPropertiesFile, String propertyName, File basedir) {
+        return new UserPropertiesProvider(findUserPropertiesFile, propertyName, basedir);
+    }
+    private static final class UserPropertiesProvider extends DelegatingPropertyProvider implements PropertyChangeListener {
+        private final PropertyEvaluator findUserPropertiesFile;
+        private final String propertyName;
+        private final File basedir;
+        public UserPropertiesProvider(PropertyEvaluator findUserPropertiesFile, String propertyName, File basedir) {
+            super(computeDelegate(findUserPropertiesFile, propertyName, basedir));
+            this.findUserPropertiesFile = findUserPropertiesFile;
+            this.propertyName = propertyName;
+            this.basedir = basedir;
+            findUserPropertiesFile.addPropertyChangeListener(this);
+        }
+        public void propertyChange(PropertyChangeEvent ev) {
+            if (propertyName.equals(ev.getPropertyName())) {
+                setDelegate(computeDelegate(findUserPropertiesFile, propertyName, basedir));
+            }
+        }
+        private static PropertyProvider computeDelegate(PropertyEvaluator findUserPropertiesFile, String propertyName, File basedir) {
+            String userPropertiesFile = findUserPropertiesFile.getProperty(propertyName);
+            if (userPropertiesFile != null) {
+                // Have some defined global properties file, so read it and listen to changes in it.
+                File f = PropertyUtils.resolveFile(basedir, userPropertiesFile);
+                if (f.equals(PropertyUtils.userBuildProperties())) {
+                    // Just to share the cache.
+                    return PropertyUtils.globalPropertyProvider();
+                } else {
+                    return PropertyUtils.propertiesFilePropertyProvider(f);
+                }
+            } else {
+                // Use the in-IDE default.
+                return PropertyUtils.globalPropertyProvider();
+            }
+        }
+    }
     
     private static final class SequentialPropertyEvaluator implements PropertyEvaluator, ChangeListener {
         
@@ -839,19 +888,34 @@ public class PropertyUtils {
     
     /**
      * Property provider that delegates to another source.
-     * Currently attaches a strong listener to it.
+     * Useful, for example, when conditionally loading from one or another properties file.
+     * @since org.netbeans.modules.project.ant/1 1.14
      */
-    static abstract class DelegatingPropertyProvider implements PropertyProvider, ChangeListener {
+    public static abstract class DelegatingPropertyProvider implements PropertyProvider {
         
         private PropertyProvider delegate;
         private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+        private final ChangeListener strongListener = new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                //System.err.println("DPP: change from current provider " + delegate);
+                fireChange();
+            }
+        };
         private ChangeListener weakListener = null; // #50572: must be weak
-        
+
+        /**
+         * Initialize the proxy.
+         * @param delegate the initial delegate to use
+         */
         protected DelegatingPropertyProvider(PropertyProvider delegate) {
             assert delegate != null;
             setDelegate(delegate);
         }
         
+        /**
+         * Change the current delegate (firing changes as well).
+         * @param delegate the initial delegate to use
+         */
         protected final void setDelegate(PropertyProvider delegate) {
             if (delegate == this.delegate) {
                 return;
@@ -861,7 +925,7 @@ public class PropertyUtils {
                 this.delegate.removeChangeListener(weakListener);
             }
             this.delegate = delegate;
-            weakListener = WeakListeners.change(this, delegate);
+            weakListener = WeakListeners.change(strongListener, delegate);
             delegate.addChangeListener(weakListener);
             fireChange();
         }
@@ -893,11 +957,6 @@ public class PropertyUtils {
             }
         }
 
-        public final void stateChanged(ChangeEvent changeEvent) {
-            //System.err.println("DPP: change from current provider " + delegate);
-            fireChange();
-        }
-        
     }
     
 }

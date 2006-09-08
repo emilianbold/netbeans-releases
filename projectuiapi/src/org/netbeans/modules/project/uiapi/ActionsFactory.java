@@ -66,5 +66,7 @@ public interface ActionsFactory {
     public Action fileCommandAction( String command, String name, Icon icon );
 
     public Action renameProjectAction();
+
+    Action setProjectConfigurationAction();
     
 }

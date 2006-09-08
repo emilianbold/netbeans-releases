@@ -42,6 +42,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
 import org.netbeans.modules.javacore.JMManager;
@@ -277,23 +278,42 @@ class J2SEActionProvider implements ActionProvider {
             p.setProperty("fix.includes", path); // NOI18N
         }
         else if (command.equals (COMMAND_RUN) || command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
-            EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String config = project.evaluator().getProperty(J2SEConfigurationProvider.PROP_CONFIG);
+            String path;
+            if (config == null || config.length() == 0) {
+                path = AntProjectHelper.PROJECT_PROPERTIES_PATH;
+            } else {
+                // Set main class for a particular config only.
+                path = "nbproject/configs/" + config + ".properties"; // NOI18N
+            }
+            EditableProperties ep = updateHelper.getProperties(path);
 
             // check project's main class
-            String mainClass = (String)ep.get ("main.class"); // NOI18N
-            int result = isSetMainClass (project.getSourceRoots().getRoots(), mainClass);
-            if (result != 0) {                
+            // Check whether main class is defined in this config. Note that we use the evaluator,
+            // not ep.getProperty(MAIN_CLASS), since it is permissible for the default pseudoconfig
+            // to define a main class - in this case an active config need not override it.
+            String mainClass = project.evaluator().getProperty(J2SEProjectProperties.MAIN_CLASS);
+            MainClassStatus result = isSetMainClass (project.getSourceRoots().getRoots(), mainClass);
+            if (context.lookup(J2SEConfigurationProvider.Config.class) != null) {
+                // If a specific config was selected, just skip this check for now.
+                // XXX would ideally check that that config in fact had a main class.
+                // But then evaluator.getProperty(MAIN_CLASS) would be inaccurate.
+                // Solvable but punt on it for now.
+                result = MainClassStatus.SET_AND_VALID;
+            }
+            if (result != MainClassStatus.SET_AND_VALID) {
                 do {
                     // show warning, if cancel then return
                     if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep,result)) {
                         return null;
                     }
-                    mainClass = (String)ep.get ("main.class"); // NOI18N
+                    // No longer use the evaluator: have not called putProperties yet so it would not work.
+                    mainClass = ep.get(J2SEProjectProperties.MAIN_CLASS);
                     result=isSetMainClass (project.getSourceRoots().getRoots(), mainClass);
-                } while (result != 0);
+                } while (result != MainClassStatus.SET_AND_VALID);
                 try {
                     if (updateHelper.requestSave()) {
-                        updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+                        updateHelper.putProperties(path, ep);
                         ProjectManager.getDefault().saveProject(project);
                     }
                     else {
@@ -303,7 +323,7 @@ class J2SEActionProvider implements ActionProvider {
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe);
                 }
             }
-            if (!command.equals(COMMAND_RUN)) {
+            if (!command.equals(COMMAND_RUN) && /* XXX should ideally look up proper mainClass in evaluator x config */ mainClass != null) {
                 p.setProperty("debug.class", mainClass); // NOI18N
             }
             
@@ -388,6 +408,17 @@ class J2SEActionProvider implements ActionProvider {
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
+        }
+        J2SEConfigurationProvider.Config c = context.lookup(J2SEConfigurationProvider.Config.class);
+        if (c != null) {
+            String config;
+            if (c.name != null) {
+                config = c.name;
+            } else {
+                // Invalid but overrides any valid setting in config.properties.
+                config = "";
+            }
+            p.setProperty(J2SEConfigurationProvider.PROP_CONFIG, config);
         }
         return targetNames;
     }
@@ -551,31 +582,34 @@ class J2SEActionProvider implements ActionProvider {
         return srcDir;
     }
     
+    private static enum MainClassStatus {
+        SET_AND_VALID,
+        SET_BUT_INVALID,
+        UNSET
+    }
 
     /**
      * Tests if the main class is set
      * @param sourcesRoots source roots
      * @param mainClass main class name
-     * @return 0 if the main class is set and is valid
-     *        -1 if the main class is not set
-     *        -2 if the main class is set but is not valid
+     * @return status code
      */
-    private int isSetMainClass (FileObject[] sourcesRoots, String mainClass) {
+    private MainClassStatus isSetMainClass(FileObject[] sourcesRoots, String mainClass) {
 
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue () ? 0 : -2;
+            return MainClassChooser.unitTestingSupport_hasMainMethodResult ? MainClassStatus.SET_AND_VALID : MainClassStatus.SET_BUT_INVALID;
         }
 
         if (mainClass == null || mainClass.length () == 0) {
-            return -1;
+            return MainClassStatus.UNSET;
         }
         
         ClassPath classPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);  //Single compilation unit
         if (J2SEProjectUtil.isMainClass (mainClass, classPath)) {
-            return 0;
+            return MainClassStatus.SET_AND_VALID;
         }
-        return -2;
+        return MainClassStatus.SET_BUT_INVALID;
     }
     
     /** Checks if given file object contains the main method.
@@ -590,17 +624,13 @@ class J2SEActionProvider implements ActionProvider {
         }
         try {
             DataObject classDO = DataObject.find (classFO);
-            Object obj = classDO.getCookie (SourceCookie.class);
-            if (obj == null || !(obj instanceof SourceCookie)) {
+            SourceCookie cookie = classDO.getCookie(SourceCookie.class);
+            if (cookie == null) {
                 return false;
             }
-            SourceCookie cookie = (SourceCookie) obj;
             // check the main class
-            SourceElement source = cookie.getSource ();
-            ClassElement[] classes = source.getClasses();
-            boolean hasMain = false;
-            for (int i = 0; i < classes.length; i++) {
-                if (classes[i].hasMainMethod()) {
+            for (ClassElement clazz : cookie.getSource().getClasses()) {
+                if (clazz.hasMainMethod()) {
                     return true;
                 }
             }
@@ -615,11 +645,11 @@ class J2SEActionProvider implements ActionProvider {
      * Asks user for name of main class
      * @param mainClass current main class
      * @param projectName the name of project
-     * @param ep EditableProperties
-     * @param messgeType type of dialog -1 when the main class is not set, -2 when the main class in not valid
+     * @param ep project.properties to possibly edit
+     * @param messgeType type of dialog
      * @return true if user selected main class
      */
-    private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep, int messageType) {
+    private boolean showMainClassWarning(String mainClass, String projectName, EditableProperties ep, MainClassStatus messageType) {
         boolean canceled;
         final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (MainClassWarning.class, "AD_MainClassWarning_ChooseMainClass_OK"));
@@ -627,12 +657,12 @@ class J2SEActionProvider implements ActionProvider {
         // main class goes wrong => warning
         String message;
         switch (messageType) {
-            case -1:
+            case UNSET:
                 message = MessageFormat.format (NbBundle.getMessage(MainClassWarning.class,"LBL_MainClassNotFound"), new Object[] {
                     projectName
                 });
                 break;
-            case -2:
+            case SET_BUT_INVALID:
                 message = MessageFormat.format (NbBundle.getMessage(MainClassWarning.class,"LBL_MainClassWrong"), new Object[] {
                     mainClass,
                     projectName
@@ -670,7 +700,7 @@ class J2SEActionProvider implements ActionProvider {
         } else {
             mainClass = panel.getSelectedMainClass ();
             canceled = false;
-            ep.put ("main.class", mainClass == null ? "" : mainClass); // NOI18N
+            ep.put(J2SEProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass);
         }
         dlg.dispose();            
 

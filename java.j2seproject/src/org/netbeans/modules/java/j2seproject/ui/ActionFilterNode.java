@@ -80,13 +80,13 @@ class ActionFilterNode extends FilterNode {
      * @return ActionFilterNode
      */
     static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId) {
-        DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
+        DataObject dobj = original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
             Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed (new Object[] {new Removable (helper, classPathId, entryId),
-            new JavadocProvider(root,root)})});
+            Lookups.fixed(new Removable(helper, classPathId, entryId),
+                          new JavadocProvider(root,root))});
         return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
     }
 
@@ -152,7 +152,7 @@ class ActionFilterNode extends FilterNode {
         return actionCache;
     }
 
-    private static class ActionFilterChildren extends Children {
+    private static class ActionFilterChildren extends FilterNode.Children {
 
         private final int mode;
         private final FileObject cpRoot;
@@ -163,25 +163,24 @@ class ActionFilterNode extends FilterNode {
             this.cpRoot = cpRooot;
         }
 
-        protected Node[] createNodes(Object key) {
-            Node n = (Node) key;
+        protected Node[] createNodes(Node n) {
             switch (mode) {
                 case MODE_ROOT:
                 case MODE_PACKAGE:
-                    DataObject dobj = (DataObject) n.getCookie(org.openide.loaders.DataObject.class);
+                    DataObject dobj = n.getCookie(DataObject.class);
                     if (dobj == null) {
                         assert false : "DataNode without DataObject in Lookup";  //NOI18N
                         return new Node[0];
                     }
                     else if (dobj.getPrimaryFile().isFolder()) {
-                        return new Node[] {new ActionFilterNode ((Node)key, MODE_PACKAGE,cpRoot,dobj.getPrimaryFile())};
+                        return new Node[] {new ActionFilterNode(n, MODE_PACKAGE, cpRoot, dobj.getPrimaryFile())};
                     }
                     else {
-                        return new Node[] {new ActionFilterNode ((Node)key, MODE_FILE,cpRoot,dobj.getPrimaryFile())};
+                        return new Node[] {new ActionFilterNode(n, MODE_FILE, cpRoot, dobj.getPrimaryFile())};
                     }
                 case MODE_FILE:
                 case MODE_FILE_CONTENT:
-                    return new Node[] {new ActionFilterNode ((Node)key, MODE_FILE_CONTENT)};
+                    return new Node[] {new ActionFilterNode(n, MODE_FILE_CONTENT)};
                 default:
                     assert false : "Unknown mode";  //NOI18N
                     return new Node[0];

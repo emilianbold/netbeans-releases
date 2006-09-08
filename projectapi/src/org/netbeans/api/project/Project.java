@@ -76,6 +76,7 @@ public interface Project extends Lookup.Provider {
      * </ol>
      * <p>You might also have e.g.:</p>
      * <ol>
+     * <li>{@link org.netbeans.spi.project.ProjectConfigurationProvider}</li>
      * <li>{@link org.netbeans.spi.queries.FileBuiltQueryImplementation}</li>
      * <li>{@link org.netbeans.spi.queries.SharabilityQueryImplementation}</li>
      * <li><a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/ProjectOpenedHook.html"><code>ProjectOpenedHook</code></a></li>
