@@ -62,9 +62,9 @@ public class ErrorManagerCyclicDepTest extends NbTestCase {
      * https://thinnbeditor.dev.java.net/source/browse/thinnbeditor/thinnbeditor/src/net/java/dev/thinnbeditor/logging/LoggerAdapter.java?rev=1.1&view=auto&content-type=text/vnd.viewcvs-markup
      */
     private static final class LoggerAdapter extends Logger {
-        private static final Map levelMap = new HashMap();
-        private static final Map errorManagerMap = new TreeMap();
-        private static final Map exceptionLevelMap = new HashMap();
+        private static final Map<Level,Integer> levelMap = new HashMap<Level,Integer>();
+        private static final Map<Integer,Level> errorManagerMap = new TreeMap<Integer,Level>();
+        private static final Map<Level,Integer> exceptionLevelMap = new HashMap<Level,Integer>();
         
         static {
             levelMap.put(Level.SEVERE, new Integer(ErrorManager.ERROR));
@@ -75,8 +75,8 @@ public class ErrorManagerCyclicDepTest extends NbTestCase {
             levelMap.put(Level.FINER, new Integer(2));
             levelMap.put(Level.FINEST, new Integer(1));
             
-            for (Iterator i = levelMap.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry = (Map.Entry)i.next();
+            for (Iterator<Map.Entry<Level,Integer>> i = levelMap.entrySet().iterator(); i.hasNext(); ) {
+                Map.Entry<Level,Integer> entry = i.next();
                 errorManagerMap.put(entry.getValue(), entry.getKey());
             }
             
