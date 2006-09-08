@@ -332,7 +332,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements WizardPanel.Co
     
     private void searchForClasspath(final ArrayList<String> list, final File directory, final int level) {
         final File[] files = directory.listFiles();
-        if (files != null && files.length < 20 && list.size() < 20)
+        if (files != null && files.length < 40 && list.size() < 100)
             for (int i = 0; i < files.length; i++) {
             final File file = files[i];
             final String name = file.getName().toLowerCase();
