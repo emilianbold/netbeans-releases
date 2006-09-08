@@ -68,6 +68,7 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
     private JList        list;
     
     private JPanel       spacer;
+    private JPanel       listReplacement;
     
     private JFileChooser fileChooser;
     
@@ -94,23 +95,35 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         
         LocationsListModel model = new LocationsListModel(getLocations());
         
+        list.setModel(model);
+        
         if (model.getSize() > 0) {
-            list.setModel(model);
-            
             if (getSelectedLocation() != null) {
                 locationField.setText(getSelectedLocation().getAbsolutePath());
             } else {
                 locationField.setText(model.getLocationAt(0).getAbsolutePath());
             }
+            
+            listLabel.setVisible(true);
+            listLabel.setEnabled(true);
+            
+            list.setVisible(true);
+            list.setEnabled(true);
+            
+            listReplacement.setVisible(false);
+            listReplacement.setEnabled(false);
         } else {
             listLabel.setVisible(false);
             listLabel.setEnabled(false);
-                    
+            
             list.setVisible(false);
             list.setEnabled(false);
+            
+            listReplacement.setVisible(true);
+            listReplacement.setEnabled(true);
         }
     }
-
+    
     public void initComponents() {
         setLayout(new GridBagLayout());
         
@@ -166,6 +179,9 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         listLabel = new JLabel();
         listLabel.setLabelFor(list);
         
+        listReplacement = new JPanel();
+        listReplacement.setOpaque(false);
+        
         add(textPane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(locationFieldLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
         add(locationField, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 11, 0, 4), 0, 0));
@@ -173,6 +189,7 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         add(spacer, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.2, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 0, 11), 0, 0));
         add(listLabel, new GridBagConstraints(0, 4, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
         add(list, new GridBagConstraints(0, 5, 2, 1, 1.0, 0.5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 11, 11), 0, 0));
+        add(listReplacement, new GridBagConstraints(0, 6, 2, 1, 1.0, 0.5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 11, 11), 0, 0));
         
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -222,7 +239,7 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
     }
     
     private void fieldValueChanged() {
-        final LocationsListModel model = (LocationsListModel) list.getModel();        
+        final LocationsListModel model = (LocationsListModel) list.getModel();
         
         final String value  = locationField.getText();
         final int length = model.getSize();
@@ -243,7 +260,7 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
     public static final String LOCATION_FIELD_LABEL_PROPERTY = "location.field.label";
     public static final String BROWSE_BUTTON_LABEL_PROPERTY = "browse.button.label";
     public static final String LIST_LABEL_PROPERTY = "list.label";
-
+    
     public static final String DEFAULT_TEXT = "";
     public static final String DEFAULT_LOCATION_FIELD_LABEL = "";
     public static final String DEFAULT_BROWSE_BUTTON_LABEL = "";
