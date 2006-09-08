@@ -55,7 +55,8 @@ import org.openide.windows.TopComponent;
  */
 class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
 {
-    static final String ARCHIVE_ICON = "org/netbeans/modules/mobility/project/ui/resources/libraries.gif";
+    private static final String PLATFORM_ICON = "org/netbeans/modules/mobility/project/ui/resources/config.gif";    //NOI18N   
+    private static final String CONFIGS_ICON = "org/netbeans/modules/mobility/project/ui/resources/configs.gif";    //NOI18N   
     
     final protected NodeCache cache;
     
@@ -199,7 +200,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                     final Node n=new ActionNode(
                             new ConfigChildren(),
                             Lookups.fixed(new Object[] {project, cfg, new AbilitiesPanel.VAData()}),
-                            cfg.getName(),ARCHIVE_ICON,
+                            cfg.getName(),PLATFORM_ICON,
                             new Action[] {
                                           SetConfigurationAction.getStaticInstance(),
                                           null,
@@ -268,12 +269,12 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
             final Node node=confs[i].equals(project.getConfigurationHelper().getDefaultConfiguration()) ? 
                 new ActionNode(new ConfigChildren(), 
                     Lookups.fixed(new Object[] {project, confs[i], new AbilitiesPanel.VAData()}),
-                    confs[i].getName(),ARCHIVE_ICON,
+                    confs[i].getName(),PLATFORM_ICON,
                     new Action[] {SetConfigurationAction.getStaticInstance(),
                                  }) :
                 new ActionNode(new ConfigChildren(),
                     Lookups.fixed(new Object[] {project, confs[i], new AbilitiesPanel.VAData()}),
-                    confs[i].getName(),ARCHIVE_ICON,
+                    confs[i].getName(),PLATFORM_ICON,
                     new Action[] {
                                   SetConfigurationAction.getStaticInstance(),
                                   null,
@@ -319,7 +320,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         
         final Node node=NodeFactory.createProjCfgsNode(createActionNodes(project), Lookups.singleton(project),
                 NbBundle.getMessage(LibResViewProvider.class,"LBL_ProjectConfigurations"),
-                ARCHIVE_ICON, new Action[] {AddConfigurationAction.getStaticInstance(),null,
+                CONFIGS_ICON, new Action[] {AddConfigurationAction.getStaticInstance(),null,
                                           SystemAction.get(PasteAction.class),});
         project.getConfigurationHelper().addPropertyChangeListener(new ConfChangeListener(node));        
         return new Node[] {node};

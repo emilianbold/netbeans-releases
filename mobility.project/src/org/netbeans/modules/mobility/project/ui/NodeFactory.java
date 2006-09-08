@@ -28,6 +28,7 @@
 
 package org.netbeans.modules.mobility.project.ui;
 
+import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.CharConversionException;
@@ -43,6 +44,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.openide.util.Utilities;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.customizer.CloneConfigurationPanel;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
@@ -361,6 +363,8 @@ class ProjCfgNode extends ActionNode
 
 class ResourcesNode extends ActionNode
 {
+    private static final Image ICON_BADGE = Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/libraries-badge.png");    //NOI18N
+
     protected ResourcesNode(Children ch,Lookup lookup,String name,String dName,String icon, Action act[])
     {
         super(ch,lookup,name,dName,icon,act);
@@ -470,6 +474,19 @@ class ResourcesNode extends ActionNode
         }
         return null;
     }
+    
+    public Image getIcon( int type ) {        
+        Image image = super.getIcon(type);
+        image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
+        return image;        
+    }
+    
+    public Image getOpenedIcon( int type ) {        
+        Image image = super.getOpenedIcon(type);
+        image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
+        return image;        
+    }
+
     
     public PasteType getDropType(Transferable tr, int action, int index)
     {
