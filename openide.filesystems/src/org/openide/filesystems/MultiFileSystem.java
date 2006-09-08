@@ -120,7 +120,7 @@ public class MultiFileSystem extends FileSystem {
     * @param fileSystems array of filesystems (can contain nulls)
     */
     public MultiFileSystem(FileSystem[] fileSystems) {
-        this.systems = (FileSystem[]) fileSystems.clone();
+        this.systems = fileSystems.clone();
     }
 
     /**

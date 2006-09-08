@@ -601,7 +601,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 names.add(name);
                 children.add(child);
             } else {
-                retVal = (ResourceElem) children.get(idx);
+                retVal = children.get(idx);
             }
 
             return retVal;
@@ -612,7 +612,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
         }
 
         ResourceElem getChild(String name) {
-            return (ResourceElem) children.get(names.indexOf(name));
+            return children.get(names.indexOf(name));
         }
 
         XMLMapAttr getAttr(boolean create) {
@@ -1013,7 +1013,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 return null;
             }
 
-            FileObject topFO = (FileObject) MultiFileObject.attrAskedFileObject.get();
+            FileObject topFO = MultiFileObject.attrAskedFileObject.get();
             FileObject f = (topFO == null) ? fo : topFO;
 
             MultiFileObject.attrAskedFileObject.set(null);
@@ -1339,7 +1339,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
             if ((controlCode == FOLDER_CODE) || (controlCode == FILE_CODE)) {
                 resElemStack.pop();
-                topRE = (ResourceElem) resElemStack.peek();
+                topRE = resElemStack.peek();
 
                 return;
             }

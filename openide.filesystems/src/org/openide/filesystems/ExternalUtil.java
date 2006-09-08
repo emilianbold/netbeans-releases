@@ -89,7 +89,7 @@ final class ExternalUtil extends Object {
     public static Class findClass(String name) throws ClassNotFoundException {
         initialize();
 
-        ClassLoader c = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader c = Lookup.getDefault().lookup(ClassLoader.class);
 
         if (c == null) {
             return Class.forName(name);
@@ -103,7 +103,7 @@ final class ExternalUtil extends Object {
     private static void initialize() {
         if (!isInitialized()) {
             Lookup l = Lookup.getDefault();
-            Repository rep = (Repository) l.lookup(org.openide.filesystems.Repository.class);
+            Repository rep = l.lookup(org.openide.filesystems.Repository.class);
             setRepository(rep);
         }
     }

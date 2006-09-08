@@ -298,7 +298,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 leader = leader.copy(folder, leader.getName(), leader.getExt());
             }
 
-            MfLock l = (MfLock) ((lock == null) ? null : lock.get());
+            MfLock l = ((lock == null) ? null : lock.get());
 
             if (l != null) {
                 // update the lock
@@ -327,7 +327,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         while (fo != null) {
             MultiFileObject mfo = (MultiFileObject) fo;
 
-            MfLock l = (MfLock) ((mfo.lock == null) ? null : mfo.lock.get());
+            MfLock l = (mfo.lock == null) ? null : mfo.lock.get();
 
             if (l != null) {
                 // the file has been locked => update the lock
@@ -355,7 +355,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         while (it.hasMoreElements()) { // cycle 1
 
-            FileObject folder = (FileObject) it.nextElement();
+            FileObject folder = it.nextElement();
 
             if ((folder == null) || !folder.isFolder()) {
                 continue;
@@ -405,7 +405,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             addList.removeAll(exclude.keySet());
         }
 
-        String[] res = (String[]) addList.toArray(new String[addList.size()]);
+        String[] res = addList.toArray(new String[addList.size()]);
 
         return res;
     }
@@ -770,7 +770,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     private Object getAttribute(FileObject fo, String attrName, String path) {
         Object o;
 
-        FileObject topFO = (FileObject) attrAskedFileObject.get();
+        FileObject topFO = attrAskedFileObject.get();
 
         if (topFO == null) {
             attrAskedFileObject.set(this);
@@ -1563,7 +1563,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         * @return the lock or null
         */
         public FileLock findLock(FileObject fo) {
-            return (FileLock) map.get(fo);
+            return map.get(fo);
         }
 
         /** Adds another lock into this lock.
@@ -1579,7 +1579,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         */
         public void changeLocks(FileObject old, FileObject n)
         throws IOException {
-            FileLock l = (FileLock) map.remove(old);
+            FileLock l = map.remove(old);
 
             if (l != null) {
                 l.releaseLock();

@@ -939,12 +939,12 @@ public final class FileUtil extends Object {
     */
     @Deprecated
     public static String getMIMEType(String ext) {
-        String s = (String) map.get(ext);
+        String s = map.get(ext);
 
         if (s != null) {
             return s;
         } else {
-            return (String) map.get(ext.toLowerCase());
+            return map.get(ext.toLowerCase());
         }
     }
 
@@ -996,7 +996,7 @@ public final class FileUtil extends Object {
     @Deprecated
     public static void setMIMEType(String ext, String mimeType) {
         synchronized (map) {
-            String old = (String) map.get(ext);
+            String old = map.get(ext);
 
             if (old == null) {
                 map.put(ext, mimeType);
@@ -1081,7 +1081,7 @@ public final class FileUtil extends Object {
      * @since 4.10
      */
     public static FileChangeListener weakFileChangeListener(FileChangeListener l, Object source) {
-        return (FileChangeListener) WeakListeners.create(FileChangeListener.class, l, source);
+        return WeakListeners.create(FileChangeListener.class, l, source);
     }
 
     /** Creates a weak implementation of FileStatusListener.
@@ -1093,7 +1093,7 @@ public final class FileUtil extends Object {
      * @since 4.10
      */
     public static FileStatusListener weakFileStatusListener(FileStatusListener l, Object source) {
-        return (FileStatusListener) WeakListeners.create(FileStatusListener.class, l, source);
+        return WeakListeners.create(FileStatusListener.class, l, source);
     }
 
     /**
@@ -1418,7 +1418,7 @@ public final class FileUtil extends Object {
         }
 
         // First check the cache.
-        Boolean b = (Boolean) archiveFileCache.get(fo);
+        Boolean b = archiveFileCache.get(fo);
 
         if (b == null) {
             // Need to check it.

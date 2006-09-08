@@ -99,7 +99,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
 
         boolean isValidEntry = isValidEntry(n);
         synchronized(entries) {
-            Entry x = (Entry) entries.get(n);
+            Entry x = entries.get(n);
 
             if (x == null || !isValidEntry) {
                 x = new Entry(n);
@@ -124,7 +124,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
             n = n.substring(1);
         }
 
-        Entry x = (Entry) entries.get(n);
+        Entry x = entries.get(n);
 	FileObject fo = null;
         
         if (x != null) {
@@ -192,7 +192,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
                 }
             }
 
-            return (String[]) l.toArray(new String[0]);
+            return l.toArray(new String[0]);
         }
     }
 

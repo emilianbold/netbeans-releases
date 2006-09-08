@@ -684,7 +684,7 @@ public class JarFileSystem extends AbstractFileSystem {
         Cache ret = strongCache;
 
         if (ret == null) {
-            ret = (Cache) softCache.get();
+            ret = softCache.get();
         }
 
         if (ret == null) {
@@ -1085,7 +1085,7 @@ public class JarFileSystem extends AbstractFileSystem {
         }
 
         public String[] getChildrenOf(String folder) {
-            Folder fol = (Folder) folders.get(folder);
+            Folder fol = folders.get(folder);
 
             if (fol != null) {
                 return fol.getNames();
@@ -1133,7 +1133,7 @@ public class JarFileSystem extends AbstractFileSystem {
         }
 
         private Folder getFolder(String name) {
-            Folder fl = (Folder) folders.get(name);
+            Folder fl = folders.get(name);
 
             if (fl == null) {
                 // add all the superfolders on the way to the root

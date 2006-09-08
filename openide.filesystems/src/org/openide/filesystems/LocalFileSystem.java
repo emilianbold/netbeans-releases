@@ -465,7 +465,7 @@ public class LocalFileSystem extends AbstractFileSystem {
     throws java.io.IOException, java.lang.ClassNotFoundException {
         in.defaultReadObject();
 
-        ((ObjectInputStream) in).registerValidation(
+        in.registerValidation(
             new ObjectInputValidation() {
                 public void validateObject() {
                     if (attr.getClass() == DefaultAttributes.class) {

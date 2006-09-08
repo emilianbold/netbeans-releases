@@ -139,7 +139,7 @@ final class StreamPool extends Object {
      * @param fo FileObject whose StreamPool is looked for
      * @return  StreamPool or null*/
     public static synchronized StreamPool find(FileObject fo) {
-        return (StreamPool) fo2StreamPool.get(fo);
+        return fo2StreamPool.get(fo);
     }
 
     /**
@@ -148,7 +148,7 @@ final class StreamPool extends Object {
      * @param fs FileSystem whose StreamPool is looked for
      * @return  StreamPool or null*/
     public static synchronized StreamPool find(FileSystem fs) {
-        return (StreamPool) fs2StreamPool.get(fs);
+        return fs2StreamPool.get(fs);
     }
 
     /**
@@ -232,7 +232,7 @@ final class StreamPool extends Object {
 
     /** All next methods are private (Not visible outside this class)*/
     private static StreamPool get(FileObject fo) {
-        StreamPool strPool = (StreamPool) fo2StreamPool.get(fo);
+        StreamPool strPool = fo2StreamPool.get(fo);
 
         if (strPool == null) {
             fo2StreamPool.put(fo, strPool = new StreamPool());
@@ -242,7 +242,7 @@ final class StreamPool extends Object {
     }
 
     private static StreamPool get(FileSystem fs) {
-        StreamPool strPool = (StreamPool) fs2StreamPool.get(fs);
+        StreamPool strPool = fs2StreamPool.get(fs);
 
         if (strPool == null) {
             fs2StreamPool.put(fs, strPool = new StreamPool());

@@ -522,7 +522,7 @@ public abstract class FileSystem implements Serializable {
     }
 
     private final EventControl getEventControl() {
-        EventControl evnCtrl = (EventControl) thrLocal.get();
+        EventControl evnCtrl = thrLocal.get();
 
         if (evnCtrl == null) {
             thrLocal.set(evnCtrl = new EventControl());

@@ -209,7 +209,7 @@ final class XMLMapAttr implements Map {
         Object toStore = ((value == null) || value instanceof Attr) ? value : new Attr(value);
 
         if (decode) {
-            key = Attr.decode((String) key).intern();
+            key = Attr.decode(key).intern();
         }
 
         return map.put(key, toStore);

@@ -353,7 +353,7 @@ public class Repository implements Serializable {
     */
     @Deprecated
     public final FileSystem findFileSystem(String systemName) {
-        FileSystem fs = (FileSystem) names.get(systemName);
+        FileSystem fs = names.get(systemName);
 
         return fs;
     }
