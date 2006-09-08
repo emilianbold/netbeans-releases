@@ -65,10 +65,8 @@ public abstract class GraphScene<N, E> extends ObjectScene {
 
     public final void removeNodeWithEdges (N node) {
         for (E edge : findNodeEdges (node, true, true))
-            if (isEdge (edge)){
+            if (isEdge (edge))
                 removeEdge (edge);
-                validate();
-            }
         removeNode (node);
     }
 
