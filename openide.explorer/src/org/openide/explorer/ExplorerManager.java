@@ -226,30 +226,30 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             private void updateSelection() {
                 oldValue = selectedNodes;
 
-                Collection currentNodes = Arrays.asList(oldValue);
+                Collection<Node> currentNodes = Arrays.asList(oldValue);
 
                 // PENDING: filter out duplicities from the selection
-                Collection newSelection = Arrays.asList(value);
+                Collection<Node> newSelection = Arrays.asList(value);
 
-                Collection nodesToAdd = new LinkedList(newSelection);
+                Collection<Node> nodesToAdd = new LinkedList<Node>(newSelection);
                 nodesToAdd.removeAll(currentNodes);
 
-                Collection nodesToRemove = new LinkedList(currentNodes);
+                Collection<Node> nodesToRemove = new LinkedList<Node>(currentNodes);
                 nodesToRemove.removeAll(newSelection);
 
                 selectedNodes = value;
 
-                Iterator it;
+                Iterator<Node> it;
 
                 // remove listeners from nodes that are being deselected
                 for (it = nodesToRemove.iterator(); it.hasNext();) {
-                    Node n = (Node) it.next();
+                    Node n = it.next();
                     n.removeNodeListener(weakListener);
                 }
 
                 // and add listeners to nodes that become selected
                 for (it = nodesToAdd.iterator(); it.hasNext();) {
-                    Node n = (Node) it.next();
+                    Node n = it.next();
                     n.removeNodeListener(weakListener);
                     n.addNodeListener(weakListener);
                 }
@@ -901,15 +901,15 @@ bigloop:
                 removeList = new HashSet();
             }
 
-            LinkedList newSel = new LinkedList(Arrays.asList(getSelectedNodes()));
-            Iterator it = remove.iterator();
+            LinkedList<Node> newSel = new LinkedList<Node>(Arrays.asList(getSelectedNodes()));
+            Iterator<Node> it = remove.iterator();
 
             while (it.hasNext()) {
-                Node n_remove = (Node) it.next();
+                Node n_remove = it.next();
 
                 if (newSel.contains(n_remove)) {
                     // compare paths to root
-                    Node n_selection = (Node) newSel.get(newSel.indexOf(n_remove));
+                    Node n_selection = newSel.get(newSel.indexOf(n_remove));
 
                     if (!Arrays.equals(NodeOp.createPath(n_remove, null), NodeOp.createPath(n_selection, null))) {
                         it.remove();
@@ -918,13 +918,13 @@ bigloop:
             }
 
             newSel.removeAll(remove);
-            for( Iterator i=newSel.iterator(); i.hasNext(); ) {
-                Node n = (Node)i.next();
+            for( Iterator<Node> i=newSel.iterator(); i.hasNext(); ) {
+                Node n = i.next();
                 if( !isUnderRoot( n ) )
                     i.remove();
             }
 
-            Node[] selNodes = (Node[]) newSel.toArray(new Node[newSel.size()]);
+            Node[] selNodes = newSel.toArray(new Node[newSel.size()]);
             setSelectedNodes0(selNodes);
         }
     }
