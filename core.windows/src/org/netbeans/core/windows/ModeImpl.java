@@ -160,7 +160,7 @@ public final class ModeImpl implements Mode {
     public TopComponent[] getTopComponents() {
         WindowManagerImpl.assertEventDispatchThreadWeak();
         
-        return (TopComponent[])getCentral().getModeTopComponents(this).toArray(new TopComponent[0]);
+        return getCentral().getModeTopComponents(this).toArray(new TopComponent[0]);
     }
 
     /** Adds listener to the property changes.
@@ -220,7 +220,7 @@ public final class ModeImpl implements Mode {
     }
 
     /** Gets list of opened TopComponentS. */
-    public List getOpenedTopComponents() {
+    public List<TopComponent> getOpenedTopComponents() {
         return getCentral().getModeOpenedTopComponents(this);
     }
     
@@ -262,7 +262,7 @@ public final class ModeImpl implements Mode {
     }
     
     // XXX
-    public List getOpenedTopComponentsIDs() {
+    public List<String> getOpenedTopComponentsIDs() {
         return getCentral().getModeOpenedTopComponentsIDs(this);
     }
     // XXX

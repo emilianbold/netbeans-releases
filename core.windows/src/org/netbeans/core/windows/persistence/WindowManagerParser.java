@@ -64,13 +64,12 @@ public class WindowManagerParser {
     
     private InternalConfig internalConfig;
     
-    private Map modeParserMap = new HashMap(19);
+    private Map<String, ModeParser> modeParserMap = new HashMap<String, ModeParser>(19);
     
-    private Map groupParserMap = new HashMap(19);
+    private Map<String, GroupParser> groupParserMap = new HashMap<String, GroupParser>(19);
     
-    //Set of <String>
     //Used to collect names of all localy stored wstcref files.
-    private Set tcRefNameLocalSet = new HashSet(101);
+    private Set<String> tcRefNameLocalSet = new HashSet<String>(101);
     
     private static Object SAVING_LOCK = new Object();
     
@@ -214,7 +213,7 @@ public class WindowManagerParser {
      * Adds TCRefParser to ModeParser.     
      * @param tcRefName unique name of tcRef
      */
-    TCRefConfig addTCRef (String modeName, String tcRefName, List tcRefNameList) {
+    TCRefConfig addTCRef (String modeName, String tcRefName, List<String> tcRefNameList) {
         synchronized (SAVING_LOCK) {
             if (DEBUG) Debug.log(WindowManagerParser.class, "WMParser.addTCRef ENTER" + " mo:" + modeName
             + " tcRef:" + tcRefName);  // NOI18N
@@ -395,8 +394,8 @@ public class WindowManagerParser {
         
         //Check if corresponding module is present and enabled.
         //We must load configuration data first because module info is stored in XML.
-        List modeCfgList = new ArrayList(modeParserMap.size());
-        List toRemove = new ArrayList(modeParserMap.size());
+        List<ModeConfig> modeCfgList = new ArrayList<ModeConfig>(modeParserMap.size());
+        List<ModeParser> toRemove = new ArrayList<ModeParser>(modeParserMap.size());
         for (Iterator it = modeParserMap.keySet().iterator(); it.hasNext(); ) {
             ModeParser modeParser = (ModeParser) modeParserMap.get(it.next());
             ModeConfig modeCfg;
@@ -421,7 +420,7 @@ public class WindowManagerParser {
             modeParserMap.remove(modeParser.getName());
         }
         
-        wmc.modes = (ModeConfig []) modeCfgList.toArray(new ModeConfig[modeCfgList.size()]);
+        wmc.modes = modeCfgList.toArray(new ModeConfig[modeCfgList.size()]);
         
         if (DEBUG) Debug.log(WindowManagerParser.class, "readModes LEAVE");
     }
@@ -517,8 +516,8 @@ public class WindowManagerParser {
         
         //Check if corresponding module is present and enabled.
         //We must load configuration data first because module info is stored in XML.
-        List groupCfgList = new ArrayList(groupParserMap.size());
-        List toRemove = new ArrayList(groupParserMap.size());
+        List<GroupConfig> groupCfgList = new ArrayList<GroupConfig>(groupParserMap.size());
+        List<GroupParser> toRemove = new ArrayList<GroupParser>(groupParserMap.size());
         for (Iterator it = groupParserMap.keySet().iterator(); it.hasNext(); ) {
             GroupParser groupParser = (GroupParser) groupParserMap.get(it.next());
             GroupConfig groupCfg;
@@ -543,7 +542,7 @@ public class WindowManagerParser {
             groupParserMap.remove(groupParser.getName());
         }
         
-        wmc.groups = (GroupConfig []) groupCfgList.toArray(new GroupConfig[groupCfgList.size()]);
+        wmc.groups = groupCfgList.toArray(new GroupConfig[groupCfgList.size()]);
         
         if (DEBUG) Debug.log(WindowManagerParser.class, "readGroups LEAVE");
     }
@@ -587,13 +586,13 @@ public class WindowManagerParser {
     private void writeModes (WindowManagerConfig wmc) throws IOException {
         if (DEBUG) Debug.log(WindowManagerParser.class, "writeModes ENTER");
         //Step 1: Clean obsolete mode parsers
-        HashMap modeConfigMap = new HashMap();
+        Map<String, ModeConfig> modeConfigMap = new HashMap<String, ModeConfig>();
         for (int i = 0; i < wmc.modes.length; i++) {
             modeConfigMap.put(wmc.modes[i].name, wmc.modes[i]);
         }
-        List toDelete = new ArrayList(10);
-        for (Iterator it = modeParserMap.keySet().iterator(); it.hasNext(); ) {
-            ModeParser modeParser = (ModeParser) modeParserMap.get(it.next());
+        List<String> toDelete = new ArrayList<String>(10);
+        for (String s: modeParserMap.keySet()) {
+            ModeParser modeParser = modeParserMap.get(s);
             if (!modeConfigMap.containsKey(modeParser.getName())) {
                 toDelete.add(modeParser.getName());
             }
@@ -602,7 +601,7 @@ public class WindowManagerParser {
             //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeModes ** REMOVE FROM MAP modeParser: " + toDelete.get(i));
             modeParserMap.remove(toDelete.get(i));
             //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeModes ** DELETE modeParser: " + toDelete.get(i));
-            deleteLocalMode((String) toDelete.get(i));
+            deleteLocalMode(toDelete.get(i));
         }
         
         //Step 2: Create missing mode parsers
@@ -632,15 +631,15 @@ public class WindowManagerParser {
     private void writeGroups (WindowManagerConfig wmc) throws IOException {
         if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups ENTER");
         //Step 1: Clean obsolete group parsers
-        HashMap groupConfigMap = new HashMap();
+        Map<String, GroupConfig> groupConfigMap = new HashMap<String, GroupConfig>();
         //if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups List of groups to be saved:");
         for (int i = 0; i < wmc.groups.length; i++) {
             //if (DEBUG) Debug.log(WindowManagerParser.class, "writeGroups group[" + i + "]: " + wmc.groups[i].name);
             groupConfigMap.put(wmc.groups[i].name, wmc.groups[i]);
         }
-        List toDelete = new ArrayList(10);
-        for (Iterator it = groupParserMap.keySet().iterator(); it.hasNext(); ) {
-            GroupParser groupParser = (GroupParser) groupParserMap.get(it.next());
+        List<String> toDelete = new ArrayList<String>(10);
+        for (String s: groupParserMap.keySet()) {
+            GroupParser groupParser = groupParserMap.get(s);
             if (!groupConfigMap.containsKey(groupParser.getName())) {
                 toDelete.add(groupParser.getName());
             }
@@ -649,7 +648,7 @@ public class WindowManagerParser {
             //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeGroups ** REMOVE FROM MAP groupParser: " + toDelete.get(i));
             groupParserMap.remove(toDelete.get(i));
             //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.writeGroups ** DELETE groupParser: " + toDelete.get(i));
-            deleteLocalGroup((String) toDelete.get(i));
+            deleteLocalGroup(toDelete.get(i));
         }
         //Step 2: Create missing group parsers
         for (int i = 0; i < wmc.groups.length; i++) {
@@ -729,10 +728,10 @@ public class WindowManagerParser {
         private InternalConfig internalConfig = null;
         
         /** List to store parsed path items */
-        private List itemList = new ArrayList(10);
+        private List<SplitConstraint> itemList = new ArrayList<SplitConstraint>(10);
         
         /** List to store parsed tc-ids */
-        private List tcIdList = new ArrayList(10);
+        private List<String> tcIdList = new ArrayList<String>(10);
         
         /** Lock to prevent mixing readData and writeData */
         private final Object RW_LOCK = new Object();
@@ -841,9 +840,9 @@ public class WindowManagerParser {
             }
             
             winMgrConfig.editorAreaConstraints =
-                (SplitConstraint []) itemList.toArray(new SplitConstraint[itemList.size()]);
+                itemList.toArray(new SplitConstraint[itemList.size()]);
             winMgrConfig.tcIdViewList = 
-                (String []) tcIdList.toArray(new String[tcIdList.size()]);
+                tcIdList.toArray(new String[tcIdList.size()]);
             winMgrCfg = winMgrConfig;
             internalCfg = internalConfig;
             

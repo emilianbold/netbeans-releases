@@ -78,10 +78,10 @@ class ModeParser {
     private InternalConfig internalConfig;
     
     /** Map of TCRefParser instances. Used for fast access. */
-    private Map tcRefParserMap = new HashMap(19);
+    private Map<String, TCRefParser> tcRefParserMap = new HashMap<String, TCRefParser>(19);
     
     /** map of names of tcRefs to their index or null */
-    private Map tcRefOrder; // Map<String,Integer>
+    private Map<String,Integer> tcRefOrder;
     
     /** Unique mode name from file name */
     private String modeName;
@@ -150,7 +150,7 @@ class ModeParser {
         if (DEBUG) Debug.log(ModeParser.class, "readTCRefs ENTER" + " mo:" + getName());
         
         for (Iterator it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
-            TCRefParser tcRefParser = (TCRefParser) tcRefParserMap.get(it.next());
+            TCRefParser tcRefParser = tcRefParserMap.get(it.next());
             tcRefParser.setInModuleFolder(false);
             tcRefParser.setInLocalFolder(false);
         }
@@ -170,7 +170,7 @@ class ModeParser {
                         //wstcref file
                         TCRefParser tcRefParser;
                         if (tcRefParserMap.containsKey(files[i].getName())) {
-                            tcRefParser = (TCRefParser) tcRefParserMap.get(files[i].getName());
+                            tcRefParser = tcRefParserMap.get(files[i].getName());
                         } else {
                             tcRefParser = new TCRefParser(files[i].getName());
                             tcRefParserMap.put(files[i].getName(), tcRefParser);
@@ -190,7 +190,7 @@ class ModeParser {
                     //if (DEBUG) Debug.log(ModeParser.class, "-- -- LOCAL fo[" + i + "]: " + files[i]);
                     if (!files[i].isFolder() && PersistenceManager.TCREF_EXT.equals(files[i].getExt())) {
                         //wstcref file
-                        TCRefParser tcRefParser = (TCRefParser) tcRefParserMap.get(files[i].getName());
+                        TCRefParser tcRefParser = tcRefParserMap.get(files[i].getName());
                         if (tcRefParser== null) {
                             tcRefParser = new TCRefParser(files[i].getName());
                             tcRefParserMap.put(files[i].getName(), tcRefParser);
@@ -212,8 +212,8 @@ class ModeParser {
         //Read order
         readOrder();
         
-        List localList = new ArrayList(10);
-        Map localMap = (Map) ((HashMap) tcRefParserMap).clone();
+        List<TCRefParser> localList = new ArrayList<TCRefParser>(10);
+        Map<String, TCRefParser> localMap = (Map<String, TCRefParser>) ((HashMap<String, TCRefParser>) tcRefParserMap).clone();
         
         if (tcRefOrder != null) {
             //if (DEBUG) Debug.log(ModeParser.class, "-- -- ORDER IS DEFINED");
@@ -236,14 +236,14 @@ class ModeParser {
                 }
             }
             //Append remaining instances if any
-            for (Iterator it = localMap.keySet().iterator(); it.hasNext(); ) {
-                TCRefParser tcRefParser = (TCRefParser) localMap.get(it.next());
+            for (String s: localMap.keySet()) {
+                TCRefParser tcRefParser = localMap.get(s);
                 localList.add(tcRefParser);
             }
         } else {
             //if (DEBUG) Debug.log(ModeParser.class, "-- -- NO ORDER, USING PARTIAL ORDERING");
-            for (Iterator it = localMap.keySet().iterator(); it.hasNext(); ) {
-                TCRefParser tcRefParser = (TCRefParser) localMap.get(it.next());
+            for (String s: localMap.keySet()) {
+                TCRefParser tcRefParser = localMap.get(s);
                 localList.add(tcRefParser);
             }
             
@@ -263,11 +263,11 @@ class ModeParser {
             }*/
             
             if (tcRefOrder == null) {
-                tcRefOrder = new HashMap(19);
+                tcRefOrder = new HashMap<String,Integer>(19);
             }
             tcRefOrder.clear();
             for (int i = 0; i < localList.size(); i++) {
-                TCRefParser tcRefParser = (TCRefParser) localList.get(i);
+                TCRefParser tcRefParser = localList.get(i);
                 tcRefOrder.put(tcRefParser.getName(), new Integer(i));
             }
             writeOrder();
@@ -275,10 +275,10 @@ class ModeParser {
         
         //Check if corresponding module is present and enabled.
         //We must load configuration data first because module info is stored in XML.
-        List tcRefCfgList = new ArrayList(localList.size());
-        List toRemove = new ArrayList(localList.size());
+        List<TCRefConfig> tcRefCfgList = new ArrayList<TCRefConfig>(localList.size());
+        List<TCRefParser> toRemove = new ArrayList<TCRefParser>(localList.size());
         for (int i = 0; i < localList.size(); i++) {
-            TCRefParser tcRefParser = (TCRefParser) localList.get(i);
+            TCRefParser tcRefParser = localList.get(i);
             //Special masking: Ignore tcRef which is present in module folder and
             //is present in local folder in DIFFERENT mode. (ie. when TopComponent defined
             //by module was moved to another module) It is to avoid creating _hidden file =>
@@ -308,7 +308,7 @@ class ModeParser {
         }
         
         for (int i = 0; i < toRemove.size(); i++) {
-            TCRefParser tcRefParser = (TCRefParser) toRemove.get(i);
+            TCRefParser tcRefParser = toRemove.get(i);
             localList.remove(tcRefParser);
             tcRefParserMap.remove(tcRefParser.getName());
         }
@@ -316,7 +316,7 @@ class ModeParser {
         //Update order if any tcRef was removed
         if (toRemove.size() > 0) {
             if (tcRefOrder == null) {
-                tcRefOrder = new HashMap(19);
+                tcRefOrder = new HashMap<String,Integer>(19);
             }
             tcRefOrder.clear();
             for (int i = 0; i < localList.size(); i++) {
@@ -326,7 +326,7 @@ class ModeParser {
             writeOrder();
         }
         
-        mc.tcRefConfigs = (TCRefConfig [])
+        mc.tcRefConfigs = 
             tcRefCfgList.toArray(new TCRefConfig[tcRefCfgList.size()]);
         
         PersistenceManager pm = PersistenceManager.getDefault();
@@ -373,7 +373,7 @@ class ModeParser {
         //Step 0: Create order
         if (mc.tcRefConfigs.length > 0) {
             if (tcRefOrder == null) {
-                tcRefOrder = new HashMap(19);
+                tcRefOrder = new HashMap<String,Integer>(19);
             }
             tcRefOrder.clear();
             for (int i = 0; i < mc.tcRefConfigs.length; i++) {
@@ -384,15 +384,15 @@ class ModeParser {
         }
         writeOrder();
         //Step 1: Clean obsolete tcRef parsers
-        Map tcRefConfigMap = new HashMap(19);
+        Map<String, TCRefConfig> tcRefConfigMap = new HashMap<String, TCRefConfig>(19);
         for (int i = 0; i < mc.tcRefConfigs.length; i++) {
             //if (DEBUG) Debug.log(ModeParser.class, "-- -- tcRefCfg[" + i + "]: " + mc.tcRefConfigs[i].tc_id);
             tcRefConfigMap.put(mc.tcRefConfigs[i].tc_id, mc.tcRefConfigs[i]);
         }
         TCRefParser tcRefParser;
-        List toDelete = new ArrayList(10);
-        for (Iterator it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
-            tcRefParser = (TCRefParser) tcRefParserMap.get(it.next());
+        List<String> toDelete = new ArrayList<String>(10);
+        for (String s: tcRefParserMap.keySet()) {
+            tcRefParser = tcRefParserMap.get(s);
             if (!tcRefConfigMap.containsKey(tcRefParser.getName())) {
                 toDelete.add(tcRefParser.getName());
             }
@@ -401,7 +401,7 @@ class ModeParser {
             //if (DEBUG) Debug.log(ModeParser.class, " ** REMOVE FROM MAP tcRefParser: " + toDelete.get(i));
             tcRefParserMap.remove(toDelete.get(i));
             //if (DEBUG) Debug.log(ModeParser.class, " ** DELETE tcRefParser: " + toDelete.get(i));
-            deleteLocalTCRef((String) toDelete.get(i));
+            deleteLocalTCRef(toDelete.get(i));
         }
         
         //Step 2: Create missing tcRefs parsers
@@ -425,7 +425,7 @@ class ModeParser {
         //if (DEBUG) Debug.log(ModeParser.class, "writeTCRefs" + " localFolder:" + localFolder);
         
         for (Iterator it = tcRefParserMap.keySet().iterator(); it.hasNext(); ) {
-            tcRefParser = (TCRefParser) tcRefParserMap.get(it.next());
+            tcRefParser = tcRefParserMap.get(it.next());
             tcRefParser.setLocalParentFolder(localFolder);
             tcRefParser.setInLocalFolder(true);
             tcRefParser.save((TCRefConfig) tcRefConfigMap.get(tcRefParser.getName()));
@@ -474,7 +474,7 @@ class ModeParser {
             return;
         } else if (o instanceof String) {
             String sepNames = (String) o;
-            Map map = new HashMap(19);
+            Map<String,Integer> map = new HashMap<String,Integer>(19);
             StringTokenizer tok = new StringTokenizer(sepNames, "/"); // NOI18N
             int i = 0;
             while (tok.hasMoreTokens()) {
@@ -509,15 +509,13 @@ class ModeParser {
             localModeFolder.setAttribute(EA_ORDER, null);
         } else {
             // Stores list of file names separated by /
-            Iterator it = tcRefOrder.entrySet().iterator();
             String[] tcRefNames = new String[tcRefOrder.size()];
-            while (it.hasNext()) {
-                Map.Entry en = (Map.Entry) it.next();
-                String tcRefName = (String) en.getKey();
-                int index = ((Integer) en.getValue()).intValue();
+            for (Map.Entry<String, Integer> en: tcRefOrder.entrySet()) {
+                String tcRefName = en.getKey();
+                int index = en.getValue().intValue();
                 tcRefNames[index] = tcRefName;
             }
-            StringBuffer buf = new StringBuffer(255);
+            StringBuilder buf = new StringBuilder(255);
             for (int i = 0; i < tcRefNames.length; i++) {
                 if (i > 0) {
                     buf.append(SEP);
@@ -533,10 +531,10 @@ class ModeParser {
      * Each element is a string of the form "a<b" for a, b filenames
      * with extension, where a should come before b.
      */
-    private Set readPartials () { // Set<String>
+    private Set<String> readPartials () {
         //if (DEBUG) Debug.log(ModeParser.class, "++ ++");
         //if (DEBUG) Debug.log(ModeParser.class, "++ ModeParser.readPartials ENTER");
-        Set s = new HashSet(19);
+        Set<String> s = new HashSet<String>(19);
         
         //Partials are defined only in module folder
         if (moduleParentFolder == null) {
@@ -585,9 +583,9 @@ class ModeParser {
      * @param objects a collection of data objects known to be in the folder
      * @return a constraint map, or null if there are no constraints
      */
-    private Map getOrderingConstraints (List tcRefParsers) {
+    private Map<TCRefParser,List<TCRefParser>> getOrderingConstraints (List<TCRefParser> tcRefParsers) {
         //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints ENTER");
-        final Set partials = readPartials();
+        final Set<String> partials = readPartials();
         if (partials.isEmpty()) {
             //if (DEBUG) Debug.log(ModeParser.class, "getOrderingConstraints LEAVE 1");
             return null;
@@ -611,32 +609,30 @@ class ModeParser {
                     }*/
                 }
             }
-            Map objectsByName = new HashMap(19);
+            Map<String, TCRefParser> objectsByName = new HashMap<String, TCRefParser>(19);
             for (int i = 0; i < tcRefParsers.size(); i++) {
-                TCRefParser tcRefParser = (TCRefParser) tcRefParsers.get(i);
+                TCRefParser tcRefParser = tcRefParsers.get(i);
                 objectsByName.put(tcRefParser.getName(), tcRefParser);
             }
-            Map m = new HashMap(19);
-            Iterator it = partials.iterator();
-            while (it.hasNext()) {
-                String constraint = (String) it.next();
+            Map<TCRefParser,List<TCRefParser>> m = new HashMap<TCRefParser,List<TCRefParser>>(19);
+            for (String constraint: partials) {
                 int idx = constraint.indexOf(SEP);
                 String a = constraint.substring(0, idx);
                 String b = constraint.substring(idx + 1);
                 if ((tcRefOrder != null) && (tcRefOrder.containsKey(a) && tcRefOrder.containsKey(b))) {
                     continue;
                 }
-                TCRefParser ad = (TCRefParser) objectsByName.get(a);
+                TCRefParser ad = objectsByName.get(a);
                 if (ad == null) {
                     continue;
                 }
-                TCRefParser bd = (TCRefParser) objectsByName.get(b);
+                TCRefParser bd = objectsByName.get(b);
                 if (bd == null) {
                     continue;
                 }
-                List l = (List) m.get(ad);
+                List<TCRefParser> l = m.get(ad);
                 if (l == null) {
-                    m.put(ad, l = new LinkedList());
+                    m.put(ad, l = new LinkedList<TCRefParser>());
                 }
                 l.add(bd);
             }
@@ -651,15 +647,16 @@ class ModeParser {
      * @param l the list to sort
      * @return the sorted list (may or may not be the same)
      */
-    private List carefullySort (List l) {
-        Map constraints = getOrderingConstraints(l);
+    private List<TCRefParser> carefullySort (List<TCRefParser> l) {
+        Map<TCRefParser, List<TCRefParser>> constraints = getOrderingConstraints(l);
         if (constraints == null) {
             return l;
         } else {
             try {
                 return Utilities.topologicalSort(l, constraints);
             } catch (TopologicalSortException ex) {
-                List corrected = ex.partialSort();
+                @SuppressWarnings("unchecked")
+                List<TCRefParser> corrected = ex.partialSort();
                 PersistenceManager.LOG.log(Level.WARNING,"Note: Mode " + getName() // NOI18N
                 + " cannot be consistently sorted due to ordering conflicts.", ex); // NOI18N
                 PersistenceManager.LOG.log(Level.WARNING,"Using partial sort: " + corrected); // NOI18N
@@ -677,7 +674,7 @@ class ModeParser {
     void removeTCRef (String tcRefName) {
         if (DEBUG) Debug.log(ModeParser.class, "removeTCRef ENTER" + " tcRef:" + tcRefName);
         //Update order
-        List localList = new ArrayList(10);
+        List<TCRefParser> localList = new ArrayList<TCRefParser>(10);
         Map localMap = (Map) ((HashMap) tcRefParserMap).clone();
         
         tcRefParserMap.remove(tcRefName);
@@ -704,7 +701,7 @@ class ModeParser {
 
         //Remove tcRef
         for (int i = 0; i < localList.size(); i++) {
-            TCRefParser tcRefParser = (TCRefParser) localList.get(i);
+            TCRefParser tcRefParser = localList.get(i);
             if (tcRefName.equals(tcRefParser.getName())) {
                 localList.remove(i);
                 break;
@@ -714,7 +711,7 @@ class ModeParser {
         //Create updated order
         tcRefOrder.clear();
         for (int i = 0; i < localList.size(); i++) {
-            TCRefParser tcRefParser = (TCRefParser) localList.get(i);
+            TCRefParser tcRefParser = localList.get(i);
             tcRefOrder.put(tcRefParser.getName(), new Integer(i));
         }
         try {
@@ -732,11 +729,11 @@ class ModeParser {
     /** Adds TCRefParser to ModeParser.
      * @param tcRefName unique name of tcRef
      */
-    TCRefConfig addTCRef (String tcRefName, List tcRefNameList) {
+    TCRefConfig addTCRef (String tcRefName, List<String> tcRefNameList) {
         if (DEBUG) Debug.log(ModeParser.class, "addTCRef ENTER" + " mo:" + getName()
         + " tcRef:" + tcRefName);
         //Check consistency. TCRefParser instance should not exist.
-        TCRefParser tcRefParser = (TCRefParser) tcRefParserMap.get(tcRefName);
+        TCRefParser tcRefParser = tcRefParserMap.get(tcRefName);
         if (tcRefParser != null) {
             PersistenceManager.LOG.log(Level.WARNING,
             "[WinSys.ModeParser.addTCRef]" // NOI18N
@@ -759,7 +756,7 @@ class ModeParser {
         }
         
         // Update order
-        List localList = new ArrayList(10);
+        List<TCRefParser> localList = new ArrayList<TCRefParser>(10);
         Map localMap = (Map) ((HashMap) tcRefParserMap).clone();
         
         TCRefParser [] tcRefParserArray = new TCRefParser[tcRefOrder.size()];
@@ -831,7 +828,7 @@ class ModeParser {
         if (DEBUG) Debug.log(ModeParser.class, "addTCRefImport ENTER" + " mo:" + getName()
         + " tcRef:" + tcRefName);
         //Check consistency. TCRefParser instance should not exist.
-        TCRefParser tcRefParser = (TCRefParser) tcRefParserMap.get(tcRefName);
+        TCRefParser tcRefParser = tcRefParserMap.get(tcRefName);
         if (tcRefParser != null) {
             PersistenceManager.LOG.log(Level.WARNING,
             "[WinSys.ModeParser.addTCRef]" // NOI18N
@@ -864,7 +861,7 @@ class ModeParser {
      */
     TCRefParser findTCRefParser (String tcRefName) {
         //if (DEBUG) Debug.log(ModeParser.class, "findTCRefParser ENTER" + " tcRef:" + tcRefName);
-        return (TCRefParser) tcRefParserMap.get(tcRefName);
+        return tcRefParserMap.get(tcRefName);
     }
     
     /** Getter for internal configuration data.
@@ -914,7 +911,7 @@ class ModeParser {
         private InternalConfig internalConfig = null;
         
         /** List to store parsed path items */
-        private List itemList = new ArrayList(10);
+        private List<SplitConstraint> itemList = new ArrayList<SplitConstraint>(10);
         
         /** Lock to prevent mixing readData and writeData */
         private final Object RW_LOCK = new Object();
@@ -1007,7 +1004,7 @@ class ModeParser {
             }
             
             modeConfig.constraints =
-                (SplitConstraint []) itemList.toArray(new SplitConstraint[itemList.size()]);
+                itemList.toArray(new SplitConstraint[itemList.size()]);
             
             modeCfg = modeConfig;
             internalCfg = internalConfig;

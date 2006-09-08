@@ -53,9 +53,9 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
     private static boolean installed = false;
 
     /* holds original set of focus forward traversal keys */
-    private static Set defaultForward;
+    private static Set<AWTKeyStroke> defaultForward;
     /* holds original set of focus backward traversal keys */
-    private static Set defaultBackward;
+    private static Set<AWTKeyStroke> defaultBackward;
     
     
     private  ShortcutAndMenuKeyEventProcessor() {

@@ -131,8 +131,8 @@ public class ModeView extends ViewElement {
         return container.isActive();
     }
     
-    public List getTopComponents() {
-        return new ArrayList(Arrays.asList(container.getTopComponents()));
+    public List<TopComponent> getTopComponents() {
+        return new ArrayList<TopComponent>(Arrays.asList(container.getTopComponents()));
     }
     
     public void focusSelectedTopComponent() {

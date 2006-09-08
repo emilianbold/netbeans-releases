@@ -20,6 +20,7 @@
 
 package org.netbeans.core.windows;
 
+import java.lang.ref.Reference;
 import java.util.Iterator;
 import java.util.Set;
 import org.openide.windows.TopComponent;
@@ -42,7 +43,7 @@ final class RecentViewList implements PropertyChangeListener {
     
     /** List of TopComponents (weak references are used). First is most recently
      * activated. */
-    private List tcWeakList = new ArrayList(20);
+    private List<Reference<TopComponent>> tcWeakList = new ArrayList<Reference<TopComponent>>(20);
     
     public RecentViewList (WindowManager wm) {
         // Starts listening on Registry to be notified about activated TopComponent.
@@ -52,23 +53,23 @@ final class RecentViewList implements PropertyChangeListener {
     
     /** Used to get array for view and for persistence */
     public TopComponent [] getTopComponents() {
-        List tcList = new ArrayList(tcWeakList.size());
+        List<TopComponent> tcList = new ArrayList<TopComponent>(tcWeakList.size());
         clean();
         for (int i = 0; i < tcWeakList.size(); i++) {
-            WeakReference w = (WeakReference) tcWeakList.get(i);
-            TopComponent tc = (TopComponent) w.get();
+            Reference<TopComponent> w = tcWeakList.get(i);
+            TopComponent tc = w.get();
             if ((tc != null) && tc.isOpened()) {
                 tcList.add(tc);
             }
         }
-        return (TopComponent []) tcList.toArray(new TopComponent[tcList.size()]);
+        return tcList.toArray(new TopComponent[tcList.size()]);
     }
     
     /** Used to set initial values from persistence */
     public void setTopComponents(TopComponent [] tcs) {
         tcWeakList.clear();
         for (int i = 0; i < tcs.length; i++) {
-            WeakReference wr = new WeakReference(tcs[i]);
+            Reference<TopComponent> wr = new WeakReference<TopComponent>(tcs[i]);
             tcWeakList.add(wr);
         }
     }
@@ -79,13 +80,13 @@ final class RecentViewList implements PropertyChangeListener {
             if (tc != null) {
                 //Update list
                 clean();
-                WeakReference w = find(tc);
+                Reference<TopComponent> w = find(tc);
                 if (w != null) {
                     //Rearrange, put to first place
                     tcWeakList.remove(w);
                     tcWeakList.add(0,w);
                 } else {
-                    WeakReference wr = new WeakReference(tc);
+                    Reference<TopComponent> wr = new WeakReference<TopComponent>(tc);
                     tcWeakList.add(0,wr);
                 }
                 // #69486: ensure all components are listed
@@ -111,10 +112,10 @@ final class RecentViewList implements PropertyChangeListener {
     
     /** Returns weak reference to given TopComponent if present.
      * Otherwise returns null. */
-    private WeakReference find (TopComponent tc) {
+    private Reference<TopComponent> find (TopComponent tc) {
         for (int i = 0; i < tcWeakList.size(); i++) {
-            WeakReference w = (WeakReference) tcWeakList.get(i);
-            TopComponent c = (TopComponent) w.get();
+            Reference<TopComponent> w = tcWeakList.get(i);
+            TopComponent c = w.get();
             if (tc == c) {
                 return w;
             }
@@ -125,17 +126,15 @@ final class RecentViewList implements PropertyChangeListener {
     /** Fills list of weak references with TCs that are in given
      * input list but are not yet contained in list of weak references.
      */ 
-    private void fillList(Set openedTCs) {
-        TopComponent curTC;
-        WeakReference wr;
-        for (Iterator it = openedTCs.iterator(); it.hasNext();) {
-            curTC = (TopComponent) it.next();
+    private void fillList(Set<TopComponent> openedTCs) {
+        Reference<TopComponent> wr;
+        for (TopComponent curTC: openedTCs) {
             if (find(curTC) == null) {
                 if (tcWeakList.size() > 1) {
-                    wr = new WeakReference(curTC);
+                    wr = new WeakReference<TopComponent>(curTC);
                     tcWeakList.add(1,wr);
                 } else {
-                    wr = new WeakReference(curTC);
+                    wr = new WeakReference<TopComponent>(curTC);
                     tcWeakList.add(wr);
                 }
             }

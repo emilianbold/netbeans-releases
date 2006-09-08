@@ -44,9 +44,9 @@ final class PersistenceHandler implements PersistenceObserver {
 
     // Persistence data
     /** Maps mode config name to mode instance. */
-    private final Map name2mode = new WeakHashMap(10);
+    private final Map<String, ModeImpl> name2mode = new WeakHashMap<String, ModeImpl>(10);
     /** Maps group config name to group instance. */
-    private final Map name2group = new WeakHashMap(10);
+    private final Map<String, TopComponentGroupImpl> name2group = new WeakHashMap<String, TopComponentGroupImpl>(10);
 
     private static PersistenceHandler defaultInstance;
 
@@ -102,18 +102,18 @@ final class PersistenceHandler implements PersistenceObserver {
         
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         if (wmc.tcIdViewList.length > 0) {
-            List tcList = new ArrayList(wmc.tcIdViewList.length);
+            List<TopComponent> tcList = new ArrayList<TopComponent>(wmc.tcIdViewList.length);
             for (int i = 0; i < wmc.tcIdViewList.length; i++) {
                 TopComponent tc = getTopComponentForID(wmc.tcIdViewList[i]);
                 if (tc != null) {
                     tcList.add(tc);
                 }
             }
-            TopComponent [] tcs = (TopComponent []) tcList.toArray(new TopComponent[tcList.size()]);
+            TopComponent [] tcs = tcList.toArray(new TopComponent[tcList.size()]);
             wm.setRecentViewList(tcs);
         } else {
             //No recent view list is saved, fill it by opened TopComponents
-            List tcList = new ArrayList();
+            List<TopComponent> tcList = new ArrayList<TopComponent>();
             for (int i = 0; i < wmc.modes.length; i++) {
                 ModeConfig mc = wmc.modes[i];
                 for (int j = 0; j < mc.tcRefConfigs.length; j++) {
@@ -126,7 +126,7 @@ final class PersistenceHandler implements PersistenceObserver {
                     }
                 }
             }
-            TopComponent [] tcs = (TopComponent []) tcList.toArray(new TopComponent[tcList.size()]);
+            TopComponent [] tcs = tcList.toArray(new TopComponent[tcList.size()]);
             wm.setRecentViewList(tcs);
         }
         
@@ -142,7 +142,7 @@ final class PersistenceHandler implements PersistenceObserver {
         ModeImpl maximizedMode = null;
         
         // First create empty modes.
-        Map mode2config = new HashMap();
+        Map<ModeImpl, ModeConfig> mode2config = new HashMap<ModeImpl, ModeConfig>();
         Set slidingModes = new HashSet();
         
         for (int i = 0; i < wmc.modes.length; i++) {
@@ -491,25 +491,25 @@ final class PersistenceHandler implements PersistenceObserver {
         }
         
         // Modes.
-        Set modeSet = wmi.getModes();
-        List modeConfigs = new ArrayList(modeSet.size());
-        for (Iterator it = modeSet.iterator(); it.hasNext(); ) {
-            modeConfigs.add(getConfigFromMode((ModeImpl) it.next()));
+        Set<ModeImpl> modeSet = wmi.getModes();
+        List<ModeConfig> modeConfigs = new ArrayList<ModeConfig>(modeSet.size());
+        for (Iterator<ModeImpl> it = modeSet.iterator(); it.hasNext(); ) {
+            modeConfigs.add(getConfigFromMode(it.next()));
         }
-        wmc.modes = (ModeConfig[])modeConfigs.toArray(new ModeConfig[0]);
+        wmc.modes = modeConfigs.toArray(new ModeConfig[0]);
         
         // TopComponent groups.
-        Set tcGroups = wmi.getTopComponentGroups();
-        List groupConfigs = new ArrayList(tcGroups.size());
-        for (Iterator it = tcGroups.iterator(); it.hasNext(); ) {
-            groupConfigs.add(getConfigFromGroup((TopComponentGroupImpl)it.next()));
+        Set<TopComponentGroupImpl> tcGroups = wmi.getTopComponentGroups();
+        List<GroupConfig> groupConfigs = new ArrayList<GroupConfig>(tcGroups.size());
+        for (Iterator<TopComponentGroupImpl> it = tcGroups.iterator(); it.hasNext(); ) {
+            groupConfigs.add(getConfigFromGroup(it.next()));
         }
-        wmc.groups = (GroupConfig[])groupConfigs.toArray(new GroupConfig[0]);
+        wmc.groups = groupConfigs.toArray(new GroupConfig[0]);
 
         PersistenceManager pm = PersistenceManager.getDefault();
         //RecentViewList
         TopComponent [] tcs = wmi.getRecentViewList();
-        List tcIdList = new ArrayList(tcs.length);
+        List<String> tcIdList = new ArrayList<String>(tcs.length);
         for (int i = 0; i < tcs.length; i++) {
             if (pm.isTopComponentPersistent(tcs[i])) {
                 String tc_id = WindowManager.getDefault().findTopComponentID(tcs[i]);
@@ -517,7 +517,7 @@ final class PersistenceHandler implements PersistenceObserver {
                 tcIdList.add(tc_id);
             }
         }
-        wmc.tcIdViewList = (String []) tcIdList.toArray(new String [tcIdList.size()]);
+        wmc.tcIdViewList = tcIdList.toArray(new String [tcIdList.size()]);
         
         return wmc;
     }
@@ -583,8 +583,8 @@ final class PersistenceHandler implements PersistenceObserver {
         }
         
         // TopComponents:
-        List tcRefCfgList = new ArrayList();
-        List openedTcIDs = mode.getOpenedTopComponentsIDs();
+        List<TCRefConfig> tcRefCfgList = new ArrayList<TCRefConfig>();
+        List<String> openedTcIDs = mode.getOpenedTopComponentsIDs();
         for(Iterator it = mode.getTopComponentsIDs().iterator(); it.hasNext(); ) {
             String tcID = (String)it.next();
             
@@ -615,7 +615,7 @@ final class PersistenceHandler implements PersistenceObserver {
             tcRefCfgList.add(tcRefCfg);
         }
         
-        modeCfg.tcRefConfigs = (TCRefConfig []) tcRefCfgList.toArray(new TCRefConfig[tcRefCfgList.size()]);
+        modeCfg.tcRefConfigs = tcRefCfgList.toArray(new TCRefConfig[tcRefCfgList.size()]);
         return modeCfg;
     }
     
@@ -627,18 +627,17 @@ final class PersistenceHandler implements PersistenceObserver {
             debugLog(""); // NOI18N
             debugLog("group name=" + groupCfg.name); // NOI18N
         }
-        Set openSet = tcGroup.getOpeningSetIDs();
-        Set closeSet = tcGroup.getClosingSetIDs();
-        Set wasOpenedSet = tcGroup.getGroupOpenedTopComponentsIDs();
+        Set<String> openSet = tcGroup.getOpeningSetIDs();
+        Set<String> closeSet = tcGroup.getClosingSetIDs();
+        Set<String> wasOpenedSet = tcGroup.getGroupOpenedTopComponentsIDs();
         
-        Map tcGroupCfgMap = new HashMap();
+        Map<String, TCGroupConfig> tcGroupCfgMap = new HashMap<String, TCGroupConfig>();
         
-        for (Iterator it = tcGroup.getTopComponentsIDs().iterator(); it.hasNext(); ) {
-            String tcID = (String)it.next();
+        for (String tcID: tcGroup.getTopComponentsIDs()) {
             
             TCGroupConfig tcGroupCfg;
             if (tcGroupCfgMap.containsKey(tcID)) {
-                tcGroupCfg = (TCGroupConfig) tcGroupCfgMap.get(tcID);
+                tcGroupCfg = tcGroupCfgMap.get(tcID);
             } else {
                 tcGroupCfg = new TCGroupConfig();
                 tcGroupCfg.tc_id = tcID;
@@ -658,7 +657,7 @@ final class PersistenceHandler implements PersistenceObserver {
             }
         }
         
-        groupCfg.tcGroupConfigs = (TCGroupConfig[])tcGroupCfgMap.values().toArray(new TCGroupConfig[0]);
+        groupCfg.tcGroupConfigs = tcGroupCfgMap.values().toArray(new TCGroupConfig[0]);
         return groupCfg;
     }
     

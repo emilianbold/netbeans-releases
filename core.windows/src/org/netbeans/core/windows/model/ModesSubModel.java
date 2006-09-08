@@ -51,15 +51,15 @@ final class ModesSubModel {
     private final Model parentModel;
     
     /** Set of modes. */
-    private final Set modes = new HashSet(10);
+    private final Set<ModeImpl> modes = new HashSet<ModeImpl>(10);
 
     /** Represents split model of modes, also contains special editor area. */
     private final EditorSplitSubModel editorSplitSubModel;
    
     /** Sliding modes model, <ModeImpl, String> mapping 
      of mode and side of presence */
-    private final HashMap slidingModes2Sides = new HashMap(5);
-    private final HashMap slidingSides2Modes = new HashMap(5);
+    private final HashMap<ModeImpl, String> slidingModes2Sides = new HashMap<ModeImpl, String>(5);
+    private final HashMap<String, ModeImpl> slidingSides2Modes = new HashMap<String, ModeImpl>(5);
 
     /** Active mode. */
     private ModeImpl activeMode;
@@ -96,14 +96,14 @@ final class ModesSubModel {
     }
     
     public String getSlidingModeConstraints(ModeImpl mode) {
-        return (String)slidingModes2Sides.get(mode);
+        return slidingModes2Sides.get(mode);
     }
     
     public ModeImpl getSlidingMode(String side) {
-        return (ModeImpl)slidingSides2Modes.get(side);
+        return slidingSides2Modes.get(side);
     }
     
-    public Set getSlidingModes() {
+    public Set<ModeImpl> getSlidingModes() {
         return Collections.unmodifiableSet(slidingModes2Sides.keySet());
     }
 
@@ -246,8 +246,8 @@ final class ModesSubModel {
         return this.maximizedMode;
     }
 
-    public Set getModes() {
-        return new HashSet(modes);
+    public Set<ModeImpl> getModes() {
+        return new HashSet<ModeImpl>(modes);
     }
     
     public void setSplitWeights( ModelElement[] snapshots, double[] splitWeights ) {
@@ -266,21 +266,21 @@ final class ModesSubModel {
     }
 
     /** Set of mode element snapshots. */
-    public Set createSeparateModeSnapshots() {
-        Set s = new HashSet();
+    public Set<ModeStructureSnapshot.ModeSnapshot> createSeparateModeSnapshots() {
+        Set<ModeStructureSnapshot.ModeSnapshot> s = 
+                new HashSet<ModeStructureSnapshot.ModeSnapshot>();
         
         s.addAll(editorSplitSubModel.createSeparateSnapshots());
         
         return s;
     }
     
-    public Set createSlidingModeSnapshots() {
-        Set result = new HashSet();
-        Map.Entry curEntry;
-        for (Iterator iter = slidingModes2Sides.entrySet().iterator(); iter.hasNext(); ) {
-            curEntry = (Map.Entry)iter.next();
+    public Set<ModeStructureSnapshot.SlidingModeSnapshot> createSlidingModeSnapshots() {
+        Set<ModeStructureSnapshot.SlidingModeSnapshot> result = 
+                new HashSet<ModeStructureSnapshot.SlidingModeSnapshot>();
+        for (Map.Entry<ModeImpl, String> curEntry: slidingModes2Sides.entrySet()) {
             result.add(new ModeStructureSnapshot.SlidingModeSnapshot(
-                    (ModeImpl)curEntry.getKey(), (String)curEntry.getValue()));
+                    curEntry.getKey(), curEntry.getValue()));
         }
         
         return result;

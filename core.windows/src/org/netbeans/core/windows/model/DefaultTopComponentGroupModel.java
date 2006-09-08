@@ -42,21 +42,21 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
     private boolean opened;
 
     /** All TopComponent IDs belonging to this group. */
-    private final Set topComponents = new HashSet(3);
+    private final Set<String> topComponents = new HashSet<String>(3);
     // XXX Helper
     /** All TopComponent IDs which were opened by this group (at the moment
      * when group was opening). When group is closed this set should be emtpy. */
-    private final Set openedTopComponents = new HashSet(3);
+    private final Set<String> openedTopComponents = new HashSet<String>(3);
     
     /** All TopComponent IDs which were already opened before this group was 
      * opened (at the moment when group was opening). When group is closed this 
      * set should be emtpy. */
-    private final Set openedBeforeTopComponents = new HashSet(3);
+    private final Set<String> openedBeforeTopComponents = new HashSet<String>(3);
     
     /** TopComponent IDs with opening flag. */
-    private final Set openingTopComponents = new HashSet(3);
+    private final Set<String> openingTopComponents = new HashSet<String>(3);
     /** TopComponent IDs with closing flag. */
-    private final Set closingTopComponents = new HashSet(3);
+    private final Set<String> closingTopComponents = new HashSet<String>(3);
     
     private final Object LOCK_OPENED = new Object();
     
@@ -73,19 +73,21 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         return name;
     }
     
-    public void open(Collection openedTopComponents, Collection openedBeforeTopComponents) {
+    public void open(
+            Collection<TopComponent> openedTopComponents, 
+            Collection<TopComponent> openedBeforeTopComponents) {
         synchronized(LOCK_OPENED) {
             this.opened = true;
             this.openedTopComponents.clear();
-            for(Iterator it = openedTopComponents.iterator(); it.hasNext(); ) {
-                String tcID = getID((TopComponent)it.next());
+            for(TopComponent tc: openedTopComponents) {
+                String tcID = getID(tc);
                 if(tcID != null) {
                     this.openedTopComponents.add(tcID);
                 }
             }
             this.openedBeforeTopComponents.clear();
-            for(Iterator it = openedBeforeTopComponents.iterator(); it.hasNext(); ) {
-                String tcID = getID((TopComponent)it.next());
+            for(TopComponent tc: openedBeforeTopComponents) {
+                String tcID = getID(tc);
                 if(tcID != null) {
                     this.openedBeforeTopComponents.add(tcID);
                 }
@@ -107,15 +109,15 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         }
     }
     
-    public Set getTopComponents() {
-        Set s;
+    public Set<TopComponent> getTopComponents() {
+        Set<String> s;
         synchronized(LOCK_TOPCOMPONENTS) {
-            s = new HashSet(topComponents);
+            s = new HashSet<String>(topComponents);
         }
         
-        Set result = new HashSet(s.size());
-        for(Iterator it = s.iterator(); it.hasNext(); ) {
-            TopComponent tc = getTopComponent((String)it.next());
+        Set<TopComponent> result = new HashSet<TopComponent>(s.size());
+        for(String tcId: s) {
+            TopComponent tc = getTopComponent(tcId);
             if(tc != null) {
                 result.add(tc);
             }
@@ -124,15 +126,15 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         return result;
     }
     
-    public Set getOpenedTopComponents() {
-        Set s;
+    public Set<TopComponent> getOpenedTopComponents() {
+        Set<String> s;
         synchronized(LOCK_OPENED) {
-            s = new HashSet(openedTopComponents);
+            s = new HashSet<String>(openedTopComponents);
         }
         
-        Set result = new HashSet(s.size());
-        for(Iterator it = s.iterator(); it.hasNext(); ) {
-            TopComponent tc = getTopComponent((String)it.next());
+        Set<TopComponent> result = new HashSet<TopComponent>(s.size());
+        for(String tcId: s) {
+            TopComponent tc = getTopComponent(tcId);
             if(tc != null) {
                 result.add(tc);
             }
@@ -141,15 +143,15 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         return result;
     }
     
-    public Set getOpenedBeforeTopComponents() {
-        Set s;
+    public Set<TopComponent> getOpenedBeforeTopComponents() {
+        Set<String> s;
         synchronized(LOCK_OPENED) {
-            s = new HashSet(openedBeforeTopComponents);
+            s = new HashSet<String>(openedBeforeTopComponents);
         }
         
-        Set result = new HashSet(s.size());
-        for(Iterator it = s.iterator(); it.hasNext(); ) {
-            TopComponent tc = getTopComponent((String)it.next());
+        Set<TopComponent> result = new HashSet<TopComponent>(s.size());
+        for(String tcId: s) {
+            TopComponent tc = getTopComponent(tcId);
             if(tc != null) {
                 result.add(tc);
             }
@@ -158,15 +160,15 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         return result;
     }
     
-    public Set getOpeningTopComponents() {
-        Set s;
+    public Set<TopComponent> getOpeningTopComponents() {
+        Set<String> s;
         synchronized(LOCK_TOPCOMPONENTS) {
-            s = new HashSet(openingTopComponents);
+            s = new HashSet<String>(openingTopComponents);
         }
         
-        Set result = new HashSet(s.size());
-        for(Iterator it = s.iterator(); it.hasNext(); ) {
-            TopComponent tc = getTopComponent((String)it.next());
+        Set<TopComponent> result = new HashSet<TopComponent>(s.size());
+        for(String tcId: s) {
+            TopComponent tc = getTopComponent(tcId);
             if(tc != null) {
                 result.add(tc);
             }
@@ -175,15 +177,15 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
         return result;
     }
     
-    public Set getClosingTopComponents() {
-        Set s;
+    public Set<TopComponent> getClosingTopComponents() {
+        Set<String> s;
         synchronized(LOCK_TOPCOMPONENTS) {
-            s = new HashSet(closingTopComponents);
+            s = new HashSet<String>(closingTopComponents);
         }
         
-        Set result = new HashSet(s.size());
-        for(Iterator it = s.iterator(); it.hasNext(); ) {
-            TopComponent tc = getTopComponent((String)it.next());
+        Set<TopComponent> result = new HashSet<TopComponent>(s.size());
+        for(String tcId: s) {
+            TopComponent tc = getTopComponent(tcId);
             if(tc != null) {
                 result.add(tc);
             }
@@ -269,25 +271,25 @@ final class DefaultTopComponentGroupModel implements TopComponentGroupModel {
 
     
     // XXX>>
-    public Set getTopComponentsIDs() {
+    public Set<String> getTopComponentsIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
-            return new HashSet(topComponents);
+            return new HashSet<String>(topComponents);
         }
     }
     
-    public Set getOpeningSetIDs() {
+    public Set<String> getOpeningSetIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
-            return new HashSet(openingTopComponents);
+            return new HashSet<String>(openingTopComponents);
         }
     }
-    public Set getClosingSetIDs() {
+    public Set<String> getClosingSetIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
-            return new HashSet(closingTopComponents);
+            return new HashSet<String>(closingTopComponents);
         }
     }
-    public Set getOpenedTopComponentsIDs() {
+    public Set<String> getOpenedTopComponentsIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
-            return new HashSet(openedTopComponents);
+            return new HashSet<String>(openedTopComponents);
         }
     }
     // XXX<<

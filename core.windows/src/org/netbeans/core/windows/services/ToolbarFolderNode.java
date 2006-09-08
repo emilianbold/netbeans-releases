@@ -65,7 +65,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
         this.folder = folder;
         //JST: it displays only Toolbar as name!    super.setDisplayName(NbBundle.getBundle (ToolbarFolderNode.class).getString("CTL_Toolbars_name"));
         super.setShortDescription(NbBundle.getBundle (ToolbarFolderNode.class).getString("CTL_Toolbars_hint"));
-        super.setIconBase ("org/netbeans/core/resources/toolbars"); // NOI18N
+        setIconBaseWithExtension ("org/netbeans/core/resources/toolbars.gif"); // NOI18N
         
         ToolbarPool.getDefault().addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(this, ToolbarPool.getDefault()));
     }
@@ -401,7 +401,7 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
             //JST: it displays only Toolbar as name!    super.setDisplayName(NbBundle.getBundle (ToolbarFolderNode.class).getString("CTL_Toolbars_name"));
             super.setName( folder.getName() );
             super.setShortDescription(NbBundle.getBundle (ToolbarFolderNode.class).getString("CTL_Toolbars_hint"));
-            super.setIconBase ("org/netbeans/core/resources/toolbars"); // NOI18N
+            setIconBaseWithExtension ("org/netbeans/core/resources/toolbars.gif"); // NOI18N
 
             //prevent deadlock
             SwingUtilities.invokeLater( new Runnable() {
@@ -530,17 +530,17 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                 )
             );
             ss.put(
-                new PropertySupport.ReadWrite(
+                new PropertySupport.ReadWrite<Boolean>(
                     "visible", // NOI18N
                     Boolean.class,
                     NbBundle.getBundle (ToolbarFolderNode.class).getString("PROP_ToolbarVisible"),
                     NbBundle.getBundle (ToolbarFolderNode.class).getString("HINT_ToolbarVisible")
                 ) {
-                    public void setValue(Object v) {
-                        currentConfiguration().setToolbarVisible(ToolbarPool.getDefault().findToolbar(folder.getName()), ((Boolean)v).booleanValue());
+                    public void setValue(Boolean v) {
+                        currentConfiguration().setToolbarVisible(ToolbarPool.getDefault().findToolbar(folder.getName()), v.booleanValue());
                     }
 
-                    public Object getValue() {
+                    public Boolean getValue() {
                         return currentConfiguration().isToolbarVisible(ToolbarPool.getDefault().findToolbar(folder.getName()))
                             ? Boolean.TRUE : Boolean.FALSE;
                     }

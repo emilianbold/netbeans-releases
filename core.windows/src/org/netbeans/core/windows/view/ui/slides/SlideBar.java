@@ -98,7 +98,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     /** listener for mouse actions and moves, which trigger slide operations */
     private SlideGestureRecognizer gestureRecognizer;
     /** list of sliding buttons */
-    private List buttons;
+    private List<SlidingButton> buttons;
     /** operation handler */
     private CommandManager commandMgr;
     /** true when this slide bar is active in winsys, false otherwise */
@@ -115,7 +115,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         this.selModel = selModel;
         commandMgr = new CommandManager(this);
         gestureRecognizer = new SlideGestureRecognizer(this, commandMgr.getResizer());
-        buttons = new ArrayList(5);
+        buttons = new ArrayList<SlidingButton>(5);
         
         syncWithModel();
         
@@ -407,12 +407,11 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     
     private void syncWithModel () {
         assert SwingUtilities.isEventDispatchThread();
-        Set blinks = null;
-        for (Iterator iter = buttons.iterator(); iter.hasNext(); ) {
-            SlidingButton curr = (SlidingButton) iter.next();
+        Set<TabData> blinks = null;
+        for (SlidingButton curr: buttons) {
             if (curr.isBlinking()) {
                 if (blinks == null) {
-                    blinks = new HashSet();
+                    blinks = new HashSet<TabData>();
                 }
                 blinks.add (curr.getData());
             }
@@ -421,7 +420,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         removeAll();
         buttons.clear();
         
-        List dataList = dataModel.getTabs();
+        List<TabData> dataList = dataModel.getTabs();
         SlidingButton curButton;
         for (Iterator iter = dataList.iterator(); iter.hasNext(); ) {
             TabData td = (TabData) iter.next();

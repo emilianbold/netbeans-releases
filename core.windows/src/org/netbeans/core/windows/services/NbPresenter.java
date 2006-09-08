@@ -52,11 +52,11 @@ import org.openide.util.*;
  * @author Ian Formanek, Jaroslav Tulach
  */
 class NbPresenter extends JDialog
-implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
+implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparator<Object> {
     
     /** variable holding current modal dialog in the system */
     public static NbPresenter currentModalDialog;
-    private static final Set listeners = new HashSet(); // Set<ChangeListener>
+    private static final Set<ChangeListener> listeners = new HashSet<ChangeListener>();
     
     protected NotifyDescriptor descriptor;
     
@@ -775,6 +775,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         super.show();
     }
     
+    @Override
     public void show() {
         //Bugfix #29993: Call show() asynchronously for non modal dialogs.
         if (isModal()) {
@@ -792,7 +793,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         }
     }
     
-    public Object run() {
+    public Void run() {
         doShow();
         return null;
     }
@@ -943,13 +944,13 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     private static void fireChangeEvent() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Iterator it;
+                Iterator<ChangeListener> it;
                 synchronized (listeners) {
-                    it = new HashSet(listeners).iterator();
+                    it = new HashSet<ChangeListener>(listeners).iterator();
                 }
                 ChangeEvent ev = new ChangeEvent(NbPresenter.class);
                 while (it.hasNext()) {
-                    ((ChangeListener) it.next()).stateChanged(ev);
+                    it.next().stateChanged(ev);
                 }
             }
         });

@@ -69,9 +69,9 @@ public final class TabbedSlideAdapter implements Tabbed {
     /** Visual component for displaying box for sliding windows */
     private SlideBar slideBar;
     /** List of action listeners */
-    private List actionListeners;
+    private List<ActionListener> actionListeners;
     /** List of selection listeners */
-    private List selectionListeners;
+    private List<ChangeListener> selectionListeners;
     /** selection change event - stateless, so we can cache */
     private final ChangeEvent selectionEvt = new ChangeEvent(this);
     
@@ -106,7 +106,7 @@ public final class TabbedSlideAdapter implements Tabbed {
 
     public final synchronized void addActionListener(ActionListener listener) {
         if (actionListeners == null) {
-            actionListeners = new ArrayList();
+            actionListeners = new ArrayList<ActionListener>();
         }
         actionListeners.add(listener);
     }
@@ -126,20 +126,20 @@ public final class TabbedSlideAdapter implements Tabbed {
     }
 
     final void postActionEvent(ActionEvent event) {
-        List list;
+        List<ActionListener> list;
         synchronized (this) {
             if (actionListeners == null)
                 return;
             list = Collections.unmodifiableList(actionListeners);
         }
         for (int i = 0; i < list.size(); i++) {
-            ((ActionListener) list.get(i)).actionPerformed(event);
+            list.get(i).actionPerformed(event);
         }
     }
     
     public void addChangeListener(ChangeListener listener) {
         if (selectionListeners == null) {
-            selectionListeners = new ArrayList();
+            selectionListeners = new ArrayList<ChangeListener>();
         }
         selectionListeners.add(listener);
     }    
@@ -154,14 +154,14 @@ public final class TabbedSlideAdapter implements Tabbed {
     }
     
     final void postSelectionEvent() {
-        List list;
+        List<ChangeListener> list;
         synchronized (this) {
             if (selectionListeners == null)
                 return;
             list = Collections.unmodifiableList(selectionListeners);
         }
         for (int i = 0; i < list.size(); i++) {
-            ((ChangeListener) list.get(i)).stateChanged(selectionEvt);
+            list.get(i).stateChanged(selectionEvt);
         }
     }
     

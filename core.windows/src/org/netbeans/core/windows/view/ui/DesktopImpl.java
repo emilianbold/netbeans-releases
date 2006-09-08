@@ -59,7 +59,7 @@ public final class DesktopImpl {
     private Component viewComponent;
     
     /** slide bars. Lazy initialization, because slide bars are optional. */
-    private Set slidingViews;
+    private Set<SlidingView> slidingViews;
     /** slide in operation in progress or null if no component is currently slided in */
     private SlideOperation curSlideIn;
 
@@ -143,7 +143,7 @@ public final class DesktopImpl {
     }
     
     public void addSlidingView (SlidingView view) {
-        Set slidingViews = getSlidingViews();
+        Set<SlidingView> slidingViews = getSlidingViews();
         if (slidingViews.contains(view)) {
             return;
         }
@@ -367,9 +367,9 @@ public final class DesktopImpl {
         return null;
     }
     
-    private Set getSlidingViews() {
+    private Set<SlidingView> getSlidingViews() {
         if (slidingViews == null) {
-            slidingViews = new HashSet(5);
+            slidingViews = new HashSet<SlidingView>(5);
         }
         return slidingViews;
     }

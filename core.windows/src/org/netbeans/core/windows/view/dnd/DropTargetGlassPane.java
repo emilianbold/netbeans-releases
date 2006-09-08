@@ -371,7 +371,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     interface Informer {
         public boolean isCopyOperationPossible();
         public Controller getController();
-        public Set getFloatingFrames();
+        public Set<Component> getFloatingFrames();
     }
     
     /** A scratch rectangle to save allocating one for every pixel the mouse

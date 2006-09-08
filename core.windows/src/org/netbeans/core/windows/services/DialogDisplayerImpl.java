@@ -54,8 +54,8 @@ public class DialogDisplayerImpl extends DialogDisplayer {
 
     /** Creates new dialog. */
     public Dialog createDialog (final DialogDescriptor d) {
-        return (Dialog)Mutex.EVENT.readAccess (new Mutex.Action () {
-            public Object run () {
+        return Mutex.EVENT.readAccess (new Mutex.Action<Dialog> () {
+            public Dialog run () {
                 // if a modal dialog active use it as parent
                 // otherwise use the main window
                 if (NbPresenter.currentModalDialog != null) {

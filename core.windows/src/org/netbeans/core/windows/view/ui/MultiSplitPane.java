@@ -58,11 +58,11 @@ public class MultiSplitPane extends JPanel
     //the divider that user is currently dragging with a mouse
     private MultiSplitDivider draggingDivider;
     //a list of draggable split dividers
-    private ArrayList dividers = new ArrayList();
+    private ArrayList<MultiSplitDivider> dividers = new ArrayList<MultiSplitDivider>();
     //true if the list of children has been updated
     private boolean dirty = true;
     //a list of children cells (component wrappers)
-    private ArrayList /*MultiSplitCell*/ cells = new ArrayList();
+    private ArrayList<MultiSplitCell> cells = new ArrayList<MultiSplitCell>();
     //split orientation JSplitPane.HORIZONTAL_SPLIT or JSplitPane.VERTICAL_SPLIT
     private int orientation;
     //the width or height of the divider bar
@@ -101,7 +101,7 @@ public class MultiSplitPane extends JPanel
         this.orientation = orientation;
 
         //list of components currently displayed in the split
-        ArrayList currentComponents = collectComponents();
+        List<Component> currentComponents = collectComponents();
         
         cells.clear();
         for( int i=0; i<childrenViews.length; i++ ) {
@@ -109,20 +109,18 @@ public class MultiSplitPane extends JPanel
                                            splitWeights[i], 
                                            isHorizontalSplit() ) );
         }
-        ArrayList updatedComponents = collectComponents();
+        List<Component> updatedComponents = collectComponents();
         
-        ArrayList removed = new ArrayList( currentComponents );
+        ArrayList<Component> removed = new ArrayList<Component>( currentComponents );
         removed.removeAll( updatedComponents ); //componets that were removed from the split
-        ArrayList added = new ArrayList( updatedComponents );
+        ArrayList<Component> added = new ArrayList<Component>( updatedComponents );
         added.removeAll( currentComponents ); //components that were added to the split
         
-        for( Iterator i=removed.iterator(); i.hasNext(); ) {
-            Component c = (Component)i.next();
+        for(Component c: removed) {
             remove( c );
         }
         
-        for( Iterator i=added.iterator(); i.hasNext(); ) {
-            Component c = (Component)i.next();
+        for(Component c: added) {
             add( c );
         }
 
@@ -162,8 +160,8 @@ public class MultiSplitPane extends JPanel
         return orientation == JSplitPane.HORIZONTAL_SPLIT;
     }
     
-    private ArrayList collectComponents() {
-        ArrayList res = new ArrayList( getCellCount() );
+    private List<Component> collectComponents() {
+        ArrayList<Component> res = new ArrayList<Component>( getCellCount() );
         for( int i=0; i<getCellCount(); i++ ) {
             MultiSplitCell cell = cellAt( i );
             Component c = cell.getComponent();
@@ -176,7 +174,7 @@ public class MultiSplitPane extends JPanel
     /**
      * Calculate split weights for all children components according to split's current dimensions.
      */
-    public void calculateSplitWeights( ArrayList visibleViews, ArrayList splitWeights ) {
+    public void calculateSplitWeights( List<ViewElement> visibleViews, List<Double> splitWeights ) {
         double size = isHorizontalSplit() ? getSize().width : getSize().height;
         if( size <= 0.0 )
             return;
@@ -285,8 +283,7 @@ public class MultiSplitPane extends JPanel
     }
 
     private MultiSplitDivider dividerAtPoint( Point p ) {
-        for( Iterator i=dividers.iterator(); i.hasNext(); ) {
-            MultiSplitDivider d = (MultiSplitDivider)i.next();
+        for(MultiSplitDivider d: dividers) {
             if( d.containsPoint( p ) )
                 return d;
         }
@@ -296,8 +293,7 @@ public class MultiSplitPane extends JPanel
     public void paint( Graphics g ) {
         super.paint(g);
         //paint split bars
-        for( Iterator i=dividers.iterator(); i.hasNext(); ) {
-            MultiSplitDivider divider = (MultiSplitDivider)i.next();
+        for(MultiSplitDivider divider: dividers) {
             divider.paint( g );
         }
     }
@@ -349,7 +345,7 @@ public class MultiSplitPane extends JPanel
      */
     private void grow( int delta ) {
         //children with resize weight > 0 that are not collapsed
-        ArrayList hungryCells = getResizeHungryCells();
+        List<MultiSplitCell> hungryCells = getResizeHungryCells();
 
         //grow some/all child windows
         if( !hungryCells.isEmpty() ) {
@@ -358,7 +354,7 @@ public class MultiSplitPane extends JPanel
             distributeDelta( delta, hungryCells );
         } else {
             //resize all children proportionally
-            ArrayList resizeableCells = new ArrayList( cells );
+            ArrayList<MultiSplitCell> resizeableCells = new ArrayList<MultiSplitCell>( cells );
             normalizeResizeWeights( resizeableCells );
             distributeDelta( delta, resizeableCells );
         }
@@ -374,7 +370,7 @@ public class MultiSplitPane extends JPanel
         int delta = -negativeDelta;
 
         //children with resize weight > 0 that are not collapsed
-        ArrayList hungryCells = getResizeHungryCells();
+        List<MultiSplitCell> hungryCells = getResizeHungryCells();
 
         //first find out how much cells with non-zero resize weight can shrink
         int resizeArea = calculateShrinkableArea( hungryCells );
@@ -392,7 +388,7 @@ public class MultiSplitPane extends JPanel
         if( delta > 0 ) {
             //hungry cells did not consume the complete delta, 
             //distribute the remaining delta among other resizeable cells
-            ArrayList resizeableCells = new ArrayList( cells );
+            ArrayList<MultiSplitCell> resizeableCells = new ArrayList<MultiSplitCell>( cells );
 
             resizeArea = calculateShrinkableArea( resizeableCells );
             if( resizeArea >= delta ) {
@@ -414,9 +410,9 @@ public class MultiSplitPane extends JPanel
      * Children cells that cannot be resized are removed from the given list and
      * resize weights of remaining cells are normalized.
      */
-    private int calculateShrinkableArea( ArrayList cells ) {
+    private int calculateShrinkableArea( List<MultiSplitCell> cells ) {
         int res = 0;
-        ArrayList nonShrinkable = new ArrayList( cells.size() );
+        ArrayList<MultiSplitCell> nonShrinkable = new ArrayList<MultiSplitCell>( cells.size() );
         for( int i=0; i<cells.size(); i++ ) {
             MultiSplitCell c = (MultiSplitCell)cells.get( i );
             int currentSize = c.getRequiredSize();
@@ -429,8 +425,7 @@ public class MultiSplitPane extends JPanel
         }
         
         cells.removeAll( nonShrinkable );
-        for( int i=0; i<cells.size(); i++ ) {
-            MultiSplitCell c = (MultiSplitCell)cells.get( i );
+        for(MultiSplitCell c: cells) {
             int currentSize = c.getRequiredSize();
             int minSize = c.getMinimumSize();
             c.setNormalizedResizeWeight( 1.0*(currentSize-minSize)/res );
@@ -442,10 +437,10 @@ public class MultiSplitPane extends JPanel
     /**
      * Distribute the given delta among given cell dimensions using their normalized weights.
      */
-    private void distributeDelta( int delta, ArrayList cells ) {
+    private void distributeDelta( int delta, List<MultiSplitCell> cells ) {
         int totalDistributed = 0; 
         for( int i=0; i<cells.size(); i++ ) {
-            MultiSplitCell cell = (MultiSplitCell)cells.get( i );
+            MultiSplitCell cell = cells.get( i );
             int cellDelta = (int)(cell.getNormalizedResizeWeight()*delta);
             totalDistributed += cellDelta;
             if( i == cells.size()-1 ) //fix rounding errors
@@ -478,8 +473,8 @@ public class MultiSplitPane extends JPanel
     /**
      * @return List of children cells with non-zero resize weight.
      */
-    ArrayList getResizeHungryCells() {
-        ArrayList res = new ArrayList( cells.size() );
+    List<MultiSplitCell> getResizeHungryCells() {
+        List<MultiSplitCell> res = new ArrayList<MultiSplitCell>( cells.size() );
         for( int i=0; i<getCellCount(); i++ ) {
             MultiSplitCell cell = cellAt( i );
             if( cell.getResizeWeight() <= 0.0 )
@@ -557,7 +552,7 @@ public class MultiSplitPane extends JPanel
                 return null;
             }
             
-            MultiSplitDivider divider = (MultiSplitDivider)dividers.get( i-childrenCount );
+            MultiSplitDivider divider = dividers.get( i-childrenCount );
             return divider;
         }
 

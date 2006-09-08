@@ -42,12 +42,14 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
     
     private final ElementAccessor splitRootAccessor;
     
-    private final Set separateModeAccessors;
+    private final Set<ModeAccessor> separateModeAccessors;
     
-    private final Set slidingModeAccessors;
+    private final Set<SlidingAccessor> slidingModeAccessors;
     
     /** Creates a new instance of ModesModelAccessorImpl. */
-    public ModeStructureAccessorImpl(ElementAccessor splitRootAccessor, Set separateModeAccessors, Set slidingModeAccessors) {
+    public ModeStructureAccessorImpl(ElementAccessor splitRootAccessor, 
+            Set<ModeAccessor> separateModeAccessors, 
+            Set<SlidingAccessor> slidingModeAccessors) {
         this.splitRootAccessor = splitRootAccessor;
         this.separateModeAccessors = separateModeAccessors;
         this.slidingModeAccessors = slidingModeAccessors;
@@ -58,11 +60,11 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
     }
     
     public ModeAccessor[] getSeparateModeAccessors() {
-        return (ModeAccessor[])separateModeAccessors.toArray(new ModeAccessor[0]);
+        return separateModeAccessors.toArray(new ModeAccessor[0]);
     }
     
     public SlidingAccessor[] getSlidingModeAccessors() {
-        return (SlidingAccessor[])slidingModeAccessors.toArray(new SlidingAccessor[0]);
+        return slidingModeAccessors.toArray(new SlidingAccessor[0]);
     }
 
     /** @param name name of mode */

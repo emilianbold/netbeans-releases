@@ -55,7 +55,7 @@ class GroupParser {
     
     private InternalConfig internalConfig;
     
-    private Map tcGroupParserMap = new HashMap(19);
+    private Map<String, TCGroupParser> tcGroupParserMap = new HashMap<String, TCGroupParser>(19);
     
     /** Unique group name from file name */
     private String groupName;
@@ -168,8 +168,8 @@ class GroupParser {
         
         //Check if corresponding module is present and enabled.
         //We must load configuration data first because module info is stored in XML.
-        List tcGroupCfgList = new ArrayList(tcGroupParserMap.size());
-        List toRemove = new ArrayList(tcGroupParserMap.size());
+        List<TCGroupConfig> tcGroupCfgList = new ArrayList<TCGroupConfig>(tcGroupParserMap.size());
+        List<TCGroupParser> toRemove = new ArrayList<TCGroupParser>(tcGroupParserMap.size());
         for (Iterator it = tcGroupParserMap.keySet().iterator(); it.hasNext(); ) {
             TCGroupParser tcGroupParser = (TCGroupParser) tcGroupParserMap.get(it.next());
             TCGroupConfig tcGroupCfg;
@@ -250,13 +250,13 @@ class GroupParser {
     private void writeTCGroups (GroupConfig sc) throws IOException {
         if (DEBUG) Debug.log(GroupParser.class, "writeTCGroups ENTER" + " group:" + getName());
         //Step 1: Clean obsolete tcGroup parsers
-        Map tcGroupConfigMap = new HashMap(19);
+        Map<String, TCGroupConfig> tcGroupConfigMap = new HashMap<String, TCGroupConfig>(19);
         for (int i = 0; i < sc.tcGroupConfigs.length; i++) {
             tcGroupConfigMap.put(sc.tcGroupConfigs[i].tc_id, sc.tcGroupConfigs[i]);
         }
-        List toDelete = new ArrayList(10);
-        for (Iterator it = tcGroupParserMap.keySet().iterator(); it.hasNext(); ) {
-            TCGroupParser tcGroupParser = (TCGroupParser) tcGroupParserMap.get(it.next());
+        List<String> toDelete = new ArrayList<String>(10);
+        for (String s: tcGroupParserMap.keySet()) {
+            TCGroupParser tcGroupParser = tcGroupParserMap.get(s);
             if (!tcGroupConfigMap.containsKey(tcGroupParser.getName())) {
                 toDelete.add(tcGroupParser.getName());
             }
@@ -267,7 +267,7 @@ class GroupParser {
             tcGroupParserMap.remove(toDelete.get(i));
             /*if (DEBUG) Debug.log(GroupParser.class, "-- GroupParser.writeTCGroups"
             + " ** DELETE tcGroupParser: " + toDelete.get(i));*/
-            deleteLocalTCGroup((String) toDelete.get(i));
+            deleteLocalTCGroup(toDelete.get(i));
         }
         
         //Step 2: Create missing tcGoup parsers

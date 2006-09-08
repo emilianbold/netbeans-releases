@@ -39,10 +39,10 @@ import org.netbeans.core.windows.Constants;
  */
 final class TopComponentSubModel {
 
-    /** List of oopened TopComponents. */
-    private final List openedTopComponents = new ArrayList(10);
+    /** List of opened TopComponents. */
+    private final List<TopComponent> openedTopComponents = new ArrayList<TopComponent>(10);
     /** List of all TopComponent IDs (both opened and closed). */
-    private final List tcIDs = new ArrayList(10);
+    private final List<String> tcIDs = new ArrayList<String>(10);
     /** kind of mode model this sub model is part of */
     private final int kind;
     /** Selected TopComponent ID. Has to be present in openedTopComponenets. */
@@ -52,13 +52,13 @@ final class TopComponentSubModel {
         this.kind = kind;
     }
     
-    public List getTopComponents() {
-        List l = new ArrayList(openedTopComponents);
+    public List<TopComponent> getTopComponents() {
+        List<TopComponent> l = new ArrayList<TopComponent>(openedTopComponents);
         
-        List ids = new ArrayList(tcIDs);
-        List ll = new ArrayList(ids.size());
-        for(Iterator it = ids.iterator(); it.hasNext(); ) {
-            String tcID = (String)it.next();
+        List<String> ids = new ArrayList<String>(tcIDs);
+        List<TopComponent> ll = new ArrayList<TopComponent>(ids.size());
+        for(Iterator<String> it = ids.iterator(); it.hasNext(); ) {
+            String tcID = it.next();
             TopComponent tc = getTopComponent(tcID);
             if(tc != null) {
                 ll.add(tc);
@@ -73,8 +73,8 @@ final class TopComponentSubModel {
         return l;
     }
     
-    public List getOpenedTopComponents() {
-        return new ArrayList(openedTopComponents);
+    public List<TopComponent> getOpenedTopComponents() {
+        return new ArrayList<TopComponent>(openedTopComponents);
     }
 
     public boolean addOpenedTopComponent(TopComponent tc) {
@@ -272,24 +272,24 @@ final class TopComponentSubModel {
         selectedTopComponentID = tcID;
     }
     
-    public List getOpenedTopComponentsIDs() {
-        List l = new ArrayList(openedTopComponents.size());
-        for(Iterator it = openedTopComponents.iterator(); it.hasNext(); ) {
-            l.add(getID((TopComponent)it.next()));
+    public List<String> getOpenedTopComponentsIDs() {
+        List<String> l = new ArrayList<String>(openedTopComponents.size());
+        for(Iterator<TopComponent> it = openedTopComponents.iterator(); it.hasNext(); ) {
+            l.add(getID(it.next()));
         }
         return l;
     }
     
     // XXX
-    public List getClosedTopComponentsIDs() {
-        List closedIDs = new ArrayList(tcIDs);
+    public List<String> getClosedTopComponentsIDs() {
+        List<String> closedIDs = new ArrayList<String>(tcIDs);
         closedIDs.removeAll(getOpenedTopComponentsIDs());
         return closedIDs;
     }
 
     // XXX
-    public List getTopComponentsIDs() {
-        return new ArrayList(tcIDs);
+    public List<String> getTopComponentsIDs() {
+        return new ArrayList<String>(tcIDs);
     }
     
     // XXX

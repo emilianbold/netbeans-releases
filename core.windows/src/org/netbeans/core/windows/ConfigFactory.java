@@ -89,13 +89,13 @@ abstract class ConfigFactory {
     
     /** @return list of <code>ModeConfig</code>S. */
     private static ModeConfig[] createDefaultModeConfigs() {
-        List l = new ArrayList();
+        List<ModeConfig> l = new ArrayList<ModeConfig>();
         l.add(createDefaultExplorerModeConfig());
         l.add(createDefaultPropertiesModeConfig());
         l.add(createDefaultEditorModeConfig());
         l.add(createDefaultOutputModeConfig());
         l.add(createDefaultFormModeConfig());
-        return (ModeConfig[])l.toArray(new ModeConfig[0]);
+        return l.toArray(new ModeConfig[0]);
     }
     
     private static ModeConfig createDefaultExplorerModeConfig() {
@@ -122,9 +122,9 @@ abstract class ConfigFactory {
     }
     
     private static TCRefConfig[] createDefaultExplorerTCRefConfigs() {
-        List tcRefConfigs = new ArrayList();
+        List<TCRefConfig> tcRefConfigs = new ArrayList<TCRefConfig>();
         tcRefConfigs.add(createDefaultRuntimeTCRefConfig());
-        return (TCRefConfig[])tcRefConfigs.toArray(new TCRefConfig[0]);
+        return tcRefConfigs.toArray(new TCRefConfig[0]);
     }
 
     private static TCRefConfig createDefaultRuntimeTCRefConfig() {
@@ -158,9 +158,9 @@ abstract class ConfigFactory {
     }
     
     private static TCRefConfig[] createDefaultPropertiesTCRefConfigs() {
-        List tcRefConfigs = new ArrayList();
+        List<TCRefConfig> tcRefConfigs = new ArrayList<TCRefConfig>();
         tcRefConfigs.add(createDefaultPropertiesTCRefConfig());
-        return (TCRefConfig[])tcRefConfigs.toArray(new TCRefConfig[0]);
+        return tcRefConfigs.toArray(new TCRefConfig[0]);
     }
 
     private static TCRefConfig createDefaultPropertiesTCRefConfig() {
@@ -191,9 +191,9 @@ abstract class ConfigFactory {
     }
     
     private static TCRefConfig[] createDefaultEditorTCRefConfigs() {
-        List tcRefConfigs = new ArrayList();
+        List<TCRefConfig> tcRefConfigs = new ArrayList<TCRefConfig>();
         tcRefConfigs.add(createDefaultWelcomeTCRefConfig());
-        return (TCRefConfig[])tcRefConfigs.toArray(new TCRefConfig[0]);
+        return tcRefConfigs.toArray(new TCRefConfig[0]);
     }
 
     private static TCRefConfig createDefaultWelcomeTCRefConfig() {
@@ -228,9 +228,9 @@ abstract class ConfigFactory {
     }
     
     private static TCRefConfig[] createDefaultOutputTCRefConfigs() {
-        List tcRefConfigs = new ArrayList();
+        List<TCRefConfig> tcRefConfigs = new ArrayList<TCRefConfig>();
         tcRefConfigs.add(createDefaultOutputTCRefConfig());
-        return (TCRefConfig[])tcRefConfigs.toArray(new TCRefConfig[0]);
+        return tcRefConfigs.toArray(new TCRefConfig[0]);
     }
 
     private static TCRefConfig createDefaultOutputTCRefConfig() {
@@ -265,10 +265,10 @@ abstract class ConfigFactory {
     }
     
     private static TCRefConfig[] createDefaultFormTCRefConfigs() {
-        List tcRefConfigs = new ArrayList();
+        List<TCRefConfig> tcRefConfigs = new ArrayList<TCRefConfig>();
         tcRefConfigs.add(createDefaultComponentInspectorTCRefConfig());
         tcRefConfigs.add(createDefaultComponentPaletteTCRefConfig());
-        return (TCRefConfig[])tcRefConfigs.toArray(new TCRefConfig[0]);
+        return tcRefConfigs.toArray(new TCRefConfig[0]);
     }
 
     private static TCRefConfig createDefaultComponentInspectorTCRefConfig() {
@@ -288,9 +288,9 @@ abstract class ConfigFactory {
 
     /** @return list of <code>GroupConfig</code>S. */
     private static GroupConfig[] createDefaultGroupConfigs() {
-        List l = new ArrayList();
+        List<GroupConfig> l = new ArrayList<GroupConfig>();
         // TODO
-        return (GroupConfig[])l.toArray(new GroupConfig[0]);
+        return l.toArray(new GroupConfig[0]);
     }
 
 

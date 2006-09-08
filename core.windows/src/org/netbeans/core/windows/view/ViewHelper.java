@@ -83,15 +83,15 @@ final class ViewHelper {
     
     private static ModeStructureAccessorImpl createModeStructureAccessor(ModeStructureSnapshot mss) {
         ElementAccessor splitRoot = createVisibleAccessor(mss.getSplitRootSnapshot());
-        Set separateModes = createSeparateModeAccessors(mss.getSeparateModeSnapshots());
-        Set slidingModes = createSlidingModeAccessors(mss.getSlidingModeSnapshots());
+        Set<ModeAccessor> separateModes = createSeparateModeAccessors(mss.getSeparateModeSnapshots());
+        Set<SlidingAccessor> slidingModes = createSlidingModeAccessors(mss.getSlidingModeSnapshots());
         
         ModeStructureAccessorImpl msa =  new ModeStructureAccessorImpl(splitRoot, separateModes, slidingModes);
         return msa;
     }
     
-    private static Set createSeparateModeAccessors(ModeStructureSnapshot.ModeSnapshot[] separateModeSnapshots) {
-        Set s = new HashSet();
+    private static Set<ModeAccessor> createSeparateModeAccessors(ModeStructureSnapshot.ModeSnapshot[] separateModeSnapshots) {
+        Set<ModeAccessor> s = new HashSet<ModeAccessor>();
         for(int i = 0; i < separateModeSnapshots.length; i++) {
             ModeStructureSnapshot.ModeSnapshot snapshot = separateModeSnapshots[i];
             if(snapshot.isVisibleSeparate()) {
@@ -104,8 +104,8 @@ final class ViewHelper {
         return s;
     }
     
-    private static Set createSlidingModeAccessors(ModeStructureSnapshot.SlidingModeSnapshot[] slidingModeSnapshots) {
-        Set s = new HashSet();
+    private static Set<SlidingAccessor> createSlidingModeAccessors(ModeStructureSnapshot.SlidingModeSnapshot[] slidingModeSnapshots) {
+        Set<SlidingAccessor> s = new HashSet<SlidingAccessor>();
         ModeStructureSnapshot.SlidingModeSnapshot snapshot; 
         for(int i = 0; i < slidingModeSnapshots.length; i++) {
             snapshot = slidingModeSnapshots[i];
@@ -163,8 +163,8 @@ final class ViewHelper {
     private static ElementAccessor createSplitAccessor(ModeStructureSnapshot.SplitSnapshot splitSnapshot) {
         List visibleChildren = splitSnapshot.getVisibleChildSnapshots();
         
-        ArrayList children = new ArrayList( visibleChildren.size() );
-        ArrayList weights = new ArrayList( visibleChildren.size() );
+        ArrayList<ElementAccessor> children = new ArrayList<ElementAccessor>( visibleChildren.size() );
+        ArrayList<Double> weights = new ArrayList<Double>( visibleChildren.size() );
         
         int index = 0;
         for( Iterator i=visibleChildren.iterator(); i.hasNext(); index++ ) {

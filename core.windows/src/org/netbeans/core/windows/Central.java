@@ -420,7 +420,7 @@ final class Central implements ControllerHandler {
             return;
         }
         
-        TopComponent[] tcs = (TopComponent[])getModeOpenedTopComponents(mode).toArray(new TopComponent[0]);
+        TopComponent[] tcs = getModeOpenedTopComponents(mode).toArray(new TopComponent[0]);
         
         for(int i = 0; i < tcs.length; i++) {
             TopComponent tc = tcs[i];
@@ -668,7 +668,7 @@ final class Central implements ControllerHandler {
     }
 
     // XXX
-    public List getModeOpenedTopComponentsIDs(ModeImpl mode) {
+    public List<String> getModeOpenedTopComponentsIDs(ModeImpl mode) {
         return model.getModeOpenedTopComponentsIDs(mode);
     }
     // XXX
@@ -847,19 +847,19 @@ final class Central implements ControllerHandler {
             return;
         }
 
-        Set openedBeforeTopComponents = new HashSet();
-        Set tcs = tcGroup.getTopComponents();
-        for(Iterator it = tcs.iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
+        Set<TopComponent> openedBeforeTopComponents = new HashSet<TopComponent>();
+        Set<TopComponent> tcs = tcGroup.getTopComponents();
+        for(Iterator<TopComponent> it = tcs.iterator(); it.hasNext(); ) {
+            TopComponent tc = it.next();
             if( tc.isOpened() ) {
                 openedBeforeTopComponents.add( tc );
             }
         }
         
         tcs = tcGroup.getOpeningSet();
-        List openedTcs = new ArrayList();
-        for(Iterator it = tcs.iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
+        List<TopComponent> openedTcs = new ArrayList<TopComponent>();
+        for(Iterator<TopComponent> it = tcs.iterator(); it.hasNext(); ) {
+            TopComponent tc = it.next();
             if(!tc.isOpened()) {
                 WindowManagerImpl wm = WindowManagerImpl.getInstance();
                 ModeImpl mode = (ModeImpl)wm.findMode(tc);
@@ -873,17 +873,16 @@ final class Central implements ControllerHandler {
         }
 
         
-        model.openGroup(tcGroup, new HashSet(openedTcs), openedBeforeTopComponents);
+        model.openGroup(tcGroup, new HashSet<TopComponent>(openedTcs), openedBeforeTopComponents);
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(tcGroup, 
                 View.CHANGE_TOPCOMPONENT_ARRAY_ADDED, null,
-                (TopComponent[])openedTcs.toArray(new TopComponent[0])));
+                openedTcs.toArray(new TopComponent[0])));
         }
 
         // Notify oepned.
-        for(Iterator it = openedTcs.iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
+        for(TopComponent tc: openedTcs) {
             WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
         }
     }
@@ -895,16 +894,16 @@ final class Central implements ControllerHandler {
         }
         
         Set tcs = tcGroup.getClosingSet();
-        List closedTcs = new ArrayList();
+        List<TopComponent> closedTcs = new ArrayList<TopComponent>();
         
-        Set openedTcsByGroup = model.getGroupOpenedTopComponents(tcGroup);
+        Set<TopComponent> openedTcsByGroup = model.getGroupOpenedTopComponents(tcGroup);
         
         // Find out TC which were opened before the group was opened.
-        Set openedTcsBefore = model.getGroupOpenedBeforeTopComponents(tcGroup);
+        Set<TopComponent> openedTcsBefore = model.getGroupOpenedBeforeTopComponents(tcGroup);
 
         // Adjust opening flags.
-        for(Iterator it = model.getGroupTopComponents(tcGroup).iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
+        for(Iterator<TopComponent> it = model.getGroupTopComponents(tcGroup).iterator(); it.hasNext(); ) {
+            TopComponent tc = it.next();
             boolean wasOpenedBefore = openedTcsBefore.contains(tc);
             boolean openedByGroup = openedTcsByGroup.contains(tc);
             
@@ -965,12 +964,11 @@ final class Central implements ControllerHandler {
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(tcGroup, 
                 View.CHANGE_TOPCOMPONENT_ARRAY_REMOVED, null,
-                (TopComponent[])closedTcs.toArray(new TopComponent[0])));
+                closedTcs.toArray(new TopComponent[0])));
         }
         
         // Notify closed.
-        for(Iterator it = closedTcs.iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
+        for(TopComponent tc: closedTcs) {
             WindowManagerImpl.getInstance().notifyTopComponentClosed(tc);
         }
     }
@@ -1028,19 +1026,19 @@ final class Central implements ControllerHandler {
     }
     
     // XXX>>
-    public Set getGroupTopComponentsIDs(TopComponentGroupImpl tcGroup) {
+    public Set<String> getGroupTopComponentsIDs(TopComponentGroupImpl tcGroup) {
         return model.getGroupTopComponentsIDs(tcGroup);
     }
     
-    public Set getGroupOpeningSetIDs(TopComponentGroupImpl tcGroup) {
+    public Set<String> getGroupOpeningSetIDs(TopComponentGroupImpl tcGroup) {
         return model.getGroupOpeningSetIDs(tcGroup);
     }
     
-    public Set getGroupClosingSetIDs(TopComponentGroupImpl tcGroup) {
+    public Set<String> getGroupClosingSetIDs(TopComponentGroupImpl tcGroup) {
         return model.getGroupClosingSetIDs(tcGroup);
     }
     
-    public Set getGroupOpenedTopComponentsIDs(TopComponentGroupImpl tcGroup) {
+    public Set<String> getGroupOpenedTopComponentsIDs(TopComponentGroupImpl tcGroup) {
         return model.getGroupOpenedTopComponentsIDs(tcGroup);
     }
     // XXX<<
@@ -1060,7 +1058,7 @@ final class Central implements ControllerHandler {
     }
     
     /** Gets <code>Set</code> of all <code>Mode</code>'s. */
-    public Set getModes () {
+    public Set<ModeImpl> getModes () {
         return model.getModes();
     }
 
@@ -1167,11 +1165,11 @@ final class Central implements ControllerHandler {
         return model.getModeSelectedTopComponent(mode);
     }
     /** Gets list of top components in this workspace. */
-    public List getModeTopComponents(ModeImpl mode) {
+    public List<TopComponent> getModeTopComponents(ModeImpl mode) {
         return model.getModeTopComponents(mode);
     }
     /** Gets list of top components in this workspace. */
-    public List getModeOpenedTopComponents(ModeImpl mode) {
+    public List<TopComponent> getModeOpenedTopComponents(ModeImpl mode) {
         return model.getModeOpenedTopComponents(mode);
     }
     /// << Mode specific
@@ -1179,7 +1177,7 @@ final class Central implements ControllerHandler {
     
     ////////////////////////////////////
     // TopComponentGroup specific >>
-    public Set getTopComponentGroups() {
+    public Set<TopComponentGroupImpl> getTopComponentGroups() {
         return model.getTopComponentGroups();
     }
     
@@ -1187,12 +1185,12 @@ final class Central implements ControllerHandler {
         return model.getGroupName(tcGroup);
     }
     
-    public Set getGroupTopComponents(TopComponentGroupImpl tcGroup) {
+    public Set<TopComponent> getGroupTopComponents(TopComponentGroupImpl tcGroup) {
         return model.getGroupTopComponents(tcGroup);
     }
     
     /** Gets opening top components for group from model. */
-    public Set getGroupOpeningTopComponents(TopComponentGroupImpl tcGroup) {
+    public Set<TopComponent> getGroupOpeningTopComponents(TopComponentGroupImpl tcGroup) {
         return model.getGroupOpeningTopComponents(tcGroup);
     }
     

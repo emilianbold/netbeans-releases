@@ -58,7 +58,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     private final ControllerHandler controllerHandler;
     
-    private final Set showingTopComponents = new WeakSet(10);
+    private final Set<TopComponent> showingTopComponents = new WeakSet<TopComponent>(10);
 
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(DefaultView.class);
@@ -124,15 +124,14 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
 
         // Update showing TopComponents.
-        Set oldShowing = new HashSet(showingTopComponents);
-        Set newShowing = hierarchy.getShowingTopComponents();
+        Set<TopComponent> oldShowing = new HashSet<TopComponent>(showingTopComponents);
+        Set<TopComponent> newShowing = hierarchy.getShowingTopComponents();
         showingTopComponents.clear();
         showingTopComponents.addAll(newShowing);
         
-        Set toShow = new HashSet(newShowing);
+        Set<TopComponent> toShow = new HashSet<TopComponent>(newShowing);
         toShow.removeAll(oldShowing);
-        for(Iterator it = toShow.iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
+        for(TopComponent tc: toShow) {
             WindowManagerImpl.getInstance().componentShowing(tc);
         }
         if(DEBUG) {
@@ -451,10 +450,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             }
         }
         
-        Set toHide = new HashSet(oldShowing);
+        Set<TopComponent> toHide = new HashSet<TopComponent>(oldShowing);
         toHide.removeAll(newShowing);
-        for(Iterator it = toHide.iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
+        for(TopComponent tc: toHide) {
             WindowManagerImpl.getInstance().componentHidden(tc);
         }
     }
@@ -951,11 +949,11 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
     ///////////////
     // ViewAccessor
-    public Set getModeComponents() {
+    public Set<Component> getModeComponents() {
         return hierarchy.getModeComponents();
     }
     
-    public Set getSeparateModeFrames() {
+    public Set<Component> getSeparateModeFrames() {
         return hierarchy.getSeparateModeFrames();
     }
     

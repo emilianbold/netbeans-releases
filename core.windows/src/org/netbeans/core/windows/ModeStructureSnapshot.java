@@ -38,13 +38,14 @@ public class ModeStructureSnapshot {
 
     private final ElementSnapshot splitRootSnapshot;
 
-    private final Set separateModeSnapshots;
+    private final Set<ModeSnapshot> separateModeSnapshots;
 
-    private final Set slidingModeSnapshots;
+    private final Set<SlidingModeSnapshot> slidingModeSnapshots;
 
     /** Creates a new instance of ModesModelSnapshot. */
-    public ModeStructureSnapshot(ElementSnapshot splitRootSnapshot, Set separateModeSnapshots,
-                                    Set slidingModeSnapshots) {
+    public ModeStructureSnapshot(ElementSnapshot splitRootSnapshot, 
+            Set<ModeSnapshot> separateModeSnapshots,
+            Set<SlidingModeSnapshot> slidingModeSnapshots) {
         this.splitRootSnapshot = splitRootSnapshot;
         this.separateModeSnapshots = separateModeSnapshots;
         this.slidingModeSnapshots = slidingModeSnapshots;
@@ -55,11 +56,11 @@ public class ModeStructureSnapshot {
     }
     
     public ModeSnapshot[] getSeparateModeSnapshots() {
-        return (ModeSnapshot[])separateModeSnapshots.toArray(new ModeSnapshot[0]);
+        return separateModeSnapshots.toArray(new ModeSnapshot[0]);
     }
     
     public SlidingModeSnapshot[] getSlidingModeSnapshots() {
-        return (SlidingModeSnapshot[])slidingModeSnapshots.toArray(new SlidingModeSnapshot[0]);
+        return slidingModeSnapshots.toArray(new SlidingModeSnapshot[0]);
     }
 
     /** @param name name of mode */
@@ -167,12 +168,13 @@ public class ModeStructureSnapshot {
     /** */ 
     public static class SplitSnapshot extends ElementSnapshot {
         private final int orientation;
-        private final List childSnapshots = new ArrayList();
-        private final Map childSnapshot2splitWeight = new HashMap();
+        private final List<ElementSnapshot> childSnapshots = new ArrayList<ElementSnapshot>();
+        private final Map<ElementSnapshot, Double> childSnapshot2splitWeight = new HashMap<ElementSnapshot, Double>();
         private final double resizeWeight;
         
         public SplitSnapshot(ModelElement originator, SplitSnapshot parent, int orientation,
-        List childSnapshots, Map childSnapshot2splitWeight, double resizeWeight) {
+                List<ElementSnapshot> childSnapshots, 
+                Map<ElementSnapshot, Double> childSnapshot2splitWeight, double resizeWeight) {
             super(originator, parent); // XXX PENDING originator corresponds to the first child model element.
             
             this.orientation = orientation;
@@ -186,9 +188,9 @@ public class ModeStructureSnapshot {
         }
         
         public List getVisibleChildSnapshots() {
-            List l = getChildSnapshots();
-            for(Iterator it = l.iterator(); it.hasNext(); ) {
-                ElementSnapshot child = (ElementSnapshot)it.next();
+            List<ElementSnapshot> l = getChildSnapshots();
+            for(Iterator<ElementSnapshot> it = l.iterator(); it.hasNext(); ) {
+                ElementSnapshot child = it.next();
                 if(!child.hasVisibleDescendant()) {
                     it.remove();
                 }
@@ -197,8 +199,8 @@ public class ModeStructureSnapshot {
             return l;
         }
         
-        public List getChildSnapshots() {
-            return new ArrayList(childSnapshots);
+        public List<ElementSnapshot> getChildSnapshots() {
+            return new ArrayList<ElementSnapshot>(childSnapshots);
         }
         
         public double getChildSnapshotSplitWeight(ElementSnapshot childSnapshot) {
@@ -271,7 +273,7 @@ public class ModeStructureSnapshot {
             this.bounds = mode.getBounds();
             this.frameState = mode.getFrameState();
             this.selectedTopComponent = mode.getSelectedTopComponent();
-            this.openedTopComponents = (TopComponent[])mode.getOpenedTopComponents().toArray(new TopComponent[0]);
+            this.openedTopComponents = mode.getOpenedTopComponents().toArray(new TopComponent[0]);
             this.resizeWeight = resizeWeight;
         }
         

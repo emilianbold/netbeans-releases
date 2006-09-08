@@ -45,7 +45,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     /** Activated top component */
     private TopComponent activatedTopComponent;
     /** Set of opened TopComponents */
-    private final Set openSet = new WeakSet(30);
+    private final Set<TopComponent> openSet = new WeakSet<TopComponent>(30);
     /** Currently selected nodes. */
     private Node[] currentNodes;
     /** Last non-null value of current nodes. (If null -> it means they are
@@ -65,7 +65,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
      *
      * @return immutable set of {@link TopComponent}s
      */
-    public synchronized Set getOpened() {
+    public synchronized Set<TopComponent> getOpened() {
         return java.util.Collections.unmodifiableSet(openSet);
     }
     
@@ -152,9 +152,9 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         if (openSet.contains(tc)) {
             return;
         }
-        Set old = new HashSet(openSet);
+        Set<TopComponent> old = new HashSet<TopComponent>(openSet);
         openSet.add(tc);
-        doFirePropertyChange(PROP_OPENED, old, new HashSet(openSet));
+        doFirePropertyChange(PROP_OPENED, old, new HashSet<TopComponent>(openSet));
     }
     
     /** Called when a TopComponent is closed. */
@@ -163,9 +163,9 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
             return;
         }
 
-        Set old = new HashSet(openSet);
+        Set<TopComponent> old = new HashSet<TopComponent>(openSet);
         openSet.remove(tc);
-        doFirePropertyChange(PROP_OPENED, old, new HashSet(openSet));
+        doFirePropertyChange(PROP_OPENED, old, new HashSet<TopComponent>(openSet));
     }
     
     /** Called when selected nodes changed. */

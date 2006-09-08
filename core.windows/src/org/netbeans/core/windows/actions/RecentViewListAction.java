@@ -192,7 +192,7 @@ public final class RecentViewListAction extends AbstractAction
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent[] documents = wm.getRecentViewList();
         
-        List docsList = new ArrayList();
+        List<TopComponent> docsList = new ArrayList<TopComponent>();
         for (int i = 0; i < documents.length; i++) {
             TopComponent tc = documents[i];
             if (tc == null) {
@@ -207,7 +207,7 @@ public final class RecentViewListAction extends AbstractAction
                 docsList.add(tc);
             }
         }
-        return (TopComponent[])docsList.toArray(new TopComponent[0]);
+        return docsList.toArray(new TopComponent[0]);
     }
 }
 

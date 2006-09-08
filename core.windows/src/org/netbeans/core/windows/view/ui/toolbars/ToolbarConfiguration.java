@@ -97,7 +97,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     /** standard panel for all configurations */
     private static JPanel  toolbarPanel;
     /** mapping from configuration instances to their names */
-    private static WeakHashMap confs2Names = new WeakHashMap(10);
+    private static WeakHashMap<ToolbarConfiguration, String> confs2Names = 
+            new WeakHashMap<ToolbarConfiguration, String>(10);
     
     /** toolbar layout manager for this configuration */
     private        ToolbarLayout toolbarLayout;
@@ -105,11 +106,11 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     private   ToolbarDnDListener toolbarListener;
 
     /** All toolbars which are represented in ToolbarPool too. */
-    private WeakHashMap allToolbars;
+    private WeakHashMap<String, ToolbarConstraints> allToolbars;
     /** List of visible toolbar rows. */
-    private Vector      toolbarRows;
+    private Vector<ToolbarRow> toolbarRows;
     /** All invisible toolbars (visibility==false || tb.isCorrect==false). */
-    private HashMap     invisibleToolbars;
+    private HashMap<ToolbarConstraints,Integer>     invisibleToolbars;
     
     /** Toolbar menu is global so it is static. It it the same for all toolbar
      configurations. */
@@ -118,7 +119,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     /** Toolbars which was described in DOM Document,
 	but which aren't represented in ToolbarPool.
 	For exapmle ComponentPalette and first start of IDE. */
-    private WeakHashMap waitingToolbars;
+    private WeakHashMap<String, ToolbarConstraints> waitingToolbars;
     /** Name of configuration. */
     private String      configName;
     /** Display name of configuration. */
@@ -128,7 +129,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     /** variable to signal that we are just writing the content of configuration
      * and we should ignore all changes. In such case set to Boolean.TRUE
      */
-    private final ThreadLocal WRITE_IN_PROGRESS = new ThreadLocal ();
+    private final ThreadLocal<Boolean> WRITE_IN_PROGRESS = new ThreadLocal<Boolean> ();
 
    // private static final ResourceBundle bundle = NbBundle.getBundle (ToolbarConfiguration.class);
 
@@ -226,10 +227,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     /** Clean all the configuration parameters.
      */
     private void initInstance () {
-        allToolbars = new WeakHashMap();
-        waitingToolbars = new WeakHashMap();
-        toolbarRows = new Vector();
-        invisibleToolbars = new HashMap();
+        allToolbars = new WeakHashMap<String, ToolbarConstraints>();
+        waitingToolbars = new WeakHashMap<String, ToolbarConstraints>();
+        toolbarRows = new Vector<ToolbarRow>();
+        invisibleToolbars = new HashMap<ToolbarConstraints, Integer>();
         toolbarListener = new ToolbarDnDListener (this);
     }
     
@@ -284,7 +285,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @param name name of removed toolbar
      */
     ToolbarConstraints removeToolbar (String name) {
-        ToolbarConstraints tc = (ToolbarConstraints)allToolbars.remove (name);
+        ToolbarConstraints tc = allToolbars.remove (name);
         if (tc.destroy())
             checkToolbarRows();
         return tc;
@@ -307,9 +308,9 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         ToolbarRow next = null;
         int rowCount = toolbarRows.size();
         if( index > 0 && index <= rowCount )
-            prev = (ToolbarRow)toolbarRows.elementAt( index - 1 );
+            prev = toolbarRows.elementAt( index - 1 );
         if( index >= 0 && index < rowCount )
-            next = (ToolbarRow)toolbarRows.elementAt (index);
+            next = toolbarRows.elementAt (index);
 
         if (prev != null)
             prev.setNextRow (row);
@@ -402,10 +403,9 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     /** Updates cached preferred width of toolbar configuration.
      */
     void updatePrefWidth () {
-        Iterator it = toolbarRows.iterator();
         prefWidth = 0;
-        while (it.hasNext()) {
-            prefWidth = Math.max (prefWidth, ((ToolbarRow)it.next()).getPrefWidth());
+        for (ToolbarRow tr: toolbarRows) {
+            prefWidth = Math.max (prefWidth, tr.getPrefWidth());
         }
     }
 
@@ -451,7 +451,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @return toolbar constraints of specified name
      */
     ToolbarConstraints getToolbarConstraints (String name) {
-        return (ToolbarConstraints)allToolbars.get (name);
+        return allToolbars.get (name);
     }
 
     /** Checks toolbars constraints if there is some of specific name.
@@ -465,7 +465,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @return toolbar constraints for specifed toolbar name
      */
     ToolbarConstraints checkToolbarConstraints (String name, Integer position, Boolean visible, int toolbarIndex) {
-        ToolbarConstraints tc = (ToolbarConstraints)allToolbars.get (name);
+        ToolbarConstraints tc = allToolbars.get (name);
         if (tc == null)
             tc = new ToolbarConstraints (this, name, position, visible, toolbarIndex);
         else
@@ -482,12 +482,12 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     boolean checkConfigurationOver () {
         boolean change = false;
         String name;
-        Object[] waNas = waitingToolbars.keySet().toArray();
-        Object[] names = allToolbars.keySet().toArray();
+        String[] waNas = waitingToolbars.keySet().toArray(new String[0]);
+        String[] names = allToolbars.keySet().toArray(new String[0]);
         
         /* Checks ToolbarPool with waiting list. */
         for (int i = 0; i < waNas.length; i++) {
-            name = (String)waNas[i];
+            name = waNas[i];
             if (toolbarPool ().findToolbar (name) != null) {  /* If there is new toolbar in the pool
 							      which was sometimes described ... */
                 ToolbarConstraints tc = (ToolbarConstraints)waitingToolbars.remove (name);
@@ -500,7 +500,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
 
         /* Checks ToolbarPool with list of all toolbars ... reverse process than previous for. */
         for (int i = 0; i < names.length; i++) {
-            name = (String)names[i];
+            name = names[i];
             if (toolbarPool ().findToolbar (name) == null) {  /* If there is toolbar which is not represented int pool ... */
                 ToolbarConstraints tc = removeToolbar (name);  /* ... so let's remove toolbar from all toolbars ... */
                 waitingToolbars.put (name, tc);                /* ... and add to waiting list. */
@@ -545,7 +545,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      */
     private void addVisible (ToolbarConstraints tc) {
         int rC = toolbarRows.size();
-        int pos = ((Integer)invisibleToolbars.remove (tc)).intValue();
+        int pos = invisibleToolbars.remove (tc).intValue();
         tc.setVisible (true);
         for (int i = pos; i < pos + tc.getRowCount(); i++) {
             getRow (i).addToolbar (tc, tc.getPosition());
@@ -928,7 +928,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         final FileObject tbFO = NbPlaces.getDefault().toolbars().getPrimaryFile();
         final FileSystem tbFS = tbFO.getFileSystem();
 
-        Object prev = WRITE_IN_PROGRESS.get ();
+        Boolean prev = WRITE_IN_PROGRESS.get ();
         try {
             WRITE_IN_PROGRESS.set (Boolean.TRUE);
             tbFS.runAtomicAction (new FileSystem.AtomicAction () {
@@ -1041,13 +1041,13 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     // class WritableToolbarConfiguration
     static class WritableToolbarConfiguration {
 	/** List of rows. */
-        Vector rows;
+        Vector<ToolbarRow.WritableToolbarRow> rows;
 
 	/** Create new WritableToolbarConfiguration.
 	 * @param rs list of rows
 	 * @param iv map of invisible toolbars
 	 */
-        public WritableToolbarConfiguration (Vector rs, Map iv) {
+        public WritableToolbarConfiguration (Vector<ToolbarRow> rs, Map iv) {
             initRows (rs);
             initInvisible (iv);
             removeEmptyRows();
@@ -1056,12 +1056,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         /** Init list of writable rows.
 	 * @param rs list of rows
 	 */
-        void initRows (Vector rs) {
-            rows = new Vector();
-
-            Iterator it = rs.iterator();
-            while (it.hasNext()) {
-                rows.addElement (new ToolbarRow.WritableToolbarRow ((ToolbarRow)it.next()));
+        void initRows (Vector<ToolbarRow> rs) {
+            rows = new Vector<ToolbarRow.WritableToolbarRow>();
+            for (ToolbarRow r: rs) {
+                rows.addElement (new ToolbarRow.WritableToolbarRow (r));
             }
         }
 
@@ -1097,7 +1095,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
 	 */
         ToolbarRow.WritableToolbarRow getRow (int r) {
             try {
-                return (ToolbarRow.WritableToolbarRow)rows.elementAt (r);
+                return rows.elementAt (r);
             } catch (ArrayIndexOutOfBoundsException e) {
                 rows.addElement (new ToolbarRow.WritableToolbarRow ());
                 return getRow (r);

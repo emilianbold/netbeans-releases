@@ -203,27 +203,27 @@ public final class MainWindow extends JFrame {
         }
     }
     
-    private static Lookup.Result result;
+    private static Lookup.Result<StatusLineElementProvider> result;
     
     // package-private because StatusLineElementProviderTest
     static JPanel getStatusLineElements (JPanel panel) {
         // bugfix #56375, don't duplicate the listeners
         if (result == null) {            
-            result = Lookup.getDefault ().lookup (new Lookup.Template (StatusLineElementProvider.class));
+            result = Lookup.getDefault ().lookup (
+                    new Lookup.Template<StatusLineElementProvider> (StatusLineElementProvider.class));
             result.addLookupListener (new StatusLineElementsListener (panel));
         }
-        Collection/*<StatusLineElementProvider>*/ c = result.allInstances ();
+        Collection<? extends StatusLineElementProvider> c = result.allInstances ();
         if (c == null || c.isEmpty ()) {
             return null;
         }
-        Iterator/*<StatusLineElementProvider>*/ it = c.iterator ();
+        Iterator<? extends StatusLineElementProvider> it = c.iterator ();
         JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 0, 0));
         icons.setBorder (BorderFactory.createEmptyBorder (1, 0, 0, 2));
         boolean some = false;
         while (it.hasNext ()) {
-            Object o = it.next ();
-            assert o instanceof StatusLineElementProvider;
-            Component comp = ((StatusLineElementProvider) o).getStatusLineElement ();
+            StatusLineElementProvider o = it.next ();
+            Component comp = o.getStatusLineElement ();
             if (comp != null) {
                 some = true;
                 icons.add (comp);

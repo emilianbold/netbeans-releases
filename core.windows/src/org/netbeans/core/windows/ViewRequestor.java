@@ -49,7 +49,7 @@ class ViewRequestor {
     private final View view;
     
     /** List of requests to process. */
-    private final List requests = new ArrayList(10);
+    private final List<ViewRequest> requests = new ArrayList<ViewRequest>(10);
     // PENDING
     /** Instance of snapshot which is passed to view. Reflects the actual state of model.
      * Manipulate it in AWT thread only. */
@@ -202,11 +202,11 @@ class ViewRequestor {
                 return;
             }
             
-            rs = (ViewRequest[])requests.toArray(new ViewRequest[0]);
+            rs = requests.toArray(new ViewRequest[0]);
             requests.clear();
         }
         
-        List viewEvents = new ArrayList();
+        List<ViewEvent> viewEvents = new ArrayList<ViewEvent>();
         
         updateSnapshot(rs);
         for(int i = 0; i < rs.length; i++) {
@@ -216,7 +216,7 @@ class ViewRequestor {
             }
             viewEvents.add(getViewEvent(r));
         }
-        dispatchRequest((ViewEvent[])viewEvents.toArray(new ViewEvent[0]), snapshot);
+        dispatchRequest(viewEvents.toArray(new ViewEvent[0]), snapshot);
 
     }
     

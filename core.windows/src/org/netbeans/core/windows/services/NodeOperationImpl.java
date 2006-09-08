@@ -88,8 +88,8 @@ public final class NodeOperationImpl extends NodeOperation {
     public boolean customize (Node n) {
         final Component customizer = n.getCustomizer ();
         if (customizer == null) return false;
-        return ((Boolean) Mutex.EVENT.readAccess (new Mutex.Action () {
-                public Object run () {
+        return Mutex.EVENT.readAccess (new Mutex.Action<Boolean> () {
+                public Boolean run () {
                     if (customizer instanceof NbPresenter) { // #9466
                         ((NbPresenter) customizer).pack ();
                         ((NbPresenter) customizer).show ();
@@ -129,10 +129,10 @@ public final class NodeOperationImpl extends NodeOperation {
 
                     Dialog dialog = org.openide.DialogDisplayer.getDefault ().createDialog(dd);
                     dialog.pack();
-                    dialog.show();
+                    dialog.setVisible(true);
                     return Boolean.TRUE;
                 }
-            })).booleanValue ();
+            }).booleanValue ();
     }
 
     /** Panel, decorates given inner panel with forwarding of help context.
@@ -301,7 +301,7 @@ public final class NodeOperationImpl extends NodeOperation {
                     nodeCache.add( nds );
                     dialogCache.put( nds, dlg );
                     
-                    dlg.show();
+                    dlg.setVisible(true);
                 }
             });
     }
@@ -324,7 +324,7 @@ public final class NodeOperationImpl extends NodeOperation {
     private static class SheetNodesListener extends NodeAdapter implements PropertyChangeListener {
 
         private Dialog dialog;
-        private Set listenerSet;
+        private Set<Node> listenerSet;
         /** top component we listen to for name changes */ 
         private TopComponent tc;
         
@@ -341,7 +341,7 @@ public final class NodeOperationImpl extends NodeOperation {
         }
         
         public void attach(Node[] nodes) {
-            listenerSet = new HashSet(nodes.length * 2);
+            listenerSet = new HashSet<Node>(nodes.length * 2);
             for (int i = 0; i < nodes.length; i++) {
                 listenerSet.add(nodes[i]);
                 nodes[i].addNodeListener(this);
@@ -362,7 +362,7 @@ public final class NodeOperationImpl extends NodeOperation {
                 tc.removePropertyChangeListener(this);
                 Mutex.EVENT.readAccess(new Runnable() {
                     public void run() {
-                        dialog.hide();
+                        dialog.setVisible(false);
                         dialog.dispose();
                         dialog = null;
                     }

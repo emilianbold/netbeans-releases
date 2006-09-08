@@ -24,6 +24,7 @@ package org.netbeans.core.windows.model;
 
 import java.awt.Frame;
 import java.awt.Rectangle;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
@@ -39,9 +40,11 @@ import org.openide.windows.TopComponent;
 final class DefaultModel implements Model {
 
     /** ModeImpl to ModeModel. */
-    private final Map mode2model = new WeakHashMap(10);
+    private final Map<ModeImpl, ModeModel> mode2model = 
+            new WeakHashMap<ModeImpl, ModeModel>(10);
     /** TopComponentGroup to TopComponentGroupModel. */
-    private final Map group2model = new WeakHashMap(10);
+    private final Map<TopComponentGroupImpl, TopComponentGroupModel> group2model = 
+            new WeakHashMap<TopComponentGroupImpl, TopComponentGroupModel>(10);
     
     /** Whether the current winsys is visible on the screen.
      * 'The most important' property of all winsys. */
@@ -75,7 +78,8 @@ final class DefaultModel implements Model {
     private ModesSubModel modesSubModel = new ModesSubModel(this);
 
     /** Set of TopComponentGroup's. */
-    private final Set topComponentGroups = new HashSet(5);
+    private final Set<TopComponentGroupImpl> topComponentGroups = 
+            new HashSet<TopComponentGroupImpl>(5);
     
     // Locks.
     /** Lock for visible property. */
@@ -244,12 +248,12 @@ final class DefaultModel implements Model {
     }
 
     /** Sets active mode. */
-    private WeakReference lastActiveMode = null;
+    private Reference<ModeImpl> lastActiveMode = null;
     public void setActiveMode(ModeImpl activeMode) {
         if (lastActiveMode != null && lastActiveMode.get() == activeMode) {
             return;
         } else {
-            lastActiveMode = new WeakReference(activeMode);
+            lastActiveMode = new WeakReference<ModeImpl>(activeMode);
         }
         synchronized(LOCK_MODES) {
             boolean success = modesSubModel.setActiveMode(activeMode);
@@ -382,7 +386,7 @@ final class DefaultModel implements Model {
     }
 
     /** Gets set of modes. */
-    public Set getModes() {
+    public Set<ModeImpl> getModes() {
         synchronized(LOCK_MODES) {
             return modesSubModel.getModes();
         }
@@ -672,50 +676,50 @@ final class DefaultModel implements Model {
     }
     
     /** Gets list of top components. */
-    public List getModeTopComponents(ModeImpl mode) {
+    public List<TopComponent> getModeTopComponents(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
             return modeModel.getTopComponents();
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
     
     /** Gets list of top components. */
-    public List getModeOpenedTopComponents(ModeImpl mode) {
+    public List<TopComponent> getModeOpenedTopComponents(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
             return modeModel.getOpenedTopComponents();
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
     
     // XXX
-    public List getModeOpenedTopComponentsIDs(ModeImpl mode) {
+    public List<String> getModeOpenedTopComponentsIDs(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
             return modeModel.getOpenedTopComponentsIDs();
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
     
-    public List getModeClosedTopComponentsIDs(ModeImpl mode) {
+    public List<String> getModeClosedTopComponentsIDs(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
             return modeModel.getClosedTopComponentsIDs();
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
     
-    public List getModeTopComponentsIDs(ModeImpl mode) {
+    public List<String> getModeTopComponentsIDs(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
             return modeModel.getTopComponentsIDs();
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
     
@@ -748,9 +752,9 @@ final class DefaultModel implements Model {
     }
 
     
-    public Set getTopComponentGroups() {
+    public Set<TopComponentGroupImpl> getTopComponentGroups() {
         synchronized(LOCK_TOPCOMPONENT_GROUPS) {
-            return new HashSet(topComponentGroups);
+            return new HashSet<TopComponentGroupImpl>(topComponentGroups);
         }
     }
 
@@ -764,7 +768,9 @@ final class DefaultModel implements Model {
         }
     }
     
-    public void openGroup(TopComponentGroupImpl tcGroup, Collection openedTopComponents, Collection openedBeforeTopComponents) {
+    public void openGroup(TopComponentGroupImpl tcGroup, 
+            Collection<TopComponent> openedTopComponents, 
+            Collection<TopComponent> openedBeforeTopComponents) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             groupModel.open(openedTopComponents, openedBeforeTopComponents);
@@ -787,48 +793,48 @@ final class DefaultModel implements Model {
         }
     }
     
-    public Set getGroupTopComponents(TopComponentGroupImpl tcGroup) {
+    public Set<TopComponent> getGroupTopComponents(TopComponentGroupImpl tcGroup) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getTopComponents();
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
     
-    public Set getGroupOpenedTopComponents(TopComponentGroupImpl tcGroup) {
+    public Set<TopComponent> getGroupOpenedTopComponents(TopComponentGroupImpl tcGroup) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getOpenedTopComponents();
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
     
-    public Set getGroupOpenedBeforeTopComponents(TopComponentGroupImpl tcGroup) {
+    public Set<TopComponent> getGroupOpenedBeforeTopComponents(TopComponentGroupImpl tcGroup) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getOpenedBeforeTopComponents();
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
     
-    public Set getGroupOpeningTopComponents(TopComponentGroupImpl tcGroup) {
+    public Set<TopComponent> getGroupOpeningTopComponents(TopComponentGroupImpl tcGroup) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getOpeningTopComponents();
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
     
-    public Set getGroupClosingTopComponents(TopComponentGroupImpl tcGroup) {
+    public Set<TopComponent> getGroupClosingTopComponents(TopComponentGroupImpl tcGroup) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getClosingTopComponents();
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
 
@@ -913,39 +919,39 @@ final class DefaultModel implements Model {
     }
     
     // XXX>>
-    public Set getGroupTopComponentsIDs(TopComponentGroupImpl tcGroup) {
+    public Set<String> getGroupTopComponentsIDs(TopComponentGroupImpl tcGroup) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getTopComponentsIDs();
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
     
-    public Set getGroupOpeningSetIDs(TopComponentGroupImpl tcGroup) {
+    public Set<String> getGroupOpeningSetIDs(TopComponentGroupImpl tcGroup) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getOpeningSetIDs();
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
     
-    public Set getGroupClosingSetIDs(TopComponentGroupImpl tcGroup) {
+    public Set<String> getGroupClosingSetIDs(TopComponentGroupImpl tcGroup) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getClosingSetIDs();
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
     
-    public Set getGroupOpenedTopComponentsIDs(TopComponentGroupImpl tcGroup) {
+    public Set<String> getGroupOpenedTopComponentsIDs(TopComponentGroupImpl tcGroup) {
         TopComponentGroupModel groupModel = getModelForGroup(tcGroup);
         if(groupModel != null) {
             return groupModel.getOpenedTopComponentsIDs();
         } else {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
     }
     // XXX<<
@@ -1036,8 +1042,8 @@ final class DefaultModel implements Model {
     /** Creates modes snapshot.. */
     private ModeStructureSnapshot createModeStructureSnapshot() {
         ModeStructureSnapshot.ElementSnapshot splitRoot;
-        Set separateModes;
-        Set slidingModes;
+        Set<ModeStructureSnapshot.ModeSnapshot> separateModes;
+        Set<ModeStructureSnapshot.SlidingModeSnapshot> slidingModes;
         synchronized(LOCK_MODES) {
             splitRoot = modesSubModel.createSplitSnapshot();
             separateModes = modesSubModel.createSeparateModeSnapshots();

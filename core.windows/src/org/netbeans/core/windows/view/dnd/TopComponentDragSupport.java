@@ -124,7 +124,7 @@ implements AWTEventListener, DragSourceListener {
     /** Weak reference to <code>DragSourceContext</code> used in processed
      * drag operation. Used for by fixing bugs while not passed correct
      * order of events to <code>DragSourceListener</code>. */
-    private Reference dragContextWRef = new WeakReference(null);
+    private Reference<DragSourceContext> dragContextWRef = new WeakReference<DragSourceContext>(null);
     
     /** Flag indicating the current window drag operation transferable
      * can be 'copied', i.e. the dragged <code>TopComponent</code> is
@@ -271,7 +271,7 @@ implements AWTEventListener, DragSourceListener {
         }
                  
 
-        List list = new ArrayList();
+        List<MouseEvent> list = new ArrayList<MouseEvent>();
         list.add(me);
 
         // Get start droppable (if there) and its starting point.
@@ -415,7 +415,7 @@ implements AWTEventListener, DragSourceListener {
         // Just refresh the weak ref to the context if necessary.
         // The expected code here is done by ragExitHack method called from DropTarget's.
         if(dragContextWRef.get() == null) {
-            dragContextWRef = new java.lang.ref.WeakReference(evt.getDragSourceContext());
+            dragContextWRef = new java.lang.ref.WeakReference<DragSourceContext>(evt.getDragSourceContext());
         }
     }
 
@@ -442,7 +442,7 @@ implements AWTEventListener, DragSourceListener {
         // Just refresh the weak ref to the context if necessary.
         // The expected code here is done by ragExitHack method called from DropTarget's.
         if(dragContextWRef.get() == null) {
-              dragContextWRef = new WeakReference(evt.getDragSourceContext());
+              dragContextWRef = new WeakReference<DragSourceContext>(evt.getDragSourceContext());
         }
     }
     
@@ -630,7 +630,7 @@ implements AWTEventListener, DragSourceListener {
      * @see #dragEnter */
     void setSuccessCursor (boolean freeArea) {
         int dropAction = hackUserDropAction;
-        DragSourceContext ctx = (DragSourceContext)dragContextWRef.get();
+        DragSourceContext ctx = dragContextWRef.get();
         
         if(ctx == null) {
             return;
@@ -666,7 +666,7 @@ implements AWTEventListener, DragSourceListener {
      * to its 'no-drop' state sibling.
      * @see #dragExit */
     void setUnsuccessCursor() {
-        DragSourceContext ctx = (DragSourceContext)dragContextWRef.get();
+        DragSourceContext ctx = dragContextWRef.get();
         
         if(ctx == null) {
             return;
@@ -691,7 +691,7 @@ implements AWTEventListener, DragSourceListener {
      * should reside in {@ling #dragDropEnd} method only. But that one
      * is not called in case of error in DnD framework. */
     void dragFinished() {
-        dragContextWRef = new WeakReference(null);
+        dragContextWRef = new WeakReference<DragSourceContext>(null);
     }
    
     private static void debugLog(String message) {

@@ -59,7 +59,7 @@ public class TopComponentGroupImpl implements TopComponentGroup {
         getCentral().closeGroup(this);
     }
     
-    public Set getTopComponents() {
+    public Set<TopComponent> getTopComponents() {
         return getCentral().getGroupTopComponents(this);
     }
 
@@ -72,7 +72,7 @@ public class TopComponentGroupImpl implements TopComponentGroup {
         return getCentral().isGroupOpened(this);
     }
     
-    public Set getOpeningSet() {
+    public Set<TopComponent> getOpeningSet() {
         return getCentral().getGroupOpeningTopComponents(this);
     }
     
@@ -115,19 +115,19 @@ public class TopComponentGroupImpl implements TopComponentGroup {
     }
     
     // XXX>>
-    public Set getTopComponentsIDs() {
+    public Set<String> getTopComponentsIDs() {
         return getCentral().getGroupTopComponentsIDs(this);
     }
     
-    public Set getOpeningSetIDs() {
+    public Set<String> getOpeningSetIDs() {
         return getCentral().getGroupOpeningSetIDs(this);
     }
     
-    public Set getClosingSetIDs() {
+    public Set<String> getClosingSetIDs() {
         return getCentral().getGroupClosingSetIDs(this);
     }
     
-    public Set getGroupOpenedTopComponentsIDs() {
+    public Set<String> getGroupOpenedTopComponentsIDs() {
         return getCentral().getGroupOpenedTopComponentsIDs(this);
     }
     // XXX<<

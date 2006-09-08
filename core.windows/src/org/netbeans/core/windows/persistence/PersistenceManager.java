@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.NotSerializableException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -127,26 +128,29 @@ public final class PersistenceManager implements PropertyChangeListener {
     
     /** Weak hash map between persistent TopComponents and their string IDs, used in lookup */
     //<key=TopComponent, value=String>
-    private final Map topComponent2IDMap = new WeakHashMap(30);
+    private final Map<TopComponent, String> topComponent2IDMap = new WeakHashMap<TopComponent, String>(30);
     
     /** Weak hash map between nonpersistent TopComponents and their string IDs, used in lookup */
     //<key=TopComponent, value=String>
-    private final Map topComponentNonPersistent2IDMap = new WeakHashMap(30);
+    private final Map<TopComponent, String> topComponentNonPersistent2IDMap = 
+            new WeakHashMap<TopComponent, String>(30);
     
     /** Contains already used TopComponent ID. It is used to make sure unique
      * ID is created for every TopComponent instance */
-    //<String>
-    private Set globalIDSet = new HashSet(30);
+    private Set<String> globalIDSet = new HashSet<String>(30);
     
     /** Map between string ids and weakly hold top components */
-    private final Map id2TopComponentMap = Collections.synchronizedMap(new HashMap(30));
+    private final Map<String, Reference<TopComponent>> id2TopComponentMap = 
+            Collections.synchronizedMap(new HashMap<String, Reference<TopComponent>>(30));
     
     /** Map between string ids and weakly hold top components */
-    private final Map id2TopComponentNonPersistentMap = Collections.synchronizedMap(new HashMap(30));
+    private final Map<String, Reference<TopComponent>> id2TopComponentNonPersistentMap = 
+            Collections.synchronizedMap(new HashMap<String, Reference<TopComponent>>(30));
     
     /** Weak map between data objects and top components, used to clean cache when module
      * owning tc is disabled. */
-    private final Map dataobjectToTopComponentMap = new WeakHashMap(30);
+    private final Map<DataObject, String> dataobjectToTopComponentMap = 
+            new WeakHashMap<DataObject, String>(30);
     
     /** A set of invalid Ids */
     private Set invalidIds = new HashSet(10);
@@ -154,7 +158,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** A set of used TcIds. Used to clean unused settings files
      * (ie. not referenced from tcRef or tcGroup). Cleaning is performed
      * when window system is loaded. */
-    private final Set usedTcIds = new HashSet(10); // <String>
+    private final Set<String> usedTcIds = new HashSet<String>(10); // <String>
     
     /** Lock for synchronizing access to IDs. */
     private final Object LOCK_IDS = new Object();
@@ -194,7 +198,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         changeHandler = null;
         topComponent2IDMap.clear();
         topComponentNonPersistent2IDMap.clear();
-        globalIDSet = new HashSet(30);
+        globalIDSet = new HashSet<String>(30);
         id2TopComponentMap.clear();
         id2TopComponentNonPersistentMap.clear();
         dataobjectToTopComponentMap.clear();
@@ -474,7 +478,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     TopComponent tc = (TopComponent)ic.instanceCreate();
                     synchronized(LOCK_IDS) {
                         topComponent2IDMap.put(tc, stringId);
-                        id2TopComponentMap.put(stringId, new WeakReference(tc));
+                        id2TopComponentMap.put(stringId, new WeakReference<TopComponent>(tc));
                         dataobjectToTopComponentMap.put(dob, stringId);
                     }
                     dob.addPropertyChangeListener(this);
@@ -655,20 +659,19 @@ public final class PersistenceManager implements PropertyChangeListener {
      */
     private void saveTopComponents (WindowManagerConfig wmc) {
         DataFolder compsFolder = DataFolder.findFolder(getComponentsLocalFolder());
-        Map copyIdToTopComponentMap;
+        Map<String, Reference<TopComponent>> copyIdToTopComponentMap;
         // must be synced, as Hashmap constructor iterates over original map
         synchronized(LOCK_IDS) {
-            copyIdToTopComponentMap = new HashMap(id2TopComponentMap);
+            copyIdToTopComponentMap = new HashMap<String, Reference<TopComponent>>(id2TopComponentMap);
         }
 
-        for (Iterator iter = copyIdToTopComponentMap.entrySet().iterator(); iter.hasNext(); ) {
-            Map.Entry curEntry = (Map.Entry)iter.next();
-            TopComponent curTC = (TopComponent)((WeakReference)curEntry.getValue()).get();
+        for (Map.Entry<String, Reference<TopComponent>> curEntry: copyIdToTopComponentMap.entrySet()) {
+            TopComponent curTC = curEntry.getValue().get();
             if (curTC != null) {
                 try {
                     // bugfix #21223 top components are stored by IDO.SaveCookie
                     FileObject fo = compsFolder.getPrimaryFile ().getFileObject
-                            ((String)curEntry.getKey (), "settings");  // NOI18N
+                            (curEntry.getKey (), "settings");  // NOI18N
                     DataObject ido = null;
                     if (fo != null) {
                         ido = DataObject.find(fo);
@@ -676,7 +679,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     if (ido == null) {
                         // create new settings file
                         InstanceDataObject.create(
-                            compsFolder, unescape((String)curEntry.getKey()), curTC, null
+                            compsFolder, unescape(curEntry.getKey()), curTC, null
                           );
                     } else {
                         // save to settings file if there is already
@@ -752,7 +755,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                 InstanceDataObject.class.getDeclaredMethod(
                     "escapeAndCut", new Class[] {String.class}); //NOI18N
             escape.setAccessible(true);
-            return (String) escape.invoke(null, new String[] {name});
+            return (String) escape.invoke(null, name);
         } catch (Exception ex) {
             LOG.log(Level.WARNING,
                 "Escape support failed", ex); // NOI18N
@@ -771,7 +774,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             InstanceDataObject.class.getDeclaredMethod(
             "unescape", new Class[] {String.class}); //NOI18N
             unescape.setAccessible(true);
-            return (String) unescape.invoke(null, new String[] {name});
+            return (String) unescape.invoke(null, name);
         } catch (Exception ex) {
             LOG.log(Level.WARNING,
             "Escape support failed", ex); // NOI18N
@@ -801,7 +804,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             }
 
             topComponentNonPersistent2IDMap.put(tc, srcName);
-            id2TopComponentNonPersistentMap.put(srcName, new WeakReference(tc));
+            id2TopComponentNonPersistentMap.put(srcName, new WeakReference<TopComponent>(tc));
             globalIDSet.add(srcName.toUpperCase(Locale.ENGLISH));
         }
         
@@ -837,7 +840,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             }
 
             topComponent2IDMap.put(tc, srcName);
-            id2TopComponentMap.put(srcName, new WeakReference(tc));
+            id2TopComponentMap.put(srcName, new WeakReference<TopComponent>(tc));
             globalIDSet.add(srcName.toUpperCase(Locale.ENGLISH));
         }
         
@@ -854,7 +857,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             //+ " id:" + id);
             //Thread.dumpStack();
             synchronized(LOCK_IDS) {
-                id2TopComponentMap.put(id, new WeakReference(tc));
+                id2TopComponentMap.put(id, new WeakReference<TopComponent>(tc));
                 validateId(id);
             }
             return id;
@@ -875,7 +878,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     
     /** map of exceptions to names of badly persistenced top components,
      * serves as additional annotation of main exception */
-    private Map failedCompsMap;
+    private Map<Exception, String> failedCompsMap;
     
     /** Annotate persistence exception. Exception is added to the exception
      * list, which is displayed at once when whole persistence process
@@ -883,7 +886,7 @@ public final class PersistenceManager implements PropertyChangeListener {
      */
     public void annotatePersistenceError(Exception exc, String tcName) {
         if (failedCompsMap == null) {
-            failedCompsMap = new HashMap();
+            failedCompsMap = new HashMap<Exception, String>();
         }
         failedCompsMap.put(exc, tcName);
     }
@@ -1087,13 +1090,13 @@ public final class PersistenceManager implements PropertyChangeListener {
             }
         }
         if (removeFromRecent) {
-            List l = new ArrayList(wmc.tcIdViewList.length);
+            List<String> l = new ArrayList<String>(wmc.tcIdViewList.length);
             for (int i = 0; i < wmc.tcIdViewList.length; i++) {
                 if (!id.equals(wmc.tcIdViewList[i])) {
                     l.add(wmc.tcIdViewList[i]);
                 }
             }
-            wmc.tcIdViewList = (String []) l.toArray(new String[l.size()]);
+            wmc.tcIdViewList = l.toArray(new String[l.size()]);
         }
         for (int i = 0; i < wmc.modes.length; i++) {
             ModeConfig mc = wmc.modes[i];
@@ -1108,13 +1111,13 @@ public final class PersistenceManager implements PropertyChangeListener {
                 }
             }
             if (removeFromMode) {
-                List l = new ArrayList(mc.tcRefConfigs.length);
+                List<TCRefConfig> l = new ArrayList<TCRefConfig>(mc.tcRefConfigs.length);
                 for (int j = 0; j < mc.tcRefConfigs.length; j++) {
                     if (!id.equals(mc.tcRefConfigs[j].tc_id)) {
                         l.add(mc.tcRefConfigs[j]);
                     }
                 }
-                mc.tcRefConfigs = (TCRefConfig []) l.toArray(new TCRefConfig[l.size()]);
+                mc.tcRefConfigs = l.toArray(new TCRefConfig[l.size()]);
             }
         }
         for (int i = 0; i < wmc.groups.length; i++) {
@@ -1127,13 +1130,13 @@ public final class PersistenceManager implements PropertyChangeListener {
                 }
             }
             if (removeFromGroup) {
-                List l = new ArrayList(gc.tcGroupConfigs.length);
+                List<TCGroupConfig> l = new ArrayList<TCGroupConfig>(gc.tcGroupConfigs.length);
                 for (int j = 0; j < gc.tcGroupConfigs.length; j++) {
                     if (!id.equals(gc.tcGroupConfigs[j].tc_id)) {
                         l.add(gc.tcGroupConfigs[j]);
                     }
                 }
-                gc.tcGroupConfigs = (TCGroupConfig []) l.toArray(new TCGroupConfig[l.size()]);
+                gc.tcGroupConfigs = l.toArray(new TCGroupConfig[l.size()]);
             }
         }
     }
@@ -1143,7 +1146,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         //long start, end, diff;
         //start = System.currentTimeMillis();
         if (DEBUG) Debug.log(PersistenceManager.class, "copySettingsFiles ENTER");
-        Set localSet = new HashSet(100);
+        Set<String> localSet = new HashSet<String>(100);
         FileObject [] filesLocal = getComponentsLocalFolder().getChildren();
         for (int i = 0; i < filesLocal.length; i++) {
             if (!filesLocal[i].isFolder() && "settings".equals(filesLocal[i].getExt())) { // NOI18N
@@ -1235,12 +1238,9 @@ public final class PersistenceManager implements PropertyChangeListener {
             spec = new SpecificationVersion(strSpec);
         } 
         
-        Lookup.Result modulesResult = 
-            Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class));
-        Collection infos = modulesResult.allInstances();
-        ModuleInfo curInfo = null;
-        for (Iterator iter = infos.iterator(); iter.hasNext(); ) {
-            curInfo = (ModuleInfo)iter.next();
+        Lookup.Result<ModuleInfo> modulesResult = 
+            Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
+        for (ModuleInfo curInfo: modulesResult.allInstances()) {
             // search for equal base name and then compare release and
             // spec numbers, if present
             if (curInfo.getCodeNameBase().equals(codeNameBase)) {

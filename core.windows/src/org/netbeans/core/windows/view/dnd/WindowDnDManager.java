@@ -68,13 +68,13 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     private boolean dropSuccess;
 
     /** Maps root panes to original glass panes. */
-    private final Map root2glass = new HashMap();
+    private final Map<JRootPane,Component> root2glass = new HashMap<JRootPane, Component>();
     
     /** Set of floating frame types, i.e. separate windows. */
-    private final Set floatingFrames = new WeakSet(4);
+    private final Set<Component> floatingFrames = new WeakSet<Component>(4);
     
     /** Used to hack the last Drop target to clear its indication. */ 
-    private Reference lastTargetWRef = new WeakReference(null);
+    private Reference<DropTargetGlassPane> lastTargetWRef = new WeakReference<DropTargetGlassPane>(null);
 
     /** Accesses view. */
     private final ViewAccessor viewAccessor;
@@ -91,7 +91,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     private MotionListener motionListener;
 
     /** Keeps ref to fake center panel droppable. */
-    private static WeakReference centerDropWRef = new WeakReference(null);
+    private static Reference<CenterPanelDroppable> centerDropWRef = 
+            new WeakReference<CenterPanelDroppable>(null);
     
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(WindowDnDManager.class);
@@ -152,7 +153,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * Hacking purpose only. */
     public void setLastDropTarget(DropTargetGlassPane target) {
         if(target != lastTargetWRef.get()) {
-            lastTargetWRef = new WeakReference(target);
+            lastTargetWRef = new WeakReference<DropTargetGlassPane>(target);
         }
     }
     
@@ -198,11 +199,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             ZOrderManager.getInstance().setExcludeFromOrder((RootPaneContainer)rpc, true);
         }*/
         
-        Map addedRoots = new HashMap();
-        Set addedFrames = new HashSet();
+        Map<JRootPane,Component> addedRoots = new HashMap<JRootPane, Component>();
+        Set<Component> addedFrames = new HashSet<Component>();
 
-        for(Iterator it = viewAccessor.getModeComponents().iterator(); it.hasNext(); ) {
-            Component comp = (Component)it.next();
+        for(Component comp: viewAccessor.getModeComponents()) {
             if(comp instanceof TopComponentDroppable) {
                 // Find root pane.
                 JRootPane root = null;
@@ -224,8 +224,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 }
             }
         }
-        for(Iterator it = viewAccessor.getSeparateModeFrames().iterator(); it.hasNext(); ) {
-            Window w = (Window)it.next();
+        for(Component w: viewAccessor.getSeparateModeFrames()) {
             if(w != null) {
                 addedFrames.add(w);
             }
@@ -303,15 +302,14 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
         dragging = false;
 
-        Map removedRoots;
+        Map<JRootPane, Component> removedRoots;
         synchronized(root2glass) {
-            removedRoots = new HashMap(root2glass);
+            removedRoots = new HashMap<JRootPane, Component>(root2glass);
             root2glass.clear();
         }
 
-        for(Iterator it = removedRoots.keySet().iterator(); it.hasNext(); ) {
-            JRootPane root = (JRootPane)it.next();
-            setOriginalGlassPane(root, (Component)removedRoots.get(root));
+        for(JRootPane root: removedRoots.keySet()) {
+            setOriginalGlassPane(root, removedRoots.get(root));
         }
     }
     
@@ -354,17 +352,16 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
     
     /** Gets set of floating frames. */
-    public Set getFloatingFrames() {
+    public Set<Component> getFloatingFrames() {
         synchronized(floatingFrames) {
-            return new HashSet(floatingFrames);
+            return new HashSet<Component>(floatingFrames);
         }
     }
     
     /** Checks whether the point is inside separated (floating) frame
      * droppable area. The point is relative to screen. */
     public boolean isInFloatingFrame(Point location) {
-        for(Iterator it = getFloatingFrames().iterator(); it.hasNext(); ) {
-            Window w = (Window)it.next();
+        for(Component w: getFloatingFrames()) {
             if(w.getBounds().contains(location)) {
                 return true;
             }
@@ -402,7 +399,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     
     /** Checks whetner the point is inside one of floating window,
      * i.e. separated modes, droppable area. The point is relative to screen. */
-    private static boolean isInFloatingFrameDroppable(Set floatingFrames, Point location, int kind, TopComponent transfer) {
+    private static boolean isInFloatingFrameDroppable(Set<Component> floatingFrames, Point location, int kind, TopComponent transfer) {
         return findFloatingFrameDroppable(floatingFrames, location, kind, transfer) != null;
     }
     
@@ -428,7 +425,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
 
     /** Finds <code>TopComponentDroppable</code> from specified screen location. */
     private TopComponentDroppable findDroppableFromScreen(
-    Set floatingFrames, Point location, int kind, TopComponent transfer) {
+    Set<Component> floatingFrames, Point location, int kind, TopComponent transfer) {
 
         TopComponentDroppable droppable = findMainWindowDroppable(location, kind, transfer);
         if(droppable != null) {
@@ -517,9 +514,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     /** Gets droppable from separated (floating) window, specified
      * by screen location. Helper method. */
     private static TopComponentDroppable findFloatingFrameDroppable(
-    Set floatingFrames, Point location, int kind, TopComponent transfer) {
-        for(Iterator it = floatingFrames.iterator(); it.hasNext(); ) {
-            Component comp = (Component)it.next();
+    Set<Component> floatingFrames, Point location, int kind, TopComponent transfer) {
+        for(Component comp: floatingFrames) {
             Rectangle bounds = comp.getBounds();
             
             if(bounds.contains(location) &&
@@ -635,11 +631,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     /** Creates fake droppable for center panel. */
     private TopComponentDroppable getCenterPanelDroppable() {
         CenterPanelDroppable droppable
-                = (CenterPanelDroppable)centerDropWRef.get();
+                = centerDropWRef.get();
         
         if(droppable == null) {
             droppable = new CenterPanelDroppable();
-            centerDropWRef = new WeakReference(droppable);
+            centerDropWRef = new WeakReference<CenterPanelDroppable>(droppable);
         }
         
         return droppable;
@@ -652,7 +648,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     /** 
      * Tries to perform actual drop.
      * @param location screen location */
-    boolean tryPerformDrop(Controller controller, Set floatingFrames,
+    boolean tryPerformDrop(Controller controller, Set<Component> floatingFrames,
     Point location, int dropAction, Transferable transferable) {
         TopComponent[] tcArray = extractTopComponent(
             dropAction == DnDConstants.ACTION_COPY,
@@ -917,7 +913,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         private /*static*/ void dragOverDropTarget(Point location,
         TopComponentDroppable droppable) {
             DropTargetGlassPane lastTarget
-                = (DropTargetGlassPane)windowDnDManager.lastTargetWRef.get();
+                = windowDnDManager.lastTargetWRef.get();
 
             if(lastTarget != null) {
                 Point p = new Point(location);
@@ -932,11 +928,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
          * drag exit event. */
         private /*static*/ void clearExitedDropTarget() {
             DropTargetGlassPane lastTarget
-                = (DropTargetGlassPane)windowDnDManager.lastTargetWRef.get();
+                = windowDnDManager.lastTargetWRef.get();
 
             if(lastTarget != null) {
                 lastTarget.clearIndications();
-                windowDnDManager.lastTargetWRef = new WeakReference(null);
+                windowDnDManager.lastTargetWRef = new WeakReference<DropTargetGlassPane>(null);
             }
         }
         
@@ -1018,8 +1014,8 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     // XXX
     /** Interface for accessing   */
     public interface ViewAccessor {
-        public Set getModeComponents();
-        public Set getSeparateModeFrames();
+        public Set<Component> getModeComponents();
+        public Set<Component> getSeparateModeFrames();
         public Controller getController();
         public Component getSlidingModeComponent(String side);
     } // End of ViewState.

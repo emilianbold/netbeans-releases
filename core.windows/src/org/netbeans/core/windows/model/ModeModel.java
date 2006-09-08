@@ -92,13 +92,13 @@ interface ModeModel {
     /** Gets selected TopComponent. */
     public TopComponent getSelectedTopComponent();
     /** Gets list of top components in mode. */
-    public List getTopComponents();
+    public List<TopComponent> getTopComponents();
     /** Gets list of top components in mode. */
-    public List getOpenedTopComponents();
+    public List<TopComponent> getOpenedTopComponents();
     // XXX
-    public List getOpenedTopComponentsIDs();
-    public List getClosedTopComponentsIDs();
-    public List getTopComponentsIDs();    
+    public List<String> getOpenedTopComponentsIDs();
+    public List<String> getClosedTopComponentsIDs();
+    public List<String> getTopComponentsIDs();    
     
     // Info about previous top component context, used by sliding kind of modes
     

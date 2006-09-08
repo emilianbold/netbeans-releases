@@ -19,6 +19,7 @@
 
 package org.netbeans.core.windows.view.ui.toolbars;
 
+import java.util.List;
 import org.openide.awt.ToolbarPool;
 import org.openide.windows.WindowManager;
 
@@ -45,14 +46,14 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
     /** ToolbarConfiguration cached for getting preferred toolbar configuration width. */
     ToolbarConfiguration toolbarConfig;
     /** Map of components. */
-    HashMap componentMap;
+    HashMap<Component,Object> componentMap;
 
     /**
      * Creates a new ToolbarLayout.
      */
     public ToolbarLayout (ToolbarConfiguration conf) {
         toolbarConfig = conf;
-        componentMap = new HashMap();
+        componentMap = new HashMap<Component, Object>();
     }
 
     /** Adds the specified component with the specified name to
@@ -179,11 +180,11 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
             }
 
 	    /* Setting components' bounds. */
-            HashSet completed = new HashSet(componentMap.size()*2);
+            HashSet<ToolbarConstraints> completed = new HashSet<ToolbarConstraints>(componentMap.size()*2);
             for (int i = 0; i < toolbarConfig.getRowCount(); i++) {
                 ToolbarConstraints overflownTC = processRow(toolbarConfig.getRow(i), completed, maxPosition);
                 // add row members to completed
-                for (Iterator iter = toolbarConfig.getRow(i).iterator(); it.hasNext(); ) {
+                for (Iterator<ToolbarConstraints> iter = toolbarConfig.getRow(i).iterator(); it.hasNext(); ) {
                     completed.add(iter.next());
                 }
             }
@@ -195,7 +196,7 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
         Rectangle bounds;
         Component comp;
         ToolbarConstraints constr;
-        ArrayList moveDownCandidates = new ArrayList(5);
+        List<ToolbarConstraints> moveDownCandidates = new ArrayList<ToolbarConstraints>(5);
         for (Iterator it = row.iterator(); it.hasNext(); ) {
             constr = (ToolbarConstraints)it.next();
             // don't compute twice

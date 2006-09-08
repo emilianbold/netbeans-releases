@@ -44,28 +44,28 @@ public class SplitView extends ViewElement {
     
     private int orientation;
     
-    private ArrayList /*Double*/ splitWeights;
+    private ArrayList<Double> splitWeights;
     
-    private ArrayList /*ViewElement*/ children;
+    private ArrayList<ViewElement> children;
     
     private MultiSplitPane splitPane;
     
     private boolean isDirty = false;
     
     public SplitView(Controller controller, double resizeWeight, 
-                        int orientation, List splitWeights, List children) {
+                        int orientation, List<Double> splitWeights, List<ViewElement> children) {
         super(controller, resizeWeight);
         
         this.orientation = orientation;
-        this.splitWeights = new ArrayList( splitWeights );
-        this.children = new ArrayList( children );
+        this.splitWeights = new ArrayList<Double>( splitWeights );
+        this.children = new ArrayList<ViewElement>( children );
     }
 
     public void setOrientation( int newOrientation ) {
         this.orientation = newOrientation;
     }
     
-    public void setSplitWeights( List newSplitWeights ) {
+    public void setSplitWeights( List<Double> newSplitWeights ) {
         splitWeights.clear();
         splitWeights.addAll( newSplitWeights );
     }
@@ -74,8 +74,8 @@ public class SplitView extends ViewElement {
         return orientation;
     }
     
-    public List getChildren() {
-        return new ArrayList( children );
+    public List<ViewElement> getChildren() {
+        return new ArrayList<ViewElement>( children );
     }
     
     public Component getComponent() {
@@ -94,7 +94,7 @@ public class SplitView extends ViewElement {
         }
     }
     
-    public void setChildren( List newChildren ) {
+    public void setChildren( List<ViewElement> newChildren ) {
         children.clear();
         children.addAll( newChildren );
         
@@ -139,14 +139,14 @@ public class SplitView extends ViewElement {
             splitPane.addPropertyChangeListener("splitPositions", // NOI18N
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        ArrayList weights = new ArrayList( children.size() );
-                        ArrayList views = new ArrayList( children.size() );
+                        ArrayList<Double> weights = new ArrayList<Double>( children.size() );
+                        ArrayList<ViewElement> views = new ArrayList<ViewElement>( children.size() );
                         splitPane.calculateSplitWeights( views, weights );
                         ViewElement[] arrViews = new ViewElement[views.size()];
                         double[] arrWeights = new double[views.size()]; 
                         for( int i=0; i<views.size(); i++ ) {
-                            arrViews[i] = (ViewElement)views.get( i );
-                            arrWeights[i] = ((Double)weights.get( i )).doubleValue();
+                            arrViews[i] = views.get( i );
+                            arrWeights[i] = weights.get( i ).doubleValue();
                         }
                         getController().userMovedSplit( SplitView.this, arrViews, arrWeights );
                     }

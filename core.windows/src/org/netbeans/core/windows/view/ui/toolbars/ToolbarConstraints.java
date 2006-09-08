@@ -55,11 +55,11 @@ public class ToolbarConstraints {
     /** Is toolbar visible. */
     private boolean   visible;
     /** Toolbar is part of those rows. */
-    private Vector    ownRows;   // Vector of ToolbarRows
+    private Vector<ToolbarRow>    ownRows;
     /** List of previous toolbars. */
-    private Vector    prevBars;  // Vector of ToolbarConstraints
+    private Vector<ToolbarConstraints>    prevBars;
     /** List of next toolbars. */
-    private Vector    nextBars;  // Vector of ToolbarConstraints
+    private Vector<ToolbarConstraints>    nextBars;
     /** The nearest end of previous toolbars. */
     private int       prevEnd;   // nejblizsi konec predchozich toolbaru
     /** The nearest begin of next toolbars. */
@@ -123,9 +123,9 @@ public class ToolbarConstraints {
 
     /** Init neighbourhood values. */
     void initValues () {
-        ownRows = new Vector();
-        prevBars = new Vector();
-        nextBars = new Vector();
+        ownRows = new Vector<ToolbarRow>();
+        prevBars = new Vector<ToolbarConstraints>();
+        nextBars = new Vector<ToolbarConstraints>();
 
         resetPrev();
         resetNext();
@@ -218,11 +218,8 @@ public class ToolbarConstraints {
         lastRowIndex = rowIndex();
         rowCount = ownRows.size();
 
-        Iterator it = ownRows.iterator();
-        ToolbarRow row;
         boolean emptyRow = false;
-        while (it.hasNext()) {
-            row = (ToolbarRow)it.next();
+        for (ToolbarRow row: ownRows) {
             row.removeToolbar (this);
             emptyRow = emptyRow || row.isEmpty();
         }
@@ -289,7 +286,7 @@ public class ToolbarConstraints {
         if (visible) {
             boolean emptyRow = false;
             while (rowCount < ownRows.size()) {
-                row = (ToolbarRow)ownRows.lastElement();
+                row = ownRows.lastElement();
                 row.removeToolbar (this);
                 ownRows.remove (row);
                 emptyRow = emptyRow || row.isEmpty();
@@ -297,7 +294,7 @@ public class ToolbarConstraints {
             if (emptyRow)
                 toolbarConfig.checkToolbarRows();
             while (rowCount > ownRows.size()) {
-                row = (ToolbarRow)ownRows.lastElement();
+                row = ownRows.lastElement();
                 ToolbarRow nR = row.getNextRow();
                 if (nR == null)
                     nR = toolbarConfig.createLastRow();
@@ -314,15 +311,12 @@ public class ToolbarConstraints {
             return toolbarConfig.getRowCount();
         if (ownRows.isEmpty())
             return lastRowIndex;
-        return toolbarConfig.rowIndex (((ToolbarRow)ownRows.firstElement()));
+        return toolbarConfig.rowIndex (ownRows.firstElement());
     }
 
     /** @return true if toolbar is alone at row(s). */
     boolean isAlone () {
-        Iterator it = ownRows.iterator();
-        ToolbarRow row;
-        while (it.hasNext()) {
-            row = (ToolbarRow)it.next();
+        for (ToolbarRow row: ownRows) {
             if (row.toolbarCount() != 1)
                 return false;
         }
@@ -341,11 +335,11 @@ public class ToolbarConstraints {
     /** Update toolbar bounds. */
     void updateBounds () {
         if (ownRows.size() > 0) {
-            Iterator iter = ownRows.iterator();
-            ToolbarRow firstRow = (ToolbarRow)iter.next();
+            Iterator<ToolbarRow> iter = ownRows.iterator();
+            ToolbarRow firstRow = iter.next();
             int toolbarHeight = firstRow.getPreferredHeight();
             while (iter.hasNext()) {
-                toolbarHeight += ((ToolbarRow)iter.next()).getPreferredHeight() + ToolbarLayout.VGAP;
+                toolbarHeight += iter.next().getPreferredHeight() + ToolbarLayout.VGAP;
             }
             bounds = new Rectangle (position, toolbarConfig.getRowVertLocation(firstRow),
                                     nextBeg - position - ToolbarLayout.HGAP, toolbarHeight);
@@ -384,24 +378,21 @@ public class ToolbarConstraints {
 
     /** Update next position of previous toolbars. */
     void updatePrevBars () {
-        Iterator it = prevBars.iterator();
-        ToolbarConstraints tc;
-        while (it.hasNext()) {
-            tc = (ToolbarConstraints)it.next();
+        for (ToolbarConstraints tc: prevBars) {
             tc.updateNext();
         }
     }
 
     /** Update previous position of next toolbars. */
     void updateNextBars () {
-        Iterator it = nextBars.iterator();
+        Iterator<ToolbarConstraints> it = nextBars.iterator();
         ToolbarConstraints tc;
         if (!it.hasNext()) {
             resetNext();
             updatePrefWidth();
         }
         while (it.hasNext()) {
-            tc = (ToolbarConstraints)it.next();
+            tc = it.next();
             //hotfix for issue 31822, ToolbarConstraint endless loop.  Core
             //problem is that somehow nextBars ends up containing this 
             //constraint

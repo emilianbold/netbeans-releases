@@ -46,8 +46,8 @@ public class ToolbarRow {
     /** Next row of toolbars. */
     ToolbarRow nextRow;
 
-    /** List of toolbars (ToolbarConstraints) in row. */
-    private Vector toolbars;
+    /** List of toolbars in row. */
+    private Vector<ToolbarConstraints> toolbars;
     /** listener for changes of constraints of contained toolbars */
     private PropertyChangeListener constraintsL;
     /** cached preferred height of this row */
@@ -58,7 +58,7 @@ public class ToolbarRow {
      */
     ToolbarRow (ToolbarConfiguration config) {
         toolbarConfig = config;
-        toolbars = new Vector();
+        toolbars = new Vector<ToolbarConstraints>();
         prevRow = nextRow = null;
         // invoke revalidation of toolbar rows below if height changes
         constraintsL = new PropertyChangeListener () {
@@ -173,7 +173,7 @@ public class ToolbarRow {
     }
 
     /** @return Iterator of toolbars int row. */
-    Iterator iterator () {
+    Iterator<ToolbarConstraints> iterator () {
         return toolbars.iterator();
     }
 
@@ -339,12 +339,12 @@ public class ToolbarRow {
     /** Class to store row in xml format. */
     static class WritableToolbarRow {
         /** List of toolbars. */
-        Vector toolbars;  // Vector of ToolbarConstraints.WritableToolbar
+        Vector<ToolbarConstraints.WritableToolbar> toolbars;
 
         /** Create new WritableToolbarRow.
          */
         public WritableToolbarRow () {
-            toolbars = new Vector();
+            toolbars = new Vector<ToolbarConstraints.WritableToolbar>();
         }
 
         /** Create new WritableToolbarRow.
@@ -357,9 +357,9 @@ public class ToolbarRow {
 
         /** Init list of writable toolbars. */
         void initToolbars (ToolbarRow r) {
-            Iterator it = r.toolbars.iterator();
+            Iterator<ToolbarConstraints> it = r.toolbars.iterator();
             while (it.hasNext()) {
-                toolbars.addElement (new ToolbarConstraints.WritableToolbar ((ToolbarConstraints)it.next()));
+                toolbars.addElement (new ToolbarConstraints.WritableToolbar (it.next()));
             }
         }
 

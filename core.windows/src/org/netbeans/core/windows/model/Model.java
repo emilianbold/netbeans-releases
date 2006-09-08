@@ -125,7 +125,7 @@ public interface Model {
     /** Gets maximized mode. */
     public ModeImpl getMaximizedMode();
     /** Gets set of modes. */
-    public Set getModes();
+    public Set<ModeImpl> getModes();
     /** Gets mode constraints. */
     public SplitConstraint[] getModeConstraints(ModeImpl mode);
     // XXX
@@ -206,13 +206,13 @@ public interface Model {
     /** Gets selected TopComponent. */
     public TopComponent getModeSelectedTopComponent(ModeImpl mode);
     /** Gets list of top components in this workspace. */
-    public List getModeTopComponents(ModeImpl mode);
+    public List<TopComponent> getModeTopComponents(ModeImpl mode);
     /** Gets list of top components in this workspace. */
-    public List getModeOpenedTopComponents(ModeImpl mode);
+    public List<TopComponent> getModeOpenedTopComponents(ModeImpl mode);
     // XXX
-    public List getModeOpenedTopComponentsIDs(ModeImpl mode);
-    public List getModeClosedTopComponentsIDs(ModeImpl mode);
-    public List getModeTopComponentsIDs(ModeImpl mode);
+    public List<String> getModeOpenedTopComponentsIDs(ModeImpl mode);
+    public List<String> getModeClosedTopComponentsIDs(ModeImpl mode);
+    public List<String> getModeTopComponentsIDs(ModeImpl mode);
     
     // Info about previous top component context, used by sliding kind of modes
     
@@ -227,22 +227,24 @@ public interface Model {
 
     ///////////////////////////
     // TopComponentGroup level >>
-    public Set getTopComponentGroups();
+    public Set<TopComponentGroupImpl> getTopComponentGroups();
 
     /** Gets programatic name of goup. */
     public String getGroupName(TopComponentGroupImpl tcGroup);
 
-    public void openGroup(TopComponentGroupImpl tcGroup, Collection openedTopComponents, Collection openedBeforeTopComponenets);
+    public void openGroup(TopComponentGroupImpl tcGroup, 
+            Collection<TopComponent> openedTopComponents, 
+            Collection<TopComponent> openedBeforeTopComponenets);
     public void closeGroup(TopComponentGroupImpl tcGroup);
     public boolean isGroupOpened(TopComponentGroupImpl tcGroup);
     
-    public Set getGroupTopComponents(TopComponentGroupImpl tcGroup);
+    public Set<TopComponent> getGroupTopComponents(TopComponentGroupImpl tcGroup);
     
-    public Set getGroupOpenedTopComponents(TopComponentGroupImpl tcGroup);
-    public Set getGroupOpenedBeforeTopComponents(TopComponentGroupImpl tcGroup);
+    public Set<TopComponent> getGroupOpenedTopComponents(TopComponentGroupImpl tcGroup);
+    public Set<TopComponent> getGroupOpenedBeforeTopComponents(TopComponentGroupImpl tcGroup);
     
-    public Set getGroupOpeningTopComponents(TopComponentGroupImpl tcGroup);
-    public Set getGroupClosingTopComponents(TopComponentGroupImpl tcGroup);
+    public Set<TopComponent> getGroupOpeningTopComponents(TopComponentGroupImpl tcGroup);
+    public Set<TopComponent> getGroupClosingTopComponents(TopComponentGroupImpl tcGroup);
 
     public boolean addGroupUnloadedTopComponent(TopComponentGroupImpl tcGroup, String tcID);
     public boolean removeGroupUnloadedTopComponent(TopComponentGroupImpl tcGroup, String tcID);
@@ -260,10 +262,10 @@ public interface Model {
     public boolean addGroupUnloadedOpenedTopComponent(TopComponentGroupImpl tcGroup, String tcID);
     
     // XXX>>
-    public Set getGroupTopComponentsIDs(TopComponentGroupImpl tcGroup);
-    public Set getGroupOpeningSetIDs(TopComponentGroupImpl tcGroup);
-    public Set getGroupClosingSetIDs(TopComponentGroupImpl tcGroup);
-    public Set getGroupOpenedTopComponentsIDs(TopComponentGroupImpl tcGroup);
+    public Set<String> getGroupTopComponentsIDs(TopComponentGroupImpl tcGroup);
+    public Set<String> getGroupOpeningSetIDs(TopComponentGroupImpl tcGroup);
+    public Set<String> getGroupClosingSetIDs(TopComponentGroupImpl tcGroup);
+    public Set<String> getGroupOpenedTopComponentsIDs(TopComponentGroupImpl tcGroup);
     // XXX<<
     // TopComponentGroup level <<
     ///////////////////////////

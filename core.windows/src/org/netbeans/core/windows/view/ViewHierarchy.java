@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.List;
 
 import org.netbeans.core.windows.Debug;
+import org.openide.windows.TopComponent;
 
 /**
  * Class which manages GUI components.
@@ -51,9 +52,11 @@ final class ViewHierarchy {
     /** desktop component maintainer */
     private DesktopImpl desktop = new DesktopImpl();
     /** Map of separate mode views (view <-> accessor). */
-    private final Map separateModeViews = new HashMap(10);
+    private final Map<ModeView, ModeAccessor> separateModeViews = 
+            new HashMap<ModeView, ModeAccessor>(10);
     /** Map of sliding mode views (view <-> accessor) */
-    private final Map  slidingModeViews = new HashMap(10);
+    private final Map<SlidingView, SlidingAccessor>  slidingModeViews = 
+            new HashMap<SlidingView, SlidingAccessor>(10);
     
     /** Component in which is editor area, when the editor state is separated. */
     private EditorAreaFrame editorAreaFrame;
@@ -68,9 +71,11 @@ final class ViewHierarchy {
     private ModeView lastNonSlidingActive;
     
     /** */
-    private final Map accessor2view = new HashMap(10);
+    private final Map<ElementAccessor,ViewElement> accessor2view = 
+            new HashMap<ElementAccessor,ViewElement>(10);
     /** */
-    private final Map view2accessor = new HashMap(10);
+    private final Map<ViewElement,ElementAccessor> view2accessor = 
+            new HashMap<ViewElement,ElementAccessor>(10);
     
     private MainWindow mainWindow;
 
@@ -130,28 +135,28 @@ final class ViewHierarchy {
     
     /** Puts new instances of accessors in and reuses the old relevant views. */
     public void updateAccessors(ModeStructureAccessor modeStructureAccessor) {
-        Map a2v = new HashMap(accessor2view);
+        Map<ElementAccessor,ViewElement> a2v = 
+                new HashMap<ElementAccessor,ViewElement>(accessor2view);
         
         accessor2view.clear();
         view2accessor.clear();
 
-        Set accessors  = getAllAccessorsForTree(modeStructureAccessor.getSplitRootAccessor());
+        Set<ElementAccessor> accessors  = getAllAccessorsForTree(modeStructureAccessor.getSplitRootAccessor());
         accessors.addAll(Arrays.asList(modeStructureAccessor.getSeparateModeAccessors()));
         accessors.addAll(Arrays.asList(modeStructureAccessor.getSlidingModeAccessors()));
         
-        for(Iterator it = accessors.iterator(); it.hasNext(); ) {
-            ElementAccessor accessor = (ElementAccessor)it.next();
+        for(ElementAccessor accessor: accessors) {
             ElementAccessor similar = findSimilarAccessor(accessor, a2v);
             if(similar != null) {
-                Object view = a2v.get(similar);
+                ViewElement view = a2v.get(similar);
                 accessor2view.put(accessor, view);
                 view2accessor.put(view, accessor);
             }
         }
     }
     
-    private Set getAllAccessorsForTree(ElementAccessor accessor) {
-        Set s = new HashSet();
+    private Set<ElementAccessor> getAllAccessorsForTree(ElementAccessor accessor) {
+        Set<ElementAccessor> s = new HashSet<ElementAccessor>();
         if(accessor instanceof ModeAccessor) {
             s.add(accessor);
         } else if(accessor instanceof SplitAccessor) {
@@ -187,18 +192,18 @@ final class ViewHierarchy {
             return null;
         }
         
-        ViewElement view = (ViewElement)accessor2view.get(patternAccessor);
+        ViewElement view = accessor2view.get(patternAccessor);
         
         if(view != null) {
             if(patternAccessor instanceof SplitAccessor) {
                 SplitAccessor sa = (SplitAccessor)patternAccessor;
                 ElementAccessor[] childAccessors = sa.getChildren();
-                ArrayList childViews = new ArrayList( childAccessors.length );
+                ArrayList<ViewElement> childViews = new ArrayList<ViewElement>( childAccessors.length );
                 for( int i=0; i<childAccessors.length; i++ ) {
                     childViews.add( updateViewForAccessor( childAccessors[i] ) );
                 }
                 double[] splitWeights = sa.getSplitWeights();
-                ArrayList weights = new ArrayList( splitWeights.length );
+                ArrayList<Double> weights = new ArrayList<Double>( splitWeights.length );
                 for( int i=0; i<splitWeights.length; i++ ) {
                     weights.add( new Double( splitWeights[i] ) );
                 }
@@ -231,11 +236,11 @@ final class ViewHierarchy {
         } else {
             if(patternAccessor instanceof SplitAccessor) {
                 SplitAccessor sa = (SplitAccessor)patternAccessor;
-                ArrayList weights = new ArrayList( sa.getSplitWeights().length );
+                ArrayList<Double> weights = new ArrayList<Double>( sa.getSplitWeights().length );
                 for( int i=0; i<sa.getSplitWeights().length; i++ ) {
                     weights.add( new Double( sa.getSplitWeights()[i]) );
                 }
-                ArrayList children = new ArrayList( sa.getChildren().length );
+                ArrayList<ViewElement> children = new ArrayList<ViewElement>( sa.getChildren().length );
                 for( int i=0; i<sa.getChildren().length; i++ ) {
                     children.add( updateViewForAccessor( sa.getChildren()[i] ) );
                 }
@@ -282,14 +287,14 @@ final class ViewHierarchy {
     
     
     private void updateSeparateViews(ModeAccessor[] separateModeAccessors) {
-        Map newViews = new HashMap();
+        Map<ModeView, ModeAccessor> newViews = new HashMap<ModeView, ModeAccessor>();
         for(int i = 0; i < separateModeAccessors.length; i++) {
             ModeAccessor ma = separateModeAccessors[i];
             ModeView mv = (ModeView)updateViewForAccessor(ma);
             newViews.put(mv, ma);
         }
         
-        Set oldViews = new HashSet(separateModeViews.keySet());
+        Set<ModeView> oldViews = new HashSet<ModeView>(separateModeViews.keySet());
         oldViews.removeAll(newViews.keySet());
         
         separateModeViews.clear();
@@ -318,31 +323,28 @@ final class ViewHierarchy {
     }
     
     private void updateSlidingViews(SlidingAccessor[] slidingModeAccessors) {
-        Map newViews = new HashMap();
+        Map<SlidingView, SlidingAccessor> newViews = new HashMap<SlidingView, SlidingAccessor>();
         for(int i = 0; i < slidingModeAccessors.length; i++) {
             SlidingAccessor sa = slidingModeAccessors[i];
             SlidingView sv = (SlidingView)updateViewForAccessor(sa);
             newViews.put(sv, sa);
         }
         
-        Set oldViews = new HashSet(slidingModeViews.keySet());
+        Set<SlidingView> oldViews = new HashSet<SlidingView>(slidingModeViews.keySet());
         oldViews.removeAll(newViews.keySet());
     
-        Set addedViews = new HashSet(newViews.keySet());
+        Set<SlidingView> addedViews = new HashSet<SlidingView>(newViews.keySet());
         addedViews.removeAll(slidingModeViews.keySet());
 
         slidingModeViews.clear();
         slidingModeViews.putAll(newViews);
         
         // remove old views.
-        SlidingView curSv;
-        for(Iterator it = oldViews.iterator(); it.hasNext(); ) {
-            curSv = (SlidingView)it.next();
+        for(SlidingView curSv: oldViews) {
             desktop.removeSlidingView(curSv);
         }
         // add all new views.
-        for(Iterator it = addedViews.iterator(); it.hasNext(); ) {
-            curSv = (SlidingView)it.next();
+        for(SlidingView curSv: addedViews) {
             desktop.addSlidingView(curSv);
         }
     }
@@ -432,10 +434,9 @@ final class ViewHierarchy {
     }
     
     /** Gets set of all mode view components. */
-    public Set getModeComponents() {
-        Set set = new HashSet();
-        for(Iterator it = view2accessor.keySet().iterator(); it.hasNext(); ) {
-            Object next = it.next();
+    public Set<Component> getModeComponents() {
+        Set<Component> set = new HashSet<Component>();
+        for(ViewElement next:view2accessor.keySet()) {
             if(next instanceof ModeView) {
                 ModeView modeView = (ModeView)next;
                 set.add(modeView.getComponent());
@@ -457,10 +458,9 @@ final class ViewHierarchy {
     }
     
     /** Gets set of separate mode view frames and editor frame (if separated). */
-    public Set getSeparateModeFrames() {
-        Set s = new HashSet();
-        for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
-            ModeView modeView = (ModeView)it.next();
+    public Set<Component> getSeparateModeFrames() {
+        Set<Component> s = new HashSet<Component>();
+        for(ModeView modeView: separateModeViews.keySet()) {
             s.add(modeView.getComponent());
         }
         
@@ -477,11 +477,10 @@ final class ViewHierarchy {
             return null;
         } else if(view instanceof SplitView) {
             SplitView sv = (SplitView)view;
-            List children = sv.getChildren();
-            ArrayList newChildren = new ArrayList( children.size() );
+            List<ViewElement> children = sv.getChildren();
+            ArrayList<ViewElement> newChildren = new ArrayList<ViewElement>( children.size() );
             ViewElement removedView = null;
-            for( Iterator i=children.iterator(); i.hasNext(); ) {
-                ViewElement child = (ViewElement)i.next();
+            for(ViewElement child: children) {
                 ViewElement newChild = removeModeViewFromElement( child, modeView );
                 if( newChild != child ) {
                     removedView = child;
@@ -491,7 +490,7 @@ final class ViewHierarchy {
             }
             if( newChildren.size() == 0 ) {
                 //the view is not split anymore
-                return (ViewElement)newChildren.get( 0 );
+                return newChildren.get( 0 );
             }
             if( null != removedView ) {
                 sv.remove( removedView );
@@ -550,8 +549,7 @@ final class ViewHierarchy {
             }
         } 
         
-        for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
-            ModeView mv = (ModeView)it.next();
+        for(ModeView mv: separateModeViews.keySet()) {
             if (mv.getComponent().isVisible() != visible) {
                 //#48829 the visible check needed because of this issue
                 mv.getComponent().setVisible(visible);
@@ -566,8 +564,7 @@ final class ViewHierarchy {
     }
     
     public void updateFrameStates() {
-        for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
-            ModeView mv = (ModeView)it.next();
+        for(ModeView mv: separateModeViews.keySet()) {
             mv.updateFrameState();
         }
     }
@@ -621,11 +618,11 @@ final class ViewHierarchy {
     // PENDING Revise, updating desktop and editor area, bounds... separate this method.
     public void updateDesktop(WindowSystemAccessor wsa) {
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-        List focusOwnerAWTHierarchyChain; // To find out whether there was a change in AWT hierarchy according to focusOwner.
+        List<Component> focusOwnerAWTHierarchyChain; // To find out whether there was a change in AWT hierarchy according to focusOwner.
         if(focusOwner != null) {
             focusOwnerAWTHierarchyChain = getComponentAWTHierarchyChain(focusOwner);
         } else {
-            focusOwnerAWTHierarchyChain = Collections.EMPTY_LIST;
+            focusOwnerAWTHierarchyChain = Collections.emptyList();
         }
         
         try {
@@ -764,8 +761,8 @@ final class ViewHierarchy {
     }
     
     
-    private List getComponentAWTHierarchyChain(Component comp) {
-        List l = new ArrayList();
+    private List<Component> getComponentAWTHierarchyChain(Component comp) {
+        List<Component> l = new ArrayList<Component>();
         Component c = comp;
         while(c != null) {
             l.add(c);
@@ -891,25 +888,20 @@ final class ViewHierarchy {
         if(editorAreaFrame != null) {
             SwingUtilities.updateComponentTreeUI(editorAreaFrame);
         }
-        for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
-            ModeView mv = (ModeView)it.next();
+        for(ModeView mv: separateModeViews.keySet()) {
             SwingUtilities.updateComponentTreeUI(mv.getComponent());
         }
     }
     
-    public Set getShowingTopComponents() {
-        Set s = new HashSet();
-        for(Iterator it = accessor2view.keySet().iterator(); it.hasNext(); ) {
-            Object accessor = it.next();
+    public Set<TopComponent> getShowingTopComponents() {
+        Set<TopComponent> s = new HashSet<TopComponent>();
+        for(ElementAccessor accessor: accessor2view.keySet()) {
             if(accessor instanceof ModeAccessor) {
                 s.add(((ModeAccessor)accessor).getSelectedTopComponent());
             }
         }
-        for(Iterator it = separateModeViews.values().iterator(); it.hasNext(); ) {
-            Object accessor = it.next();
-            if(accessor instanceof ModeAccessor) {
-                s.add(((ModeAccessor)accessor).getSelectedTopComponent());
-            }
+        for(ModeAccessor accessor: separateModeViews.values()) {
+            s.add(accessor.getSelectedTopComponent());
         }
         
         return s;
@@ -952,8 +944,7 @@ final class ViewHierarchy {
 
     private String dumpAccessors() {
         StringBuffer sb = new StringBuffer();
-        for(Iterator it = accessor2view.keySet().iterator(); it.hasNext(); ) {
-            Object accessor = it.next();
+        for(ElementAccessor accessor: accessor2view.keySet()) {
             sb.append("accessor="+accessor + "\tview="+accessor2view.get(accessor) + "\n"); // NOI18N
         }
         

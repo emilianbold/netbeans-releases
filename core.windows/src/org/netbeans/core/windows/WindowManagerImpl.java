@@ -291,7 +291,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Gets <code>Set</code> of all <code>Mode</code>'s.
      * Implements <code>Workspace</code> interface method. */
-    public Set getModes () {
+    public Set<ModeImpl> getModes () {
         return central.getModes();
     }
     
@@ -432,7 +432,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         central.removeTopComponentGroup(tcGroup);
     }
     
-    public Set getTopComponentGroups() {
+    public Set<TopComponentGroupImpl> getTopComponentGroups() {
         return central.getTopComponentGroups();
     }
     // TopComponentGroup<<
@@ -1246,16 +1246,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return An array of TopComponents that are opened in editor modes (i.e. editor windows).
      */
     public TopComponent[] getEditorTopComponents() {
-        Set editors = new HashSet();
-        Set modes = getModes();
-        for( Iterator i=modes.iterator(); i.hasNext(); ) {
-            Mode mode = (Mode)i.next();
-            ModeImpl modeImpl = findModeImpl( mode.getName() );
+        Set<TopComponent> editors = new HashSet<TopComponent>();
+        Set<ModeImpl> modes = getModes();
+        for(Mode mode: modes) {
+            ModeImpl modeImpl = findModeImpl( mode.getName() ); // XXX probably useless
             if( modeImpl.getKind() == Constants.MODE_KIND_EDITOR ) {
                 editors.addAll( modeImpl.getOpenedTopComponents() );
             }
         }
-        return (TopComponent[])editors.toArray( new TopComponent[editors.size()] );
+        return editors.toArray( new TopComponent[editors.size()] );
     }
 
     /**

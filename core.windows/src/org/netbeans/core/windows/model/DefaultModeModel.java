@@ -228,7 +228,7 @@ final class DefaultModeModel implements ModeModel {
     }
 
     /** Gets list of top components in this workspace. */
-    public List getTopComponents() {
+    public List<TopComponent> getTopComponents() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getTopComponents();
         }
@@ -243,26 +243,26 @@ final class DefaultModeModel implements ModeModel {
     }
 
     /** Gets list of top components. */
-    public List getOpenedTopComponents() {
+    public List<TopComponent> getOpenedTopComponents() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getOpenedTopComponents();
         }
     }
     
     // XXX
-    public List getOpenedTopComponentsIDs() {
+    public List<String> getOpenedTopComponentsIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getOpenedTopComponentsIDs();
         }
     }
     
-    public List getClosedTopComponentsIDs() {
+    public List<String> getClosedTopComponentsIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getClosedTopComponentsIDs();
         }
     }
     
-    public List getTopComponentsIDs() {
+    public List<String> getTopComponentsIDs() {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getTopComponentsIDs();
         }

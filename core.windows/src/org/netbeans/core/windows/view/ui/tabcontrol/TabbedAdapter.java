@@ -58,7 +58,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     public static final int DOCUMENT = 1;
     
     /** Utility field holding list of ChangeListeners. */
-    private transient java.util.ArrayList changeListenerList;
+    private transient java.util.ArrayList<ChangeListener> changeListenerList;
     
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(TabbedAdapter.class);
@@ -381,7 +381,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
      */
     public synchronized void addChangeListener(javax.swing.event.ChangeListener listener) {
         if (changeListenerList == null ) {
-            changeListenerList = new java.util.ArrayList();
+            changeListenerList = new java.util.ArrayList<ChangeListener>();
         }
         changeListenerList.add(listener);
     }    
@@ -398,10 +398,10 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     
     /** Notifies all registered listeners about the event. */
     private void fireStateChanged() {
-        java.util.ArrayList list;
+        java.util.ArrayList<ChangeListener> list;
         synchronized (this) {
             if (changeListenerList == null) return;
-            list = (java.util.ArrayList)changeListenerList.clone();
+            list = (java.util.ArrayList<ChangeListener>)changeListenerList.clone();
         }
         //Note: Firing the events while holding the tree lock avoids many
         //gratuitous repaints that slow down switching tabs.  To demonstrate this,

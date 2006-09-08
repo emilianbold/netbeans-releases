@@ -44,7 +44,7 @@ import org.openide.windows.TopComponent;
  */
 public abstract class ActionUtils {
     
-    private static HashMap sharedAccelerators = new HashMap();
+    private static HashMap<Object, Object> sharedAccelerators = new HashMap<Object, Object>();
 
     private ActionUtils() {}
     
@@ -52,7 +52,7 @@ public abstract class ActionUtils {
         ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
         int kind = mode != null ? mode.getKind() : Constants.MODE_KIND_EDITOR;
         
-        List actions = new ArrayList();
+        List<Action> actions = new ArrayList<Action>();
         if(kind == Constants.MODE_KIND_EDITOR) {
             actions.add(new CloseAllDocumentsAction(false));
             CloseAllButThisAction allBut = new CloseAllButThisAction(tc);
@@ -79,7 +79,7 @@ public abstract class ActionUtils {
             actions.add(new UndockWindowAction(tc));
         }
         
-        return (Action[])actions.toArray(new Action[actions.size()]);
+        return actions.toArray(new Action[actions.size()]);
     }
     
     /**** PENDING remove during merge, TabbedListener removed, instead drive directly */
@@ -189,32 +189,28 @@ public abstract class ActionUtils {
     // Utility methods >>
     public static void closeAllDocuments() {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        Set tcs = new HashSet();
-        for(Iterator it = wm.getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
+        Set<TopComponent> tcs = new HashSet<TopComponent>();
+        for(ModeImpl mode: wm.getModes()) {
             if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
                 tcs.addAll(mode.getOpenedTopComponents());
             }
         }
         
-        for(Iterator it = tcs.iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
+        for(TopComponent tc: tcs) {
             tc.close();
         }
     }
 
     public static void closeAllExcept (TopComponent c) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        Set tcs = new HashSet();
-        for(Iterator it = wm.getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
+        Set<TopComponent> tcs = new HashSet<TopComponent>();
+        for(ModeImpl mode: wm.getModes()) {
             if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
                 tcs.addAll(mode.getOpenedTopComponents());
             }
         }
 
-        for(Iterator it = tcs.iterator(); it.hasNext(); ) {
-            TopComponent tc = (TopComponent)it.next();
+        for(TopComponent tc: tcs) {
             if (tc != c) {
                 tc.close();
             }

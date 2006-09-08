@@ -21,6 +21,7 @@ package org.netbeans.core.windows.view.ui.toolbars;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -68,7 +69,7 @@ import org.openide.util.datatransfer.NewType;
  */
 public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnable {
     
-    private static WeakReference dialogRef; // is weak reference necessary?
+    private static WeakReference<Dialog> dialogRef; // is weak reference necessary?
     
     private Node root;
 
@@ -110,7 +111,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     public static void showConfigureDialog() {
         java.awt.Dialog dialog = null;
         if (dialogRef != null)
-            dialog = (JDialog) dialogRef.get();
+            dialog = dialogRef.get();
         if (dialog == null) {
             JButton closeButton = new JButton();
             closeButton.addActionListener( new ActionListener() {
@@ -131,7 +132,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                 null,
                 null);
             dialog = DialogDisplayer.getDefault().createDialog(dd);
-            dialogRef = new WeakReference(dialog);
+            dialogRef = new WeakReference<Dialog>(dialog);
         }
         dialog.setVisible(true);
         startToolbarEditMode();

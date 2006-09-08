@@ -34,17 +34,19 @@ interface TopComponentGroupModel {
 
     public String getName();
 
-    public void open(Collection openedTopComponents, Collection openedBeforeTopComponents);
+    public void open(
+            Collection<TopComponent> openedTopComponents, 
+            Collection<TopComponent> openedBeforeTopComponents);
     public void close();
     public boolean isOpened();
 
-    public Set getTopComponents();
+    public Set<TopComponent> getTopComponents();
 
-    public Set getOpenedTopComponents();
-    public Set getOpenedBeforeTopComponents();
+    public Set<TopComponent> getOpenedTopComponents();
+    public Set<TopComponent> getOpenedBeforeTopComponents();
 
-    public Set getOpeningTopComponents();
-    public Set getClosingTopComponents();
+    public Set<TopComponent> getOpeningTopComponents();
+    public Set<TopComponent> getClosingTopComponents();
     
     public boolean addUnloadedTopComponent(String tcID);
     public boolean removeUnloadedTopComponent(String tcID);
@@ -62,9 +64,9 @@ interface TopComponentGroupModel {
     public boolean addUnloadedOpenedTopComponent(String tcID);
     
     // XXX>>
-    public Set getTopComponentsIDs();
-    public Set getOpeningSetIDs();
-    public Set getClosingSetIDs();
-    public Set getOpenedTopComponentsIDs();
+    public Set<String> getTopComponentsIDs();
+    public Set<String> getOpeningSetIDs();
+    public Set<String> getClosingSetIDs();
+    public Set<String> getOpenedTopComponentsIDs();
     // XXX<<
 }

@@ -68,7 +68,7 @@ final class ActionPasteType {
     }
 
     private static boolean canBePasted(final DataObject[] dataObjects, final DataFolder targetFolder, final int operation) throws FileStateInvalidException {
-        final Set pasteableDataObjects = new HashSet ();
+        final Set<DataObject> pasteableDataObjects = new HashSet<DataObject> ();
         final FileObject folder = targetFolder.getPrimaryFile();
         
         DataObject[] folderChildren = targetFolder.getChildren();

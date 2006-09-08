@@ -41,7 +41,8 @@ class SplitSubModel {
     protected final Model parentModel;
     
     /** Maps modes to nodes of this n-branch tree model. */
-    private final Map modes2nodes = new WeakHashMap(20);
+    private final Map<ModeImpl, ModeNode> modes2nodes = 
+            new WeakHashMap<ModeImpl, ModeNode>(20);
     
     /** Root <code>Node</code> which represents the split panes structure
      * with modes as leaves. */
@@ -59,7 +60,7 @@ class SplitSubModel {
     
     private ModeNode getModeNode(ModeImpl mode) {
         synchronized(modes2nodes) {
-            ModeNode node = (ModeNode)modes2nodes.get(mode);
+            ModeNode node = modes2nodes.get(mode);
             if(node == null) {
                 node = new ModeNode(mode);
                 modes2nodes.put(mode, node);
@@ -552,16 +553,17 @@ class SplitSubModel {
         return root == null ? null : root.createSnapshot();
     }
     
-    public Set createSeparateSnapshots() {
+    public Set<ModeStructureSnapshot.ModeSnapshot> createSeparateSnapshots() {
         return findSeparateModeSnapshots(root);
     }
     
-    private Set findSeparateModeSnapshots(Node node) {
-        Set s = new HashSet();
+    private Set<ModeStructureSnapshot.ModeSnapshot> findSeparateModeSnapshots(Node node) {
+        Set<ModeStructureSnapshot.ModeSnapshot> s = 
+                new HashSet<ModeStructureSnapshot.ModeSnapshot>();
         if(node instanceof ModeNode) {
             ModeNode modeNode = (ModeNode)node;
             if(modeNode.isVisibleSeparate()) {
-                s.add(modeNode.createSnapshot());
+                s.add((ModeStructureSnapshot.ModeSnapshot)modeNode.createSnapshot());
             }
         } else if(node instanceof SplitNode) {
             SplitNode splitNode = (SplitNode)node;
@@ -727,7 +729,7 @@ class SplitSubModel {
          * the path in the model */
         public SplitConstraint[] getNodeConstraints() {
             Node node = this;
-            List conList = new ArrayList(5);
+            List<SplitConstraint> conList = new ArrayList<SplitConstraint>(5);
             do {
                 SplitConstraint item = getConstraintForNode(node);
                 if(item != null) {
@@ -738,7 +740,7 @@ class SplitSubModel {
             } while(node != null);
 
             Collections.reverse(conList);
-            return (SplitConstraint[])conList.toArray(new SplitConstraint[0]);
+            return conList.toArray(new SplitConstraint[0]);
         }
 
         /** Gets constraint of this <code>Node</code> from parent. */
@@ -784,10 +786,10 @@ class SplitSubModel {
         // XXX some better structure needed? List is not enough since the indices may
         // not be continuous (like 0, 1, 2, 3) but even like (0, 3, 8, 9).
         /** Maps index to child node, while keeps ordering according to keys (indices). */
-        private final TreeMap index2child = new TreeMap();
+        private final TreeMap<Integer, Node> index2child = new TreeMap<Integer, Node>();
 
         /** Maps child node to its splitWeight. */
-        private final Map child2splitWeight = new HashMap();
+        private final Map<Node, Double> child2splitWeight = new HashMap<Node, Double>();
 
         /** Creates a new instance of SplitNode */
         public SplitNode(int orientation) {
@@ -866,7 +868,7 @@ class SplitSubModel {
         }
 
         public double getChildSplitWeight(Node child) {
-            Double db = (Double)child2splitWeight.get(child);
+            Double db = child2splitWeight.get(child);
             if(db != null) {
                 return db.doubleValue();
             }
@@ -888,9 +890,8 @@ class SplitSubModel {
         
         
         private void normalizeWeights(double ratio) {
-            for(Iterator it = child2splitWeight.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry)it.next();
-                double w = ((Double)entry.getValue()).doubleValue();
+            for(Map.Entry<Node, Double> entry: child2splitWeight.entrySet()) {
+                double w = entry.getValue().doubleValue();
                 w = ratio * w;
                 entry.setValue(new Double(w));
             }
@@ -907,14 +908,14 @@ class SplitSubModel {
             return -1;
         }
         
-        public List getChildren() {
-            return new ArrayList(index2child.values());
+        public List<Node> getChildren() {
+            return new ArrayList<Node>(index2child.values());
         }
         
-        public List getVisibleChildren() {
-            List l = getChildren();
-            for(Iterator it = l.iterator(); it.hasNext(); ) {
-                Node node = (Node)it.next();
+        public List<Node> getVisibleChildren() {
+            List<Node> l = getChildren();
+            for(Iterator<Node> it = l.iterator(); it.hasNext(); ) {
+                Node node = it.next();
                 if(!node.hasVisibleDescendant()) {
                     it.remove();
                 }
@@ -972,10 +973,11 @@ class SplitSubModel {
         }
 
         public ModeStructureSnapshot.ElementSnapshot createSnapshot() {
-            List childSnapshots = new ArrayList();
-            Map childSnapshot2splitWeight = new HashMap();
-            for(Iterator it = getChildren().iterator(); it.hasNext(); ) {
-                Node child = (Node)it.next();
+            List<ModeStructureSnapshot.ElementSnapshot> childSnapshots = 
+                    new ArrayList<ModeStructureSnapshot.ElementSnapshot>();
+            Map<ModeStructureSnapshot.ElementSnapshot,Double> childSnapshot2splitWeight = 
+                    new HashMap<ModeStructureSnapshot.ElementSnapshot, Double>();
+            for(Node child: getChildren()) {
                 ModeStructureSnapshot.ElementSnapshot childSnapshot = child.createSnapshot();
                 childSnapshots.add(childSnapshot);
                 childSnapshot2splitWeight.put(childSnapshot, child2splitWeight.get(child));
@@ -985,8 +987,7 @@ class SplitSubModel {
                 getOrientation(), childSnapshots, childSnapshot2splitWeight, getResizeWeight());
             
             // Set parent for children.
-            for(Iterator it = childSnapshots.iterator(); it.hasNext(); ) {
-                ModeStructureSnapshot.ElementSnapshot snapshot = (ModeStructureSnapshot.ElementSnapshot)it.next();
+            for(ModeStructureSnapshot.ElementSnapshot snapshot: childSnapshots) {
                 snapshot.setParent(splitSnapshot);
             }
             

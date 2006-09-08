@@ -52,7 +52,7 @@ class ModuleChangeHandler implements FileChangeListener {
     
     /** List of <FileObject> which contains file objects of tc refs waiting
      * for their related settings files to be processed */
-    private List tcRefsWaitingOnSettings;
+    private List<FileObject> tcRefsWaitingOnSettings;
     
     /** Creates a new instance of ModuleChangeHandler */
     public ModuleChangeHandler() {
@@ -294,7 +294,7 @@ class ModuleChangeHandler implements FileChangeListener {
         } else {
             // alas, settings file not yet ready, postpone tc ref adding
             if (tcRefsWaitingOnSettings == null) {
-                tcRefsWaitingOnSettings = new ArrayList(5);
+                tcRefsWaitingOnSettings = new ArrayList<FileObject>(5);
             }
             tcRefsWaitingOnSettings.add(tcRefFO);
         }
@@ -303,10 +303,10 @@ class ModuleChangeHandler implements FileChangeListener {
     private void addTCRef (final String modeName, String tcRefName) {
         if (DEBUG) Debug.log(ModuleChangeHandler.class, "addTCRef modeName:" + modeName + " tcRefName:" + tcRefName);
         WindowManagerParser wmParser = PersistenceManager.getDefault().getWindowManagerParser();
-        List tcRefNameList = new ArrayList(10);
+        List<String> tcRefNameList = new ArrayList<String>(10);
         final TCRefConfig tcRefConfig = wmParser.addTCRef(modeName, tcRefName, tcRefNameList);
         if (tcRefConfig != null) {
-            final String [] tcRefNameArray = (String []) tcRefNameList.toArray(new String[tcRefNameList.size()]);
+            final String [] tcRefNameArray = tcRefNameList.toArray(new String[tcRefNameList.size()]);
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
