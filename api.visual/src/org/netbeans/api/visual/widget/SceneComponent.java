@@ -211,7 +211,9 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         Point location = widget.getLocation ();
         event.translatePoint (- location.x, - location.y);
 
-        if (widget.getBounds ().contains (event.getPoint ())) {
+        Rectangle bounds = widget.getBounds ();
+        assert bounds != null : "Widget is not validated. See first Q/A at http://graph.netbeans.org/faq.html page.";
+        if (bounds.contains (event.getPoint ())) {
             WidgetAction.State state;
 
             List<Widget> children = widget.getChildren ();
