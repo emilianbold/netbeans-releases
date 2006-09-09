@@ -42,7 +42,7 @@ public abstract class StackMapFrame {
         for (int i = 0; i < n; i++) {
             int tag = in.readUnsignedByte();
             StackMapFrame frame;
-            if (tag >= 0 && tag <= 64)
+            if (tag >= 0 && tag <= 63)
                 frame = new SameFrame(tag);
             else if (tag >= 64 && tag <= 127) {
                 VerificationTypeInfo typeInfo = 
