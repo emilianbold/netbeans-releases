@@ -51,7 +51,11 @@ public final class Code {
             throw new IllegalArgumentException("input stream not specified");
         if (pool == null)
             throw new IllegalArgumentException("constant pool not specified");
-        loadCode(in, pool);
+        try {
+            loadCode(in, pool);
+        } catch (IndexOutOfBoundsException e) {
+            throw new InvalidClassFileAttributeException("invalid code attribute", e);
+        }
     }
 
     private void loadCode(DataInputStream in, ConstantPool pool) 
