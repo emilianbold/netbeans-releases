@@ -38,15 +38,15 @@ public class Utilities {
      */
     public static ActionsFactory getActionsFactory() {
         ActionsFactory instance = (ActionsFactory) Lookup.getDefault().lookup(ActionsFactory.class);
-        assert instance != null;
+        assert instance != null : "Need to have " + ActionsFactory.class.getName() + " instance in the default lookup";
         return instance;
     }
     
-    /** Gets the projectChooser fatory from the global Lookup
+    /** Gets the projectChooser factory from the global Lookup
      */
     public static ProjectChooserFactory getProjectChooserFactory() {
         ProjectChooserFactory instance = (ProjectChooserFactory) Lookup.getDefault().lookup(ProjectChooserFactory.class);
-        assert instance != null;
+        assert instance != null : "Need to have " + ProjectChooserFactory.class.getName() + " instance in the default lookup";
         return instance;
     }
     
@@ -54,7 +54,7 @@ public class Utilities {
      */
     public static OpenProjectsTrampoline getOpenProjectsTrampoline() {
         OpenProjectsTrampoline instance = (OpenProjectsTrampoline) Lookup.getDefault().lookup(OpenProjectsTrampoline.class);
-        assert instance != null;
+        assert instance != null : "Need to have " + OpenProjectsTrampoline.class.getName() + " instance in the default lookup";
         return instance;
     }
     
