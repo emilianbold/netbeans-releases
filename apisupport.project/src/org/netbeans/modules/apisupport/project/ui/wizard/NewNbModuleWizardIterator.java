@@ -72,7 +72,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     private final NewModuleProjectData data;
     private int position;
     private WizardDescriptor.Panel[] panels;
-    private WizardDescriptor settings;
     private FileObject createdProjectFolder;
     
     /** See {@link #PREFERRED_SUITE_DIR}. */
@@ -133,6 +132,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         final File projectFolder = new File(data.getProjectFolder());
         ProjectChooser.setProjectsFolder(new File(data.getProjectLocation()));
         ModuleUISettings.getDefault().setLastUsedPlatformID(data.getPlatformID());
+        WizardDescriptor settings = data.getSettings();
         switch (data.getWizardType()) {
             case NewNbModuleWizardIterator.TYPE_SUITE:
                 ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
@@ -191,7 +191,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     
     public void initialize(WizardDescriptor wiz) {
         data.setSettings(wiz);
-        this.settings = wiz;
         if (preferredSuiteDir == null) {
             Project mainPrj = OpenProjects.getDefault().getMainProject();
             if (mainPrj != null) {
@@ -199,8 +198,8 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
             }
         }
         if (preferredSuiteDir != null) {
-            settings.putProperty(PREFERRED_SUITE_DIR, preferredSuiteDir);
-            settings.putProperty(ONE_SUITE_DEDICATED_MODE, suiteDedicated);
+            wiz.putProperty(PREFERRED_SUITE_DIR, preferredSuiteDir);
+            wiz.putProperty(ONE_SUITE_DEDICATED_MODE, suiteDedicated);
         }
         
         position = 0;
@@ -242,7 +241,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     }
     
     public void uninitialize(WizardDescriptor wiz) {
-        this.settings = null;
         panels = null;
     }
     
