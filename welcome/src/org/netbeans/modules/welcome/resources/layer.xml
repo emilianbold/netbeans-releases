@@ -48,11 +48,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
    </folder>
  
-    <folder name="Services">
-      <file name="WelcomeOptions.settings" url="WelcomeOptions.settings">
-      </file>
-   </folder>
-    
     <folder name="WelcomePage">
         <folder name="GettingStartedLinks">
 
