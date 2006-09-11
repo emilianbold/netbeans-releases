@@ -46,6 +46,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -225,6 +226,10 @@ public class CommitAction extends ContextAction {
     }
 
     public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support) {
+        performCommit(message, commitFiles, ctx, support, false);
+    }
+    
+    public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate) {
         try {
                                                
             SvnClient client;
@@ -292,7 +297,7 @@ public class CommitAction extends ContextAction {
                     commitCandidates.add(node.getFile());
                 }
             }
-
+            
             // perform adds
 
             List<File> addFiles = new ArrayList<File>();
@@ -383,9 +388,20 @@ public class CommitAction extends ContextAction {
             for (Iterator<List<File>> itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
                 // one commit for each wc
                 List<File> list = itCandidates.next();
-                File[] files = list.toArray(new File[0]);
+                File[] files = list.toArray(new File[list.size()]);
                 
                 client.commit(files, message, false);
+                
+                if(rootUpdate) {
+                    File[] rootFiles = ctx.getRootFiles();
+                    for (int i = 0; i < rootFiles.length; i++) {
+                        client.update(rootFiles[i], SVNRevision.HEAD, false);                            
+                    }                    
+                    for (int i = 0; i < rootFiles.length; i++) {
+                        cache.refresh(rootFiles[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    }                                        
+                }    
+                
                 // XXX it's probably already catched by cache's onNotify()
                 for (int i = 0; i < files.length; i++) {
                     cache.refresh(files[i], FileStatusCache.REPOSITORY_STATUS_UNKNOWN);

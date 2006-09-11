@@ -55,6 +55,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -105,7 +106,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
 
         throw getException();
     }
-
+    
     private boolean handleRepositoryConnectError(boolean urlEditable) {
         SVNUrl url = client.getSvnUrl();
         Repository repository = new Repository(url, urlEditable, false, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters")); // NOI18N

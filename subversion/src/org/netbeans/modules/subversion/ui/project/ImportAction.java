@@ -20,6 +20,7 @@
 package org.netbeans.modules.subversion.ui.project;
 
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.openide.util.actions.NodeAction;
@@ -112,7 +113,7 @@ public final class ImportAction extends NodeAction {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             public void perform() {                    
-                CommitAction.performCommit(message, commitFiles, context, this);
+                CommitAction.performCommit(message, commitFiles, context, this, true);
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(ImportAction.class, "LBL_Import_Progress"));
