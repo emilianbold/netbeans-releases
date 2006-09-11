@@ -105,7 +105,7 @@ public class FileBuiltQueryImpl implements FileBuiltQueryImplementation, Propert
     
     private StatusImpl createStatus(final FileObject file) {
         final FileObject root = getSrcRoot();
-        if (root != null && FileUtil.isParentOf(root, file) && file.getExt().equals("java")) try { //NOI18N
+        if (root != null && file != null && FileUtil.isParentOf(root, file) && file.getExt().equals("java")) try { //NOI18N
             return new StatusImpl(file);
         } catch (DataObjectNotFoundException dnfe) {}
         return null;
