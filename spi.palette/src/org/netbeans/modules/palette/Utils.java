@@ -464,7 +464,10 @@ public final class Utils {
                 ERR.log( Level.INFO, e.getLocalizedMessage(), e );
             }
         }
-        
+
+        public boolean isEnabled() {
+            return itemNode.canCut();
+        }
     }
     
     /**
@@ -490,7 +493,10 @@ public final class Utils {
                 ERR.log( Level.INFO, e.getLocalizedMessage(), e );
             }
         }
-        
+
+        public boolean isEnabled() {
+            return itemNode.canCopy();
+        }
     }
     
     /**
