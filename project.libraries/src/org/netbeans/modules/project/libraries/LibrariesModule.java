@@ -18,6 +18,9 @@
  */
 package org.netbeans.modules.project.libraries;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -33,10 +36,25 @@ public class LibrariesModule extends ModuleInstall {
 
     public void restored() {
         super.restored();
-        for (LibraryProvider lp : Lookup.getDefault().lookupAll(LibraryProvider.class)) {
-            //XXX: Workaround of lookup non reentrant issue (#49405)            
-            //Library can not do an initialization in its constructor
-            //For promo-E the LibraryProvider should be extended by init method
+        final OpenProjects op = OpenProjects.getDefault();
+        if (op.getOpenProjects().length > 0) {
+            initProviders ();
+        }
+        else {
+            final PropertyChangeListener l = new PropertyChangeListener () {
+                public void propertyChange (final PropertyChangeEvent e) {
+                    if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(e.getPropertyName())) {
+                        initProviders();
+                        op.removePropertyChangeListener(this);
+                    }
+                }
+            };
+            op.addPropertyChangeListener(l);
+        }        
+    }
+    
+    private void initProviders () {
+        for (LibraryProvider lp : Lookup.getDefault().lookupAll(LibraryProvider.class)) {            
             lp.getLibraries();
         }
     }
