@@ -340,6 +340,7 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
             new String[] {
                 ICON, DESCRIPTION, INFOURL, 
                 DATASIZE, 
+                INSTALL, DELETE, CONFIRM, 
                 MECONFIG, MEPROFILE, 
             },
             new String[] {
@@ -354,6 +355,7 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
             new String[] {
                 NAME, VENDOR, VERSION, ICON, DESCRIPTION, INFOURL, 
                 DATASIZE, 
+                INSTALL, DELETE, CONFIRM, 
                 MECONFIG, MEPROFILE, 
             },
             new String[] {
@@ -372,6 +374,10 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         
         public void setMIDP(final String midp) {
             isMIDP20 = midp != null  &&  ! "MIDP-1.0".equals(midp); //NOI18N
+        }
+        
+        public boolean isMIDP2() {
+            return isMIDP20;
         }
         
         public HashSet<String> getKeys() {

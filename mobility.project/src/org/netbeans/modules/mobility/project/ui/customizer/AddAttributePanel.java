@@ -76,6 +76,11 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
         this.editing = editing;
         this.tableModel = tableModel;
         this.allNames = new HashSet<String>(Arrays.asList(tableModel.getAllAttrs()));
+        if (!tableModel.isMIDP2()) {
+            riskyNames.add("MIDlet-Install-Notify"); //NOI18N
+            riskyNames.add("MIDlet-Delete-Notify"); //NOI18N
+            riskyNames.add("MIDlet-Delete-Confirm"); //NOI18N
+        }
         originalKey = key;
         jLabel4.setVisible("MIDlet-Version".equals(key)); //NOI18N
         if (editing) {
