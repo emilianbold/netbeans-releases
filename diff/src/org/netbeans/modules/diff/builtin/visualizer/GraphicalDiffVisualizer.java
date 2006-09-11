@@ -115,7 +115,6 @@ public class GraphicalDiffVisualizer extends DiffVisualizer implements Serializa
                                 String name2, String title2, Reader r2, String MIMEType) {
         if (diffs.length == 0) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GraphicalDiffVisualizer.class, "MSG_NoDifference", name1, name2)));
-            return null;
         }
         DiffComponent diff;
         String componentName = name1;

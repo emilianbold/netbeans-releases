@@ -98,10 +98,6 @@ public class DefaultDiff extends Diff implements Serializable {
         DiffProvider provider = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         try {
             Difference[] diffs = provider.computeDiff(diffInfo.createFirstReader(), diffInfo.createSecondReader());
-            if (diffs.length == 0) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DefaultDiff.class, "MSG_NoDifference", name1, name2)));
-                return null;
-            }
             diffInfo.setInitialDiffs(diffs);
         } catch (IOException ioex) {}
         DiffPresenter diffPanel = new DiffPresenter(diffInfo);

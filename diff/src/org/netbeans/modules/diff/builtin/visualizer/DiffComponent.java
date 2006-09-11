@@ -135,6 +135,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
 
 
     private void showCurrentLine() {
+        if (currentDiffLine >= diffs.length) return;
         Difference diff = diffs[currentDiffLine];
         int line = diff.getFirstStart() + diffShifts[currentDiffLine][0];
         if (diff.getType() == Difference.ADD) line++;
