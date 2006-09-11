@@ -363,28 +363,21 @@ public class Utils {
      */ 
     public static String getSticky(File file) {
         if (file == null) return null;
+        FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file);
+        if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            return getSticky(file.getParentFile());
+        } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+            return null;
+        }
         if (file.isDirectory()) {
             return CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
         }
-        FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file);
         Entry entry = info.getEntry(file);
         if (entry != null) {
             String stickyInfo = null;
             if (entry.getTag() != null) stickyInfo = "T" + entry.getTag(); // NOI18N
             else if (entry.getDate() != null) stickyInfo = "D" + entry.getDateFormatted(); // NOI18N
             return stickyInfo;
-        }
-        if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-            file = file.getParentFile();
-            if (file == null) return null;
-            int status = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file).getStatus();
-            if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                String stickyTag = CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
-                return stickyTag == null ? null : stickyTag;
-            } else if (status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                return null;
-            }
-            return getSticky(file);
         }
         return null;
     }
