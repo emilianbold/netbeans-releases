@@ -72,20 +72,20 @@ public class J2MEPlatformTest extends NbTestCase {
         osarch = System.getProperty("os.name", null);
         String ossuf = null;
         assertNotNull(osarch);
+        if (osarch.toLowerCase().indexOf("windows") != -1) {
+            ossuf = "22_win";
+        } else if (osarch.toLowerCase().indexOf("linux") != -1) {
+            ossuf = "22_linux";
+        } else if (osarch.toLowerCase().indexOf("sunos") != -1) {
+            wtkStr = "wtk21";
+            ossuf = "21_sunos";
+        } else {
+            fail("Operating system architecture: " + osarch + " not supported");
+        }
+        
         String wtkPath=System.getProperty("wtk.base.dir");
         if (wtkPath == null)
         {
-            if (osarch.toLowerCase().indexOf("windows") != -1) {
-                ossuf = "22_win";
-            } else if (osarch.toLowerCase().indexOf("linux") != -1) {
-                ossuf = "22_linux";
-            } else if (osarch.toLowerCase().indexOf("sunos") != -1) {
-                wtkStr = "wtk21";
-                ossuf = "21_sunos";
-            } else {
-                fail("Operating system architecture: " + osarch + " not supported");
-            }
-
             String platPath;
             final String rootMobility=File.separator+rootStr;
             /* Get a path to wtk - dirty hack but I don't know any better way */

@@ -226,6 +226,18 @@ public class TestUtil extends ProxyLookup {
         String wtkStr="wtk22";
         String destPath=Manager.getWorkDirPath();
         String osarch=System.getProperty("os.name",null);
+        String ossuf=null;
+        NbTestCase.assertNotNull(osarch);
+        if (osarch.toLowerCase().indexOf("windows")!=-1)
+            ossuf="22_win";
+        else if (osarch.toLowerCase().indexOf("linux")!=-1)
+            ossuf="22_linux";
+        else if (osarch.toLowerCase().indexOf("sunos")!=-1) {
+            /* For Solaris we have just wtk21 */
+            ossuf="21_sunos";
+            wtkStr="wtk21";
+        } else
+            NbTestCase.fail("Operating system architecture: "+osarch+" not supported");
         
         ZipFile zip=null;
         String zipPath=null;
@@ -245,24 +257,11 @@ public class TestUtil extends ProxyLookup {
                 int id1=classPath.lastIndexOf(File.pathSeparator,index)==-1?0:classPath.lastIndexOf(File.pathSeparator,index)+1;
                 platPath=classPath.substring(id1,index+rootMobility.length())+rootWTK;
             }
-            
-            String ossuf=null;
-            NbTestCase.assertNotNull(osarch);
-            if (osarch.toLowerCase().indexOf("windows")!=-1)
-                ossuf="22_win";
-            else if (osarch.toLowerCase().indexOf("linux")!=-1)
-                ossuf="22_linux";
-            else if (osarch.toLowerCase().indexOf("sunos")!=-1) {
-                /* For Solaris we have just wtk21 */
-                ossuf="21_sunos";
-                wtkStr="wtk21";
-            } else
-                NbTestCase.fail("Operating system architecture: "+osarch+" not supported");
-
             zipPath=platPath+"wtk"+ossuf+".zip";
         }
         else
             zipPath=wtkPath;
+        
         try {   
             zip = new ZipFile(zipPath);
             Enumeration files = zip.entries();
