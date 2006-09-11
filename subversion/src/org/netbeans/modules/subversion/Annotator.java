@@ -408,9 +408,9 @@ public class Annotator {
             if (file instanceof FlatFolder) {
                 for (Iterator j = modifiedFiles.keySet().iterator(); j.hasNext();) {
                     File mf = (File) j.next();
-                    if (mf.getParentFile().equals(file)) {
+                    if (mf.getParentFile().equals(file) || mf.equals(file)) {
                         FileInformation info = modifiedFiles.get(mf);
-                        if (info.isDirectory()) continue;
+                        if (info.isDirectory() && !mf.equals(file)) continue;
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                             Image badge = Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/conflicts-badge.png", true);  // NOI18N
