@@ -254,8 +254,16 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     if (brokenSources && testSourceRoot()) scheduleReOpen();
-                    if (broken != hasBrokenLinks()) {
-                        broken ^= true; //faster way of negation
+                    boolean br=hasBrokenLinks();
+                    boolean changed = false;
+                    synchronized(J2MEProjectRootNode.this)
+                    {
+                        if (broken != br) {
+                            broken ^= true; //faster way of negation
+                            changed=true;
+                        }
+                    }
+                    if (changed) {
                         icon = createIcon();
                         fireIconChange();
                         fireOpenedIconChange();

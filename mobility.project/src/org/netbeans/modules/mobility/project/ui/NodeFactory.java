@@ -269,8 +269,16 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 J2MEPhysicalViewProvider.J2MEProjectRootNode node=(J2MEPhysicalViewProvider.J2MEProjectRootNode)ProjCfgNode.this.getParentNode();
-                if (node!= null && broken != node.isBroken()) {
-                    broken ^= true; //faster way of negation
+                boolean br=node.isBroken();
+                boolean changed = false;
+                synchronized(this) 
+                {
+                    if (broken != br) {
+                        broken ^= true; //faster way of negation
+                        changed=true;
+                    }
+                }
+                if (changed) {
                     fireIconChange();
                     fireOpenedIconChange();
                     fireDisplayNameChange(null, null);
@@ -684,8 +692,16 @@ class CfgNode extends ActionNode implements AntProjectListener, PropertyChangeLi
     protected void checkBroken() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                if (broken != hasBrokenLinks()) {
-                    broken ^= true; //faster way of negation
+                boolean br=hasBrokenLinks();
+                boolean changed = false;
+                synchronized(this) 
+                {
+                    if (broken != br) {
+                        broken ^= true; //faster way of negation
+                        changed=true;
+                    }
+                }
+                if (changed) {
                     fireIconChange();
                     fireOpenedIconChange();
                     fireDisplayNameChange(null, null);                    
