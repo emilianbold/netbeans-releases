@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Utils;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
@@ -109,8 +110,10 @@ class CategoryButton extends JCheckBox implements Autoscroll {
     void updateProperties() {
         setIcon( closedIcon );
         setSelectedIcon( openedIcon );
-        setText( category.getDisplayName() );
+        Mnemonics.setLocalizedText( this, category.getDisplayName() );
         setToolTipText( category.getShortDescription() );
+        getAccessibleContext().setAccessibleName( category.getDisplayName() );
+        getAccessibleContext().setAccessibleDescription( category.getShortDescription() );
     }
     
     Category getCategory() {

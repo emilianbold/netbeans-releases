@@ -102,6 +102,8 @@ public class CategoryList extends JList implements Autoscroll {
         setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         setCellRenderer (getItemRenderer ());
         setLayoutOrientation( HORIZONTAL_WRAP );
+        getAccessibleContext().setAccessibleName( category.getDisplayName() );
+        getAccessibleContext().setAccessibleDescription( category.getShortDescription() );
 
         initActions();
     }
