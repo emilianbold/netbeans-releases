@@ -189,6 +189,9 @@ class CategoryDescriptor implements CategoryListener {
         }
         itemsList.setVisible( opened );
         categoryButton.setSelected( opened );
+        if( opened ) {
+            itemsList.ensureIndexIsVisible( 0 );
+        }
     }
 
     void setPositionY( int yPosition ) {
