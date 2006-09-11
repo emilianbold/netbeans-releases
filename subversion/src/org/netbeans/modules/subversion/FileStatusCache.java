@@ -31,6 +31,7 @@ import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.ErrorManager;
 
 import java.io.*;
@@ -777,10 +778,20 @@ public class FileStatusCache implements ISVNNotifyListener {
         // invalidate cached status
         refresh(path, REPOSITORY_STATUS_UNKNOWN);
 
-        // notify FS about the extrenal change
-        FileObject fo = FileUtil.toFileObject(path);
-        if (fo != null) {
-            fo.refresh();
+        // notify FS about the external change
+        for (;;) {
+            FileObject fo = FileUtil.toFileObject(path);
+            if (fo != null) {
+                try {
+                    fo.getFileSystem().refresh(true);
+                } catch (FileStateInvalidException e) {
+                    // ignore invalid filesystems
+                }
+                break;
+            } else {
+                path = path.getParentFile();
+                if (path == null) break;
+            }
         }
     }
 

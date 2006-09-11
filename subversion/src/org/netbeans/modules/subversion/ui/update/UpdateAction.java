@@ -26,8 +26,6 @@ import org.netbeans.modules.subversion.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
@@ -76,9 +74,21 @@ public class UpdateAction extends ContextAction {
         //   test/ (project1 but imagine it's in repository, to be updated )
         // Is there a way how to update project1 without updating project2?
         final Context ctx = getContext(nodes);
-        File[] roots = ctx.getRootFiles();
+        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+            public void perform() {
+                update(ctx, this);
+            }
+        };            
+        support.start(createRequestProcessor(nodes));
+    }
 
+    private static void update(Context ctx, SvnProgressSupport progress) {
+
+        File[] roots = ctx.getRootFiles();
+        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+        
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        cache.refreshCached(ctx);
         File[][] split = SvnUtils.splitFlatOthers(roots);
         final List<File> recursiveFiles = new ArrayList<File>();
         final List<File> flatFiles = new ArrayList<File>();
@@ -92,36 +102,28 @@ public class UpdateAction extends ContextAction {
         for (int i= 0; i<split[0].length; i++) {            
             flatFiles.add(split[0][i]);
         }
-
-        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
-
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
-            public void perform() {
-
-                ISVNClientAdapter client;
-                try {
-                    client = Subversion.getInstance().getClient(repositoryUrl);
-                } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
-                    return;
-                }
-
-                try {                    
-                    updateRoots(recursiveFiles, this, client, true);
-                    if(isCanceled()) {
-                        return;
-                    }
-                    updateRoots(flatFiles, this, client, false);
-                } catch (SVNClientException e1) {
-                    annotate(e1);
-                }
         
+        
+        ISVNClientAdapter client;
+        try {
+            client = Subversion.getInstance().getClient(repositoryUrl);
+        } catch (SVNClientException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not hapen
+            return;
+        }
+
+        try {                    
+            updateRoots(recursiveFiles, progress, client, true);
+            if(progress.isCanceled()) {
+                return;
             }
-        };            
-        support.start(createRequestProcessor(nodes));
+            updateRoots(flatFiles, progress, client, false);
+        } catch (SVNClientException e1) {
+            progress.annotate(e1);
+        }
     }
 
-    private void updateRoots(List<File> roots, ContextAction.ProgressSupport support, ISVNClientAdapter client, boolean recursive) throws SVNClientException {
+    private static void updateRoots(List<File> roots, SvnProgressSupport support, ISVNClientAdapter client, boolean recursive) throws SVNClientException {
         boolean conflict = false;
 roots_loop:        
         for (Iterator<File> it = roots.iterator(); it.hasNext();) {
@@ -154,20 +156,8 @@ roots_loop:
         SVNUrl repository = getSvnUrl(context);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
-            public void perform() {                                                
-                try {
-                    SvnClient client = Subversion.getInstance().getClient(context, this);
-                    File[] roots = context.getRootFiles();
-                    for (int i=0; i<roots.length; i++) {
-                        if(isCanceled()) {
-                            return;
-                        }
-                        File root = roots[i];
-                        client.update(root, SVNRevision.HEAD, true);
-                    }
-                } catch (SVNClientException ex) {
-                    annotate(ex);
-                }
+            public void perform() {
+                update(context, this);
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
