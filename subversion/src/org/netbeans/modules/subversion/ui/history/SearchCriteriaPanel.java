@@ -39,6 +39,10 @@ import java.io.File;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.Dialog;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Packages search criteria in Search History panel.
@@ -49,7 +53,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     
     private final File[] roots;
     private final SVNUrl url;
-
+    
     /** Creates new form SearchCriteriaPanel */
     public SearchCriteriaPanel(File [] roots) {
         this.roots = roots;
@@ -63,15 +67,58 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         initComponents();
     }
     
-    public String getFrom() {
+    public SVNRevision getFrom() {
         String s = tfFrom.getText().trim();
-        return s.length() > 0 ? s : null;
+        if(s.length() < 0) {
+            return null;
+        }
+        return toRevision(s, new SVNRevision.Number(1));
     }
 
-    public String getTo() {
+    public SVNRevision getTo() {
         String s = tfTo.getText().trim();
-        return s.length() > 0 ? s : null;
+        if(s.length() < 0) {
+            return null;
+        }
+        return toRevision(s, SVNRevision.HEAD);
     }
+    
+    private Date parseDate(String s) {
+        if (s == null) return null;
+        for (int i = 0; i < SearchExecutor.dateFormats.length; i++) {
+            DateFormat dateformat = SearchExecutor.dateFormats[i];
+            try {
+                return dateformat.parse(s);
+            } catch (ParseException e) {
+                // try the next one
+            }
+        }
+        return null;
+    }
+
+    private SVNRevision toRevision(String s, SVNRevision def) {
+        if (s == null) {
+            return def;
+        } else {
+            Date date = parseDate(s);
+            if (date != null) {
+                return new SVNRevision.DateSpec(date);
+            } else {
+                if ("BASE".equals(s)) { // NOI18N
+                    return SVNRevision.BASE;
+                } else if ("HEAD".equals(s)) { // NOI18N
+                    return SVNRevision.HEAD;
+                } else {
+                    try {
+                        return new SVNRevision.Number(Long.parseLong(s));
+                    } catch (NumberFormatException ex) {
+                        // do nothing
+                    }
+                }
+            }
+            return null;    
+        } 
+    }  
     
     public String getCommitMessage() {
         String s = tfCommitMessage.getText().trim();
@@ -126,11 +173,9 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         tfUsername = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        tfFrom = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         bBrowseFrom = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
-        tfTo = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         bBrowseTo = new javax.swing.JButton();
 
@@ -138,8 +183,9 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 12, 0, 11));
         jLabel1.setLabelFor(tfCommitMessage);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_UseCommitMessage"));
-        jLabel1.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("TT_CommitMessage"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_UseCommitMessage")); // NOI18N
+        jLabel1.setToolTipText(bundle.getString("TT_CommitMessage")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         add(jLabel1, gridBagConstraints);
@@ -155,8 +201,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         add(tfCommitMessage, gridBagConstraints);
 
         jLabel2.setLabelFor(tfUsername);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_UseUsername"));
-        jLabel2.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("TT_Username"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("CTL_UseUsername")); // NOI18N
+        jLabel2.setToolTipText(bundle.getString("TT_Username")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
@@ -173,8 +219,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         add(tfUsername, gridBagConstraints);
 
         jLabel3.setLabelFor(tfFrom);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_UseFrom"));
-        jLabel3.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("TT_From"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("CTL_UseFrom")); // NOI18N
+        jLabel3.setToolTipText(bundle.getString("TT_From")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
@@ -189,15 +235,15 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(tfFrom, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_FromToHint"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, bundle.getString("CTL_FromToHint")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 4);
         add(jLabel5, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(bBrowseFrom, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_BrowseFrom"));
-        bBrowseFrom.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("TT_BrowseFrom"));
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowseFrom, bundle.getString("CTL_BrowseFrom")); // NOI18N
+        bBrowseFrom.setToolTipText(bundle.getString("TT_BrowseFrom")); // NOI18N
         bBrowseFrom.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onFromBrowse(evt);
@@ -211,8 +257,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         add(bBrowseFrom, gridBagConstraints);
 
         jLabel4.setLabelFor(tfTo);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_UseTo"));
-        jLabel4.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("TT_To"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("CTL_UseTo")); // NOI18N
+        jLabel4.setToolTipText(bundle.getString("TT_To")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
@@ -232,7 +278,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(tfTo, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_FromToHint"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, bundle.getString("CTL_FromToHint")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -241,8 +287,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 2, 0, 4);
         add(jLabel6, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(bBrowseTo, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("CTL_BrowseTo"));
-        bBrowseTo.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle").getString("TT_BrowseTo"));
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowseTo, bundle.getString("CTL_BrowseTo")); // NOI18N
+        bBrowseTo.setToolTipText(bundle.getString("TT_BrowseTo")); // NOI18N
         bBrowseTo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onToBrowse(evt);
@@ -349,8 +395,8 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JTextField tfCommitMessage;
-    private javax.swing.JTextField tfFrom;
-    private javax.swing.JTextField tfTo;
+    final javax.swing.JTextField tfFrom = new javax.swing.JTextField();
+    final javax.swing.JTextField tfTo = new javax.swing.JTextField();
     private javax.swing.JTextField tfUsername;
     // End of variables declaration//GEN-END:variables
     

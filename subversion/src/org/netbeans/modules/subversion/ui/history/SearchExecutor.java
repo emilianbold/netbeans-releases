@@ -44,8 +44,8 @@ class SearchExecutor implements Runnable {
 
     public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // NOI18N
     
-    private static final SimpleDateFormat fullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");  // NOI18N
-    private static final DateFormat [] dateFormats = new DateFormat[] {
+    static final SimpleDateFormat fullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");  // NOI18N
+    static final DateFormat [] dateFormats = new DateFormat[] {
         fullDateFormat,
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),  // NOI18N
         simpleDateFormat,
@@ -103,29 +103,12 @@ class SearchExecutor implements Runnable {
         return a.length() - ai - 1;
     }
 
-    private SVNRevision toRevision(String s, SVNRevision def) {
-        Date date = parseDate(s);
-        if (date != null) {
-            return new SVNRevision.DateSpec(date);
-        } else if (s != null) {
-            if ("BASE".equals(s)) { // NOI18N
-                return SVNRevision.BASE;
-            } else if ("HEAD".equals(s)) { // NOI18N
-                return SVNRevision.HEAD;
-            } else {
-                return new SVNRevision.Number(Long.parseLong(s));
-            }
-        } else {
-            return def;
-        }
-    }
+
     
     public void run() {
-        String from = criteria.getFrom();
-        String to = criteria.getTo();
-        
-        final SVNRevision fromRevision = toRevision(from, new SVNRevision.Number(1));
-        final SVNRevision toRevision = toRevision(to, SVNRevision.HEAD);
+
+        final SVNRevision fromRevision = criteria.getFrom();
+        final SVNRevision toRevision = criteria.getTo();
 
         completedSearches = 0;
         if (searchingUrl()) {
@@ -250,17 +233,5 @@ class SearchExecutor implements Runnable {
         }
     }
 
-    private Date parseDate(String s) {
-        if (s == null) return null;
-        for (int i = 0; i < dateFormats.length; i++) {
-            DateFormat dateformat = dateFormats[i];
-            try {
-                return dateformat.parse(s);
-            } catch (ParseException e) {
-                // try the next one
-            }
-        }
-        return null;
-    }
-
+  
 }

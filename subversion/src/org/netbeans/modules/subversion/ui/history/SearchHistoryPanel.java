@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.subversion.ui.history;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
@@ -29,6 +31,7 @@ import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.NoContentPanel;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 import javax.swing.*;
@@ -46,7 +49,7 @@ import java.awt.Dimension;
  *
  * @author Maros Sandor
  */
-class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener, DiffSetupSource {
+class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener, DiffSetupSource, DocumentListener {
 
     private final File[]                roots;
     private final SVNUrl                repositoryUrl;
@@ -143,6 +146,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         bNext.setAction(nextAction);
         bPrev.setAction(prevAction);
 
+        criteria.tfFrom.getDocument().addDocumentListener(this);
+        criteria.tfTo.getDocument().addDocumentListener(this);
+        
         getActionMap().put("jumpNext", nextAction); // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
     }
@@ -451,7 +457,32 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private void onViewToggle(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onViewToggle
         refreshComponents(true);
     }//GEN-LAST:event_onViewToggle
+
+    public void insertUpdate(DocumentEvent e) {
+        validateUserInput();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        validateUserInput();        
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        validateUserInput();        
+    }
     
+    private void validateUserInput() {
+        SVNRevision from = criteria.getFrom();
+        if(from == null && criteria.tfFrom.getText().trim().length() > 0) {
+            bSearch.setEnabled(false);
+            return;
+        }
+        SVNRevision to = criteria.getFrom();
+        if(to == null && criteria.tfTo.getText().trim().length() > 0) {
+            bSearch.setEnabled(false);
+            return;
+        }        
+        bSearch.setEnabled(true);
+    }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bNext;
