@@ -19,7 +19,7 @@ is divided into following sections:
   - cleanup
 
 -->
-<project name="NetBeans_Installer_Engine-impl" default="default" basedir=".." xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/2" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1">
+<project name="NetBeans_Installer_Engine-impl" default="default" basedir=".." xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/2" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1">
     <target name="default" depends="test,jar,javadoc" description="Build and test whole project."/>
     <!-- 
     ======================
@@ -119,7 +119,6 @@ is divided into following sections:
         </condition>
         <property name="javac.debug" value="true"/>
         <property name="javadoc.preview" value="true"/>
-        <property name="application.args" value=""/>
     </target>
     <target name="-post-init">
         <!-- Empty placeholder for easier customization. -->
@@ -154,11 +153,6 @@ is divided into following sections:
             <attribute name="debug" default="${javac.debug}"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <depend srcdir="@{srcdir}" destdir="@{destdir}" cache="${build.dir}/depcache">
-                    <classpath>
-                        <path path="@{classpath}"/>
-                    </classpath>
-                </depend>
                 <javac srcdir="@{srcdir}" destdir="@{destdir}" debug="@{debug}" deprecation="${javac.deprecation}" source="${javac.source}" target="${javac.target}" fork="yes" executable="${platform.javac}" tempdir="${java.io.tmpdir}" includeantruntime="false">
                     <classpath>
                         <path path="@{classpath}"/>
@@ -577,4 +571,19 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target name="clean" depends="init,deps-clean,-do-clean,-post-clean" description="Clean build products."/>
+    
+    <target name="native-windows-clean" depends="init" description="Run make clean">
+        <echo message = "${native.windows.dir}"></echo>
+        <exec executable="make" dir="${native.windows.dir}" >
+            <arg value="clean"/>
+        </exec>    
+    </target>
+    
+    <target name="native-windows-build" depends="init" description="Run make clean">
+        <echo message = "${native.windows.dir}"></echo>
+        <exec executable="make" dir="${native.windows.dir}">
+            <arg value="build"/>
+        </exec>    
+    </target>
+    
 </project>
