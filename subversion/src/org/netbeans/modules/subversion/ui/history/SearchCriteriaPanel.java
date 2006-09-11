@@ -69,18 +69,18 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     
     public SVNRevision getFrom() {
         String s = tfFrom.getText().trim();
-        if(s.length() < 0) {
-            return null;
+        if(s.length() == 0) {
+            return new SVNRevision.Number(1);
         }
-        return toRevision(s, new SVNRevision.Number(1));
+        return toRevision(s);
     }
 
     public SVNRevision getTo() {
         String s = tfTo.getText().trim();
-        if(s.length() < 0) {
-            return null;
+        if(s.length() == 0) {
+            return SVNRevision.HEAD;
         }
-        return toRevision(s, SVNRevision.HEAD);
+        return toRevision(s);
     }
     
     private Date parseDate(String s) {
@@ -96,28 +96,24 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         return null;
     }
 
-    private SVNRevision toRevision(String s, SVNRevision def) {
-        if (s == null) {
-            return def;
+    private SVNRevision toRevision(String s) {
+        Date date = parseDate(s);
+        if (date != null) {
+            return new SVNRevision.DateSpec(date);
         } else {
-            Date date = parseDate(s);
-            if (date != null) {
-                return new SVNRevision.DateSpec(date);
+            if ("BASE".equals(s)) { // NOI18N
+                return SVNRevision.BASE;
+            } else if ("HEAD".equals(s)) { // NOI18N
+                return SVNRevision.HEAD;
             } else {
-                if ("BASE".equals(s)) { // NOI18N
-                    return SVNRevision.BASE;
-                } else if ("HEAD".equals(s)) { // NOI18N
-                    return SVNRevision.HEAD;
-                } else {
-                    try {
-                        return new SVNRevision.Number(Long.parseLong(s));
-                    } catch (NumberFormatException ex) {
-                        // do nothing
-                    }
+                try {
+                    return new SVNRevision.Number(Long.parseLong(s));
+                } catch (NumberFormatException ex) {
+                    // do nothing
                 }
             }
-            return null;    
-        } 
+        }
+        return null;    
     }  
     
     public String getCommitMessage() {
