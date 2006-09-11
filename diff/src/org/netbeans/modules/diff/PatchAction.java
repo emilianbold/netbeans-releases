@@ -178,7 +178,7 @@ public class PatchAction extends NodeAction {
                 return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
             }
             public String getDescription() {
-                return "Patch Files (*.diff, *.patch)";
+                return NbBundle.getMessage(PatchAction.class, "CTL_PatchDialog_FileFilter");
             }
         };
         chooser.addChoosableFileFilter(patchFilter);
