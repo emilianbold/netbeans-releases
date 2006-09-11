@@ -56,6 +56,7 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -146,7 +147,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                 new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
                 helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
     }
-    private static final class ConfigPropertyProvider extends PropertyUtils.DelegatingPropertyProvider implements PropertyChangeListener {
+    private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
         private final PropertyEvaluator baseEval;
         private final String prefix;
         private final AntProjectHelper helper;

@@ -26,18 +26,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import junit.framework.TestResult;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -433,9 +428,9 @@ public class PropertyUtilsTest extends NbTestCase {
     }
     
     public void testSequentialEvaluatorChanges() throws Exception {
-        TestMutablePropertyProvider predefs = new TestMutablePropertyProvider(new HashMap<String,String>());
-        TestMutablePropertyProvider defs1 = new TestMutablePropertyProvider(new HashMap<String,String>());
-        TestMutablePropertyProvider defs2 = new TestMutablePropertyProvider(new HashMap<String,String>());
+        AntBasedTestUtil.TestMutablePropertyProvider predefs = new AntBasedTestUtil.TestMutablePropertyProvider(new HashMap<String,String>());
+        AntBasedTestUtil.TestMutablePropertyProvider defs1 = new AntBasedTestUtil.TestMutablePropertyProvider(new HashMap<String,String>());
+        AntBasedTestUtil.TestMutablePropertyProvider defs2 = new AntBasedTestUtil.TestMutablePropertyProvider(new HashMap<String,String>());
         predefs.defs.put("x", "xval1");
         predefs.defs.put("y", "yval1");
         defs1.defs.put("a", "aval1");
@@ -562,69 +557,4 @@ public class PropertyUtilsTest extends NbTestCase {
         assertEquals("right main-2-b", "main-2-b-val+main-1-b-val+pre-b-val", defs.get("main-2-b"));
     }
     
-    public void testDelegatingPropertyProvider() throws Exception {
-        TestMutablePropertyProvider mpp = new TestMutablePropertyProvider(new HashMap<String,String>());
-        DPP dpp = new DPP(mpp);
-        AntBasedTestUtil.TestCL l = new AntBasedTestUtil.TestCL();
-        dpp.addChangeListener(l);
-        assertEquals("initially empty", Collections.emptyMap(), dpp.getProperties());
-        mpp.defs.put("foo", "bar");
-        mpp.mutated();
-        assertTrue("got a change", l.expect());
-        assertEquals("now right contents", Collections.singletonMap("foo", "bar"), dpp.getProperties());
-        TestMutablePropertyProvider mpp2 = new TestMutablePropertyProvider(new HashMap<String,String>());
-        mpp2.defs.put("foo", "bar2");
-        dpp.setDelegate_(mpp2);
-        assertTrue("got a change from new delegate", l.expect());
-        assertEquals("right contents from new delegate", Collections.singletonMap("foo", "bar2"), dpp.getProperties());
-        mpp2.defs.put("foo", "bar3");
-        mpp2.mutated();
-        assertTrue("got a change in new delegate", l.expect());
-        assertEquals("right contents", Collections.singletonMap("foo", "bar3"), dpp.getProperties());
-        Reference<?> r = new WeakReference<Object>(mpp);
-        mpp = null;
-        assertGC("old delegates can be collected", r);
-        r = new WeakReference<Object>(dpp);
-        dpp = null; // but not mpp2
-        assertGC("delegating PP can be collected when delegate is not", r); // #50572
-    }
-    private static final class DPP extends PropertyUtils.DelegatingPropertyProvider {
-        public DPP(PropertyProvider pp) {
-            super(pp);
-        }
-        public void setDelegate_(PropertyProvider pp) {
-            setDelegate(pp);
-        }
-    }
-    
-    private static final class TestMutablePropertyProvider implements PropertyProvider {
-        
-        public final Map<String,String> defs;
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        
-        public TestMutablePropertyProvider(Map<String,String> defs) {
-            this.defs = defs;
-        }
-        
-        public void mutated() {
-            ChangeEvent ev = new ChangeEvent(this);
-            for (ChangeListener l : listeners) {
-                l.stateChanged(ev);
-            }
-        }
-        
-        public Map<String,String> getProperties() {
-            return defs;
-        }
-        
-        public void addChangeListener(ChangeListener l) {
-            listeners.add(l);
-        }
-        
-        public void removeChangeListener(ChangeListener l) {
-            listeners.remove(l);
-        }
-        
-    }
-
 }

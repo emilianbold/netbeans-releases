@@ -82,7 +82,7 @@ is the proper place.
 
     <changes>
         
-        <change id="PropertyUtils.userPropertiesProvider.DelegatingPropertyProvider">
+        <change id="PropertyUtils.userPropertiesProvider.FilterPropertyProvider">
             <api name="general"/>
             <summary>Added utilities for constructing richer property evaluators</summary>
             <version major="1" minor="14"/>
@@ -91,12 +91,13 @@ is the proper place.
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Added a new method and nested class to <code>PropertyUtils</code> to
+                    Added a new class and a new method to <code>PropertyUtils</code> to
                     make it easier to write a customizer version of
                     <code>AntProjectHelper.getStandardPropertyEvaluator()</code>,
                     among other things.
                 </p>
             </description>
+            <class package="org.netbeans.spi.project.support.ant" name="FilterPropertyProvider"/>
             <class package="org.netbeans.spi.project.support.ant" name="PropertyUtils"/>
             <issue number="49636"/>
         </change>

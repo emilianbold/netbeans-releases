@@ -31,11 +31,9 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +53,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
@@ -726,7 +723,7 @@ public class PropertyUtils {
     public static PropertyProvider userPropertiesProvider(PropertyEvaluator findUserPropertiesFile, String propertyName, File basedir) {
         return new UserPropertiesProvider(findUserPropertiesFile, propertyName, basedir);
     }
-    private static final class UserPropertiesProvider extends DelegatingPropertyProvider implements PropertyChangeListener {
+    private static final class UserPropertiesProvider extends FilterPropertyProvider implements PropertyChangeListener {
         private final PropertyEvaluator findUserPropertiesFile;
         private final String propertyName;
         private final File basedir;
@@ -885,78 +882,6 @@ public class PropertyUtils {
         }
 
     }
-    
-    /**
-     * Property provider that delegates to another source.
-     * Useful, for example, when conditionally loading from one or another properties file.
-     * @since org.netbeans.modules.project.ant/1 1.14
-     */
-    public static abstract class DelegatingPropertyProvider implements PropertyProvider {
-        
-        private PropertyProvider delegate;
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        private final ChangeListener strongListener = new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                //System.err.println("DPP: change from current provider " + delegate);
-                fireChange();
-            }
-        };
-        private ChangeListener weakListener = null; // #50572: must be weak
 
-        /**
-         * Initialize the proxy.
-         * @param delegate the initial delegate to use
-         */
-        protected DelegatingPropertyProvider(PropertyProvider delegate) {
-            assert delegate != null;
-            setDelegate(delegate);
-        }
-        
-        /**
-         * Change the current delegate (firing changes as well).
-         * @param delegate the initial delegate to use
-         */
-        protected final void setDelegate(PropertyProvider delegate) {
-            if (delegate == this.delegate) {
-                return;
-            }
-            if (this.delegate != null) {
-                assert weakListener != null;
-                this.delegate.removeChangeListener(weakListener);
-            }
-            this.delegate = delegate;
-            weakListener = WeakListeners.change(strongListener, delegate);
-            delegate.addChangeListener(weakListener);
-            fireChange();
-        }
-
-        public final Map<String,String> getProperties() {
-            return delegate.getProperties();
-        }
-
-        public synchronized final void addChangeListener(ChangeListener listener) {
-            // XXX could listen to delegate only when this has listeners
-            listeners.add(listener);
-        }
-        
-        public synchronized final void removeChangeListener(ChangeListener listener) {
-            listeners.add(listener);
-        }
-        
-        private void fireChange() {
-            ChangeListener[] ls;
-            synchronized (this) {
-                if (listeners.isEmpty()) {
-                    return;
-                }
-                ls = listeners.toArray(new ChangeListener[listeners.size()]);
-            }
-            ChangeEvent ev = new ChangeEvent(this);
-            for (ChangeListener l : ls) {
-                l.stateChanged(ev);
-            }
-        }
-
-    }
     
 }

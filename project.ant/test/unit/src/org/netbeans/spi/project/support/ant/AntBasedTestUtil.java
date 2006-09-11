@@ -607,5 +607,35 @@ public class AntBasedTestUtil {
         }
 
     }
-    
+
+    public static final class TestMutablePropertyProvider implements PropertyProvider {
+
+        public final Map<String,String> defs;
+        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+
+        public TestMutablePropertyProvider(Map<String,String> defs) {
+            this.defs = defs;
+        }
+
+        public void mutated() {
+            ChangeEvent ev = new ChangeEvent(this);
+            for (ChangeListener l : listeners) {
+                l.stateChanged(ev);
+            }
+        }
+
+        public Map<String,String> getProperties() {
+            return defs;
+        }
+
+        public void addChangeListener(ChangeListener l) {
+            listeners.add(l);
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+            listeners.remove(l);
+        }
+
+    }
+
 }
