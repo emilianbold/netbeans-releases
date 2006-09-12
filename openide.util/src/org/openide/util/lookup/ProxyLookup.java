@@ -53,7 +53,7 @@ public class ProxyLookup extends Lookup {
     /** Create a proxy to some other lookups.
      * @param lookups the initial delegates
      */
-    public ProxyLookup(Lookup[] lookups) {
+    public ProxyLookup(Lookup... lookups) {
         this.setLookupsNoFire(lookups);
     }
 
