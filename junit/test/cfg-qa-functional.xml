@@ -9,8 +9,9 @@
                 <!-- Some Old 3.x tests -->               
                 <!-- <include name="test/Test.class"/> -->
                 
-                <!-- Example test -->
-                <!-- <include name="org/netbeans/test/junit/ExampleTest.class"/> -->
+                <include name="org/netbeans/test/junit/testcreation/*.class"/>
+                <include name="org/netbeans/test/junit/pkgtestcreation/*.class"/>
+                <include name="org/netbeans/test/junit/testresults/*.class"/>
             </patternset>
         </testset>
     </testbag>
