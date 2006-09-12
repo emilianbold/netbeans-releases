@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Timer;
+import org.netbeans.modules.openide.explorer.ExternalDragAndDrop;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -493,7 +494,7 @@ final class ExplorerActionsImpl {
                         return;
                     }
 
-                trans = new ExTransferable.Multi(arrayTrans);
+                trans = ExternalDragAndDrop.maybeAddExternalFileDnd( new ExTransferable.Multi(arrayTrans) );
             } else {
                 trans = getTransferableOwner(sel[0]);
             }
@@ -514,7 +515,6 @@ final class ExplorerActionsImpl {
                 return null;
             }
         }
-
     }
 
     /** Class which performs delete action */

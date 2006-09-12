@@ -19,16 +19,11 @@
 
 package org.openide.explorer.view;
 
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Image;
-import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragSource;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -41,6 +36,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeNode;
+import org.netbeans.modules.openide.explorer.ExternalDragAndDrop;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
@@ -50,7 +46,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.ExTransferable.Multi;
@@ -67,7 +62,6 @@ final class DragDropUtilities extends Object {
     static final int NODE_UP = -1;
     static final int NODE_CENTRAL = 0;
     static final int NODE_DOWN = 1;
-    static final Point CURSOR_CENTRAL_POINT = new Point(10, 10);
     static Runnable postDropRun = null;
 
     // helper constants
@@ -76,70 +70,6 @@ final class DragDropUtilities extends Object {
 
     /** No need to instantiate this class */
     private DragDropUtilities() {
-    }
-
-    /** Utility method - chooses and returns right cursor
-    * for given user drag action.
-    */
-    static Cursor chooseCursor(Component comp, int dragAction, boolean canDrop) {
-        //System.out.print("------> chooseCursor(action: "+dragAction+", can? "+canDrop+")");
-        // if the node does not provide icon use system default
-        Image image;
-        String name;
-
-        try {
-            switch (dragAction) {
-            case DnDConstants.ACTION_COPY:
-
-                if (canDrop) {
-                    image = Utilities.loadImage("org/openide/explorer/view/cursorscopysingle.gif"); // NOI18N
-                    name = "ACTION_COPY"; // NOI18N
-                } else {
-                    image = Utilities.loadImage("org/openide/explorer/view/cursorsnone.gif"); // NOI18N
-                    name = "NO_ACTION_COPY"; // NOI18N
-                }
-
-                break;
-
-            case DnDConstants.ACTION_COPY_OR_MOVE:
-            case DnDConstants.ACTION_MOVE:
-
-                if (canDrop) {
-                    image = Utilities.loadImage("org/openide/explorer/view/cursorsmovesingle.gif"); // NOI18N
-                    name = "ACTION_MOVE"; // NOI18N
-                } else {
-                    image = Utilities.loadImage("org/openide/explorer/view/cursorsnone.gif"); // NOI18N
-                    name = "NO_ACTION_MOVE"; // NOI18N
-                }
-
-                break;
-
-            case DnDConstants.ACTION_LINK:
-
-                if (canDrop) {
-                    image = Utilities.loadImage("org/openide/explorer/view/cursorsunknownsingle.gif"); // NOI18N
-                    name = "ACTION_LINK"; // NOI18N
-                } else {
-                    image = Utilities.loadImage("org/openide/explorer/view/cursorsnone.gif"); // NOI18N
-                    name = "NO_ACTION_LINK"; // NOI18N
-                }
-
-                break;
-
-            default:
-                image = Utilities.loadImage("org/openide/explorer/view/cursorsnone.gif"); // NOI18N
-                name = "ACTION_NONE"; // NOI18N
-
-                break;
-            }
-
-            //System.out.println("--> "+image.getSource());
-            return Utilities.createCustomCursor(comp, image, name);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return DragSource.DefaultMoveNoDrop;
     }
 
     /** Utility method.
@@ -188,7 +118,7 @@ final class DragDropUtilities extends Object {
             result = tArray[0];
         } else {
             // enclose the transferables into multi transferable
-            result = new Multi(tArray);
+            result = ExternalDragAndDrop.maybeAddExternalFileDnd( new Multi(tArray) );
         }
 
         Clipboard c = getClipboard();
