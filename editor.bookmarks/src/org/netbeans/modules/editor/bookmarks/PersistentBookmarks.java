@@ -46,7 +46,7 @@ import org.w3c.dom.Element;
  * @version 1.00
  */
 
-class PersistentBookmarks {
+public class PersistentBookmarks {
     
     private static final int[] EMPTY_INT_ARRAY = new int[0];
     

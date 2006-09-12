@@ -47,14 +47,16 @@ public final class BookmarkList {
         BookmarkManagerSupport.initPackageAccess();
     }
     
-    public static synchronized BookmarkList get(Document doc) {
-        BookmarkList bookmarkList = (BookmarkList)doc.getProperty(BookmarkList.class);
-        if (bookmarkList == null) {
-            BookmarkManager mgr = getBookmarkManagerFactory().createBookmarkManager(doc);
-            bookmarkList = new BookmarkList(doc, mgr);
-            doc.putProperty(BookmarkList.class, bookmarkList);
+    public static BookmarkList get(Document doc) {
+        synchronized (org.netbeans.modules.editor.bookmarks.PersistentBookmarks.class) {
+            BookmarkList bookmarkList = (BookmarkList)doc.getProperty(BookmarkList.class);
+            if (bookmarkList == null) {
+                BookmarkManager mgr = getBookmarkManagerFactory().createBookmarkManager(doc);
+                bookmarkList = new BookmarkList(doc, mgr);
+                doc.putProperty(BookmarkList.class, bookmarkList);
+            }
+            return bookmarkList;
         }
-        return bookmarkList;
     }
     
     private static BookmarkManagerFactory getBookmarkManagerFactory() {
