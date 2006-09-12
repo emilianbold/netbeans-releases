@@ -181,7 +181,7 @@ Microsystems, Inc. All Rights Reserved.
         </nbprofiledirect>
         
         <antcall target="run">
-            <param name="run.args" value="${profiler.jvmargs}"/>
+            <param name="run.args" value='"${profiler.jvmargs}"'/>
         </antcall>
     </target>
     
