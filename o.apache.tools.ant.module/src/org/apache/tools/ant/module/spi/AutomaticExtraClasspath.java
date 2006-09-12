@@ -20,6 +20,7 @@
 package org.apache.tools.ant.module.spi;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
@@ -48,7 +49,7 @@ final class AutomaticExtraClasspath implements AutomaticExtraClasspathProvider {
                 AutomaticExtraClasspath aec = new AutomaticExtraClasspath(f);
                 return aec;
             }
-            throw new IllegalArgumentException("file does not exists: " + obj); // NOI18N
+            throw new FileNotFoundException(obj.toString());
         } else {
             throw new IllegalArgumentException("url arg is not URL: " + obj); // NOI18N
         }
