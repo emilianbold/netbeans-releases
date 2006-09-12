@@ -342,7 +342,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             return null;
         }
 
-        /**ATTENTION: on Windows may occure dir.isDirectory () == dir.isFile () == true then
+        /**ATTENTION: on Windows may occur dir.isDirectory () == dir.isFile () == true then
          * its used testFile instead of dir.
         */
         if ( !testFile.isDirectory() ) {
@@ -366,13 +366,13 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
         if ( numberOfProjects <= 1 ) {
             if ( tempSetAsMain != null ) {
-                jCheckBoxMain.setSelected( tempSetAsMain.booleanValue() );
+                jCheckBoxMain.setSelected(tempSetAsMain);
                 tempSetAsMain = null;
             }
             jCheckBoxMain.setEnabled( enable );
         }
         else if ( tempSetAsMain == null ) {
-            tempSetAsMain = new Boolean( jCheckBoxMain.isSelected() );
+            tempSetAsMain = jCheckBoxMain.isSelected();
             jCheckBoxMain.setSelected( false );
             jCheckBoxMain.setEnabled( false );
         }
