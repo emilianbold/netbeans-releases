@@ -53,18 +53,19 @@ final class TaskThreadGroup extends ThreadGroup {
     * the second must be instanceof ExecutionEngine$RunClass thread and must wait
     * external processes are never "dead"
     */
-    private boolean isProcessDead() {
+    private boolean isProcessDead(boolean inside) {
 
-        if (dead) {
-            return true;
-        }
-
-        int count;
-        // first System.out.println must be before sync block
-        if (! finalizable) {
-            return false;
-        }
         synchronized (this) {
+            if (dead) {
+                return true;
+            }
+
+            // first System.out.println must be before sync block
+            if (! finalizable) {
+                return false;
+            }
+
+            int count;
             count = activeCount();
 
             /* Following lines patch bug in implementaion of java.lang.-Thread/ThreadGroup
@@ -105,7 +106,7 @@ final class TaskThreadGroup extends ThreadGroup {
             }
 
             // one thread remains - RunClass
-            if (runClassThreadOut) {
+            if (inside) {
                 return true;
             }
             return false;
@@ -115,23 +116,23 @@ final class TaskThreadGroup extends ThreadGroup {
     /** blocks until this ThreadGroup die - isProcessDead = true
     */
     void waitFor() throws InterruptedException {
+        boolean inside = Thread.currentThread() instanceof RunClassThread;
         synchronized (TIMER) {
             try {
-                while (! isProcessDead()) {
-                    if (Thread.currentThread() instanceof RunClassThread) {
-                        runClassThreadOut = true;
-                    }
+                while (! isProcessDead(inside)) {
                     TIMER.wait(1000);
                 }
             } finally {
                 TIMER.notifyAll();
-                dead = true;
+		synchronized(this) {
+                    dead = true;
+                }
             }
         }
     }
     
     /** Marks this group as finalizable. */
-    void setFinalizable() {
+    void synchronized setFinalizable() {
         finalizable = true;
     }
 
