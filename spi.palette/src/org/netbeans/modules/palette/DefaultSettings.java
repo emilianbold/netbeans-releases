@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -286,7 +287,6 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
     }
     
     private void store() {
-        long startTime = System.currentTimeMillis();
         Node root = (Node)model.getRoot().lookup( Node.class );
         assert null != root;
 
@@ -298,7 +298,12 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
                 return;
             synchronized( this ) {
                 if( null == settingsFileLock ) {
-                    settingsFileLock = fo.lock();
+                    try {
+                        settingsFileLock = fo.lock();
+                    } catch( FileAlreadyLockedException falE ) {
+                        //settings are being stored already at the moment
+                        return;
+                    }
                 } else {
                     //settings are being stored already at the moment
                     return;
@@ -323,7 +328,6 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
                 settingsFileLock.releaseLock();
             settingsFileLock = null;
         }
-        //System.out.println( "Storing palette settings took: " + (System.currentTimeMillis()-startTime) );
     }
     
     private void printCategory( PrintWriter writer, Node category ) {
