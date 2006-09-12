@@ -204,7 +204,7 @@ public abstract class SystemUtils {
             
             StringBuilder processStdOut = new StringBuilder();
             StringBuilder processStdErr = new StringBuilder();
-            int           errorLevel    = Integer.MAX_VALUE;
+            int           errorLevel    = ExecutionResults.TIMEOUT_ERRORCODE;
             
             Process process = new ProcessBuilder(command).directory(workingDirectory).start();
             
@@ -295,7 +295,7 @@ public abstract class SystemUtils {
                 }
             }
             
-            throw new UnrecognizedObjectException("Platform " + name + " is not recognized.");
+            throw new UnrecognizedObjectException("Platform \"" + name + "\" is not recognized.");
         }
         
         public static List<Platform> parsePlatforms(String platformsString) throws UnrecognizedObjectException {
@@ -336,7 +336,9 @@ public abstract class SystemUtils {
     }
     
     public static class ExecutionResults {
-        private int    errorCode = Integer.MAX_VALUE;
+        public static final int TIMEOUT_ERRORCODE = Integer.MAX_VALUE;
+        
+        private int    errorCode = TIMEOUT_ERRORCODE;
         private String stdOut    = "";
         private String stdErr    = "";
         
@@ -363,7 +365,7 @@ public abstract class SystemUtils {
         }
     }
     
-    public static final long MAX_EXECUTION_TIME = 30000; //30 seconds
-    public static final int  BUFFER_SIZE        = 4096; // 4 kilobytes
-    public static final int  DELAY              = 50; //50 milliseconds
+    public static final long MAX_EXECUTION_TIME = 120000; // 2 minutes seconds
+    public static final int  BUFFER_SIZE        = 4096;   // 4 kilobytes
+    public static final int  DELAY              = 50;     // 50 milliseconds
 }

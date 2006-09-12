@@ -76,6 +76,8 @@ public abstract class FileUtils {
      */
     public abstract void writeFile(File file, String string) throws IOException;
     
+    public abstract void appendFile(File file, String string) throws IOException;
+    
     /**
      * Writes the given contents to the file, wither overwriting or appending to
      * its current contents.
@@ -170,6 +172,10 @@ public abstract class FileUtils {
         
         public void writeFile(File file, String string) throws IOException {
             writeFile(file, string, false);
+        }
+        
+        public void appendFile(File file, String string) throws IOException {
+            writeFile(file, string, true);
         }
         
         public void writeFile(File file, String string, boolean append) throws IOException {

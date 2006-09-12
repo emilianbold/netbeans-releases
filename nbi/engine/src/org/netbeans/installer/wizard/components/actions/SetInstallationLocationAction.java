@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.wizard.components.actions;
 
+import java.io.File;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
@@ -31,6 +32,7 @@ import org.netbeans.installer.utils.ErrorManager;
 public class SetInstallationLocationAction extends DefaultWizardAction {
     public void execute() {
         String uid = getProperty(SOURCE_COMPONENT_UID_PROPERTY);
+        String relativeLocation = getProperty(RELATIVE_LOCATION_PROPERTY);
         
         if (uid == null) {
             ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Required property not set");
@@ -45,8 +47,16 @@ public class SetInstallationLocationAction extends DefaultWizardAction {
             return;
         }
         
-        targetComponent.setInstallationLocation(sourceComponent.getInstallationLocation());
+        File newLocation;
+        if (relativeLocation != null) {
+            newLocation = new File(sourceComponent.getInstallationLocation(), relativeLocation);
+        } else {
+            newLocation = sourceComponent.getInstallationLocation();
+        }
+        
+        targetComponent.setInstallationLocation(newLocation.getAbsoluteFile());
     }
     
     private static final String SOURCE_COMPONENT_UID_PROPERTY = "source.component";
+    private static final String RELATIVE_LOCATION_PROPERTY = "relative.location";
 }
