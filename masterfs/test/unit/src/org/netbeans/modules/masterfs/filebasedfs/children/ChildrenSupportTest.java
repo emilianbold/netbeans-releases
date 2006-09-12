@@ -19,14 +19,14 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.children;
 
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 
 import java.io.File;
 import java.util.*;
+import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
 
 /**
  *
@@ -49,6 +49,8 @@ public class ChildrenSupportTest extends NbTestCase {
     }
 
     protected void setUp() throws java.lang.Exception {
+        super.setUp();
+        clearWorkDir();
         testFile = getWorkDir().getParentFile();
         folderName = NamingFactory.fromFile(testFile);
         folderItem = new ChildrenSupport ();
@@ -70,7 +72,181 @@ public class ChildrenSupportTest extends NbTestCase {
         }
     }
 
+    public void testGetChild() throws Exception {
+        File wDir =  getWorkDir();
+        File file = new File(wDir, getName());        
+        FolderObj fo = (FolderObj)FileBasedFileSystem.getFileObject(wDir);
+        assertNotNull(fo);
+        assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
+        ChildrenCache chCache = fo.getChildrenCache();
+        assertNotNull(chCache);        
+        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        
+        assertFalse(file.exists());        
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));        
+        assertNull(chCache.getChild(file.getName(), false));
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.SOME_CHILDREN_CACHED));
+        
+        assertTrue(file.createNewFile());
+        assertNull(chCache.getChild(file.getName(), false));
+        assertNotNull(chCache.getChild(file.getName(),true));
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.SOME_CHILDREN_CACHED));
+        
+        assertTrue(file.delete());        
+        assertNotNull(chCache.getChild(file.getName(),false));
+        assertNull(chCache.getChild(file.getName(),true));
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.SOME_CHILDREN_CACHED));
+        
+        assertTrue(file.createNewFile());        
+        assertNull(chCache.getChild(file.getName(),false));
+        assertNotNull(chCache.getChild(file.getName(),true));        
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.SOME_CHILDREN_CACHED));        
+    }
+    
+    public void testRefreshChild() throws Exception {
+        File wDir =  getWorkDir();
+        File file = new File(wDir, getName());        
+        FolderObj fo = (FolderObj)FileBasedFileSystem.getFileObject(wDir);
+        assertNotNull(fo);
+        assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
+        ChildrenCache chCache = fo.getChildrenCache();
+        assertNotNull(chCache);        
+        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        
+        assertFalse(file.exists());        
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));                
+        assertNull(chCache.getChild(file.getName(),false));        
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.SOME_CHILDREN_CACHED));                
+        
+        assertTrue(file.createNewFile());
+        assertNull(chCache.getChild(file.getName(),false));
+        Map m = chCache.refresh();        
+        assertEquals(1, m.keySet().size());
+        assertEquals(m.keySet().toArray()[0],NamingFactory.fromFile(file));
+        assertEquals(m.values().toArray()[0],ChildrenCache.ADDED_CHILD);        
+        assertNotNull(chCache.getChild(file.getName(),false));
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.SOME_CHILDREN_CACHED));                        
+        
+        assertTrue(file.delete());        
+        assertNotNull(chCache.getChild(file.getName(),false));
+        m = chCache.refresh();        
+        assertEquals(1, m.keySet().size());
+        assertEquals(m.keySet().toArray()[0],NamingFactory.fromFile(file));
+        assertEquals(m.values().toArray()[0],ChildrenCache.REMOVED_CHILD);
+        assertNull(chCache.getChild(file.getName(),false));
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.SOME_CHILDREN_CACHED));                
+        
+        assertTrue(file.createNewFile());        
+        assertNull(chCache.getChild(file.getName(),false));
+        m = chCache.refresh();        
+        assertEquals(1, m.keySet().size());
+        assertEquals(m.keySet().toArray()[0],NamingFactory.fromFile(file));
+        assertEquals(m.values().toArray()[0],ChildrenCache.ADDED_CHILD);
+        assertNotNull(chCache.getChild(file.getName(),false));        
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.SOME_CHILDREN_CACHED));                        
+    }
 
+    public void testGetChildren() throws Exception {
+        File wDir =  getWorkDir();
+        File file = new File(wDir, getName());        
+        FolderObj fo = (FolderObj)FileBasedFileSystem.getFileObject(wDir);
+        assertNotNull(fo);
+        assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
+        ChildrenCache chCache = fo.getChildrenCache();
+        assertNotNull(chCache);        
+        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        
+        assertFalse(file.exists());        
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));        
+        assertTrue(chCache.getChildren(false).isEmpty());
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.ALL_CHILDREN_CACHED));
+        
+        assertTrue(file.createNewFile());
+        assertNull(chCache.getChild(file.getName(),false));                
+        assertTrue(chCache.getChildren(false).isEmpty());        
+        assertFalse(chCache.getChildren(true).isEmpty());                
+        assertFalse(chCache.getChildren(false).isEmpty());        
+        assertNotNull(chCache.getChild(file.getName(),false));                        
+        assertEquals(chCache.getChild(file.getName(),false), 
+                chCache.getChildren(false).toArray()[0]);                
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.ALL_CHILDREN_CACHED));
+        
+        assertTrue(file.delete());        
+        assertNotNull(chCache.getChild(file.getName(),false));                
+        assertFalse(chCache.getChildren(false).isEmpty());        
+        assertTrue(chCache.getChildren(true).isEmpty());                
+        assertTrue(chCache.getChildren(false).isEmpty());        
+        assertNull(chCache.getChild(file.getName(), false));                        
+        assertTrue(chCache.getChildren(false).isEmpty());        
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.ALL_CHILDREN_CACHED));
+        
+        assertTrue(file.createNewFile());        
+        assertNull(chCache.getChild(file.getName(), false));                
+        assertTrue(chCache.getChildren(false).isEmpty());        
+        assertFalse(chCache.getChildren(true).isEmpty());                
+        assertFalse(chCache.getChildren(false).isEmpty());        
+        assertNotNull(chCache.getChild(file.getName(), false));                        
+        assertEquals(chCache.getChild(file.getName(), false), 
+                chCache.getChildren(false).toArray()[0]);                
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.ALL_CHILDREN_CACHED));
+    }
+    
+    public void testRefreshChildren() throws Exception {
+        File wDir =  getWorkDir();
+        File file = new File(wDir, getName());        
+        FolderObj fo = (FolderObj)FileBasedFileSystem.getFileObject(wDir);
+        assertNotNull(fo);
+        assertEquals(fo.getFileName(),NamingFactory.fromFile(wDir));
+        ChildrenCache chCache = fo.getChildrenCache();
+        assertNotNull(chCache);        
+        ChildrenSupport childrenSupport = ((FolderObj.FolderChildrenCache)chCache).ch;
+        
+        assertFalse(file.exists());        
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.NO_CHILDREN_CACHED));        
+        assertTrue(chCache.getChildren(false).isEmpty());
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.ALL_CHILDREN_CACHED));
+        
+        assertTrue(file.createNewFile());
+        assertNull(chCache.getChild(file.getName(),false));                
+        assertTrue(chCache.getChildren(false).isEmpty());        
+        Map m = chCache.refresh();        
+        assertEquals(1, m.keySet().size());
+        assertEquals(m.keySet().toArray()[0],NamingFactory.fromFile(file));
+        assertEquals(m.values().toArray()[0],ChildrenCache.ADDED_CHILD);        
+        assertFalse(chCache.getChildren(false).isEmpty());        
+        assertNotNull(chCache.getChild(file.getName(),false));                        
+        assertEquals(chCache.getChild(file.getName(),false), 
+                chCache.getChildren(false).toArray()[0]);                
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.ALL_CHILDREN_CACHED));
+        
+        assertTrue(file.delete());        
+        assertNotNull(chCache.getChild(file.getName(),false));                
+        assertFalse(chCache.getChildren(false).isEmpty());        
+        m = chCache.refresh();        
+        assertEquals(1, m.keySet().size());
+        assertEquals(m.keySet().toArray()[0],NamingFactory.fromFile(file));
+        assertEquals(m.values().toArray()[0],ChildrenCache.REMOVED_CHILD);
+        assertTrue(chCache.getChildren(false).isEmpty());        
+        assertNull(chCache.getChild(file.getName(),false));                        
+        assertTrue(chCache.getChildren(false).isEmpty());        
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.ALL_CHILDREN_CACHED));
+        
+        assertTrue(file.createNewFile());        
+        assertNull(chCache.getChild(file.getName(),false));                
+        assertTrue(chCache.getChildren(false).isEmpty());        
+        m = childrenSupport.refresh(NamingFactory.fromFile(wDir));        
+        assertEquals(1, m.keySet().size());
+        assertEquals(m.keySet().toArray()[0],NamingFactory.fromFile(file));
+        assertEquals(m.values().toArray()[0],ChildrenCache.ADDED_CHILD);        
+        assertFalse(chCache.getChildren(false).isEmpty());        
+        assertNotNull(chCache.getChild(file.getName(),false));                        
+        assertEquals(chCache.getChild(file.getName(),false), 
+                chCache.getChildren(false).toArray()[0]);                
+        assertTrue(childrenSupport.isStatus(ChildrenSupport.ALL_CHILDREN_CACHED));
+    }
+    
+    
+    
     /**
      * Test of getFolderName method, of class org.netbeans.modules.masterfs.children.FolderPathItems.
      */

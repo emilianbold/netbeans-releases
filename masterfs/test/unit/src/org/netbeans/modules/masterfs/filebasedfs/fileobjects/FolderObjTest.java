@@ -64,6 +64,107 @@ public class FolderObjTest extends NbTestCase {
         testFile = getWorkDir();        
     }
 
+   public void testFileObjectDistributionWorksAccuratelyAccordingToChildrenCache() throws IOException  {
+        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        assertNotNull(workDirFo);        
+        File fold = new File(getWorkDir(),"fold");//NOI18N
+        assertNull(FileUtil.toFileObject(fold));
+        FileObject foldFo = workDirFo.createFolder(fold.getName());
+        assertNotNull(foldFo);
+        
+        foldFo.delete();
+        assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));        
+        assertNull(FileBasedFileSystem.getFileObject(fold));
+        assertNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                
+        assertNull(workDirFo.getFileObject(fold.getName()));                
+        assertFalse(existsChild(workDirFo, fold.getName()));
+        fold.mkdir();
+        assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));   
+        assertNull(FileBasedFileSystem.getFileObject(fold));        
+        assertNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                
+        assertNull(workDirFo.getFileObject(fold.getName()));                        
+        assertFalse(existsChild(workDirFo, fold.getName()));        
+        workDirFo.refresh();
+        assertNotNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));
+        assertNotNull(FileBasedFileSystem.getFileObject(fold));        
+        assertNotNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                
+        assertNotNull(workDirFo.getFileObject(fold.getName()));        
+        assertTrue(existsChild(workDirFo, fold.getName()));        
+        fold.delete();
+        assertNotNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));                
+        assertNotNull(FileBasedFileSystem.getFileObject(fold));                
+        assertNotNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                        
+        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
+        assertTrue(existsChild(workDirFo, fold.getName()));        
+        workDirFo.refresh();
+        assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));     
+        assertNull(FileBasedFileSystem.getFileObject(fold));                
+        assertNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                        
+        assertNull(workDirFo.getFileObject(fold.getName()));                                        
+        assertFalse(existsChild(workDirFo, fold.getName()));        
+        fold.mkdir();
+        assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));                
+        assertNull(FileBasedFileSystem.getFileObject(fold));                        
+        assertNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                        
+        assertNull(workDirFo.getFileObject(fold.getName()));
+        assertFalse(existsChild(workDirFo, fold.getName()));        
+        workDirFo.getFileSystem().refresh(false);
+        assertNotNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));                
+        assertNotNull(FileBasedFileSystem.getFileObject(fold));                                
+        assertNotNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                        
+        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
+        assertTrue(existsChild(workDirFo, fold.getName()));        
+        foldFo.delete();
+        assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));     
+        assertNull(FileBasedFileSystem.getFileObject(fold));                                
+        assertNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                        
+        assertNull(workDirFo.getFileObject(fold.getName()));                                        
+        assertFalse(existsChild(workDirFo, fold.getName()));        
+        fold.mkdir();
+        assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));                
+        assertNull(FileBasedFileSystem.getFileObject(fold));                                
+        assertNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                        
+        assertNull(workDirFo.getFileObject(fold.getName()));                                        
+        assertFalse(existsChild(workDirFo, fold.getName()));        
+        workDirFo.getFileSystem().refresh(false);
+        assertNotNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));                
+        assertNotNull(FileBasedFileSystem.getFileObject(fold));                                
+        assertNotNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                        
+        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
+        assertTrue(existsChild(workDirFo, fold.getName()));        
+        fold.delete();
+        assertNotNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));           
+        assertNotNull(FileBasedFileSystem.getFileObject(fold));                                
+        assertNotNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                        
+        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
+        assertTrue(existsChild(workDirFo, fold.getName()));        
+        workDirFo.getFileSystem().refresh(false);
+        assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));              
+        assertNull(FileBasedFileSystem.getFileObject(fold));                                
+        assertNull((workDirFo.getFileSystem()).findResource(fold.getAbsolutePath()));                        
+        assertNull(workDirFo.getFileObject(fold.getName()));                                
+        assertFalse(existsChild(workDirFo, fold.getName()));                
+    }
+   
+   private static boolean existsChild(final FileObject folder, final String childName) {
+       FileObject[] childs = folder.getChildren();
+       for (int i = 0; i < childs.length; i++) {
+           if (childs[i].getNameExt().equals(childName)) {
+               return true;
+           } 
+       }
+       return false;
+   }
+        
+    public void testChildren() throws Exception {
+        final FolderObj testRoot = (FolderObj)FileBasedFileSystem.getFileObject(getWorkDir());
+        assertNotNull(testRoot);
+        for (int i = 0; i < 5; i++) {
+            assertTrue(new File (getWorkDir(), "file"+String.valueOf(i)).createNewFile());
+        }                
+        assertEquals(5,testRoot.getChildren().length);
+    }
+    
     public void testSize() throws Exception {
         final FolderObj testRoot = (FolderObj)FileBasedFileSystem.getFileObject(getWorkDir());
         assertNotNull(testRoot);
@@ -823,7 +924,7 @@ public class FolderObjTest extends NbTestCase {
         testFolder.addFileChangeListener(fcl);
         assertEquals(0, l.size());
         
-        f.delete();
+        assertTrue(f.delete());
         testFolder.refresh();
         assertEquals(1, l.size());        
     }

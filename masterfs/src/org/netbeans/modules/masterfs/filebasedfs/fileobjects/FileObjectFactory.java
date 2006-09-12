@@ -94,12 +94,20 @@ public final class FileObjectFactory {
         if (name.isFile() && !name.isDirectory()) {
             assert name.getFile() != null &&  (name.getFile().isFile() || !name.getFile().isDirectory()) : name;
             final FileObj realRoot = new FileObj(file, name);
+            FolderObj par = (FolderObj)realRoot.getExistingParent();
+            if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
+                return null;
+            }
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
         
         if (!name.isFile() && name.isDirectory()) {            
             assert name.getFile() != null &&  (!name.getFile().isFile() || name.getFile().isDirectory()) : name;
             final FolderObj realRoot = new FolderObj(file, name);
+            FolderObj par = (FolderObj)realRoot.getExistingParent();            
+            if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
+                return null;
+            }            
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
 
@@ -121,6 +129,10 @@ public final class FileObjectFactory {
                     return !isReadOnly();
                 }
             };
+            FolderObj par = (FolderObj)realRoot.getExistingParent();            
+            if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
+                return null;
+            }                        
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
 

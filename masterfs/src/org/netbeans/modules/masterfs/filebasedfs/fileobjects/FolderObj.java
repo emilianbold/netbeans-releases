@@ -101,7 +101,7 @@ public final class FolderObj extends BaseFileObj {
 
         Set fileNames;
         try {
-            fileNames = new HashSet(childrenCache.getChildren(true));
+            fileNames = new HashSet(childrenCache.getChildren(false));
         } finally {
             mutexPrivileged.exitWriteAccess();
         }
@@ -230,13 +230,14 @@ public final class FolderObj extends BaseFileObj {
         for (int i = 0; i < all.size(); i++) {
             final BaseFileObj toDel = (BaseFileObj) all.get(i);            
             final FolderObj existingParent = toDel.getExistingParent();            
+            assert existingParent == null || toDel.getParent().equals(existingParent);
             final ChildrenCache childrenCache = (existingParent != null) ? existingParent.getChildrenCache() : null;            
             if (childrenCache != null) {
                 final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
                 if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
                 try {      
                     if (deleteHandler != null) {
-                        childrenCache.removeChild(BaseFileObj.getNameExt(file));
+                        childrenCache.removeChild(toDel.getFileName());
                     } else {
                         childrenCache.getChild(BaseFileObj.getNameExt(file), true);
                     }
@@ -263,7 +264,7 @@ public final class FolderObj extends BaseFileObj {
             Map refreshResult = null;
             mutexPrivileged.enterWriteAccess();
             try {
-                oldChildren = cache.getChildren(false);
+                oldChildren = new HashSet(cache.getCachedChildren());
                 refreshResult = cache.refresh();
             } finally {
                 mutexPrivileged.exitWriteAccess();
@@ -455,7 +456,7 @@ public final class FolderObj extends BaseFileObj {
     }
 
     public final class FolderChildrenCache implements ChildrenCache {
-        final ChildrenSupport ch = new ChildrenSupport();
+        public final ChildrenSupport ch = new ChildrenSupport();
 
 
         public final Set getChildren(final boolean rescan) {
@@ -478,12 +479,12 @@ public final class FolderObj extends BaseFileObj {
             return getFileName().toString();
         }
 
-        public boolean existsInCache(String childName) {
-            return ch.existsldInCache(getFileName(), childName);
+        public void removeChild(FileNaming childName) {
+            ch.removeChild(getFileName(), childName);
         }
 
-        public void removeChild(String childName) {
-            ch.removeChild(getFileName(), childName);
+        public Set getCachedChildren() {
+            return ch.getCachedChildren();
         }
     }
 

@@ -29,21 +29,10 @@ public interface ChildrenCache {
     Integer ADDED_CHILD = new Integer(0);
     Integer REMOVED_CHILD = new Integer(1);
 
-    Set getChildren(boolean rescan);
-
     FileNaming getChild(String childName, boolean rescan);
-    
-    /**
-     * Added because of subversion support, please do don't use 
-     * this method and use rather FileNaming getChild(String childName, boolean rescan)
-     * This method is just good for keeping cache in state that doesn't correspond 
-     * with disk status.
-     */
-    void removeChild(String childName);
-
-    boolean existsInCache(String childName);
-
+    void removeChild(FileNaming childName);    
+    Set getChildren(boolean rescan);
+    Set getCachedChildren();
     Map refresh();
-
     Mutex.Privileged getMutexPrivileged();
 }

@@ -179,7 +179,7 @@ public abstract class BaseFileObj extends FileObject {
                 final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
                 if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
                 try {
-                    childrenCache.removeChild(allRenamed[i].getName());
+                    childrenCache.removeChild(allRenamed[i]);
                     childrenCache.getChild(allRenamed[i].getName(), true);
                 } finally {
                     if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
@@ -404,7 +404,7 @@ public abstract class BaseFileObj extends FileObject {
             BaseFileObj.attribs.deleteAttributes(f.getAbsolutePath().replace('\\', '/'));//NOI18N
             if (childrenCache != null) {
                 if (deleteHandler != null) {
-                    childrenCache.removeChild(BaseFileObj.getNameExt(f));
+                    childrenCache.removeChild(getFileName());
                 } else {
                     childrenCache.getChild(BaseFileObj.getNameExt(f), true);
                 }
