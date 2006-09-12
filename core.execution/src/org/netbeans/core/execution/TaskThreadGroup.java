@@ -132,7 +132,7 @@ final class TaskThreadGroup extends ThreadGroup {
     }
     
     /** Marks this group as finalizable. */
-    void synchronized setFinalizable() {
+    synchronized void setFinalizable() {
         finalizable = true;
     }
 
