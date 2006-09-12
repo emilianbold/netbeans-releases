@@ -109,10 +109,13 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
 
         explorerManager.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
-                if (ExplorerManager.PROP_SELECTED_NODES.equals(ev.getPropertyName()))
+                if (ExplorerManager.PROP_SELECTED_NODES.equals(ev.getPropertyName())) {
                     updateInfoLabel(explorerManager.getSelectedNodes());
+                    updateButtons();
+                }
             }
         });
+        updateButtons();
     }
 
     public void addNotify() {
@@ -135,6 +138,27 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         return lookup;
     }
 
+    private void updateButtons() {
+        Node[] selNodes = explorerManager.getSelectedNodes();
+        boolean canRemove = null != selNodes && selNodes.length > 0;
+        boolean canMoveUp = null != selNodes && selNodes.length == 1;
+        boolean canMoveDown = null != selNodes && selNodes.length == 1;
+        
+        for( int i=0; null != selNodes && i<selNodes.length; i++ ) {
+            Node node = selNodes[i];
+            if( !node.canDestroy() )
+                canRemove = false;
+            
+            Node parent = node.getParentNode();
+            if( null == parent || movePossible( node, parent, true ) < 0 )
+                canMoveUp = false;
+            if( null == parent || movePossible( node, parent, false ) < 0 )
+                canMoveDown = false;
+        }
+        removeButton.setEnabled( canRemove );
+        moveUpButton.setEnabled( canMoveUp );
+        moveDownButton.setEnabled( canMoveDown );
+    }
     // -------
 
     /** This method is called from within the constructor to
@@ -338,7 +362,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
     // End of variables declaration//GEN-END:variables
 
     private void moveNode(boolean up) {
-        final Node[] selected = explorerManager.getSelectedNodes();
+        Node[] selected = explorerManager.getSelectedNodes();
         if (selected.length != 1)
             return;
 
@@ -353,10 +377,11 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
 
         int index = movePossible(node, parent, up);
         if (index != -1) {
-            if (up)
+            if (up) {
                 indexCookie.moveUp(index);
-            else 
+            } else {
                 indexCookie.moveDown(index);
+            }
         }
     }
 
