@@ -160,7 +160,9 @@ public final class TargetExecutor implements Runnable {
 
         public void actionPerformed(ActionEvent e) {
             setEnabled(false); // discourage repeated clicking
-            stopProcess(t);
+            if (t != null) { // #84688
+                stopProcess(t);
+            }
         }
 
     }
@@ -279,7 +281,12 @@ public final class TargetExecutor implements Runnable {
         }
         @Override
         public void stop () {
-            stopActions.get(io).actionPerformed(null);
+            StopAction sa = stopActions.get(io);
+            if (sa != null) {
+                sa.actionPerformed(null);
+            } else { // just in case
+                task.stop();
+            }
         }
         @Override
         public int result () {
