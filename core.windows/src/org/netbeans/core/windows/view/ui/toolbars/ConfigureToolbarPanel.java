@@ -27,6 +27,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
@@ -114,11 +116,6 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             dialog = dialogRef.get();
         if (dialog == null) {
             JButton closeButton = new JButton();
-            closeButton.addActionListener( new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    endToolbarEditMode();
-                }
-            });
             closeButton.getAccessibleContext().setAccessibleDescription( getBundleString("ACSD_Close") );
             org.openide.awt.Mnemonics.setLocalizedText(
                 closeButton, getBundleString("CTL_Close")); 
@@ -134,6 +131,11 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
             dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialogRef = new WeakReference<Dialog>(dialog);
         }
+        dialog.addWindowListener( new WindowAdapter() {
+            public void windowClosed(WindowEvent e) {
+                endToolbarEditMode();
+            }
+        });
         dialog.setVisible(true);
         startToolbarEditMode();
     }
