@@ -38,7 +38,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities;
@@ -142,7 +142,7 @@ public class AbilitiesPanel implements NavigatorPanel
                     
                     //Default configuration is a special case
                     final ProjectConfigurationsHelper pch=project.getLookup().lookup(ProjectConfigurationsHelper.class);
-                    final ProjectConfiguration cf=conf.getName().equals(pch.getDefaultConfiguration().getName()) ? null : conf;
+                    final ProjectConfiguration cf=conf.getDisplayName().equals(pch.getDefaultConfiguration().getDisplayName()) ? null : conf;
                     final boolean def=testForNonDefaultValue(j2meProperties,cf);
                     final boolean useDefault=def ^ true; //Negation
                     
@@ -150,7 +150,7 @@ public class AbilitiesPanel implements NavigatorPanel
                     table.setBackground(javax.swing.UIManager.getDefaults().getColor(useDefault ? "Panel.background" : "Table.background")); //NOI18N
 
                     
-                    final String pn=VisualPropertySupport.translatePropertyName(cf==null?null:cf.getName(),
+                    final String pn=VisualPropertySupport.translatePropertyName(cf==null?null:cf.getDisplayName(),
                             DefaultPropertiesDescriptor.ABILITIES, useDefault);
                     
                     final Object values[]= new Object[] {j2meProperties.get(pn)};                    
@@ -165,7 +165,7 @@ public class AbilitiesPanel implements NavigatorPanel
         private static boolean testForNonDefaultValue(final J2MEProjectProperties properties, final ProjectConfiguration conf)
         {
             if (conf == null || 
-                    properties.get(VisualPropertySupport.prefixPropertyName(conf.getName(), DefaultPropertiesDescriptor.ABILITIES)) != null)
+                    properties.get(VisualPropertySupport.prefixPropertyName(conf.getDisplayName(), DefaultPropertiesDescriptor.ABILITIES)) != null)
                 return true;
             return false;
         }

@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
@@ -119,7 +119,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
             int pos;
             Node parentNode=null;
             String confName;
-            final String defName=project.getConfigurationHelper().getDefaultConfiguration().getName();
+            final String defName=project.getConfigurationHelper().getDefaultConfiguration().getDisplayName();
             
             if ((pos=prop.indexOf(DefaultPropertiesDescriptor.LIBS_CLASSPATH))!=-1)
             {
@@ -143,16 +143,16 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                 //We must refresh resources of all "default resources" configurations
                 if (pos==0)
                 {
-                    final ProjectConfiguration confs[]=project.getConfigurationHelper().getConfigurations();
+                    final ProjectConfiguration confs[]=project.getConfigurationHelper().getConfigurations().toArray(new ProjectConfiguration[0]);
                     final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
                     for (int i=0;i<confs.length;i++)
                     {
-                        if (!confs[i].getName().equals(defName))
+                        if (!confs[i].getDisplayName().equals(defName))
                         {
-                            final String libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+confs[i].getName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+                            final String libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+confs[i].getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
                             if (libs==null)
                             {
-                                parentNode=node.getChildren().findChild(confs[i].getName());
+                                parentNode=node.getChildren().findChild(confs[i].getDisplayName());
                                 if (parentNode != null)
                                 {
                                     final ConfigChildren children=(ConfigChildren)parentNode.getChildren();
@@ -200,7 +200,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                     final Node n=new CfgNode(
                             new ConfigChildren(),
                             Lookups.fixed(new Object[] {project, cfg, new AbilitiesPanel.VAData()}),
-                            cfg.getName(),PLATFORM_ICON,
+                            cfg.getDisplayName(),PLATFORM_ICON,
                             new Action[] {
                                           SetConfigurationAction.getStaticInstance(),
                                           null,
@@ -208,7 +208,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                                           RemoveConfigurationAction.getStaticInstance(),
                                          });
                     node.getChildren().add(new Node[] {n});
-                    n.setName(cfg.getName());
+                    n.setName(cfg.getDisplayName());
                 }
                 
                 //Remove configurations
@@ -216,7 +216,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                 base.removeAll(nObj);
                 for (ProjectConfiguration cfg : base)
                 {
-                   Node parentNode=node.getChildren().findChild(cfg.getName());
+                   Node parentNode=node.getChildren().findChild(cfg.getDisplayName());
                    if (parentNode!= null)
                      node.getChildren().remove(new Node[] {parentNode}) ;
                    return;
@@ -233,21 +233,21 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                 {
                     if (oObj!=null)
                     {
-                        final Node n=node.getChildren().findChild(oObj.getName());
+                        final Node n=node.getChildren().findChild(oObj.getDisplayName());
                         if (n!=null)
                         {
                             n.setValue("bold",Boolean.FALSE);
-                            n.setName(oObj.getName());
+                            n.setName(oObj.getDisplayName());
                         }
                     }
 
                     if (nObj!=null)
                     {
-                        Node n=node.getChildren().findChild(nObj.getName());
+                        Node n=node.getChildren().findChild(nObj.getDisplayName());
                         if (n!=null)
                         {
                             n.setValue("bold",Boolean.TRUE);
-                            n.setName(nObj.getName());
+                            n.setName(nObj.getDisplayName());
                         }
                     }                    
                 }
@@ -261,7 +261,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
         final Node nodes[]=new Node[0];
 
         final ProjectConfigurationsHelper confHelper=project.getConfigurationHelper();
-        final ProjectConfiguration confs[]=confHelper.getConfigurations();        
+        final ProjectConfiguration confs[]=confHelper.getConfigurations().toArray(new ProjectConfiguration[0]);        
         final ProjectConfiguration active=confHelper.getActiveConfiguration();
         
         for (int i=0;i<confs.length;i++)
@@ -269,12 +269,12 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
             final Node node=confs[i].equals(project.getConfigurationHelper().getDefaultConfiguration()) ? 
                 new CfgNode(new ConfigChildren(), 
                     Lookups.fixed(new Object[] {project, confs[i], new AbilitiesPanel.VAData()}),
-                    confs[i].getName(),PLATFORM_ICON,
+                    confs[i].getDisplayName(),PLATFORM_ICON,
                     new Action[] {SetConfigurationAction.getStaticInstance(),
                                  }) :
                 new CfgNode(new ConfigChildren(),
                     Lookups.fixed(new Object[] {project, confs[i], new AbilitiesPanel.VAData()}),
-                    confs[i].getName(),PLATFORM_ICON,
+                    confs[i].getDisplayName(),PLATFORM_ICON,
                     new Action[] {
                                   SetConfigurationAction.getStaticInstance(),
                                   null,
@@ -282,7 +282,7 @@ class LibResViewProvider  extends J2MEPhysicalViewProvider.ChildLookup
                                   RemoveConfigurationAction.getStaticInstance(),
                                   });
             nodeArray.add(node);
-            if (confs[i].getName().equals(active.getName()))
+            if (confs[i].getDisplayName().equals(active.getDisplayName()))
             {
                 node.setValue("bold",Boolean.TRUE);
             }

@@ -38,7 +38,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
@@ -200,13 +200,13 @@ class ConfigurationsProvider
                 project.getLookup().lookup(ReferenceHelper.class), 
                 project.getConfigurationHelper() );
         
-        if (conf.getName().equals(project.getConfigurationHelper().getDefaultConfiguration().getName()))
+        if (conf.getDisplayName().equals(project.getConfigurationHelper().getDefaultConfiguration().getDisplayName()))
         {
             libs=(ArrayList<VisualClassPathItem>)j2meProperties.get(DefaultPropertiesDescriptor.LIBS_CLASSPATH);
         }
         else
         {
-            libs=(ArrayList<VisualClassPathItem>)j2meProperties.get(J2MEProjectProperties.CONFIG_PREFIX+conf.getName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+            libs=(ArrayList<VisualClassPathItem>)j2meProperties.get(J2MEProjectProperties.CONFIG_PREFIX+conf.getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
         }
         
         if (libs==null)

@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.project.*;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mobility.project.J2MEActionProvider;
 import org.netbeans.modules.mobility.project.J2MEProject;
@@ -127,7 +127,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     }
     
     protected String[] getBreakableProperties() {
-        final ProjectConfiguration pc[] = pcp.getConfigurations();
+        final ProjectConfiguration pc[] = pcp.getConfigurations().toArray(new ProjectConfiguration[0]);
         String s[] = new String[2*pc.length+1];
         s[0] = DefaultPropertiesDescriptor.SRC_DIR;
         for (int i= 0; i<pc.length; i++) {
@@ -135,21 +135,21 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
                 s[2*i+1] = DefaultPropertiesDescriptor.LIBS_CLASSPATH;
                 s[2*i+2] = DefaultPropertiesDescriptor.SIGN_KEYSTORE;
             } else {
-                s[2*i+1] = J2MEProjectProperties.CONFIG_PREFIX + pc[i].getName() + "." + DefaultPropertiesDescriptor.LIBS_CLASSPATH; //NOI18N
-                s[2*i+2] = J2MEProjectProperties.CONFIG_PREFIX + pc[i].getName() + "." + DefaultPropertiesDescriptor.SIGN_KEYSTORE; //NOI18N
+                s[2*i+1] = J2MEProjectProperties.CONFIG_PREFIX + pc[i].getDisplayName() + "." + DefaultPropertiesDescriptor.LIBS_CLASSPATH; //NOI18N
+                s[2*i+2] = J2MEProjectProperties.CONFIG_PREFIX + pc[i].getDisplayName() + "." + DefaultPropertiesDescriptor.SIGN_KEYSTORE; //NOI18N
             }
         }
         return s;
     }
     
     protected String[] getBreakablePlatformProperties() {
-        final ProjectConfiguration pc[] = pcp.getConfigurations();
+        final ProjectConfiguration pc[] = pcp.getConfigurations().toArray(new ProjectConfiguration[0]);
         String s[] = new String[pc.length];
         for (int i= 0; i<pc.length; i++) {
             if (pcp.getDefaultConfiguration().equals(pc[i])) {
                 s[i] = DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
             } else {
-                s[i] = J2MEProjectProperties.CONFIG_PREFIX + pc[i].getName() + "." + DefaultPropertiesDescriptor.PLATFORM_ACTIVE; //NOI18N
+                s[i] = J2MEProjectProperties.CONFIG_PREFIX + pc[i].getDisplayName() + "." + DefaultPropertiesDescriptor.PLATFORM_ACTIVE; //NOI18N
             }
         }
         return s;
@@ -373,8 +373,8 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_JAVADOC, bundle.getString( "LBL_JavadocAction_Name" ), null )); // NOI18N
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null )); // NOI18N
                 act.add(null);
-                act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
-                act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
+                act.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
+                act.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_RUN_WITH, bundle.getString( "LBL_RunWithAction_Name" ), null )); // NOI18N
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_BUILD_ALL, bundle.getString( "LBL_BuildAllAction_Name" ), null )); // NOI18N
                 act.add(ProjectSensitiveActions.projectCommandAction( J2MEActionProvider.COMMAND_REBUILD_ALL, bundle.getString( "LBL_RebuildAllAction_Name" ), null )); // NOI18N

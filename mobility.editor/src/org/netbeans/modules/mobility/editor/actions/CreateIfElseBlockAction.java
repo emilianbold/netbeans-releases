@@ -34,7 +34,7 @@ import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.mdr.MDRepository;
-import org.netbeans.api.project.configurations.ProjectConfigurationsProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
@@ -57,18 +57,18 @@ public class CreateIfElseBlockAction extends PreprocessorEditorContextAction {
         super(NAME); //NOI18N
     }
     
-    public boolean isEnabled(final ProjectConfigurationsProvider cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
-        return cfgProvider != null && cfgProvider.getConfigurations().length > 1 && !overlapsBlockBorders(target, preprocessorLineList);
+    public boolean isEnabled(final ProjectConfigurationProvider cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
+        return cfgProvider != null && cfgProvider.getConfigurations().size() > 1 && !overlapsBlockBorders(target, preprocessorLineList);
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")
-	final ProjectConfigurationsProvider cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
+	final ProjectConfigurationProvider cfgProvider, final ArrayList<PPLine> preprocessorLineList, final JTextComponent target) {
         return getBlock(target, preprocessorLineList) != null ? NbBundle.getMessage(CreateIfElseBlockAction.class, "LBL_Create_Nested_If_Else_Block") : NbBundle.getMessage(CreateIfElseBlockAction.class, "LBL_Create_If_Else_Block");//NOI18N
     }
     
     public void actionPerformed(@SuppressWarnings("unused")
 	final ActionEvent evt, final JTextComponent txt) {
-        final ProjectConfigurationsProvider prov = J2MEProjectUtils.getConfigProviderForDoc(txt.getDocument());
+        final ProjectConfigurationProvider prov = J2MEProjectUtils.getConfigProviderForDoc(txt.getDocument());
         if (prov == null) return;
         final MDRepository rep = JavaModel.getJavaRepository();
         rep.beginTrans(false);

@@ -29,7 +29,7 @@ import java.beans.PropertyChangeListener;
 import junit.framework.*;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.configurations.ProjectConfigurationsProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -308,7 +308,7 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         Document doc=ec.openDocument();
         ProjectConfigurationsHelper cfghlp=J2MEProjectUtils.getCfgHelperForDoc(doc);
         assertNotNull(cfghlp);
-        ProjectConfigurationsProvider pprov=J2MEProjectUtils.getConfigProviderForDoc(doc);
+        ProjectConfigurationProvider pprov=J2MEProjectUtils.getConfigProviderForDoc(doc);
         assertNotNull(pprov);
         Project p=J2MEProjectUtils.getProjectForDocument(doc);
         assertEquals(p,prj);

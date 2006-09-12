@@ -46,7 +46,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.mobility.cldcplatform.libraries.J2MELibraryTypeProvider;
 import org.netbeans.modules.mobility.project.J2MEProject;
@@ -123,13 +123,13 @@ abstract class NodeAction<T> extends ContextAction
         assert project != null;
 
         String propName;
-        if (conf.getName().equals(project.getConfigurationHelper().getDefaultConfiguration().getName()))
+        if (conf.getDisplayName().equals(project.getConfigurationHelper().getDefaultConfiguration().getDisplayName()))
         {
             propName=DefaultPropertiesDescriptor.LIBS_CLASSPATH;
         }
         else
         {
-            propName=J2MEProjectProperties.CONFIG_PREFIX+conf.getName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH;
+            propName=J2MEProjectProperties.CONFIG_PREFIX+conf.getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH;
         }
 
         final List<VisualClassPathItem> list=(List)j2meProperties.get(propName);
@@ -182,13 +182,13 @@ abstract class NodeAction<T> extends ContextAction
                                                             project.getConfigurationHelper() );
 
                 String propName;
-                if (conf.getName().equals(project.getConfigurationHelper().getDefaultConfiguration().getName()))
+                if (conf.getDisplayName().equals(project.getConfigurationHelper().getDefaultConfiguration().getDisplayName()))
                 {
                     propName=DefaultPropertiesDescriptor.LIBS_CLASSPATH;
                 }
                 else
                 {
-                    propName=J2MEProjectProperties.CONFIG_PREFIX+conf.getName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH;
+                    propName=J2MEProjectProperties.CONFIG_PREFIX+conf.getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH;
                 }
 
                 final List<VisualClassPathItem> list=(List)j2meProperties.get(propName);
@@ -529,7 +529,13 @@ class SetConfigurationAction extends ContextAction
     {
         final J2MEProject project=activatedNodes[0].getLookup().lookup(J2MEProject.class);
         final ProjectConfiguration conf=activatedNodes[0].getLookup().lookup(ProjectConfiguration.class);
-        project.getConfigurationHelper().setActiveConfiguration(conf);
+        try {
+            project.getConfigurationHelper().setActiveConfiguration(conf);
+        } catch (IllegalArgumentException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
     }
 }
 
@@ -585,7 +591,7 @@ class AddConfigurationAction extends ContextAction
         allNames.addAll(Arrays.asList(j2meProperties.getConfigurations()));
         final ArrayList<String> names = new ArrayList<String>(allNames.size());
         for ( ProjectConfiguration cfg : allNames )
-            names.add(cfg.getName());
+            names.add(cfg.getDisplayName());
         final NewConfigurationPanel ncp = new NewConfigurationPanel(names);
         final DialogDescriptor dd = new DialogDescriptor(ncp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
         ncp.setDialogDescriptor(dd);
@@ -594,7 +600,7 @@ class AddConfigurationAction extends ContextAction
         {
             final ProjectConfiguration cfg = new ProjectConfiguration() 
             {
-                public String getName() {
+                public String getDisplayName() {
                     return newName;
                 }
             };
@@ -604,8 +610,14 @@ class AddConfigurationAction extends ContextAction
 
             // Store the properties 
             j2meProperties.store();
-            project.getConfigurationHelper().setActiveConfiguration(cfg); 
-            return true;
+            try {
+                project.getConfigurationHelper().setActiveConfiguration(cfg); 
+                return true;
+            } catch (IllegalArgumentException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } 
         }
         return false;
     }
@@ -632,7 +644,7 @@ class RemoveConfigurationAction extends ContextAction
         for (Node node : activatedNodes)
         {
             ProjectConfiguration conf=node.getLookup().lookup(ProjectConfiguration.class);
-            buffer.append('\n'+conf.getName());
+            buffer.append('\n').append(conf.getDisplayName());
         }
         
         final NotifyDescriptor desc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_ReallyRemove", buffer), NotifyDescriptor.YES_NO_OPTION); //NOI18N
@@ -671,7 +683,7 @@ class RemoveConfigurationAction extends ContextAction
                 project.getConfigurationHelper() );
 
         final String keys[] = j2meProperties.keySet().toArray(new String[j2meProperties.size()]);
-        final String prefix = J2MEProjectProperties.CONFIG_PREFIX + conf.getName();
+        final String prefix = J2MEProjectProperties.CONFIG_PREFIX + conf.getDisplayName();
         for (int i=0; i<keys.length; i++) 
         {
             if (keys[i].startsWith(prefix))
@@ -683,8 +695,13 @@ class RemoveConfigurationAction extends ContextAction
         list.remove(conf);
 
         //Set active in case we are deleting active
-        if (project.getConfigurationHelper().getActiveConfiguration().equals(conf))
+        if (project.getConfigurationHelper().getActiveConfiguration().equals(conf)) try {
             project.getConfigurationHelper().setActiveConfiguration(project.getConfigurationHelper().getDefaultConfiguration());
+        } catch (IllegalArgumentException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
+        } 
 
         j2meProperties.setConfigurations(list.toArray(new ProjectConfiguration[list.size()]));
 

@@ -20,7 +20,7 @@
 package org.netbeans.api.mobility.project.ui.customizer;
 
 import java.util.Map;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.filesystems.FileObject;
 
 /**

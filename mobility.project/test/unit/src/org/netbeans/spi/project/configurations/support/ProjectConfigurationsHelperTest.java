@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;

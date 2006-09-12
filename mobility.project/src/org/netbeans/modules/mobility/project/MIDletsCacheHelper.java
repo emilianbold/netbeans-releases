@@ -25,8 +25,8 @@ import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
-import org.netbeans.api.project.configurations.ProjectConfigurationsProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 
 import java.util.*;
@@ -52,7 +52,7 @@ public class MIDletsCacheHelper implements AntProjectListener {
         helper.addAntProjectListener(this);
         confs.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(final PropertyChangeEvent evt) {
-                if (ProjectConfigurationsProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName()))
+                if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName()))
                     refresh();
             }
             
@@ -91,7 +91,7 @@ public class MIDletsCacheHelper implements AntProjectListener {
         set = new HashSet<String>();
         
         final ProjectConfiguration activeProjectConfiguration = confs.getActiveConfiguration();
-        final String activeConfiguration = (activeProjectConfiguration != null   &&  activeProjectConfiguration != confs.getDefaultConfiguration()) ? activeProjectConfiguration.getName() : null;
+        final String activeConfiguration = (activeProjectConfiguration != null   &&  activeProjectConfiguration != confs.getDefaultConfiguration()) ? activeProjectConfiguration.getDisplayName() : null;
         String value = null;
         final PropertyEvaluator pe = helper.getStandardPropertyEvaluator();
         if (activeConfiguration != null) {

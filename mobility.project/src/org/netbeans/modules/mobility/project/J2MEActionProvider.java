@@ -58,10 +58,7 @@ public class J2MEActionProvider implements ActionProvider {
     public static final String COMMAND_OBFUSCATE = "obfuscate"; /*XXX define somewhere*/ // NOI18N
     public static final String COMMAND_PREVERIFY = "preverify"; /*XXX define somewhere*/ // NOI18N
     public static final String COMMAND_JAR = "jar"; /*XXX define somewhere*/ // NOI18N
-    public static final String COMMAND_RUN = "run"; /*XXX define somewhere*/ // NOI18N
     public static final String COMMAND_RUN_WITH = "runwith"; /*XXX define somewhere*/ // NOI18N
-    public static final String COMMAND_DEBUG = "debug"; /*XXX define somewhere*/ // NOI18N
-    public static final String COMMAND_DEBUG_STEP_INTO = "debug.stepinto"; /*XXX define somewhere*/ // NOI18N
     public static final String COMMAND_JAVADOC = "javadoc"; /*XXX define somewhere*/ // NOI18N
     public static final String COMMAND_DEPLOY = "deploy"; /*XXX define somewhere*/ // NOI18N
     public static final String COMMAND_CLEAN_ALL = "clean-all"; /*XXX define somewhere*/ // NOI18N
@@ -193,7 +190,7 @@ public class J2MEActionProvider implements ActionProvider {
                 }
                 EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 ProjectConfigurationsHelper confs = project.getConfigurationHelper();
-                String activeConfiguration = confs.getActiveConfiguration() != confs.getDefaultConfiguration() ? confs.getActiveConfiguration().getName() : null;
+                String activeConfiguration = confs.getActiveConfiguration() != confs.getDefaultConfiguration() ? confs.getActiveConfiguration().getDisplayName() : null;
                 Properties p = new Properties();
                 if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
                     String sDir = helper.getStandardPropertyEvaluator().getProperty("src.dir"); //NOI18N

@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
+<!--
     <folder name="Actions">
         <folder name="Project">
             <file name="org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.instance">
@@ -36,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>        
+-->
 
     <folder name="Navigator">
         <folder name="Panels">
@@ -48,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
     <folder name="Menu">
-        
+<!--        
         <folder name="BuildProject">
             <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/org-netbeans-modules-project-support-ActiveConfigAction.shadow" boolvalue="true"/>
             
@@ -78,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
 
             <attr name="SeparatorBuildAllMainProject.instance/org-netbeans-modules-project-ui-JavadocProject.shadow" boolvalue="true"/>
         </folder>
-            
+-->            
         <folder name="Tools">
             <attr name="LibrariesCustomizerAction.instance/SecurityManagerAction.instance" boolvalue="true"/>
             <file name="SecurityManagerAction.instance">
@@ -86,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
-
+<!--
     <folder name="Toolbars">
     
         <folder name="Build">            
@@ -99,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
                 
     </folder>
-
+-->
     <folder name="Services">
         <file name="org-netbeans-modules-mobility-project-security-KeyStoreRepository.settings" url="/org/netbeans/modules/mobility/project/ui/resources/KeyStoreRepository.settings">
             <attr boolvalue="true" name="hidden"/>

@@ -44,7 +44,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.GlobalAbilitiesCache;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
@@ -219,7 +219,7 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
     private Set<String> getUsedIdentifiers() {
         final Set<String> uI = new HashSet<String>(tableModel.getKeys());
         final ProjectConfiguration cfg[] = props.getConfigurations();
-        for (int i=0; i<cfg.length; i++) uI.add(cfg[i].getName());
+        for (int i=0; i<cfg.length; i++) uI.add(cfg[i].getDisplayName());
         return uI;
     }
     

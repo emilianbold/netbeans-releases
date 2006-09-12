@@ -48,7 +48,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeSelectionModel;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
 import org.openide.DialogDescriptor;
@@ -76,7 +76,7 @@ public class J2MECustomizer extends JPanel implements Runnable {
     private static final String REGISTRATION_FOLDER = "Customizer/org.netbeans.modules.kjava.j2meproject";//NOI18N
     private static final ProjectConfiguration ADD_CONFIGURATION = new ProjectConfiguration() {
         private final String name=NbBundle.getMessage(J2MECustomizer.class, "LBL_Customizer_AddConfiguration"); //NOI18N
-        public String getName() {
+        public String getDisplayName() {
             return name;
         }
     };
@@ -294,7 +294,7 @@ public class J2MECustomizer extends JPanel implements Runnable {
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
             final ProjectConfiguration cfg = new ProjectConfiguration() {
                 private final String name = p.getName();
-                public String getName() {
+                public String getDisplayName() {
                     return name;
                 }
             };
@@ -406,7 +406,7 @@ public class J2MECustomizer extends JPanel implements Runnable {
         
         public void updateCustomizerPanel() {
             final Object cfg = configurationCombo.getSelectedItem();
-            final String configuration = configurationCombo.getSelectedIndex() == 0 || cfg == null || !(cfg instanceof ProjectConfiguration) ? null : ((ProjectConfiguration)cfg).getName();
+            final String configuration = configurationCombo.getSelectedIndex() == 0 || cfg == null || !(cfg instanceof ProjectConfiguration) ? null : ((ProjectConfiguration)cfg).getDisplayName();
             final Node nodes[] = manager.getSelectedNodes();
             if ( nodes == null || nodes.length <= 0 ) {
                 return;
@@ -523,7 +523,7 @@ public class J2MECustomizer extends JPanel implements Runnable {
         public Component getListCellRendererComponent( final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
             super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
             if (value instanceof ProjectConfiguration) {
-                setText( ((ProjectConfiguration)value).getName());
+                setText( ((ProjectConfiguration)value).getDisplayName());
             }
             return this;
         }

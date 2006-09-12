@@ -42,7 +42,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.cldcplatform.PlatformConvertor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -137,7 +137,7 @@ public final class VisualConfigSupport {
         final ProjectConfiguration cfgs[] = getConfigurationItems();
         final HashSet<String> allNames = new HashSet<String>(cfgs.length);
         for (int i=0; i<cfgs.length; i++) {
-            allNames.add(cfgs[i].getName());
+            allNames.add(cfgs[i].getDisplayName());
         }
         final NewConfigurationPanel ncp = new NewConfigurationPanel(allNames);
         final DialogDescriptor dd = new DialogDescriptor(ncp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
@@ -145,7 +145,7 @@ public final class VisualConfigSupport {
         final String newName = NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) ? ncp.getName() : null;
         if (newName != null) {
             final ProjectConfiguration cfg = new ProjectConfiguration() {
-                public String getName() {
+                public String getDisplayName() {
                     return newName;
                 }
             };
@@ -232,7 +232,7 @@ public final class VisualConfigSupport {
         final ProjectConfiguration cfgs[] = getConfigurationItems();
         final HashSet<String> allNames = new HashSet<String>(cfgs.length);
         for (int i=0; i<cfgs.length; i++) {
-            allNames.add(cfgs[i].getName());
+            allNames.add(cfgs[i].getDisplayName());
         }
         final CloneConfigurationPanel ccp = new CloneConfigurationPanel(allNames);
         final DialogDescriptor dd = new DialogDescriptor(ccp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
@@ -240,13 +240,13 @@ public final class VisualConfigSupport {
         final String newName = NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) ? ccp.getName() : null;
         if (newName != null) {
             final ProjectConfiguration newCfg = new ProjectConfiguration() {
-                public String getName() {
+                public String getDisplayName() {
                     return newName;
                 }
             };
             
             configurationModel.addElement(newCfg);
-            copyProperties(cfg.getName(), newName);
+            copyProperties(cfg.getDisplayName(), newName);
             configurationList.setSelectedValue(newCfg, true);
             fireActionPerformed();
         }
@@ -276,11 +276,11 @@ public final class VisualConfigSupport {
         assert si > 0 : "Remove button should be disabled"; // NOI18N
         
         final ProjectConfiguration cfg = (ProjectConfiguration) configurationList.getSelectedValue();
-        final NotifyDescriptor desc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_ReallyRemove", cfg.getName()), NotifyDescriptor.YES_NO_OPTION); //NOI18N
+        final NotifyDescriptor desc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_ReallyRemove", cfg.getDisplayName()), NotifyDescriptor.YES_NO_OPTION); //NOI18N
         if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
             
             configurationModel.remove( si );
-            removeProperties(cfg.getName());
+            removeProperties(cfg.getDisplayName());
             configurationList.setSelectedIndex(si < configurationModel.getSize() ? si : si - 1);
             fireActionPerformed();
         }
@@ -304,12 +304,12 @@ public final class VisualConfigSupport {
             allNames.add(tmps[i].getName());
         }
         final JButton SAVE_OPTION = new JButton(NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_SaveBtn")); //NOI18N
-        final SaveConfigurationPanel scp = new SaveConfigurationPanel(cfg.getName() + PlatformConvertor.CFG_TEMPLATE_SUFFIX, allNames, SAVE_OPTION);
+        final SaveConfigurationPanel scp = new SaveConfigurationPanel(cfg.getDisplayName() + PlatformConvertor.CFG_TEMPLATE_SUFFIX, allNames, SAVE_OPTION);
         SAVE_OPTION.setMnemonic(NbBundle.getMessage(VisualConfigSupport.class, "MNM_VCS_SaveBtn").charAt(0)); //NOI18N
         SAVE_OPTION.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VisualConfigSupport.class, "ACSD_VCS_SaveBtn")); //NOI18N
         final DialogDescriptor dd = new DialogDescriptor(scp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_SaveConfiguration"), true, new Object[] {SAVE_OPTION, NotifyDescriptor.CANCEL_OPTION}, SAVE_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(SaveConfigurationPanel.class), null); //NOI18N
         if (SAVE_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
-            saveConfigurationTemplate(cfg.getName(), scp.getName());
+            saveConfigurationTemplate(cfg.getDisplayName(), scp.getName());
         }
     }
     
@@ -467,7 +467,7 @@ public final class VisualConfigSupport {
         public Component getListCellRendererComponent( final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
             super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
             if (value instanceof ProjectConfiguration) {
-                setText( ((ProjectConfiguration)value).getName());
+                setText( ((ProjectConfiguration)value).getDisplayName());
             }
             return this;
         }

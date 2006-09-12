@@ -35,8 +35,8 @@ import javax.swing.*;
 
 import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
-import org.netbeans.api.project.configurations.ProjectConfigurationsProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
@@ -65,14 +65,14 @@ public class RecommentAction extends PreprocessorEditorContextAction {
         putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("control shift R"));//NOI18N
     }
     
-    public boolean isEnabled(final ProjectConfigurationsProvider cfgProvider, @SuppressWarnings("unused")
+    public boolean isEnabled(final ProjectConfigurationProvider cfgProvider, @SuppressWarnings("unused")
 	final ArrayList preprocessorLineList, @SuppressWarnings("unused")
 	final JTextComponent target) {
-        return cfgProvider != null && cfgProvider.getConfigurations().length > 1;
+        return cfgProvider != null && cfgProvider.getConfigurations().size() > 1;
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")
-	final ProjectConfigurationsProvider cfgProvider, @SuppressWarnings("unused")
+	final ProjectConfigurationProvider cfgProvider, @SuppressWarnings("unused")
 	final ArrayList preprocessorLineList, @SuppressWarnings("unused")
 	final JTextComponent target) {
         return NbBundle.getMessage(RecommentAction.class, "LBL_Recomment") ;//NOI18N
@@ -98,7 +98,7 @@ public class RecommentAction extends PreprocessorEditorContextAction {
                 final PPDocumentDestination ppDestination = new PPDocumentDestination((BaseDocument)doc);
                 final ProjectConfiguration conf = pch.getActiveConfiguration();
                 final HashMap<String,String> identifiers=new HashMap<String,String>(pch.getAbilitiesFor(conf));
-                identifiers.put(conf.getName(),null);
+                identifiers.put(conf.getDisplayName(),null);
                 final CommentingPreProcessor cpp =new CommentingPreProcessor(ppSource, ppDestination, identifiers) ;
                 //note: nbr transaction is already locked here
                 final MDRepository rep = JavaModel.getJavaRepository();

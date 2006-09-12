@@ -27,8 +27,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
-import org.netbeans.api.project.configurations.ProjectConfigurationsProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
@@ -72,7 +72,7 @@ public class TextSwitcher implements PropertyChangeListener {
     public void propertyChange(final PropertyChangeEvent evt) {
         final String changed = evt.getPropertyName();
         
-        if (ProjectConfigurationsProvider.PROP_CONFIGURATION_ACTIVE.equals(changed) ||
+        if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(changed) ||
                 ProjectConfigurationsHelper.PROJECT_PROPERTIES.equals(changed)) {
             
             new Runner(((ProjectConfiguration)evt.getNewValue())).start();
@@ -140,7 +140,7 @@ public class TextSwitcher implements PropertyChangeListener {
                 final ProjectConfigurationsHelper pch = p.getLookup().lookup(ProjectConfigurationsHelper.class);
                 
                 final HashMap<String,String> identifiers=new HashMap<String,String>(pch.getActiveAbilities());
-                identifiers.put(pch.getActiveConfiguration().getName(),null);
+                identifiers.put(pch.getActiveConfiguration().getDisplayName(),null);
                 final CommentingPreProcessor cpp =new CommentingPreProcessor(ppSrc, ppDest, identifiers) ;
                 
                 final MDRepository rep = JavaModel.getJavaRepository();

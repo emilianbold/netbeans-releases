@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.configurations.ProjectConfigurationsProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.netbeans.modules.mobility.project.ui.J2MECustomizerProvider;
 import org.openide.util.NbBundle;
@@ -48,14 +48,14 @@ public class AddProjectConfigurationAction extends PreprocessorEditorContextActi
         super(NAME); //NOI18N
     }
     
-    public boolean isEnabled(final ProjectConfigurationsProvider cfgProvider, @SuppressWarnings("unused")
+    public boolean isEnabled(final ProjectConfigurationProvider cfgProvider, @SuppressWarnings("unused")
 	final ArrayList preprocessorLineList, @SuppressWarnings("unused")
 	final JTextComponent target) {
         return cfgProvider != null;
     }
     
     public String getPopupMenuText(@SuppressWarnings("unused")
-	final ProjectConfigurationsProvider cfgProvider, @SuppressWarnings("unused")
+	final ProjectConfigurationProvider cfgProvider, @SuppressWarnings("unused")
 	final ArrayList preprocessorLineList, @SuppressWarnings("unused")
 	final JTextComponent target) {
         return NbBundle.getMessage(AddProjectConfigurationAction.class, "LBL_Add_Configuration_To_Project"); //NOI18N

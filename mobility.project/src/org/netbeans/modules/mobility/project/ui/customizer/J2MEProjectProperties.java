@@ -36,7 +36,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
@@ -119,14 +119,14 @@ public class J2MEProjectProperties implements ProjectProperties {
     }
     
     public synchronized void setActiveConfiguration(final ProjectConfiguration cfg) {
-        put(DefaultPropertiesDescriptor.CONFIG_ACTIVE, cfg == null || configHelper.getDefaultConfiguration().equals(cfg)? "" : cfg.getName()); //NOI18N
+        put(DefaultPropertiesDescriptor.CONFIG_ACTIVE, cfg == null || configHelper.getDefaultConfiguration().equals(cfg)? "" : cfg.getDisplayName()); //NOI18N
     }
     
     public synchronized ProjectConfiguration getActiveConfiguration() {
         final String cfg = (String)get(DefaultPropertiesDescriptor.CONFIG_ACTIVE);
         if (devConfigs == null || cfg == null || cfg.length() == 0) return configHelper.getDefaultConfiguration();
         for (int i=0; i<devConfigs.length; i++)
-            if (cfg.equals(devConfigs[i].getName())) return devConfigs[i];
+            if (cfg.equals(devConfigs[i].getDisplayName())) return devConfigs[i];
         return configHelper.getDefaultConfiguration();
     }
     
@@ -208,8 +208,8 @@ public class J2MEProjectProperties implements ProjectProperties {
     public List<String> getAllIdentifiers() {
         final ArrayList<String> l = new ArrayList<String>();
         for (int i=0; i<devConfigs.length; i++) {
-            l.add(devConfigs[i].getName());
-            final Map<String,Object> abs = (Map<String,Object>)get(configHelper.getDefaultConfiguration().equals(devConfigs[i]) ? DefaultPropertiesDescriptor.ABILITIES : CONFIG_PREFIX + devConfigs[i].getName() + '.' + DefaultPropertiesDescriptor.ABILITIES);
+            l.add(devConfigs[i].getDisplayName());
+            final Map<String,Object> abs = (Map<String,Object>)get(configHelper.getDefaultConfiguration().equals(devConfigs[i]) ? DefaultPropertiesDescriptor.ABILITIES : CONFIG_PREFIX + devConfigs[i].getDisplayName() + '.' + DefaultPropertiesDescriptor.ABILITIES);
             if (abs != null) l.addAll(abs.keySet());
         }
         return l;
@@ -230,7 +230,7 @@ public class J2MEProjectProperties implements ProjectProperties {
         // Read the properties from the project
         EditableProperties sharedProps = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         EditableProperties privateProps = antProjectHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        final ProjectConfiguration cfgs[] = configHelper.getConfigurations();
+        final ProjectConfiguration cfgs[] = configHelper.getConfigurations().toArray(new ProjectConfiguration[0]);
         final ProjectConfiguration confs[] = new ProjectConfiguration[cfgs.length];
         System.arraycopy(cfgs, 0, confs, 0, cfgs.length);
         setConfigurations(confs);
@@ -241,7 +241,7 @@ public class J2MEProjectProperties implements ProjectProperties {
             String raw = ep.getProperty( pd.getName());
             properties.put( pd.getName(), new PropertyInfo( pd, raw == null ? pd.getDefaultValue() : raw));
             for (int j=0; j<devConfigs.length; j++) {
-                final PropertyDescriptor clone = pd.clone(CONFIG_PREFIX + devConfigs[j].getName() + '.' + pd.getName());
+                final PropertyDescriptor clone = pd.clone(CONFIG_PREFIX + devConfigs[j].getDisplayName() + '.' + pd.getName());
                 raw = ep.getProperty(clone.getName());
                 if (raw != null) {
                     properties.put(clone.getName(), new PropertyInfo(clone, raw));
@@ -272,7 +272,7 @@ public class J2MEProjectProperties implements ProjectProperties {
                     EditableProperties sharedProps = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = antProjectHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     
-                    final ProjectConfiguration configs[] = configHelper.getConfigurations();
+                    final ProjectConfiguration configs[] = configHelper.getConfigurations().toArray(new ProjectConfiguration[0]);
                     final HashSet<ProjectConfiguration> newConfigs = new HashSet<ProjectConfiguration>(Arrays.asList(devConfigs));
                     for (int i=0; i<configs.length; i++) {
                         if (!newConfigs.remove(configs[i])) {
@@ -280,7 +280,7 @@ public class J2MEProjectProperties implements ProjectProperties {
                         }
                     }
                     for (ProjectConfiguration cfg:newConfigs) {
-                        configHelper.addConfiguration(cfg.getName());
+                        configHelper.addConfiguration(cfg.getDisplayName());
                     }
                     
                     // Set the changed properties

@@ -25,7 +25,7 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.mobility.project.PropertyDescriptor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.cldcplatform.PlatformConvertor;
@@ -192,10 +192,10 @@ public class J2MEProjectGenerator {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep2);
         final Project prj = ProjectManager.getDefault().findProject(projectLocation);
         final ProjectConfigurationsHelper oldCfgHlp = oldProject.getLookup().lookup(ProjectConfigurationsHelper.class);
-        final ProjectConfiguration cfgs[] = oldCfgHlp.getConfigurations();
+        final ProjectConfiguration cfgs[] = oldCfgHlp.getConfigurations().toArray(new ProjectConfiguration[0]);
         final ProjectConfigurationsHelper cfgHlp = prj.getLookup().lookup(ProjectConfigurationsHelper.class);
         for (int a = 0; a < cfgs.length; a++) {
-            if (!oldCfgHlp.getDefaultConfiguration().equals(cfgs[a])) cfgHlp.addConfiguration(cfgs[a].getName());
+            if (!oldCfgHlp.getDefaultConfiguration().equals(cfgs[a])) cfgHlp.addConfiguration(cfgs[a].getDisplayName());
         }
         final ReferenceHelper oldRefHelper = oldProject.getLookup().lookup(ReferenceHelper.class);
         final ReferenceHelper refHelper = prj.getLookup().lookup(ReferenceHelper.class);
@@ -980,7 +980,7 @@ public class J2MEProjectGenerator {
             icon = ""; // NOI18N
         
         final ProjectConfigurationsHelper confHelper = project.getLookup().lookup(ProjectConfigurationsHelper.class);
-        final ProjectConfiguration[] confs = confHelper.getConfigurations();
+        final ProjectConfiguration[] confs = confHelper.getConfigurations().toArray(new ProjectConfiguration[0]);
         final EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         
         final String defaultValue = ep.getProperty(DefaultPropertiesDescriptor.MANIFEST_MIDLETS);
@@ -990,7 +990,7 @@ public class J2MEProjectGenerator {
         
         for (int i = 0; i < confs.length; i++) {
             final ProjectConfiguration conf = confs[i];
-            final String confName = conf.getName();
+            final String confName = conf.getDisplayName();
             final String propertyName = VisualPropertySupport.translatePropertyName(confName, DefaultPropertiesDescriptor.MANIFEST_MIDLETS, false);
             if (propertyName == null)
                 continue;

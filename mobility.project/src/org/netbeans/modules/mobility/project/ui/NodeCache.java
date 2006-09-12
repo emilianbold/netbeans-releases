@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
@@ -75,12 +75,12 @@ class NodeCache implements PropertyChangeListener
     
     public Node[] getNodes(ProjectConfiguration cfg)
     {
-        Collection<Node> res=nodes.get(cfg.getName());
+        Collection<Node> res=nodes.get(cfg.getDisplayName());
         if (res != null)
             return res.toArray(new Node[res.size()]);
         else
         {
-            ProjectConfiguration newCfg = project.getConfigurationHelper().getConfigurationByName(cfg.getName());
+            ProjectConfiguration newCfg = project.getConfigurationHelper().getConfigurationByName(cfg.getDisplayName());
             if (newCfg != null)
             {
                 addNode(newCfg);
@@ -92,12 +92,12 @@ class NodeCache implements PropertyChangeListener
     
     public Node[] getClones(ProjectConfiguration cfg)
     {
-        Collection<Node> res=clones.get(cfg.getName());
+        Collection<Node> res=clones.get(cfg.getDisplayName());
         if (res != null)
             return res.toArray(new Node[res.size()]);
         else
         {
-            ProjectConfiguration newCfg = project.getConfigurationHelper().getConfigurationByName(cfg.getName());
+            ProjectConfiguration newCfg = project.getConfigurationHelper().getConfigurationByName(cfg.getDisplayName());
             if (newCfg != null)
             {
                 addNode(newCfg);
@@ -113,13 +113,13 @@ class NodeCache implements PropertyChangeListener
         final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);        
         
         /* Check for default lib config */
-        if (cfg.getName().equals(project.getConfigurationHelper().getDefaultConfiguration().getName()))
+        if (cfg.getDisplayName().equals(project.getConfigurationHelper().getDefaultConfiguration().getDisplayName()))
         {
             libs=helper.getStandardPropertyEvaluator().getProperty(DefaultPropertiesDescriptor.LIBS_CLASSPATH);
         }
         else
         {
-            libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+cfg.getName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+            libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+cfg.getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
         }
         return libs;
     }
@@ -137,7 +137,7 @@ class NodeCache implements PropertyChangeListener
         if (gray)
         {
             resNode=NodeFactory.resourcesNode(resNodes.toArray(subNodes), lookup,
-                    "Resources","Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getName(),PLATFORM_ICON);
+                    "Resources","Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getDisplayName(),PLATFORM_ICON);
         }
         else
         {
@@ -145,20 +145,20 @@ class NodeCache implements PropertyChangeListener
         }
         resNode.setValue("gray",gray);
         allNodes.add(resNode);        
-        nodes.put(cfg.getName(),allNodes);
+        nodes.put(cfg.getDisplayName(),allNodes);
         
         /* we must do clones of node to add it to another branch of the logical view */
         final ArrayList<Node> list=new ArrayList<Node>(allNodes.size());
         for (Node node : allNodes)
             list.add(node.cloneNode());
-        clones.put(cfg.getName(),list);
+        clones.put(cfg.getDisplayName(),list);
     }
     
     public void update(final String name)
     {
         final ProjectConfiguration cfg=new ProjectConfiguration()
         {
-            public String getName()
+            public String getDisplayName()
             {
                 return name;
             }
@@ -184,7 +184,7 @@ class NodeCache implements PropertyChangeListener
                     resNode.getChildren().add(nodes);
                     if (gray)
                     {
-                        resNode.setDisplayName("Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getName());
+                        resNode.setDisplayName("Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getDisplayName());
                         ((ActionNode)resNode).setActions(null);
                     }
                     else
@@ -225,8 +225,8 @@ class NodeCache implements PropertyChangeListener
             set.removeAll(newV);
             for (ProjectConfiguration cfg:set)
             {
-                nodes.remove(cfg.getName());
-                clones.remove(cfg.getName());
+                nodes.remove(cfg.getDisplayName());
+                clones.remove(cfg.getDisplayName());
             }
         }    
     }

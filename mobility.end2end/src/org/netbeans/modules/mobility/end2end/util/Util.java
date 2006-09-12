@@ -260,7 +260,7 @@ public final class Util {
         final AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
         final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         final ProjectConfigurationsHelper confs = project.getConfigurationHelper();
-        final String activeConfiguration = confs.getActiveConfiguration() != confs.getDefaultConfiguration() ? confs.getActiveConfiguration().getName() : null;
+        final String activeConfiguration = confs.getActiveConfiguration() != confs.getDefaultConfiguration() ? confs.getActiveConfiguration().getDisplayName() : null;
         
         return evaluateProperty(ep, property, activeConfiguration);
     }

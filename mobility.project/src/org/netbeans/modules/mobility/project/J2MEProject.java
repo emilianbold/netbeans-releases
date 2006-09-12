@@ -50,7 +50,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtender;
 import org.netbeans.modules.mobility.project.queries.UnitTestForSourceQueryImpl;
@@ -184,7 +184,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         addRoots(helper);
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
-        configHelper = new ProjectConfigurationsHelper(helper, aux);
+        configHelper = new ProjectConfigurationsHelper(helper, aux, this);
         genFilesHelper = new GeneratedFilesHelper(helper);
         midletsCacheHelper = new MIDletsCacheHelper(helper, configHelper);
         
@@ -486,10 +486,10 @@ public final class J2MEProject implements Project, AntProjectListener {
         }
         
         public AntArtifact[] getBuildArtifacts() {
-            final ProjectConfiguration cfgs[] = configHelper.getConfigurations();
+            final ProjectConfiguration cfgs[] = configHelper.getConfigurations().toArray(new ProjectConfiguration[0]);
             AntArtifact art[] = new AntArtifact[cfgs.length];
             for (int i=0; i<cfgs.length; i++) {
-                art[i] = new J2MEAntArtifact(configHelper.getDefaultConfiguration().equals(cfgs[i]) ? null : cfgs[i].getName());
+                art[i] = new J2MEAntArtifact(configHelper.getDefaultConfiguration().equals(cfgs[i]) ? null : cfgs[i].getDisplayName());
             }
             return art;
         }

@@ -36,7 +36,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.mobility.project.J2MEProjectUtils;
 import org.netbeans.modules.mobility.project.J2MEProject;
@@ -214,9 +214,9 @@ public final class PPCompletionProvider implements CompletionProvider {
             
             this.pch = J2MEProjectUtils.getCfgHelperForDoc(component.getDocument());
             
-            final ProjectConfiguration devConfigs[] = pch.getConfigurations();
+            final ProjectConfiguration devConfigs[] = pch.getConfigurations().toArray(new ProjectConfiguration[0]);
             for (int i = 0; i < devConfigs.length; i++) {
-                variableItems.add(new PPVariableCompletionItem(devConfigs[i].getName(),
+                variableItems.add(new PPVariableCompletionItem(devConfigs[i].getDisplayName(),
                         NbBundle.getMessage(PPCompletionProvider.class, "DESC_CONFIG_CC")));
                 final Map<String,String> varMap = pch.getAbilitiesFor(devConfigs[i]);
                 for ( final String varName : varMap.keySet() ) {

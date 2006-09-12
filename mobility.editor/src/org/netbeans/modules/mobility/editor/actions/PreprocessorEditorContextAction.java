@@ -28,7 +28,7 @@ package org.netbeans.modules.mobility.editor.actions;
 import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.project.configurations.ProjectConfigurationsProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.mobility.antext.preprocessor.PPBlockInfo;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
@@ -45,9 +45,9 @@ public abstract class PreprocessorEditorContextAction extends BaseAction {
         super(name);
     }
     
-    public abstract String getPopupMenuText(ProjectConfigurationsProvider cfgProvider, ArrayList<PPLine> preprocessorLineList, JTextComponent target);
+    public abstract String getPopupMenuText(ProjectConfigurationProvider cfgProvider, ArrayList<PPLine> preprocessorLineList, JTextComponent target);
     
-    public abstract boolean isEnabled(ProjectConfigurationsProvider cfgProvider, ArrayList<PPLine> preprocessorLineList, JTextComponent target);
+    public abstract boolean isEnabled(ProjectConfigurationProvider cfgProvider, ArrayList<PPLine> preprocessorLineList, JTextComponent target);
     
     protected int getSelectionStartLine(final JTextComponent c) {
         if (c == null || !(c.getDocument() instanceof StyledDocument)) return 0;

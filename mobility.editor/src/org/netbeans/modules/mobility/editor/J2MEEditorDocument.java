@@ -178,7 +178,7 @@ public class J2MEEditorDocument extends NbEditorDocument {
                 final ProjectConfigurationsHelper configHelper = p.getLookup().lookup(ProjectConfigurationsHelper.class);
                 if (configHelper == null) return;
                 final HashMap<String,String> activeIdentifiers=new HashMap<String,String>(configHelper.getActiveAbilities());
-                activeIdentifiers.put(configHelper.getActiveConfiguration().getName(),null);
+                activeIdentifiers.put(configHelper.getActiveConfiguration().getDisplayName(),null);
                 try {
                     final CommentingPreProcessor cpp = new CommentingPreProcessor(new PPDocumentSource(doc), null, activeIdentifiers);
                     cpp.run();

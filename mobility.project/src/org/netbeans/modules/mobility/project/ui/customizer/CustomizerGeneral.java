@@ -29,7 +29,7 @@ import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.ui.CyclicDependencyWarningPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
@@ -81,7 +81,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel {
         addSubprojects(DefaultPropertiesDescriptor.LIBS_CLASSPATH, subprojects);
         final ProjectConfiguration cfg[] = props.getConfigurations();
         for (int i= 0; i<cfg.length; i++) {
-            addSubprojects("configs." + cfg[i].getName() + '.' + DefaultPropertiesDescriptor.LIBS_CLASSPATH, subprojects);
+            addSubprojects("configs." + cfg[i].getDisplayName() + '.' + DefaultPropertiesDescriptor.LIBS_CLASSPATH, subprojects);
         }
         
         // Replace projects in the list with formated names

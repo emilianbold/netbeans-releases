@@ -38,7 +38,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
 
-import org.netbeans.api.project.configurations.ProjectConfigurationsProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -109,7 +109,7 @@ public class J2MEKit extends JavaKit {
         return menu;
     }
     
-    private static void addAction(final BaseKit kit, final ProjectConfigurationsProvider cfgProvider, final ArrayList<PPLine> preprocessorBlockList, final JTextComponent target, final JMenu menu, final String actionName) {
+    private static void addAction(final BaseKit kit, final ProjectConfigurationProvider cfgProvider, final ArrayList<PPLine> preprocessorBlockList, final JTextComponent target, final JMenu menu, final String actionName) {
         final Action a = kit.getActionByName(actionName);
         if (a != null) {
             if (a instanceof PreprocessorEditorContextAction) {

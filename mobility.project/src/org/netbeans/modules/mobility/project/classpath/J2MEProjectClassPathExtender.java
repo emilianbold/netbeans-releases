@@ -21,7 +21,7 @@ package org.netbeans.modules.mobility.project.classpath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
@@ -78,10 +78,10 @@ public class J2MEProjectClassPathExtender implements ProjectClassPathExtender {
             public void run() {
                 final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 
-                final ProjectConfiguration[] configurations = confHelper.getConfigurations();
+                final ProjectConfiguration[] configurations = confHelper.getConfigurations().toArray(new ProjectConfiguration[0]);
                 if (configurations != null)
                     for (int i = 0; i < configurations.length; i++) {
-                    final String propName = "configs." + configurations[i].getName() + "." + property;
+                    final String propName = "configs." + configurations[i].getDisplayName() + "." + property;
                     if (props.containsKey(propName))
                         properties.add(propName);
                     }

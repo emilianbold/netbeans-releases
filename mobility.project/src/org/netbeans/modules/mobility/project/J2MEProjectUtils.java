@@ -34,7 +34,7 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.configurations.ProjectConfigurationsProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
@@ -92,10 +92,10 @@ public class J2MEProjectUtils {
         return null;
     }
     
-    public static ProjectConfigurationsProvider getConfigProviderForDoc(final Document doc) {
+    public static ProjectConfigurationProvider getConfigProviderForDoc(final Document doc) {
         final Project p = getProjectForDocument(doc);
         if (p != null) {
-            return p.getLookup().lookup(ProjectConfigurationsProvider.class);
+            return p.getLookup().lookup(ProjectConfigurationProvider.class);
         }
         return null;
         

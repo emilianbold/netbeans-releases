@@ -46,8 +46,9 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ui.customizer.CloneConfigurationPanel;
@@ -320,19 +321,19 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                     {
                         cfg=node.getLookup().lookup(ProjectConfiguration.class);
                         //Check if configuration with the same name already exist
-                        ProjectConfiguration exst=projectDrop.getConfigurationHelper().getConfigurationByName(cfg.getName());
+                        ProjectConfiguration exst=projectDrop.getConfigurationHelper().getConfigurationByName(cfg.getDisplayName());
                         if (exst != null)
                         {
                             for (ProjectConfiguration name : allNames)
-                                allStrNames.add(name.getName());
+                                allStrNames.add(name.getDisplayName());
                             
                             final CloneConfigurationPanel ccp = new CloneConfigurationPanel(allStrNames);
-                            final DialogDescriptor dd = new DialogDescriptor(ccp, cfg.getName() + " : " + NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
+                            final DialogDescriptor dd = new DialogDescriptor(ccp, cfg.getDisplayName() + " : " + NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
                             ccp.setDialogDescriptor(dd);
                             final String newName = NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) ? ccp.getName() : null;
                             if (newName != null) {
                                 cfg = new ProjectConfiguration() {
-                                    public String getName() {
+                                    public String getDisplayName() {
                                         return newName;
                                     }
                                 };
@@ -341,10 +342,10 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                                 continue;
                         }
                         final String keys[] = j2meProperties.keySet().toArray(new String[j2meProperties.size()]);
-                        final String prefix = J2MEProjectProperties.CONFIG_PREFIX + cfg.getName();
+                        final String prefix = J2MEProjectProperties.CONFIG_PREFIX + cfg.getDisplayName();
                         for (int i=0; i<keys.length; i++) {
                             if (keys[i].startsWith(prefix))
-                                dropProperties.put(J2MEProjectProperties.CONFIG_PREFIX + cfg.getName() + keys[i].substring(prefix.length()), j2meProperties.get(keys[i]));
+                                dropProperties.put(J2MEProjectProperties.CONFIG_PREFIX + cfg.getDisplayName() + keys[i].substring(prefix.length()), j2meProperties.get(keys[i]));
                         }
 
                         
@@ -381,7 +382,13 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                 {
                     public void run() {  
                         assert lcfg != null;
-                        projectDrop.getConfigurationHelper().setActiveConfiguration(lcfg);
+                        try {
+                            projectDrop.getConfigurationHelper().setActiveConfiguration(lcfg);
+                        } catch (IllegalArgumentException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        } 
                     }
                 });
                 return tr;
@@ -625,11 +632,11 @@ class CfgNode extends ActionNode implements AntProjectListener, PropertyChangeLi
         }
         else
         {
-            libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+cfg.getName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
+            libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX+cfg.getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH);
             if (libs==null)
                 libs=DefaultPropertiesDescriptor.LIBS_CLASSPATH;
             else
-                libs=J2MEProjectProperties.CONFIG_PREFIX+cfg.getName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH;
+                libs=J2MEProjectProperties.CONFIG_PREFIX+cfg.getDisplayName()+"."+DefaultPropertiesDescriptor.LIBS_CLASSPATH;
         }
         return libs;
     }
@@ -641,7 +648,7 @@ class CfgNode extends ActionNode implements AntProjectListener, PropertyChangeLi
         if (project.getConfigurationHelper().getDefaultConfiguration().equals(cfg)) {
             s[2] = DefaultPropertiesDescriptor.SIGN_KEYSTORE;
         } else {
-            s[2] = J2MEProjectProperties.CONFIG_PREFIX + cfg.getName() + "." + DefaultPropertiesDescriptor.SIGN_KEYSTORE; //NOI18N
+            s[2] = J2MEProjectProperties.CONFIG_PREFIX + cfg.getDisplayName() + "." + DefaultPropertiesDescriptor.SIGN_KEYSTORE; //NOI18N
         }
         return s;
     }
@@ -659,11 +666,11 @@ class CfgNode extends ActionNode implements AntProjectListener, PropertyChangeLi
         }
         else
         {
-            libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX + cfg.getName() + "." + DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
+            libs=helper.getStandardPropertyEvaluator().getProperty(J2MEProjectProperties.CONFIG_PREFIX + cfg.getDisplayName() + "." + DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
             if (libs==null)
                 libs=DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
             else
-                libs=J2MEProjectProperties.CONFIG_PREFIX + cfg.getName() + "." + DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
+                libs=J2MEProjectProperties.CONFIG_PREFIX + cfg.getDisplayName() + "." + DefaultPropertiesDescriptor.PLATFORM_ACTIVE;
         }
         return libs;
     }

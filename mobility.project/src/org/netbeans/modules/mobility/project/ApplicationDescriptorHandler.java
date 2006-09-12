@@ -29,7 +29,7 @@ import java.util.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.configurations.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
@@ -121,12 +121,12 @@ public class ApplicationDescriptorHandler {
         final ProjectConfigurationsHelper pch = project.getLookup().lookup(ProjectConfigurationsHelper.class);
         if (helper == null || pch == null) return;
         final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        final ProjectConfiguration cfg[] = pch.getConfigurations();
+        final ProjectConfiguration cfg[] = pch.getConfigurations().toArray(new ProjectConfiguration[0]);
         boolean modifiedProj = false;
         final HashMap<String,String> newMidlets = new HashMap<String,String>();
         for (int i=0; i<cfg.length; i++) {
             boolean modifiedProp = false;
-            final String propName = pch.getDefaultConfiguration().equals(cfg[i]) ? DefaultPropertiesDescriptor.MANIFEST_MIDLETS : J2MEProjectProperties.CONFIG_PREFIX + cfg[i].getName() + '.' + DefaultPropertiesDescriptor.MANIFEST_MIDLETS;
+            final String propName = pch.getDefaultConfiguration().equals(cfg[i]) ? DefaultPropertiesDescriptor.MANIFEST_MIDLETS : J2MEProjectProperties.CONFIG_PREFIX + cfg[i].getDisplayName() + '.' + DefaultPropertiesDescriptor.MANIFEST_MIDLETS;
             final String value = props.getProperty(propName);
             if (value != null) {
                 final HashMap<String,String> midlets = (HashMap<String,String>)DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(value, null, null);
