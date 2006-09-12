@@ -167,7 +167,7 @@ NodeActionsProvider {
     
     public Object getValueAt (Object node, String columnID) throws 
     UnknownTypeException {
-        if (columnID.equals ("use")) {
+        if ("use".equals (columnID)) {
             if (node instanceof String)
                 return Boolean.valueOf (
                     isEnabled ((String) node)
@@ -178,7 +178,7 @@ NodeActionsProvider {
     
     public boolean isReadOnly (Object node, String columnID) throws 
     UnknownTypeException {
-        if ( columnID.equals ("use") &&
+        if ( "use".equals (columnID) &&
              (node instanceof String))
             return false;
         throw new UnknownTypeException (node);
@@ -186,7 +186,7 @@ NodeActionsProvider {
     
     public void setValueAt (Object node, String columnID, Object value) 
     throws UnknownTypeException {
-        if (columnID.equals ("use")) {
+        if ("use".equals (columnID)) {
             if (node instanceof String) {
                 setEnabled ((String) node, ((Boolean) value).booleanValue ());
                 return;

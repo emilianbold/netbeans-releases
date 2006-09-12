@@ -142,7 +142,7 @@ public class BreakpointsNodeModel implements NodeModel {
             String className = "";
             String[] fs = b.getClassFilters ();
             if (fs.length > 0) className = fs [0];
-            if (b.getMethodName ().equals (""))
+            if ("".equals (b.getMethodName ()))
                 return bold (b,
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,
@@ -234,7 +234,7 @@ public class BreakpointsNodeModel implements NodeModel {
                     BreakpointsNodeModel.class,
                     "CTL_Line_Breakpoint",
                     EditorContextBridge.getFileName ((LineBreakpoint) o),
-                    "" + ((LineBreakpoint) o).getLineNumber ()
+                    String.valueOf(((LineBreakpoint) o).getLineNumber ())
                 );
         } else
         if (o instanceof ThreadBreakpoint) {
@@ -280,7 +280,7 @@ public class BreakpointsNodeModel implements NodeModel {
             String className = "";
             String[] fs = b.getClassFilters ();
             if (fs.length > 0) className = fs [0];
-            if (b.getMethodName ().equals (""))
+            if ("".equals (b.getMethodName ()))
                 return
                     NbBundle.getMessage (
                         BreakpointsNodeModel.class,

@@ -325,7 +325,7 @@ public class EditorContextBridge {
         if (lineNumber < 1) return null;
         String condition = b.getCondition ();
         boolean isConditional = (condition != null) &&
-            !condition.trim ().equals (""); // NOI18N
+            !"".equals (condition.trim ()); // NOI18N
         String annotationType = b.isEnabled () ?
             (isConditional ? EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE :
                              EditorContext.BREAKPOINT_ANNOTATION_TYPE) :

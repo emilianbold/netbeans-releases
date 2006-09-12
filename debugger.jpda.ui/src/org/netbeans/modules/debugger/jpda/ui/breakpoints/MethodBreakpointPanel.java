@@ -78,7 +78,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             tfPackageName.setText (className.substring (0, i));
             tfClassName.setText (className.substring (i + 1, className.length ()));
         }
-        if (b.getMethodName ().equals ("")) {
+        if ("".equals (b.getMethodName ())) {
             tfMethodName.setText (org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "Method_Breakpoint_ALL_METHODS"));
             cbAllMethods.setSelected (true);
             tfMethodName.setEnabled (false);

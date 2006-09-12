@@ -165,7 +165,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             fs [1] = ov.getField ("value");
             return fs;
         }
-        if ( type.equals ("java.beans.PropertyChangeSupport")
+        if ( "java.beans.PropertyChangeSupport".equals (type)
         ) 
             try {
                 ObjectVariable ov = (ObjectVariable) variable;
@@ -198,7 +198,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
 //            } catch (NoSuchMethodException e) {
 //                e.printStackTrace ();
 //            }
-        if ( type.equals ("java.lang.ref.WeakReference")
+        if ( "java.lang.ref.WeakReference".equals (type)
         ) {
             ObjectVariable ov = (ObjectVariable) variable;
             return new Object [] {ov.getField ("referent")};
@@ -282,10 +282,10 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         else if (isMapEntryType(type)) {
             return 2;
         }
-        else if (type.equals("java.beans.PropertyChangeSupport")) {
+        else if ("java.beans.PropertyChangeSupport".equals(type)) {
             return getChildren (original, variable, 0, 0).length;
         }
-        else if (type.equals("java.lang.ref.WeakReference")) {
+        else if ("java.lang.ref.WeakReference".equals(type)) {
             return 1;
         }
         return original.getChildrenCount(variable);

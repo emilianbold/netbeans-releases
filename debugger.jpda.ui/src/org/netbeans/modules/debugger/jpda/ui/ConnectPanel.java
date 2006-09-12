@@ -457,8 +457,8 @@ Controller, ActionListener {
             String paramName = tf.getName ();
             String paramValue = tf.getText ();
             Argument a = (Argument) args.get (paramName);
-            while ( ((!a.isValid (paramValue)) && (!paramValue.equals (""))) ||
-                    ( paramValue.equals ("") && a.mustSpecify () )
+            while ( ((!a.isValid (paramValue)) && (!"".equals (paramValue))) ||
+                    ( "".equals (paramValue) && a.mustSpecify () )
             ) {
                 NotifyDescriptor.InputLine in = null;
                 String label = translate (a.name());
@@ -470,7 +470,7 @@ Controller, ActionListener {
                         label = label.substring(0, amp) + label.substring(amp + 1);
                     }
                 }
-                if ( paramValue.equals ("") && a.mustSpecify ())
+                if ( "".equals (paramValue) && a.mustSpecify ())
                     in = new NotifyDescriptor.InputLine (
                         label,
                         NbBundle.getMessage (

@@ -137,7 +137,7 @@ PropertyChangeListener {
 //                        where,
                         new String[] {
                             c.getHostName (),
-                            "" + c.getPortNumber ()
+                            String.valueOf(c.getPortNumber ())
                         },
                         null
                     );
@@ -183,7 +183,7 @@ PropertyChangeListener {
                         "CTL_Listening_socket",
 //                        where,
                         new String[] {
-                            "" + c.getPortNumber ()
+                            String.valueOf(c.getPortNumber ())
                         },
                         null
                     );
@@ -283,7 +283,7 @@ PropertyChangeListener {
                             threadName,
                             sourceName,
                             methodName,
-                            "" + lineNumber
+                            String.valueOf(lineNumber)
                         },
                         line
                     );
@@ -313,7 +313,7 @@ PropertyChangeListener {
                             threadName,
                             className,
                             methodName,
-                            lineNumber > 0 ? "" + lineNumber : ""
+                            lineNumber > 0 ? String.valueOf(lineNumber) : ""
                         },
                         null
                     );

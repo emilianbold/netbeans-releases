@@ -338,7 +338,7 @@ public class Evaluator extends javax.swing.JPanel {
         
         public void propertyChange(PropertyChangeEvent evt) {
             Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
-            if (currentSession != null && currentSession.getCurrentLanguage().equals("Java")) {
+            if (currentSession != null && "Java".equals(currentSession.getCurrentLanguage())) {
                 if (autoClosed) {
                     DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
                     if (de == null) return ;
@@ -360,7 +360,7 @@ public class Evaluator extends javax.swing.JPanel {
     private class EvaluateTask implements Runnable {
         public void run() {
             String exp = getExpression();
-            if (exp == null || exp.equals("")) {
+            if (exp == null || "".equals(exp)) {
                 //System.out.println("Can not evaluate '"+exp+"'");
                 return ;
             }

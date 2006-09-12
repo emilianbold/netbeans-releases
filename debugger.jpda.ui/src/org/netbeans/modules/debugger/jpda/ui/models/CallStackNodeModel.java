@@ -148,7 +148,7 @@ public class CallStackNodeModel implements NodeModel {
         String fileName = l ? 
             sf.getClassName () :
             BreakpointsNodeModel.getShort (sf.getClassName ());
-        if (language.equals ("Java"))
+        if ("Java".equals (language))
             fileName += "." + sf.getMethodName ();
         else
             try {

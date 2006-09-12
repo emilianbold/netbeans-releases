@@ -39,7 +39,7 @@ public class CallStackTableModel implements TableModel, Constants {
     public Object getValueAt (Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof CallStackFrame) {
-            if (columnID.equals (CALL_STACK_FRAME_LOCATION_COLUMN_ID))
+            if (CALL_STACK_FRAME_LOCATION_COLUMN_ID.equals (columnID))
                 try {
                     return ((CallStackFrame) row).getSourceName (
                         null // default stratumn for current csf is used
@@ -57,7 +57,7 @@ public class CallStackTableModel implements TableModel, Constants {
     public boolean isReadOnly (Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof CallStackFrame) {
-            if (columnID.equals (CALL_STACK_FRAME_LOCATION_COLUMN_ID))
+            if (CALL_STACK_FRAME_LOCATION_COLUMN_ID.equals (columnID))
                 return true;
         }
         throw new UnknownTypeException (row);

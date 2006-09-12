@@ -55,13 +55,13 @@ PropertyChangeListener {
     public Object getValueAt (TableModel original, Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof Session && isJPDASession((Session) row)) {
-            if (columnID.equals (SESSION_STATE_COLUMN_ID))
+            if (SESSION_STATE_COLUMN_ID.equals (columnID))
                 return getSessionState ((Session) row);
             else
-            if (columnID.equals (SESSION_LANGUAGE_COLUMN_ID))
+            if (SESSION_LANGUAGE_COLUMN_ID.equals (columnID))
                 return row;
             else
-            if (columnID.equals (SESSION_HOST_NAME_COLUMN_ID))
+            if (SESSION_HOST_NAME_COLUMN_ID.equals (columnID))
                 return ((Session) row).getLocationName ();
             else
                 throw new UnknownTypeException (row);
@@ -72,13 +72,13 @@ PropertyChangeListener {
     public boolean isReadOnly (TableModel original, Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof Session && isJPDASession((Session) row)) {
-            if (columnID.equals (SESSION_STATE_COLUMN_ID))
+            if (SESSION_STATE_COLUMN_ID.equals (columnID))
                 return true;
             else
-            if (columnID.equals (SESSION_LANGUAGE_COLUMN_ID))
+            if (SESSION_LANGUAGE_COLUMN_ID.equals (columnID))
                 return false;
             else
-            if (columnID.equals (SESSION_HOST_NAME_COLUMN_ID))
+            if (SESSION_HOST_NAME_COLUMN_ID.equals (columnID))
                 return true;
             else
                 throw new UnknownTypeException (row);

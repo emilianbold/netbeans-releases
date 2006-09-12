@@ -199,7 +199,7 @@ PropertyChangeListener {
         String language = DebuggerManager.getDebuggerManager ().
             getCurrentSession ().getCurrentLanguage ();
         String methodName = t.getMethodName ();
-        if (methodName.equals ("")) methodName = "?";
+        if ("".equals (methodName)) methodName = "?";
         // replace $ by \$
         methodName = dollarEscapePattern.matcher (methodName).replaceAll 
             ("\\\\\\$");

@@ -54,8 +54,8 @@ public class VariablesTableModel implements TableModel, Constants {
     public Object getValueAt (Object row, String columnID) throws 
     UnknownTypeException {
         
-        if ( columnID.equals (LOCALS_TO_STRING_COLUMN_ID) ||
-             columnID.equals (WATCH_TO_STRING_COLUMN_ID)
+        if ( LOCALS_TO_STRING_COLUMN_ID.equals (columnID) ||
+             WATCH_TO_STRING_COLUMN_ID.equals (columnID)
         ) {
             if (row instanceof Super)
                 return "";
@@ -71,8 +71,8 @@ public class VariablesTableModel implements TableModel, Constants {
             if (row instanceof Variable)
                 return ((Variable) row).getValue ();
         } else
-        if ( columnID.equals (LOCALS_TYPE_COLUMN_ID) ||
-             columnID.equals (WATCH_TYPE_COLUMN_ID)
+        if ( LOCALS_TYPE_COLUMN_ID.equals (columnID) ||
+             WATCH_TYPE_COLUMN_ID.equals (columnID)
         ) {
             if (row instanceof Variable)
                 return getShort (((Variable) row).getType ());
@@ -83,8 +83,8 @@ public class VariablesTableModel implements TableModel, Constants {
                 }
             }
         } else
-        if ( columnID.equals (LOCALS_VALUE_COLUMN_ID) ||
-             columnID.equals (WATCH_VALUE_COLUMN_ID)
+        if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
+             WATCH_VALUE_COLUMN_ID.equals (columnID)
         ) {
             if (row instanceof JPDAWatch) {
                 JPDAWatch w = (JPDAWatch) row;
@@ -108,13 +108,13 @@ public class VariablesTableModel implements TableModel, Constants {
     public boolean isReadOnly (Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof Variable) {
-            if ( columnID.equals (LOCALS_TO_STRING_COLUMN_ID) ||
-                 columnID.equals (WATCH_TO_STRING_COLUMN_ID) ||
-                 columnID.equals (LOCALS_TYPE_COLUMN_ID) ||
-                 columnID.equals (WATCH_TYPE_COLUMN_ID)
+            if ( LOCALS_TO_STRING_COLUMN_ID.equals (columnID) ||
+                 WATCH_TO_STRING_COLUMN_ID.equals (columnID) ||
+                 LOCALS_TYPE_COLUMN_ID.equals (columnID) ||
+                 WATCH_TYPE_COLUMN_ID.equals (columnID)
             ) return true;
-            if ( columnID.equals (LOCALS_VALUE_COLUMN_ID) ||
-                 columnID.equals (WATCH_VALUE_COLUMN_ID) 
+            if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
+                 WATCH_VALUE_COLUMN_ID.equals (columnID) 
             ) {
                 if (row instanceof This)
                     return true;
@@ -140,7 +140,7 @@ public class VariablesTableModel implements TableModel, Constants {
     public void setValueAt (Object row, String columnID, Object value) 
     throws UnknownTypeException {
         if (row instanceof LocalVariable) {
-            if (columnID.equals (LOCALS_VALUE_COLUMN_ID)) {
+            if (LOCALS_VALUE_COLUMN_ID.equals (columnID)) {
                 try {
                     ((LocalVariable) row).setValue ((String) value);
                 } catch (InvalidExpressionException e) {
@@ -155,8 +155,8 @@ public class VariablesTableModel implements TableModel, Constants {
             }
         }
         if (row instanceof Field) {
-            if ( columnID.equals (LOCALS_VALUE_COLUMN_ID) ||
-                 columnID.equals (WATCH_VALUE_COLUMN_ID)
+            if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
+                 WATCH_VALUE_COLUMN_ID.equals (columnID)
             ) {
                 try {
                     ((Field) row).setValue ((String) value);
@@ -172,8 +172,8 @@ public class VariablesTableModel implements TableModel, Constants {
             }
         }
         if (row instanceof JPDAWatch) {
-            if ( columnID.equals (LOCALS_VALUE_COLUMN_ID) ||
-                 columnID.equals (WATCH_VALUE_COLUMN_ID)
+            if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
+                 WATCH_VALUE_COLUMN_ID.equals (columnID)
             ) {
                 try {
                     ((JPDAWatch) row).setValue ((String) value);

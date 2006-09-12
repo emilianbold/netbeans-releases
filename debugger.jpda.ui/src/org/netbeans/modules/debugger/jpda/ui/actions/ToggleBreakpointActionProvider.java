@@ -98,7 +98,7 @@ implements PropertyChangeListener {
         // 1) get source name & line number
         int ln = EditorContextBridge.getCurrentLineNumber ();
         String url = EditorContextBridge.getCurrentURL ();
-        if (url.trim ().equals ("")) return;
+        if ("".equals (url.trim ())) return;
         
         // 2) find and remove existing line breakpoint
         LineBreakpoint lb = getBreakpointAnnotationListener ().findBreakpoint (

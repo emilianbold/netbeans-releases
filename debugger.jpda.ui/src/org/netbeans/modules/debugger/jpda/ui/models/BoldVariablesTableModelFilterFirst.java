@@ -51,16 +51,16 @@ Constants {
         String columnID
     ) throws UnknownTypeException {
         Object result = original.getValueAt (row, columnID);
-        if ( columnID.equals (LOCALS_TYPE_COLUMN_ID) ||
-             columnID.equals (WATCH_TYPE_COLUMN_ID)
+        if ( LOCALS_TYPE_COLUMN_ID.equals (columnID) ||
+             WATCH_TYPE_COLUMN_ID.equals (columnID)
         )
             return bold (row, (String) result, variableToValueType);
-        if ( columnID.equals (LOCALS_VALUE_COLUMN_ID) ||
-             columnID.equals (WATCH_VALUE_COLUMN_ID)
+        if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
+             WATCH_VALUE_COLUMN_ID.equals (columnID)
         )
             return bold (row, (String) result, variableToValueValue);
-        if ( columnID.equals (LOCALS_TO_STRING_COLUMN_ID) ||
-             columnID.equals (WATCH_TO_STRING_COLUMN_ID)
+        if ( LOCALS_TO_STRING_COLUMN_ID.equals (columnID) ||
+             WATCH_TO_STRING_COLUMN_ID.equals (columnID)
         )
             return bold (row, (String) result, variableToValueToString);
         return result;

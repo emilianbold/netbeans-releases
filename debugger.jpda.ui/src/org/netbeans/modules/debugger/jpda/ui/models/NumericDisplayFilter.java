@@ -137,16 +137,16 @@ NodeActionsProviderFilter, Constants {
         case NumericDisplaySettings.DECIMAL:
             return var.getValue ();
         case NumericDisplaySettings.HEXADECIMAL:
-            if (type.equals ("int"))
+            if ("int".equals (type))
                 return "0x" + Integer.toHexString (
                     Integer.parseInt (var.getValue ())
                 );
             else
-            if (type.equals ("short")) {
+            if ("short".equals (type)) {
                 String rv = Integer.toHexString(Short.parseShort(var.getValue()));
                 if (rv.length() > 4) rv = rv.substring(rv.length() - 4, rv.length());
                 return "0x" + rv;
-            } else if (type.equals("byte")) {
+            } else if ("byte".equals(type)) {
                 String rv = Integer.toHexString(Byte.parseByte(var.getValue()));
                 if (rv.length() > 2) rv = rv.substring(rv.length() - 2, rv.length());
                 return "0x" + rv;
@@ -155,17 +155,17 @@ NodeActionsProviderFilter, Constants {
                     Long.parseLong (var.getValue ())
                 );
         case NumericDisplaySettings.OCTAL:
-            if (type.equals ("int"))
+            if ("int".equals (type))
                 return "0" + Integer.toOctalString (
                     Integer.parseInt (var.getValue ())
                 );
             else
-            if (type.equals("short")) {
+            if ("short".equals(type)) {
                 String rv = Integer.toOctalString(Short.parseShort(var.getValue()));
                 if (rv.length() > 5) rv = rv.substring(rv.length() - 5, rv.length());
                 return "0" + (rv.charAt(0) == '0' ? "1" : "") + rv;
             } else
-            if (type.equals("byte")) {
+            if ("byte".equals(type)) {
                 String rv = Integer.toOctalString(Byte.parseByte(var.getValue()));
                 if (rv.length() > 3) rv = "1" + rv.substring(rv.length() - 2, rv.length());
                 return "0" + rv;
@@ -174,13 +174,13 @@ NodeActionsProviderFilter, Constants {
                     Long.parseLong (var.getValue ())
                 );
         case NumericDisplaySettings.BINARY:
-            if (type.equals("int"))
+            if ("int".equals(type))
                 return Integer.toBinaryString(Integer.parseInt(var.getValue()));
-            else if (type.equals("short")) {
+            else if ("short".equals(type)) {
                 String rv = Integer.toBinaryString(Short.parseShort(var.getValue()));
                 if (rv.length() > 16) rv = rv.substring(rv.length() - 16, rv.length());
                 return rv;
-            } else if (type.equals("byte")) {
+            } else if ("byte".equals(type)) {
                 String rv = Integer.toBinaryString(Byte.parseByte(var.getValue()));
                 if (rv.length() > 8) rv = rv.substring(rv.length() - 8, rv.length());
                 return rv;
@@ -205,12 +205,11 @@ NodeActionsProviderFilter, Constants {
         }
         
         String type = v.getType ();
-        return type != null && 
-            (type.equals ("int") || 
-            type.equals ("char") || 
-            type.equals ("byte") || 
-            type.equals ("long") || 
-            type.equals ("short"));
+        return "int".equals (type) || 
+            "char".equals (type) || 
+            "byte".equals (type) || 
+            "long".equals (type) || 
+            "short".equals (type);
     }
 
     private String localize(String s) {

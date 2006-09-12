@@ -49,23 +49,23 @@ public class ThreadsTableModel implements TableModel, Constants {
         if (row instanceof MonitorModel.ThreadWithBordel) 
             row = ((MonitorModel.ThreadWithBordel) row).originalThread;
         if (row instanceof JPDAThreadGroup) {
-            if (columnID.equals (THREAD_STATE_COLUMN_ID)) 
+            if (THREAD_STATE_COLUMN_ID.equals (columnID)) 
                 return "";
-            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID)) {
+            if (THREAD_SUSPENDED_COLUMN_ID.equals (columnID)) {
                 JPDAThreadGroup group = (JPDAThreadGroup) row;
                 JPDAThread[] threads = group.getThreads ();
                 if (threads.length < 1) return Boolean.FALSE;
-                return new Boolean (threads [0].isSuspended ());
+                return Boolean.valueOf (threads [0].isSuspended ());
             }
         }
         if (row instanceof JPDAThread) {
-            if (columnID.equals (THREAD_STATE_COLUMN_ID)) {
+            if (THREAD_STATE_COLUMN_ID.equals (columnID)) {
                 String description = getThreadStateDescription(((JPDAThread) row).getState ());
                 if (description != null) {
                     return description;
                 }
             } else
-            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID))
+            if (THREAD_SUSPENDED_COLUMN_ID.equals (columnID))
                 return Boolean.valueOf (((JPDAThread) row).isSuspended ());
         }
         throw new UnknownTypeException (row);
@@ -118,16 +118,16 @@ public class ThreadsTableModel implements TableModel, Constants {
         if (row instanceof MonitorModel.ThreadWithBordel) 
             row = ((MonitorModel.ThreadWithBordel) row).originalThread;
         if (row instanceof JPDAThreadGroup) {
-            if (columnID.equals (THREAD_STATE_COLUMN_ID)) 
+            if (THREAD_STATE_COLUMN_ID.equals (columnID)) 
                 return true;
-            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID)) 
+            if (THREAD_SUSPENDED_COLUMN_ID.equals (columnID)) 
                 return false;
         }
         if (row instanceof JPDAThread) {
-            if (columnID.equals (THREAD_STATE_COLUMN_ID))
+            if (THREAD_STATE_COLUMN_ID.equals (columnID))
                 return true;
             else
-            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID))
+            if (THREAD_SUSPENDED_COLUMN_ID.equals (columnID))
                 return false;
         }
         throw new UnknownTypeException (row);
@@ -138,7 +138,7 @@ public class ThreadsTableModel implements TableModel, Constants {
         if (row instanceof MonitorModel.ThreadWithBordel) 
             row = ((MonitorModel.ThreadWithBordel) row).originalThread;
         if (row instanceof JPDAThreadGroup) {
-            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID)) {
+            if (THREAD_SUSPENDED_COLUMN_ID.equals (columnID)) {
                 if (((Boolean) value).booleanValue ())
                     ((JPDAThreadGroup) row).suspend ();
                 else
@@ -148,7 +148,7 @@ public class ThreadsTableModel implements TableModel, Constants {
             }
         }
         if (row instanceof JPDAThread) {
-            if (columnID.equals (THREAD_SUSPENDED_COLUMN_ID)) {
+            if (THREAD_SUSPENDED_COLUMN_ID.equals (columnID)) {
                 if (value.equals (Boolean.TRUE))
                     ((JPDAThread) row).suspend ();
                 else 

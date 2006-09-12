@@ -71,7 +71,7 @@ public final class MultilinePanel extends JPanel {
         boolean lastWasNewline = true;
         for (int i = 0; tokenizer.hasMoreTokens(); ++i) {
             String line = tokenizer.nextToken();
-            if (line.equals("\n")) {   //NOI18N
+            if ("\n".equals(line)) {   //NOI18N
                 if (!lastWasNewline) {
                     lastWasNewline = true;
                     continue;   //newline after text - end of line
