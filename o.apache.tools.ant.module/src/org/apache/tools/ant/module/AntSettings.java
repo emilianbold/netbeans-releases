@@ -29,6 +29,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
+import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider;
 import org.openide.ErrorManager;
 import org.openide.execution.NbClassPath;
@@ -63,7 +64,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     @Override
     protected void initialize () {
         super.initialize();
-        setVerbosity(2 /*Project.MSG_INFO*/);
+        setVerbosity(AntEvent.LOG_INFO);
         Properties p = new Properties ();
         // Enable hyperlinking for Jikes:
         p.setProperty ("build.compiler.emacs", "true"); // NOI18N

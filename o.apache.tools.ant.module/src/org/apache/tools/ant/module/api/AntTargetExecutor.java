@@ -101,17 +101,16 @@ final public class AntTargetExecutor {
             properties = (Properties) AntSettings.getDefault().getProperties().clone();
         }
 
-        /** Set verbosity of Ant script execution. See org.apache.tools.ant.Project.MSG_
-         * properties for list of possible values.
-         * @param v the new verbosity
+        /**
+         * Set verbosity of Ant script execution.
+         * @param v the new verbosity (e.g. {@link org.apache.tools.ant.module.spi.AntEvent#LOG_VERBOSE})
          */
         public void setVerbosity(int v) {
             verbosity = v;
         }
 
-        /** Get verbosity of Ant script execution. See <code>org.apache.tools.ant.Project.MSG_*</code>
-         * properties for list of possible values.
-         * @return the current verbosity
+        /** Get verbosity of Ant script execution.
+         * @return the current verbosity (e.g. {@link org.apache.tools.ant.module.spi.AntEvent#LOG_VERBOSE})
          */
         public int getVerbosity() {
             return verbosity;
