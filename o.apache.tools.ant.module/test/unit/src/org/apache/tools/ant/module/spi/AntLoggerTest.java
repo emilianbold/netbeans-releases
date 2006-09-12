@@ -60,7 +60,7 @@ public class AntLoggerTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockServices.setServices(IFL.class, Class.forName("org.netbeans.modules.masterfs.MasterURLMapper"), TestLogger.class);
+        MockServices.setServices(IFL.class, TestLogger.class);
         LOGGER = Lookup.getDefault().lookup(TestLogger.class);
         LOGGER.reset();
         testdir = new File(this.getDataDir(), "antlogger");
@@ -70,10 +70,12 @@ public class AntLoggerTest extends NbTestCase {
     }
 
     private void run(FileObject script) throws Exception {
-        run(script, null);
+        run(script, null, AntEvent.LOG_INFO);
     }
-    private void run(FileObject script, String[] targets) throws Exception {
-        int res = AntTargetExecutor.createTargetExecutor(new AntTargetExecutor.Env()).execute(new AntProjectSupport(script), targets).result();
+    private void run(FileObject script, String[] targets, int verbosity) throws Exception {
+        AntTargetExecutor.Env env = new AntTargetExecutor.Env();
+        env.setVerbosity(verbosity);
+        int res = AntTargetExecutor.createTargetExecutor(env).execute(new AntProjectSupport(script), targets).result();
         if (res != 0) {
             throw new IOException("Nonzero exit code: " + res + "; messages: " + LOGGER.getMessages());
         }
@@ -153,8 +155,20 @@ public class AntLoggerTest extends NbTestCase {
         run(testdirFO.getFileObject("property.xml"));
         assertTrue(LOGGER.antEventDetailsOK);
         LOGGER.antEventDetailsOK = false;
-        run(testdirFO.getFileObject("property.xml"), new String[] {"run2"});
+        run(testdirFO.getFileObject("property.xml"), new String[] {"run2"}, AntEvent.LOG_INFO);
         assertTrue("#71816: works even inside <antcall>", LOGGER.antEventDetailsOK);
+    }
+    
+    public void testSimultaneousLogging() throws Exception {
+        // #84704: just because one log call is locked, ought not block others
+        LOGGER.interestedInSessionFlag = true;
+        LOGGER.interestedInAllScriptsFlag = true;
+        LOGGER.interestingTargets = AntLogger.ALL_TARGETS;
+        LOGGER.interestingTasks = AntLogger.ALL_TASKS;
+        LOGGER.interestingLogLevels = new int[] {AntEvent.LOG_VERBOSE};
+        LOGGER.halt = true;
+        run(testdirFO.getFileObject("trivial.xml"), null, AntEvent.LOG_VERBOSE);
+        // see TestLogger.taskStarted for details
     }
     
     /**
@@ -169,6 +183,7 @@ public class AntLoggerTest extends NbTestCase {
         public String[] interestingTasks;
         public int[] interestingLogLevels;
         public boolean collectLineNumbersForTargets;
+        public boolean halt;
         /** Format of each: "/path/to/file.xml:line#targetName" (line numbers only if collectLineNumbersForTargets) */
         private List<String> targetsStarted;
         /** Format of each: "taskname:level:message" */
@@ -189,6 +204,7 @@ public class AntLoggerTest extends NbTestCase {
             targetsStarted = new ArrayList<String>();
             messages = new ArrayList<String>();
             antEventDetailsOK = false;
+            halt = false;
         }
         
         public synchronized List<String> getTargetsStarted() {
@@ -256,13 +272,38 @@ public class AntLoggerTest extends NbTestCase {
         }
 
         @Override
-        public void taskStarted(AntEvent event) {
+        public synchronized void taskStarted(final AntEvent event) {
             antEventDetailsOK |=
                     "echo".equals(event.getTaskName()) &&
                     "meaningless".equals(event.getTaskStructure().getText()) &&
                     "info".equals(event.getTaskStructure().getAttribute("level")) &&
                     event.getPropertyNames().contains("propname") &&
                     "propval".equals(event.getProperty("propname"));
+            if (halt && event.getTaskName().equals("touch")) {
+                try {
+                    Thread t = new Thread() {
+                        public void run() {
+                            synchronized (TestLogger.this) {
+                                assertEquals("${foobie}", event.evaluate("${foobie}"));
+                                TestLogger.this.notify();
+                            }
+                        }
+                    };
+                    t.start();
+                    wait(9999);
+                    t.join(9999);
+                    boolean found = false;
+                    for (String m : messages) {
+                        if (m.contains("foobie")) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    assertTrue("message about ${foobie} exists", found);
+                } catch (InterruptedException x) {
+                    fail(x.toString());
+                }
+            }
         }
         
     }

@@ -96,7 +96,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private Map<String/*|null*/,Collection<AntLogger>> interestedLoggersByTask = new HashMap<String,Collection<AntLogger>>();
     private Map<Integer,Collection<AntLogger>> interestedLoggersByLevel = new HashMap<Integer,Collection<AntLogger>>();
     
-    private final Set<Project> projectsWithProperties = new WeakSet<Project>();
+    private final Set<Project> projectsWithProperties = Collections.synchronizedSet(new WeakSet<Project>());
     
     private final Set<Throwable> consumedExceptions = new WeakSet<Throwable>();
     
@@ -110,7 +110,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
      * Hack for lack of Target.getLocation() in Ant 1.6.2 and earlier.
      * Unused if targetGetLocation is not null.
      */
-    private final Map<String,Map<String,String>> knownImportedTargets = new HashMap<String,Map<String,String>>();
+    private final Map<String,Map<String,String>> knownImportedTargets = Collections.synchronizedMap(new HashMap<String,Map<String,String>>());
     /**
      * Main script known to be being parsed at the moment.
      * Unused if targetGetLocation is not null.
@@ -175,8 +175,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
      * set and some loggers may care about the targets. However if buildInitializationFailed
      * is called before then, initialize them anyway.
      */
-    private void initInterestedLoggers() {
-        assert Thread.holdsLock(this);
+    private synchronized void initInterestedLoggers() {
         if (interestedLoggers == null) {
             interestedLoggers = new ArrayList<AntLogger>();
             for (AntLogger l : Lookup.getDefault().lookupAll(AntLogger.class)) {
@@ -205,8 +204,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     /**
      * Get those loggers interested in a given event.
      */
-    private Collection<AntLogger> getInterestedLoggersByEvent(AntEvent e) {
-        assert Thread.holdsLock(this);
+    private synchronized Collection<AntLogger> getInterestedLoggersByEvent(AntEvent e) {
         initInterestedLoggers();
         // Start with the smallest one and go down.
         interestedLoggersByVariousCriteria[0] = getInterestedLoggersByScript(e.getScriptLocation());
@@ -229,8 +227,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         return loggers;
     }
     
-    private Collection<AntLogger> getInterestedLoggersByScript(File script) {
-        assert Thread.holdsLock(this);
+    private synchronized Collection<AntLogger> getInterestedLoggersByScript(File script) {
         Collection<AntLogger> c = interestedLoggersByScript.get(script);
         if (c == null) {
             c = new LinkedHashSet<AntLogger>(interestedLoggers.size());
@@ -247,8 +244,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         return c;
     }
     
-    private Collection<AntLogger> getInterestedLoggersByTarget(String target) {
-        assert Thread.holdsLock(this);
+    private synchronized Collection<AntLogger> getInterestedLoggersByTarget(String target) {
         Collection<AntLogger> c = interestedLoggersByTarget.get(target);
         if (c == null) {
             c = new LinkedHashSet<AntLogger>(interestedLoggers.size());
@@ -268,8 +264,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         return c;
     }
     
-    private Collection<AntLogger> getInterestedLoggersByTask(String task) {
-        assert Thread.holdsLock(this);
+    private synchronized Collection<AntLogger> getInterestedLoggersByTask(String task) {
         Collection<AntLogger> c = interestedLoggersByTask.get(task);
         if (c == null) {
             c = new LinkedHashSet<AntLogger>(interestedLoggers.size());
@@ -289,8 +284,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         return c;
     }
     
-    private Collection<AntLogger> getInterestedLoggersByLevel(int level) {
-        assert Thread.holdsLock(this);
+    private synchronized Collection<AntLogger> getInterestedLoggersByLevel(int level) {
         Collection<AntLogger> c = interestedLoggersByLevel.get(level);
         if (c == null) {
             c = new LinkedHashSet<AntLogger>(interestedLoggers.size());
@@ -319,7 +313,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         this.targets = targets;
     }
     
-    synchronized void buildInitializationFailed(BuildException be) {
+    void buildInitializationFailed(BuildException be) {
         initInterestedLoggers();
         AntEvent ev = LoggerTrampoline.ANT_EVENT_CREATOR.makeAntEvent(new Event(be));
         if (LOGGABLE) {
@@ -330,7 +324,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
     }
     
-    public synchronized void buildStarted(BuildEvent ev) {
+    public void buildStarted(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
             checkForStop();
@@ -351,7 +345,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
     }
     
-    public synchronized void buildFinished(BuildEvent ev) {
+    public void buildFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
             // #82160: do not call checkForStop() here
@@ -377,7 +371,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
     }
     
-    public synchronized void targetStarted(BuildEvent ev) {
+    public void targetStarted(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
             checkForStop();
@@ -398,7 +392,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
     }
     
-    public synchronized void targetFinished(BuildEvent ev) {
+    public void targetFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
             checkForStop();
@@ -419,7 +413,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
     }
     
-    public synchronized void taskStarted(BuildEvent ev) {
+    public void taskStarted(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
             checkForStop();
@@ -449,7 +443,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
     }
     
-    public synchronized void taskFinished(BuildEvent ev) {
+    public void taskFinished(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
             checkForStop();
@@ -504,7 +498,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private static final Pattern PARSED_TARGET_MESSAGE =
         Pattern.compile(" \\+Target: (.+)"); // NOI18N
     
-    public synchronized void messageLogged(BuildEvent ev) {
+    public void messageLogged(BuildEvent ev) {
         AntBridge.suspendDelegation();
         try {
             checkForStop();
@@ -568,31 +562,26 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
     
     public File getOriginatingScript() {
-        assert Thread.holdsLock(this);
         verifyRunning();
         return origScript;
     }
     
     public String[] getOriginatingTargets() {
-        assert Thread.holdsLock(this);
         verifyRunning();
         return targets != null ? targets : new String[0];
     }
     
-    public Object getCustomData(AntLogger logger) {
-        assert Thread.holdsLock(this);
+    public synchronized Object getCustomData(AntLogger logger) {
         verifyRunning();
         return customData.get(logger);
     }
     
-    public void putCustomData(AntLogger logger, Object data) {
-        assert Thread.holdsLock(this);
+    public synchronized void putCustomData(AntLogger logger, Object data) {
         verifyRunning();
         customData.put(logger, data);
     }
     
     public void println(String message, boolean error, OutputListener listener) {
-        assert Thread.holdsLock(this);
         verifyRunning();
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "println: error=" + error + " listener=" + listener + " message=" + message);
@@ -615,7 +604,6 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
     
     public void deliverMessageLogged(AntEvent originalEvent, String message, int level) {
-        assert Thread.holdsLock(this);
         verifyRunning();
         if (originalEvent == null) {
             throw new IllegalArgumentException("Must pass an original event to deliverMessageLogged"); // NOI18N
@@ -639,8 +627,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
     }
     
-    public void consumeException(Throwable t) throws IllegalStateException {
-        assert Thread.holdsLock(this);
+    public synchronized void consumeException(Throwable t) throws IllegalStateException {
         verifyRunning();
         if (isExceptionConsumed(t)) {
             throw new IllegalStateException("Already consumed " + t); // NOI18N
@@ -648,8 +635,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         consumedExceptions.add(t);
     }
     
-    public boolean isExceptionConsumed(Throwable t) {
-        assert Thread.holdsLock(this);
+    public synchronized boolean isExceptionConsumed(Throwable t) {
         verifyRunning();
         if (consumedExceptions.contains(t)) {
             return true;
@@ -665,7 +651,6 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
     
     public int getVerbosity() {
-        assert Thread.holdsLock(this);
         verifyRunning();
         return verbosity;
     }
@@ -675,13 +660,11 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
     
     public String getDisplayName() {
-        assert Thread.holdsLock(this);
         verifyRunning();
         return displayName;
     }
 
     public OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2) {
-        assert Thread.holdsLock(this);
         verifyRunning();
         return new Hyperlink(file, message, line1, column1, line2, column2);
     }
