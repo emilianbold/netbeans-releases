@@ -274,13 +274,13 @@ is divided into following sections:
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="-do-compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile" if="have.sources">
+    <target name="-do-compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile,native-compile" if="have.sources">
         <j2seproject3:javac/>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${build.classes.excludes}"/>
-        </copy>
+        </copy>        
     </target>
-    <target name="-post-compile">
+    <target name="-post-compile" depends="native-post-compile">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
@@ -570,20 +570,61 @@ is divided into following sections:
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="clean" depends="init,deps-clean,-do-clean,-post-clean" description="Clean build products."/>
+    <target name="clean" depends="init,deps-clean,native-clean,-do-clean,-post-clean" description="Clean build products."/>
     
-    <target name="native-windows-clean" depends="init" description="Run make clean">
-        <echo message = "${native.windows.dir}"></echo>
-        <exec executable="make" dir="${native.windows.dir}" >
+    
+    
+    
+    <target name="native-init" description="Init native"/>        
+    <target name="native-clean" depends="native-init" description="Clean native projects">    
+        <antcall target="native-platform-clean">
+            <param name="native.directory"  value="${native.windows.dir}"/>
+        </antcall> 
+    </target>    
+    
+    <target name="native-pre-compile" description="Precompile native projects">            
+        <antcall target="native-platform-pre-compile">
+            <param name="native.directory"  value="${native.windows.dir}"/>
+        </antcall>
+    </target>
+    
+    <target name="native-compile" depends="native-pre-compile" description="Compile native projects">    
+        <antcall target="native-platform-compile">
+            <param name="native.directory"  value="${native.windows.dir}"/>
+        </antcall>
+    </target>
+    
+    <target name="native-post-compile" depends="native-compile" description="Post compile native projects">
+        <antcall target="native-platform-post-compile">
+            <param name="native.directory"  value="${native.windows.dir}"/>
+        </antcall> 
+    </target>
+    
+    
+    <target name="native-platform-clean" description="Clean native">        
+        <exec executable="make" dir="${native.directory}" >
             <arg value="clean"/>
         </exec>    
     </target>
     
-    <target name="native-windows-build" depends="init" description="Run make clean">
-        <echo message = "${native.windows.dir}"></echo>
-        <exec executable="make" dir="${native.windows.dir}">
+    <target name="native-platform-compile" description="Compile Native">        
+        <exec executable="make" dir="${native.directory}">
             <arg value="build"/>
         </exec>    
+    </target>
+    
+    <target name="native-platform-init" description="Native platform init"/>
+    <target name="native-platform-pre-compile" description="Pre compile native"/>
+    
+    <target name="native-platform-post-compile" depends="native-platform-compile" description="Pre compile native">        
+        <antcall target="copy-platform-lib">
+            <param name="native.directory"  value="${native.windows.dir}"/>
+            <param name="native.file"  value="${native.windows.file}"/>
+        </antcall>
+    </target>
+    
+    <target name="copy-platform-lib" depends="native-platform-compile" description="Copy native library">            
+        <copy file="${native.directory}/dist/${native.file}" tofile="${build.classes.dir}/${native.jar.dir}/${native.file}"/>        
     </target>
     
 </project>
