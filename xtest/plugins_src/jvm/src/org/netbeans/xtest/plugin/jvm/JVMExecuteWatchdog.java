@@ -70,6 +70,8 @@ public class JVMExecuteWatchdog extends ExecuteWatchdog {
                     if (line != null) {
                         try {
                             long pid = Long.parseLong(line);
+                            // xtest.home used in NativeKill class
+                            System.setProperty("xtest.home", antProject.getProperty("xtest.home"));
                             antProject.log("Requesting thread dump on process with PID="+pid);
                             NativeKill.dumpProcess(pid);
                             // sleep a bit, so resources can be released
