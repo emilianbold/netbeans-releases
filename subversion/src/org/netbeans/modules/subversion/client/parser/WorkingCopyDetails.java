@@ -337,16 +337,17 @@ public class WorkingCopyDetails {
         List<String> keywordsList = new ArrayList<String>();
         for (int i = 0; i < keywords.length; i++) {
             String kw = keywords[i].toLowerCase();
-            if(kw.equals("date")) {
+            if(kw.equals("date") || kw.equals("lastchangeddate")) {
                 keywordsList.add("LastChangedDate");
                 keywordsList.add("Date");
-            } else if(kw.equals("revision")) {
+            } else if(kw.equals("revision") || kw.equals("rev") || kw.equals("lastchangedrevision")) {
                 keywordsList.add("LastChangedRevision");
                 keywordsList.add("Revision");
-            } else if(kw.equals("author")) {
+                keywordsList.add("Rev");
+            } else if(kw.equals("author") || kw.equals("lastchangedby")) {
                 keywordsList.add("LastChangedBy");
                 keywordsList.add("Author");
-            } else if(kw.equals("url")) {
+            } else if(kw.equals("url") || kw.equals("headurl")) {
                 keywordsList.add("HeadURL");
                 keywordsList.add("URL");
             } else {
