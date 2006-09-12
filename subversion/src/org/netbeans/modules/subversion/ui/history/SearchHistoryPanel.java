@@ -476,7 +476,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             bSearch.setEnabled(false);
             return;
         }
-        SVNRevision to = criteria.getFrom();
+        SVNRevision to = criteria.getTo();
         if(to == null && criteria.tfTo.getText().trim().length() > 0) {
             bSearch.setEnabled(false);
             return;
