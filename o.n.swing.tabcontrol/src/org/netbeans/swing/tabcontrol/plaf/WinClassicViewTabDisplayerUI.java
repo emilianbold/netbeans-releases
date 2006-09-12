@@ -39,8 +39,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
     private static final boolean isGenericUI =
         !"Windows".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     
-    private static final Color GTK_TABBED_PANE_BACKGROUND_1 = new Color(100, 100, 100);
-    private static final Color GTK_TABBED_PANE_BACKGROUND_2 = new Color(255, 255, 255);
+    private static final Color GTK_TABBED_PANE_BACKGROUND_1 = new Color(255, 255, 255);
     
     /**
      * ******** constants ************
@@ -363,11 +362,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
     }
     
     private static final Color getSelGradientColor2() {
-        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
-            return GTK_TABBED_PANE_BACKGROUND_2; // #68200
-        } else {
-            return UIManager.getColor("TabbedPane.background"); // NOI18N
-        }
+        return UIManager.getColor("TabbedPane.background"); // NOI18N
     }
     
     /**

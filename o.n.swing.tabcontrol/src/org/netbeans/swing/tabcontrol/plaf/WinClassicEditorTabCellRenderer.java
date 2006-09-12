@@ -33,8 +33,7 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
     private static final TabPainter rightClip = new WinClassicRightClipPainter();
     private static final TabPainter normal = new WinClassicPainter();
 
-    private static final Color GTK_TABBED_PANE_BACKGROUND_1 = new Color(100, 100, 100);
-    private static final Color GTK_TABBED_PANE_BACKGROUND_2 = new Color(255, 255, 255);
+    private static final Color GTK_TABBED_PANE_BACKGROUND_1 = new Color(255, 255, 255);
     
     static final Color ATTENTION_COLOR = new Color(255, 238, 120);
     
@@ -428,11 +427,7 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
     }
     
     private static final Color getSelGradientColor2() {
-        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
-            return GTK_TABBED_PANE_BACKGROUND_2; // #68200
-        } else {
-            return UIManager.getColor("TabbedPane.background"); // NOI18N
-        }
+        return UIManager.getColor("TabbedPane.background"); // NOI18N
     }
     
 }
