@@ -24,10 +24,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.netbeans.modules.subversion.client.*;
 
 /**
  *
@@ -333,7 +334,27 @@ public class WorkingCopyDetails {
         boolean returnValue = false;
 
         String[] keywords = rawKeywords.split(" ");
-
+        List<String> keywordsList = new ArrayList<String>();
+        for (int i = 0; i < keywords.length; i++) {
+            String kw = keywords[i].toLowerCase();
+            if(kw.equals("date")) {
+                keywordsList.add("LastChangedDate");
+                keywordsList.add("Date");
+            } else if(kw.equals("revision")) {
+                keywordsList.add("LastChangedRevision");
+                keywordsList.add("Revision");
+            } else if(kw.equals("author")) {
+                keywordsList.add("LastChangedBy");
+                keywordsList.add("Author");
+            } else if(kw.equals("url")) {
+                keywordsList.add("HeadURL");
+                keywordsList.add("URL");
+            } else {
+                keywordsList.add(keywords[i]);                
+            }            
+        }
+        keywords = keywordsList.toArray(new String[keywordsList.size()]);
+        
         BufferedReader baseReader = null;
         BufferedReader fileReader = null;
 
