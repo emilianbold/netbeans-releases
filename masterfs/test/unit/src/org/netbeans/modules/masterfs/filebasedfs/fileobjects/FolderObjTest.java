@@ -74,7 +74,7 @@ public class FolderObjTest extends NbTestCase {
             "testCreateData72617"
         };
         return (Arrays.asList(testsWithEnabledLogger).contains(getName())) ? 
-            Level.FINEST : super.logLevel();
+            Level.FINEST : Level.OFF;
     }
 
     static abstract class IntrusiveLogHandler extends Handler {
