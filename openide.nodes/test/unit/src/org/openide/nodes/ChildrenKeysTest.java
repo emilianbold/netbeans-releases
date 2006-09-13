@@ -125,6 +125,7 @@ public class ChildrenKeysTest extends NbTestCase {
         final Children k = filter.getChildren();
         
         final Ticker t1 = new Ticker();
+        final Ticker tick2 = new Ticker();
         final boolean[] done = new boolean[2];
         
         // Try to get nodes from writeAccess
@@ -133,7 +134,7 @@ public class ChildrenKeysTest extends NbTestCase {
                 Children.PR.enterWriteAccess();
                 try {
                     t1.tick(); // I do have the write access ...
-                    t1.waitOn(); // ... so wait till I'm preempted                    
+                    tick2.waitOn(); // ... so wait till I'm preempted                    
                     k.getNodes();
                 } finally {
                     Children.PR.exitWriteAccess();
@@ -154,7 +155,7 @@ public class ChildrenKeysTest extends NbTestCase {
         t2.start();
         
         Thread.sleep(2000); // give T2 some time ...
-        t1.tick(); // and unfuse T
+        tick2.tick(); // and unfuse T
         
         // wait for other thread
         t.join(2000);
