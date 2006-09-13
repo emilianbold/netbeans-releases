@@ -1556,14 +1556,28 @@ public class FileObjectTestHid extends TestBaseHid {
             newFolder.delete();
             assertFalse(newFolder.isValid());
             assertEquals(0,testFo.getChildren().length);
-            assertNull(testFo.getFileObject(newFolder.getNameExt()));        
-                        
+            implOfTestGetFileObjectForSubversion(testFo, newFolder.getNameExt());                        
         } catch (IOException iex) {
             fsAssert("FileObject could not be deleted. So there was expected fs or fo are read-only",
             fs.isReadOnly() || root.isReadOnly());            
             return;
         }
             
+    }
+
+    public static void implOfTestGetFileObjectForSubversion(final FileObject folder, final String childName) {        
+        final List l = new ArrayList();
+        folder.addFileChangeListener(new FileChangeAdapter(){
+            public void fileFolderCreated(FileEvent fe) {
+                l.add(fe.getFile());
+            }                
+        });
+        FileObject child = folder.getFileObject(childName);
+        if (l.size() == 0) {
+            assertNull(child);        
+        } else {
+            assertNotNull(child);        
+        }
     }
     
     /** Test of delete method, of class org.openide.filesystems.FileObject. */    
@@ -1913,7 +1927,7 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject fo1 = getTestFile1 (root);
         FileLock lock = null;
         try {
-            fo1.lock ();   
+            lock = fo1.lock ();   
         } catch (IOException iex) {
             fsAssert("FileObject could not be locked",            
             fs.isReadOnly() || fo1.isReadOnly() ) ;
