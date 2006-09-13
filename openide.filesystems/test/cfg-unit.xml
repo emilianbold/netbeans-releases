@@ -26,8 +26,6 @@ Microsystems, Inc. All Rights Reserved.
       <patternset>
         <!-- fs tests should be stable. If not file a bug: -->
         <include name="org/openide/filesystems/*Test.class"/>
-          <!-- Under development: -->
-          <exclude  name="org/openide/filesystems/MultiFileSystemMaskTest.class"/>
       </patternset>
     </testset>
   </testbag>
