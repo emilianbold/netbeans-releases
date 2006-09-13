@@ -16,38 +16,39 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.java.j2seproject;
 
-
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.mdr.events.AttributeEvent;
+import org.netbeans.api.mdr.events.MDRChangeEvent;
+import org.netbeans.api.mdr.events.MDRChangeListener;
+import org.netbeans.api.mdr.events.MDRChangeSource;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.jmi.javamodel.UnresolvedClass;
 import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-
-import org.openide.ErrorManager;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.mdr.events.MDRChangeListener;
-import org.netbeans.api.mdr.events.MDRChangeEvent;
-import org.netbeans.api.mdr.events.MDRChangeSource;
-import org.netbeans.api.mdr.events.AttributeEvent;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.Project;
-
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.ErrorManager;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.RequestProcessor;
 
-import org.netbeans.jmi.javamodel.Type;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
-
+/**
+ * Changes property name of main class in response to rename refactorings.
+ * @see "issue #42245"
+ * @author Tomas Zezula
+ */
 class MainClassUpdater implements PropertyChangeListener, MDRChangeListener {
 
     private static RequestProcessor performer = new RequestProcessor();
@@ -87,16 +88,16 @@ class MainClassUpdater implements PropertyChangeListener, MDRChangeListener {
                             try {
                                 //#63048:Deadlock while renaming main class of older j2se project
                                 //Don't show a modal dialog under mutex
-                                final String oldMainClass = (String) ProjectManager.mutex().readAccess(
-                                        new Mutex.ExceptionAction () {
-                                            public Object run () throws Exception {
-                                                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                                return props.getProperty(mainClassPropName);
-                                            }
+                                final String oldMainClass = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
+                                    public String run() throws Exception {
+                                        return eval.getProperty(mainClassPropName);
+                                    }
                                 });                        
-                                if (!newMainClassName.equals(oldMainClass) && helper.requestSave()) {
-                                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction () {
-                                        public Object run() throws Exception {
+                                if (!newMainClassName.equals(oldMainClass) && helper.requestSave() &&
+                                        // XXX ##84806: ideally should update nbproject/configs/*.properties in this case:
+                                        eval.getProperty(J2SEConfigurationProvider.PROP_CONFIG) == null) {
+                                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                                        public Void run() throws Exception {
                                             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                             props.put(mainClassPropName, newMainClassName);
                                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
