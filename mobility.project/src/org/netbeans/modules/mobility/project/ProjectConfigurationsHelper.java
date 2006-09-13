@@ -83,7 +83,7 @@ public final class ProjectConfigurationsHelper implements ProjectConfigurationPr
     /**
      * Default configuration name.
      */
-    static final String DEFAULT_CONFIGURATION_NAME = "DefaultConfiguration"; // NOI18N
+    static public final String DEFAULT_CONFIGURATION_NAME = "DefaultConfiguration"; // NOI18N
     
     /**
      * Default configuration name.

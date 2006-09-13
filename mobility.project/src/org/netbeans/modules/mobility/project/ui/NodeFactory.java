@@ -39,9 +39,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TreeMap;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -51,6 +53,7 @@ import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.netbeans.modules.mobility.project.J2MEProject;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.ui.customizer.CloneConfigurationPanel;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
@@ -83,7 +86,26 @@ final class NodeFactory
 {
     private static class NodeKeys extends Children.Keys
     {
-        final HashMap<String,Node> nodeMap=new HashMap<String,Node>();
+        final TreeMap<String,Node> nodeMap=new TreeMap<String,Node>(new Comparator<String>() {
+            public int compare(String o1, String o2)
+            {
+                if (o1.equals(o2))
+                    return 0;
+                if (o1.equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME))
+                    return -1;
+                if (o2.equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME))
+                    return 1;
+                return o1.compareToIgnoreCase(o2);
+            }
+            
+            public boolean equals(Object that)
+            {
+                if (this == that) 
+                    return true;
+                else
+                    return false;
+            };
+        });
         
         NodeKeys(final Node[] ns)
         {
@@ -109,7 +131,7 @@ final class NodeFactory
             this.setKeys(nodeMap.keySet());
             return true;
         }
-
+        
         
         protected void removeNotify() {
             this.setKeys(Collections.EMPTY_SET);
@@ -270,19 +292,22 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 J2MEPhysicalViewProvider.J2MEProjectRootNode node=(J2MEPhysicalViewProvider.J2MEProjectRootNode)ProjCfgNode.this.getParentNode();
-                boolean br=node.isBroken();
-                boolean changed = false;
-                synchronized(this) 
+                if (node != null)
                 {
-                    if (broken != br) {
-                        broken ^= true; //faster way of negation
-                        changed=true;
+                    boolean br=node.isBroken();
+                    boolean changed = false;
+                    synchronized(this) 
+                    {
+                        if (broken != br) {
+                            broken ^= true; //faster way of negation
+                            changed=true;
+                        }
                     }
-                }
-                if (changed) {
-                    fireIconChange();
-                    fireOpenedIconChange();
-                    fireDisplayNameChange(null, null);
+                    if (changed) {
+                        fireIconChange();
+                        fireOpenedIconChange();
+                        fireDisplayNameChange(null, null);
+                    }
                 }
             }
         });
