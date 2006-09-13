@@ -24,6 +24,7 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
+import org.netbeans.modules.junit.output.antutils.AntProject;
 import org.netbeans.modules.junit.output.antutils.TestCounter;
 
 /**
@@ -171,7 +172,8 @@ public final class JUnitAntLogger extends AntLogger {
                 sessionInfo.sessionType = taskType;
             }
             final int testClassCount = TestCounter.getTestClassCount(event);
-            getOutputReader(event).testTaskStarted(testClassCount);
+            final boolean hasXmlOutput = hasXmlOutput(event);
+            getOutputReader(event).testTaskStarted(testClassCount, hasXmlOutput);
         }
     }
     
@@ -235,6 +237,33 @@ public final class JUnitAntLogger extends AntLogger {
             session.putCustomData(this, sessionInfo);
         }
         return sessionInfo;
+    }
+    
+    /**
+     * Finds whether the test report will be generated in XML format.
+     */
+    private static boolean hasXmlOutput(AntEvent event) {
+        TaskStructure taskStruct = event.getTaskStructure();
+        for (TaskStructure child : taskStruct.getChildren()) {
+            String childName = child.getName();
+            if (childName.equals("formatter")) {                        //NOI18N
+                String type = child.getAttribute("type");               //NOI18N
+                String usefile = child.getAttribute("usefile");         //NOI18N
+                if ((type != null) && type.equals("xml")                //NOI18N
+                       && (usefile != null) && !AntProject.toBoolean(usefile)) {
+                    String ifPropName = child.getAttribute("if");       //NOI18N
+                    String unlessPropName =child.getAttribute("unless");//NOI18N
+
+                    if ((ifPropName == null
+                                || event.getProperty(ifPropName) != null)
+                        && (unlessPropName == null
+                                || event.getProperty(unlessPropName) == null)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
     
 }

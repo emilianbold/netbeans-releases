@@ -98,6 +98,8 @@ final class JUnitOutputReader {
      * @see  #progressHandle
      */
     private boolean isDeterminateProgress;
+    /** whether XML report is expected */
+    private boolean expectXmlReport;
     /** */
     private final File antScript;
     /** */
@@ -310,7 +312,7 @@ final class JUnitOutputReader {
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="XML_DECL_PREFIX">
-        else if (msg.startsWith(RegexpUtils.XML_DECL_PREFIX)) {
+        else if (expectXmlReport && msg.startsWith(RegexpUtils.XML_DECL_PREFIX)) {
             Matcher matcher = regexp.getXmlDeclPattern().matcher(msg.trim());
             if (matcher.matches()) {
                 suiteStarted(null);
@@ -529,7 +531,8 @@ final class JUnitOutputReader {
      * @param  expectedSuitesCount  expected number of test suites going to be
      *                              executed by this task
      */
-    void testTaskStarted(int expectedSuitesCount) {
+    void testTaskStarted(int expectedSuitesCount, boolean expectXmlOutput) {
+        this.expectXmlReport = expectXmlOutput;
         
         final boolean willBeDeterminateProgress = (expectedSuitesCount > 0);
         if (progressHandle == null) {

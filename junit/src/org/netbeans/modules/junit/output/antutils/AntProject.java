@@ -28,7 +28,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author  Marian Petras
  */
-final class AntProject {
+public final class AntProject {
 
     /** {@code AntEvent} which serves for evaluation of Ant properties */
     private final AntEvent event;
