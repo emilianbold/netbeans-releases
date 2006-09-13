@@ -570,6 +570,10 @@ public abstract class FileUtils {
         public List<File> findExecutableFiles(File parent) throws IOException {
             List<File> files = new ArrayList<File>();
             
+            if (!parent.exists()) {
+                return files;
+            }
+            
             for (File child: parent.listFiles()) {
                 if (child.isDirectory()) {
                     files.addAll(findExecutableFiles(child));
@@ -605,6 +609,10 @@ public abstract class FileUtils {
         
         public List<File> findNonUnixFiles(File parent) throws IOException {
             List<File> files = new ArrayList<File>();
+            
+            if (!parent.exists()) {
+                return files;
+            }
             
             for (File child: parent.listFiles()) {
                 if (child.isDirectory()) {
