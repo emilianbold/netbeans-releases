@@ -52,6 +52,8 @@ import org.openide.util.Utilities;
  */
 final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2SEConfigurationProvider.Config> {
 
+    private static final Logger LOGGER = Logger.getLogger(J2SEConfigurationProvider.class.getName());
+
     /**
      * Ant property name for active config.
      */
@@ -90,18 +92,19 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final FileChangeListener fcl = new FileChangeAdapter() {
         public void fileFolderCreated(FileEvent fe) {
-            update();
+            update(fe);
         }
         public void fileDataCreated(FileEvent fe) {
-            update();
+            update(fe);
         }
         public void fileDeleted(FileEvent fe) {
-            update();
+            update(fe);
         }
         public void fileRenamed(FileRenameEvent fe) {
-            update();
+            update(fe);
         }
-        private void update() {
+        private void update(FileEvent ev) {
+            LOGGER.log(Level.FINEST, "Received {0}", ev);
             Set<String> oldConfigs = configs != null ? configs.keySet() : Collections.<String>emptySet();
             configDir = p.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
             if (configDir != null) {
@@ -111,6 +114,7 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
             calculateConfigs();
             Set<String> newConfigs = configs.keySet();
             if (!oldConfigs.equals(newConfigs)) {
+                LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs});
                 pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
                 // XXX also fire PROP_ACTIVE_CONFIGURATION?
             }
@@ -134,7 +138,8 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
         p.evaluator().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_CONFIG.equals(evt.getPropertyName())) {
-                    pcs.firePropertyChange(PROP_CONFIGURATION_ACTIVE, null, null);
+                    LOGGER.log(Level.FINER, "Refiring " + PROP_CONFIG + " -> " + ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE);
+                    pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
                 }
             }
         });
@@ -159,7 +164,7 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
                         is.close();
                     }
                 } catch (IOException x) {
-                    Logger.getLogger(J2SEConfigurationProvider.class.getName()).log(Level.INFO, null, x);
+                    LOGGER.log(Level.INFO, null, x);
                 }
             }
         }

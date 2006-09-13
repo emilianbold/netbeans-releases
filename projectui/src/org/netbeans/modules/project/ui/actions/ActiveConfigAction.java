@@ -60,6 +60,8 @@ import org.openide.util.actions.Presenter;
  */
 public class ActiveConfigAction extends CallableSystemAction implements ContextAwareAction {
 
+    private static final Logger LOGGER = Logger.getLogger(ActiveConfigAction.class.getName());
+
     private static final DefaultComboBoxModel EMPTY_MODEL = new DefaultComboBoxModel();
     private static final Object CUSTOMIZE_ENTRY = new Object();
 
@@ -112,6 +114,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
 
 
     private synchronized void configurationsListChanged(Collection<? extends ProjectConfiguration> configs) {
+        LOGGER.log(Level.FINER, "configurationsListChanged: {0}", configs);
         if (configs == null) {
             configListCombo.setModel(EMPTY_MODEL);
             configListCombo.setEnabled(false);
@@ -129,6 +132,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
     }
 
     private synchronized void activeConfigurationChanged(ProjectConfiguration config) {
+        LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
         listeningToCombo = false;
         try {
             configListCombo.setSelectedIndex(-1);
@@ -147,11 +151,12 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
     }
 
     private synchronized void activeConfigurationSelected(ProjectConfiguration cfg) {
+        LOGGER.log(Level.FINER, "activeConfigurationSelected: {0}", cfg);
         if (pcp != null && cfg != null && !cfg.equals(getActiveConfiguration(pcp))) {
             try {
                 setActiveConfiguration(pcp, cfg);
             } catch (IOException x) {
-                Logger.getLogger(ActiveConfigAction.class.getName()).log(Level.WARNING, null, x);
+                LOGGER.log(Level.WARNING, null, x);
             }
         }
     }
@@ -271,6 +276,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
     }
 
     private synchronized void activeProjectChanged(Project p) {
+        LOGGER.log(Level.FINER, "activeProjectChanged: {0} -> {1}", new Object[] {currentProject, p});
         if (currentProject != p) {
             if (pcp != null) {
                 pcp.removePropertyChangeListener(lst);
