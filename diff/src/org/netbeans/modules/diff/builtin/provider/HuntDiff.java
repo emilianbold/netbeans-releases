@@ -89,13 +89,49 @@ public class HuntDiff {
     }
     
     private static int findAssoc(String line1, Line[] l2s, boolean[] equivalence) {
-        // TODO use binary search
-        for (int j = 1; j < l2s.length; j++) {
-            if (equivalence[j-1] && line1.equals(l2s[j].line)) {
-                return j;
+        int idx = binarySearch(l2s, line1, 1, l2s.length - 1);
+        if (idx < 1) {
+            return 0;
+        } else {
+            int lastGoodIdx = 0;
+            for (; idx >= 1 && l2s[idx].line.equals(line1); idx--) {
+                if (equivalence[idx - 1]) {
+                    lastGoodIdx = idx;
+                }
+            }
+            return lastGoodIdx;
+        }
+    }
+
+    private static int binarySearch(Line[] L, String key, int low, int high) {
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            String midVal = L[mid].line;
+            int comparison = midVal.compareTo(key); 
+            if (comparison < 0) {
+                low = mid + 1;
+            } else if (comparison > 0) {
+                high = mid - 1;
+            } else {
+                return mid;
             }
         }
-        return 0;
+    	return -(low + 1);
+    }
+    
+    private static int binarySearch(Candidate[] K, int key, int low, int high) {
+        while (low <= high) {
+            int mid = (low + high) >> 1;
+            int midVal = K[mid].b;
+            if (midVal < key) {
+                low = mid + 1;
+            } else if (midVal > key) {
+                high = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+    	return -(low + 1);
     }
 
     private static int merge(Candidate[] K, int k, int i, int[] equvalenceLines,
@@ -104,12 +140,13 @@ public class HuntDiff {
         Candidate c = K[0];
         do {
             int j = equvalenceLines[p];
-            int s = r;
-            // TODO use binary search
-            for (; s <= k; s++) {
-                if (K[s].b < j && K[s+1].b > j) {
-                    break;
-                }
+            int s = binarySearch(K, j, r, k);
+            if (s >= 0) {
+                // j was found in K[]
+                s = k + 1;
+            } else {
+                s = -s - 2;
+                if (s < r || s > k) s = k + 1; 
             }
             if (s <= k) {
                 if (K[s+1].b > j) {
@@ -194,9 +231,6 @@ public class HuntDiff {
                     int d1f1l1 = add.getFirstStart() - (del.getFirstEnd() - del.getFirstStart());
                     int d2f1l1 = del.getFirstStart();
                     if (d1f1l1 == d2f1l1) {
-                        int d1f2l1 = add.getSecondStart() - (del.getFirstEnd() - del.getFirstStart());
-                        int d2f2l1 = del.getSecondStart() + 1;
-                        
                         Difference newDiff = new Difference(Difference.CHANGE,
                             d1f1l1, del.getFirstEnd(), add.getSecondStart(), add.getSecondEnd(),
                             del.getFirstText(), add.getSecondText());
