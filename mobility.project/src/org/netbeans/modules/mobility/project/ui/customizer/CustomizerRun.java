@@ -215,6 +215,8 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         vps.register(OTARadio, DefaultPropertiesDescriptor.RUN_METHOD, useDefault);
         vps.register(jCheckBoxUseSecurity, DefaultPropertiesDescriptor.RUN_USE_SECURITY_DOMAIN, useDefault);
         vps.register(cmdOptionsText, DefaultPropertiesDescriptor.RUN_CMD_OPTIONS, useDefault);
+        jLabel1.setEnabled(!useDefault);
+        jLabel2.setEnabled(!useDefault);
         actionPerformed(null);
     }
     

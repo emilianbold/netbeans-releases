@@ -48,6 +48,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.spi.mobility.project.ui.customizer.ComposedCustomizerPanel;
+import org.netbeans.spi.mobility.project.ui.customizer.HelpCtxCallback;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
@@ -71,7 +73,7 @@ import org.openide.util.HelpCtx;
  *
  * @author  phrebejk, Adam Sotona
  */
-public class J2MECustomizer extends JPanel implements Runnable {
+public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback {
     
     private static final String REGISTRATION_FOLDER = "Customizer/org.netbeans.modules.kjava.j2meproject";//NOI18N
     private static final ProjectConfiguration ADD_CONFIGURATION = new ProjectConfiguration() {
@@ -416,13 +418,25 @@ public class J2MECustomizer extends JPanel implements Runnable {
             customizerPanel.removeAll();
             
             DataFolder df = (DataFolder)node.getCookie(DataFolder.class);
-            DataObject dob[] = df.getChildren();
-            JTabbedPane tab = new JTabbedPane();
-            tab.setBorder(BorderFactory.createEmptyBorder(5, 8, 8, 8));
-            boolean cfgSensitive = false;
-            for (int i=0; i<dob.length; i++) {
-                if (!(dob[i] instanceof DataFolder)) {
-                    JComponent c = (JComponent)dob[i].getPrimaryFile().getAttribute("customizerPanelClass");
+            JComponent c = (JComponent)df.getPrimaryFile().getAttribute("customizerPanelClass");//NOI18N
+            if (c != null) {
+                updateHelpCtx(new HelpCtx(c.getClass()));
+                c.setBorder(BorderFactory.createEmptyBorder(5, 8, 8, 8));
+                customizerPanel.add(c, BorderLayout.CENTER );
+                configurationCombo.setEnabled(c instanceof VisualPropertyGroup);
+                if (c instanceof CustomizerPanel) {
+                    ((CustomizerPanel)c).initValues(props, configuration);
+                }
+                if (c instanceof ComposedCustomizerPanel) {
+                    ((ComposedCustomizerPanel)c).setHelpContextCallback(J2MECustomizer.this);
+                }
+            } else {
+                DataObject dob[] = df.getChildren();
+                JTabbedPane tab = new JTabbedPane();
+                tab.setBorder(BorderFactory.createEmptyBorder(5, 8, 8, 8));
+                boolean cfgSensitive = false;
+                for (int i=0; i<dob.length; i++) {
+                    c = (JComponent)dob[i].getPrimaryFile().getAttribute("customizerPanelClass");//NOI18N
                     if (c != null) {
                         c.setBorder(BorderFactory.createEmptyBorder(5, 8, 8, 8));
                         tab.add(dob[i].getNodeDelegate().getDisplayName(), c);
@@ -432,18 +446,18 @@ public class J2MECustomizer extends JPanel implements Runnable {
                         }
                     }
                 }
-            }
-            configurationCombo.setEnabled(cfgSensitive);
-            if (tab.getComponentCount() > 0) {  
-                updateHelpCtx(new HelpCtx(tab.getComponent(0).getClass()));
-                customizerPanel.add(tab.getComponentCount()==1 ? tab.getComponent(0) : tab, BorderLayout.CENTER );
-                tab.addChangeListener(CategoryView.this);
-                Integer i = tabSelections.get(node);
-                if (i != null && i < tab.getTabCount()) {
-                    tab.setSelectedIndex(i);
+                configurationCombo.setEnabled(cfgSensitive);
+                if (tab.getComponentCount() > 0) {  
+                    updateHelpCtx(new HelpCtx(tab.getComponent(0).getClass()));
+                    customizerPanel.add(tab.getComponentCount()==1 ? tab.getComponent(0) : tab, BorderLayout.CENTER );
+                    tab.addChangeListener(CategoryView.this);
+                    Integer i = tabSelections.get(node);
+                    if (i != null && i < tab.getTabCount()) {
+                        tab.setSelectedIndex(i);
+                    }
+                } else {
+                    updateHelpCtx(null);
                 }
-            } else {
-                updateHelpCtx(null);
             }
             customizerPanel.validate();
             customizerPanel.repaint();

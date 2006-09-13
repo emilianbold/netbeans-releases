@@ -21,24 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
-<!--
-    <folder name="Actions">
-        <folder name="Project">
-            <file name="org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.Actions.buildAllConfigurationsAction"/>            
-            </file>
-            
-            <file name="org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.project.ui.Actions.rebuildAllConfigurationsAction"/>            
-            </file>
-
-            <file name="org-netbeans-modules-project-support-ActiveConfigAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.support.ActiveConfigAction"/>            
-            </file>
-        </folder>
-    </folder>        
--->
-
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="j2me">
@@ -48,39 +30,8 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-    
+ 
     <folder name="Menu">
-<!--        
-        <folder name="BuildProject">
-            <attr name="org-netbeans-modules-project-ui-RebuildMainProject.shadow/org-netbeans-modules-project-support-ActiveConfigAction.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-project-support-ActiveConfigAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-support-ActiveConfigAction.instance"/>
-            </file>
-        
-            <attr name="org-netbeans-modules-project-support-ActiveConfigAction.shadow/SeparatorMainProject.instance" boolvalue="true"/>
-        
-            <attr name="SeparatorMainProject.instance/org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.shadow" boolvalue="true"/>
-
-            <file name="org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.instance"/>
-            </file>
-            
-            <attr name="org-netbeans-modules-mobility-project-ui-BuildAllMainProjectConfigs.shadow/org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.shadow" boolvalue="true"/>            
-
-            <file name="org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.instance"/>
-            </file>
-            
-            <attr name="org-netbeans-modules-mobility-project-ui-RebuildAllMainProjectConfigs.shadow/SeparatorBuildAllMainProject.instance" boolvalue="true"/>            
-
-            <file name="SeparatorBuildAllMainProject.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-
-            <attr name="SeparatorBuildAllMainProject.instance/org-netbeans-modules-project-ui-JavadocProject.shadow" boolvalue="true"/>
-        </folder>
--->            
         <folder name="Tools">
             <attr name="LibrariesCustomizerAction.instance/SecurityManagerAction.instance" boolvalue="true"/>
             <file name="SecurityManagerAction.instance">
@@ -88,20 +39,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
-<!--
-    <folder name="Toolbars">
-    
-        <folder name="Build">            
-            <file name="org-netbeans-modules-project-support-ActiveConfigAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-support-ActiveConfigAction.instance"/>
-            </file>
-        
-            <attr name="org-netbeans-modules-project-support-ActiveConfigAction.shadow/org-netbeans-modules-project-ui-BuildMainProject.shadow" boolvalue="true"/>
-    
-        </folder>
-                
-    </folder>
--->
+
     <folder name="Services">
         <file name="org-netbeans-modules-mobility-project-security-KeyStoreRepository.settings" url="/org/netbeans/modules/mobility/project/ui/resources/KeyStoreRepository.settings">
             <attr boolvalue="true" name="hidden"/>
@@ -341,10 +279,16 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Platform">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/midp.gif"/>
+                <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerPlatform"/>
                 <file name="CLDC">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDP"/>
                 </file>
+<!--
+                <file name="Test">
+                    <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities"/>
+                </file>
+-->
             </folder>
             <attr name="Platform/Abilities" boolvalue="true"/>
             <folder name="Abilities">

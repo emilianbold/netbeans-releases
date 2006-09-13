@@ -19,14 +19,14 @@
 
 package org.netbeans.spi.mobility.project.ui.customizer;
 
-import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author Adam Sotona
  */
-public interface CustomizerPanel {
+public interface HelpCtxCallback {
     
-    public void initValues(ProjectProperties props, String configuration);
+    public void updateHelpCtx(HelpCtx helpId);
     
 }

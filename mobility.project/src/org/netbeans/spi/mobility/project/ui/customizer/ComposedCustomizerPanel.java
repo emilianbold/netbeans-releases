@@ -19,14 +19,12 @@
 
 package org.netbeans.spi.mobility.project.ui.customizer;
 
-import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
-
 /**
  *
  * @author Adam Sotona
  */
-public interface CustomizerPanel {
+public interface ComposedCustomizerPanel extends CustomizerPanel {
     
-    public void initValues(ProjectProperties props, String configuration);
+    public void setHelpContextCallback(HelpCtxCallback callback);
     
 }
