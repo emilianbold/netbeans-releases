@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  */
 
 public class ExitDialog extends JPanel implements java.awt.event.ActionListener {
-    private final static boolean isAqua = UIManager.getLookAndFeel().getID().equals("Aqua");
+    private final static boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID());
 
     private static Object[] exitOptions;
 

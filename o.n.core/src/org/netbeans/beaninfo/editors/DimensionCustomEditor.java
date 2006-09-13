@@ -23,7 +23,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ResourceBundle;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
@@ -54,8 +54,8 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Propert
         heightLabel.setDisplayedMnemonic(NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Height_mnemonic").charAt(0));
         heightLabel.setLabelFor(heightField);
 
-        widthField.setText ("" + dimension.width);    // NOI18N
-        heightField.setText ("" + dimension.height);  // NOI18N
+        widthField.setText (String.valueOf(dimension.width));
+        heightField.setText (String.valueOf(dimension.height));
 //        HelpCtx.setHelpIDString (this, DimensionCustomEditor.class.getName ());
 
         widthField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DimensionCustomEditor.class, "ACSD_CTL_Width"));
@@ -73,14 +73,14 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Propert
             int height = Integer.parseInt (heightField.getText ());
             if ((width < 0) || (height < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                UIException.annotateUser(ise, null, 
+                UIExceptions.annotateUser(ise, null, 
                     NbBundle.getMessage(DimensionCustomEditor.class, "CTL_NegativeSize"), null, null);
                 throw ise;
             }
             return new Dimension (width, height);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            UIException.annotateUser(ise, null, 
+            UIExceptions.annotateUser(ise, null, 
                 NbBundle.getMessage(DimensionCustomEditor.class, "CTL_NegativeSize"), null, null);
             throw ise;
         }

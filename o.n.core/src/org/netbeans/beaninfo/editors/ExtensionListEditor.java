@@ -22,7 +22,7 @@ package org.netbeans.beaninfo.editors;
 import java.beans.*;
 import java.text.MessageFormat;
 import java.util.*;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -156,7 +156,7 @@ public class ExtensionListEditor extends Object implements PropertyEditor,
                     ExtensionListEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"),  //NOI18N
                     new Object[] {text});
             }
-            UIException.annotateUser(iae, iae.getMessage(), msg, e, new Date());
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, e, new Date());
             throw iae;     
         }
     }

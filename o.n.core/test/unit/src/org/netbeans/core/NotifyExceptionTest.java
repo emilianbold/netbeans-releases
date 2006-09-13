@@ -42,7 +42,8 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.WindowManager;
 
 /**
- * Test NotifyException class.
+ * Test NotifyExcPanel class.
+ * 
  * @author Stanislav Aubrecht
  */
 public class NotifyExceptionTest extends NbTestCase {
@@ -73,7 +74,7 @@ public class NotifyExceptionTest extends NbTestCase {
         System.getProperties().remove("netbeans.exception.alert.min.level");
         System.getProperties().remove("netbeans.exception.report.min.level");
 
-        NotifyException.cleanInstance();
+        NotifyExcPanel.cleanInstance();
     }
     
     /**
@@ -158,7 +159,7 @@ public class NotifyExceptionTest extends NbTestCase {
         }
         MockFlashingIcon mock = new MockFlashingIcon();
 
-        NotifyException.flasher = mock;
+        NotifyExcPanel.flasher = mock;
 
         Logger l = Logger.getLogger(getName());
         l.setLevel(Level.ALL);

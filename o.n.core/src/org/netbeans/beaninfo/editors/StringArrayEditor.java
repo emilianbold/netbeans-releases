@@ -82,10 +82,15 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
     protected final String getStrings(boolean quoted) {
         if (strings == null) return "null"; // NOI18N
 
-        StringBuffer buf = new StringBuffer ();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < strings.length; i++) {
             // XXX handles in-string escapes if quoted
-            buf.append(quoted ? "\""+strings[i]+"\"" : strings[i]); // NOI18N
+            if (quoted) {
+                buf.append('"').append(strings[i]).append('"');
+            }
+            else {
+                buf.append(strings[i]);
+            }
             if (i != strings.length - 1) {
                 buf.append (separator); 
                 buf.append (' '); // NOI18N
@@ -100,7 +105,7 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
     }
 
     public void setAsText (String text) {
-        if (text.equals("null")) { // NOI18N
+        if ("null".equals(text)) { // NOI18N
             setValue(null);
             return;
         }
@@ -211,7 +216,7 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
             for (int i = 0; i < items.getLength(); i++) {
                 if (items.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                     itemEl = (org.w3c.dom.Element)items.item(i);
-                    if (itemEl.getNodeName().equals(XML_STRING_ITEM)) {
+                    if (XML_STRING_ITEM.equals(itemEl.getNodeName())) {
                         String indexStr = itemEl.getAttribute(ATTR_INDEX);
                         String valueStr = itemEl.getAttribute(ATTR_VALUE);
                         if (indexStr != null && valueStr != null) {

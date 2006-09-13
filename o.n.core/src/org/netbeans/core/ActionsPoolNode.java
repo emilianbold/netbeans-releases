@@ -38,8 +38,6 @@ import org.openide.util.NbBundle;
 */
 public final class ActionsPoolNode extends DataFolder.FolderNode {
 
-    /** Actions which this node supports */
-    static SystemAction[] staticActions;
     /** Actions of this node when it is top level actions node */
     static SystemAction[] topStaticActions;
 
@@ -56,7 +54,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
         //JST: it displays only Menu as name!    super.setDisplayName(NbBundle.getBundle (ActionsPoolNode.class).getString("CTL_Actions_name"));
         super.setShortDescription(NbBundle.getBundle (ActionsPoolNode.class).getString("CTL_Actions_hint"));
 
-        super.setIconBase ("org/netbeans/core/resources/actions"); // NOI18N
+        super.setIconBaseWithExtension ("org/netbeans/core/resources/actions.gif"); // NOI18N
     }
 
     public HelpCtx getHelpCtx () {
@@ -78,7 +76,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
     * @return array of actions for this node
     */
     public SystemAction[] getActions () {
-        if (staticActions == null)
+        if (topStaticActions == null)
             topStaticActions = new SystemAction [] {
                                    SystemAction.get (FileSystemAction.class),
                                    null,

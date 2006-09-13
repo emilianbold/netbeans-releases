@@ -522,11 +522,7 @@ public abstract class NbTopManager {
                 idePCL = new PropertyChangeListener() {
 
                     public void propertyChange(PropertyChangeEvent evt) {
-                        String name = evt.getPropertyName();
-
-                        if (name == null)
-                            return;
-                        if (name.equals(IDESettings.PROP_WWWBROWSER)) {
+                        if (IDESettings.PROP_WWWBROWSER.equals(evt.getPropertyName())) {
                             ((NbURLDisplayer) HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
                             if (idePCL != null) {
                                 (IDESettings.findObject(IDESettings.class, true)).removePropertyChangeListener(idePCL);

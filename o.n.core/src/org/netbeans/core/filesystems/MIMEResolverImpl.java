@@ -135,7 +135,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                     StringBuffer buf = new StringBuffer();
                     buf.append("Parse: ");
                     for (int i = 0; i<smell.length; i++)
-                        buf.append("\n" + smell[i]);
+                        buf.append('\n').append(smell[i]);
                     ERR.fine(buf.toString());
                 }
             }
@@ -414,9 +414,9 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         public String toString() {
             StringBuffer buf = new StringBuffer();
             buf.append("FileElement(");
-            buf.append(fileCheck + " ");
-            buf.append(rule + " ");
-            buf.append("Result:" + mime);
+            buf.append(fileCheck).append(' ');
+            buf.append(rule).append(' ');
+            buf.append("Result:").append(mime);
             return buf.toString();
         }
     }
@@ -452,30 +452,30 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             if (exts != null) {
                 buf.append("exts:");            
                 for (i = 0; i<exts.length; i++)
-                    buf.append(exts[i] + ", ");
+                    buf.append(exts[i]).append(", ");
             }
             
             if (mimes != null) {
                 buf.append("mimes:");
                 for (i = 0; i<mimes.length; i++)
-                    buf.append(mimes[i] + ", ");
+                    buf.append(mimes[i]).append(", ");
             }
             
             if (fatts != null) {
                 buf.append("file-attributes:");
                 for (i = 0; i<fatts.length; i++)
-                    buf.append(fatts[i] + "='" + vals[i] + "', ");
+                    buf.append(fatts[i]).append("='").append(vals[i]).append("', ");
             }
 
             if (magic != null) {
-                buf.append("magic:" + XMLUtil.toHex(magic, 0, magic.length));
+                buf.append("magic:").append(XMLUtil.toHex(magic, 0, magic.length));
             }
             
             if (mask != null) {
-                buf.append("mask:" + XMLUtil.toHex(mask, 0, mask.length));
+                buf.append("mask:").append(XMLUtil.toHex(mask, 0, mask.length));
             }
 
-            buf.append(")");
+            buf.append(')');
             
             return buf.toString();
         }

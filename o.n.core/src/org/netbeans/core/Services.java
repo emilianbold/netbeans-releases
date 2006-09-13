@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.ServiceType;
@@ -170,8 +171,9 @@ public final class Services extends ServiceType.Registry implements LookupListen
         }
         
         // storing order attribute
-	for (DataObject parent: order.keySet()) {
-            List<DataObject> orderedFiles = order.get(parent);
+	for (Entry<DataFolder,List<DataObject>> entry: order.entrySet()) {
+            DataObject parent = entry.getKey();
+            List<DataObject> orderedFiles = entry.getValue();
             if (orderedFiles.size() < 2) continue;
             
             Iterator<DataObject> files = orderedFiles.iterator();

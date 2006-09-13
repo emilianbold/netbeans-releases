@@ -21,7 +21,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.util.StringTokenizer;
 import java.text.MessageFormat;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
@@ -136,7 +136,7 @@ implements XMLPropertyEditor, ExPropertyEditor  {
     * @param text  The string to be parsed.
     */
     public void setAsText(String text) throws IllegalArgumentException {
-        if (text.equals("null") || text.equals("")) { // NOI18N
+        if ("null".equals(text) || "".equals(text)) { // NOI18N
             setValue(null);
             return;
         }
@@ -174,7 +174,7 @@ implements XMLPropertyEditor, ExPropertyEditor  {
         String msg = new MessageFormat(VALUE_FORMAT).format(new Object[] 
             { className , getHintFormat() } );
         IllegalArgumentException iae = new IllegalArgumentException(msg);
-        UIException.annotateUser(iae, e == null ? ""
+        UIExceptions.annotateUser(iae, e == null ? ""
                                                 : e.getMessage(), msg, e,
                                  new java.util.Date()); //NOI18N
         throw iae;                                          

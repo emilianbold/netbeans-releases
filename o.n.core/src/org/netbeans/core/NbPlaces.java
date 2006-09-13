@@ -128,8 +128,7 @@ public final class NbPlaces extends Object {
                 // resource not found, try to create new folder
                 fo = FileUtil.createFolder(fs.getRoot(), name);
             }
-            DataFolder df = DataFolder.findFolder(fo);
-            return df;
+            return DataFolder.findFolder(fo);
         } catch (IOException ex) {
             throw (IllegalStateException) new IllegalStateException("Folder not found and cannot be created: " + name).initCause(ex); // NOI18N
         }

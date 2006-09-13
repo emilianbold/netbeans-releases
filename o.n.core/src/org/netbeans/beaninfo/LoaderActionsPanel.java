@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.accessibility.AccessibleContext;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -92,10 +93,12 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements PropertyCh
         upButton.setMnemonic(bundle.getString("LoaderActionsPanel.jButton4.mnemonic").charAt(0));
         downButton.setMnemonic(bundle.getString("LoaderActionsPanel.jButton5.mnemonic").charAt(0));
         
-        beanTreeView2.getAccessibleContext().setAccessibleName(bundle.getString("ACS_LoaderActionsPanel.beanTreeView"));
-        beanTreeView2.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_LoaderActionsPanel.beanTreeView"));
-        list.getAccessibleContext().setAccessibleName(bundle.getString("ACS_LoaderActionsPanel.list"));
-        list.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_LoaderActionsPanel.list"));
+        AccessibleContext ac = beanTreeView2.getAccessibleContext();
+        ac.setAccessibleName(bundle.getString("ACS_LoaderActionsPanel.beanTreeView"));
+        ac.setAccessibleDescription(bundle.getString("ACSD_LoaderActionsPanel.beanTreeView"));
+        ac = list.getAccessibleContext();
+        ac.setAccessibleName(bundle.getString("ACS_LoaderActionsPanel.list"));
+        ac.setAccessibleDescription(bundle.getString("ACSD_LoaderActionsPanel.list"));
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_LoaderActionsPanel"));
     }
 

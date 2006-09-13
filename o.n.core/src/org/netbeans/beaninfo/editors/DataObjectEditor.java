@@ -285,7 +285,7 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     }
 
     public void setAsText(String text) throws java.lang.IllegalArgumentException {
-        if ((text==null)||(text.equals(""))) setValue(null);
+        if ((text==null)||("".equals(text))) setValue(null);
     }
 
     /** CookieFilter allows you to filter DataObjects

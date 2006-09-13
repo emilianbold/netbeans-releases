@@ -53,7 +53,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.NbBundle;
@@ -293,7 +293,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                                                     new Color(red, green, blue)));
                             return;
                         } catch( IllegalArgumentException iaE ) {
-                            UIException.annotateUser(iaE, null,
+                            UIExceptions.annotateUser(iaE, null,
                                                      iaE.getLocalizedMessage(),
                                                      null, null);
                             throw iaE;
@@ -332,7 +332,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 NbBundle.getMessage (ColorEditor.class, "FMT_IllegalEntry"), 
                 new Object[]{text});
             IllegalArgumentException iae = new IllegalArgumentException (text);
-            UIException.annotateUser(iae, text, msg, null, null);
+            UIExceptions.annotateUser(iae, text, msg, null, null);
             throw iae;
         }
 
@@ -634,7 +634,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 return superEquals && objID.equals(getID()) && (objPalette == getPalette());
             }
             else {
-                return superEquals && (objID == getID()) && (objPalette == getPalette());
+                return superEquals && (null == getID()) && (objPalette == getPalette());
             }
         }
 
@@ -924,7 +924,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     public static final boolean gtkShouldAntialias() {
         if (gtkAA == null) {
             Object o = Toolkit.getDefaultToolkit().getDesktopProperty("gnome.Xft/Antialias"); //NOI18N
-            gtkAA = new Integer(1).equals(o) ? Boolean.TRUE : Boolean.FALSE;
+            gtkAA = Boolean.valueOf(Integer.valueOf(1).equals(o));
         }
 
         return gtkAA.booleanValue();

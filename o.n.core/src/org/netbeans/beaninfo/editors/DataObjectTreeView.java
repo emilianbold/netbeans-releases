@@ -165,8 +165,8 @@ public class DataObjectTreeView extends DataObjectPanel {
         expPanel.getExplorerManager().addPropertyChangeListener(
         new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals
-                (ExplorerManager.PROP_SELECTED_NODES)) {
+                if (ExplorerManager.PROP_SELECTED_NODES.equals
+                (evt.getPropertyName())) {
                     Node [] nodes = (Node []) evt.getNewValue();
                     DataObject d = getDataObject();
                     boolean enableOK = false;

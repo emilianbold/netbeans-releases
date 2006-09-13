@@ -99,7 +99,7 @@ class ShortcutsFolder {
         // update shortcuts from profile
         String keymapName = (String) profilesFileObject.getAttribute
             (CURRENT_PROFILE_ATTRIBUTE);
-        if (keymapName == null || keymapName.equals (""))
+        if (keymapName == null || "".equals (keymapName))
             keymapName = "NetBeans"; // NOI18N
         if (currentFolder != null) 
             currentFolder.removeFileChangeListener (listener);
@@ -192,7 +192,7 @@ class ShortcutsFolder {
         
         public void fileAttributeChanged (FileAttributeEvent fe) {
             if (fe.getName () != null &&
-                !fe.getName ().equals (CURRENT_PROFILE_ATTRIBUTE)
+                !CURRENT_PROFILE_ATTRIBUTE.equals (fe.getName ())
             ) return;
             task.schedule (500);
         }

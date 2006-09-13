@@ -171,7 +171,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
         Children ch = new Children.Array ();
         AbstractNode n = new AbstractNode (ch);
 
-        ch.add ((Node[])nodes ().toArray (new Node[0]));
+        ch.add ((Node[])nodes ().toArray (new Node[nodes().size()]));
 
         getExplorerManager ().setRootContext (n);
         setActivatedNodes(new Node[0]);
@@ -322,7 +322,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
                                  Node.Property[] props = sets[ii].getProperties ();
                                  List<Node.Property> nueprops = new ArrayList<Node.Property> ();
                                  for (int j = 0; j < props.length; j++)
-                                     if (! props[j].getName ().equals ("name")) // NOI18N
+                                     if (! "name".equals (props[j].getName ())) // NOI18N
                                          nueprops.add (props[j]);
                                  return nueprops.toArray (new Node.Property[nueprops.size ()]);
                              }

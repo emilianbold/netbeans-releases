@@ -26,6 +26,7 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -197,10 +198,9 @@ final class FileStateManager {
             h = (HashMap<FileStatusListener,LinkedList<FileObject>>)listeners.clone ();
         }
         
-        Iterator<FileStatusListener> i = h.keySet ().iterator ();
-        while (i.hasNext ()) {
-            FileStatusListener l = i.next ();
-            LinkedList<FileObject> lst = h.get (l);
+        for (Entry<FileStatusListener,LinkedList<FileObject>> entry: h.entrySet()) {
+            FileStatusListener l = entry.getKey();
+            LinkedList<FileObject> lst = entry.getValue();
             if (lst.contains (mfo))
                 l.fileStatusChanged (mfo);
         }

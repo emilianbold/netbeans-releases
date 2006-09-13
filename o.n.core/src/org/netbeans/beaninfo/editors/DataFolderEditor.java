@@ -22,7 +22,7 @@ package org.netbeans.beaninfo.editors;
 import java.beans.*;
 import java.io.File;
 import java.text.MessageFormat;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -83,7 +83,7 @@ public class DataFolderEditor extends PropertyEditorSupport implements ExPropert
             String msg = MessageFormat.format(
                 NbBundle.getMessage(
                     DataFolderEditor.class, "FMT_DF_UNKNOWN"), new Object[] {text}); //NOI18N
-            UIException.annotateUser(iae, iae.getMessage(), msg, null,
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, null,
                                      new java.util.Date());
             throw iae;
         }        

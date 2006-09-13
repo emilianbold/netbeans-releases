@@ -59,9 +59,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
 //        System.err.println("Print of " + fo);
 //        System.err.println("print " + print);
 //        System.err.println("template " + template);
-        boolean res = template.match(print);
-//        System.err.println("Match " + res);
-        return res;
+        return template.match(print);
     }
 
     public String toString() {
@@ -350,32 +348,32 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             if (doctypes != null) {
                 buf.append("doctypes:");
                 for (i = 0; i<doctypes.length; i++)
-                    buf.append(doctypes[i] + ", ");
+                    buf.append(doctypes[i]).append(", ");
             }
 
             if (pis != null) {
                 buf.append("PIs:");
                 for (i = 0; i<pis.length; i++)
-                    buf.append(pis[i] + ", ");
+                    buf.append(pis[i]).append(", ");
             }
 
             if (root != null) {
-               buf.append("root:" + root);
+               buf.append("root:").append(root);
             }
 
             if (nss != null) {
                 buf.append("root-namespaces:");
                 for (i = 0; i<nss.length; i++)
-                    buf.append(nss[i] + ", ");
+                    buf.append(nss[i]).append(", ");
             }
 
             if (attns != null) {
                 buf.append("attributes:");
                 for (i = 0; i<attns.length; i++)
-                    buf.append(attns[i] + "='" + attvs[i] + "'");
+                    buf.append(attns[i]).append("='").append(attvs[i]).append("'");
             }
 
-            buf.append(")");
+            buf.append(')');
             return buf.toString();
 
         }

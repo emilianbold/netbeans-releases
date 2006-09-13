@@ -259,7 +259,7 @@ public final class NbSheet extends TopComponent {
             }
         }
         Object[] titleParams = new Object[] {
-            new Integer(copyNodes.size()),
+            Integer.valueOf(copyNodes.size()),
             nodeTitle
         };
         // different naming if docked in properties mode
@@ -433,7 +433,7 @@ public final class NbSheet extends TopComponent {
     private class Listener extends Object implements Runnable, PropertyChangeListener {
         Listener() {}
         public void propertyChange (PropertyChangeEvent ev) {
-            if (ev.getPropertyName().equals( TopComponent.Registry.PROP_ACTIVATED_NODES )) {
+            if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals( ev.getPropertyName() )) {
                 activate();
             }
             /*

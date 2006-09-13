@@ -142,13 +142,13 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
         if (file == null) {
             return ""; // NOI18N
         }
-        String path = "[";
+        StringBuilder path = new StringBuilder("[");
         for (int i = 0; i < file.length; i++) {
-            path += file[i].getPath();
+            path.append(file[i].getPath());
         }
         // Dot is more friendly to people though Java itself would prefer blank:
-        if (path.equals("[")) path = "[."; // NOI18N
-        return path + "]"; // NOI18N
+        if (file.length == 0) path.append('.'); // NOI18N
+        return path.append(']').toString(); // NOI18N
     }
     
     /** Parses the given string and should create a new instance of the
@@ -160,7 +160,7 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
         if (str == null) {
             throw new IllegalArgumentException("null"); // NOI18N
         }
-        if (str.equals("")) { // NOI18N
+        if ("".equals(str)) { // NOI18N
             setValue(null);
             return;
         }
@@ -243,21 +243,21 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
         } else {
             // [PENDING] not a full escape of filenames, but enough to at least
             // handle normal Windows backslashes
-            String retVal = "new java.io.File[] { "; // NOI18N
+            StringBuilder retVal = new StringBuilder("new java.io.File[] { "); // NOI18N
             for (int i = 0; i < value.length; i++) {
                 if (baseDirectory != null && !value[i].isAbsolute()) {
-                    retVal += "new java.io.File(" // NOI18N
-                        + FileEditor.stringify(baseDirectory.getPath())
-                        + ", " // NOI18N
-                        + FileEditor.stringify(value[i].getPath())
-                        + "), "; // NOI18N
+                    retVal.append("new java.io.File(") // NOI18N
+                        .append(FileEditor.stringify(baseDirectory.getPath()))
+                        .append( ", " ) // NOI18N
+                        .append(FileEditor.stringify(value[i].getPath()))
+                        .append( "), " ); // NOI18N
                 } else {
-                    retVal += "new java.io.File(" // NOI18N
-                        + FileEditor.stringify(value[i].getAbsolutePath())
-                        + "), "; // NOI18N
+                    retVal.append("new java.io.File(") // NOI18N
+                        .append(FileEditor.stringify(value[i].getAbsolutePath()))
+                        .append("), "); // NOI18N
                 }
             }
-            return retVal+" }";
+            return retVal.append(" }").toString();
         }
     }
     

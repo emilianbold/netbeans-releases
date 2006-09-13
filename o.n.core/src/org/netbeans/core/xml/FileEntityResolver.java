@@ -403,7 +403,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                 reader.parse(is);
             } catch (StopSaxException ex) {
             } catch (Exception ex) { // SAXException, FileNotFoundException, IOException
-                if (ex.getClass ().getName ().equals ("org.openide.util.lookup.AbstractLookup$ISE")) { // NOI18N
+                if ("org.openide.util.lookup.AbstractLookup$ISE".equals (ex.getClass ().getName ())) { // NOI18N
                     // this is covered by the FileEntityResolverDeadlock54971Test
                     throw (IllegalStateException)ex;
                 }

@@ -142,10 +142,10 @@ public final class SettingChildren extends FilterNode.Children {
             this.layer = layer;
 
             setValue (ListImageEditor.PROP_VALUES, new Integer [] {
-                new Integer (FileStateManager.FSTATE_DEFINED),
-                new Integer (FileStateManager.FSTATE_IGNORED),
-                new Integer (FileStateManager.FSTATE_INHERITED),
-                new Integer (FileStateManager.FSTATE_UNDEFINED)
+                Integer.valueOf (FileStateManager.FSTATE_DEFINED),
+                Integer.valueOf (FileStateManager.FSTATE_IGNORED),
+                Integer.valueOf (FileStateManager.FSTATE_INHERITED),
+                Integer.valueOf (FileStateManager.FSTATE_UNDEFINED)
             });
 
             setValue (ListImageEditor.PROP_IMAGES, new Image [] {
@@ -174,7 +174,7 @@ public final class SettingChildren extends FilterNode.Children {
 
         public Object getValue () throws IllegalAccessException, InvocationTargetException {
             FileStateManager fsm = FileStateManager.getDefault ();
-            return new Integer (fsm.getFileState (primaryFile, layer));
+            return Integer.valueOf (fsm.getFileState (primaryFile, layer));
         }
 
         public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {

@@ -20,7 +20,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.Point;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.util.NbBundle;
 
 /** A property editor for Point class.
@@ -48,7 +48,7 @@ public class PointEditor extends ArrayOfIntSupport {
                 "CTL_NegativeSize"); //NOI18N
             IllegalArgumentException iae = new IllegalArgumentException (
                 "Negative value"); //NOI18N
-            UIException.annotateUser(iae, iae.getMessage(), msg, null,
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, null,
                                      new java.util.Date());
             throw iae;
         }

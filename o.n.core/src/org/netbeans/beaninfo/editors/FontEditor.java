@@ -44,16 +44,16 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     // static .....................................................................................
 
     static final Integer[] sizes = new Integer [] {
-                                       new Integer (3),
-                                       new Integer (5),
-                                       new Integer (8),
-                                       new Integer (10),
-                                       new Integer (12),
-                                       new Integer (14),
-                                       new Integer (18),
-                                       new Integer (24),
-                                       new Integer (36),
-                                       new Integer (48)
+                                       Integer.valueOf (3),
+                                       Integer.valueOf (5),
+                                       Integer.valueOf (8),
+                                       Integer.valueOf (10),
+                                       Integer.valueOf (12),
+                                       Integer.valueOf (14),
+                                       Integer.valueOf (18),
+                                       Integer.valueOf (24),
+                                       Integer.valueOf (36),
+                                       Integer.valueOf (48)
                                    };
 
     static final String[] styles = new String [] {
@@ -229,7 +229,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             lStyle.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_FontStyle"));
             lSize = new JList (sizes);
             lSize.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_CTL_Size"));
-            tfSize = new JTextField ("" + font.getSize ()); // NOI18N
+            tfSize = new JTextField (String.valueOf(font.getSize ()));
             tfSize.getAccessibleContext().setAccessibleDescription(lSize.getAccessibleContext().getAccessibleDescription());
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FontEditor.class, "ACSD_FontCustomEditor"));
 
@@ -344,7 +344,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                                                 public void valueChanged (ListSelectionEvent e) {
                                                     if (!lSize.isSelectionEmpty ()) {
                                                         int i = lSize.getSelectedIndex ();
-                                                        tfSize.setText ("" + sizes [i]); // NOI18N
+                                                        tfSize.setText (String.valueOf(sizes [i]));
                                                         setValue ();
                                                     }
                                                 }
@@ -382,8 +382,8 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         }
 
         private void updateSizeList(int size) {
-            if (java.util.Arrays.asList(sizes).contains(new Integer(size)))
-                lSize.setSelectedValue(new Integer(size), true);
+            if (java.util.Arrays.asList(sizes).contains(Integer.valueOf(size)))
+                lSize.setSelectedValue(Integer.valueOf(size), true);
             else
                 lSize.clearSelection();
         }

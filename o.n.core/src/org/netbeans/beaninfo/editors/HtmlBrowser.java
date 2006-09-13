@@ -22,7 +22,7 @@ package org.netbeans.beaninfo.editors;
 import java.beans.PropertyEditorSupport;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -91,7 +91,7 @@ public class HtmlBrowser extends Object {
                     HtmlBrowser.class, "FMT_EXC_GENERIC_BAD_VALUE"), //NOI18N
                     new Object[] {str}); 
             }
-            UIException.annotateUser(iae, str, msg, e, new java.util.Date());
+            UIExceptions.annotateUser(iae, str, msg, e, new java.util.Date());
             throw iae;
             }
         }

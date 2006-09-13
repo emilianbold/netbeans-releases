@@ -447,8 +447,6 @@ public final class LoaderPoolNode extends AbstractNode {
         HashSet<Class> classes = new HashSet<Class> ();
         LinkedList<DataLoader> l = new LinkedList<DataLoader> ();
         
-        Exception deserExc = null; // collects all exceptions thrown by loader deserialization
-
         Iterator<? extends ModuleInfo> mit = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
         Map<String,ModuleInfo> modules = new HashMap<String,ModuleInfo>();
         while (mit.hasNext()) {
@@ -596,9 +594,6 @@ public final class LoaderPoolNode extends AbstractNode {
         // update event). Cf. #29671.
         resort ();
         
-        if (deserExc != null) {
-            throw new SafeException (deserExc);
-        }
     }
     
     // I/O with loaders.ser; moved from NbProjectOperation:

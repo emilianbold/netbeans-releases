@@ -29,7 +29,7 @@ import java.util.HashMap;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -110,7 +110,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyCh
             int height = Integer.parseInt (heightField.getText ());
             if ((x < 0) || (y < 0) || (width < 0) || (height < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                UIException.annotateUser(ise, null,
+                UIExceptions.annotateUser(ise, null,
                                          NbBundle.getMessage(InsetsCustomEditor.class,
                                                              "CTL_NegativeSize"),
                                          null, null);
@@ -119,7 +119,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyCh
             return new Insets (x, y, width, height);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            UIException.annotateUser(ise, null,
+            UIExceptions.annotateUser(ise, null,
                                      NbBundle.getMessage(InsetsCustomEditor.class,
                                                          "CTL_InvalidValue"),
                                      null, null);

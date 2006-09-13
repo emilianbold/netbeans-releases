@@ -43,7 +43,7 @@ public class DateEditor extends PropertyEditorSupport {
     }
     
     public void setAsText(String text) throws IllegalArgumentException {
-        if (text.equals("")) { // NOI18N
+        if ("".equals(text)) { // NOI18N
             setValue(null);
         } else {
             try {

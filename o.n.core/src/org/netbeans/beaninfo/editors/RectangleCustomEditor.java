@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -107,7 +107,7 @@ implements KeyListener, PropertyChangeListener {
             int height = Integer.parseInt (heightField.getText ());
             if ((x < 0) || (y < 0) || (width < 0) || (height < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                UIException.annotateUser(ise, null,
+                UIExceptions.annotateUser(ise, null,
                                          NbBundle.getMessage(RectangleCustomEditor.class,
                                                              "CTL_NegativeSize"),
                                          null, null);
@@ -116,7 +116,7 @@ implements KeyListener, PropertyChangeListener {
             return new Rectangle (x, y, width, height);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            UIException.annotateUser(ise, null,
+            UIExceptions.annotateUser(ise, null,
                                      NbBundle.getMessage(RectangleCustomEditor.class,
                                                          "CTL_InvalidValue"),
                                      null, null);

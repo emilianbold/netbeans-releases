@@ -97,7 +97,7 @@ public class CharEditor extends PropertyEditorSupport implements EnhancedPropert
         } else {
             value = text.charAt(0);
         }
-        setValue(new Character(value));
+        setValue(Character.valueOf(value));
     }
     
     /**
@@ -113,12 +113,12 @@ public class CharEditor extends PropertyEditorSupport implements EnhancedPropert
         if (newValue instanceof String) {
             String text = (String ) newValue;
             if (text.length() >= 1) {
-                super.setValue(new Character(text.charAt(0)));
+                super.setValue(Character.valueOf(text.charAt(0)));
                 return;
             }
         }
         if (newValue == null ) {
-            super.setValue( new Character( '\u0000' ) ); // NOI18N
+            super.setValue( Character.valueOf( '\u0000' ) ); // NOI18N
             return;
         }
         

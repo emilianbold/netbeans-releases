@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Set;
 import javax.swing.Action;
@@ -284,9 +285,9 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
     void addActionForKeyStrokeMap(Map<KeyStroke,Action> map) {
         Set<Action> actionsSet = new HashSet<Action>();
         synchronized (this) {
-            for (Iterator<KeyStroke> it = map.keySet ().iterator (); it.hasNext (); ) {
-                KeyStroke key = it.next ();
-                Action value = map.get(key);
+            for (Entry<KeyStroke,Action> entry: map.entrySet ()) {
+                KeyStroke key = entry.getKey();
+                Action value = entry.getValue();
                 // Add both old and new action:
                 actionsSet.add(value);
                 actionsSet.add(bindings.put(key, value));
@@ -414,7 +415,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator<Key
     
     }
     
-    public class KeymapAction extends javax.swing.AbstractAction {
+    public static class KeymapAction extends javax.swing.AbstractAction {
         private Keymap keymap;
         private KeyStroke stroke;
 	

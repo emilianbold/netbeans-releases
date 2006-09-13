@@ -22,7 +22,7 @@ package org.netbeans.beaninfo.editors;
 import java.awt.Image;
 import java.beans.PropertyEditorSupport;
 import java.beans.FeatureDescriptor;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -117,7 +117,7 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
                 "negative: " + str); //NOI18N
             String msg = NbBundle.getMessage(ListImageEditor.class, 
                 "CTL_NegativeSize"); //NOI18N
-            UIException.annotateUser(iae, iae.getMessage(), msg, null,
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, null,
                                      new java.util.Date());
             throw iae;
         }

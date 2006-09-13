@@ -20,7 +20,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.Insets;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
@@ -28,7 +28,7 @@ import org.openide.util.NbBundle;
 /** A property editor for Insets class.
 * @author   Petr Hamernik
 */
-public class InsetsEditor extends ArrayOfIntSupport implements ExPropertyEditor {
+public class InsetsEditor extends ArrayOfIntSupport {
     public InsetsEditor() {
         super("java.awt.Insets", 4); // NOI18N
     }
@@ -52,7 +52,7 @@ public class InsetsEditor extends ArrayOfIntSupport implements ExPropertyEditor 
                 "CTL_NegativeSize"); //NOI18N
             IllegalArgumentException iae = new IllegalArgumentException (
                 "Negative value"); //NOI18N
-            UIException.annotateUser(iae, iae.getMessage(), msg, null,
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, null,
                                      new java.util.Date());
             throw iae;
 

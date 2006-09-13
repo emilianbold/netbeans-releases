@@ -25,7 +25,7 @@
 package org.netbeans.beaninfo.editors;
 import java.util.Arrays;
 import org.netbeans.beaninfo.editors.ExPropertyEditorSupport.EnvException;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.*;
 import org.openide.util.NbBundle;
 /** An editor for primitive integer types which allows hinting of tag
@@ -154,12 +154,12 @@ public class IntEditor extends ExPropertyEditorSupport {
         //IllegalArgumentException is a more correct exception to throw
         //anyway
         try {
-            setValue(new Integer(Integer.parseInt(s)));
+            setValue(Integer.valueOf(s));
         } catch (NumberFormatException nfe) {
             String msg = NbBundle.getMessage(
                 IntEditor.class, "EXC_ILLEGAL_VALUE_TEXT") + s; //NOI18N
             RuntimeException iae = new IllegalArgumentException(msg); //NOI18N
-            UIException.annotateUser(iae, msg, msg, nfe, new java.util.Date());
+            UIExceptions.annotateUser(iae, msg, msg, nfe, new java.util.Date());
             throw iae;
         }
     }
@@ -181,11 +181,11 @@ public class IntEditor extends ExPropertyEditorSupport {
                 msg.append(arrToStr(keys));
                 String message = msg.toString();
                 RuntimeException iae = new IllegalArgumentException(message);
-                UIException.annotateUser(iae, message, message, iae,
+                UIExceptions.annotateUser(iae, message, message, iae,
                                          new java.util.Date());
                 throw iae;
             } else {
-                setValue(new Integer(idx));
+                setValue(Integer.valueOf(idx));
             }
         }
     }
@@ -193,7 +193,7 @@ public class IntEditor extends ExPropertyEditorSupport {
     public Object getValue () {
         Integer v = (Integer) super.getValue();
         if (values != null) {
-            v = new Integer (values[v.intValue()]);
+            v = Integer.valueOf (values[v.intValue()]);
         }
         return v;
     }

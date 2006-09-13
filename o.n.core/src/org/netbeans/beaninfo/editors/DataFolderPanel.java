@@ -618,7 +618,7 @@ class DataFolderPanel extends TopComponent implements
                                         null
                                     );
 
-                if ( ( closest == null || selected.contains (rootNode) ) && sugg != null ) {
+                if ( sugg != null ) {
                     // if we can go on and there has been no suggestion o
                     // this is the current filesystem => go o
                     closest = ex;

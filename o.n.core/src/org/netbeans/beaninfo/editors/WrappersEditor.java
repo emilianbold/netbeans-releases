@@ -21,7 +21,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
 import java.text.MessageFormat;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
@@ -77,7 +77,7 @@ public abstract class WrappersEditor implements ExPropertyEditor {
                 NbBundle.getMessage(
                     WrappersEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"), new Object[] {text}); //NOI18N
             }
-            UIException.annotateUser(iae, iae.getMessage(), msg, e,
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, e,
                                      new java.util.Date());
             throw iae;
         }
@@ -103,8 +103,6 @@ public abstract class WrappersEditor implements ExPropertyEditor {
         pe.removePropertyChangeListener(listener);
     }    
     
-    public abstract String getJavaInitializationString();
-
     public void attachEnv(PropertyEnv env) {
         //Delegate if the primitive editor is an ExPropertyEditor -
         //boolean and int editors will be

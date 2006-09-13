@@ -27,7 +27,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.util.NbBundle;
 
 
@@ -52,13 +52,13 @@ public class PropertiesEditor extends PropertyEditorSupport {
                 
                 Object key = e.nextElement();
                 
-                buff.append(key + "=" + prop.get(key)); // NOI18N
+                buff.append(key).append('=').append(prop.get(key)); // NOI18N
             }
             
             return buff.toString();
         }
         
-        return "" + value; // NOI18N
+        return String.valueOf(value); // NOI18N
     }
 
     /** Overrides superclass method.
@@ -83,7 +83,7 @@ public class PropertiesEditor extends PropertyEditorSupport {
                 NbBundle.getMessage(
                     PropertiesEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"), new Object[] {text}); //NOI18N
             }
-            UIException.annotateUser(iae, iae.getMessage(), msg, ioe, new Date());
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, ioe, new Date());
             throw iae;
         }
     }

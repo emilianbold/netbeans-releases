@@ -178,8 +178,7 @@ abstract class FlashingIcon extends JComponent implements MouseListener {
         Dimension d = tip.getPreferredSize();
         
         
-        Point retValue = new Point( getWidth()-d.width, -d.height );
-        return retValue;
+        return new Point( getWidth()-d.width, -d.height );
     }
     
     private class Timer implements Runnable {

@@ -217,17 +217,17 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 }
             }
         }
-        String path = getFileName(rootNode);
+        StringBuilder path = new StringBuilder(getFileName(rootNode));
         if (n != null) {
-            path += File.separator + getFileName(n);
+            path.append( File.separator ).append( getFileName(n) );
 
             while (!st.isEmpty()) {
                 Node nn = st.pop().getNodeDelegate();
-                path += File.separator + getFileName(nn);
+                path.append( File.separator ).append( getFileName(nn));
             }
         }
         
-        return path;
+        return path.toString();
     }
     
     /**
@@ -513,7 +513,6 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 }
             }
             setOkButtonEnabled(enableOK);
-        } else if (JFileChooser.DIRECTORY_CHANGED_PROPERTY.equals(e.getPropertyName())) {
         }
     }
     
@@ -585,13 +584,8 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             }
         }
         
-        public String getParent () {
-            String p = super.getParent();
-            return p;
-        }
-        
         public File getParentFile () {
-            String p = this.getParent();
+            String p = getParent();
             if (p == null) {
                 return null;
             }
@@ -686,8 +680,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         }
         
         public Icon getIcon () {
-            Icon icon = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
-            return icon;
+            return new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
         }
         
         public String getAbsolutePath() {
@@ -742,8 +735,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 //Try to locate corresponding node by path
                 Node n = findNode(f.getPath());
                 if (n != null) {
-                    Icon icon = new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
-                    return icon;
+                    return new ImageIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
                 } else {
                     return null;
                 }
@@ -776,8 +768,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             String path = containingDir.getPath() + File.separator + newFolderString;
             Node n = findNode(path);
             if (n != null) {
-                NodeFile folder = new NodeFile(path, n);
-                return folder;
+                return new NodeFile(path, n);
             } else {
                 Node parent = findNode(containingDir.getPath());
                 if (parent == null) {
@@ -794,8 +785,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                     return null;
                 }
                 n = createNode(path);
-                NodeFile folder = new NodeFile(path, n);
-                return folder;
+                return new NodeFile(path, n);
             }
         }
         
@@ -807,8 +797,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             if (n == null) {
                 n = createNode(path);
             }
-            NodeFile file = new NodeFile(path, n);
-            return file;
+            return new NodeFile(path, n);
         }
 
         /**
@@ -820,8 +809,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             if (n == null) {
                 n = createNode(path);
             }
-            NodeFile file = new NodeFile(path, n);
-            return file;
+            return new NodeFile(path, n);
         }
         
         /**
@@ -854,8 +842,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         public File getParentDirectory (File dir) {
             if (dir != null) {
                 File f = createFileObject(dir.getPath());
-                File parent = f.getParentFile();
-                return parent;
+                return f.getParentFile();
             }
             return null;
         }
@@ -886,7 +873,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         }
         
         public void setCurrentDirectory (File dir) {
-            if ((DataObjectListView.this != null) && (dir != null) && !(dir instanceof NodeFile)) {
+            if ((dir != null) && !(dir instanceof NodeFile)) {
                 Node n = findNode(dir.getPath());
                 dir = new NodeFile(dir.getPath(), n);
             }

@@ -20,7 +20,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.Rectangle;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
@@ -28,7 +28,7 @@ import org.openide.util.NbBundle;
 /** A property editor for Rectangle class.
 * @author   Petr Hamernik
 */
-public class RectangleEditor extends ArrayOfIntSupport implements ExPropertyEditor {
+public class RectangleEditor extends ArrayOfIntSupport {
 
     public RectangleEditor() {
         super("java.awt.Rectangle", 4); // NOI18N
@@ -49,7 +49,7 @@ public class RectangleEditor extends ArrayOfIntSupport implements ExPropertyEdit
                 "CTL_NegativeSize"); //NOI18N
             IllegalArgumentException iae = new IllegalArgumentException (
                 "Negative value"); //NOI18N
-            UIException.annotateUser(iae, iae.getMessage(), msg, null,
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, null,
                                      new java.util.Date());
             throw iae;
 

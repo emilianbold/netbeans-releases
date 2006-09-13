@@ -177,7 +177,7 @@ public class IDESettings extends SystemOption {
     public void setModulesSortMode (int nue) {
         int oldValue = modulesSortMode;
         modulesSortMode = nue;
-        firePropertyChange (PROP_MODULES_SORT_MODE, new Integer (oldValue), new Integer (nue));
+        firePropertyChange (PROP_MODULES_SORT_MODE, Integer.valueOf (oldValue), Integer.valueOf (nue));
     }
 
     /** Getter for ShowToolTipsInIDE
@@ -561,7 +561,7 @@ public class IDESettings extends SystemOption {
         }
         int oldValue = this.uiMode;
         this.uiMode = uiMode;
-        firePropertyChange (PROP_UIMODE, new Integer(oldValue), new Integer(uiMode));
+        firePropertyChange (PROP_UIMODE, Integer.valueOf(oldValue), Integer.valueOf(uiMode));
     }
 
     public int getUIMode () {
@@ -584,7 +584,7 @@ public class IDESettings extends SystemOption {
         String localhost = ""; // NOI18N
         try {
             localhost = InetAddress.getLocalHost().getHostName();
-            if (!localhost.equals("localhost")) { // NOI18N
+            if (!"localhost".equals(localhost)) { // NOI18N
                 nonProxy = nonProxy + "|" + localhost; // NOI18N
             } else {
                 // Avoid this error when hostname == localhost:
@@ -599,7 +599,7 @@ public class IDESettings extends SystemOption {
         }
         try {
             String localhost2 = InetAddress.getLocalHost().getCanonicalHostName();
-            if (!localhost2.equals("localhost") && !localhost2.equals(localhost)) { // NOI18N
+            if (!"localhost".equals(localhost2) && !localhost2.equals(localhost)) { // NOI18N
                 nonProxy = nonProxy + "|" + localhost2; // NOI18N
             } else {
                 // Avoid this error when hostname == localhost:
@@ -629,7 +629,7 @@ public class IDESettings extends SystemOption {
             } catch (PatternSyntaxException e) {
                 IllegalArgumentException iae = new IllegalArgumentException();
                 iae.initCause( e );
-                UIException.annotateUser(iae, e.getMessage(),
+                UIExceptions.annotateUser(iae, e.getMessage(),
                                          e.getLocalizedMessage(), null, null);
                 throw iae;
             }
@@ -672,28 +672,32 @@ public class IDESettings extends SystemOption {
     private static String compactNonProxyHosts (String nonProxyHost) {
         StringTokenizer st = new StringTokenizer (nonProxyHost, "|"); //NOI18N
         Set<String> s = new HashSet<String> (); 
-        String compactedProxyHosts = "";
+        StringBuilder compactedProxyHosts = new StringBuilder();
         while (st.hasMoreTokens ()) {
             String t = st.nextToken ();
             if (s.add (t.toLowerCase (Locale.US))) {
-                compactedProxyHosts = compactedProxyHosts + (compactedProxyHosts.length () > 0 ? "|" : "") + t; //NOI18N
+                if (compactedProxyHosts.length() > 0)
+                    compactedProxyHosts.append('|');
+                compactedProxyHosts.append(t);
             }
         }
-        return compactedProxyHosts;
+        return compactedProxyHosts.toString();
     }
     
     private static String addReguralToNonProxyHosts (String nonProxyHost) {
         StringTokenizer st = new StringTokenizer (nonProxyHost, "|");
-        String reguralProxyHosts = "";
+        StringBuilder reguralProxyHosts = new StringBuilder();
         while (st.hasMoreTokens ()) {
             String t = st.nextToken ();
             if (t.indexOf ('*') == -1) { //NOI18N
                 t = t + '*'; //NOI18N
             }
-            reguralProxyHosts = reguralProxyHosts + (reguralProxyHosts.length () > 0 ? "|" : "") + t; //NOI18N
+            if (reguralProxyHosts.length() > 0) 
+                reguralProxyHosts.append('|');
+            reguralProxyHosts.append(t);
         }
         
-        return reguralProxyHosts;
+        return reguralProxyHosts.toString();
     }
     
    

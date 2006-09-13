@@ -23,7 +23,7 @@ import java.beans.PropertyEditorSupport;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.util.NbBundle;
 
 /** A property editor for java.net.URL class.
@@ -47,7 +47,7 @@ public class URLEditor extends PropertyEditorSupport implements org.openide.expl
             String msg = MessageFormat.format(
                 NbBundle.getMessage(
                     URLEditor.class, "FMT_EXC_BAD_URL"), new Object[] {s}); //NOI18N
-             UIException.annotateUser(iae, e.getMessage(), msg, e,
+             UIExceptions.annotateUser(iae, e.getMessage(), msg, e,
                                       new java.util.Date());
             throw iae;
         }

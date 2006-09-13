@@ -60,7 +60,7 @@ public final class NbErrorManager extends Handler {
                 level = null;
             }
             Exc ex = createExc(record.getThrown(), level, record.getLevel().intValue() == 1973 ? record : null);
-            NotifyException.notify(ex);
+            NotifyExcPanel.notify(ex);
         }
     }
     
@@ -131,48 +131,39 @@ public final class NbErrorManager extends Handler {
 
         
         if (recursively) {
-            if (l != null) {
-                ArrayList<LogRecord> al = new ArrayList<LogRecord>();
-                for (Iterator<LogRecord> i = l.iterator(); i.hasNext(); ) {
-                    LogRecord ano = i.next();
-                    Throwable t1 = ano.getThrown();
-                    if ((t1 != null) && (! alreadyVisited.contains(t1))) {
-                        alreadyVisited.add(t1);
-                        LogRecord[] tmpAnnoArray = findAnnotations0(t1, null, true, alreadyVisited);
-                        if ((tmpAnnoArray != null) && (tmpAnnoArray.length > 0)) {
-                            al.addAll(Arrays.asList(tmpAnnoArray));
-                        }
+            ArrayList<LogRecord> al = new ArrayList<LogRecord>();
+            for (Iterator<LogRecord> i = l.iterator(); i.hasNext(); ) {
+                LogRecord ano = i.next();
+                Throwable t1 = ano.getThrown();
+                if ((t1 != null) && (! alreadyVisited.contains(t1))) {
+                    alreadyVisited.add(t1);
+                    LogRecord[] tmpAnnoArray = findAnnotations0(t1, null, true, alreadyVisited);
+                    if ((tmpAnnoArray != null) && (tmpAnnoArray.length > 0)) {
+                        al.addAll(Arrays.asList(tmpAnnoArray));
                     }
                 }
-                l.addAll(al);
             }
+            l.addAll(al);
         }
 
         Throwable cause = t.getCause();
         if (cause != null) {
             LogRecord[] extras = findAnnotations0(cause, null, true, alreadyVisited);
             if (extras != null && extras.length > 0) {
-                if (l == null) {
-                    l = new ArrayList<LogRecord>();
-                }
                 l.addAll(Arrays.asList(extras));
             }
         }
         
         LogRecord[] arr;
-        if (l == null) {
-            arr = null;
-        } else {
-            arr = new LogRecord[l.size()];
-            l.toArray(arr);
-        }
+        arr = new LogRecord[l.size()];
+        l.toArray(arr);
         
         return arr;
     }
     
     /**
      * Another final class that is used to communicate with
-     * NotifyException and provides enough information to the dialog.
+     * NotifyExcPanel and provides enough information to the dialog.
      */
     final class Exc {
         /** the original throwable */
@@ -455,7 +446,7 @@ public final class NbErrorManager extends Handler {
                     return new Date();
                 default:
                     throw new IllegalArgumentException(
-                        "Unknown " + new Integer(kind) // NOI18N
+                        "Unknown " + Integer.valueOf(kind) // NOI18N
                         );
             }
         }

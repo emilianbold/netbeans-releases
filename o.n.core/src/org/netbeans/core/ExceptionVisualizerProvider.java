@@ -28,6 +28,6 @@ import org.openide.awt.StatusLineElementProvider;
  */
 public final class ExceptionVisualizerProvider implements StatusLineElementProvider {
     public Component getStatusLineElement () {
-        return NotifyException.getNotificationVisualizer ();
+        return NotifyExcPanel.getNotificationVisualizer ();
     }
 }

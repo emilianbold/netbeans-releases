@@ -91,7 +91,7 @@ class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChan
     }
     
     public void propertyChange (PropertyChangeEvent e) {
-        if (!e.getPropertyName ().equals (HtmlBrowser.Impl.PROP_TITLE)) return;
+        if (!HtmlBrowser.Impl.PROP_TITLE.equals (e.getPropertyName ())) return;
         String title = browserComponent.getBrowserImpl().getTitle ();
         if ((title == null) || (title.length () < 1)) return;
         HtmlBrowserComponent.this.setName (title);
@@ -268,7 +268,7 @@ public static final class BrowserReplacer implements java.io.Externalizable {
     throws java.io.ObjectStreamException {
         // return singleton instance
         try {
-            if (url.getProtocol().equals("http")    // NOI18N
+            if ("http".equals(url.getProtocol())    // NOI18N
             &&  InetAddress.getByName (url.getHost ()).equals (InetAddress.getLocalHost ())) {
                 url.openStream ();
             }

@@ -181,7 +181,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         }
         String path = file.getPath();
         // Dot is more friendly to people though Java itself would prefer blank:
-        if (path.equals("")) path = "."; // NOI18N
+        if ("".equals(path)) path = "."; // NOI18N
         return path;
     }
     
@@ -194,12 +194,12 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         if (str == null) {
             throw new IllegalArgumentException("null"); // NOI18N
         }
-        if (str.equals("")) { // NOI18N
+        if ("".equals(str)) { // NOI18N
             setValue(null);
             return;
         }
         // See getAsText.
-        if (str.equals(".")) str = ""; // NOI18N
+        if (".".equals(str)) str = ""; // NOI18N
         setValue(new File(str));
     }
 

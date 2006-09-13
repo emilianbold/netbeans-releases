@@ -35,10 +35,6 @@ public class JumpNextAction extends CallbackSystemAction {
         putProperty ("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    public void setEnabled (boolean b) {
-        super.setEnabled (b);
-    }
-
     protected String iconResource () {
         return "org/netbeans/core/resources/actions/nextOutJump.gif"; // NOI18N
     }

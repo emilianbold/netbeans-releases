@@ -33,7 +33,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
@@ -177,7 +177,7 @@ implements ExPropertyEditor {
             NbBundle.getMessage(
                 ObjectEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"),  //NOI18N
                 new Object[] {str});
-        UIException.annotateUser(iae, str, msg, null, new Date());
+        UIExceptions.annotateUser(iae, str, msg, null, new Date());
         throw iae;        
     }
     

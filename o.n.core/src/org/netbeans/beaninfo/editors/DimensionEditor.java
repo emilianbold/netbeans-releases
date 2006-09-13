@@ -20,7 +20,7 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.Dimension;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.util.NbBundle;
 
@@ -28,8 +28,7 @@ import org.openide.util.NbBundle;
 * @author   Petr Hamernik
 * @version  0.10, 21 Jul, 1998
 */
-public class DimensionEditor extends ArrayOfIntSupport
-implements ExPropertyEditor {
+public class DimensionEditor extends ArrayOfIntSupport {
     public DimensionEditor() {
         super("java.awt.Dimension", 2); // NOI18N
     }
@@ -65,7 +64,7 @@ implements ExPropertyEditor {
                 "CTL_NegativeSize"); //NOI18N
             IllegalArgumentException iae = new IllegalArgumentException (
                 "Negative value"); //NOI18N
-            UIException.annotateUser(iae, iae.getMessage(), msg, null,
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, null,
                                      new java.util.Date());
             throw iae;
         }

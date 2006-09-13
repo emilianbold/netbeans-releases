@@ -21,7 +21,7 @@ package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
 import java.text.MessageFormat;
-import org.netbeans.core.UIException;
+import org.netbeans.core.UIExceptions;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -295,7 +295,7 @@ public class DataObjectArrayEditor extends PropertyEditorSupport implements ExPr
 
     public void setAsText(String text) throws java.lang.IllegalArgumentException {
         try {
-            if ((text==null)||(text.equals(""))) setValue(null);
+            if ((text==null)||("".equals(text))) setValue(null);
         } catch (Exception e) {
             IllegalArgumentException iae = new IllegalArgumentException (e.getMessage());
             String msg = e.getLocalizedMessage();
@@ -305,7 +305,7 @@ public class DataObjectArrayEditor extends PropertyEditorSupport implements ExPr
                     DataObjectArrayEditor.class, 
                     "FMT_EXC_GENERIC_BAD_VALUE"), new Object[] {text}); //NOI18N
             }
-            UIException.annotateUser(iae, iae.getMessage(), msg, e,
+            UIExceptions.annotateUser(iae, iae.getMessage(), msg, e,
                                      new java.util.Date());
             throw iae;
         }

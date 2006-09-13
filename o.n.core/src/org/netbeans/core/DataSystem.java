@@ -197,7 +197,7 @@ implements RepositoryListener {
         Collection c = result.allInstances();
         for (Iterator iterator = c.iterator(); iterator.hasNext();) {
             URLMapper mapper = (URLMapper) iterator.next();
-            if (mapper != null && mapper.getClass().getName().equals("org.netbeans.modules.masterfs.MasterURLMapper")) {//NOI18N
+            if (mapper != null && "org.netbeans.modules.masterfs.MasterURLMapper".equals(mapper.getClass().getName())) {//NOI18N
                 retVal = mapper;
                 break;
             }
@@ -219,7 +219,7 @@ implements RepositoryListener {
             DataSystem ds = getDS ();
             if (ds == null) return;
 
-            if (ev.getPropertyName().equals("root")) {
+            if ("root".equals(ev.getPropertyName())) {
                 FileSystem fs = (FileSystem)ev.getSource ();
                 ds.refresh (fs);
                 ds.refresh ();
