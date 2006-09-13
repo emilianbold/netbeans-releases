@@ -296,17 +296,14 @@ public class Node {
                 throw new JemmyException("Popup path ["+popupPaths[i]+"] not found.");
             }
         }
-        //closing popup
+        //close popup and wait until is not visible
         popup.waitState(new ComponentChooser() {
             public boolean checkComponent(Component comp) {
-                try {
-                    popup.pushKey(KeyEvent.VK_ESCAPE);
-                    return false;
-                } catch (JemmyException e) {}
-                return true;
+                popup.pushKey(KeyEvent.VK_ESCAPE);
+                return !popup.isVisible();
             }
             public String getDescription() {
-                return "Popup menu closer";
+                return "Popup menu closed";
             }
         });
     }
