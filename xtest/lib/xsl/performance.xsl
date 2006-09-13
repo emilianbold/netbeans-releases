@@ -84,6 +84,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 
                                         <xsl:for-each select="Data">
                                             <xsl:for-each select="PerformanceData[generate-id()=generate-id(key('name_runOrder', concat(@name, @runOrder, ../../../../@runID)))]">
+                                                <xsl:sort select="concat(@name,@runOrder)"/>
 
                                                 <xsl:variable name="currentName" select="@name"/>
                                                 <xsl:variable name="currentOrder" select="@runOrder"/>
@@ -120,8 +121,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                                                     </xsl:choose>                                                
                                                 </xsl:variable>
                                                 
-                                                <xsl:sort select="concat(@name,@runOrder)"/>
-
                                                 <xsl:for-each select="key('name_runOrder', concat(@name, @runOrder, ../../../../@runID))">
                                                     <xsl:choose>
                                                         <xsl:when test="position()=last()">
