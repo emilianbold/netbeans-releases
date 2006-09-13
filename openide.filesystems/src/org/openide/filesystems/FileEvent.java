@@ -16,8 +16,11 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
+import java.util.Date;
+import java.util.EventObject;
 
 /** Event for listening on filesystem changes.
 * <P>
@@ -26,7 +29,7 @@ package org.openide.filesystems;
 *
 * @author Jaroslav Tulach, Petr Hamernik
 */
-public class FileEvent extends java.util.EventObject {
+public class FileEvent extends EventObject {
     /** generated Serialized Version UID */
     private static final long serialVersionUID = 1028087432345400108L;
 
@@ -110,9 +113,28 @@ public class FileEvent extends java.util.EventObject {
         return expected;
     }
 
+    @Override
     public String toString() {
-        return super.toString() + "[file=" + file + ",time=" + time + ",expected=" + expected + "]"; // NOI18N
+        StringBuilder b = new StringBuilder();
+        b.append(getClass().getName().replaceFirst(".+\\.", ""));
+        b.append('[');
+        FileObject src = (FileObject) getSource();
+        if (src != file) {
+            b.append("src=");
+            b.append(FileUtil.getFileDisplayName(src));
+            b.append(',');
+        }
+        b.append("file=");
+        b.append(FileUtil.getFileDisplayName(file));
+        b.append(",time=");
+        b.append(new Date(time));
+        b.append(",expected=");
+        b.append(expected);
+        insertIntoToString(b);
+        b.append(']');
+        return b.toString();
     }
+    void insertIntoToString(StringBuilder b) {}
 
     /** */
     void setAtomicActionLink(EventControl.AtomicActionLink atomActionID) {

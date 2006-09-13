@@ -80,4 +80,13 @@ public class FileRenameEvent extends FileEvent {
     public String getExt() {
         return ext;
     }
+
+    @Override
+    void insertIntoToString(StringBuilder b) {
+        b.append(",name.ext=");
+        b.append(name);
+        b.append('.');
+        b.append(ext);
+    }
+
 }

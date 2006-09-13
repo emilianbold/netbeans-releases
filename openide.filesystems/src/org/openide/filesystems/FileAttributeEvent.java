@@ -95,4 +95,15 @@ public class FileAttributeEvent extends FileEvent {
     public Object getNewValue() {
         return newValue;
     }
+
+    @Override
+    void insertIntoToString(StringBuilder b) {
+        b.append(",name=");
+        b.append(name);
+        b.append(",oldValue=");
+        b.append(oldValue);
+        b.append(",newValue=");
+        b.append(newValue);
+    }
+
 }
