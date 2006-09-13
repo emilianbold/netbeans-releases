@@ -18,11 +18,13 @@
  */
 
 package org.netbeans.modules.palette;
+import java.awt.datatransfer.Transferable;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.spi.palette.PaletteActions;
+import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteFilter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -36,6 +38,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -295,5 +298,11 @@ class CategoryNode extends FilterNode {
             else nameOK = paletteFO.getFileObject(freeName) == null;
         }
         return freeName;
+    }
+
+    public PasteType getDropType(Transferable t, int action, int index) {
+        if( t.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR ) )
+            return super.getDropType(t, action, index);
+        return null;
     }
 }
