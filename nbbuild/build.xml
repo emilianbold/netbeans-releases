@@ -807,7 +807,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
       <!-- #66799: best to warn about this condition... -->
       <fail>Will not delete ${test.user.dir} because ${test.user.dir.lock} still exists; kill any running process and delete lock file if necessary</fail>
     </target>
-  <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail"/>
+  <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail" description="Clean temporary testing user directory."/>
   <target name="sanity-start" depends="init,maybe-build-nozip,-jdk-init">
     <mkdir dir="${test.user.dir}"/>
     <echo>Starting the IDE as a sanity check...</echo>
