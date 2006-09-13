@@ -34,6 +34,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 
 /**
  * @author Jesse Glick
@@ -161,25 +162,45 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
         ProjectConfiguration c = configs.get(1);
         assertEquals("debug", c.getDisplayName());
         setActiveConfiguration(pcp, c);
-        assertEquals(new HashSet<String>(Arrays.asList(new String[] {"config", "debug"})), l.events());
+        assertEquals(new HashSet<String>(Arrays.asList("config", "debug")), l.events());
         assertEquals("debug", eval.getProperty("config"));
         assertEquals("true", eval.getProperty("debug"));
         assertEquals(null, eval.getProperty("more"));
         c = configs.get(2);
         assertEquals("release", c.getDisplayName());
         setActiveConfiguration(pcp, c);
-        assertEquals(new HashSet<String>(Arrays.asList(new String[] {"config", "debug", "more"})), l.events());
+        assertEquals(new HashSet<String>(Arrays.asList("config", "debug", "more")), l.events());
         assertEquals("release", eval.getProperty("config"));
         assertEquals("false", eval.getProperty("debug"));
         assertEquals("stuff", eval.getProperty("more"));
         c = configs.get(0);
         assertEquals("<default>", c.getDisplayName());
         setActiveConfiguration(pcp, c);
-        assertEquals(new HashSet<String>(Arrays.asList(new String[] {"config", "debug", "more"})), l.events());
+        assertEquals(new HashSet<String>(Arrays.asList("config", "debug", "more")), l.events());
         assertEquals(null, eval.getProperty("config"));
         assertEquals(null, eval.getProperty("debug"));
         assertEquals(null, eval.getProperty("more"));
         // XXX test nbproject/private/configs/*.properties
+    }
+
+    public void testInitialListening() throws Exception { // #84781
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
+                TestListener l = new TestListener();
+                pcp.addPropertyChangeListener(l);
+                Properties props = new Properties();
+                props.setProperty("$label", "X");
+                write(props, d, "nbproject/configs/x.properties");
+                props = new Properties();
+                props.setProperty("config", "x");
+                write(props, d, "nbproject/private/config.properties");
+                assertEquals(new HashSet<String>(Arrays.asList(ProjectConfigurationProvider.PROP_CONFIGURATIONS, ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE)),
+                        l.events());
+                assertEquals(2, pcp.getConfigurations().size());
+                assertEquals("X", pcp.getActiveConfiguration().getDisplayName());
+                return null;
+            }
+        });
     }
 
     private void write(Properties p, FileObject d, String path) throws IOException {
