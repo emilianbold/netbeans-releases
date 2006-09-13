@@ -39,7 +39,7 @@ import org.xml.sax.ext.LexicalHandler;
  */
 final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
 
-    private short state = INIT;
+    private short parseState = INIT;
     
     // template obtained form parsed description
     private final Smell template = new Smell();
@@ -93,11 +93,11 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
 
         String s;
 
-        switch (state) {
+        switch (parseState) {
 
             case INIT:
                 if (ROOT.equals(qName) ==  false) error();
-                state = IN_ROOT;
+                parseState = IN_ROOT;
                 break;
 
             case IN_ROOT:
@@ -110,7 +110,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
                 } else if (DOCTYPE.equals(qName)) {
                     s = atts.getValue(PUBLIC_ID);
                     if (s == null) {
-                        state = IN_DOCTYPE;
+                        parseState = IN_DOCTYPE;
                         break;
                     } else {
                         template.addDoctype(s);
@@ -128,7 +128,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
                         if (s != null) template.addElementNS(s);
                     }
 
-                    state = IN_ELEMENT;
+                    parseState = IN_ELEMENT;
 
                 } else {
                     error();
@@ -159,13 +159,13 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
 
     public void endElement(String namespaceURI, String localName, String qName) {
 
-        switch (state) {
+        switch (parseState) {
             case IN_ELEMENT:
-                if (ELEMENT.equals(qName)) state = IN_ROOT;
+                if (ELEMENT.equals(qName)) parseState = IN_ROOT;
                 break;      
 
             case IN_DOCTYPE:
-                if (DOCTYPE.equals(qName)) state = IN_ROOT;
+                if (DOCTYPE.equals(qName)) parseState = IN_ROOT;
                 break;
         }
     }

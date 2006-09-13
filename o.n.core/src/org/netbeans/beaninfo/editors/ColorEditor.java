@@ -669,13 +669,13 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         private JList list;
 
         /** Arraay of names of colors. */
-        private String [] names;
+        String [] names;
         /** Arraay of colors. */
-        private Color [] colors;
+        Color [] colors;
         /** Palette type. */
-        private int palette;
+        int palette;
         /** Current ColorEditor. */
-        private ColorEditor ce;
+        ColorEditor ce;
         
         /** Name for display of this chooser panel. */
         private String displayName;

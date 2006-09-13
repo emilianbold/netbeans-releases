@@ -318,7 +318,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements PropertyCh
     // End of variables declaration//GEN-END:variables
 
     /** Try to find a system action instance among a set of nodes. */
-    private static SystemAction findAction (Node[] nodes) {
+    static SystemAction findAction (Node[] nodes) {
         if (nodes == null || nodes.length == 0 || nodes.length > 1) return null;
         InstanceCookie inst = (InstanceCookie) nodes[0].getCookie (InstanceCookie.class);
         if (inst == null) return null;

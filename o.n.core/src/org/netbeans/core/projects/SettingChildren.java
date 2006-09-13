@@ -94,7 +94,7 @@ public final class SettingChildren extends FilterNode.Children {
             Action a = toDeleteActions[i];
             if (actions.contains(a)) {
                 actions.remove(a);
-                retVal = actions.toArray(new Action[0]);
+                retVal = actions.toArray(new Action[actions.size()]);
             }                
         }            
         return retVal;

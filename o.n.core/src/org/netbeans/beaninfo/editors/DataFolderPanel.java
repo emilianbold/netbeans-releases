@@ -58,7 +58,7 @@ class DataFolderPanel extends TopComponent implements
     private ChangeListener listener;
 
     /** file system reference */
-    private Reference<FileSystem>  system = new WeakReference<FileSystem> (null);
+    Reference<FileSystem>  system = new WeakReference<FileSystem> (null);
 
     /** root node */
     private Node rootNode;
@@ -712,7 +712,7 @@ class DataFolderPanel extends TopComponent implements
 
     /** Updates directory name
     */
-    private void updateDirectory () {
+    void updateDirectory () {
         FileSystem fs = system.get ();
         if (fs == null) {
             // No known directory?? Leave it blank.
@@ -781,7 +781,7 @@ class DataFolderPanel extends TopComponent implements
     }
 
     /** Updates associated editor by calling setDataFolder(...) . */
-    private void updatePropertyEditor() {
+    void updatePropertyEditor() {
         try {
             DataFolder newF = getTargetFolder(false);
             //fix for issue 31434, DataFolder may be null if
@@ -793,7 +793,7 @@ class DataFolderPanel extends TopComponent implements
     }
     
     /** Sets the state of the createButton */
-    private void enableCreateButton() {
+    void enableCreateButton() {
         String name = null;
         if (df != null) {
             name = df.getPrimaryFile ().getPath ();

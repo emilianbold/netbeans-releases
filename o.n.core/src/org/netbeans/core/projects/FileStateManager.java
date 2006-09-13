@@ -242,7 +242,7 @@ final class FileStateManager {
                 FileObject mfos [] = null;
 
                 synchronized (info) {
-                    mfos = (FileObject [])info.keySet ().toArray (new FileObject [0]);
+                    mfos = (FileObject [])info.keySet ().toArray (new FileObject [info.size()]);
                     
                     // invalidate all existing FileInfos
                     for (int i = 0; i < mfos.length; i++) {

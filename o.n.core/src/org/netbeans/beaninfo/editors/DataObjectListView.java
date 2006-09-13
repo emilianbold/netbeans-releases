@@ -50,12 +50,12 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
     
     private JFileChooser chooser;
     
-    private File rootFile;
+    File rootFile;
     
     /** We must keep created filtered root node because rootNode can be reset any time
      * eg. when setOkButtonEnabled() is called and we need filtered root node to traverse
      * node hierarchy up. */
-    private Node filteredRootNode;
+    Node filteredRootNode;
     
     public DataObjectListView (PropertyEditorSupport my, PropertyEnv env) {
         super(my, env);
@@ -234,7 +234,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
      * Tries to retrieve unique file name from Node -> DataObject -> PrimaryFile
      * if possible. Used to set file name for NodeFile representing node in JFileChooser.
      */
-    private static String getFileName (Node n) {
+    static String getFileName (Node n) {
         DataObject dObj = (DataObject) n.getCookie(DataObject.class);
         if (dObj != null) {
             FileObject pf = dObj.getPrimaryFile();

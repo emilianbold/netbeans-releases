@@ -590,10 +590,10 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
             String name = ev.getPropertyName();
             
             if (
-                DataObject.PROP_COOKIE == name ||
-                DataObject.PROP_NAME == name ||
-                DataObject.PROP_VALID == name ||
-                DataObject.PROP_PRIMARY_FILE == name
+                DataObject.PROP_COOKIE.equals(name) ||
+                DataObject.PROP_NAME.equals(name) ||
+                DataObject.PROP_VALID.equals(name) ||
+                DataObject.PROP_PRIMARY_FILE.equals(name)
             ) {
                 update ();
             }

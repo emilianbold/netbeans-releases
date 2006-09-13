@@ -78,7 +78,7 @@ public class ServiceTypePanel extends org.netbeans.beaninfo.ExplorerPanel {
 
         getExplorerManager ().addPropertyChangeListener (new java.beans.PropertyChangeListener () {
                     public void propertyChange (java.beans.PropertyChangeEvent ev) {
-                        if ( ev.getPropertyName() == ExplorerManager.PROP_SELECTED_NODES ) {
+                        if ( ExplorerManager.PROP_SELECTED_NODES.equals(ev.getPropertyName()) ) {
                             firePropertyChange( DialogDescriptor.PROP_HELP_CTX, null, null );
                         }
                         firePropertyChange ();

@@ -72,10 +72,10 @@ public abstract class WrappersEditor implements ExPropertyEditor {
             //Reasonable to assume any exceptions from core/jdk editors are legit
             IllegalArgumentException iae = new IllegalArgumentException (e.getMessage());
             String msg = e.getLocalizedMessage();
-            if (msg == null || e.getMessage() == msg) {
+            if (msg == null || e.getMessage().equals(msg)) {
                 msg = MessageFormat.format(
                 NbBundle.getMessage(
-                    WrappersEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"), new Object[] {text}); //NOI18N
+                    WrappersEditor.class, "FMT_EXC_GENERIC_BAD_VALUE"), text); //NOI18N
             }
             UIExceptions.annotateUser(iae, iae.getMessage(), msg, e,
                                      new java.util.Date());
