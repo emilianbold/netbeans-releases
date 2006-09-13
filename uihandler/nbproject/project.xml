@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.uihandler</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.8</specification-version>
+                        <specification-version>6.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.1</specification-version>
+                        <specification-version>6.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.7</specification-version>
+                        <specification-version>6.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.2</specification-version>
+                        <specification-version>6.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -69,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.8</specification-version>
+                        <specification-version>6.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -77,19 +77,10 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.3</specification-version>
+                        <specification-version>6.8</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <test-dependencies>
-                <test-type>
-                    <name>unit</name>
-                    <test-dependency>
-                        <code-name-base>org.openide.dialogs</code-name-base>
-                        <recursive/>
-                    </test-dependency>
-                </test-type>
-            </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.uihandler.api</package>
             </public-packages>
