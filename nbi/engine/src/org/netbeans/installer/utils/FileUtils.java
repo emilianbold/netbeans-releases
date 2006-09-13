@@ -23,13 +23,13 @@ package org.netbeans.installer.utils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.channels.FileChannel;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-import java.util.Vector;
 import java.util.zip.CRC32;
 import java.io.*;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,7 +50,11 @@ public abstract class FileUtils {
     
     public static synchronized FileUtils getInstance() {
         if (instance == null) {
-            instance = new GenericFileUtils();
+            if (SystemUtils.getInstance().isWindows()) {
+                instance = new GenericFileUtils();
+            } else {
+                instance = new UnixFileUtils();
+            }
         }
         
         return instance;
@@ -121,6 +125,8 @@ public abstract class FileUtils {
     
     public abstract String getFileMD5String(File file) throws IOException, NoSuchAlgorithmException;
     
+    public abstract String readFirstLine(File file) throws IOException;
+    
     public abstract List<String> readStringList(File file) throws IOException;
     
     public abstract void writeStringList(File file, List<String> list) throws IOException;
@@ -132,6 +138,8 @@ public abstract class FileUtils {
     public abstract void deleteFile(File file, boolean followLinks) throws IOException;
     
     public abstract void deleteFile(File file, String mask) throws IOException;
+    
+    public abstract void deleteFiles(List<File> files) throws IOException;
     
     public abstract File createTempFile() throws IOException;
     
@@ -155,7 +163,11 @@ public abstract class FileUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    private static class GenericFileUtils extends FileUtils {
+    public static class GenericFileUtils extends FileUtils {
+        private GenericFileUtils() {
+            // nothing here
+        }
+        
         public String readFile(File file) throws IOException {
             String contents = "";
             
@@ -290,6 +302,16 @@ public abstract class FileUtils {
             return StringUtils.getInstance().asHexString(getFileMD5(file));
         }
         
+        public String readFirstLine(File file) throws IOException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            
+            try {
+                return reader.readLine();
+            } finally {
+                reader.close();
+            }
+        }
+        
         public List<String> readStringList(File file) throws IOException {
             List<String> vector = new LinkedList<String> ();
             
@@ -365,6 +387,12 @@ public abstract class FileUtils {
                 if (file.getName().matches(mask)) {
                     deleteFile(file);
                 }
+            }
+        }
+        
+        public void deleteFiles(List<File> files) throws IOException {
+            for (File file: files) {
+                deleteFile(file);
             }
         }
         
@@ -531,6 +559,135 @@ public abstract class FileUtils {
             inputStream.close();
             
             return true;
+        }
+    }
+    
+    public static class UnixFileUtils extends GenericFileUtils {
+        private UnixFileUtils() {
+            // nothing here
+        }
+        
+        public List<File> findExecutableFiles(File parent) throws IOException {
+            List<File> files = new ArrayList<File>();
+            
+            for (File child: parent.listFiles()) {
+                if (child.isDirectory()) {
+                    files.addAll(findExecutableFiles(child));
+                } else {
+                    // name based analysis
+                    String name = child.getName();
+                    if (name.endsWith(".sh")) { // shell script
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".pl")) { // perl script
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".py")) { // python script
+                        files.add(child);
+                        continue;
+                    }
+                    
+                    // contents based analysis
+                    String line = readFirstLine(child);
+                    if (line != null) {
+                        if (line.startsWith("#!")) { // a script of some sort
+                            files.add(child);
+                            continue;
+                        }
+                    }
+                }
+            }
+            
+            return files;
+        }
+        
+        public List<File> findNonUnixFiles(File parent) throws IOException {
+            List<File> files = new ArrayList<File>();
+            
+            for (File child: parent.listFiles()) {
+                if (child.isDirectory()) {
+                    files.addAll(findNonUnixFiles(child));
+                } else {
+                    // name based analysis
+                    String name = child.getName();
+                    if (name.endsWith(".bat")) { // dos batch file
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".cmd")) { // windows batch file
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".dll")) { // windows library
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".exe")) { // windows executable
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".com")) { // windows executable
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".vbs")) { // windows script
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".vbe")) { // windows script
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".wsf")) { // windows script
+                        files.add(child);
+                        continue;
+                    }
+                    if (name.endsWith(".wsh")) { // windows script
+                        files.add(child);
+                        continue;
+                    }
+                    
+                    // contents based analysis - none at this point
+                }
+            }
+            
+            return files;
+        }
+        
+        public void chmod(File file, String mode) throws IOException {
+            chmod(Arrays.asList(file), mode);
+        }
+        
+        public void chmod(File file, int mode) throws IOException {
+            chmod(file, Integer.toString(mode));
+        }
+        
+        public void chmod(List<File> files, String mode) throws IOException {
+            for (File file: files) {
+                File   directory = file.getParentFile();
+                String name      = file.getName();
+                
+                SystemUtils.getInstance().executeCommand(directory,
+                        "chmod",
+                        mode,
+                        name);
+            }
+        }
+        
+        public void correctFiles(File parent) throws IOException {
+            // all executables should be executable
+            chmod(findExecutableFiles(parent), "ugo+x");
+            
+            // irrelevant files should be deleted
+            deleteFiles(findNonUnixFiles(parent));
+        }
+        
+        public void correctFiles(File... parents) throws IOException {
+            for (File parent: parents) {
+                correctFiles(parent);
+            }
         }
     }
     
