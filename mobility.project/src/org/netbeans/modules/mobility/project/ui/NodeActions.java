@@ -133,10 +133,10 @@ abstract class NodeAction<T> extends ContextAction
         }
 
         final List<VisualClassPathItem> list=(List)j2meProperties.get(propName);
-        HashSet<VisualClassPathItem> set=new HashSet<VisualClassPathItem>(list);
-        set=addItems (obj,set, node);
+        List<VisualClassPathItem> newList=new ArrayList<VisualClassPathItem>(list);
+        newList=addItems (obj,newList, node);
         
-        j2meProperties.put(propName,new ArrayList(set));
+        j2meProperties.put(propName,newList);
     }
     
     static private void save(final HashMap<J2MEProject,J2MEProjectProperties> map)
@@ -230,7 +230,7 @@ abstract class NodeAction<T> extends ContextAction
         }
     }
     
-    abstract protected HashSet<VisualClassPathItem> addItems(T obj[], HashSet<VisualClassPathItem> set, Node node);
+    abstract protected List<VisualClassPathItem> addItems(T obj[], List<VisualClassPathItem> list, Node node);
     
     abstract protected T[] getItems();
     
@@ -273,7 +273,7 @@ class AddLibraryAction extends NodeAction<Library>
         return result;
     }
     
-    protected HashSet<VisualClassPathItem> addItems(final Library libraries[], final HashSet<VisualClassPathItem> set, final Node node)
+    protected List<VisualClassPathItem> addItems(final Library libraries[], final List<VisualClassPathItem> set, final Node node)
     {
     	for ( Library lib : libraries ) {
             final String libraryName = lib.getName();
@@ -323,7 +323,7 @@ class AddFolderAction extends NodeAction<File>
     }
      
     
-    protected HashSet<VisualClassPathItem> addItems( File files[], final HashSet<VisualClassPathItem> set, final Node node ) 
+    protected List<VisualClassPathItem> addItems( File files[], final List<VisualClassPathItem> set, final Node node ) 
     {
     	for ( File file : files ) {
             file = FileUtil.normalizeFile(file);
@@ -362,12 +362,12 @@ class RemoveResourceAction extends NodeAction<Object>
         return empty;
     }
     
-    protected HashSet<VisualClassPathItem> addItems(final Object[] items, final HashSet<VisualClassPathItem> set, final Node node )
+    protected List<VisualClassPathItem> addItems(final Object[] items, final List<VisualClassPathItem> set, final Node node )
     {
         final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
         final File        file=node.getLookup().lookup(File.class);
         final PropertyEvaluator eval=project.getLookup().lookup(AntProjectHelper.class).getStandardPropertyEvaluator();
-        HashSet<VisualClassPathItem> newSet=(HashSet<VisualClassPathItem>)set.clone();
+        List<VisualClassPathItem> newSet=new ArrayList<VisualClassPathItem>(set);
         
         for ( final VisualClassPathItem vcp : set ) {
             final File item=FileUtil.normalizeFile(new File(eval.evaluate(vcp.getRawText())));
@@ -401,7 +401,7 @@ class AddProjectAction extends NodeAction<ArtifactItem>
         return AntArtifactChooser.showDialog( JavaProjectConstants.ARTIFACT_TYPE_JAR );
     }
     
-    protected HashSet<VisualClassPathItem> addItems(final ArtifactItem art[], final HashSet<VisualClassPathItem> set, final Node node )
+    protected List<VisualClassPathItem> addItems(final ArtifactItem art[], final List<VisualClassPathItem> set, final Node node )
     {
         final J2MEProject project=node.getLookup().lookup(J2MEProject.class);
         
@@ -482,7 +482,7 @@ class AddJarAction extends NodeAction<File>
         return files;
     }
 
-    protected HashSet<VisualClassPathItem> addItems(File files[], final HashSet<VisualClassPathItem> set, final Node node )
+    protected List<VisualClassPathItem> addItems(File files[], final List<VisualClassPathItem> set, final Node node )
     {
     	for ( File file : files ) {
             file = FileUtil.normalizeFile(file);

@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
 import javax.swing.Action;
@@ -84,31 +85,14 @@ import org.openide.xml.XMLUtil;
 
 final class NodeFactory
 {
+    
     private static class NodeKeys extends Children.Keys
     {
-        final TreeMap<String,Node> nodeMap=new TreeMap<String,Node>(new Comparator<String>() {
-            public int compare(String o1, String o2)
-            {
-                if (o1.equals(o2))
-                    return 0;
-                if (o1.equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME))
-                    return -1;
-                if (o2.equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME))
-                    return 1;
-                return o1.compareToIgnoreCase(o2);
-            }
-            
-            public boolean equals(Object that)
-            {
-                if (this == that) 
-                    return true;
-                else
-                    return false;
-            };
-        });
+        final java.util.Map<String,Node> nodeMap;
         
-        NodeKeys(final Node[] ns)
+        NodeKeys(final java.util.Map<String,Node> map,final Node[] ns)
         {
+            nodeMap=map;
             add(ns);
         }
         
@@ -146,19 +130,40 @@ final class NodeFactory
     
     static public Node createProjCfgsNode(final Node nodes[], final Lookup lookup, final String name, final String icon, final Action act[])
     {
-        final Children child=new NodeKeys(nodes);
+        final Children child=new NodeKeys(
+                new TreeMap<String,Node>(new Comparator<String>() {
+                    public int compare(String o1, String o2)
+                    {
+                        if (o1.equals(o2))
+                            return 0;
+                        if (o1.equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME))
+                            return -1;
+                        if (o2.equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME))
+                            return 1;
+                        return o1.compareToIgnoreCase(o2);
+                    }
+
+                    public boolean equals(Object that)
+                    {
+                        if (this == that) 
+                            return true;
+                        else
+                            return false;
+                    };
+                }),
+                nodes);
         return new ProjCfgNode(child,lookup,name,icon,act);
     }
     
     static public Node resourcesNode(final Node nodes[], final Lookup lookup,final String name, final String dName, final String icon)
     {
-        final Children child=new NodeKeys(nodes);
+        final Children child=new NodeKeys(new LinkedHashMap<String,Node>(),nodes);
         return new ResourcesNode(child,lookup,name,dName, icon, null);
     }
     
     static public Node resourcesNode(final Node nodes[], final Lookup lookup,final String name, final String dName, final String icon, final Action act[])
     {
-        final Children child=new NodeKeys(nodes);
+        final Children child=new NodeKeys(new LinkedHashMap<String,Node>(),nodes);
         return new ResourcesNode(child,lookup,name,dName, icon, act);
     }
 }
