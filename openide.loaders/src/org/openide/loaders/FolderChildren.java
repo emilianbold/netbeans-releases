@@ -143,7 +143,7 @@ implements PropertyChangeListener, ChangeListener {
                 return new Node[0];
             }
         } catch (DataObjectNotFoundException e) {
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.global.log(Level.INFO, null, e);
             return new Node[0];
         }
     }
