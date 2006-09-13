@@ -342,7 +342,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         } else {
             // can only reorder?
             Node[] draggedNodes = ExplorerDnDManager.getDefault().getDraggedNodes();
-            if( null != draggedNodes && canReorder(dropNode, draggedNodes) ) {
+            if( null != draggedNodes && canReorderWhenMoving(dropNode, draggedNodes) ) {
                 // ok, can accept only reoder
                 dtde.acceptDrag(dropAction);
             } else {
@@ -451,11 +451,14 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         return null;
     }
 
-    private boolean canReorder(Node folder, Node[] dragNodes) {
+    private boolean canReorderWhenMoving(Node folder, Node[] dragNodes) {
         if ((ExplorerDnDManager.getDefault().getNodeAllowedActions() & DnDConstants.ACTION_MOVE) == 0) {
             return false;
         }
+        return canReorder( folder, dragNodes );
+    }
 
+    private boolean canReorder(Node folder, Node[] dragNodes) {
         if ((folder == null) || (dragNodes.length == 0)) {
             return false;
         }
@@ -654,7 +657,7 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
 
         if( null != dragNodes ) {
             if (!canDrop(dropNode, dropAction, dtde.getTransferable())) {
-                if (canReorder(dropNode, dragNodes)) {
+                if (canReorderWhenMoving(dropNode, dragNodes)) {
                     performReorder(dropNode, dragNodes, lowerNodeIdx, upperNodeIdx);
                     dtde.dropComplete(true);
                 } else {
