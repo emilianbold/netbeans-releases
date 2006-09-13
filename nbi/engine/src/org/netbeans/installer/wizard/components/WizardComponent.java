@@ -39,7 +39,11 @@ public interface WizardComponent {
     
     public abstract boolean isActive();
     
-    public abstract void setActive(boolean isActive); 
+    public abstract boolean isForwardOnly();
+    
+    public abstract boolean isBackwardOnly();
+    
+    public abstract boolean isPointOfNoReturn();
     
     public abstract String getProperty(String name);
     

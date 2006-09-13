@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.wizard.components;
@@ -34,7 +34,7 @@ public abstract class WizardAction implements WizardComponent {
     private SubWizard  wizard;
     private boolean active = true;
     
-    private List<WizardCondition> wizardConditions = 
+    private List<WizardCondition> wizardConditions =
             new ArrayList<WizardCondition>();
     
     private Properties properties = new Properties();
@@ -86,10 +86,22 @@ public abstract class WizardAction implements WizardComponent {
     public void setActive(boolean isActive) {
         active = isActive;
     }
-
+    
     public void addChildComponent(WizardComponent aWizardComponent) {
         throw new UnsupportedOperationException(
                 "This component does not support child components");
+    }
+    
+    public boolean isForwardOnly() {
+        return true;
+    }
+    
+    public boolean isBackwardOnly() {
+        return false;
+    }
+    
+    public boolean isPointOfNoReturn() {
+        return false;
     }
     
     public final String getProperty(String name) {

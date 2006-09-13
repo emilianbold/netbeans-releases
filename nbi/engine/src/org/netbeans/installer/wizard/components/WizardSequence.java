@@ -15,7 +15,7 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.wizard.components;
@@ -33,10 +33,10 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
 public class WizardSequence implements WizardComponent {
     private boolean active = true;
     
-    private List<WizardComponent> wizardComponents = 
+    private List<WizardComponent> wizardComponents =
             new ArrayList<WizardComponent>();
     
-    private List<WizardCondition> wizardConditions = 
+    private List<WizardCondition> wizardConditions =
             new ArrayList<WizardCondition>();
     
     private Properties properties = new Properties();
@@ -70,7 +70,19 @@ public class WizardSequence implements WizardComponent {
     public void setActive(boolean isActive) {
         active = isActive;
     }
-
+    
+    public boolean isForwardOnly() {
+        return false;
+    }
+    
+    public boolean isBackwardOnly() {
+        return false;
+    }
+    
+    public boolean isPointOfNoReturn() {
+        return false;
+    }
+    
     public final String getProperty(String name) {
         return properties.getProperty(name);
     }
