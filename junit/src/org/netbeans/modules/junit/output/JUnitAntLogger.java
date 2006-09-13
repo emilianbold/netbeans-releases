@@ -49,6 +49,10 @@ public final class JUnitAntLogger extends AntLogger {
     public static final String TASK_JAVA = "java";                      //NOI18N
     public static final String TASK_JUNIT = "junit";                    //NOI18N
     private static final String[] INTERESTING_TASKS = {TASK_JAVA, TASK_JUNIT};
+    private static final String ANT_TEST_RUNNER_CLASS_NAME =
+            "org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner";//NOI18N
+    private static final String XML_FORMATTER_CLASS_NAME =
+            "org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter";//NOI18N
     
     /** default constructor for lookup */
     public JUnitAntLogger() { }
@@ -243,6 +247,21 @@ public final class JUnitAntLogger extends AntLogger {
      * Finds whether the test report will be generated in XML format.
      */
     private static boolean hasXmlOutput(AntEvent event) {
+        final String taskName = event.getTaskName();
+        if (taskName.equals(TASK_JUNIT)) {
+            return hasXmlOutputJunit(event);
+        } else if (taskName.equals(TASK_JAVA)) {
+            return hasXmlOutputJava(event);
+        } else {
+            assert false;
+            return false;
+        }
+    }
+    
+    /**
+     * Finds whether the test report will be generated in XML format.
+     */
+    private static boolean hasXmlOutputJunit(AntEvent event) {
         TaskStructure taskStruct = event.getTaskStructure();
         for (TaskStructure child : taskStruct.getChildren()) {
             String childName = child.getName();
@@ -258,6 +277,39 @@ public final class JUnitAntLogger extends AntLogger {
                                 || event.getProperty(ifPropName) != null)
                         && (unlessPropName == null
                                 || event.getProperty(unlessPropName) == null)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Finds whether the test report will be generated in XML format.
+     */
+    private static boolean hasXmlOutputJava(AntEvent event) {
+        TaskStructure taskStruct = event.getTaskStructure();
+        
+        String classname = taskStruct.getAttribute("classname");        //NOI18N
+        if ((classname == null) ||
+                !event.evaluate(classname).equals(ANT_TEST_RUNNER_CLASS_NAME)) {
+            return false;
+        }
+        
+        for (TaskStructure child : taskStruct.getChildren()) {
+            String childName = child.getName();
+            if (childName.equals("arg")) {                              //NOI18N
+                String argValue = child.getAttribute("value");          //NOI18N
+                if (argValue == null) {
+                    continue;
+                }
+                argValue = event.evaluate(argValue);
+                if (argValue.startsWith("formatter=")) {                //NOI18N
+                    int clsNameStartIndex = "formatter=".length();      //NOI18N
+                    if ((argValue.indexOf(',', clsNameStartIndex) == -1)
+                            && argValue.substring(clsNameStartIndex)
+                               .equals(XML_FORMATTER_CLASS_NAME)) {
                         return true;
                     }
                 }
