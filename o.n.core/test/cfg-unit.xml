@@ -53,6 +53,15 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+    <testbag testattribs="performance" executor="ide" name="Testing lookup in whole IDE">
+        <testset dir="unit/src">
+            <patternset>
+                <!-- this includes all tests testing layers -->
+                <include name="org/netbeans/perftest/BytecodeTest.class"/> 
+            </patternset>
+        </testset>
+    </testbag>
+
     <testbag testattribs="stable" executor="code" name="Unit tests in code mode">
         <testset dir="unit/src">
             <patternset>
@@ -70,6 +79,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/xml/*Test.class"/>
                 <!-- these tests are run in IDE mode-->
                 <exclude  name="**/Validate*Test.class"/> 
+                <exclude  name="org/netbeans/perftest/*Test.class"/> 
             </patternset>
         </testset>
     </testbag>
