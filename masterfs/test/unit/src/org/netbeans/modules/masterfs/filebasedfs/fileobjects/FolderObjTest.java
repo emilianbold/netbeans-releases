@@ -32,6 +32,11 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
@@ -54,15 +59,99 @@ import org.openide.util.Utilities;
 public class FolderObjTest extends NbTestCase {
     File testFile;
     
-    
     public FolderObjTest(String testName) {
         super(testName);
     }
-    
+            
     protected void setUp() throws Exception {
         clearWorkDir();
         testFile = getWorkDir();        
     }
+
+    protected Level logLevel() {
+        String[] testsWithEnabledLogger = new String[] {
+            "testCreateFolder72617",
+            "testCreateData72617"
+        };
+        return (Arrays.asList(testsWithEnabledLogger).contains(getName())) ? 
+            Level.FINEST : super.logLevel();
+    }
+
+    static abstract class IntrusiveLogHandler extends Handler {
+        private String message;
+        IntrusiveLogHandler(final String message) {
+            this.message = message;
+        }
+        public final void publish(LogRecord record) {
+            String recordMsg = record.getMessage();
+            if (recordMsg != null && recordMsg.indexOf(this.message) != -1) {
+                processLogRecord(record);
+            }
+        }
+
+        abstract protected void processLogRecord(final LogRecord record);
+        public void flush() {}
+        public void close() { flush(); }
+    }
+    
+    public void testCreateFolder72617() throws IOException {
+        Handler handler = new IntrusiveLogHandler("FolderCreated:") {//NOI18N
+            protected void processLogRecord(final LogRecord record) {
+                Object[] params = record.getParameters();
+                if (params != null && params.length > 0 && params[0] instanceof File) {
+                    File f = (File)params[0];
+                    assertTrue(f.exists());
+                    assertTrue(f.delete());
+                }                
+            }            
+        };
+        Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").addHandler(handler);
+        try {
+            File f = testFile;
+            FileSystem fs = FileBasedFileSystem.getInstance(f);
+            assertNotNull(fs);
+
+            FileObject fo = fs.findResource(TestUtils.getFileObjectPath(testFile));
+            assertNotNull(fo);
+            File f2 = new File (testFile, "newfoldercreated");
+            try {
+                fo.createFolder (f2.getName());
+                fail();
+            } catch(IOException iex) {}        
+        } finally {
+          Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").removeHandler(handler);
+        }
+    }
+    
+    public void testCreateData72617() throws IOException {
+        Handler handler = new IntrusiveLogHandler("DataCreated:") {//NOI18N
+            protected void processLogRecord(final LogRecord record) {
+                Object[] params = record.getParameters();
+                if (params != null && params.length > 0 && params[0] instanceof File) {
+                    File f = (File)params[0];
+                    assertTrue(f.exists());
+                    assertTrue(f.delete());
+                }                
+            }            
+        };
+        Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").addHandler(handler);
+        try {
+            File f = testFile;
+            FileSystem fs = FileBasedFileSystem.getInstance(f);
+            assertNotNull(fs);
+
+            FileObject fo = fs.findResource(TestUtils.getFileObjectPath(testFile));
+            assertNotNull(fo);
+            File f2 = new File (testFile, "newdatacreated");
+            try {
+                fo.createData (f2.getName());
+                fail();
+            } catch(IOException iex) {}        
+        } finally {
+          Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").removeHandler(handler);
+        }
+    }
+    
 
    public void testFileObjectDistributionWorksAccuratelyAccordingToChildrenCache() throws IOException  {
         final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
@@ -1451,6 +1540,5 @@ public class FolderObjTest extends NbTestCase {
     
     public File getWorkDir() throws IOException {
         return super.getWorkDir();
-    }
-
+    }    
 }

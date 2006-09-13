@@ -33,6 +33,9 @@ import org.openide.util.Mutex;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
@@ -139,19 +142,22 @@ public final class FolderObj extends BaseFileObj {
             createFolder(folder2Create, name);
 
             final FileNaming childName = this.getChildrenCache().getChild(folder2Create.getName(), true);
-            NamingFactory.checkCaseSensitivity(childName, folder2Create);                        
-            assert childName != null;
+            if (childName != null) {
+                NamingFactory.checkCaseSensitivity(childName, folder2Create);                        
+            }
         } finally {
             mutexPrivileged.exitWriteAccess();
         }
 
         final FileBasedFileSystem localFileBasedFileSystem = getLocalFileSystem();
         if (localFileBasedFileSystem != null) {
-            assert folder2Create.exists() && folder2Create.isDirectory() : folder2Create.getAbsolutePath();
             retVal = (FolderObj) localFileBasedFileSystem.findFileObject(folder2Create);
         }
-        assert retVal != null : folder2Create.getAbsolutePath();
-        retVal.fireFileFolderCreatedEvent(false);
+        if (retVal != null) {
+            retVal.fireFileFolderCreatedEvent(false);
+        } else {
+            FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N                           
+        }
 
         return retVal;
     }
@@ -165,6 +171,9 @@ public final class FolderObj extends BaseFileObj {
         } else if (!folder2Create.mkdirs()) {
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N               
         }
+        LogRecord r = new LogRecord(Level.FINEST, "FolderCreated: "+ folder2Create.getAbsolutePath());
+        r.setParameters(new Object[] {folder2Create});
+        Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(r);
     }
 
     public final FileObject createData(final String name, final String ext) throws java.io.IOException {
@@ -184,8 +193,9 @@ public final class FolderObj extends BaseFileObj {
             createData(file2Create);
 
             final FileNaming childName = getChildrenCache().getChild(file2Create.getName(), true);
-            NamingFactory.checkCaseSensitivity(childName, file2Create);                        
-            assert childName != null;
+            if (childName != null) {
+                NamingFactory.checkCaseSensitivity(childName, file2Create);                        
+            }
 
         } finally {
             mutexPrivileged.exitWriteAccess();
@@ -194,12 +204,14 @@ public final class FolderObj extends BaseFileObj {
         final FileBasedFileSystem localFileBasedFileSystem = getLocalFileSystem();
         retVal = null;
         if (localFileBasedFileSystem != null) {
-            assert file2Create.exists() && !file2Create.isDirectory() : file2Create.getAbsolutePath();            
             retVal = (FileObj) localFileBasedFileSystem.findFileObject(file2Create);
         }
 
-        assert retVal != null;
-        retVal.fireFileDataCreatedEvent(false);
+        if (retVal != null) {            
+            retVal.fireFileDataCreatedEvent(false);
+        } else {
+            FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
+        }
 
         return retVal;
     }
@@ -213,6 +225,9 @@ public final class FolderObj extends BaseFileObj {
         } else if (!file2Create.createNewFile()) {
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         }        
+        LogRecord r = new LogRecord(Level.FINEST, "DataCreated: "+ file2Create.getAbsolutePath());
+        r.setParameters(new Object[] {file2Create});
+        Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(r);        
     }
 
     public void delete(final FileLock lock, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {
