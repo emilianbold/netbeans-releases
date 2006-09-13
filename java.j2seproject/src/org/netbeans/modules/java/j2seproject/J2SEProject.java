@@ -125,7 +125,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
 
     public String toString() {
-        return "J2SEProject[" + getProjectDirectory() + "]"; // NOI18N
+        return "J2SEProject[" + FileUtil.getFileDisplayName(getProjectDirectory()) + "]"; // NOI18N
     }
     
     private PropertyEvaluator createEvaluator() {
