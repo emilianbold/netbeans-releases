@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
@@ -157,6 +158,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             Level lev = logLevel();
             if (lev != null) {
                 Log.configure(lev, NbTestCase.this);
+            } else {
+                LogManager.getLogManager().reset();
             }
             super.run(result);
         }
