@@ -114,7 +114,7 @@ Microsystems, Inc. All Rights Reserved.
                         <location>test/unit/src</location>
                     </source-folder>
                     <source-file>
-                        <location>${ant.script}</location>
+                        <location>build.xml</location>
                     </source-file>
                 </items>
                 <context-menu>
