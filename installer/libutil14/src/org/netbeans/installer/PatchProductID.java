@@ -67,7 +67,7 @@ public class PatchProductID {
         } else {
             boolean added = false;
             for (int i = 1; i < arr.length; i++) {
-                if (packID.compareTo(arr[i]) < 0) {
+                if (!added && (packID.compareTo(arr[i]) < 0)) {
                     sb.append("_");
                     sb.append(packID);
                     added = true;
