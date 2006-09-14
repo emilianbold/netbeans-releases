@@ -319,7 +319,7 @@ public class J2MEPlatformTest extends NbTestCase {
     public void testGetFilePath() {
         System.out.println("getFilePath");
         
-        String str = instance.getFilePath(FileUtil.toFileObject(new File(zipPath)));
+        String str = instance.getFilePath(FileUtil.toFileObject(FileUtil.normalizeFile(new File(zipPath))));
         assertNotNull(str);
         
         String jarPath = getGoldenFile("MIDletSuite.jar").getAbsolutePath();
@@ -524,7 +524,7 @@ public class J2MEPlatformTest extends NbTestCase {
     public void testSetJavadocFolders() {
         System.out.println("setJavadocFolders");
         
-        FileObject folder = FileUtil.toFileObject(new File(zipPath)).getParent();
+        FileObject folder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(zipPath))).getParent();
         List folders = new ArrayList(1);
         folders.add(folder);
         System.out.println("set folder: " + folder);
@@ -564,7 +564,7 @@ public class J2MEPlatformTest extends NbTestCase {
     public void testSetSourceFolders() {
         System.out.println("setSourceFolders");
         
-        FileObject folder = FileUtil.toFileObject(new File(zipPath)).getParent();
+        FileObject folder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(zipPath))).getParent();
         List sources = new ArrayList(1);
         sources.add(folder);
         System.out.println("set folder: " + folder.getName());
