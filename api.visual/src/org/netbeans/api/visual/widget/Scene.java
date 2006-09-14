@@ -41,6 +41,7 @@ public class Scene extends Widget {
 
     private JComponent component;
     private Graphics2D graphics;
+    private boolean paintEverything = true;
 
     private Font defaultFont;
     private Rectangle repaintRegion = null;
@@ -249,6 +250,14 @@ public class Scene extends Widget {
 
         for (SceneListener listener : ls)
             listener.sceneRepaint ();
+    }
+
+    boolean isPaintEverything () {
+        return paintEverything;
+    }
+
+    void setPaintEverything (boolean paintEverything) {
+        this.paintEverything = paintEverything;
     }
 
     public final double getZoomFactor () {

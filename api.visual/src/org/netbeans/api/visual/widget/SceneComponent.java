@@ -72,7 +72,9 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
         AffineTransform previousTransform = gr.getTransform ();
         double zoomFactor = scene.getZoomFactor ();
         gr.scale (zoomFactor, zoomFactor);
+        scene.setPaintEverything (false);
         scene.paint ();
+        scene.setPaintEverything (true);
         gr.setTransform (previousTransform);
 
         g.setColor (Color.BLACK);

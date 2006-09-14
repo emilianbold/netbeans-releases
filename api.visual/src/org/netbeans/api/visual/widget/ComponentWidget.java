@@ -13,6 +13,7 @@
 package org.netbeans.api.visual.widget;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
@@ -28,23 +29,13 @@ public final class ComponentWidget extends Widget {
     private double zoomFactor = Double.MIN_VALUE;
     private ComponentSceneListener validateListener;
     private ComponentComponentListener componentListener;
-    private boolean paintComponent;
 
     public ComponentWidget (Scene scene, Component component) {
         super (scene);
         this.component = component;
         validateListener = null;
         componentListener = new ComponentComponentListener ();
-        paintComponent = true;
         attach ();
-    }
-
-    public boolean isPaintComponent () {
-        return paintComponent;
-    }
-
-    public void setPaintComponent (boolean paintComponent) {
-        this.paintComponent = paintComponent;
     }
 
     public final void attach () {
@@ -106,12 +97,15 @@ public final class ComponentWidget extends Widget {
     }
 
     protected void paintWidget () {
-        if (paintComponent) {
+        if (getScene ().isPaintEverything ()) {
             Graphics2D graphics = getGraphics ();
             Rectangle bounds = getClientArea ();
+            AffineTransform previousTransform = graphics.getTransform ();
             graphics.translate (bounds.x, bounds.y);
+            double zoomFactor = getScene ().getZoomFactor ();
+            graphics.scale (1 / zoomFactor, 1 / zoomFactor);
             component.paint (graphics);
-            graphics.translate (- bounds.x, - bounds.y);
+            graphics.setTransform (previousTransform);
         }
     }
 
