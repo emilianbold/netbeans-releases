@@ -41,7 +41,15 @@ public abstract class SystemUtils {
     
     public static synchronized SystemUtils getInstance() {
         if (instance == null) {
-            instance = new GenericSystemUtils();
+            switch (Platform.getCurrentPlatform()) {
+                case WINDOWS:
+                    instance = new WindowsSystemUtils();
+                    break;
+                default:
+                    instance = new GenericSystemUtils();
+                    break;
+                    
+            }
         }
         
         return instance;
@@ -74,6 +82,8 @@ public abstract class SystemUtils {
     public abstract File getTempDirectory();
     
     public abstract File getSystemDrive();
+    
+    public abstract long getFreeSpace(File file);
     
     public abstract ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException;
     
@@ -115,7 +125,7 @@ public abstract class SystemUtils {
         }
         
         public File getDefaultApplicationsLocation() {
-            switch (getCurrentPlatform()) {
+            switch (Platform.getCurrentPlatform()) {
                 case WINDOWS:
                     return new File(System.getenv("ProgramFiles"));
                 default:
@@ -124,35 +134,7 @@ public abstract class SystemUtils {
         }
         
         public Platform getCurrentPlatform() {
-            if (System.getProperty("os.name").contains("Windows")) {
-                return Platform.WINDOWS;
-            }
-            if (System.getProperty("os.name").contains("Linux")) {
-                return Platform.LINUX;
-            }
-            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("ppc")) {
-                return Platform.MACOS_X_PPC;
-            }
-            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("i386")) {
-                return Platform.MACOS_X_X86;
-            }
-            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("sparc")) {
-                return Platform.SOLARIS_SPARC;
-            }
-            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("x86")) {
-                return Platform.SOLARIS_X86;
-            }
-            
-            return null;
-        }
-        
-        public boolean isWindows() {
-            return getCurrentPlatform() == Platform.WINDOWS;
-        }
-        
-        public boolean isMacOS() {
-            return (getCurrentPlatform() == Platform.MACOS_X_X86) ||
-                    (getCurrentPlatform() == Platform.MACOS_X_PPC);
+            return Platform.getCurrentPlatform();
         }
         
         public void sleep(long millis) {
@@ -167,6 +149,15 @@ public abstract class SystemUtils {
             return System.getProperty("line.separator");
         }
         
+        public boolean isWindows() {
+            return Platform.getCurrentPlatform() == Platform.WINDOWS;
+        }
+        
+        public boolean isMacOS() {
+            return (Platform.getCurrentPlatform() == Platform.MACOS_X_X86) ||
+                    (Platform.getCurrentPlatform() == Platform.MACOS_X_PPC);
+        }
+        
         public File getUserHomeDirectory() {
             return new File(System.getProperty("user.home"));
         }
@@ -179,8 +170,11 @@ public abstract class SystemUtils {
             return new File(System.getProperty("java.io.tmpdir"));
         }
         
+        public long getFreeSpace(File file) {
+            return Long.MAX_VALUE;
+        }
         public File getSystemDrive() {
-            switch (getCurrentPlatform()) {
+            switch (Platform.getCurrentPlatform()) {
                 case WINDOWS:
                     return new File(System.getenv("SystemDrive") + "\\");
                 default:
@@ -280,6 +274,14 @@ public abstract class SystemUtils {
         }
     }
     
+    private static class WindowsSystemUtils extends GenericSystemUtils {
+        private native long getFreeSpace(String s);
+        public long getFreeSpace(File file) {
+            return (file==null || file.getPath().equals("")) ? 0 :
+                getFreeSpace(file.getPath());
+        }
+    }
+    
     public static enum Platform {
         WINDOWS("windows", "Windows"),
         LINUX("linux", "Linux"),
@@ -312,6 +314,29 @@ public abstract class SystemUtils {
                 }
                 return platforms;
             }
+        }
+        
+        public static Platform getCurrentPlatform() {
+            if (System.getProperty("os.name").contains("Windows")) {
+                return Platform.WINDOWS;
+            }
+            if (System.getProperty("os.name").contains("Linux")) {
+                return Platform.LINUX;
+            }
+            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("ppc")) {
+                return Platform.MACOS_X_PPC;
+            }
+            if (System.getProperty("os.name").contains("Mac OS X") && System.getProperty("os.arch").contains("i386")) {
+                return Platform.MACOS_X_X86;
+            }
+            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("sparc")) {
+                return Platform.SOLARIS_SPARC;
+            }
+            if (System.getProperty("os.name").contains("SunOS") && System.getProperty("os.arch").contains("x86")) {
+                return Platform.SOLARIS_X86;
+            }
+            
+            return null;
         }
         
         private String name;
