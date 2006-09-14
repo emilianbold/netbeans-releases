@@ -30,6 +30,7 @@ import java.io.Reader;
 import java.io.Writer;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -441,7 +442,7 @@ public final class CommentingPreProcessor implements Runnable
             
             public Writer createWriter(boolean validOutput) throws IOException
             {
-                return new OutputStreamWriter(validOutput ? System.out : System.err);
+                return new StringWriter();
             }
             
         }, Collections.singletonMap("aaa", (String)null)).run();
