@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import junit.framework.*;
 import java.util.*;
 import java.util.logging.Level;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
@@ -32,14 +33,15 @@ import org.openide.util.lookup.AbstractLookup;
  *
  * @author Jaroslav Tulach
  */
-public class MIMESupport69049Test extends TestCase {
+public class MIMESupport69049Test extends NbTestCase {
     static {
         System.setProperty("org.openide.util.Lookup", "org.openide.filesystems.MIMESupport69049Test$Lkp");
         Logger logger = Logger.getLogger(MIMESupport.class.getName());
         logger.setLevel(Level.FINEST);
         logger.addHandler(new ErrMgr());
     }
-    
+
+    private Logger LOG;
     
     public MIMESupport69049Test (String testName) {
         super (testName);
@@ -50,6 +52,7 @@ public class MIMESupport69049Test extends TestCase {
     }
 
     protected void setUp () throws Exception {
+        LOG = Logger.getLogger("TEST-" + getName());
     }
 
     protected void tearDown () throws Exception {
@@ -62,17 +65,21 @@ public class MIMESupport69049Test extends TestCase {
             public MIMEResolver[] all;
             public MIMEResolver[] all2;
             public Throwable ex;
+            public RequestProcessor.Task wait;
             
             
             protected boolean instanceOf(Class c) {
+                LOG.info("instanceOf: " + c);
                 return c.isAssignableFrom(getType());
             }
 
             protected boolean creatorOf(Object obj) {
+                LOG.info("creatorOf: " + obj);
                 return false;
             }
 
             public Object getInstance() {
+                LOG.info("getInstance: " + all);
                 if (all == null) {
                     all = MIMESupport.getResolvers();
                     assertNotNull("Computed", all);
@@ -80,6 +87,7 @@ public class MIMESupport69049Test extends TestCase {
                     all2 = MIMESupport.getResolvers();
                     assertNotNull("Computed", all2);
                 }
+                LOG.info("after getInstance: " + all + " and " + all2);
                 return null;
             }
 
@@ -97,9 +105,12 @@ public class MIMESupport69049Test extends TestCase {
             
             public void run() {
                 try {
+                    LOG.info("running");
+                    if (wait != null) wait.waitFinished();
                     all = MIMESupport.getResolvers();
+                    LOG.info("finishing");
                 } catch (Throwable e) {
-                    e.printStackTrace();
+                    LOG.log(Level.INFO, "ending with exception", e);
                     ex = e;
                 }
             }
@@ -123,11 +134,15 @@ public class MIMESupport69049Test extends TestCase {
         Pair run2 = new Pair();
 
 
-        RequestProcessor.Task t1 = new RequestProcessor("t1").post(run1);
+        LOG.info("Starting the tasks");
         RequestProcessor.Task t2 = new RequestProcessor("t2").post(run2, 20, Thread.NORM_PRIORITY);
+        run1.wait = t2;
+        RequestProcessor.Task t1 = new RequestProcessor("t1").post(run1);
         
         t1.waitFinished();
         t2.waitFinished();
+        
+        LOG.info("Waiting for the tasks to finish");
         
         assertTrue("t1 done", t1.isFinished());
         assertTrue("t2 done", t2.isFinished());
@@ -137,12 +152,6 @@ public class MIMESupport69049Test extends TestCase {
 
         assertNotNull("Been in the query", p.all);
         assertEquals("In query we cannot do better than nothing", 0, p.all.length);
-        assertNotNull("Been in the query twice", p.all2);
-        /* second query does not need to know anything, it can either see
-         * result of the previous one or not
-        assertEquals("Second query knows the result", 1, p.all2.length);
-        assertEquals("and the result is right", Lkp.c1, p.all2[0]);
-         */
     }
     
     
