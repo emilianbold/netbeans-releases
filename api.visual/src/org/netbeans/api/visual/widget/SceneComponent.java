@@ -65,8 +65,8 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
 //        long s = System.currentTimeMillis ();
         Graphics2D gr = (Graphics2D) g;
 
-//        gr.setRenderingHint (RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//        gr.setRenderingHint (RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        gr.setRenderingHint (RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        gr.setRenderingHint (RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         scene.setGraphics (gr);
 
         AffineTransform previousTransform = gr.getTransform ();
