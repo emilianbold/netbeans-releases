@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import junit.framework.Test;
@@ -348,6 +349,18 @@ public final class NbErrorManagerTest extends NbTestCase {
         assertNotNull("Mock descriptor called", MockDD.lastDescriptor);
         assertEquals("Info msg", NotifyDescriptor.INFORMATION_MESSAGE, MockDD.lastDescriptor.getMessageType());
     }
+    public void testUIExceptionsTriggersTheDialogWithWarningPlus1() throws Exception {
+        MockDD.lastDescriptor = null;
+
+        Exception ex = new IOException();
+        ErrorManager em = ErrorManager.getDefault();
+        em.annotate(ex, ErrorManager.USER, "bla", "blaLoc", null, null);
+        Logger.global.log(OwnLevel.UNKNOWN, "someerror", ex);
+
+        waitEQ();
+        assertNotNull("Mock descriptor called", MockDD.lastDescriptor);
+        assertEquals("Info msg", NotifyDescriptor.INFORMATION_MESSAGE, MockDD.lastDescriptor.getMessageType());
+    }
     
     // Noticed as part of analysis of #59807 stack trace: Throwable.initCause tricky!
     public void testCatchMarker() throws Exception {
@@ -435,4 +448,11 @@ public final class NbErrorManagerTest extends NbTestCase {
         }
         
     }
+    private static final class OwnLevel extends Level {
+        public static final Level UNKNOWN = new OwnLevel("UNKNOWN", Level.WARNING.intValue() + 1); // NOI18N
+
+        private OwnLevel(String s, int i) {
+            super(s, i);
+        }
+    } // end of UserLevel
 }

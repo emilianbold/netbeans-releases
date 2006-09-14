@@ -59,7 +59,7 @@ public final class NbErrorManager extends Handler {
                 // unknown level
                 level = null;
             }
-            if (level.intValue() == Level.SEVERE.intValue() + 1) {
+            if (level != null && level.intValue() == Level.SEVERE.intValue() + 1) {
                 // unknown level
                 level = null;
             }
