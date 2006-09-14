@@ -18,12 +18,12 @@
  */
 
 package org.netbeans.modules.projectimport.jbuilder;
+import java.io.IOException;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.projectimport.j2seimport.ui.BasicWizardIterator;
 import org.netbeans.modules.projectimport.j2seimport.ui.ProgressPanel;
 import org.netbeans.modules.projectimport.j2seimport.ui.WarningMessage;
 import org.netbeans.modules.projectimport.jbuilder.ui.JBWizardData;
-import org.netbeans.modules.projectimport.jbuilder.ui.JBWizardPanel;
 import org.netbeans.modules.projectimport.jbuilder.ui.JBuilderWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -65,9 +65,9 @@ public class ImportAction extends CallableSystemAction {
         return (JBWizardData)WizardSupport.show(wizardIterator);
     }
 
-    private void performImport(final JBWizardData wizardData) {
+    private void performImport(final JBWizardData wizardData) throws IOException {
         ImportProcess iProcess;
-        FileObject prjDir = FileUtil.toFileObject(wizardData.getDestinationDir());
+        FileObject prjDir = FileUtil.createFolder(wizardData.getDestinationDir());
         assert prjDir != null;
 
         iProcess = ImportUtils.createImportProcess(prjDir,wizardData.getProjectDefinition(),

@@ -156,7 +156,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
             if (tempFolder == null || tempFolder.isFile()) {
                 break;
             }
-            if (tempFolder.exists()) {
+            if (tempFolder.canWrite()) {
                 isDesttDirValid = true;
                 break;
             }
