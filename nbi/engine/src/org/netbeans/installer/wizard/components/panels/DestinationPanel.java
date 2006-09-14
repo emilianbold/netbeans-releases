@@ -93,7 +93,7 @@ public class DestinationPanel extends DefaultWizardPanel {
         destinationFieldLabel.setLabelFor(destinationField);
         
         browseButton = new JButton();
-        if (SystemUtils.getInstance().isMacOS()) {
+        if (SystemUtils.Platform.isMacOS()) {
             browseButton.setOpaque(false);
         }
         browseButton.addActionListener(new ActionListener() {

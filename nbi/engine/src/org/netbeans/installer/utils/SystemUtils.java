@@ -28,6 +28,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.installer.download.DownloadManager;
+import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 
 /**
@@ -50,8 +52,7 @@ public abstract class SystemUtils {
                     break;
                     
             }
-        }
-        
+        }        
         return instance;
     }
     
@@ -67,10 +68,6 @@ public abstract class SystemUtils {
     
     public abstract Platform getCurrentPlatform();
     
-    public abstract boolean isWindows();
-    
-    public abstract boolean isMacOS();
-    
     public abstract void sleep(long millis);
     
     public abstract String getLineSeparator();
@@ -84,6 +81,12 @@ public abstract class SystemUtils {
     public abstract File getSystemDrive();
     
     public abstract long getFreeSpace(File file);
+    
+    public abstract void loadNativeLibrary();
+    
+    public abstract boolean createShortcut(String shortcutName,
+            String shortcutPath, String path, String description,
+            String iconPath, String workingDirectory, String arguments);
     
     public abstract ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException;
     
@@ -149,14 +152,7 @@ public abstract class SystemUtils {
             return System.getProperty("line.separator");
         }
         
-        public boolean isWindows() {
-            return Platform.getCurrentPlatform() == Platform.WINDOWS;
-        }
         
-        public boolean isMacOS() {
-            return (Platform.getCurrentPlatform() == Platform.MACOS_X_X86) ||
-                    (Platform.getCurrentPlatform() == Platform.MACOS_X_PPC);
-        }
         
         public File getUserHomeDirectory() {
             return new File(System.getProperty("user.home"));
@@ -173,6 +169,16 @@ public abstract class SystemUtils {
         public long getFreeSpace(File file) {
             return Long.MAX_VALUE;
         }
+        public void loadNativeLibrary() {
+            
+        }
+        
+        public boolean createShortcut(String shortcutName,
+                String shortcutPath, String path, String description,
+                String iconPath, String workingDirectory, String arguments) {
+            return false;
+        }
+        
         public File getSystemDrive() {
             switch (Platform.getCurrentPlatform()) {
                 case WINDOWS:
@@ -275,11 +281,39 @@ public abstract class SystemUtils {
     }
     
     private static class WindowsSystemUtils extends GenericSystemUtils {
+        public final static String WINDOWS_LIBRARY_PROPERTY = "nbi.utils.windows.library.property";
+        
         private native long getFreeSpace(String s);
+        
         public long getFreeSpace(File file) {
             return (file==null || file.getPath().equals("")) ? 0 :
                 getFreeSpace(file.getPath());
         }
+        
+        public native boolean createShortcut(String shortcutName, String shortcutPath,
+                String path, String description, String iconPath,
+                String workingDirectory, String arguments);
+        
+        public void loadNativeLibrary() {
+            if(System.getProperty(WINDOWS_LIBRARY_PROPERTY)==null) {
+                System.setProperty(WINDOWS_LIBRARY_PROPERTY, Win32Registry.WIN32_DLL_LOCATION);
+                
+                try {
+                    System.out.println("Downloading Win32 library from resource..");
+                    String win32dll = DownloadManager.getInstance().download(
+                            System.getProperty(WINDOWS_LIBRARY_PROPERTY)).getPath();
+                    
+                    System.out.println("Loading Win32 library..");
+                    System.load(win32dll);
+                    System.out.println("Loading done");
+                } catch(DownloadException ex) {
+                    System.out.println("Can`t download win32 library: " + ex);
+                } catch(UnsatisfiedLinkError ex) {
+                    System.out.println("Can`t load win32 library: " + ex);
+                    
+                }
+            }            
+        }            
     }
     
     public static enum Platform {
@@ -337,6 +371,15 @@ public abstract class SystemUtils {
             }
             
             return null;
+        }
+        
+        public static boolean isWindows() {
+            return Platform.getCurrentPlatform() == Platform.WINDOWS;
+        }
+        
+        public static boolean isMacOS() {
+            return (Platform.getCurrentPlatform() == Platform.MACOS_X_X86) ||
+                    (Platform.getCurrentPlatform() == Platform.MACOS_X_PPC);
         }
         
         private String name;

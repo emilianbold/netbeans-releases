@@ -151,7 +151,7 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         locationFieldLabel.setLabelFor(locationField);
         
         browseButton = new JButton();
-        if (SystemUtils.getInstance().isMacOS()) {
+        if (SystemUtils.Platform.isMacOS()) {
             browseButton.setOpaque(false);
         }
         browseButton.addActionListener(new ActionListener() {

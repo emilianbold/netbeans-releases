@@ -50,13 +50,12 @@ public abstract class FileUtils {
     
     public static synchronized FileUtils getInstance() {
         if (instance == null) {
-            if (SystemUtils.getInstance().isWindows()) {
+            if (SystemUtils.Platform.isWindows()) {
                 instance = new GenericFileUtils();
             } else {
                 instance = new UnixFileUtils();
             }
         }
-        
         return instance;
     }
     
