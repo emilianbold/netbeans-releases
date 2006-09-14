@@ -35,8 +35,9 @@ final class VersionsCacheExecutor extends ExecutorSupport {
 
     private File checkedOutVersion;
 
-    public VersionsCacheExecutor(CheckoutCommand cmd, GlobalOptions options) {
+    public VersionsCacheExecutor(CheckoutCommand cmd, GlobalOptions options, boolean quiet) {
         super(CvsVersioningSystem.getInstance(), cmd, options);
+        setNonInteractive(quiet);
     }
 
     protected synchronized void commandFinished(ClientRuntime.Result result) {

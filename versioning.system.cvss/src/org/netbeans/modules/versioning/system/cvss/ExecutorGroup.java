@@ -60,6 +60,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
     private boolean hasBarrier;
     private boolean failed;
     private boolean executingCleanup;
+    private boolean nonInteractive;
 
     /**
      * Creates new group.
@@ -148,7 +149,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         progressHandle.switchToIndeterminate();
         progressHandle.setDisplayName(NbBundle.getMessage(ExecutorGroup.class, "BK2001", name));
 
-        if (started.add(queue)) {
+        if (!nonInteractive && started.add(queue)) {
             String msg = NbBundle.getMessage(ExecutorGroup.class, "BK1001", new Date(), getDisplayName());
             String sep = NbBundle.getMessage(ExecutorGroup.class, "BK1000");
             String header = "\n" + sep + "\n" + msg + "\n"; // NOI18N
@@ -194,6 +195,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
     }
 
     private void logFinished(ClientRuntime queue) {
+        if (nonInteractive) return;
         Collection consoles;
         if (queue == null) {
             consoles = started;
@@ -437,6 +439,9 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
         }
     }
 
+    public void setNonInteractive(boolean nonInteractive) {
+        this.nonInteractive = nonInteractive;
+    }
 
     public static interface Groupable {
 

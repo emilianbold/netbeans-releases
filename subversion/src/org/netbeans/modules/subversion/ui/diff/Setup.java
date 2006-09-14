@@ -76,6 +76,7 @@ public final class Setup {
      */
     public static final int DIFFTYPE_ALL       = 2;
     
+    public static final String REVISION_PRISTINE = "PRISTINE"; // NOI18N
     public static final String REVISION_BASE = "BASE"; // NOI18N
     public static final String REVISION_CURRENT = "LOCAL"; // NOI18N
     public static final String REVISION_HEAD    = "HEAD"; // NOI18N

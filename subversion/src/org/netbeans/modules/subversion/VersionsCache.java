@@ -58,13 +58,27 @@ public class VersionsCache {
      */
     public File getFileRevision(File base, String revision) throws IOException {
         if (Setup.REVISION_BASE.equals(revision)) {
-            String name = base.getName();
-            File dir = base.getParentFile();
-            File svnDir = new File(dir, ".svn");  // NOI18N
-            if (!svnDir.isDirectory()) {
-                svnDir = new File(dir, "_svn");  // NOI18N
+            try {
+                File svnDir = getMetadataDir(base.getParentFile());
+                if (svnDir == null) return null;
+                File svnBase = new File(svnDir, "text-base/" + base.getName() + ".svn-base");
+                File expanded = new File(svnDir, "text-base/" + base.getName() + ".netbeans-base");
+                if (expanded.canRead() && svnBase.isFile() && expanded.lastModified() > svnBase.lastModified()) {
+                    return expanded;
+                }
+                SvnClient client = Subversion.getInstance().getClient(base);
+                InputStream in = client.getContent(base, SVNRevision.BASE);
+                expanded = FileUtil.normalizeFile(expanded);
+                expanded.deleteOnExit();
+                FileUtils.copyStreamToFile(new BufferedInputStream(in), expanded);
+                return expanded;
+            } catch (SVNClientException e) {
+                return null;
             }
-            if (svnDir.isDirectory()) {
+        } else if (Setup.REVISION_PRISTINE.equals(revision)) {
+            String name = base.getName();
+            File svnDir = getMetadataDir(base.getParentFile());
+            if (svnDir != null) {
                 File text_base = new File(svnDir, "text-base"); // NOI18N
                 File pristine = new File(text_base, name + ".svn-base"); // NOI18N
                 if (pristine.isFile()) {
@@ -121,5 +135,16 @@ public class VersionsCache {
         // (mapping all repository revisions to it)
         //
         // File caching is leveraged in Search History
+    }
+
+    private File getMetadataDir(File dir) {
+        File svnDir = new File(dir, ".svn");  // NOI18N
+        if (!svnDir.isDirectory()) {
+            svnDir = new File(dir, "_svn");  // NOI18N
+            if (!svnDir.isDirectory()) {
+                return null;
+            }
+        }
+        return svnDir;
     }
 }

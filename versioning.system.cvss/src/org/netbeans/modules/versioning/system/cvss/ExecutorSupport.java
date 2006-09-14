@@ -107,6 +107,11 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
     boolean t9yRetryFlag;
 
     /**
+     * Be non-interactive.
+     */
+    private boolean nonInteractive;
+
+    /**
      * Creates execution environment for given command.
      * @param cvs
      * @param cmd that has undergone {@link #prepareBasicCommand} splitting.
@@ -119,6 +124,9 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         cache = cvs.getStatusCache();
     }
 
+    protected void setNonInteractive(boolean nonInteractive) {
+        this.nonInteractive = nonInteractive;
+    }
 
 
     /**
@@ -131,6 +139,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
         executed = true;
         if (group == null) {
             group = new ExecutorGroup(getDisplayName());
+            group.setNonInteractive(nonInteractive);
         }
 
         setup();
@@ -364,10 +373,10 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
                         internalError = error;
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, error);
                         report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
-                               NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"), 
+                               NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"),
                                Arrays.asList(new Object [] { error.getMessage() }), NotifyDescriptor.ERROR_MESSAGE);
                     }
-                    else if (retryConnection(error)) {
+                    else if (!nonInteractive && retryConnection(error)) {
                         terminated = false;
                         String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1004", new Date(), getDisplayName());
                         clientRuntime = cvs.getClientRuntime(cmd, options);
@@ -424,6 +433,7 @@ public abstract class ExecutorSupport implements CVSListener, ExecutorGroup.Grou
     }
 
     protected void report(String title, String prompt, List messages, int type) {
+        if (nonInteractive) return;
         CommandReport report = new CommandReport(prompt, messages);
         JButton ok = new JButton(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandReport_OK"));
         NotifyDescriptor descriptor = new NotifyDescriptor(

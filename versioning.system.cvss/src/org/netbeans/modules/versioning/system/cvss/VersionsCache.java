@@ -87,21 +87,30 @@ public class VersionsCache {
      */ 
     public synchronized File getRemoteFile(File baseFile, String revision, ExecutorGroup group) throws IOException,
                 IllegalCommandException, CommandException, AuthenticationException, NotVersionedException {
+        return getRemoteFile(baseFile, revision, group, false);
+    }
+
+    public synchronized File getRemoteFile(File baseFile, String revision, ExecutorGroup group, boolean quiet) throws IOException,
+                IllegalCommandException, CommandException, AuthenticationException, NotVersionedException {
+        String resolvedRevision = resolveRevision(baseFile, revision);
+        File file = getCachedRevision(baseFile, resolvedRevision);
+        if (file != null) return file;
+        file = checkoutRemoteFile(baseFile, revision, group, quiet);
+        if (file == null) return null;
+        return saveRevision(baseFile, file, resolvedRevision);
+    }
+
+    private String resolveRevision(File baseFile, String revision) throws IOException {
         if (revision == REVISION_BASE) {
-            revision = getBaseRevision(baseFile);
+            return getBaseRevision(baseFile);
         }
         if (revision.equals(REVISION_HEAD)) {
             Entry entry = CvsVersioningSystem.getInstance().getAdminHandler().getEntry(baseFile);
             if (entry != null && entry.getTag() != null) {
-                revision = entry.getTag();
+                return entry.getTag();
             }
         }
-        File file = getCachedRevision(baseFile, revision);
-        if (file != null) return file;
-        file = checkoutRemoteFile(baseFile, revision, group);
-        if (file == null) return null;
-        file = saveRevision(baseFile, file, revision);
-        return file;
+        return revision;
     }
 
     /**
@@ -128,7 +137,8 @@ public class VersionsCache {
             FileUtil.copy(fin, fos);
             fin.close();
             fos.close();
-            file.delete();
+            // eventually delete the checked out file
+            if (!file.equals(baseFile)) file.delete();
             return destFile;
         } catch (IOException e) {
             // ignore errors, cache is not that much important
@@ -189,12 +199,29 @@ public class VersionsCache {
      * @param baseFile location of the file in local workdir (need not exist)
      * @param revision revision number to get
      * @param group that carries shared state. Note that this group must not be executed later on. This parameter can be null.
+     * @param quiet
      * @return File file on disk (most probably located in some temp diretory) or null if this file does not exist
      * in repository in the specified revision
      * @throws IOException if some I/O error occurs during checkout
      */ 
-    private File checkoutRemoteFile(File baseFile, String revision, ExecutorGroup group) throws IOException {
+    private File checkoutRemoteFile(File baseFile, String revision, ExecutorGroup group, boolean quiet) throws IOException {
 
+        if (revision == REVISION_BASE) {
+            // be optimistic, use the file available on disk if possible
+            FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(baseFile);
+            if (info.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
+                Entry entry = info.getEntry(baseFile);
+                if (entry != null) {
+                    File file = saveRevision(baseFile, baseFile, entry.getRevision());
+                    // if the file was modified meanwhile, fallback to normal chekout
+                    if (file.lastModified() > baseFile.lastModified()) {
+                        return baseFile;                        
+                    }
+                }
+            }
+        }
+        revision = resolveRevision(baseFile, revision);
+        
         GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
         String root = getCvsRoot(baseFile.getParentFile());
         CVSRoot cvsRoot = CVSRoot.parse(root);
@@ -217,7 +244,7 @@ public class VersionsCache {
         String msg  = NbBundle.getMessage(VersionsCache.class, "MSG_VersionsCache_FetchingProgress", revision, baseFile.getName());
         cmd.setDisplayName(msg);
 
-        VersionsCacheExecutor executor = new VersionsCacheExecutor(cmd, options);
+        VersionsCacheExecutor executor = new VersionsCacheExecutor(cmd, options, quiet);
         if (group != null) {
             group.progress(msg);
             group.addExecutor(executor);
