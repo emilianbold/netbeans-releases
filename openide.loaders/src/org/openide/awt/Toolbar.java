@@ -1315,7 +1315,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             dim = new Dimension (width, width);
             max = new Dimension (width, Integer.MAX_VALUE);
             this.setBorder (new EmptyBorder (VGAP, HGAP, VGAP, HGAP));
-            this.setToolTipText (Toolbar.this.getName());
+            this.setToolTipText (Toolbar.this.getDisplayName());
         }
 
         /** Paint grip to specific Graphics. */
