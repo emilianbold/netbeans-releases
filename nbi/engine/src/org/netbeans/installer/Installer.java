@@ -49,12 +49,10 @@ public class Installer {
      * @see #start(String[])
      */
     public static void main(String[] arguments) {        
-        new Installer(arguments).start();
+        new Installer(arguments).start();        
     }
     
-    static {
-        SystemUtils.getInstance().loadNativeLibrary();
-    }
+   
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_LOCAL_DIRECTORY_PATH =

@@ -22,6 +22,7 @@ package org.netbeans.installer.utils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -52,7 +53,8 @@ public abstract class SystemUtils {
                     break;
                     
             }
-        }        
+            instance.loadNativeLibrary();
+        }
         return instance;
     }
     
@@ -81,6 +83,8 @@ public abstract class SystemUtils {
     public abstract File getSystemDrive();
     
     public abstract long getFreeSpace(File file);
+    
+    protected abstract String getNativeLibraryPath();            
     
     public abstract void loadNativeLibrary();
     
@@ -169,8 +173,54 @@ public abstract class SystemUtils {
         public long getFreeSpace(File file) {
             return Long.MAX_VALUE;
         }
+        protected String getNativeLibraryPath() {
+            return null;
+        }
+        
         public void loadNativeLibrary() {
             
+            String libraryPath = getNativeLibraryPath();
+            
+            if(libraryPath!=null) {
+                FileOutputStream outputStream=null;
+                File file = null;
+                InputStream inputStream= null;
+                
+                try {
+                    inputStream = getClass().
+                            getClassLoader().
+                            getResource(libraryPath).
+                            openStream();
+                    file = new File(getTempDirectory().getPath() + 
+                            File.separator + "nbi-native-lib.tmp");
+                    outputStream = new FileOutputStream(file);
+                    byte[] buffer = new byte[1024];
+                    while (inputStream.available() > 0) {
+                        outputStream.write(buffer, 0, inputStream.read(buffer));
+                    }                    
+                    outputStream.close();
+                    System.load(file.getPath());
+                    
+                } catch(IOException ex) {
+                    System.out.println("Can`t write library.");
+                    ex.printStackTrace();
+                } catch(UnsatisfiedLinkError ex) {
+                    System.out.println("Can`t load native library. ");
+                    ex.printStackTrace();
+                } finally {
+                    try {
+                        if(outputStream!=null) outputStream.close();
+                    } catch (IOException ex) {
+                    }
+                    try {
+                        if(inputStream!=null) inputStream.close();
+                    } catch (IOException ex) {
+                    }
+                    if(file!=null && !file.delete()) {
+                        file.deleteOnExit();
+                    }
+                }
+            }
         }
         
         public boolean createShortcut(String shortcutName,
@@ -281,7 +331,7 @@ public abstract class SystemUtils {
     }
     
     private static class WindowsSystemUtils extends GenericSystemUtils {
-        public final static String WINDOWS_LIBRARY_PROPERTY = "nbi.utils.windows.library.property";
+        public static final String WIN32_DLL_LOCATION = "native/win32.dll";
         
         private native long getFreeSpace(String s);
         
@@ -294,26 +344,9 @@ public abstract class SystemUtils {
                 String path, String description, String iconPath,
                 String workingDirectory, String arguments);
         
-        public void loadNativeLibrary() {
-            if(System.getProperty(WINDOWS_LIBRARY_PROPERTY)==null) {
-                System.setProperty(WINDOWS_LIBRARY_PROPERTY, Win32Registry.WIN32_DLL_LOCATION);
-                
-                try {
-                    System.out.println("Downloading Win32 library from resource..");
-                    String win32dll = DownloadManager.getInstance().download(
-                            System.getProperty(WINDOWS_LIBRARY_PROPERTY)).getPath();
-                    
-                    System.out.println("Loading Win32 library..");
-                    System.load(win32dll);
-                    System.out.println("Loading done");
-                } catch(DownloadException ex) {
-                    System.out.println("Can`t download win32 library: " + ex);
-                } catch(UnsatisfiedLinkError ex) {
-                    System.out.println("Can`t load win32 library: " + ex);
-                    
-                }
-            }            
-        }            
+        protected String getNativeLibraryPath() {
+            return WIN32_DLL_LOCATION;
+        }
     }
     
     public static enum Platform {
