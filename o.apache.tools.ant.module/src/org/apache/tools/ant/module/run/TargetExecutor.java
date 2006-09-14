@@ -48,6 +48,12 @@ import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
@@ -113,8 +119,10 @@ public final class TargetExecutor implements Runnable {
         String fileName;
         if (pcookie.getFileObject() != null) {
             fileName = pcookie.getFileObject().getNameExt();
-        } else {
+        } else if (pcookie.getFile() != null) {
             fileName = pcookie.getFile().getName();
+        } else {
+            fileName = ""; // last resort for #84874
         }
         if (projectName.equals("")) { // NOI18N
             // No name="..." given, so try the file name instead.
@@ -167,7 +175,7 @@ public final class TargetExecutor implements Runnable {
 
     }
 
-    private static final class RerunAction extends AbstractAction {
+    private static final class RerunAction extends AbstractAction implements FileChangeListener {
 
         private final AntProjectCookie pcookie;
         private final List<String> targetNames;
@@ -180,6 +188,10 @@ public final class TargetExecutor implements Runnable {
             verbosity = prototype.verbosity;
             properties = prototype.properties;
             setEnabled(false); // initially, until ready
+            FileObject script = pcookie.getFileObject();
+            if (script != null) {
+                script.addFileChangeListener(FileUtil.weakFileChangeListener(this, script));
+            }
         }
 
         @Override
@@ -204,6 +216,25 @@ public final class TargetExecutor implements Runnable {
             } catch (IOException x) {
                 Logger.getLogger(TargetExecutor.class.getName()).log(Level.INFO, null, x);
             }
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            firePropertyChange("enabled", null, false); // NOI18N
+        }
+
+        public void fileFolderCreated(FileEvent fe) {}
+
+        public void fileDataCreated(FileEvent fe) {}
+
+        public void fileChanged(FileEvent fe) {}
+
+        public void fileRenamed(FileRenameEvent fe) {}
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {}
+
+        public boolean isEnabled() {
+            // #84874: should be disabled in case the original Ant script is now gone.
+            return super.isEnabled() && pcookie.getFileObject() != null && pcookie.getFileObject().isValid();
         }
 
     }

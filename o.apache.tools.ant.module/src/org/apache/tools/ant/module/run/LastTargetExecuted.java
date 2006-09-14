@@ -100,7 +100,10 @@ public class LastTargetExecuted {
     public static ExecutorTask rerun() throws IOException {
         AntProjectCookie apc = getLastBuildScript();
         if (apc == null) {
-            throw new IOException("No last process"); // NOI18N
+            // Can happen in case the build script was deleted (similar to #84874).
+            // Also make sure to disable RunLastTargetAction.
+            fireChange();
+            return null;
         }
         TargetExecutor t = new TargetExecutor(apc, targets);
         t.setVerbosity(verbosity);

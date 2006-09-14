@@ -366,7 +366,9 @@ public class TargetLister {
                         file = _file;
                     } else {
                         if (apc.getFile() == null) {
-                            throw new IOException("Cannot import relative path " + fileS + " from a diskless script"); // NOI18N
+                            //throw new IOException("Cannot import relative path " + fileS + " from a diskless script"); // NOI18N
+                            // Can happen when refreshing Navigator or the like after deleting a script with imports. Just ignore.
+                            continue;
                         }
                         // #50087: <import> resolves file against the script, *not* the basedir.
                         file = new File(apc.getFile().getParentFile(), fileSubstituted);
