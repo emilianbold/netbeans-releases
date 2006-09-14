@@ -76,7 +76,10 @@ public class Installer extends ModuleInstall {
         all.addHandler(handler);
         
         
-        for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
+        Lookup.Template/*GENERICS<Activated>GENERICS*/ temp = new Lookup.Template/*GENERICS<Activated>GENERICS*/(Activated.class);
+        Lookup.Result/*GENERICS<Activated>GENERICS*/ res = Lookup.getDefault().lookup(temp);
+        for (Object o : res.allInstances()) {
+            Activated a = (Activated)o;
             a.activated(log);
         }
         /*
@@ -106,7 +109,10 @@ public class Installer extends ModuleInstall {
     
     public boolean closing() {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
-        for (Deactivated a : Lookup.getDefault().lookupAll(Deactivated.class)) {
+        Lookup.Template/*GENERICS<Deactivated>GENERICS*/ temp = new Lookup.Template/*GENERICS<Deactivated>GENERICS*/(Deactivated.class);
+        Lookup.Result/*GENERICS<Deactivated>GENERICS*/ result = Lookup.getDefault().lookup(temp);
+        for (Object o : result.allInstances()) {
+            Deactivated a = (Deactivated)o;
             a.deactivated(log);
         }
         
