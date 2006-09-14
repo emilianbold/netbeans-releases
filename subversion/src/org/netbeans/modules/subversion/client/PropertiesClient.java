@@ -21,7 +21,11 @@ package org.netbeans.modules.subversion.client;
 
 import java.io.*;
 import java.util.*;
+import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.parser.LocalSvnInfoImpl;
 import org.netbeans.modules.subversion.config.KVFile;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Implements properties access that is not supported
@@ -63,12 +67,12 @@ public final class PropertiesClient {
      */
     public Map<String, byte[]> getBaseProperties() throws IOException {
         File store;
-        if (file.isDirectory()) {
-            store = new File(file, ".svn/dir-props-base");  // NOI18N
-        } else {
-            store = new File(file.getParentFile(), ".svn/prop-base/" + file.getName() + ".svn-base");  // NOI18N
+        try {
+            store = getPropertyFile(true);
+        } catch (SVNClientException ex) {
+            throw new IOException(ex.getMessage());
         }
-        if (store.isFile()) {
+        if (store != null && store.isFile()) {
             KVFile kv = new KVFile(store);
             return normalize(kv.getMap());
         } else {
@@ -82,12 +86,12 @@ public final class PropertiesClient {
      */
     public Map<String, byte[]> getProperties() throws IOException {
         File store;
-        if (file.isDirectory()) {
-            store = new File(file, ".svn/dir-props");  // NOI18N
-        } else {
-            store = new File(file.getParentFile(), ".svn/props/" + file.getName() + ".svn-work");  // NOI18N
+        try {
+            store = getPropertyFile(false);
+        } catch (SVNClientException ex) {
+            throw new IOException(ex.getMessage());
         }
-        if (store.isFile()) {
+        if (store != null && store.isFile()) {
             KVFile kv = new KVFile(store);
             return normalize(kv.getMap());
         } else {
@@ -95,6 +99,26 @@ public final class PropertiesClient {
         }
     }
 
+    private File getPropertyFile(boolean base) throws SVNClientException {
+        // XXX realy not sure if this is the best way ...
+        SvnClient client = Subversion.getInstance().getClient(false);
+        ISVNInfo info = null;
+        try {
+            info = client.getInfoFromWorkingCopy(file);
+        } catch (SVNClientException ex) {
+            throw ex;
+        }
+        if(info instanceof LocalSvnInfoImpl) {
+            if(base) {
+                return ((LocalSvnInfoImpl) info).getBasePropertyFile();
+            } else {
+                return ((LocalSvnInfoImpl) info).getPropertyFile();                
+            }
+        } else {
+            throw new SVNClientException("Unexpected value:" + info + " should be from type " + LocalSvnInfoImpl.class);
+        }         
+    }
+    
     private Map<String, byte[]> normalize(Map map) {
         Map<String, byte[]> ret = new HashMap<String, byte[]>(map.size());
         Iterator<Map.Entry> it = map.entrySet().iterator();

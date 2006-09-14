@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -39,11 +40,16 @@ public class WorkingCopyDetails {
     static final String IS_HANDLED = "handled";
     private static final char SLASH_N = '\n';
     private static final char SLASH_R = '\r';
-
+    
+    static final String VERSION_ATTR_KEY = "wc-version";
+    static final String VERSION_UNKNOWN = "";
+    static final String VERSION_13 = "1.3";
+    static final String VERSION_14 = "1.4";
+    
     private File file;
     //These Map stores the values in the SVN entities file
     //for the file and its parent directory
-    private Map<String, String> attributes;
+    protected Map<String, String> attributes;
     //private Properties parentProps;
     //These Properties store the working and base versions of the
     //SVN properties for the file
@@ -55,9 +61,47 @@ public class WorkingCopyDetails {
     private File textBaseFile = null;
 
     /** Creates a new instance of WorkingCopyDetails */
-    public WorkingCopyDetails(File file, Map<String, String> attributes) {
+    private WorkingCopyDetails(File file, Map<String, String> attributes) {
         this.file = file;
         this.attributes  = attributes;
+    }
+
+    public static WorkingCopyDetails createWorkingCopy(File file, Map<String, String> attributes) {
+        String version = attributes != null ? attributes.get(VERSION_ATTR_KEY) : VERSION_UNKNOWN;
+        if(version != null) {
+            if(version.equals(VERSION_13)) {
+                
+                return new WorkingCopyDetails(file, attributes);
+                
+            } else if(version.equals(VERSION_14)) {
+                
+                return new WorkingCopyDetails(file, attributes) {
+                    public boolean propertiesExist() throws IOException {
+                        return this.attributes.containsKey("has-props");        // NOI18N
+                    }  
+                    public boolean propertiesModified() throws IOException {
+                        return this.attributes.containsKey("has-prop-mods");    // NOI18N
+                    }            
+                };
+                
+            } else if(version.equals(VERSION_UNKNOWN)) {
+                
+                WorkingCopyDetails wcd = new WorkingCopyDetails(file, attributes);
+                if(!wcd.isHandled()) {
+                    return wcd;
+                } 
+                // how is this possible?
+                throw new UnsupportedOperationException("Unknown SVN working copy version: " + version);    // NOI18N                
+                
+            } else {
+                
+                throw new UnsupportedOperationException("Unknown SVN working copy version: " + version);    // NOI18N
+                
+            }   
+        } else {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not determine the SVN working copy version for " + file + ". Falling back on 1.3");  // NOI18N
+            return new WorkingCopyDetails(file, attributes);
+        }
     }
 
     public String getValue(String propertyName, String defaultValue) {
@@ -90,28 +134,30 @@ public class WorkingCopyDetails {
         }
     }
 
-    public boolean getBooleanValue(String key) throws LocalSubversionException {
+    public boolean getBooleanValue(String key) {
         String value = getValue(key);
         if(value==null) return false;
         return Boolean.valueOf(value).booleanValue();
     }
 
-    public boolean isHandled() throws LocalSubversionException {
+    public boolean isHandled() {
         return getBooleanValue(IS_HANDLED);
     }
 
     public boolean isFile() {
-        return attributes !=null ? FILE_ATTRIBUTE_VALUE.equals(attributes.get("kind")) : false;
+        return attributes !=null ? FILE_ATTRIBUTE_VALUE.equals(attributes.get("kind")) : false; // NOI18N
     }
 
-    private File getPropertiesFile() throws IOException {
+    File getPropertiesFile() throws IOException {
         if (propertiesFile == null) {
-            propertiesFile = SvnWcUtils.getPropertiesFile(file, false);
+            // unchanged properties have only the base file
+            boolean modified = getBooleanValue("has-prop-mods");                                // NOI18N
+            propertiesFile = SvnWcUtils.getPropertiesFile(file, modified ? false : true);
         }
         return propertiesFile;
     }
 
-    private File getBasePropertiesFile() throws IOException {
+    File getBasePropertiesFile() throws IOException {
         if (basePropertiesFile == null) {
             basePropertiesFile = SvnWcUtils.getPropertiesFile(file, true);
         }
@@ -127,21 +173,21 @@ public class WorkingCopyDetails {
 
     private Properties getWorkingSvnProperties() throws IOException {
         if (workingSvnProperties == null) {
-                workingSvnProperties = loadProperties(getPropertiesFile());
+            workingSvnProperties = loadProperties(getPropertiesFile());
         }
         return workingSvnProperties;
     }
 
     private Properties getBaseSvnProperties() throws IOException {
         if (baseSvnProperties == null) {
-                baseSvnProperties = loadProperties(getBasePropertiesFile());
+            baseSvnProperties = loadProperties(getBasePropertiesFile());
         }
         return baseSvnProperties;
     }
 
     public boolean propertiesExist() throws IOException {
         boolean returnValue = false;
-
+        
         File propsFile = getPropertiesFile();
         returnValue = propsFile != null ? propsFile.exists() : false;
         if (returnValue) {
@@ -162,7 +208,7 @@ public class WorkingCopyDetails {
 
         return returnValue;
     }
-
+    
     public boolean propertiesModified() throws IOException {
         File basePropsFile = getPropertiesFile();
         File propsFile = getBasePropertiesFile();
@@ -204,7 +250,7 @@ public class WorkingCopyDetails {
                         propValue = currentLine;
                         returnValue.setProperty(propKey, propValue);
                         propKey = null;
-                        propValue = "";
+                        propValue = "";                                                 // NOI18N
                     }
                 }
                 headerLine = !(headerLine);
@@ -237,14 +283,14 @@ public class WorkingCopyDetails {
             Properties workingSvnProps = getWorkingSvnProperties();
             String value = "";
             if(workingSvnProps!=null) {
-                value = workingSvnProps.getProperty("svn:special", "none");
+                value = workingSvnProps.getProperty("svn:special", "none");         // NOI18N
             }
             if (value.equals("*")) {
 		if (isSymbolicLink()) {
         	    returnValue = false;
 		}
             } else {
-	        String rawKeywords = workingSvnProps != null ? workingSvnProps.getProperty("svn:keywords") : null;
+	        String rawKeywords = workingSvnProps != null ? workingSvnProps.getProperty("svn:keywords") : null;      // NOI18N
 	        if (rawKeywords != null) {
                     returnValue = isModifiedByLine(rawKeywords.trim());
 	        } else {
@@ -265,7 +311,7 @@ public class WorkingCopyDetails {
             try {
                 reader = new BufferedReader(new java.io.FileReader(baseFile));
 	        String firstLine = reader.readLine();
-	        returnValue = firstLine.startsWith("link");
+	        returnValue = firstLine.startsWith("link");     // NOI18N
             } finally {
 		if (reader != null) {
                     reader.close();
@@ -337,19 +383,19 @@ public class WorkingCopyDetails {
         List<String> keywordsList = new ArrayList<String>();
         for (int i = 0; i < keywords.length; i++) {
             String kw = keywords[i].toLowerCase();
-            if(kw.equals("date") || kw.equals("lastchangeddate")) {
-                keywordsList.add("LastChangedDate");
-                keywordsList.add("Date");
-            } else if(kw.equals("revision") || kw.equals("rev") || kw.equals("lastchangedrevision")) {
-                keywordsList.add("LastChangedRevision");
-                keywordsList.add("Revision");
-                keywordsList.add("Rev");
-            } else if(kw.equals("author") || kw.equals("lastchangedby")) {
-                keywordsList.add("LastChangedBy");
-                keywordsList.add("Author");
-            } else if(kw.equals("url") || kw.equals("headurl")) {
-                keywordsList.add("HeadURL");
-                keywordsList.add("URL");
+            if(kw.equals("date") || kw.equals("lastchangeddate")) {                                         // NOI18N
+                keywordsList.add("LastChangedDate");                                                        // NOI18N
+                keywordsList.add("Date");                                                                   // NOI18N
+            } else if(kw.equals("revision") || kw.equals("rev") || kw.equals("lastchangedrevision")) {      // NOI18N
+                keywordsList.add("LastChangedRevision");                                                    // NOI18N
+                keywordsList.add("Revision");                                                               // NOI18N
+                keywordsList.add("Rev");                                                                    // NOI18N
+            } else if(kw.equals("author") || kw.equals("lastchangedby")) {                                  // NOI18N
+                keywordsList.add("LastChangedBy");                                                          // NOI18N
+                keywordsList.add("Author");                                                                 // NOI18N
+            } else if(kw.equals("url") || kw.equals("headurl")) {                                           // NOI18N
+                keywordsList.add("HeadURL");                                                                // NOI18N
+                keywordsList.add("URL");                                                                    // NOI18N
             } else {
                 keywordsList.add(keywords[i]);                
             }            
@@ -371,7 +417,7 @@ public class WorkingCopyDetails {
                 if (!fileLine.equals(baseLine)) {
                     boolean equal = false;
                     for (int i = 0; i < keywords.length; i++) {
-                        String headerPattern = "$" + keywords[i];
+                        String headerPattern = "$" + keywords[i];                           // NOI18N
                         if(fileLine.indexOf(headerPattern) > -1) {
                             equal = compareKeywordLines(fileLine, baseLine, keywords);
                             break;
@@ -409,7 +455,7 @@ public class WorkingCopyDetails {
                 // 1. could be a keyword ...
                 for (int keywordsIdx = 0; keywordsIdx < keywords.length; keywordsIdx++) {
                     
-                    String keyword = keywords[keywordsIdx] + "$";
+                    String keyword = keywords[keywordsIdx] + "$";                                   // NOI18N
                     
                     boolean gotHeader = false;
                     for (int keyIdx = 0; keyIdx < keyword.length(); keyIdx++) {

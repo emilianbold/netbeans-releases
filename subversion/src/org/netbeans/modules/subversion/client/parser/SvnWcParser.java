@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -39,9 +40,10 @@ public class SvnWcParser {
     /** Creates a new instance of SvnWcParser */
     public SvnWcParser() {
     }
-           
-    private WorkingCopyDetails getWCDetails(File file) throws IOException, SAXException {                        
-        return new WorkingCopyDetails(file, EntriesCache.getInstance().getFileAttributes(file));        
+
+    private WorkingCopyDetails getWCDetails(File file) throws IOException, SAXException {   
+        Map<String, String> attributes = EntriesCache.getInstance().getFileAttributes(file);
+        return WorkingCopyDetails.createWorkingCopy(file, attributes);            
     }
 
     /**
@@ -51,7 +53,7 @@ public class SvnWcParser {
         List<ISVNStatus> l = getStatus(path, descend);
         return l.toArray(new ISVNStatus[l.size()]);
     }
-    
+
     private List<ISVNStatus> getStatus(File path, boolean descend) throws LocalSubversionException {
         List<ISVNStatus> ret = new ArrayList(20);
                         
@@ -67,11 +69,11 @@ public class SvnWcParser {
         ret.add(getSingleStatus(path));
         return ret;
     }    
-    
+
     public ISVNStatus getSingleStatus(File file) throws LocalSubversionException {
         String finalTextStatus = SVNStatusKind.NORMAL.toString();
         String finalPropStatus = SVNStatusKind.NONE.toString();
-        
+
         try {
             WorkingCopyDetails wcDetails = getWCDetails(file);
             if (wcDetails.isHandled()) {
@@ -90,7 +92,7 @@ public class SvnWcParser {
                         finalTextStatus = SVNStatusKind.MODIFIED.toString();
                     }
                 } 
-                
+
                 String value = wcDetails.getValue("schedule");  // NOI18N
                 if (value != null) {
                     if (value.equals("add")) {  // NOI18N
@@ -131,7 +133,7 @@ public class SvnWcParser {
                 if (value != null && ((String)value).length() > 0) {
                     conflictWorking = new File(file.getParentFile(), value);
                 }
-                
+
                 value = wcDetails.getValue("conflict-new");  // NOI18N
                 if (value != null && ((String)value).length() > 0) {
                     conflictNew = new File(file.getParentFile(), value);
@@ -151,7 +153,7 @@ public class SvnWcParser {
                     lockComment = wcDetails.getValue("lock-comment");  // NOI18N
                     lockOwner = wcDetails.getValue("lock-owner");      // NOI18N
                 }
-                
+
                 return new LocalSvnStatusImpl(
                         file,
                         fileUrl,
@@ -173,7 +175,7 @@ public class SvnWcParser {
             } else {
                 //File isn't handled.
                 return new LocalSvnStatusImpl(
-                        file,                                 // NOI18N
+                        file,                                
                         wcDetails.getValue("url"),            // NOI18N
                         0,
                         "unknown",                            // NOI18N   
@@ -208,7 +210,6 @@ public class SvnWcParser {
             WorkingCopyDetails wcDetails = getWCDetails(file);  // NOI18N
             if (wcDetails.isHandled()) {
                 String fileUrl = wcDetails.getValue("url");               // NOI18N   
-
                 String reposUrl = wcDetails.getValue("repos");  // NOI18N
                 String reposUuid = wcDetails.getValue("uuid");  // NOI18N
                 String schedule = wcDetails.getValue("schedule");  // NOI18N
@@ -217,7 +218,6 @@ public class SvnWcParser {
                 }
 
                 long revision = wcDetails.getLongValue("revision");     // NOI18N                
-                
                 boolean isCopied = wcDetails.getBooleanValue("copied");  // NOI18N
                 String urlCopiedFrom = null;
                 long revisionCopiedFrom = 0;
@@ -231,7 +231,7 @@ public class SvnWcParser {
                 String lastCommitAuthor = wcDetails.getValue("last-author");        // NOI18N          
                 Date lastDatePropsUpdate = wcDetails.getDateValue("prop-time");     // NOI18N                          
                 Date lastDateTextUpdate = wcDetails.getDateValue("text-time");  // NOI18N
-                
+
                 Date lockCreationDate = wcDetails.getDateValue("lock-creation-date");  // NOI18N
                 String lockComment = null;
                 String lockOwner = null;                
@@ -239,21 +239,20 @@ public class SvnWcParser {
                     lockComment = wcDetails.getValue("lock-comment");  // NOI18N
                     lockOwner = wcDetails.getValue("lock-owner");  // NOI18N
                 }
-                
-                String nodeKind = wcDetails.getValue("kind", "normal");     // NOI18N             
 
+                String nodeKind = wcDetails.getValue("kind", "normal");     // NOI18N             
                 returnValue = new LocalSvnInfoImpl(file, fileUrl, reposUrl, reposUuid,
                     schedule, revision, isCopied, urlCopiedFrom, revisionCopiedFrom,
                     lastCommittedDate, lastChangedRevision, lastCommitAuthor,
                     lastDatePropsUpdate, lastDateTextUpdate, lockCreationDate,
-                    lockOwner, lockComment, nodeKind);
+                    lockOwner, lockComment, nodeKind, wcDetails.getPropertiesFile(), wcDetails.getBasePropertiesFile());
             } else {
                 String fileUrl = wcDetails.getValue("url");  // NOI18N
                 String reposUrl = wcDetails.getValue("repos");  // NOI18N
                 String reposUuid = wcDetails.getValue("uuid");  // NOI18N
                 returnValue = new LocalSvnInfoImpl(file, fileUrl, reposUrl, reposUuid,
                     SVNScheduleKind.NORMAL.toString(), 0, false, null, 0, null, 0, null,
-                    null, null, null, null, null, SVNNodeKind.UNKNOWN.toString());
+                    null, null, null, null, null, SVNNodeKind.UNKNOWN.toString(), null, null);
             }
         } catch (IOException ex) {
             throw new LocalSubversionException(ex);
@@ -262,5 +261,6 @@ public class SvnWcParser {
         }
         return returnValue;
     }
-   
+
 }
+

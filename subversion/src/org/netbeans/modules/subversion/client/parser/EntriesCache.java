@@ -18,11 +18,13 @@
  */
 package org.netbeans.modules.subversion.client.parser;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -40,6 +42,7 @@ public class EntriesCache {
     private static final String ENTRIES = "entries";      // NOI18N    
     private static final String SVN_THIS_DIR = "svn:this_dir"; // NOI18N
     private static final String EMPTY_STRING = "";       
+    private static final String DELIMITER = "\f";
     
     private class EntryAttributes extends HashMap<String, Map<String, String>> { };
     
@@ -81,8 +84,7 @@ public class EntriesCache {
         long lastModified = entriesFile.lastModified();
         long fileLength = entriesFile.length();
         if(ef == null || ef.ts != lastModified || ef.size != fileLength) {                        
-            EntriesHandler handler = getEntriesHandler(entriesFile, file.getName());                                
-            EntryAttributes ea = handler.getEntryAttributes();
+            EntryAttributes ea = getAttributesFromEntriesFile(entriesFile);
             ef = new EntriesFile(getMergedAttributes(ea), lastModified, fileLength);            
             getEntries().put(entriesFile.getAbsolutePath(), ef);
         } 
@@ -131,7 +133,10 @@ public class EntriesCache {
                     if( attributes.get(key) == null ) {
                         attributes.put(key, value + "/" + fileName);                
                     }    
-                } else if( key.equals("uuid") || key.equals("repos") || key.equals("revision") ) {
+                } else if( key.equals("uuid") || 
+                           key.equals("repos") || 
+                           key.equals("revision") || 
+                           key.equals(WorkingCopyDetails.VERSION_ATTR_KEY)) {
                     if( attributes.get(key) == null ) {
                         attributes.put(key, value);
                     }
@@ -141,13 +146,37 @@ public class EntriesCache {
         return attributes;
     }
     
-    private EntriesHandler getEntriesHandler(File entriesFile, String fileName) throws IOException, SAXException {        
+    private EntryAttributes getAttributesFromEntriesFile(File entriesFile) throws IOException, SAXException {        
+        //We need to check the first line of the File.
+        //If it is a number, its the new format.
+        //Otherwise, treat it as XML
+        boolean isXml = false;
+        BufferedReader fileReader = new BufferedReader(new java.io.FileReader(entriesFile));
+        try {
+            String firstLine = fileReader.readLine();
+            try {
+                Integer.valueOf(firstLine);
+                isXml = false;
+            } catch (NumberFormatException ex) {
+                isXml = true;
+            }
+
+            if (isXml) {
+                return loadAttributesFromXml(entriesFile);
+            } else {
+                return loadAttributesFromPlainText(fileReader);
+            }
+        } finally {
+            fileReader.close();
+        }
+    }    
+    
+    private EntryAttributes loadAttributesFromXml(File entriesFile) throws IOException, SAXException {
         //Parse the entries file
         XMLReader saxReader = XMLUtil.createXMLReader();
-        EntriesHandler entriesHandler = null;
-        entriesHandler = new EntriesHandler();
-        saxReader.setContentHandler(entriesHandler);
-        saxReader.setErrorHandler(entriesHandler);
+        XmlEntriesHandler xmlEntriesHandler = new XmlEntriesHandler();
+        saxReader.setContentHandler(xmlEntriesHandler);
+        saxReader.setErrorHandler(xmlEntriesHandler);
         InputStream inputStream = new java.io.FileInputStream(entriesFile);
 
         try {            
@@ -157,10 +186,98 @@ public class EntriesCache {
         } finally {
             inputStream.close();
         }
-        return entriesHandler;
-    }    
+        return xmlEntriesHandler.getEntryAttributes();
+    }
+
+    //New entries file format, as of SVN 1.4.0
+    private EntryAttributes loadAttributesFromPlainText(BufferedReader entriesReader) throws IOException {
+        EntryAttributes returnValue = new EntryAttributes();
+        
+        int attrIndex = 0;
+        
+        String entryName = null;
+        Map<String, String> attributes = new HashMap<String, String>();
+        
+        String nextLine = entriesReader.readLine();
+        while (nextLine != null) {
+            if (attrIndex == 0) {
+                entryName = nextLine;
+                if (entryName.equals(EMPTY_STRING)) {
+                    entryName = SVN_THIS_DIR;
+                }
+            }
+            
+            if (!(EMPTY_STRING.equals(nextLine))) {
+                if (isBooleanValue(entryFileAttributes[attrIndex])) {
+                    nextLine  = "true";
+                }
+                attributes.put(entryFileAttributes[attrIndex], nextLine);
+            }
+            attrIndex++;
+            nextLine = entriesReader.readLine();
+            
+            if (DELIMITER.equals(nextLine)) {
+                attributes.put(WorkingCopyDetails.VERSION_ATTR_KEY, WorkingCopyDetails.VERSION_14);
+                returnValue.put(entryName, attributes);
+                attributes = new HashMap<String, String>();
+                attrIndex = 0;
+                nextLine = entriesReader.readLine();
+            }
+        }
+        
+        return returnValue;
+    }
     
-    private class EntriesHandler extends DefaultHandler {
+    /**
+     * The order as it is defined should be the same as how the Subvesion entries handler
+     * expects to read the entries file.  This ordering is based on Subversion 1.4.0
+     */    
+    static String[] entryFileAttributes = new String[] {
+        "name",
+        "kind",
+        "revision",
+        "url",
+        "repos",
+        "schedule",
+        "text-time",
+        "checksum",
+        "committed-date",
+        "committed-rev",
+        "last-author",
+        "has-props",
+        "has-prop-mods",
+        "cachable-props",
+        "present-props",
+        "prop-reject-file",
+        "conflict-old",
+        "conflict-new",
+        "conflict-wrk",
+        "copied",
+        "copyfrom-url",
+        "copyfrom-rev",
+        "deleted",
+        "absent",
+        "incomplete",
+        "uuid",
+        "lock-token",
+        "lock-owner",
+        "lock-comment",
+        "lock-creation-date",
+    };
+    
+    private static final Set<String> BOOLEAN_ATTRIBUTES = new java.util.HashSet<String>();
+    static {
+        BOOLEAN_ATTRIBUTES.add("has-props");
+        BOOLEAN_ATTRIBUTES.add("has-props-mod");
+        BOOLEAN_ATTRIBUTES.add("copied");
+        BOOLEAN_ATTRIBUTES.add("deleted");
+    }
+    
+    private static boolean isBooleanValue(String attribute) {
+        return BOOLEAN_ATTRIBUTES.contains(attribute);
+    }   
+    
+    private class XmlEntriesHandler extends DefaultHandler {
         
         private static final String ENTRY_ELEMENT_NAME = "entry";  // NOI18N
         private static final String NAME_ATTRIBUTE = "name";  // NOI18N
@@ -182,6 +299,7 @@ public class EntriesCache {
                 if(entryAttributes == null) {
                     entryAttributes = new EntryAttributes();
                 }                
+                attributes.put(WorkingCopyDetails.VERSION_ATTR_KEY, WorkingCopyDetails.VERSION_13);
                 entryAttributes.put(nameValue, attributes);
             }
         }
