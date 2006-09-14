@@ -137,11 +137,19 @@ public class FileBuiltQueryImplTest extends NbTestCase {
         projDir.getParent().createFolder("doc2");
         ep.setProperty("libs.classpath","../doc2");
         aph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+        
         JavadocForBinaryQuery.Result result=instance.findJavadoc(projDir.getURL());
         assertNotNull(result);
         URL roots[]=result.getRoots();
         assertNotNull(roots);
-        assertTrue(roots.length==1);
+        assertTrue(roots.length==0);
+        
+        result=instance.findJavadoc(FileUtil.normalizeFile(new File(projDir.getPath()+File.separatorChar+"dist")).toURI().toURL());
+        assertNotNull(result);
+        roots=result.getRoots();
+        assertNotNull(roots);
+        assertTrue(roots.length>0);
+        
         assertEquals(roots[0].getFile(),projDir.getURL().getFile()+"dist/doc/");
         
         //To cover property changes listener

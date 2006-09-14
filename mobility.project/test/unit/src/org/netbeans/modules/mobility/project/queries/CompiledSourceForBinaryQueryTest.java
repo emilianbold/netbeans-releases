@@ -102,19 +102,30 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
      */
     public void testFindSourceRoots() throws Exception {
         System.out.println("findSourceRoots");
-        URL binaryRoot=null;
+        URL projRoot=null;
+        URL binRoot=null;
         try {
-            binaryRoot = projDir.getURL();
+            projRoot = projDir.getURL();
+            binRoot=FileUtil.normalizeFile(new File(projDir.getPath()+File.separatorChar+"dist")).toURI().toURL();
         } catch (FileStateInvalidException ex) {
             ex.printStackTrace();
             fail("Can't get URL");
         }
         
-        SourceForBinaryQuery.Result result = instance.findSourceRoots(binaryRoot);
-        assertNotNull(result);
+        SourceForBinaryQuery.Result result = instance.findSourceRoots(projRoot);
+        assertNotNull(result);        
         FileObject obj[]=result.getRoots();
-        assertNotNull(obj);
+        assertNotNull(obj);       
+        assertTrue(obj.length==0);
+        
+        
+        result = instance.findSourceRoots(binRoot);
+        assertNotNull(result);        
+        obj=result.getRoots();
+        assertNotNull(obj);       
         assertTrue(obj.length>0);
+        
+        
         assertEquals(obj[0],projDir.getFileObject("src"));
         
         //Improve test coverage
