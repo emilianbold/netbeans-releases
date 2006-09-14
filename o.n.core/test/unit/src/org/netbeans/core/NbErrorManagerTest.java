@@ -39,6 +39,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.xml.sax.SAXParseException;
 
@@ -329,6 +330,19 @@ public final class NbErrorManagerTest extends NbTestCase {
         String msg = "LocMsg";
         em.annotate(ex, msg);
         em.notify(ErrorManager.USER, ex); // Issue 65116 - don't show the exception to the user
+
+        waitEQ();
+        assertNotNull("Mock descriptor called", MockDD.lastDescriptor);
+        assertEquals("Info msg", NotifyDescriptor.INFORMATION_MESSAGE, MockDD.lastDescriptor.getMessageType());
+    }
+
+    public void testUIExceptionsTriggersTheDialog() throws Exception {
+        MockDD.lastDescriptor = null;
+
+        Exception ex = new IOException();
+        ErrorManager em = ErrorManager.getDefault();
+        em.annotate(ex, ErrorManager.USER, "bla", "blaLoc", null, null);
+        Exceptions.printStackTrace(ex);
 
         waitEQ();
         assertNotNull("Mock descriptor called", MockDD.lastDescriptor);

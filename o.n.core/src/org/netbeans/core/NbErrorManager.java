@@ -59,6 +59,10 @@ public final class NbErrorManager extends Handler {
                 // unknown level
                 level = null;
             }
+            if (level.intValue() == Level.SEVERE.intValue() + 1) {
+                // unknown level
+                level = null;
+            }
             Exc ex = createExc(record.getThrown(), level, record.getLevel().intValue() == 1973 ? record : null);
             NotifyExcPanel.notify(ex);
         }
