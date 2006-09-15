@@ -55,6 +55,9 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
     private Map queues = new HashMap();
     /** ClientRuntimes*/
     private Set started = new HashSet();
+    /**
+     * Porgress handle is never created if the group is non-interactive.
+     */
     private ProgressHandle progressHandle;
     private long dataCounter;
     private boolean hasBarrier;
@@ -95,6 +98,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      * @param details progress detail messag eor null
      */
     public synchronized void progress(String details) {
+        if (nonInteractive) return;
         if (progressHandle == null) {
             progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ExecutorGroup.class, "BK2001", name), this, this);
             progressHandle.start();
@@ -115,7 +119,7 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      */
     synchronized void enqueued(ClientRuntime queue, Object id) {
         progress(null);
-        if (started.size() == 0) {
+        if (progressHandle != null && started.size() == 0) {
             progressHandle.setDisplayName(NbBundle.getMessage(ExecutorGroup.class, "BK2005", name));
             progressHandle.progress(NbBundle.getMessage(ExecutorGroup.class, "BK1007"));
             progressHandle.switchToDeterminate(100);
@@ -146,8 +150,10 @@ public final class ExecutorGroup extends AbstractAction implements Cancellable {
      */
     synchronized void started(ClientRuntime queue) {
 
-        progressHandle.switchToIndeterminate();
-        progressHandle.setDisplayName(NbBundle.getMessage(ExecutorGroup.class, "BK2001", name));
+        if (progressHandle != null) {
+            progressHandle.switchToIndeterminate();
+            progressHandle.setDisplayName(NbBundle.getMessage(ExecutorGroup.class, "BK2001", name));
+        }
 
         if (!nonInteractive && started.add(queue)) {
             String msg = NbBundle.getMessage(ExecutorGroup.class, "BK1001", new Date(), getDisplayName());

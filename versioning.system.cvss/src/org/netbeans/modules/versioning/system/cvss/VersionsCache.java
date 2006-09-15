@@ -138,7 +138,15 @@ public class VersionsCache {
             fin.close();
             fos.close();
             // eventually delete the checked out file
-            if (!file.equals(baseFile)) file.delete();
+            if (file.equals(baseFile)) {
+                // safety check
+                if (destFile.lastModified() <= baseFile.lastModified()) {
+                    destFile.delete();
+                    return null;
+                }
+            } else {
+                file.delete();
+            }
             return destFile;
         } catch (IOException e) {
             // ignore errors, cache is not that much important
@@ -208,16 +216,9 @@ public class VersionsCache {
 
         if (revision == REVISION_BASE) {
             // be optimistic, use the file available on disk if possible
-            FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(baseFile);
+            FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().createFileInformation(baseFile);
             if (info.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
-                Entry entry = info.getEntry(baseFile);
-                if (entry != null) {
-                    File file = saveRevision(baseFile, baseFile, entry.getRevision());
-                    // if the file was modified meanwhile, fallback to normal chekout
-                    if (file.lastModified() > baseFile.lastModified()) {
-                        return baseFile;                        
-                    }
-                }
+                return baseFile;
             }
         }
         revision = resolveRevision(baseFile, revision);

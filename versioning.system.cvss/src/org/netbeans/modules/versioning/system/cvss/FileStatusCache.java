@@ -260,6 +260,23 @@ public class FileStatusCache {
     }
 
     /**
+     * Creates local file information. This method does not use cache, it always reads status from disk.
+     *
+     * @param file
+     * @return FileInformation
+     */
+    FileInformation createFileInformation(File file) {
+        Entry entry = null;
+        try {
+            entry = cvs.getAdminHandler().getEntry(file);
+        } catch (IOException e) {
+            // no entry for this file
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        return createFileInformation(file, entry, REPOSITORY_STATUS_UNKNOWN);
+    }
+
+    /**
      * Two FileInformation objects are equivalent if their status contants are equal AND they both reperesent a file (or
      * both represent a directory) AND Entries they cache, if they can be compared, are equal. 
      *  
