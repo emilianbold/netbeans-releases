@@ -84,13 +84,11 @@ public abstract class SystemUtils {
     
     public abstract long getFreeSpace(File file);
     
-    protected abstract String getNativeLibraryPath();            
+    protected abstract String getNativeLibraryPath();
     
     public abstract void loadNativeLibrary();
     
-    public abstract boolean createShortcut(String shortcutName,
-            String shortcutPath, String path, String description,
-            String iconPath, String workingDirectory, String arguments);
+    public abstract boolean createShortcut(Shortcut shortcut);
     
     public abstract ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException;
     
@@ -191,13 +189,13 @@ public abstract class SystemUtils {
                             getClassLoader().
                             getResource(libraryPath).
                             openStream();
-                    file = new File(getTempDirectory().getPath() + 
+                    file = new File(getTempDirectory().getPath() +
                             File.separator + "nbi-native-lib.tmp");
                     outputStream = new FileOutputStream(file);
                     byte[] buffer = new byte[1024];
                     while (inputStream.available() > 0) {
                         outputStream.write(buffer, 0, inputStream.read(buffer));
-                    }                    
+                    }
                     outputStream.close();
                     System.load(file.getPath());
                     
@@ -223,9 +221,7 @@ public abstract class SystemUtils {
             }
         }
         
-        public boolean createShortcut(String shortcutName,
-                String shortcutPath, String path, String description,
-                String iconPath, String workingDirectory, String arguments) {
+        public boolean createShortcut(Shortcut shortcut) {
             return false;
         }
         
@@ -343,15 +339,27 @@ public abstract class SystemUtils {
                 getFreeSpace0(file.getPath());
         }
         
-        public native boolean createShortcut(String shortcutName, String shortcutPath,
-                String path, String description, String iconPath,
-                String workingDirectory, String arguments);
+        private native boolean createShortcut0(String shortcutName,
+            String shortcutPath, String path, String description,
+            String iconPath, String workingDirectory, String arguments);
+        
+        public boolean createShortcut(Shortcut shortcut) {
+            return createShortcut0(
+                    shortcut.getShortcutName(),
+                    shortcut.getShortcutPath(),
+                    shortcut.getPath(),
+                    shortcut.getDescription(),
+                    shortcut.getIconPath(),
+                    shortcut.getWorkingDirectory(),
+                    shortcut.getArguments());
+        }
+        
         
         protected String getNativeLibraryPath() {
             return WIN32_DLL_LOCATION;
         }
         public Win32Registry getWin32Registry() {
-           return registry;  
+            return registry;
         }
     }
     
@@ -469,6 +477,75 @@ public abstract class SystemUtils {
         
         public String getStdErr() {
             return stdErr;
+        }
+    }
+    
+    public class Shortcut {
+        private String shortcutName;
+        private String shortcutPath;
+        private String path;
+        private String description;
+        private String iconPath;
+        private String workingDirectory;
+        private String arguments;
+
+        public String getShortcutName() {
+            return shortcutName;
+        }
+
+        public void setShortcutName(String shortcutName) {
+            this.shortcutName = shortcutName;
+        }
+
+        public String getShortcutPath() {
+            return shortcutPath;
+        }
+
+        public void setShortcutPath(String shortcutPath) {
+            this.shortcutPath = shortcutPath;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public String getIconPath() {
+            return iconPath;
+        }
+
+        public void setIconPath(String iconPath) {
+            this.iconPath = iconPath;
+        }
+
+        public String getWorkingDirectory() {
+            return workingDirectory;
+        }
+
+        public void setWorkingDirectory(String workingDirectory) {
+            this.workingDirectory = workingDirectory;
+        }
+
+        public String getArguments() {
+            return arguments;
+        }
+
+        public void setArguments(String arguments) {
+            this.arguments = arguments;
+        }
+        public Shortcut() {
+            
         }
     }
     
