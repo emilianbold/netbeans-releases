@@ -16,15 +16,19 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
+import javax.swing.JCheckBoxMenuItem;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -242,7 +246,10 @@ public final class TestKit {
     }
     
     public static void showStatusLabels() {
-        Action a = new Action("View|Show Subversion", null);
-        a.perform();
+        JMenuBarOperator mbo = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
+        JMenuItemOperator mo = mbo.showMenuItem("View|Show Subversion Status Labels");
+        JCheckBoxMenuItemOperator cbmio = new JCheckBoxMenuItemOperator((JCheckBoxMenuItem) mo.getSource());
+        if (!cbmio.getState())
+            cbmio.push();
     }
 }
