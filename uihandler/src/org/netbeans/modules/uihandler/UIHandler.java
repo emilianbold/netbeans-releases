@@ -58,6 +58,13 @@ public class UIHandler extends Handler {
                 logs.add(record);
             }
         }
+        
+        if (
+            record.getLevel().intValue() >= Level.WARNING.intValue()
+            && record.getThrown() != null
+        ) {
+            Installer.displaySummary("ERROR_URL"); // NOI18N
+        }
     }
 
     public void flush() {

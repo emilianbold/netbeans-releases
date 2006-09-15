@@ -75,6 +75,10 @@ public class Installer extends ModuleInstall {
         Logger all = Logger.getLogger("");
         all.addHandler(handler);
         
+        if (Integer.getInteger("netbeans.exception.report.min.level", 0).intValue() < 1000) {
+            System.setProperty("netbeans.exception.report.min.level", "1001");
+        }
+        
         
         Lookup.Template/*GENERICS<Activated>GENERICS*/ temp = new Lookup.Template/*GENERICS<Activated>GENERICS*/(Activated.class);
         Lookup.Result/*GENERICS<Activated>GENERICS*/ res = Lookup.getDefault().lookup(temp);
@@ -108,6 +112,11 @@ public class Installer extends ModuleInstall {
     }
     
     public boolean closing() {
+        return displaySummary("WELCOME_URL"); // NOI18N
+    }
+    
+    
+    static boolean displaySummary(String msg) {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         Lookup.Template/*GENERICS<Deactivated>GENERICS*/ temp = new Lookup.Template/*GENERICS<Deactivated>GENERICS*/(Deactivated.class);
         Lookup.Result/*GENERICS<Deactivated>GENERICS*/ result = Lookup.getDefault().lookup(temp);
@@ -120,7 +129,7 @@ public class Installer extends ModuleInstall {
         URL url = null;
         Object[] buttons = new Object[] { exitMsg };
         try {
-            String uri = NbBundle.getMessage(SubmitPanel.class, "WELCOME_URL");
+            String uri = NbBundle.getMessage(SubmitPanel.class, msg);
             if (uri != null && uri.length() > 0) {
                 url = new URL(uri); // NOI18N
                 InputStream is = url.openStream();
