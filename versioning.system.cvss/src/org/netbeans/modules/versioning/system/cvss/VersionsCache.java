@@ -140,7 +140,8 @@ public class VersionsCache {
             // eventually delete the checked out file
             if (file.equals(baseFile)) {
                 // safety check
-                if (destFile.lastModified() <= baseFile.lastModified()) {
+                FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().createFileInformation(baseFile);
+                if (info.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
                     destFile.delete();
                     return null;
                 }
