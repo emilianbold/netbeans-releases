@@ -48,8 +48,11 @@ public class MemoryURL extends URLStreamHandler {
         URL.setURLStreamHandlerFactory(f);
     }
     
-    private static Map<String,String> contents = new HashMap<String,String>();
+    private static Map<String,InputStream> contents = new HashMap<String,InputStream>();
     public static void registerURL(String u, String content) {
+        contents.put(u, new ByteArrayInputStream(content.getBytes()));
+    }
+    public static void registerURL(String u, InputStream content) {
         contents.put(u, content);
     }
 
@@ -58,13 +61,16 @@ public class MemoryURL extends URLStreamHandler {
     }
     
     private static final class MC extends URLConnection {
-        private String values;
+        private InputStream values;
         
         public MC(URL u) {
             super(u);
         }
 
         public void connect() throws IOException {
+            if (values != null) {
+                return;
+            }
             values = contents.remove(url.toExternalForm());
             if (values == null) {
                 throw new IOException("No such content: " + url);
@@ -73,7 +79,7 @@ public class MemoryURL extends URLStreamHandler {
 
         public InputStream getInputStream() throws IOException {
             connect();
-            return new ByteArrayInputStream(values.getBytes());
+            return values;
         }
         
         

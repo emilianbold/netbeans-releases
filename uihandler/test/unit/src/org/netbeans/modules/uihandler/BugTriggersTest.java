@@ -52,7 +52,7 @@ public class BugTriggersTest extends TestCase {
         assertNotNull("Installer created", o);
         MockServices.setServices(DD.class);
         
-        MemoryURL.registerURL("memory://error.html", "empty");
+        MemoryURL.registerURL("memory://error.html", getClass().getResourceAsStream("error.html"));
     }
 
     protected void tearDown() throws Exception {
