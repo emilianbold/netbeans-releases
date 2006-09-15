@@ -68,7 +68,7 @@ public class OpenProjectsTest extends NbTestCase {
         
         assertEquals(1, l.events.size());
         
-        PropertyChangeEvent e = (PropertyChangeEvent) l.events.remove(0);
+        PropertyChangeEvent e = l.events.remove(0);
         
         assertEquals(OpenProjects.PROPERTY_OPEN_PROJECTS, e.getPropertyName());
         
@@ -76,14 +76,14 @@ public class OpenProjectsTest extends NbTestCase {
         
         assertEquals(1, l.events.size());
         
-        e = (PropertyChangeEvent) l.events.remove(0);
+        e = l.events.remove(0);
         
         assertEquals(OpenProjects.PROPERTY_OPEN_PROJECTS, e.getPropertyName());
     }
     
     private static final class PropertyChangeListenerImpl implements PropertyChangeListener {
         
-        private List events = new ArrayList();
+        private List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
         
         public void propertyChange(PropertyChangeEvent evt) {
             events.add(evt);

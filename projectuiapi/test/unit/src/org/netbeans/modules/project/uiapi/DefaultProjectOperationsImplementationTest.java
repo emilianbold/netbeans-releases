@@ -42,9 +42,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
-
 /**
- *
  * @author Jan Lahoda
  */
 public class DefaultProjectOperationsImplementationTest extends NbTestCase {
@@ -68,7 +66,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         projdir = scratch.createFolder("proj");
         
         createProject(projdir);
-        
+
         TestUtil.setLookup(new Object[] {
             new TestProjectFactory(),
             new SimpleFileOwnerQueryImplementation(),
@@ -113,9 +111,9 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         assertTrue(handler.confirmationDialogCalled);
         
         assertTrue(projectDirectory.exists());
-        List/*<String>*/ items = Arrays.asList(projectDirectory.list());
+        List<String> items = Arrays.asList(projectDirectory.list());
         Collections.sort(items);
-        assertEquals(Arrays.asList(new String[] {"nbproject", "src"}), items);
+        assertEquals(Arrays.asList("nbproject", "src"), items);
     }
     
     public void testDeleteProjectNestedProject() throws Exception {
@@ -152,7 +150,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         
         assertNotNull(extDirFile);
         
-        DeleteProjectOperationImpl dpoi = (DeleteProjectOperationImpl) prj.getLookup().lookup(DeleteProjectOperationImpl.class);
+        DeleteProjectOperationImpl dpoi = prj.getLookup().lookup(DeleteProjectOperationImpl.class);
         
         assertNotNull(dpoi);
         
@@ -402,10 +400,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         private final FileObject projectDirectory;
         
         TestProject(FileObject projectDirectory) throws IOException {
-            l = Lookups.fixed(new Object[] {
-                new DeleteProjectOperationImpl(this),
-            });
-            
+            l = Lookups.fixed(new DeleteProjectOperationImpl(this));
             this.projectDirectory = projectDirectory;
         }
         
@@ -423,7 +418,7 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         
     }
     
-    private static class TestProjectFactory implements ProjectFactory {
+    public static class TestProjectFactory implements ProjectFactory {
         
         public boolean isProject(FileObject projectDirectory) {
             return projectDirectory.getFileObject("nbproject") != null;
@@ -454,15 +449,15 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
             this.project = project;
         }
         
-        public List getMetadataFiles() {
+        public List<FileObject> getMetadataFiles() {
             return Collections.singletonList(project.getProjectDirectory().getFileObject("nbproject"));
         }
         
-        public List getDataFiles() {
+        public List<FileObject> getDataFiles() {
             if (externalFile == null) {
                 return Collections.singletonList(project.getProjectDirectory().getFileObject("src"));
             } else {
-                return Arrays.asList(new FileObject[] {project.getProjectDirectory().getFileObject("src"), externalFile});
+                return Arrays.asList(project.getProjectDirectory().getFileObject("src"), externalFile);
             }
         }
         

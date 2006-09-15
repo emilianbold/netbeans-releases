@@ -25,9 +25,6 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -40,11 +37,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
  * @author Petr Hrebejk
  */
 public class CategoryView extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
-                
+
     private ExplorerManager manager;
     private BeanTreeView btv;
     private CategoryModel categoryModel;
@@ -63,12 +59,12 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
         btv.setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
         btv.setPopupAllowed( false );
         btv.setRootVisible( false );
-        btv.setDefaultActionAllowed( false );            
+        btv.setDefaultActionAllowed( false );
         btv.setMinimumSize( size );
         btv.setPreferredSize( size );
         btv.setMaximumSize( size );
         btv.setDragSource (false);
-        this.add( btv, BorderLayout.CENTER );                        
+        this.add( btv, BorderLayout.CENTER );
         manager.setRootContext( createRootNode( categoryModel ) );
         manager.addPropertyChangeListener( this );
         categoryModel.addPropertyChangeListener( this );
@@ -84,13 +80,11 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
         return manager;
     }
 
-
     public void addNotify() {
         super.addNotify();
         btv.expandAll();
         btv.requestFocusInWindow();
     }
-
 
     // Private methods -----------------------------------------------------
 
@@ -98,16 +92,16 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
 
         Node node = findNode( category, manager.getRootContext() );
 
-        if ( node != null ) {                
+        if ( node != null ) {
             try {
                 manager.setSelectedNodes( new Node[] { node } );
             }
             catch ( PropertyVetoException e ) {
                 // No node will be selected
-            }                
+            }
         }
 
-    }   
+    }
 
     private Node findNode( ProjectCustomizer.Category category, Node node ) {
 
@@ -116,19 +110,19 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
         if ( ch != null && ch != Children.LEAF ) {
             Node nodes[] = ch.getNodes( true );
 
-            if ( nodes != null ) {                    
-                for( int i = 0; i < nodes.length; i++ ) {
-                    ProjectCustomizer.Category cc = (ProjectCustomizer.Category)nodes[i].getLookup().lookup( ProjectCustomizer.Category.class );
+            if ( nodes != null ) {
+                for (Node child : nodes) {
+                    ProjectCustomizer.Category cc = child.getLookup().lookup(ProjectCustomizer.Category.class);
 
                     if ( cc == category ) {
-                        return nodes[i];
+                        return child;
                     }
                     else {
-                        Node n = findNode( category, nodes[i] );
+                        Node n = findNode(category, child);
                         if ( n != null ) {
                             return n;
                         }
-                    }                                                
+                    }
                 }
             }
         }
@@ -137,8 +131,8 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
     }
 
 
-    private Node createRootNode( CategoryModel categoryModel ) {            
-        ProjectCustomizer.Category rootCategory = ProjectCustomizer.Category.create( "root", "root", null, categoryModel.getCategories() ); // NOI18N           
+    private Node createRootNode( CategoryModel categoryModel ) {
+        ProjectCustomizer.Category rootCategory = ProjectCustomizer.Category.create( "root", "root", null, categoryModel.getCategories() ); // NOI18N
         return new CategoryNode( rootCategory );
     }
 
@@ -150,13 +144,13 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
         String propertyName = evt.getPropertyName();
 
         if ( source== manager && ExplorerManager.PROP_SELECTED_NODES.equals( propertyName ) ) {
-            Node nodes[] = manager.getSelectedNodes(); 
+            Node nodes[] = manager.getSelectedNodes();
             if ( nodes == null || nodes.length <= 0 ) {
                 return;
             }
             Node node = nodes[0];
 
-            ProjectCustomizer.Category category = (ProjectCustomizer.Category) node.getLookup().lookup( ProjectCustomizer.Category.class );
+            ProjectCustomizer.Category category = node.getLookup().lookup(ProjectCustomizer.Category.class);
             if ( category != categoryModel.getCurrentCategory() ) {
                 categoryModel.setCurrentCategory( category );
             }
@@ -175,20 +169,20 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
      */
     private static class CategoryNode extends AbstractNode implements PropertyChangeListener {
 
-        private Image icon = org.openide.util.Utilities.loadImage( "org/netbeans/modules/project/uiapi/defaultCategory.gif" ); // NOI18N    
+        private Image icon = org.openide.util.Utilities.loadImage( "org/netbeans/modules/project/uiapi/defaultCategory.gif" ); // NOI18N
 
         private ProjectCustomizer.Category category;
 
         public CategoryNode( ProjectCustomizer.Category category ) {
-            super( ( category.getSubcategories() == null || category.getSubcategories().length == 0 ) ? 
-                        Children.LEAF : new CategoryChildren( category.getSubcategories() ), 
-                   Lookups.fixed( new Object[] { category } ) );
+            super( ( category.getSubcategories() == null || category.getSubcategories().length == 0 ) ?
+                        Children.LEAF : new CategoryChildren( category.getSubcategories() ),
+                   Lookups.fixed(category));
             setName( category.getName() );
             this.category = category;
             setDisplayName( category.getDisplayName() );
-            
+
             if ( category.getIcon() != null ) {
-                this.icon = category.getIcon(); 
+                this.icon = category.getIcon();
             }
             Utilities.getCategoryChangeSupport(category).addPropertyChangeListener(this);
         }
@@ -198,7 +192,7 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
                 "<html><font color=\"!nb.errorForeground\">" + // NOI18N
                     category.getDisplayName() + "</font></html>"; // NOI18N
         }
-        
+
         public Image getIcon( int type ) {
             return this.icon;
         }
@@ -206,23 +200,23 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
         public Image getOpenedIcon( int type ) {
             return getIcon( type );
         }
-        
+
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == CategoryChangeSupport.VALID_PROPERTY) {
                 fireDisplayNameChange(null, null);
             }
         }
-        
+
     }
 
     /** Children used for configuration
      */
-    private static class CategoryChildren extends Children.Keys {
+    private static class CategoryChildren extends Children.Keys<ProjectCustomizer.Category> {
 
-        private Collection descriptions;
+        private ProjectCustomizer.Category[] descriptions;
 
         public CategoryChildren( ProjectCustomizer.Category[] descriptions ) {
-            this.descriptions = Arrays.asList( descriptions );
+            this.descriptions = descriptions;
         }
 
         // Children.Keys impl --------------------------------------------------
@@ -232,14 +226,14 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
         }
 
         public void removeNotify() {
-            setKeys( Collections.EMPTY_LIST );
+            setKeys(new ProjectCustomizer.Category[0]);
         }
 
-        protected Node[] createNodes( Object key ) {
-            return new Node[] { new CategoryNode( (ProjectCustomizer.Category)key ) };
+        protected Node[] createNodes(ProjectCustomizer.Category c) {
+            return new Node[] {new CategoryNode(c)};
         }
-    }        
+    }
 
 }
-            
- 
+
+

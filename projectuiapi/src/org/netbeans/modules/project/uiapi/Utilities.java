@@ -30,14 +30,14 @@ import org.openide.util.Lookup;
  */
 public class Utilities {
 
-    private static final Map/*<ProjectCustomizer.Category, CategoryChangeSupport>*/ CATEGORIES = new HashMap();
+    private static final Map<ProjectCustomizer.Category,CategoryChangeSupport> CATEGORIES = new HashMap<ProjectCustomizer.Category,CategoryChangeSupport>();
 
     private Utilities() {}
 
     /** Gets action factory from the global Lookup.
      */
     public static ActionsFactory getActionsFactory() {
-        ActionsFactory instance = (ActionsFactory) Lookup.getDefault().lookup(ActionsFactory.class);
+        ActionsFactory instance = Lookup.getDefault().lookup(ActionsFactory.class);
         assert instance != null : "Need to have " + ActionsFactory.class.getName() + " instance in the default lookup";
         return instance;
     }
@@ -45,7 +45,7 @@ public class Utilities {
     /** Gets the projectChooser factory from the global Lookup
      */
     public static ProjectChooserFactory getProjectChooserFactory() {
-        ProjectChooserFactory instance = (ProjectChooserFactory) Lookup.getDefault().lookup(ProjectChooserFactory.class);
+        ProjectChooserFactory instance = Lookup.getDefault().lookup(ProjectChooserFactory.class);
         assert instance != null : "Need to have " + ProjectChooserFactory.class.getName() + " instance in the default lookup";
         return instance;
     }
@@ -53,13 +53,13 @@ public class Utilities {
     /** Gets an object the OpenProjects can delegate to
      */
     public static OpenProjectsTrampoline getOpenProjectsTrampoline() {
-        OpenProjectsTrampoline instance = (OpenProjectsTrampoline) Lookup.getDefault().lookup(OpenProjectsTrampoline.class);
+        OpenProjectsTrampoline instance = Lookup.getDefault().lookup(OpenProjectsTrampoline.class);
         assert instance != null : "Need to have " + OpenProjectsTrampoline.class.getName() + " instance in the default lookup";
         return instance;
     }
     
     public static CategoryChangeSupport getCategoryChangeSupport(ProjectCustomizer.Category category) {
-        CategoryChangeSupport cw = (CategoryChangeSupport) Utilities.CATEGORIES.get(category);
+        CategoryChangeSupport cw = Utilities.CATEGORIES.get(category);
         return cw == null ? CategoryChangeSupport.NULL_INSTANCE : cw;
     }
     

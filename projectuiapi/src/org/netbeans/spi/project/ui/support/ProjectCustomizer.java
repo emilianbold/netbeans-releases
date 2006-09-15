@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -250,7 +251,7 @@ public final class ProjectCustomizer {
         public static Category create( String name,
                                        String displayName,
                                        Image icon,
-                                       Category[] subcategories ) {
+                                       Category... subcategories ) {
             return new Category( name, displayName, icon, subcategories );
         }
         
@@ -310,7 +311,7 @@ public final class ProjectCustomizer {
             if (this.valid != valid) {
                 this.valid = valid;
                 Utilities.getCategoryChangeSupport(this).firePropertyChange(
-                        CategoryChangeSupport.VALID_PROPERTY, Boolean.valueOf(!valid), Boolean.valueOf(valid));
+                        CategoryChangeSupport.VALID_PROPERTY, !valid, valid);
             }
         }
         
@@ -338,21 +339,23 @@ public final class ProjectCustomizer {
     }
 
     private static class DelegateCategoryProvider implements CategoryComponentProvider, CompositeCategoryProvider {
-        private Lookup context;
-        private HashMap category2provider;
-        private DataFolder folder;
+
+        private final Lookup context;
+        private final Map<ProjectCustomizer.Category,CompositeCategoryProvider> category2provider;
+        private final DataFolder folder;
+
         public DelegateCategoryProvider(DataFolder folder, Lookup context) {
-            this(folder, context, new HashMap());
+            this(folder, context, new HashMap<ProjectCustomizer.Category,CompositeCategoryProvider>());
         }
 
-        private DelegateCategoryProvider(DataFolder folder, Lookup context, HashMap cat2Provider) {
+        private DelegateCategoryProvider(DataFolder folder, Lookup context, Map<ProjectCustomizer.Category,CompositeCategoryProvider> cat2Provider) {
             this.context = context;
             this.folder = folder;
             category2provider = cat2Provider;
         }
 
         public JComponent create(ProjectCustomizer.Category category) {
-            CompositeCategoryProvider prov = (CompositeCategoryProvider)category2provider.get(category);
+            CompositeCategoryProvider prov = category2provider.get(category);
             assert prov != null : "Category doesn't have a provider associated.";
             return prov.createComponent(category, context);
         }
@@ -371,16 +374,15 @@ public final class ProjectCustomizer {
 
 
         private ProjectCustomizer.Category[] readCategories(DataFolder folder) throws IOException, ClassNotFoundException {
-            List toRet = new ArrayList();
-            DataObject[] dobjs = folder.getChildren();
-            for (int i = 0; i < dobjs.length; i++) {
-                if (dobjs[i] instanceof DataFolder) {
-                    CompositeCategoryProvider prov = new DelegateCategoryProvider((DataFolder)dobjs[i], context, category2provider);
+            List<ProjectCustomizer.Category> toRet = new ArrayList<ProjectCustomizer.Category>();
+            for (DataObject dob : folder.getChildren()) {
+                if (dob instanceof DataFolder) {
+                    CompositeCategoryProvider prov = new DelegateCategoryProvider((DataFolder) dob, context, category2provider);
                     ProjectCustomizer.Category cat = prov.createCategory(context);
                     toRet.add(cat);
                     category2provider.put(cat, prov);
                 }
-                InstanceCookie cook = (InstanceCookie)dobjs[i].getCookie(InstanceCookie.class);
+                InstanceCookie cook = dob.getCookie(InstanceCookie.class);
                 if (cook != null && CompositeCategoryProvider.class.isAssignableFrom(cook.instanceClass())) {
                     CompositeCategoryProvider provider = (CompositeCategoryProvider)cook.instanceCreate();
                     ProjectCustomizer.Category cat = provider.createCategory(context);
@@ -392,7 +394,7 @@ public final class ProjectCustomizer {
                     }
                 }
             }
-            return (ProjectCustomizer.Category[])toRet.toArray(new ProjectCustomizer.Category[toRet.size()]);
+            return toRet.toArray(new ProjectCustomizer.Category[toRet.size()]);
         }
 
         /**

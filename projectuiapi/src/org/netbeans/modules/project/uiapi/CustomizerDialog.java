@@ -37,61 +37,60 @@ import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-
 /** Implementation of standard customizer dialog.
  *
  * @author Petr Hrebejk
  */
 public class CustomizerDialog {
-    
-    /** Factory class only 
+
+    /** Factory class only
      */
     private CustomizerDialog() {}
-    
+
     // Option indexes
     private static final int OPTION_OK = 0;
     private static final int OPTION_CANCEL = OPTION_OK + 1;
-    
+
     // Option command names
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
-                
+
     public static Dialog createDialog( ActionListener okOptionListener, JPanel innerPane,
             HelpCtx helpCtx, final ProjectCustomizer.Category[] categories ) {
-        
+
         ListeningButton okButton = new ListeningButton(
                 NbBundle.getMessage(CustomizerDialog.class, "LBL_Customizer_Ok_Option"), // NOI18N
                 categories);
         okButton.setEnabled(CustomizerDialog.checkValidity(categories));
-        
+
         // Create options
-        JButton options[] = new JButton[] { 
+        JButton options[] = {
             okButton,
             new JButton( NbBundle.getMessage( CustomizerDialog.class, "LBL_Customizer_Cancel_Option" ) ) , // NOI18N
         };
-        
+
         // Set commands
         options[ OPTION_OK ].setActionCommand( COMMAND_OK );
         options[ OPTION_CANCEL ].setActionCommand( COMMAND_CANCEL );
-        
+
         //A11Y
         options[ OPTION_OK ].getAccessibleContext().setAccessibleDescription ( NbBundle.getMessage( CustomizerDialog.class, "AD_Customizer_Ok_Option") ); // NOI18N
         options[ OPTION_CANCEL ].getAccessibleContext().setAccessibleDescription ( NbBundle.getMessage( CustomizerDialog.class, "AD_Customizer_Cancel_Option") ); // NOI18N
-        
+
 
         // RegisterListener
-        ActionListener optionsListener = new OptionListener( okOptionListener );        
+        ActionListener optionsListener = new OptionListener( okOptionListener );
         options[ OPTION_OK ].addActionListener( optionsListener );
         options[ OPTION_CANCEL ].addActionListener( optionsListener );
-        
+
         innerPane.getAccessibleContext().setAccessibleName( NbBundle.getMessage( CustomizerDialog.class, "AN_ProjectCustomizer") ); //NOI18N
-        innerPane.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( CustomizerDialog.class, "AD_ProjectCustomizer") ); //NOI18N      
-                        
+        innerPane.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( CustomizerDialog.class, "AD_ProjectCustomizer") ); //NOI18N
+
         if ( helpCtx == null ) {
             helpCtx = HelpCtx.DEFAULT_HELP;
         }
-        
-        DialogDescriptor dialogDescriptor = new DialogDescriptor( 
+
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(
             innerPane,                             // innerPane
             NbBundle.getMessage( CustomizerDialog.class, "LBL_Customizer_Title" ), // NOI18N // displayName
             false,                                  // modal
@@ -99,7 +98,7 @@ public class CustomizerDialog {
             options[OPTION_OK],                     // initial value
             DialogDescriptor.BOTTOM_ALIGN,          // options align
             helpCtx,                                // helpCtx
-            null );                                 // listener 
+            null );                                 // listener
 
         innerPane.addPropertyChangeListener( new HelpCtxChangeListener( dialogDescriptor, helpCtx ) );
         if ( innerPane instanceof HelpCtx.Provider ) {
@@ -108,34 +107,34 @@ public class CustomizerDialog {
         dialogDescriptor.setClosingOptions( new Object[] { options[ OPTION_OK ], options[ OPTION_CANCEL ] } );
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
-        
+
         dialog.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
-                List queue = new LinkedList(Arrays.asList(categories));
-                
+                List<ProjectCustomizer.Category> queue = new LinkedList<ProjectCustomizer.Category>(Arrays.asList(categories));
+
                 while (!queue.isEmpty()) {
-                    ProjectCustomizer.Category category = (ProjectCustomizer.Category) queue.remove(0);
-                    
+                    ProjectCustomizer.Category category = queue.remove(0);
+
                     Utilities.removeCategoryChangeSupport(category);
-                    
+
                     if (category.getSubcategories() != null) {
                         queue.addAll(Arrays.asList(category.getSubcategories()));
                     }
                 }
             }
         });
-        
+
         return dialog;
-        
+
     }
-    
+
     /** Returns whether all given categories are valid or not. */
     private static boolean checkValidity(ProjectCustomizer.Category[] categories) {
-        for (int i = 0; i < categories.length; i++) {
-            if (!categories[i].isValid()) {
+        for (ProjectCustomizer.Category c : categories) {
+            if (!c.isValid()) {
                 return false;
             }
-            ProjectCustomizer.Category[] subCategories = categories[i].getSubcategories();
+            ProjectCustomizer.Category[] subCategories = c.getSubcategories();
             if (subCategories != null) {
                 if (!checkValidity(subCategories)) {
                     return false;
@@ -147,67 +146,67 @@ public class CustomizerDialog {
 
     /** Listens to the actions on the Customizer's option buttons */
     private static class OptionListener implements ActionListener {
-    
+
         private ActionListener okOptionListener;
-        
+
         OptionListener( ActionListener okOptionListener ) {
             this.okOptionListener = okOptionListener;
         }
-        
+
         public void actionPerformed( ActionEvent e ) {
             String command = e.getActionCommand();
-            
+
             if ( COMMAND_OK.equals( command ) ) {
                 // Call the OK option listener
                 okOptionListener.actionPerformed( e ); // XXX maybe create new event
             }
-            
-        }        
-        
+
+        }
+
     }
-    
+
     private static class HelpCtxChangeListener implements PropertyChangeListener {
-                
+
         DialogDescriptor dialogDescriptor;
         HelpCtx defaultHelpCtx;
-        
+
         HelpCtxChangeListener( DialogDescriptor dialogDescriptor, HelpCtx defaultHelpCtx ) {
             this.dialogDescriptor = dialogDescriptor;
             this.defaultHelpCtx = defaultHelpCtx;
         }
-        
+
         public void propertyChange( PropertyChangeEvent evt ) {
-            
+
             if ( CustomizerPane.HELP_CTX_PROPERTY.equals( evt.getPropertyName() ) ) {
                 HelpCtx newHelp = (HelpCtx)evt.getNewValue();
                 dialogDescriptor.setHelpCtx( newHelp == null  || newHelp == HelpCtx.DEFAULT_HELP  ? defaultHelpCtx : newHelp );
             }
-                        
+
         }
-        
+
     }
-    
+
     private static class ListeningButton extends JButton implements PropertyChangeListener {
-        
+
         private ProjectCustomizer.Category[] categories;
-        
+
         public ListeningButton(String label, ProjectCustomizer.Category[] categories) {
             super(label);
             this.categories = categories;
-            for (int i = 0; i < categories.length; i++) {
-                Utilities.getCategoryChangeSupport(categories[i]).addPropertyChangeListener(this);
+            for (ProjectCustomizer.Category c : categories) {
+                Utilities.getCategoryChangeSupport(c).addPropertyChangeListener(this);
             }
-            
+
         }
-        
+
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == CategoryChangeSupport.VALID_PROPERTY) {
-                boolean valid = ((Boolean) evt.getNewValue()).booleanValue();
+                boolean valid = (Boolean) evt.getNewValue();
                 // enable only if all categories are valid
                 setEnabled(valid && CustomizerDialog.checkValidity(categories));
             }
         }
-        
+
     }
-    
+
 }

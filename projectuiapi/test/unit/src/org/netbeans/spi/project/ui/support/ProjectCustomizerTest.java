@@ -20,27 +20,21 @@
 package org.netbeans.spi.project.ui.support;
 
 import java.awt.Dialog;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CategoryComponentProvider;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 
-
 /**
- *
  * @author Jan Lahoda
  */
 public class ProjectCustomizerTest extends NbTestCase {
@@ -49,11 +43,11 @@ public class ProjectCustomizerTest extends NbTestCase {
         super(testName);
     }
 
-    private WeakReference[] runTestCategoriesAreReclaimable() throws Exception {
-        final WeakReference[] result = new WeakReference[4];
-              Category test1 = Category.create("test1", "test1", null, null);
-        final Category test2 = Category.create("test2", "test3", null, new Category[] {test1});
-        final Category test3 = Category.create("test3", "test3", null, null);
+    private Reference<?>[] runTestCategoriesAreReclaimable() throws Exception {
+        final Reference<?>[] result = new Reference<?>[4];
+              Category test1 = Category.create("test1", "test1", null);
+        final Category test2 = Category.create("test2", "test3", null, test1);
+        final Category test3 = Category.create("test3", "test3", null);
         
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
@@ -74,7 +68,7 @@ public class ProjectCustomizerTest extends NbTestCase {
                 d.setVisible(false);
                 d.dispose();
                 
-                result[0] = new WeakReference(d);
+                result[0] = new WeakReference<Object>(d);
                 
                 d = null;
                 
@@ -110,18 +104,16 @@ public class ProjectCustomizerTest extends NbTestCase {
             }
         });
                 
-        result[1] = new WeakReference(test1);
-        result[2] = new WeakReference(test2);
-        result[3] = new WeakReference(test3);
+        result[1] = new WeakReference<Object>(test1);
+        result[2] = new WeakReference<Object>(test2);
+        result[3] = new WeakReference<Object>(test3);
         
         return result;
     }
     
     public void testCategoriesAreReclaimable() throws Exception {
-        final WeakReference[] refs = runTestCategoriesAreReclaimable();
-                
-        for (int cntr = 0; cntr < refs.length; cntr++) {
-            assertGC("Is reclaimable", refs[cntr]);
+        for (Reference<?> ref : runTestCategoriesAreReclaimable()) {
+            assertGC("Is reclaimable", ref);
         }
     }
     

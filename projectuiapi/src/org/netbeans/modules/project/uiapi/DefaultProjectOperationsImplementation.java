@@ -61,14 +61,12 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
  * @author Jan Lahoda
  */
 public final class DefaultProjectOperationsImplementation {
@@ -92,7 +90,7 @@ public final class DefaultProjectOperationsImplementation {
     /**
      * @return true if success
      */
-    private static boolean performDelete(Project project, List/*FileObject>*/ toDelete, ProgressHandle handle) throws Exception {
+    private static boolean performDelete(Project project, List<FileObject> toDelete, ProgressHandle handle) throws Exception {
         try {
             handle.start(toDelete.size() + 1 /*clean*/);
             
@@ -104,10 +102,8 @@ public final class DefaultProjectOperationsImplementation {
             
             handle.progress(++done);
             
-            for (Iterator i = toDelete.iterator(); i.hasNext(); ) {
-                FileObject f = (FileObject) i.next();
-                
-                handle.progress(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Progress_Deleting_File", new Object[] {FileUtil.getFileDisplayName(f)}));
+            for (FileObject f : toDelete) {
+                handle.progress(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Progress_Deleting_File", FileUtil.getFileDisplayName(f)));
                 
                 if (f != null)
                     f.delete();
@@ -128,7 +124,7 @@ public final class DefaultProjectOperationsImplementation {
             return true;
         } catch (Exception e) {
             String displayName = getDisplayName(project);
-            String message     = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Project_cannot_be_deleted.", new Object[] {displayName});
+            String message     = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Project_cannot_be_deleted.", displayName);
             
             ErrorManager.getDefault().annotate(e, message);
             
@@ -148,16 +144,15 @@ public final class DefaultProjectOperationsImplementation {
             ERR.log(ErrorManager.INFORMATIONAL, "delete started: " + displayName); // NOI18N
         }
         
-        final List/*<FileObject>*/ metadataFiles = ProjectOperations.getMetadataFiles(project);
-        final List/*<FileObject>*/ dataFiles = ProjectOperations.getDataFiles(project);
-        final List/*<FileObject>*/ allFiles = new ArrayList/*<FileObject>*/();
+        final List<FileObject> metadataFiles = ProjectOperations.getMetadataFiles(project);
+        final List<FileObject> dataFiles = ProjectOperations.getDataFiles(project);
+        final List<FileObject> allFiles = new ArrayList<FileObject>();
         
         allFiles.addAll(metadataFiles);
         allFiles.addAll(dataFiles);
         
-        for (Iterator i = allFiles.iterator(); i.hasNext(); ) {
-            FileObject f = (FileObject) i.next();
-            
+        for (Iterator<FileObject> i = allFiles.iterator(); i.hasNext(); ) {
+            FileObject f = i.next();
             if (!FileUtil.isParentOf(projectFolder, f)) {
                 i.remove();
             }
@@ -233,14 +228,11 @@ public final class DefaultProjectOperationsImplementation {
             
             FileObject target = newTarget.createFolder(nueName);
             FileObject projectDirectory = project.getProjectDirectory();
-            List/*<FileObject>*/ toCopyList = Arrays.asList(projectDirectory.getChildren());
+            List<FileObject> toCopyList = Arrays.asList(projectDirectory.getChildren());
             
             double workPerFileAndOperation = totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK) / toCopyList.size();
 
-            for (Iterator i = toCopyList.iterator(); i.hasNext(); ) {
-                FileObject toCopy = (FileObject) i.next();
-                File       toCopyFile = FileUtil.toFile(toCopy);
-                
+            for (FileObject toCopy : toCopyList) {
                 doCopy(project, toCopy, target);
                 
                 int lastWorkDone = (int) currentWorkDone;
@@ -271,7 +263,7 @@ public final class DefaultProjectOperationsImplementation {
             handle.progress(totalWork);
             handle.finish();
         } catch (Exception e) {
-            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Move", new Object[]{e.getLocalizedMessage()}));
+            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Move", e.getLocalizedMessage()));
             throw e;
         }
     }
@@ -325,20 +317,20 @@ public final class DefaultProjectOperationsImplementation {
                         
                         FileObject projectDirectory = project.getProjectDirectory();
                         File       projectDirectoryFile = FileUtil.toFile(project.getProjectDirectory());
-                        Collection operations = project.getLookup().lookupAll(MoveOperationImplementation.class);
+                        Collection<? extends MoveOperationImplementation> operations = project.getLookup().lookupAll(MoveOperationImplementation.class);
                         
                         close(project);
                         
                         handle.progress(++currentWorkDone);
                         
-                        for (Iterator i = operations.iterator(); i.hasNext(); ) {
-                            ((MoveOperationImplementation) i.next()).notifyMoving();
+                        for (MoveOperationImplementation o : operations) {
+                            o.notifyMoving();
                         }
                         
                         handle.progress(++currentWorkDone);
                         
-                        for (Iterator i = operations.iterator(); i.hasNext(); ) {
-                            ((MoveOperationImplementation) i.next()).notifyMoved(null, projectDirectoryFile, nueName);
+                        for (MoveOperationImplementation o : operations) {
+                            o.notifyMoved(null, projectDirectoryFile, nueName);
                         }
                         
                         handle.progress(++currentWorkDone);
@@ -354,10 +346,10 @@ public final class DefaultProjectOperationsImplementation {
                         
                         handle.progress(++currentWorkDone);
                         
-                        Collection nueOperations = nue.getLookup().lookupAll(MoveOperationImplementation.class);
+                        operations = nue.getLookup().lookupAll(MoveOperationImplementation.class);
                         
-                        for (Iterator i = nueOperations.iterator(); i.hasNext(); ) {
-                            ((MoveOperationImplementation) i.next()).notifyMoved(project, projectDirectoryFile, nueName);
+                        for (MoveOperationImplementation o : operations) {
+                            o.notifyMoved(project, projectDirectoryFile, nueName);
                         }
                         
                         ProjectManager.getDefault().saveProject(nue);
@@ -374,7 +366,7 @@ public final class DefaultProjectOperationsImplementation {
                             assert nue != null;
                             open(nue, wasMain);
                         }
-                        ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", new Object[]{e.getLocalizedMessage()}));
+                        ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Cannot_Rename", e.getLocalizedMessage()));
                         throw e;
                     }
 		}
@@ -404,15 +396,13 @@ public final class DefaultProjectOperationsImplementation {
             handle.progress((int) (currentWorkDone = totalWork * NOTIFY_WORK));
             
             FileObject projectDirectory = project.getProjectDirectory();
-            List/*<FileObject>*/ toMoveList = Arrays.asList(projectDirectory.getChildren());
+            List<FileObject> toMoveList = Arrays.asList(projectDirectory.getChildren());
             
             double workPerFileAndOperation = (totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK) / toMoveList.size()) / 2;
             
             target = newTarget.createFolder(nueName);
-	    
-            for (Iterator i = toMoveList.iterator(); i.hasNext(); ) {
-                FileObject toCopy = (FileObject) i.next();
-                
+
+            for (FileObject toCopy : toMoveList) {
                 doCopy(project, toCopy, target);
                 
                 int lastWorkDone = (int) currentWorkDone;
@@ -426,10 +416,7 @@ public final class DefaultProjectOperationsImplementation {
             
             originalOK = false;
             
-            for (Iterator i = toMoveList.iterator(); i.hasNext(); ) {
-                FileObject toCopy = (FileObject) i.next();
-                File       toCopyFile = FileUtil.toFile(toCopy);
-                
+            for (FileObject toCopy : toMoveList) {
                 doDelete(project, toCopy);
                 
                 int lastWorkDone = (int) currentWorkDone;
@@ -477,7 +464,7 @@ public final class DefaultProjectOperationsImplementation {
 		
                 open(nue, wasMain);
             }
-            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, errorKey, new Object[]{e.getLocalizedMessage()}));
+            ErrorManager.getDefault().annotate(e, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, errorKey, e.getLocalizedMessage()));
             throw e;
         }
     }
@@ -496,9 +483,8 @@ public final class DefaultProjectOperationsImplementation {
         
         if (from.isFolder()) {
             FileObject copy = toParent.createFolder(from.getNameExt());
-            FileObject[] kids = from.getChildren();
-            for (int i = 0; i < kids.length; i++) {
-                doCopy(original, kids[i], copy);
+            for (FileObject kid : from.getChildren()) {
+                doCopy(original, kid, copy);
             }
         } else {
             assert from.isData();
@@ -521,11 +507,10 @@ public final class DefaultProjectOperationsImplementation {
         }
         
         if (toDelete.isFolder()) {
-            FileObject[] kids = toDelete.getChildren();
             boolean delete = true;
-            
-            for (int i = 0; i < kids.length; i++) {
-                delete &= doDelete(original, kids[i]);
+
+            for (FileObject kid : toDelete.getChildren()) {
+                delete &= doDelete(original, kid);
             }
             
             if (delete) {
@@ -678,12 +663,12 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     private static void close(final Project prj) {
-        Mutex.EVENT.readAccess(new Mutex.Action() {
-            public Object run() {
+        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+            public Void run() {
 		LifecycleManager.getDefault().saveAll();
 		
                 Action closeAction = CommonProjectActions.closeProjectAction();
-                closeAction = closeAction instanceof ContextAwareAction ? ((ContextAwareAction) closeAction).createContextAwareInstance(Lookups.fixed(new Object[] {prj})) : null;
+                closeAction = closeAction instanceof ContextAwareAction ? ((ContextAwareAction) closeAction).createContextAwareInstance(Lookups.fixed(prj)) : null;
                 
                 if (closeAction != null && closeAction.isEnabled()) {
                     closeAction.actionPerformed(new ActionEvent(prj, -1, "")); // NOI18N

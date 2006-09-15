@@ -21,10 +21,8 @@ package org.netbeans.modules.project.uiapi;
 import java.awt.CardLayout;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.JFileChooser;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -40,7 +38,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Jan Lahoda
  */
 public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentListener, DefaultProjectOperationsImplementation.InvalidablePanel {
@@ -49,7 +46,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private boolean isMove;
     private boolean invalid;
     
-    private List listeners;
+    private List<ChangeListener> listeners;
     private ProgressHandle handle;
     
     /**
@@ -58,7 +55,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     public ProjectCopyPanel(ProgressHandle handle, Project project, boolean isMove) {
         this.project = project;
         this.isMove = isMove;
-        this.listeners = new ArrayList();
+        this.listeners = new ArrayList<ChangeListener>();
         this.handle = handle;
         
         
@@ -321,15 +318,11 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     }
     
     private boolean hasExternalSources() {
-        List/*<FileObject>*/ files = ProjectOperations.getDataFiles(project);
-        
-        for (Iterator i = files.iterator(); i.hasNext(); ) {
-            FileObject file = (FileObject) i.next();
-            
-            if (!FileUtil.isParentOf(project.getProjectDirectory(), file))
+        for (FileObject file : ProjectOperations.getDataFiles(project)) {
+            if (!FileUtil.isParentOf(project.getProjectDirectory(), file)) {
                 return true;
+            }
         }
-        
         return false;
     }
     
@@ -385,12 +378,12 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
             ChangeListener[] listenersCopy;
                     
             synchronized (this) {
-                listenersCopy = (ChangeListener[] ) listeners.toArray(new ChangeListener[0]);
+                listenersCopy = listeners.toArray(new ChangeListener[0]);
             }
             ChangeEvent evt = new ChangeEvent(this);
             
-            for (int cntr = 0; cntr < listenersCopy.length; cntr++) {
-                listenersCopy[cntr].stateChanged(evt);
+            for (ChangeListener l : listenersCopy) {
+                l.stateChanged(evt);
             }
         }
     }

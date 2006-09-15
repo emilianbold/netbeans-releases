@@ -33,16 +33,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.uiapi.DefaultProjectOperationsImplementation.InvalidablePanel;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
- *
  * @author Jan Lahoda
  */
 public class DefaultProjectRenamePanel extends javax.swing.JPanel implements DocumentListener, InvalidablePanel {
     
     private Project project;
-    private List listeners;
+    private List<ChangeListener> listeners;
     private ProgressHandle handle;
     
     /**
@@ -56,7 +54,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
             name = ProjectUtils.getInformation(project).getDisplayName();
         }
         
-        this.listeners = new ArrayList();
+        this.listeners = new ArrayList<ChangeListener>();
         
         initComponents();
         
@@ -284,12 +282,12 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
             ChangeListener[] listenersCopy;
                     
             synchronized (this) {
-                listenersCopy = (ChangeListener[] ) listeners.toArray(new ChangeListener[0]);
+                listenersCopy = listeners.toArray(new ChangeListener[0]);
             }
             ChangeEvent evt = new ChangeEvent(this);
             
-            for (int cntr = 0; cntr < listenersCopy.length; cntr++) {
-                listenersCopy[cntr].stateChanged(evt);
+            for (ChangeListener l : listenersCopy) {
+                l.stateChanged(evt);
             }
         }
     }
