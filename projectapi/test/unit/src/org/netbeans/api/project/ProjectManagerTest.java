@@ -126,7 +126,7 @@ public class ProjectManagerTest extends NbTestCase {
         }
         assertNotNull("Should have recognized goodproject", p);
         assertEquals("ProjectFactory was called once so far on goodproject", 1, TestUtil.projectLoadCount(goodproject));
-        Reference pref = new WeakReference(p);
+        Reference<?> pref = new WeakReference<Object>(p);
         p = null;
         Thread.sleep(TimedWeakReference.TIMEOUT); // make sure it is not being held strongly
         assertGC("Can collect an unused project with project directory still set", pref);
@@ -134,9 +134,9 @@ public class ProjectManagerTest extends NbTestCase {
         assertNotNull("Can load goodproject again", p);
         assertEquals("Correct project directory set", goodproject, p.getProjectDirectory());
         assertEquals("ProjectFactory was called again on goodproject", 2, TestUtil.projectLoadCount(goodproject));
-        pref = new WeakReference(p);
+        pref = new WeakReference<Object>(p);
         p = null;
-        Reference dirref = new WeakReference(goodproject);
+        Reference<?> dirref = new WeakReference<Object>(goodproject);
         goodproject = null;
         assertGC("Collected the project directory", dirref);
         assertGC("Can collect an unused project with project directory discarded", pref);
@@ -176,7 +176,7 @@ public class ProjectManagerTest extends NbTestCase {
             fail("badproject is broken on disk but should still be in cache: " + e);
         }
         assertEquals("Cached badproject", p, p2);
-        Reference pref = new WeakReference(p);
+        Reference<?> pref = new WeakReference<Object>(p);
         p = null;
         p2 = null;
         assertGC("Collected badproject cache", pref);
@@ -191,8 +191,8 @@ public class ProjectManagerTest extends NbTestCase {
     public void testModify() throws Exception {
         Project p1 = pm.findProject(goodproject);
         Project p2 = pm.findProject(goodproject2);
-        Set/*<Project>*/ p1p2 = new HashSet(Arrays.asList(new Project[] {p1, p2}));
-        assertEquals("start with no modified projects", Collections.EMPTY_SET, pm.getModifiedProjects());
+        Set<Project> p1p2 = new HashSet<Project>(Arrays.asList(p1, p2));
+        assertEquals("start with no modified projects", Collections.emptySet(), pm.getModifiedProjects());
         assertTrue("p1 is not yet modified", !pm.isModified(p1));
         assertTrue("p2 is not yet modified", !pm.isModified(p2));
         TestUtil.modify(p1);
@@ -208,8 +208,8 @@ public class ProjectManagerTest extends NbTestCase {
     public void testSave() throws Exception {
         Project p1 = pm.findProject(goodproject);
         Project p2 = pm.findProject(goodproject2);
-        Set/*<Project>*/ p1p2 = new HashSet(Arrays.asList(new Project[] {p1, p2}));
-        assertEquals("start with no modified projects", Collections.EMPTY_SET, pm.getModifiedProjects());
+        Set<Project> p1p2 = new HashSet<Project>(Arrays.asList(p1, p2));
+        assertEquals("start with no modified projects", Collections.emptySet(), pm.getModifiedProjects());
         assertEquals("p1 has never been saved", 0, TestUtil.projectSaveCount(p1));
         assertEquals("p2 has never been saved", 0, TestUtil.projectSaveCount(p2));
         TestUtil.modify(p1);
@@ -221,11 +221,11 @@ public class ProjectManagerTest extends NbTestCase {
         assertEquals("p1 was saved once", 1, TestUtil.projectSaveCount(p1));
         assertEquals("p2 has not yet been saved", 0, TestUtil.projectSaveCount(p2));
         pm.saveProject(p2);
-        assertEquals("now p1 and p2 are both saved", Collections.EMPTY_SET, pm.getModifiedProjects());
+        assertEquals("now p1 and p2 are both saved", Collections.emptySet(), pm.getModifiedProjects());
         assertEquals("p1 was saved once", 1, TestUtil.projectSaveCount(p1));
         assertEquals("p2 has now been saved once", 1, TestUtil.projectSaveCount(p2));
         pm.saveProject(p2);
-        assertEquals("saving p2 again has no effect", Collections.EMPTY_SET, pm.getModifiedProjects());
+        assertEquals("saving p2 again has no effect", Collections.emptySet(), pm.getModifiedProjects());
         assertEquals("p1 still saved just once", 1, TestUtil.projectSaveCount(p1));
         assertEquals("redundant call to save did not really save again", 1, TestUtil.projectSaveCount(p2));
         TestUtil.modify(p1);
@@ -246,7 +246,7 @@ public class ProjectManagerTest extends NbTestCase {
         Project p2 = pm.findProject(goodproject2);
         TestUtil.modify(p1);
         TestUtil.modify(p2);
-        Set/*<Project>*/ p1p2 = new HashSet(Arrays.asList(new Project[] {p1, p2}));
+        Set<Project> p1p2 = new HashSet<Project>(Arrays.asList(p1, p2));
         assertEquals("both p1 and p2 are modified", p1p2, pm.getModifiedProjects());
         TestUtil.setProjectSaveWillFail(p1, new IOException("expected"));
         try {

@@ -19,6 +19,7 @@
 
 package org.netbeans.api.project;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.zip.CRC32;
@@ -268,8 +269,8 @@ public class FileOwnerQueryTest extends NbTestCase {
         
         FileOwnerQuery.markExternalOwner(fileObject2URI(extfile2), p2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         
-        WeakReference p2WR = new WeakReference(p2);
-        WeakReference rootWR = new WeakReference(root);
+        Reference<?> p2WR = new WeakReference<Object>(p2);
+        Reference<?> rootWR = new WeakReference<Object>(root);
         
         p2 = null;
         root = null;
