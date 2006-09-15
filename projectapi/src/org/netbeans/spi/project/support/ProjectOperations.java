@@ -53,6 +53,7 @@ public final class ProjectOperations {
         
         for (DataFilesProviderImplementation i : prj.getLookup().lookupAll(DataFilesProviderImplementation.class)) {
             result.addAll(i.getMetadataFiles());
+            assert !result.contains(null) : "Nulls in " + result + " from " + i;
         }
         
         return result;
@@ -70,6 +71,7 @@ public final class ProjectOperations {
         
         for (DataFilesProviderImplementation i : prj.getLookup().lookupAll(DataFilesProviderImplementation.class)) {
             result.addAll(i.getDataFiles());
+            assert !result.contains(null) : "Nulls in " + result + " from " + i;
         }
         
         return result;
