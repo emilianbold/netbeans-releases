@@ -40,8 +40,6 @@ import java.io.IOException;
  */
 public class CommitExecutor extends ExecutorSupport {
     
-    private Set refreshedFiles;
-
     /**
      * Splits the original command into more commands if the original
      * command would execute on incompatible files.
@@ -82,9 +80,6 @@ public class CommitExecutor extends ExecutorSupport {
         
         CommitCommand xcmd = (CommitCommand) cmd;
         
-        // files that we have information that changed
-        refreshedFiles = new HashSet(toRefresh.size());
-        
         for (Iterator i = toRefresh.iterator(); i.hasNext();) {
             CommitInformation info = (CommitInformation) i.next();
             if (info.getFile() == null) continue;
@@ -96,7 +91,6 @@ public class CommitExecutor extends ExecutorSupport {
                 repositoryStatus = FileStatusCache.REPOSITORY_STATUS_UNKNOWN;
             }
             cache.refreshCached(info.getFile(), repositoryStatus);
-            refreshedFiles.add(info.getFile());
         }
 
         if (cmd.hasFailed()) return;
