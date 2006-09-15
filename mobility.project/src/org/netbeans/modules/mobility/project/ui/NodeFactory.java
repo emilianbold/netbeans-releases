@@ -343,7 +343,8 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                                                     projectDrop.getConfigurationHelper() );
                 final ArrayList<ProjectConfiguration> allNames=new ArrayList<ProjectConfiguration>(Arrays.asList(dropProperties.getConfigurations()));                
                 final int size=allNames.size();
-                ProjectConfiguration cfg=null;
+                ProjectConfiguration oldCfg=null;
+                ProjectConfiguration newCfg=null;
                 
                 for (J2MEProject project : map.keySet())
                 {
@@ -359,17 +360,17 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
 
                     for (Node node : set)
                     {
-                        cfg=node.getLookup().lookup(ProjectConfiguration.class);
+                        oldCfg=node.getLookup().lookup(ProjectConfiguration.class);
                         //Check if configuration with the same name already exist
-                        ProjectConfiguration exst=projectDrop.getConfigurationHelper().getConfigurationByName(cfg.getDisplayName());
+                        ProjectConfiguration exst=projectDrop.getConfigurationHelper().getConfigurationByName(oldCfg.getDisplayName());
                         if (exst != null)
                         {
                             final CloneConfigurationPanel ccp = new CloneConfigurationPanel(allStrNames);
-                            final DialogDescriptor dd = new DialogDescriptor(ccp, cfg.getDisplayName() + " : " + NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
+                            final DialogDescriptor dd = new DialogDescriptor(ccp, oldCfg.getDisplayName() + " : " + NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
                             ccp.setDialogDescriptor(dd);
                             final String newName = NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) ? ccp.getName() : null;
                             if (newName != null) {
-                                cfg = new ProjectConfiguration() {
+                                newCfg = new ProjectConfiguration() {
                                     public String getDisplayName() {
                                         return newName;
                                     }
@@ -380,14 +381,14 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                                 continue;
                         }
                         final String keys[] = j2meProperties.keySet().toArray(new String[j2meProperties.size()]);
-                        final String prefix = J2MEProjectProperties.CONFIG_PREFIX + cfg.getDisplayName();
+                        final String prefix = J2MEProjectProperties.CONFIG_PREFIX + oldCfg.getDisplayName();
                         for (int i=0; i<keys.length; i++) {
                             if (keys[i].startsWith(prefix))
-                                dropProperties.put(J2MEProjectProperties.CONFIG_PREFIX + cfg.getDisplayName() + keys[i].substring(prefix.length()), j2meProperties.get(keys[i]));
+                                dropProperties.put(J2MEProjectProperties.CONFIG_PREFIX + newCfg.getDisplayName() + keys[i].substring(prefix.length()), j2meProperties.get(keys[i]));
                         }
 
                         
-                        allNames.add(cfg);
+                        allNames.add(newCfg);
                     }
                 }
                 map.clear();
@@ -401,7 +402,7 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                 
                 dropProperties.setConfigurations(allNames.toArray(new ProjectConfiguration[allNames.size()]));
                 // Store the properties
-                final ProjectConfiguration lcfg=cfg;
+                final ProjectConfiguration lcfg=newCfg;
                     
                 SwingUtilities.invokeLater( new Runnable() 
                 {
