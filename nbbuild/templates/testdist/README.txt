@@ -32,8 +32,8 @@ xtest.module.list - list of modules seperated by ':' in format ${cluster}/${code
 
 test.required.modules - run tests only with listed modules when property is defined,
         it's applied to only 'unit' tests. 
-    example: org-openide-explorer.jar,org-openide-master-fs.jar run modules which need
-          the org-openide-explorer.jar and org-openide-master-fs.jar for test run
+    example: org-openide-explorer.jar,org-netbeans-modules-masterfs.jar run modules which need
+          either org-openide-explorer.jar or org-netbeans-modules-masterfs.jar for test run.
 
 Generated report:
 

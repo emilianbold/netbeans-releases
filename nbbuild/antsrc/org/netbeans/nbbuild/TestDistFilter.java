@@ -326,6 +326,9 @@ public class TestDistFilter extends Task {
                   if (runCp != null) {
                       String paths[] = runCp.split(":");
                       Set reqModules = getRequiredModulesSet();
+                      if (reqModules.size() == 0) {
+                          return true;
+                      }
                       for (int i = 0 ; i < paths.length ; i++) {
                           String p = paths[i];
                           int lastSlash = p.lastIndexOf('/');
@@ -333,11 +336,8 @@ public class TestDistFilter extends Task {
                               p = p.substring(lastSlash + 1);
                           } 
                           if (reqModules.contains(p)) {
-                              reqModules.remove(p);
+                              return true;
                           }
-                      }
-                      if (reqModules.size() == 0) {
-                          return true;
                       }
                   }
                 } finally {

@@ -203,7 +203,7 @@ public class TestDistFilterTest extends NbTestCase {
         filter.setRequiredModules("org-openide-loaders.jar,org-openide-filesystems.jar");
         filter.setTestListProperty("list.prop4");
         filter.execute();
-        assertProperty(prj,"list.prop4",new String[]{ORG_OPENIDE_LOADERS});
+        assertProperty(prj,"list.prop4",new String[]{ORG_OPENIDE_LOADERS,ORG_OPENIDE_UNIT,ORG_OPENIDE_FS,ORG_OPENIDE_NO_LOADERS});
         
     }
    
