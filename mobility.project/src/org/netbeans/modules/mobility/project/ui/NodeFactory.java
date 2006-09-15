@@ -36,6 +36,7 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -236,6 +237,13 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
 {
     private boolean broken = false;
     
+    /* Those two variables are used for pasting nodes. As D&D sends me nodes node by node I must collect them to one
+     * collection again. First call to paste do operation on all transfered nodes and any subsequent call do nothing until
+     * new transfer is initiated
+     */
+    final HashMap<J2MEProject,HashSet<Node>> map=new HashMap<J2MEProject,HashSet<Node>>();
+    PasteType pType;
+    
     protected ProjCfgNode(Children ch,Lookup lookup,String name,String icon, Action act[])
     {
         super(ch,lookup,name,null,icon,act);
@@ -323,7 +331,6 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
         final String PRIMARY_TYPE = "application";   //NOI18N     
         final String DND_TYPE = "x-java-openide-nodednd"; //NOI18N
         final String MULTI_TYPE = "x-java-openide-multinode"; //NOI18N
-        final HashMap<J2MEProject,HashSet<Node>> map=new HashMap<J2MEProject,HashSet<Node>>();
         
         class CfgPasteType extends PasteType
         {
@@ -346,6 +353,9 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                             project.getLookup().lookup(AntProjectHelper.class),
                             project.getLookup().lookup(ReferenceHelper.class), 
                             project.getConfigurationHelper() );
+                    
+                    for (ProjectConfiguration name : allNames)
+                        allStrNames.add(name.getDisplayName());
 
                     for (Node node : set)
                     {
@@ -354,9 +364,6 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                         ProjectConfiguration exst=projectDrop.getConfigurationHelper().getConfigurationByName(cfg.getDisplayName());
                         if (exst != null)
                         {
-                            for (ProjectConfiguration name : allNames)
-                                allStrNames.add(name.getDisplayName());
-                            
                             final CloneConfigurationPanel ccp = new CloneConfigurationPanel(allStrNames);
                             final DialogDescriptor dd = new DialogDescriptor(ccp, cfg.getDisplayName() + " : " + NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_DuplConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
                             ccp.setDialogDescriptor(dd);
@@ -367,6 +374,7 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                                         return newName;
                                     }
                                 };
+                                allStrNames.add(newName);
                             }
                             else
                                 continue;
@@ -382,7 +390,11 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                         allNames.add(cfg);
                     }
                 }
-                
+                map.clear();
+                synchronized (CfgPasteType.this)
+                {
+                    pType=null;
+                }
                 //No configuration was added
                 if (allNames.size() == size)
                     return null;
@@ -390,29 +402,19 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                 dropProperties.setConfigurations(allNames.toArray(new ProjectConfiguration[allNames.size()]));
                 // Store the properties
                 final ProjectConfiguration lcfg=cfg;
-                
-                Children.MUTEX.writeAccess( new Runnable() 
-                {
-                    public void run()
-                    {
-                        try {
-                            ProjectManager.mutex().writeAccess( new Runnable() {
-                                public void run()
-                                {
-                                    dropProperties.store();                                        
-                                }
-                            });
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                });
                     
                 SwingUtilities.invokeLater( new Runnable() 
                 {
                     public void run() {  
                         assert lcfg != null;
                         try {
+                            Children.MUTEX.writeAccess( new Runnable() {
+                                public void run()
+                                {
+                                    dropProperties.store();                                                                
+                                }
+                            });
+                            
                             projectDrop.getConfigurationHelper().setActiveConfiguration(lcfg);
                         } catch (IllegalArgumentException ex) {
                             ErrorManager.getDefault().notify(ex);
@@ -421,8 +423,14 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                         } 
                     }
                 });
-                return tr;
+                return null;
             }
+        }
+        
+        synchronized (this)
+        {
+            if (pType == null)
+                pType=new CfgPasteType();
         }
         
         for (DataFlavor flavor : flavors) {
@@ -445,7 +453,7 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                         }
                     }
                     if (map.size() != 0)
-                        return new CfgPasteType();
+                        return pType;
                 }
                 if (DND_TYPE.equals(flavor.getSubType ())) {
                     Node node=NodeTransfer.node(tr,NodeTransfer.DND_COPY_OR_MOVE);
@@ -461,7 +469,7 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
                         set.add(node);
                     }
                     if (map.size() != 0)
-                        return new CfgPasteType();
+                        return pType;
                 }
             }
         }
