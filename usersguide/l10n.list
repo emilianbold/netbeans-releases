@@ -9,4 +9,4 @@ usersguide/javahelp/org/netbeans/modules/usersguide/**/*.css
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.gif
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.png
 usersguide/src/org/netbeans/modules/usersguide/Bundle.properties
-usersguide/pdf_source/shortcuts50.sxw
+usersguide/pdf_source/shortcuts.sxw
