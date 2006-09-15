@@ -110,6 +110,9 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
             if (configDir != null) {
                 configDir.removeFileChangeListener(fclWeak);
                 configDir.addFileChangeListener(fclWeak);
+                LOGGER.log(Level.FINEST, "(Re-)added listener to {0}", configDir);
+            } else {
+                LOGGER.log(Level.FINEST, "No nbproject/configs exists");
             }
             calculateConfigs();
             Set<String> newConfigs = configs.keySet();
@@ -130,9 +133,11 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
         FileObject nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         if (nbp != null) {
             nbp.addFileChangeListener(fclWeak);
+            LOGGER.log(Level.FINEST, "Added listener to {0}", nbp);
             configDir = nbp.getFileObject("configs"); // NOI18N
             if (configDir != null) {
                 configDir.addFileChangeListener(fclWeak);
+                LOGGER.log(Level.FINEST, "Added listener to {0}", configDir);
             }
         }
         p.evaluator().addPropertyChangeListener(new PropertyChangeListener() {
@@ -168,6 +173,7 @@ final class J2SEConfigurationProvider implements ProjectConfigurationProvider<J2
                 }
             }
         }
+        LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs);
     }
 
     public Collection<Config> getConfigurations() {
