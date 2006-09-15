@@ -59,14 +59,24 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Editors">
         <folder name="SideBar">
-            <file name="org-netbeans-modules-diff-sidebar-DiffSidebarManager.instance"/>
+            <file name="org-netbeans-modules-diff-sidebar-DiffSidebarFactory.instance"/>
             <!-- place in between line numbers sidebar and folding sidebar #57544 -->
-            <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-diff-sidebar-DiffSidebarManager.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance/org-netbeans-modules-diff-sidebar-DiffSidebarManager.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-diff-sidebar-DiffSidebarManager.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-diff-sidebar-DiffSidebarManager.instance/org-netbeans-modules-html-editor-folding-HTMLCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-diff-sidebar-DiffSidebarManager.instance/org-netbeans-modules-xml-text-folding-XmlCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-            <attr name="org-netbeans-modules-diff-sidebar-DiffSidebarManager.instance/org-netbeans-modules-web-core-syntax-folding-JspCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+            <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-diff-sidebar-DiffSidebarFactory.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-subversion-ui-blame-AnnotationBarManager.instance/org-netbeans-modules-diff-sidebar-DiffSidebarFactory.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-diff-sidebar-DiffSidebarFactory.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-diff-sidebar-DiffSidebarFactory.instance/org-netbeans-modules-html-editor-folding-HTMLCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-diff-sidebar-DiffSidebarFactory.instance/org-netbeans-modules-xml-text-folding-XmlCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-diff-sidebar-DiffSidebarFactory.instance/org-netbeans-modules-web-core-syntax-folding-JspCodeFoldingSideBarFactory.instance" boolvalue="true"/>
+        </folder>
+
+        <folder name="text">
+            <folder name="base">
+                <folder name="UpToDateStatusProvider">
+                    <file name="org-netbeans-modules-diff-sidebar-DiffMarkProviderCreator.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.diff.sidebar.DiffMarkProviderCreator"/>
+                    </file>
+                </folder>
+            </folder>
         </folder>
     </folder>
 
