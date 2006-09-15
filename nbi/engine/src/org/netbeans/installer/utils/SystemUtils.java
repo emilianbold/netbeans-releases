@@ -339,21 +339,11 @@ public abstract class SystemUtils {
                 getFreeSpace0(file.getPath());
         }
         
-        private native boolean createShortcut0(String shortcutName,
-            String shortcutPath, String path, String description,
-            String iconPath, String workingDirectory, String arguments);
+        private native boolean createShortcut0(Shortcut shortcut);
         
         public boolean createShortcut(Shortcut shortcut) {
-            return createShortcut0(
-                    shortcut.getShortcutName(),
-                    shortcut.getShortcutPath(),
-                    shortcut.getPath(),
-                    shortcut.getDescription(),
-                    shortcut.getIconPath(),
-                    shortcut.getWorkingDirectory(),
-                    shortcut.getArguments());
-        }
-        
+            return createShortcut0(shortcut);
+        }        
         
         protected String getNativeLibraryPath() {
             return WIN32_DLL_LOCATION;
@@ -480,7 +470,7 @@ public abstract class SystemUtils {
         }
     }
     
-    public class Shortcut {
+    public static class Shortcut {
         private String shortcutName;
         private String shortcutPath;
         private String path;
