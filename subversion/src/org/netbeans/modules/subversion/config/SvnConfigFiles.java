@@ -99,6 +99,9 @@ public class SvnConfigFiles {
         config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher()); // NOI18N
         // get the nb servers file merged with the systems servers files
         servers = loadNetbeansIniFile("servers"); // NOI18N
+        
+        // and store it so any commnand against the repository may use it
+        storeServers();
     }
     
     /**
@@ -181,6 +184,10 @@ public class SvnConfigFiles {
             removeFromServerGroup(host);
         }
 
+        storeServers();
+    }
+
+    private void storeServers() {
         try {
             File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/servers")); // NOI18N
             file.getParentFile().mkdirs();
@@ -189,7 +196,7 @@ public class SvnConfigFiles {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-
+    
     private void setProxy(final Ini.Section group, final ProxyDescriptor pd) {
 
         group.put("http-proxy-host", pd.getHost()); // NOI18N

@@ -197,12 +197,21 @@ public class Subversion {
                                String password) 
     throws SVNClientException    
     {
-        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password);            
+        return getClient(repositoryUrl, pd, username, password, true);
+    }
+
+    // XXX hotfix for 5.5. use masks to set which errors should be handled in the invocation handler and which not!
+    public SvnClient getClient(SVNUrl repositoryUrl,
+                               ProxyDescriptor pd, 
+                               String username, 
+                               String password,
+                               boolean handleConnectErrors) throws SVNClientException {
+        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password, handleConnectErrors);            
         attachListeners(client, false);            
 
         return client;
     }
-
+    
     public SvnClient getClient(File file) throws SVNClientException {
         return getClient(file, null);
     }
@@ -463,4 +472,5 @@ public class Subversion {
         }
         return rp;
     }
+
 }

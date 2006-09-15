@@ -79,19 +79,21 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private Cancellable cancellable;
     private SvnProgressSupport support;
     private SvnWcParser wcParser = new SvnWcParser();
-
+    private final boolean handleConnectErrors; //XXX hotfix. see also subversion.createSvnCLient
    /**
      *
      */
-    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc) {
+    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, boolean handleConnectErrors) {
         this.adapter = adapter;
         this.desc = desc;
+        this.handleConnectErrors = handleConnectErrors;
     }
 
-    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support) {
+    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, boolean handleConnectErrors) {
         this.adapter = adapter;
         this.desc = desc;
         this.support = support;
+        this.handleConnectErrors = handleConnectErrors;
         this.cancellable = new Cancellable() {
             public boolean cancel() {
                 try {
@@ -248,7 +250,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             throw t;
         }
 
-        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client);        
+        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, handleConnectErrors);        
         return eh.handleException();        
     }
 

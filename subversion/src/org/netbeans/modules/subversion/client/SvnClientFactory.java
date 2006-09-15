@@ -70,7 +70,7 @@ public class SvnClientFactory {
      */
     public SvnClient createSvnClient() {
         ISVNClientAdapter adapter = createSvnClientAdapter();
-        return createSvnClient(adapter, null, null);
+        return createSvnClient(adapter, null, null, true);
     }
 
     /**
@@ -96,7 +96,7 @@ public class SvnClientFactory {
             password = passwordFile.getPassword();            
         }        
         ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, null, username, password);
-        return createSvnClient(adapter, support, repositoryUrl);
+        return createSvnClient(adapter, support, repositoryUrl, true);
     }    
 
     /**
@@ -119,10 +119,15 @@ public class SvnClientFactory {
                                      String username, 
                                      String password) 
     {                                                                                   
-        ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, pd, username, password);
-        return createSvnClient(adapter, null, repositoryUrl);
+        return createSvnClient(repositoryUrl, pd, username, password, true) ;
     }
 
+    // XXX hotfix. see also Subversion.createSvnClient(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password, boolean handleConnectErrors)
+    public SvnClient createSvnClient(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password, boolean handleConnectErrors) {
+        ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, pd, username, password);
+        return createSvnClient(adapter, null, repositoryUrl, handleConnectErrors);
+    }
+    
     /**
      *
      * Returns a SvnClientInvocationHandler instance which is configured with the given <tt>adapter</tt>,
@@ -135,7 +140,7 @@ public class SvnClientFactory {
      * @return the created SvnClientInvocationHandler instance
      *
      */
-    private SvnClient createSvnClient(ISVNClientAdapter adapter, SvnProgressSupport support, final SVNUrl repository) {
+    private SvnClient createSvnClient(ISVNClientAdapter adapter, SvnProgressSupport support, final SVNUrl repository, boolean handleConnectErrors) {
         Class proxyClass = Proxy.getProxyClass(SvnClient.class.getClassLoader(), new Class[]{ SvnClient.class } );
 
         SvnClientInvocationHandler handler;
@@ -146,9 +151,9 @@ public class SvnClientFactory {
         };
         Subversion.getInstance().cleanupFilesystem();
         if(support != null) {
-            handler = new SvnClientInvocationHandler(adapter, desc, support);
+            handler = new SvnClientInvocationHandler(adapter, desc, support, handleConnectErrors);
         } else {
-            handler = new SvnClientInvocationHandler(adapter, desc);
+            handler = new SvnClientInvocationHandler(adapter, desc, handleConnectErrors);
         } 
         try {
            return (SvnClient) proxyClass.getConstructor( new Class[] { InvocationHandler.class } ).newInstance( new Object[] { handler } );
@@ -189,7 +194,7 @@ public class SvnClientFactory {
         }        
         return adapter;
     }        
-
+    
     /**
      * Returns a CommandlineClientAdapter instance.
      *
@@ -206,4 +211,6 @@ public class SvnClientFactory {
         }                
         return adapter;
     }         
+
+
 }

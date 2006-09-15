@@ -72,7 +72,8 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     private final SvnClient client;
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private final String CHARSET_NAME = "ASCII7"; // NOI18N
-
+    private final boolean handleConnectErrors;
+    
     private class Failure {
         int mask;
         String error;
@@ -91,10 +92,11 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         new Failure (8, "issuer is not trusted" ,                        NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotTrusted"))         // NOI18N
     };
     
-    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client) {
+    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, boolean handleConnectErrors) {
         super(exception);
         this.adapter = adapter;
         this.client = client;
+        this.handleConnectErrors = handleConnectErrors;
     }  
     
     public boolean handleException() throws Exception {
@@ -102,7 +104,10 @@ class SvnClientExceptionHandler extends ExceptionHandler {
             return handleRepositoryConnectError(false);
         } if(isNoCertificate(getException())) {                        
             return handleNoCertificateError();
-        } 
+        } if(handleConnectErrors && isHostNotFound(getException())) {
+            return handleRepositoryConnectError(false);
+        }
+            
 
         throw getException();
     }

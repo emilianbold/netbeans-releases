@@ -161,7 +161,8 @@ public class RepositoryStep
                     client = Subversion.getInstance().getClient(selectedRepository.getUrl(),
                                                                 pd,
                                                                 repository.getUserName(),
-                                                                repository.getPassword());
+                                                                repository.getPassword(),
+                                                                false);
                 } catch (SVNClientException ex) {
                     ErrorManager.getDefault().notify(ex);
                     invalidMsg = ex.getLocalizedMessage();
