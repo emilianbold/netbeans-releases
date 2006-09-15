@@ -33,27 +33,31 @@ import org.openide.NotifyDescriptor;
 
 /**
  *
- * @author Jaroslav Tulachs
+ * @author Jaroslav Tulach
  */
 public class BugTriggersTest extends TestCase {
-    private Installer o;
+    private static Installer o;
+    
+    static {
+        Locale.setDefault(new Locale("te", "ST"));
+        o = Installer.findObject(Installer.class, true);
+        o.restored();
+    }
     
     public BugTriggersTest(String testName) {
         super(testName);
     }
     
     protected void setUp() throws Exception {
-        Locale.setDefault(new Locale("te", "ST"));
-        o = Installer.findObject(Installer.class, true);
         assertNotNull("Installer created", o);
         MockServices.setServices(DD.class);
-        o.restored();
     }
 
     protected void tearDown() throws Exception {
     }
 
     public void testErrorMgrShowsDialogOnException() throws Exception {
+        DD.toReturn = 0;
         IOException ex = new IOException("Chyba");
         ErrorManager.getDefault().notify(ex);
         
@@ -61,6 +65,7 @@ public class BugTriggersTest extends TestCase {
     }
     
     public void testLoggerShowsDialogOnException() throws Exception {
+        DD.toReturn = 0;
         IOException ex = new IOException("Chyba");
         Logger.getAnonymousLogger().log(Level.WARNING, null, ex);
         
@@ -68,11 +73,17 @@ public class BugTriggersTest extends TestCase {
     }
     
     public static final class DD extends DialogDisplayer {
+        public static int toReturn = -1;
         public static NotifyDescriptor d;
         
         public Object notify(NotifyDescriptor descriptor) {
             d = descriptor;
-            return NotifyDescriptor.CANCEL_OPTION;
+            if (toReturn == -1) {
+                fail("There should be something to return");
+            }
+            Object r = descriptor.getOptions()[toReturn];
+            toReturn = -1;
+            return r;
         }
 
         public Dialog createDialog(DialogDescriptor descriptor) {
