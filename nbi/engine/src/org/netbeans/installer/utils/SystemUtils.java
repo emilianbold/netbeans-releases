@@ -331,13 +331,16 @@ public abstract class SystemUtils {
     }
     
     private static class WindowsSystemUtils extends GenericSystemUtils {
+        
         public static final String WIN32_DLL_LOCATION = "native/win32.dll";
         
-        private native long getFreeSpace(String s);
+        public static final Win32Registry registry = Win32Registry.getInstance();
+        
+        private native long getFreeSpace0(String s);
         
         public long getFreeSpace(File file) {
             return (file==null || file.getPath().equals("")) ? 0 :
-                getFreeSpace(file.getPath());
+                getFreeSpace0(file.getPath());
         }
         
         public native boolean createShortcut(String shortcutName, String shortcutPath,
@@ -346,6 +349,9 @@ public abstract class SystemUtils {
         
         protected String getNativeLibraryPath() {
             return WIN32_DLL_LOCATION;
+        }
+        public Win32Registry getWin32Registry() {
+           return registry;  
         }
     }
     
