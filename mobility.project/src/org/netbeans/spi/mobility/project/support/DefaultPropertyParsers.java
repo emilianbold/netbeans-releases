@@ -169,7 +169,7 @@ public class DefaultPropertyParsers {
         public List<VisualClassPathItem> decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
             String pe[] = PropertyUtils.tokenizePath( raw );
             List<VisualClassPathItem> cpItems = new ArrayList<VisualClassPathItem>( pe.length );
-            for( String pei:pe) {//int i = 0; i < pe.length; i++ ) {
+            for( String pei:pe) {
                 VisualClassPathItem cpItem = null;
                 
                 // First try to find out whether the item is well known classpath
@@ -188,7 +188,14 @@ public class DefaultPropertyParsers {
                     // Library from library manager
                     String eval = pei.substring( LIBRARY_PREFIX.length(), pei.lastIndexOf('.') ); //NOI18N
                     Library lib = LibraryManager.getDefault().getLibrary(eval);
-                    cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, pei, lib.getDisplayName());
+                    String dName;
+                    if (lib != null)
+                        dName=lib.getDisplayName();
+                    else
+                    {
+                        dName=eval;
+                    }
+                    cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, pei, dName );
                 } else if (pei.startsWith(ARTIFACT_PREFIX)) {
                     Object o[] = refHelper.findArtifactAndLocation( pei );
                     File f = null;

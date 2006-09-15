@@ -233,7 +233,7 @@ class ConfigurationsProvider
                     final Action actions[]=gray ? new Action[] {} : new Action[] { 
                                                                                    RemoveResourceAction.getStaticInstance(),
                                                                                  };
-                    final Node n=new FilterNode(new ActionNode(Children.LEAF,lookup,itemPath,null,actions),null,lookup)
+                    final Node n=new FilterNode(new ActionNode(Children.LEAF,lookup,itemPath,item.getDisplayName(),null,actions),null,lookup)
                     {
                             public Image getIcon(int i) {
                                 return ((ImageIcon)item.getIcon()).getImage();
