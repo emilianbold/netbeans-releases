@@ -31,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/test/subversion/main/checkout/ProxySettingsUITest.class"/>
                 <!-- diff -->
                 <include name="org/netbeans/test/subversion/main/diff/DiffTest.class"/>
+                <include name="org/netbeans/test/subversion/main/diff/ExportDiffPatchTest.class"/>
                 <!-- delete -->
                 <include name="org/netbeans/test/subversion/main/delete/Delete.class"/>
                 <!-- archeology -->
