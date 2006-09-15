@@ -115,8 +115,22 @@ public class Installer extends ModuleInstall {
         return displaySummary("WELCOME_URL"); // NOI18N
     }
     
-    
+    private static ThreadLocal<Object> DISPLAYING = new ThreadLocal<Object>();
     static boolean displaySummary(String msg) {
+        if (DISPLAYING.get() != null) {
+            return true;
+        }
+        boolean v = true;
+        try {
+            DISPLAYING.set(msg);
+            v = doDisplaySummary(msg);
+        } finally {
+            DISPLAYING.set(null);
+        }
+        return v;
+    }
+    
+    private static boolean doDisplaySummary(String msg) {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         Lookup.Template/*GENERICS<Deactivated>GENERICS*/ temp = new Lookup.Template/*GENERICS<Deactivated>GENERICS*/(Deactivated.class);
         Lookup.Result/*GENERICS<Deactivated>GENERICS*/ result = Lookup.getDefault().lookup(temp);

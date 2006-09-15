@@ -51,6 +51,8 @@ public class BugTriggersTest extends TestCase {
     protected void setUp() throws Exception {
         assertNotNull("Installer created", o);
         MockServices.setServices(DD.class);
+        
+        MemoryURL.registerURL("memory://error.html", "empty");
     }
 
     protected void tearDown() throws Exception {
