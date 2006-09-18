@@ -40,23 +40,23 @@ public class WorkingCopyDetails {
     static final String IS_HANDLED = "handled";
     private static final char SLASH_N = '\n';
     private static final char SLASH_R = '\r';
-    
+
     static final String VERSION_ATTR_KEY = "wc-version";
     static final String VERSION_UNKNOWN = "";
     static final String VERSION_13 = "1.3";
     static final String VERSION_14 = "1.4";
-    
-    private File file;
+
+    private final File file;
     //These Map stores the values in the SVN entities file
     //for the file and its parent directory
-    protected Map<String, String> attributes;
+    private final Map<String, String> attributes;
     //private Properties parentProps;
     //These Properties store the working and base versions of the
     //SVN properties for the file
     private Properties workingSvnProperties = null;
     private Properties baseSvnProperties = null;
 
-    private File propertiesFile = null;
+    protected File propertiesFile = null;
     private File basePropertiesFile = null;
     private File textBaseFile = null;
 
@@ -70,33 +70,42 @@ public class WorkingCopyDetails {
         String version = attributes != null ? attributes.get(VERSION_ATTR_KEY) : VERSION_UNKNOWN;
         if(version != null) {
             if(version.equals(VERSION_13)) {
-                
+
                 return new WorkingCopyDetails(file, attributes);
                 
             } else if(version.equals(VERSION_14)) {
                 
                 return new WorkingCopyDetails(file, attributes) {
                     public boolean propertiesExist() throws IOException {
-                        return this.attributes.containsKey("has-props");        // NOI18N
+                        return getAttributes().containsKey("has-props");        // NOI18N
                     }  
                     public boolean propertiesModified() throws IOException {
-                        return this.attributes.containsKey("has-prop-mods");    // NOI18N
+                        return getAttributes().containsKey("has-prop-mods");    // NOI18N
                     }            
+                    File getPropertiesFile() throws IOException {
+                        if (propertiesFile == null) {
+                            // unchanged properties have only the base file
+                            boolean modified = true;
+                            modified = getBooleanValue("has-prop-mods");                                // NOI18N
+                            propertiesFile = SvnWcUtils.getPropertiesFile(getFile(), modified ? false : true);
+                        }
+                        return propertiesFile;
+                    }                    
                 };
-                
+
             } else if(version.equals(VERSION_UNKNOWN)) {
-                
+
                 WorkingCopyDetails wcd = new WorkingCopyDetails(file, attributes);
                 if(!wcd.isHandled()) {
                     return wcd;
                 } 
                 // how is this possible?
                 throw new UnsupportedOperationException("Unknown SVN working copy version: " + version);    // NOI18N                
-                
+
             } else {
-                
+
                 throw new UnsupportedOperationException("Unknown SVN working copy version: " + version);    // NOI18N
-                
+
             }   
         } else {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not determine the SVN working copy version for " + file + ". Falling back on 1.3");  // NOI18N
@@ -104,6 +113,14 @@ public class WorkingCopyDetails {
         }
     }
 
+    protected Map<String, String> getAttributes() { 
+        return attributes;
+    }
+    
+    protected File getFile() {
+        return file;
+    }
+    
     public String getValue(String propertyName, String defaultValue) {
         String returnValue = getValue(propertyName);
         return returnValue != null ? returnValue : defaultValue;
@@ -111,7 +128,7 @@ public class WorkingCopyDetails {
 
     public String getValue(String key) {
         if(key==null) return null;
-        return attributes != null ? attributes.get(key) : null;
+        return getAttributes() != null ? getAttributes().get(key) : null;
     }
 
     public long getLongValue(String key) throws LocalSubversionException {
@@ -145,13 +162,13 @@ public class WorkingCopyDetails {
     }
 
     public boolean isFile() {
-        return attributes !=null ? FILE_ATTRIBUTE_VALUE.equals(attributes.get("kind")) : false; // NOI18N
+        return getAttributes() !=null ? FILE_ATTRIBUTE_VALUE.equals(getAttributes().get("kind")) : false; // NOI18N
     }
 
     File getPropertiesFile() throws IOException {
         if (propertiesFile == null) {
             // unchanged properties have only the base file
-            boolean modified = getBooleanValue("has-prop-mods");                                // NOI18N
+            boolean modified = true;
             propertiesFile = SvnWcUtils.getPropertiesFile(file, modified ? false : true);
         }
         return propertiesFile;
@@ -187,7 +204,6 @@ public class WorkingCopyDetails {
 
     public boolean propertiesExist() throws IOException {
         boolean returnValue = false;
-        
         File propsFile = getPropertiesFile();
         returnValue = propsFile != null ? propsFile.exists() : false;
         if (returnValue) {
@@ -208,7 +224,7 @@ public class WorkingCopyDetails {
 
         return returnValue;
     }
-    
+
     public boolean propertiesModified() throws IOException {
         File basePropsFile = getPropertiesFile();
         File propsFile = getBasePropertiesFile();
@@ -227,7 +243,6 @@ public class WorkingCopyDetails {
 
         Properties baseProps = getBaseSvnProperties();
         Properties props = getWorkingSvnProperties();
-
         return !(baseProps.equals(props));
     }
 
@@ -259,7 +274,6 @@ public class WorkingCopyDetails {
         } finally {
             fileReader.close();
         }
-
         return returnValue;
     }
 
@@ -318,8 +332,6 @@ public class WorkingCopyDetails {
 		}
             }
         }   
-
-
         return returnValue;
     }
 
@@ -411,9 +423,10 @@ public class WorkingCopyDetails {
 
             String baseLine = baseReader.readLine();
             String fileLine = fileReader.readLine();
+
             while (baseLine != null) {
                 //StringBuilder modifiedFileLine = new StringBuilder(fileLine);
-                
+
                 if (!fileLine.equals(baseLine)) {
                     boolean equal = false;
                     for (int i = 0; i < keywords.length; i++) {
@@ -427,12 +440,13 @@ public class WorkingCopyDetails {
                         return true;
                     }
                 }
-                    
+
                 baseLine = baseReader.readLine();
                 fileLine = fileReader.readLine();
             }
 
             returnValue = (fileLine != null);
+            
         } finally {
             if (fileReader != null) {
                 fileReader.close();
@@ -447,16 +461,16 @@ public class WorkingCopyDetails {
     }
 
     private boolean compareKeywordLines(String modifiedLine, String baseLine, String[] keywords) {
-        
+
         int modifiedIdx = 0;
         for (int fileIdx = 0; fileIdx < baseLine.length(); fileIdx++) {
-            
+
             if(baseLine.charAt(fileIdx) == '$') {
                 // 1. could be a keyword ...
                 for (int keywordsIdx = 0; keywordsIdx < keywords.length; keywordsIdx++) {
-                    
+
                     String keyword = keywords[keywordsIdx] + "$";                                   // NOI18N
-                    
+
                     boolean gotHeader = false;
                     for (int keyIdx = 0; keyIdx < keyword.length(); keyIdx++) {
                         if(fileIdx + keyIdx + 1 > baseLine.length() - 1 ||                           // we are already at the end of the baseline
@@ -467,16 +481,15 @@ public class WorkingCopyDetails {
                         } 
                         gotHeader = true;
                     }
+                    
                     if(gotHeader) {
                         // 3. it was a keyword -> skip the chars until the next '$'
-                        
                         // for the base file
                         fileIdx += keyword.length(); 
-                   
                         // for the modified file - '$Id: '
                         modifiedIdx += keyword.length() + 1;       //                  
                         while(++modifiedIdx < modifiedLine.length() && modifiedLine.charAt(modifiedIdx) != '$');
-                                          
+
                         if(modifiedIdx >= modifiedLine.length()) {
                             // modified line is done but we found a kyeword -> wrong
                             return false; 
