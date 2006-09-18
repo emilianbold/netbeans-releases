@@ -81,6 +81,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="NodeFactory">
+            <api name="general"/>
+            <summary>Ability to construct project node's children from multiple sources.</summary>
+            <version major="1" minor="18"/>
+            <date day="18" month="9" year="2006"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible">
+            </compatibility>
+            <description>
+                Added way to declaratively layout the subnodes of the project node, allowing 3rd party contributions 
+                to project's Logical/Projects View.
+                The project's node is constructed based on layer folder content. This api change provides just 
+                the infrastructure, the actual extension point location is up to the project type implementations.
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="NodeFactory"/>
+            <class package="org.netbeans.spi.project.ui.support" name="NodeList"/>
+            <class package="org.netbeans.spi.project.ui.support" name="NodeFactorySupport"/>
+            <issue number="72441"/>
+        </change>
         
         <change id="CommonProjectActions.setProjectConfigurationAction">
             <api name="general"/>
