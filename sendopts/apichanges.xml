@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../../nbbuild/javadoctools/apichanges.dtd">
+
+<apichanges>
+<apidefs>
+    <apidef name="sendoptsapi">SendOpts API</apidef>
+    <apidef name="sendoptsspi">SendOpts SPI</apidef>
+</apidefs>
+<changes>
+    <change id="completerewrite">
+      <summary>Completelly rewritten</summary>
+      <version major="2" minor="0"/>
+      <date day="20" month="8" year="2006"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="yes" binary="incompatible" source="incompatible" semantic="incompatible" deprecation="no" deletion="yes"/>
+      <description>
+          After the <a href="http://www.netbeans.org/issues/show_bug.cgi?id=57611">review from others</a>
+          it has been decided to de-generify the interfaces. As a result
+          of this complete rewrite, the API clients need to be fully 
+          rewritten as most of the method signatures changed.
+      </description>
+    </change>
+    <change id="shortdescription" >
+      <api name="sendoptsspi"/>
+      <summary>Use short description for each Option</summary>
+      <version major="1" minor="8"/>
+      <date day="18" month="3" year="2006"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+          Use <code>Option.shortDescription</code> to associate a one-liner
+          text with an option. This description will be printed when showing
+          usage for the command line.
+      </description>
+      <class package="org.netbeans.spi.sendopts" name="Option"/>
+    </change>
+    <change id="localizederrors" >
+      <api name="sendoptsapi"/>
+      <summary>Command exceptions can have localized messages</summary>
+      <version major="1" minor="8"/>
+      <date day="18" month="3" year="2006"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+          There is a new factory method in <code>CommandException</code>
+          that can influence the localized message which is then printed
+          to the user as a description of the error.
+      </description>
+      <class package="org.netbeans.api.sendopts" name="CommandException"/>
+    </change>
+    <change id="printusage" >
+      <api name="sendoptsapi"/>
+      <summary>Using PrintStream</summary>
+      <version major="1" minor="7"/>
+      <date day="15" month="3" year="2006"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+          There is new method <a href="@TOP@org/netbeans/api/sendopts/CommandLine.html#usage(java.io.PrintWriter)">usage</a>
+          that
+          allows to print description of all available options in the command
+          line.
+      </description>
+      <class package="org.netbeans.api.sendopts" name="CommandLine"/>
+    </change>
+    <change id="printstream" >
+      <api name="sendoptsspi"/>
+      <summary>Using PrintStream</summary>
+      <version major="1" minor="4"/>
+      <date day="26" month="2" year="2006"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+        <code>Env.getErrorStream()</code> and <code>Env.getOutputStream()</code>
+        return <code>PrintStream</code>.
+      </description>
+      <class package="org.netbeans.spi.sendopts" name="Env"/>
+    </change>
+</changes>
+<htmlcontents>
+<head>
+<title>Change History for the SendOpts API and SPI</title>
+<link rel="stylesheet" href="prose.css" type="text/css"/>
+</head>
+<body>
+<p class="overviewlink">
+<a href="overview-summary.html">Overview</a>
+</p>
+<h1>Introduction</h1>
+<h2>What do the Dates Mean?</h2>
+<p>The supplied dates indicate when the API change was made, on the CVS
+trunk. From this you can generally tell whether the change should be
+present in a given build or not; for trunk builds, simply whether it
+was made before or after the change; for builds on a stabilization
+branch, whether the branch was made before or after the given date. In
+some cases corresponding API changes have been made both in the trunk
+and in an in-progress stabilization branch, if they were needed for a
+bug fix; this ought to be marked in this list.</p>
+<hr/>
+<standard-changelists module-code-name="$codebase"/>
+<hr/>
+<p>@FOOTER@</p>
+</body>
+</htmlcontents>
+</apichanges>
