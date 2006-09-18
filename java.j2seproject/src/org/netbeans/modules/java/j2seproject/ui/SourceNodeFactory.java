@@ -59,21 +59,17 @@ public final class SourceNodeFactory implements NodeFactory {
         return new SourcesNodeList(project);
     }
     
-    public Node findPath(Project p, Node root, Object target) {
-        return null;
-    }
-    
-    private static class SourcesNodeList implements NodeList, ChangeListener {
+    private static class SourcesNodeList implements NodeList<SourceGroupKey>, ChangeListener {
         
         private J2SEProject project;
         
-        private List listeners = new ArrayList();
+        private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         
         public SourcesNodeList(J2SEProject proj) {
             project = proj;
         }
         
-        public List keys() {
+        public List<SourceGroupKey> keys() {
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
                 return Collections.EMPTY_LIST;
             }
@@ -96,23 +92,19 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
         private void fireChange() {
-            ArrayList list = new ArrayList();
+            ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
             synchronized (this) {
                 list.addAll(listeners);
             }
-            Iterator it = list.iterator();
+            Iterator<ChangeListener> it = list.iterator();
             while (it.hasNext()) {
-                ChangeListener elem = (ChangeListener) it.next();
+                ChangeListener elem = it.next();
                 elem.stateChanged(new ChangeEvent( this ));
             }
         }
         
-        public Node node(Object key) {
-            if (key instanceof SourceGroupKey) {
-                //Source root
-                return new PackageViewFilterNode(((SourceGroupKey) key).group, project);
-            }
-            return null;
+        public Node node(SourceGroupKey key) {
+            return new PackageViewFilterNode(key.group, project);
         }
         
         public void addNotify() {

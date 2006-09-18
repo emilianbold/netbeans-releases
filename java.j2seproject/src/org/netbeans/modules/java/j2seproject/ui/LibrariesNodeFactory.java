@@ -60,17 +60,13 @@ public final class LibrariesNodeFactory implements NodeFactory {
         return new LibrariesNodeList(project);
     }
 
-    public Node findPath(Project p, Node root, Object target) {
-        return null;
-    }
-    
-    private static class LibrariesNodeList implements NodeList, PropertyChangeListener {
-        private static final Object LIBRARIES = "Libs"; //NOI18N
-        private static final Object TEST_LIBRARIES = "TestLibs"; //NOI18N
+    private static class LibrariesNodeList implements NodeList<String>, PropertyChangeListener {
+        private static final String LIBRARIES = "Libs"; //NOI18N
+        private static final String TEST_LIBRARIES = "TestLibs"; //NOI18N
 
         private SourceRoots testSources;
         private J2SEProject project;
-        private ArrayList listeners = new ArrayList();
+        private ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
         private PropertyEvaluator evaluator;
         private UpdateHelper helper;
@@ -86,8 +82,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
             resolver = logView.getRefHelper();
         }
         
-        public List keys() {
-            List result = new ArrayList();
+        public List<String> keys() {
+            List<String> result = new ArrayList<String>();
             result.add(LIBRARIES);
             URL[] testRoots = testSources.getRootURLs();
             boolean addTestSources = false;
@@ -113,18 +109,18 @@ public final class LibrariesNodeFactory implements NodeFactory {
         }
         
         private void fireChange() {
-            ArrayList list = new ArrayList();
+            ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
             synchronized (this) {
                 list.addAll(listeners);
             }
-            Iterator it = list.iterator();
+            Iterator<ChangeListener> it = list.iterator();
             while (it.hasNext()) {
-                ChangeListener elem = (ChangeListener) it.next();
+                ChangeListener elem = it.next();
                 elem.stateChanged(new ChangeEvent( this ));
             }
         }
 
-        public Node node(Object key) {
+        public Node node(String key) {
             if (key == LIBRARIES) {
                 //Libraries Node
                 return  
