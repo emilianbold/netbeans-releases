@@ -88,7 +88,7 @@ public abstract class SystemUtils {
     
     public abstract void loadNativeLibrary();
     
-    public abstract boolean createShortcut(Shortcut shortcut);
+    public abstract int createShortcut(Shortcut shortcut);
     
     public abstract ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException;
     
@@ -221,8 +221,8 @@ public abstract class SystemUtils {
             }
         }
         
-        public boolean createShortcut(Shortcut shortcut) {
-            return false;
+        public int createShortcut(Shortcut shortcut) {
+            return 0;
         }
         
         public File getSystemDrive() {
@@ -339,9 +339,9 @@ public abstract class SystemUtils {
                 getFreeSpace0(file.getPath());
         }
         
-        private native boolean createShortcut0(Shortcut shortcut);
+        private native int createShortcut0(Shortcut shortcut);
         
-        public boolean createShortcut(Shortcut shortcut) {
+        public int createShortcut(Shortcut shortcut) {
             return createShortcut0(shortcut);
         }        
         
