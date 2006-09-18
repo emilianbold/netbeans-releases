@@ -132,8 +132,12 @@ public class SvnConfigFiles {
         }
         Ini.Section group = getServerGroup(host);
         if(group==null) {
-            // no proxy specified -> direct
-            return ProxyDescriptor.DIRECT;
+            // check if there is a [global] group
+            group = servers.get("global");
+            if(group==null) {
+                // no proxy specified -> direct
+                return ProxyDescriptor.DIRECT;
+            }
         }
         String proxyHost = group.get("http-proxy-host"); // NOI18N
         if(proxyHost == null || proxyHost.length() == 0) {
@@ -359,7 +363,7 @@ public class SvnConfigFiles {
         }
         return null;
     }
-
+    
    /**
      * Returns the section from the <b>servers</b> config file used by the Subversion module which 
      * is holding the proxy settings from the given {@link org.netbeans.modules.subversion.config.ProxyDescriptor}
