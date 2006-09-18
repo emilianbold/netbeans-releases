@@ -40,29 +40,29 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.bootstrap</code-name-base>
-                      <recursive/>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.filesystems</code-name-base>
-                      <compile-dependency/>
-                  </test-dependency>
-              </test-type>
-              <test-type>
-                  <name>qa-functional</name>
-              </test-type>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.bootstrap</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.filesystems</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core</friend>
                 <friend>org.netbeans.core.execution</friend>
                 <friend>org.netbeans.core.startup</friend>
                 <friend>org.netbeans.modules.autoupdate</friend>
-                <friend>org.netbeans.modules.utilities</friend>
+                <friend>org.netbeans.modules.sendopts</friend>
                 <package>org.netbeans</package>
             </friend-packages>
         </data>
