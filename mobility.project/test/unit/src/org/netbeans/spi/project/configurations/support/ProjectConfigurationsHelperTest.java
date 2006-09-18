@@ -26,6 +26,8 @@
 package org.netbeans.spi.project.configurations.support;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 import junit.framework.*;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +39,6 @@ import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.TestUtil;
-import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtenderTest;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
 
@@ -92,7 +93,7 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
         System.out.println("getDefaultConfiguration");
         
         ProjectConfiguration result = instance.getDefaultConfiguration();
-        assertEquals(result.getName(), "DefaultConfiguration");
+        assertEquals(result.getDisplayName(), "DefaultConfiguration");
     }
     
     /**
@@ -140,16 +141,16 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
         System.out.println("removeConfiguration");
         
         assertTrue(instance.addConfiguration("MyCFG"));
-        ProjectConfiguration[] result = instance.getConfigurations();
-        assertTrue(result.length==2);
+        Collection<ProjectConfiguration> result = instance.getConfigurations();
+        assertTrue(result.size()==2);
         assertTrue(instance.removeConfiguration(new ProjectConfiguration() {
-            public String getName() {
+            public String getDisplayName() {
                 return "MyCFG";
             }
         }));
         result = instance.getConfigurations();
-        assertTrue(result.length==1);
-        assertEquals(result[0].getName(),"DefaultConfiguration");
+        assertTrue(result.size()==1);
+        assertEquals(result.iterator().next().getDisplayName(),"DefaultConfiguration");
     }
     
     
@@ -164,7 +165,7 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
         assertTrue(instance.addConfiguration("MyCFG"));
         result = instance.getConfigurationByName("MyCFG");
         assertNotNull(result);
-        assertEquals(result.getName(),"MyCFG");
+        assertEquals(result.getDisplayName(),"MyCFG");
     }
     
     
@@ -176,12 +177,18 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
         assertTrue(instance.addConfiguration("MyCFG_1"));
         assertTrue(instance.addConfiguration("MyCFG_2"));
         assertTrue(instance.addConfiguration("MyCFG_3"));
-        instance.setActiveConfiguration(new ProjectConfiguration() {
-            public String getName() {
-                return "MyCFG_2";
-            }
-        });
+        try {
+            instance.setActiveConfiguration(new ProjectConfiguration() {
+                public String getDisplayName() {
+                    return "MyCFG_2";
+                }
+            });
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
         
-        assertEquals(instance.getActiveConfiguration().getName(),"MyCFG_2");
+        assertEquals(instance.getActiveConfiguration().getDisplayName(),"MyCFG_2");
     }
 }
