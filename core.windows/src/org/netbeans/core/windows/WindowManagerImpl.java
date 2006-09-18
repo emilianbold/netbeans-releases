@@ -1223,7 +1223,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         if (!(w instanceof RootPaneContainer)) {
             return false;
         }
-        return ((RootPaneContainer) w).getRootPane().getClientProperty(Constants.SEPARATE_WINDOW_PROPERTY) != null;
+        // #85089 - getRootPane may return null in some edge situations
+        JRootPane rp = ((RootPaneContainer) w).getRootPane();
+        if (rp == null) {
+            return false;
+        }
+        return rp.getClientProperty(Constants.SEPARATE_WINDOW_PROPERTY) != null;
     }
 
     private static final String ASSERTION_ERROR_MESSAGE = "WindowsAPI is required to be called from AWT thread only, see " // NOI18N
