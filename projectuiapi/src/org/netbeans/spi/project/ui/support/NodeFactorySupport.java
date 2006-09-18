@@ -81,14 +81,14 @@ public class NodeFactorySupport {
         return new FixedNodeList(nodes);
     }
     
-    private static class FixedNodeList implements NodeList {
+    private static class FixedNodeList implements NodeList<Node> {
         
-        private List nodes;
+        private List<Node> nodes;
         
         FixedNodeList(Node... nds) {
             nodes = Arrays.asList(nds);
         }
-        public List keys() {
+        public List<Node> keys() {
             return nodes;
         }
         
@@ -96,14 +96,14 @@ public class NodeFactorySupport {
         
         public void removeChangeListener(ChangeListener l) { }
         
-        public Node node(Object key) {
-            return (Node)key;
-        }
-        
         public void addNotify() {
         }
         
         public void removeNotify() {
+        }
+
+        public Node node(Node key) {
+            return key;
         }
     }
     

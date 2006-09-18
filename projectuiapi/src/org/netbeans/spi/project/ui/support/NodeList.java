@@ -32,13 +32,13 @@ import org.openide.nodes.Node;
  * @author mkleint
  * @since org.netbeans.modules.projectuiapi/1 1.18
  */
-public interface NodeList {
+public interface NodeList<K> {
     /**
      * child keys for which we later create a  {@link org.openide.nodes.Node}
      * in the node() method. If the change set of keys changes based on external
      *  events, fire a <code>ChangeEvent</code> to notify the parent Node.
      */
-    List keys();
+    List<K> keys();
     /**
      * add a change listener, primarily to be used by the infrastructure
      * A change in keys provided by this NodeList is supposed to trigger a ChangeEvent
@@ -52,7 +52,7 @@ public interface NodeList {
     /**
      * create Node for a given key, equal in semantics to <code>Children.Keys.createNode()</code>
      */
-    Node node(Object key);
+    Node node(K key);
     /**
      * callback from Children instance of the parent node, equal in semantics to <code>Children.addNotify()</code>
      * To be used primarily for registering of listeners and caching of state.
