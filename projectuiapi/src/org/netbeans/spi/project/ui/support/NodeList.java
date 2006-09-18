@@ -41,10 +41,12 @@ public interface NodeList {
     List keys();
     /**
      * add a change listener, primarily to be used by the infrastructure
+     * A change in keys provided by this NodeList is supposed to trigger a ChangeEvent
      */
     void addChangeListener(ChangeListener l); // change in keys()
     /**
      * remove a change listener, primarily to be used by the infrastructure
+     * A change in keys is supposed to trigger ChangeEvent
      */
     void removeChangeListener(ChangeListener l);
     /**
@@ -53,10 +55,12 @@ public interface NodeList {
     Node node(Object key);
     /**
      * callback from Children instance of the parent node, equal in semantics to <code>Children.addNotify()</code>
+     * To be used primarily for registering of listeners and caching of state.
      */
     void addNotify();
     /**
      * callback from Children instance of the parent node, equal in semantics to <code>Children.removeNotify()</code>
+     * To be used primarily for unregistering of listeners and general cleanup.
      */
     void removeNotify();
 }
