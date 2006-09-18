@@ -38,7 +38,7 @@ public class FooBarLogicalViewProvider implements LogicalViewProvider {
 }
 </pre>
  * @author RichUnger
- * @since org.netbeans.modules.projectuiapi 1.17
+ * @since org.netbeans.modules.projectuiapi/1 1.18
  */
 public interface NodeFactory {
     

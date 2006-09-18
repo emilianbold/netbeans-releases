@@ -30,7 +30,7 @@ import org.openide.nodes.Node;
  * {@link org.netbeans.spi.project.ui.support.NodeFactorySupport}
 
  * @author mkleint
- * @since org.netbeans.modules.projectuiapi 1.17
+ * @since org.netbeans.modules.projectuiapi/1 1.18
  */
 public interface NodeList {
     /**

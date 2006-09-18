@@ -54,7 +54,7 @@ import org.openide.util.LookupListener;
  * Support class for creating Project node's children nodes from NodeFactory instances
  * in layers.
  * @author mkleint
- * @since org.netbeans.modules.projectuiapi 1.17
+ * @since org.netbeans.modules.projectuiapi/1 1.18
  */
 public class NodeFactorySupport {
     
