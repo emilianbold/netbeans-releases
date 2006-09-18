@@ -77,24 +77,15 @@ public class NodeFactorySupport {
     /**
      * Utility method for creating a non variable NodeList instance.
      */
-    public static NodeList fixedNodeList(Node[] nodes) {
+    public static NodeList fixedNodeList(Node... nodes) {
         return new FixedNodeList(nodes);
     }
     
-    /**
-     * Utility method to create empty NodeList instance. Useful in case when a particular project instance is not
-     * relevant to the NodeFactory
-     */
-    public static NodeList emptyNodeList() {
-        return new FixedNodeList(new Node[0]);
-    }
-    
-    
-    private static class FixedNodeList implements  NodeList {
+    private static class FixedNodeList implements NodeList {
         
         private List nodes;
         
-        FixedNodeList(Node[] nds) {
+        FixedNodeList(Node... nds) {
             nodes = Arrays.asList(nds);
         }
         public List keys() {
@@ -120,9 +111,9 @@ public class NodeFactorySupport {
         
         private String folderPath;
         private Project project;
-        private List nodeLists = new ArrayList();
-        private List factories = new ArrayList();
-        private Lookup.Result result;
+        private List<NodeList> nodeLists = new ArrayList<NodeList>();
+        private List<NodeFactory> factories = new ArrayList<NodeFactory>();
+        private Lookup.Result<NodeFactory> result;
         
         public DelegateChildren(Project proj, String path) {
             folderPath = path;
@@ -139,7 +130,7 @@ public class NodeFactorySupport {
         protected Node[] createNodes(Object key) {
             NodeList lst = (NodeList)key;
             Iterator it = lst.keys().iterator();
-            List toRet = new ArrayList();
+            List<Node> toRet = new ArrayList<Node>();
             while (it.hasNext()) {
                 Object elem = it.next();
                 Node nd = lst.node(elem);
@@ -152,7 +143,7 @@ public class NodeFactorySupport {
         
         protected void addNotify() {
             super.addNotify();
-            result = createLookup().lookup(new Lookup.Template(NodeFactory.class));
+            result = createLookup().lookup(new Lookup.Template<NodeFactory>(NodeFactory.class));
             Iterator it = result.allInstances().iterator();
             while (it.hasNext()) {
                 NodeFactory factory = (NodeFactory) it.next();

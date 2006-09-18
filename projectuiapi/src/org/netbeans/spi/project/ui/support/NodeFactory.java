@@ -46,7 +46,7 @@ public interface NodeFactory {
      * Create a list of children nodes for the given project. If the list is to be static,
      * use the {@link org.netbeans.spi.project.ui.support.NodeFactorySupport#fixedNodeList}
      * @return never return null, if the project is not relevant to the NodeFactory,
-     * use {@link org.netbeans.spi.project.ui.support.NodeFactorySupport#emptyNodeList} empty value.
+     * use {@link org.netbeans.spi.project.ui.support.NodeFactorySupport#fixedNodeList} empty value.
      */ 
     NodeList createNodes(Project p);
     
