@@ -24,14 +24,10 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,7 +38,6 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -54,29 +49,24 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
-import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries;
-import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
-import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -90,8 +80,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -102,8 +90,6 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.client.WebServicesClientView;
 
 /**
  * Support for creating logical views.
@@ -119,9 +105,6 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
     private List changeListeners;
-
-    // Web service client
-    private static final Object KEY_SERVICE_REFS = "serviceRefs"; // NOI18N
     
     public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -137,6 +120,18 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     
     public Node createLogicalView() {
         return new J2SELogicalViewRootNode();
+    }
+    
+    public PropertyEvaluator getEvaluator() {
+        return evaluator;
+    }
+    
+    public ReferenceHelper getRefHelper() {
+        return resolver;
+    }
+    
+    public UpdateHelper getUpdateHelper() {
+        return helper;
     }
     
     public Node findPath(Node root, Object target) {
@@ -284,7 +279,8 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         // icon badging <<<
         
         public J2SELogicalViewRootNode() {
-            super(new LogicalViewChildren(project, evaluator, helper, resolver), Lookups.singleton(project));
+            super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-java-j2seproject/Nodes"), 
+                  Lookups.singleton(project));
             setIconBaseWithExtension("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif");
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks()) {
@@ -651,352 +647,6 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             
         }
         
-    }
-    
-    private static final class LogicalViewChildren extends Children.Keys/*<SourceGroup>*/ implements ChangeListener {
-        
-        private static final Object LIBRARIES = "Libs"; //NOI18N
-        private static final Object TEST_LIBRARIES = "TestLibs"; //NOI18N
-        private static final String WSDL_FOLDER=J2SEProjectWebServicesClientSupport.WSDL_FOLDER;
-        
-        private final Project project;
-        private final PropertyEvaluator evaluator;
-        private final UpdateHelper helper;
-        private final ReferenceHelper resolver;
-        private final SourceRoots testSources;
-            
-        private final WsdlCreationListener wsdlListener;
-        private final MetaInfListener metaInfListener;
-        private FileObject wsdlFolder;
-                
-        public LogicalViewChildren(J2SEProject project, PropertyEvaluator evaluator, UpdateHelper helper, ReferenceHelper resolver) {
-            this.project = project;
-            this.evaluator = evaluator;
-            this.helper = helper;
-            this.resolver = resolver;
-            this.testSources = project.getTestSourceRoots();
-            this.metaInfListener = new MetaInfListener();
-            this.wsdlListener = new WsdlCreationListener();
-        }
-        
-        protected void addNotify() {
-            super.addNotify();
-            getSources().addChangeListener(this);
-            
-            AntProjectHelper projectHelper = helper.getAntProjectHelper();
-            String prop = evaluator.getProperty("meta.inf.dir"); //NOI18N
-            if (prop!=null) {
-                FileObject metaInf = projectHelper.resolveFileObject(prop);
-                if (metaInf!=null) metaInf.addFileChangeListener(metaInfListener);
-            }
-            prop = evaluator.getProperty("src.dir"); //NOI18N
-            if (prop!=null) {
-                FileObject srcDir = projectHelper.resolveFileObject(prop);
-                if (srcDir!=null) srcDir.addFileChangeListener(metaInfListener);
-            }
-            
-            //XXX: Not very nice, the wsdlFolder should be hold by this class because it listens on it            
-            WebServicesClientSupport wsClientSupportImpl = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-            try {
-                if (wsClientSupportImpl != null) {
-                    wsdlFolder = wsClientSupportImpl.getWsdlFolder(false);
-                }
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
-            if (wsdlFolder != null) {
-                wsdlFolder.addFileChangeListener(wsdlListener);
-            }
-            setKeys(getKeys());
-        }
-        
-        protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
-            getSources().removeChangeListener(this);
-            
-            AntProjectHelper projectHelper = helper.getAntProjectHelper();
-            String prop = evaluator.getProperty("meta.inf.dir"); //NOI18N
-            if (prop!=null) {
-                FileObject metaInf = projectHelper.resolveFileObject(prop);
-                if (metaInf!=null) metaInf.addFileChangeListener(metaInfListener);
-            }
-            prop = evaluator.getProperty("src.dir"); //NOI18N
-            if (prop!=null) {
-                FileObject srcDir = projectHelper.resolveFileObject(prop);
-                if (srcDir!=null) srcDir.removeFileChangeListener(metaInfListener);
-            }
-            if (wsdlFolder != null) {
-                wsdlFolder.removeFileChangeListener(wsdlListener);
-            }
-
-            super.removeNotify();
-        }
-        
-        protected Node[] createNodes(Object key) {
-            Node[] result;
-            if (key == LIBRARIES) {
-                //Libraries Node
-                result = new Node[] {
-                    new LibrariesNode(NbBundle.getMessage(J2SELogicalViewProvider.class,"CTL_LibrariesNode"),
-                        project, evaluator, helper, resolver, J2SEProjectProperties.RUN_CLASSPATH,
-                        new String[] {J2SEProjectProperties.BUILD_CLASSES_DIR},
-                        "platform.active", // NOI18N
-                        new Action[] {
-                            LibrariesNode.createAddProjectAction(project, J2SEProjectProperties.JAVAC_CLASSPATH),
-                            LibrariesNode.createAddLibraryAction(project, J2SEProjectProperties.JAVAC_CLASSPATH),
-                            LibrariesNode.createAddFolderAction(project, J2SEProjectProperties.JAVAC_CLASSPATH),
-                            null,
-                            new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
-                        }
-                    ),
-                };
-            } else if (key == TEST_LIBRARIES) {
-                result = new Node[] {
-                    new LibrariesNode(NbBundle.getMessage(J2SELogicalViewProvider.class,"CTL_TestLibrariesNode"),
-                        project, evaluator, helper, resolver, J2SEProjectProperties.RUN_TEST_CLASSPATH,
-                        new String[] {
-                            J2SEProjectProperties.BUILD_TEST_CLASSES_DIR,
-                            J2SEProjectProperties.JAVAC_CLASSPATH,
-                            J2SEProjectProperties.BUILD_CLASSES_DIR,
-                        },
-                        null,
-                        new Action[] {
-                            LibrariesNode.createAddProjectAction(project, J2SEProjectProperties.JAVAC_TEST_CLASSPATH),
-                            LibrariesNode.createAddLibraryAction(project, J2SEProjectProperties.JAVAC_TEST_CLASSPATH),
-                            LibrariesNode.createAddFolderAction(project, J2SEProjectProperties.JAVAC_TEST_CLASSPATH),
-                            null,
-                            new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
-                        }
-                    ),
-                };
-            }
-            // else if (key instanceof SourceGroup) {
-            else if (key instanceof SourceGroupKey) {
-                //Source root
-                result = new Node[] {new PackageViewFilterNode(((SourceGroupKey) key).group, project)};
-
-            } else if (key == KEY_SERVICE_REFS) {
-                result = null;
-                FileObject clientRoot = project.getProjectDirectory();
-                WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
-                if (clientView != null) {
-                    WebServicesClientSupport wss = WebServicesClientSupport.getWebServicesClientSupport(clientRoot);
-                    if (wss!=null) {
-                        FileObject wsdlFolder = wss.getWsdlFolder();
-                        if (wsdlFolder!=null) {
-                            FileObject[] children = wsdlFolder.getChildren();
-                            boolean foundWsdl = false;
-                            for (int i=0;i<children.length;i++) {
-                                if (children[i].getExt().equalsIgnoreCase(WSDL_FOLDER)) { //NOI18N
-                                    foundWsdl=true;
-                                    break;
-                                }
-                            }
-                            if (foundWsdl) {
-                                result = new Node[] {clientView.createWebServiceClientView(wsdlFolder)};
-                            }
-                        }
-                    }
-                }
-            } else {
-                assert false : "Unknown key type";  //NOI18N
-                result = new Node[0];
-            }
-            return result;
-        }
-        
-        public void stateChanged(ChangeEvent e) {
-            // setKeys(getKeys());
-            // The caller holds ProjectManager.mutex() read lock
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    setKeys(getKeys());
-                }
-            });
-        }
-        
-        // Private methods -----------------------------------------------------
-        
-        private Collection getKeys() {
-            //#60800, #61584 - when the project is deleted externally do not try to create children, the source groups
-            //are not valid
-            if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
-                return Collections.EMPTY_LIST;
-            }
-            Sources sources = getSources();
-            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            
-            List result =  new ArrayList(groups.length);
-            for( int i = 0; i < groups.length; i++ ) {
-                result.add(new SourceGroupKey(groups[i]));
-            }
-            result.add(LIBRARIES);
-            URL[] testRoots = this.testSources.getRootURLs();
-            boolean addTestSources = false;
-            for (int i = 0; i < testRoots.length; i++) {
-                File f = new File(URI.create(testRoots[i].toExternalForm()));
-                if (f.exists()) {
-                    addTestSources = true;
-                    break;
-                }
-            }
-            if (addTestSources) {
-                result.add(TEST_LIBRARIES);
-            }
-            
-            result.add(KEY_SERVICE_REFS);
-
-            return result;
-        }
-        
-        private Sources getSources() {
-            return ProjectUtils.getSources(project);
-        }
-        
-        private static class SourceGroupKey {
-            
-            public final SourceGroup group;
-            public final FileObject fileObject;
-            
-            SourceGroupKey(SourceGroup group) {
-                this.group = group;
-                this.fileObject = group.getRootFolder();
-            }
-            
-            public int hashCode() {
-                return fileObject.hashCode();
-            }
-            
-            public boolean equals(Object obj) {
-                if (!(obj instanceof SourceGroupKey)) {
-                    return false;
-                } else {
-                    SourceGroupKey otherKey = (SourceGroupKey) obj;
-                    String thisDisplayName = this.group.getDisplayName();
-                    String otherDisplayName = otherKey.group.getDisplayName();
-                    // XXX what is the operator binding order supposed to be here??
-                    return fileObject.equals(otherKey.fileObject) &&
-                            thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName);
-                }
-            }
-            
-        }
-        
-        private final class WsdlCreationListener extends FileChangeAdapter {
-            
-            public void fileDataCreated (FileEvent fe) {
-                if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            refreshKey(KEY_SERVICE_REFS);
-                        }
-                    });
-                }
-            }
-            
-            public void fileDeleted (FileEvent fe) {
-                if (WSDL_FOLDER.equalsIgnoreCase(fe.getFile().getExt())) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            refreshKey(KEY_SERVICE_REFS);
-                        }
-                    });
-                } else if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            refreshKey(KEY_SERVICE_REFS);
-                        }
-                    });
-                }
-            }
-        }
-        
-        private final class MetaInfListener extends FileChangeAdapter {
-            
-            public void fileFolderCreated (FileEvent fe) {
-                if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
-                    fe.getFile().addFileChangeListener(wsdlListener);
-                } else if (fe.getFile().isFolder() && "META-INF".equals(fe.getFile().getName())) { //NOI18N
-                    fe.getFile().addFileChangeListener(metaInfListener);
-                }
-            }
-
-            public void fileDeleted (FileEvent fe) {
-                if (fe.getFile().isFolder() && WSDL_FOLDER.equals(fe.getFile().getName())) {
-                    fe.getFile().removeFileChangeListener(wsdlListener);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            refreshKey(KEY_SERVICE_REFS);
-                        }
-                    });
-                } else if (fe.getFile().isFolder() && "META-INF".equals(fe.getFile().getName())) { //NOI18N
-                    fe.getFile().removeFileChangeListener(metaInfListener);
-                }
-            }
-        }
-    }
-                
-    /** Yet another cool filter node just to add properties action
-     */
-    private static class PackageViewFilterNode extends FilterNode {
-        
-        private String nodeName;
-        private Project project;
-        
-        Action[] actions;
-        
-        public PackageViewFilterNode(SourceGroup sourceGroup, Project project) {
-            super(PackageView.createPackageView(sourceGroup));
-            this.project = project;
-            this.nodeName = "Sources";
-        }
-        
-        
-        public Action[] getActions(boolean context) {
-            if (!context) {
-                if (actions == null) {
-                    Action superActions[] = super.getActions(context);
-                    actions = new Action[superActions.length + 2];
-                    System.arraycopy(superActions, 0, actions, 0, superActions.length);
-                    actions[superActions.length] = null;
-                    actions[superActions.length + 1] = new PreselectPropertiesAction(project, nodeName);
-                }
-                return actions;
-            } else {
-                return super.getActions(context);
-            }
-        }
-        
-    }
-    
-    
-    /** The special properties action
-     */
-    private static class PreselectPropertiesAction extends AbstractAction {
-        
-        private final Project project;
-        private final String nodeName;
-        private final String panelName;
-        
-        public PreselectPropertiesAction(Project project, String nodeName) {
-            this(project, nodeName, null);
-        }
-        
-        public PreselectPropertiesAction(Project project, String nodeName, String panelName) {
-            super(NbBundle.getMessage(J2SELogicalViewProvider.class, "LBL_Properties_Action"));
-            this.project = project;
-            this.nodeName = nodeName;
-            this.panelName = panelName;
-        }
-        
-        public void actionPerformed(ActionEvent e) {
-            // J2SECustomizerProvider cp = (J2SECustomizerProvider) project.getLookup().lookup(J2SECustomizerProvider.class);
-            CustomizerProviderImpl cp = (CustomizerProviderImpl) project.getLookup().lookup(CustomizerProviderImpl.class);
-            if (cp != null) {
-                cp.showCustomizer(nodeName, panelName);
-            }
-            
-        }
     }
     
 }
