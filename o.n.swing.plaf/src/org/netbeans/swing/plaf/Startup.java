@@ -405,7 +405,8 @@ public final class Startup {
 
     private boolean isWindowsVista() {
         String osName = System.getProperty ("os.name");
-        return osName.indexOf("Vista") >= 0;
+        return osName.indexOf("Vista") >= 0 
+            || (osName.equals( "Windows NT (unknown)" ) && "6.0".equals( System.getProperty("os.version") ));
     }
 
     private boolean isMac() {
