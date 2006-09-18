@@ -360,7 +360,7 @@ class ProjCfgNode extends ActionNode implements AntProjectListener, PropertyChan
 
                     for (Node node : set)
                     {
-                        oldCfg=node.getLookup().lookup(ProjectConfiguration.class);
+                        newCfg=oldCfg=node.getLookup().lookup(ProjectConfiguration.class);
                         //Check if configuration with the same name already exist
                         ProjectConfiguration exst=projectDrop.getConfigurationHelper().getConfigurationByName(oldCfg.getDisplayName());
                         if (exst != null)
