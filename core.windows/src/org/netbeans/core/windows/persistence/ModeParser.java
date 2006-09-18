@@ -268,7 +268,7 @@ class ModeParser {
             tcRefOrder.clear();
             for (int i = 0; i < localList.size(); i++) {
                 TCRefParser tcRefParser = localList.get(i);
-                tcRefOrder.put(tcRefParser.getName(), new Integer(i));
+                tcRefOrder.put(tcRefParser.getName(), Integer.valueOf(i));
             }
             writeOrder();
         }
@@ -321,7 +321,7 @@ class ModeParser {
             tcRefOrder.clear();
             for (int i = 0; i < localList.size(); i++) {
                 TCRefParser tcRefParser = (TCRefParser) localList.get(i);
-                tcRefOrder.put(tcRefParser.getName(), new Integer(i));
+                tcRefOrder.put(tcRefParser.getName(), Integer.valueOf(i));
             }
             writeOrder();
         }
@@ -377,7 +377,7 @@ class ModeParser {
             }
             tcRefOrder.clear();
             for (int i = 0; i < mc.tcRefConfigs.length; i++) {
-                tcRefOrder.put(mc.tcRefConfigs[i].tc_id, new Integer(i));
+                tcRefOrder.put(mc.tcRefConfigs[i].tc_id, Integer.valueOf(i));
             }
         } else {
             tcRefOrder = null;
@@ -479,7 +479,7 @@ class ModeParser {
             int i = 0;
             while (tok.hasMoreTokens()) {
                 String tcRefName = tok.nextToken();
-                map.put(tcRefName, new Integer(i));
+                map.put(tcRefName, Integer.valueOf(i));
                 i++;
             }
             tcRefOrder = map;
@@ -712,7 +712,7 @@ class ModeParser {
         tcRefOrder.clear();
         for (int i = 0; i < localList.size(); i++) {
             TCRefParser tcRefParser = localList.get(i);
-            tcRefOrder.put(tcRefParser.getName(), new Integer(i));
+            tcRefOrder.put(tcRefParser.getName(), Integer.valueOf(i));
         }
         try {
             writeOrder();
@@ -797,7 +797,7 @@ class ModeParser {
         tcRefOrder.clear();
         for (int i = 0; i < localList.size(); i++) {
             tcRefParser = (TCRefParser) localList.get(i);
-            tcRefOrder.put(tcRefParser.getName(), new Integer(i));
+            tcRefOrder.put(tcRefParser.getName(), Integer.valueOf(i));
         }
         try {
             writeOrder();

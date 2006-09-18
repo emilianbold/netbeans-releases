@@ -268,7 +268,7 @@ final class CommandManager implements ActionListener {
         // slided tabbed container
         TabData origTab = dataModel.getTab(tabIndex);
         TabData newTab = new TabData(origTab.getUserObject(), origTab.getIcon(), 
-                            new String(origTab.getText()), origTab.getTooltip());
+                            origTab.getText(), origTab.getTooltip());
         if (containerModel.size() == 0) {
             containerModel.addTab(0, newTab);
         } else {

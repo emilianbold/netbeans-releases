@@ -966,7 +966,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             
             Object pressedOption = evt.getSource();
             // handle ESCAPE
-            if (evt.getActionCommand() == CANCEL_COMMAND) {
+            if (CANCEL_COMMAND.equals(evt.getActionCommand())) {
                 pressedOption = NotifyDescriptor.CLOSED_OPTION;
             } else {
                 if (evt.getSource() == stdHelpButton) {
@@ -1174,7 +1174,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
 
             LOG.warning("Symptoms of #50423: There is something in type ahead: " + result + " requesting focus change"); // NOI18N
             try {
-                dequeue.invoke(fm, new Object[] { new Long(-1), NbPresenter.this });
+                dequeue.invoke(fm, new Object[] { Long.valueOf(-1), NbPresenter.this });
             } catch (Exception ex) {
                 Logger.global.log(Level.WARNING, null, ex);
             }

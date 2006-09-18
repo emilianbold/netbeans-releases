@@ -461,7 +461,7 @@ final class PersistenceHandler implements PersistenceObserver {
         }
         wmc.editorAreaConstraints = wmi.getEditorAreaConstraints();
         if(DEBUG) {
-            debugLog("editorAreaConstraints=" + wmc.editorAreaConstraints); // NOI18N
+            debugLog("editorAreaConstraints=" + Arrays.toString(wmc.editorAreaConstraints)); // NOI18N
         }
         wmc.editorAreaFrameState = wmi.getEditorAreaFrameState();
         if(DEBUG) {
@@ -549,7 +549,7 @@ final class PersistenceHandler implements PersistenceObserver {
         
         modeCfg.constraints = mode.getConstraints();
         if(DEBUG) {
-            debugLog("mode constraints=" + modeCfg.constraints); // NOI18N
+            debugLog("mode constraints=" + Arrays.toString(modeCfg.constraints)); // NOI18N
         }
         // PENDING Whether to save relative or absolute bounds.
         // In case of relative, they would need to be computed.
@@ -846,7 +846,7 @@ final class PersistenceHandler implements PersistenceObserver {
         buffer.append("\n--    activeModeName: " + wmc.activeModeName);
         buffer.append("\n-- maximizedModeName: " + wmc.maximizedModeName);
         buffer.append("\n--     toolbarconfig: " + wmc.toolbarConfiguration);
-        buffer.append("\n-- modes: " + wmc.modes + " size " + (wmc.modes == null ? -1 : wmc.modes.length));
+        buffer.append("\n-- modes: " + Arrays.toString(wmc.modes) + " size " + (wmc.modes == null ? -1 : wmc.modes.length));
         for (int i = 0; i < wmc.modes.length; i++) {
             ModeConfig mc = wmc.modes[i];
             buffer.append("\n-- --");
@@ -873,7 +873,7 @@ final class PersistenceHandler implements PersistenceObserver {
                 }
             }
         }
-        buffer.append("\n-- groups: " + wmc.groups + " size " + (wmc.groups == null ? -1 : wmc.groups.length));
+        buffer.append("\n-- groups: " + Arrays.toString(wmc.groups) + " size " + (wmc.groups == null ? -1 : wmc.groups.length));
         for (int i = 0; i < wmc.groups.length; i++) {
             GroupConfig sc = wmc.groups[i];
             buffer.append("\n-- --");

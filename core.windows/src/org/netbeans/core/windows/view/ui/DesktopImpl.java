@@ -241,7 +241,7 @@ public final class DesktopImpl {
     /************** private stuff ***********/
     
     private void performSlide(SlideOperation operation) {
-        operation.run(layeredPane, new Integer(102));
+        operation.run(layeredPane, Integer.valueOf(102));
     }
     
     private Rectangle convertRectFromScreen (Component comp, Rectangle screenRect) {

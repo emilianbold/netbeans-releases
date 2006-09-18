@@ -274,7 +274,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 rI = toolbarRows.size();
             else
                 rI = toolbarRows.indexOf (row);
-            invisibleToolbars.put (tc, new Integer (rI));
+            invisibleToolbars.put (tc, Integer.valueOf(rI));
         }
         allToolbars.put (tc.getName(), tc);
     }
@@ -504,7 +504,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             if (toolbarPool ().findToolbar (name) == null) {  /* If there is toolbar which is not represented int pool ... */
                 ToolbarConstraints tc = removeToolbar (name);  /* ... so let's remove toolbar from all toolbars ... */
                 waitingToolbars.put (name, tc);                /* ... and add to waiting list. */
-                invisibleToolbars.put (tc, new Integer (tc.rowIndex()));
+                invisibleToolbars.put (tc, Integer.valueOf(tc.rowIndex()));
                 change = true;
             }
         }
@@ -532,7 +532,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @param tc specified toolbar
      */
     private void removeVisible (ToolbarConstraints tc) {
-        invisibleToolbars.put (tc, new Integer (tc.rowIndex()));
+        invisibleToolbars.put (tc, Integer.valueOf (tc.rowIndex()));
         if (tc.destroy())
             checkToolbarRows();
         tc.setVisible (false);
@@ -642,7 +642,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                     if (smallToolbarIcons) {
                         ((JComponent) comps[j]).putClientProperty("PreferredIconSize",null); //NOI18N
                     } else {
-                        ((JComponent) comps[j]).putClientProperty("PreferredIconSize",new Integer(24)); //NOI18N
+                        ((JComponent) comps[j]).putClientProperty("PreferredIconSize",Integer.valueOf(24)); //NOI18N
                     }
                 }
             }

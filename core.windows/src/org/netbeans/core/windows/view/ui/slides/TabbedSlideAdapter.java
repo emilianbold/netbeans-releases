@@ -277,7 +277,7 @@ public final class TabbedSlideAdapter implements Tabbed {
     
     public Object getConstraintForLocation(Point location, boolean attachingPossible) {
         int tab = slideBar.nextTabForCoordinate(location.x, location.y);
-        return new Integer(tab);
+        return Integer.valueOf(tab);
     }
     
     public Shape getIndicationForLocation(Point location, TopComponent startingTransfer, Point startingPoint, boolean attachingPossible) {

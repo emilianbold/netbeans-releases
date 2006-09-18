@@ -275,7 +275,7 @@ public class EditorView extends ViewElement {
                 String side = getSideForLocation(location);
 
                 double ratio = Constants.DROP_AROUND_RATIO;
-                if(side == Constants.TOP) {
+                if(Constants.TOP.equals(side)) {
                     return new Rectangle(0, 0, rect.width, (int)(rect.height * ratio));
                 } else if(side == Constants.LEFT) {
                     return new Rectangle(0, 0, (int)(rect.width * ratio), rect.height);

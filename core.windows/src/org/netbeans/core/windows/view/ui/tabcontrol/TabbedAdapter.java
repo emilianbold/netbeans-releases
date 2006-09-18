@@ -245,7 +245,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         int tab = tabForCoordinate(location);
         if (tab != -1) {
             int index = dropIndexOfPoint(location);
-            return index < 0 ? null : new Integer(index);
+            return index < 0 ? null : Integer.valueOf(index);
         }
         // ----
         if(attachingPossible) {
@@ -255,7 +255,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
             }
         }
         int index = dropIndexOfPoint(location);
-        return index < 0 ? null : new Integer(index);
+        return index < 0 ? null : Integer.valueOf(index);
     }
 
     /** Computes and returns feedback indication shape for given location

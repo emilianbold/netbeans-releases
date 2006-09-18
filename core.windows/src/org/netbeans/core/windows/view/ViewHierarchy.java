@@ -205,7 +205,7 @@ final class ViewHierarchy {
                 double[] splitWeights = sa.getSplitWeights();
                 ArrayList<Double> weights = new ArrayList<Double>( splitWeights.length );
                 for( int i=0; i<splitWeights.length; i++ ) {
-                    weights.add( new Double( splitWeights[i] ) );
+                    weights.add( Double.valueOf( splitWeights[i] ) );
                 }
                 SplitView sv = (SplitView)view;
                 sv.setOrientation( sa.getOrientation() );
@@ -238,7 +238,7 @@ final class ViewHierarchy {
                 SplitAccessor sa = (SplitAccessor)patternAccessor;
                 ArrayList<Double> weights = new ArrayList<Double>( sa.getSplitWeights().length );
                 for( int i=0; i<sa.getSplitWeights().length; i++ ) {
-                    weights.add( new Double( sa.getSplitWeights()[i]) );
+                    weights.add( Double.valueOf( sa.getSplitWeights()[i]) );
                 }
                 ArrayList<ViewElement> children = new ArrayList<ViewElement>( sa.getChildren().length );
                 for( int i=0; i<sa.getChildren().length; i++ ) {

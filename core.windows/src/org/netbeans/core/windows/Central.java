@@ -134,7 +134,7 @@ final class Central implements ControllerHandler {
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(null, View.CHANGE_MAIN_WINDOW_FRAME_STATE_JOINED_CHANGED,
-                new Integer(old), new Integer(frameState)));
+                Integer.valueOf(old), Integer.valueOf(frameState)));
         }
     }
     
@@ -148,7 +148,7 @@ final class Central implements ControllerHandler {
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(null, View.CHANGE_MAIN_WINDOW_FRAME_STATE_SEPARATED_CHANGED,
-                new Integer(old), new Integer(frameState)));
+                Integer.valueOf(old), Integer.valueOf(frameState)));
         }
     }
     
@@ -296,11 +296,11 @@ final class Central implements ControllerHandler {
         if(isVisible()) {
             viewRequestor.scheduleRequest(
                 new ViewRequest(null, View.CHANGE_EDITOR_AREA_STATE_CHANGED,
-                        new Integer(old), new Integer(editorAreaState)));
+                        Integer.valueOf(old), Integer.valueOf(editorAreaState)));
         }
         
         WindowManagerImpl.getInstance().doFirePropertyChange(
-            WindowManagerImpl.PROP_EDITOR_AREA_STATE, new Integer(old), new Integer(editorAreaState));
+            WindowManagerImpl.PROP_EDITOR_AREA_STATE, Integer.valueOf(old), Integer.valueOf(editorAreaState));
     }
 
     public void setEditorAreaFrameState(int frameState) {
@@ -312,7 +312,7 @@ final class Central implements ControllerHandler {
         
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(null, View.CHANGE_EDITOR_AREA_FRAME_STATE_CHANGED,
-                new Integer(old), new Integer(frameState)));
+                Integer.valueOf(old), Integer.valueOf(frameState)));
         }
     }
     
@@ -358,8 +358,7 @@ final class Central implements ControllerHandler {
 //            return;
 //        }
         SplitConstraint[] old = getModeConstraints(mode);
-        if((modeConstraints == null && old == null)
-        || modeConstraints != null && modeConstraints.equals(old)) {
+        if(modeConstraints == old) {
             return;
         }
         
@@ -531,7 +530,7 @@ final class Central implements ControllerHandler {
         if(isVisible()) {
             viewRequestor.scheduleRequest(new ViewRequest(
                 mode, View.CHANGE_MODE_FRAME_STATE_CHANGED,
-                new Integer(old), new Integer(frameState)));
+                Integer.valueOf(old), Integer.valueOf(frameState)));
         }
     }
     

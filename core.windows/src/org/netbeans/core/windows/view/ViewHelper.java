@@ -182,11 +182,11 @@ final class ViewHelper {
                 double[] weightsToMerge = subSplit.getSplitWeights();
                 for( int j=0; j<childrenToMerge.length; j++ ) {
                     children.add( childrenToMerge[j] );
-                    weights.add( new Double( weightsToMerge[j] * weight ) );
+                    weights.add( Double.valueOf( weightsToMerge[j] * weight ) );
                 }
             } else {
                 children.add( childAccessor );
-                weights.add( new Double( weight ) );
+                weights.add( Double.valueOf( weight ) );
             }
         }
         

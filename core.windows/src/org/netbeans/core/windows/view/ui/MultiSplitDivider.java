@@ -297,19 +297,19 @@ public class MultiSplitDivider implements Accessible {
 
         public Number getMinimumAccessibleValue() {
             initDragMinMax();
-            return new Integer( dragMin );
+            return Integer.valueOf( dragMin );
         }
 
         public Number getMaximumAccessibleValue() {
             initDragMinMax();
-            return new Integer( dragMax );
+            return Integer.valueOf( dragMax );
         }
 
         public Number getCurrentAccessibleValue() {
             if( isHorizontal() )
-                return new Integer( rect.x );
+                return Integer.valueOf( rect.x );
             else
-                return new Integer( rect.y );
+                return Integer.valueOf( rect.y );
         }
 
         public AccessibleValue getAccessibleValue() {

@@ -99,7 +99,7 @@ class SplitSubModel {
                               new java.lang.IllegalArgumentException("Mode=" +
                                                                      mode +
                                                                      " constraints=" +
-                                                                     constraints));
+                                                                     Arrays.toString(constraints)));
             return false;
         }
 
@@ -828,12 +828,12 @@ class SplitSubModel {
                 }
             }
             
-            Integer ind = new Integer(index);
+            Integer ind = Integer.valueOf(index);
             
             Node oldChild = (Node)index2child.get(ind);
             // There are some other nodes at the index, shift them first.
             for(int i = ind.intValue() + 1; oldChild != null; i++) {
-                oldChild = (Node)index2child.put(new Integer(i), oldChild);
+                oldChild = (Node)index2child.put(Integer.valueOf(i), oldChild);
             }
 
             // Finally add the new node.
@@ -846,7 +846,7 @@ class SplitSubModel {
         }
         
         public Node getChildAt(int index) {
-            return (Node)index2child.get(new Integer(index));
+            return (Node)index2child.get(Integer.valueOf(index));
         }
         
         private void verifyChildren() {
@@ -885,7 +885,7 @@ class SplitSubModel {
         }
         
         private void setChildSplitWeightImpl(Node child, double weight) {
-            child2splitWeight.put(child, new Double(weight));
+            child2splitWeight.put(child, Double.valueOf(weight));
         }
         
         
@@ -893,7 +893,7 @@ class SplitSubModel {
             for(Map.Entry<Node, Double> entry: child2splitWeight.entrySet()) {
                 double w = entry.getValue().doubleValue();
                 w = ratio * w;
-                entry.setValue(new Double(w));
+                entry.setValue(Double.valueOf(w));
             }
         }
         

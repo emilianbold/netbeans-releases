@@ -181,7 +181,7 @@ public class MultiSplitPane extends JPanel
         for( int i=0; i<getCellCount(); i++ ) {
             MultiSplitCell cell = cellAt( i );
             double weight = cell.getSize() / size;
-            splitWeights.add( new Double( weight ) );
+            splitWeights.add( Double.valueOf( weight ) );
             visibleViews.add( cell.getViewElement() );
         }
     }
