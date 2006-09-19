@@ -21,6 +21,7 @@
 package org.netbeans.installer;
 
 import java.io.File;
+import java.util.Properties;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.utils.ErrorLevel;
@@ -118,6 +119,14 @@ public class Installer {
         if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
             localDirectory = new File(System.getProperty(
                     LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
+        }
+        
+        
+        logManager.log(ErrorLevel.MESSAGE, "system properties:");
+        Properties sysprops = System.getProperties();
+        
+        for (Object key: sysprops.keySet()) {
+            LogManager.getInstance().log(ErrorLevel.MESSAGE, key.toString() + " => " + sysprops.get(key).toString());
         }
         
         logManager.unindent();
