@@ -166,7 +166,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
             builder.setEntityResolver(this);
 
             if (generateTemplate) {
-                q = builder.parse(getClass().getResourceAsStream("Arch-api-questions.xml"));
+                q = builder.parse(Arch.class.getResourceAsStream("Arch-api-questions.xml"));
                 qSource = new DOMSource (q);
             } else {
                 q = builder.parse (questionsFile);
