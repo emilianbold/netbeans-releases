@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.openide.ErrorManager;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -45,6 +46,51 @@ public class EntriesCache {
     private static final String DELIMITER = "\f";
     
     private class EntryAttributes extends HashMap<String, Map<String, String>> { };
+    
+    /**
+     * The order as it is defined should be the same as how the Subvesion entries handler
+     * expects to read the entries file.  This ordering is based on Subversion 1.4.0
+     */    
+    static String[] entryFileAttributes = new String[] {
+        "name",
+        "kind",
+        "revision",
+        "url",
+        "repos",
+        "schedule",
+        "text-time",
+        "checksum",
+        "committed-date",
+        "committed-rev",
+        "last-author",
+        "has-props",
+        "has-prop-mods",
+        "cachable-props",
+        "present-props",
+        "prop-reject-file",
+        "conflict-old",
+        "conflict-new",
+        "conflict-wrk",
+        "copied",
+        "copyfrom-url",
+        "copyfrom-rev",
+        "deleted",
+        "absent",
+        "incomplete",
+        "uuid",
+        "lock-token",
+        "lock-owner",
+        "lock-comment",
+        "lock-creation-date",
+    };
+    
+    private static final Set<String> BOOLEAN_ATTRIBUTES = new java.util.HashSet<String>();
+    static {
+        BOOLEAN_ATTRIBUTES.add("has-props");
+        BOOLEAN_ATTRIBUTES.add("has-props-mod");
+        BOOLEAN_ATTRIBUTES.add("copied");
+        BOOLEAN_ATTRIBUTES.add("deleted");
+    }
     
     private class EntriesFile {        
         long ts;
@@ -164,7 +210,7 @@ public class EntriesCache {
             if (isXml) {
                 return loadAttributesFromXml(entriesFile);
             } else {
-                return loadAttributesFromPlainText(fileReader);
+                return loadAttributesFromPlainText(fileReader, entriesFile.getAbsolutePath());
             }
         } finally {
             fileReader.close();
@@ -190,7 +236,7 @@ public class EntriesCache {
     }
 
     //New entries file format, as of SVN 1.4.0
-    private EntryAttributes loadAttributesFromPlainText(BufferedReader entriesReader) throws IOException {
+    private EntryAttributes loadAttributesFromPlainText(BufferedReader entriesReader, String entryFilePath) throws IOException {
         EntryAttributes returnValue = new EntryAttributes();
         
         int attrIndex = 0;
@@ -215,6 +261,11 @@ public class EntriesCache {
             }
             attrIndex++;
             nextLine = entriesReader.readLine();
+ 
+            if(nextLine != null && attrIndex > entryFileAttributes.length - 1) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping attribute foom position " + attrIndex + " in entry file " + entryFilePath);  // NOI18N
+                for( ; nextLine != null && !DELIMITER.equals(nextLine); nextLine = entriesReader.readLine());
+            }
             
             if (DELIMITER.equals(nextLine)) {
                 attributes.put(WorkingCopyDetails.VERSION_ATTR_KEY, WorkingCopyDetails.VERSION_14);
@@ -222,56 +273,13 @@ public class EntriesCache {
                 attributes = new HashMap<String, String>();
                 attrIndex = 0;
                 nextLine = entriesReader.readLine();
+                continue;
             }
+            
         }
         
         return returnValue;
-    }
-    
-    /**
-     * The order as it is defined should be the same as how the Subvesion entries handler
-     * expects to read the entries file.  This ordering is based on Subversion 1.4.0
-     */    
-    static String[] entryFileAttributes = new String[] {
-        "name",
-        "kind",
-        "revision",
-        "url",
-        "repos",
-        "schedule",
-        "text-time",
-        "checksum",
-        "committed-date",
-        "committed-rev",
-        "last-author",
-        "has-props",
-        "has-prop-mods",
-        "cachable-props",
-        "present-props",
-        "prop-reject-file",
-        "conflict-old",
-        "conflict-new",
-        "conflict-wrk",
-        "copied",
-        "copyfrom-url",
-        "copyfrom-rev",
-        "deleted",
-        "absent",
-        "incomplete",
-        "uuid",
-        "lock-token",
-        "lock-owner",
-        "lock-comment",
-        "lock-creation-date",
-    };
-    
-    private static final Set<String> BOOLEAN_ATTRIBUTES = new java.util.HashSet<String>();
-    static {
-        BOOLEAN_ATTRIBUTES.add("has-props");
-        BOOLEAN_ATTRIBUTES.add("has-props-mod");
-        BOOLEAN_ATTRIBUTES.add("copied");
-        BOOLEAN_ATTRIBUTES.add("deleted");
-    }
+    }   
     
     private static boolean isBooleanValue(String attribute) {
         return BOOLEAN_ATTRIBUTES.contains(attribute);
