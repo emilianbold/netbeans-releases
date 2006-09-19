@@ -53,7 +53,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Dafe Simonek
  */
-final class NavigatorTC extends TopComponent {
+public final class NavigatorTC extends TopComponent {
     
     /** singleton instance */
     private static NavigatorTC instance;
@@ -61,7 +61,7 @@ final class NavigatorTC extends TopComponent {
     /** Currently active panel in navigator (or null if empty) */
     private NavigatorPanel selectedPanel;
     /** A list of panels currently available (or null if empty) */
-    private List panels;
+    private List<NavigatorPanel> panels;
     /** Controller, controls behaviour and reacts to user actions */
     private NavigatorController controller;
     /** label signalizing no available providers */
@@ -140,13 +140,13 @@ final class NavigatorTC extends TopComponent {
     /** List of panels currently contained in navigator component.
      * @return List of NavigatorPanel instances or null if navigator is empty
      */
-    public List getPanels () {
+    public List<NavigatorPanel> getPanels () {
         return panels;
     }
     
     /** Sets content of navigator to given panels, selecting the first one
      */ 
-    public void setPanels (List panels) {
+    public void setPanels (List<NavigatorPanel> panels) {
         this.panels = panels;
         int panelsCount = panels == null ? -1 : panels.size();
         // no panel, so make UI look empty
@@ -160,11 +160,9 @@ final class NavigatorTC extends TopComponent {
             // #63777: hide panel selector when only one panel available
             panelSelector.setVisible(panelsCount != 1);
             // fill with new content
-            NavigatorPanel curPanel = null;
             JComponent curComp = null;
             int i = 0;
-            for (Iterator iter = panels.iterator(); iter.hasNext(); i++) {
-                curPanel = (NavigatorPanel)iter.next();
+            for (NavigatorPanel curPanel : panels) {
                 panelSelector.addItem(curPanel.getDisplayName());
                 curComp = curPanel.getComponent();
                 // for better error report in cases like #68544
@@ -180,6 +178,7 @@ final class NavigatorTC extends TopComponent {
                 if (i == 0) {
                     selectedPanel = curPanel;
                 }
+                i++;
             }
             // show if was hidden
             resetFromEmpty();
@@ -246,16 +245,17 @@ final class NavigatorTC extends TopComponent {
         }
         return navTCLookup;
     }
-    
-    /*************** private stuff ************/
-    
+
     /** Accessor for controller which controls UI behaviour */
-    private NavigatorController getController () {
+    public NavigatorController getController () {
         if (controller == null) {
             controller = new NavigatorController(this);
         }
         return controller;
     }
+    
+    
+    /*************** private stuff ************/
     
     /** Removes regular UI content and sets UI to empty state */
     private void setToEmpty () {

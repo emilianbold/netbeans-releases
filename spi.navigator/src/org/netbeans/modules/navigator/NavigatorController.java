@@ -56,10 +56,11 @@ import org.openide.loaders.DataObject;
 import org.openide.windows.WindowManager;
 
 /**
- *
+ * Listen to user action and handles navigator behaviour. 
+ * 
  * @author Dafe Simonek
  */
-final class NavigatorController implements LookupListener, ActionListener, Lookup.Provider, PropertyChangeListener {
+public final class NavigatorController implements LookupListener, ActionListener, Lookup.Provider, PropertyChangeListener {
     
     /** Time in ms to wait before propagating current node changes further
      * into navigator UI */
@@ -144,13 +145,23 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
             return;
         }
         NavigatorPanel newPanel = (NavigatorPanel)navigatorTC.getPanels().get(index);
+        activatePanel(newPanel);
+    }
+    
+    /** Activates given panel. Throws IllegalArgumentException if panel is 
+     * not available for activation.
+     */
+    public void activatePanel (NavigatorPanel panel) {
+        if (!navigatorTC.getPanels().contains(panel)) {
+            throw new IllegalArgumentException("Panel is not available for activation: " + panel); //NOI18N
+        }
         NavigatorPanel oldPanel = navigatorTC.getSelectedPanel();
-        if (!newPanel.equals(oldPanel)) {
+        if (!panel.equals(oldPanel)) {
             if (oldPanel != null) {
                 oldPanel.panelDeactivated();
             }
-            newPanel.panelActivated(clientsLookup);
-            navigatorTC.setSelectedPanel(newPanel);
+            panel.panelActivated(clientsLookup);
+            navigatorTC.setSelectedPanel(panel);
         }
     }
     

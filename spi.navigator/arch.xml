@@ -56,6 +56,7 @@ Microsystems, Inc. All Rights Reserved.
    Client's views are registered through declarative xml layers approach.</p>
    
    <api group="java" name="org.netbeans.spi.navigator.NavigatorPanel" category="stable" type="export" />
+   <api group="java" name="org.netbeans.spi.navigator.NavigatorHandler" category="devel" type="export" />
    
  </answer>
 
@@ -266,6 +267,38 @@ Microsystems, Inc. All Rights Reserved.
            
    </usecase>
    
+   <usecase id="activatePanel" name="Programmatic activation of NavigatorPanel" >
+        <p>Programmatic activation of specific navigator panel activates and shows
+            navigator panel in navigation area, as if user had selected the panel
+            manually. API clients are expected to use programmatic activation to
+            activate/select preferred panel from a set of available panels.</p>
+        <b>Example:</b>
+            Several <code>TopComponents</code> in multiview arrangement,
+            <code>TopComponentA</code> and <code>TopComponentB</code>.
+            Both components provide the same
+            <code>NavigatorLookupHint</code> impl, which is recognized by two
+            providers <code>NavigatorPanelA</code> and <code>NavigatorPanelB</code>.
+            Now when <code>TopComponentA</code> becomes activated (has a focus),
+            it's desirable to select/show <code>NavigatorPanelA</code> from
+            navigator panels. On the other side, when <code>TopComponentB</code>
+            is activated, <code>NavigatorPanelB</code> should be activated automatically.
+            <p></p>
+         
+        <b>Steps to do to activate panel programmatically:</b>
+         
+        <ul>
+            <li>Get the instance of <code>NavigatorPanel</code> implementation that
+                you want to activate/show in navigator area.<br></br>
+                See <a href="@org-openide-util@/org/openide/util/doc-files/api.html#instances">Instantiation rules</a>.<p></p>
+            </li>
+            
+            <li>Call <a href="@TOP@/org/netbeans/spi/navigator/NavigatorHandler.html#activatePanel(org.netbeans.spi.navigator.NavigatorPanel)">
+                NavigatorHandler.activatePanel(NavigatorPanel panel)</a><p></p>.
+            </li>
+             
+        </ul>
+           
+   </usecase>
    
    
             

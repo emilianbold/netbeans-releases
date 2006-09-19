@@ -84,6 +84,21 @@ is the proper place.
   <changes>
     <change>
         <api name="navigator_api"/>
+        <summary>Added API class NavigatorHandler and API method NavigatorHandler.activatePanel.</summary>
+        <version major="1" minor="4"/>
+        <date day="19" month="9" year="2006"/>
+        <author login="dsimonek"/>
+        <compatibility addition="yes"/>
+        <description>
+            NavigatorHandler is new API class for driving navigator behaviour. 
+            Method NavigatorHandler.activatePanel(NavigatorPanel) allows clients
+            to programmatically activate the panel - panel becomes active and
+            visible in navigator area.
+        </description>
+    </change>      
+      
+    <change>
+        <api name="navigator_api"/>
         <summary>Initial version released</summary>
         <version major="1" minor="0"/>
         <date day="8" month="8" year="2005"/>
