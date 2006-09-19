@@ -263,7 +263,7 @@ public class EntriesCache {
             nextLine = entriesReader.readLine();
  
             if(nextLine != null && attrIndex > entryFileAttributes.length - 1) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping attribute foom position " + attrIndex + " in entry file " + entryFilePath);  // NOI18N
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping attribute from position " + attrIndex + " in entry file " + entryFilePath);  // NOI18N
                 for( ; nextLine != null && !DELIMITER.equals(nextLine); nextLine = entriesReader.readLine());
             }
             
