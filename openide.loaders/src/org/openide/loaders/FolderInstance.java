@@ -87,13 +87,13 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
     /** static variable to hold current value for callbacks to tasks 
      * Also used to synchronize access to map field on.
      */
-    private static final ThreadLocal CURRENT = new ThreadLocal ();
+    private static final ThreadLocal<Object> CURRENT = new ThreadLocal<Object> ();
 
     /** The last finished folder instance in this thread. Works together
      * with CURRENT, because sometimes more than one FolderInstance.instanceCreate
      * can be called on the same thread.
      */
-    private static final ThreadLocal LAST_CURRENT = new ThreadLocal ();
+    private static final ThreadLocal<Object> LAST_CURRENT = new ThreadLocal<Object> ();
 
     /* -------------------------------------------------------------------- */
     /* -- Instance attributes --------------------------------------------- */
@@ -108,7 +108,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
     private DataObject.Container container;
 
     /** map of primary file to their cookies (FileObject, HoldInstance) */
-    private HashMap map = new HashMap (17);
+    private HashMap<FileObject, HoldInstance> map = new HashMap<FileObject, HoldInstance> (17);
 
     /** Array of tasks that we have to check before we are ok. These are the tasks
      *  associated with children of the current folder.
@@ -385,7 +385,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         if (cookie == null) {
             DataFolder folder = (DataFolder) dob.getCookie (DataFolder.class);
             if (folder != null) {
-                HoldInstance previous = (HoldInstance)map.get (folder.getPrimaryFile ());
+                HoldInstance previous = map.get (folder.getPrimaryFile ());
                 if (previous != null && previous.cookie != null) {
                     // the old cookie will be returned if the folder is already registered
                     cookie = previous;
@@ -607,7 +607,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
         return PROCESSOR.post (new Runnable () {
             public void run () {
                 DataObject[] arr = container.getChildren ();
-                ArrayList list = new ArrayList (arr.length);
+                ArrayList<DataObject> list = new ArrayList<DataObject> (arr.length);
                 for (int i = 0; i < arr.length; i++) {
                     listener.process (arr[i], list);
                 }
@@ -626,7 +626,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
     * 
     * @param arr collection of DataObjects
     */
-    final void processObjects (final Collection arr) {
+    final void processObjects (final Collection<DataObject> arr) {
         creationTask = postCreationTask (new Runnable () {
             public void run () {
                 defaultProcessObjects (arr);
@@ -637,19 +637,17 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
     /** Default processing of objects.
     * @param arr array of objects to process
     */
-    private final void defaultProcessObjects (Collection arr) {
+    private final void defaultProcessObjects (Collection<DataObject> arr) {
         err.fine("defaultProcessObjects");
-        HashSet toRemove;
-        ArrayList cookies = new ArrayList ();
+        HashSet<FileObject> toRemove;
+        ArrayList<HoldInstance> cookies = new ArrayList<HoldInstance> ();
 
         // synchronized for safe access to map field
         synchronized (CURRENT) {
-            toRemove = new HashSet (map.keySet ());
+            toRemove = new HashSet<FileObject> (map.keySet ());
         }
             
-        Iterator dataObjects = arr.iterator ();
-        while (dataObjects.hasNext ()) {
-            DataObject obj = (DataObject)dataObjects.next ();
+        for (DataObject obj: arr) {
             if (! obj.isValid()) {
                 // #12960: skip over it, probably invalidated while we were
                 // waiting for this task to be run...
@@ -666,7 +664,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
                 HoldInstance prevCookie = null;
                 if (toRemove.remove (fo)) {
                     // if the fo is in the map than try to find its cookie
-                    prevCookie = (HoldInstance)map.get (fo);
+                    prevCookie = map.get (fo);
                     if (prevCookie != null && (prevCookie.cookie == null || !prevCookie.cookie.equals (cookie))) {
                         prevCookie = null;
                         // #49199 - do not add second listener
@@ -707,7 +705,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
                     FileObject fo = obj.getPrimaryFile ();
                     toRemove.remove (fo);
                     
-                    HoldInstance hold = (HoldInstance)map.get (fo);
+                    HoldInstance hold = map.get (fo);
                     if (hold != null && hold.cookie == null) {
                         // already registered do not do any changes
                         continue;
@@ -775,14 +773,14 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
      *  with the children of the folder).
      */
     private void updateWaitFor (HoldInstance[] arr) {
-        ArrayList out = new ArrayList (arr.length);
+        ArrayList<Task> out = new ArrayList<Task> (arr.length);
         for (int i = 0; i < arr.length; i++) {
             Task t = arr[i].getTask ();
             if (t != null) {
                 out.add (t);
             }
         }
-        waitFor = (Task[])out.toArray (new Task[out.size ()]);
+        waitFor = out.toArray (new Task[out.size ()]);
     }
     
     /* ----------------------------------------------------------------------------- */
@@ -878,7 +876,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
                     HoldInstance hi;
                     FileObject fo = source.getPrimaryFile();
                     synchronized (CURRENT) {
-                        hi = (HoldInstance)map.get(fo);
+                        hi = map.get(fo);
                     }
                 
                     if (hi != null) {
@@ -909,7 +907,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
          *  child objects.
          * @param arr list of DataObjects
          */
-        public void finished(java.util.List arr) {
+        public void finished(java.util.List<DataObject> arr) {
             processObjects (arr);
         }
 
@@ -918,7 +916,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
          * @param arr array where the implementation should add the 
          *   object
          */
-        public void process(DataObject obj, java.util.List arr) {
+        public void process(DataObject obj, java.util.List<DataObject> arr) {
             arr.add (obj);
         }
 
@@ -979,7 +977,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
             }
             // delegate
             try {
-                Class clazz = cookie.instanceClass ();
+                Class<?> clazz = cookie.instanceClass ();
                 return type.isAssignableFrom (clazz);
             } catch (IOException ex) {
                 return false;

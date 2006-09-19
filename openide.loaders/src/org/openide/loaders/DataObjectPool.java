@@ -942,8 +942,8 @@ implements ChangeListener {
         /** error manager to log what is happening here */
         private static final Logger err = Logger.getLogger("org.openide.loaders.DataObject.Validator"); // NOI18N
         
-        /** set of all files that should be revalidated (FileObject) */
-        private Set files;
+        /** set of all files that should be revalidated */
+        private Set<FileObject> files;
         /** current thread that is in the validator */
         private Thread current;
         /** number of threads waiting to enter the validation */

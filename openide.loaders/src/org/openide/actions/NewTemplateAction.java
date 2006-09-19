@@ -307,9 +307,9 @@ public class NewTemplateAction extends NodeAction {
     private DataFolder recentListFolder;
     
     private boolean recentChanged = true;
-    private List recentList = new ArrayList (0);
+    private List<DataObject> recentList = new ArrayList<DataObject> (0);
     
-    private List getPrivilegedList() {
+    private List<DataObject> getPrivilegedList() {
         if (privilegedListFolder == null) {
             FileObject fo = Repository.getDefault().getDefaultFileSystem().
                                     findResource("Templates/Privileged"); // NOI18N
@@ -317,7 +317,7 @@ public class NewTemplateAction extends NodeAction {
         }
         if (privilegedListFolder != null) {
             DataObject[] data = privilegedListFolder.getChildren();
-            List l2 = new ArrayList(data.length);
+            List<DataObject> l2 = new ArrayList<DataObject>(data.length);
             for (int i=0; i<data.length; i++) {
                 DataObject dobj = data[i];
                 if (dobj instanceof DataShadow)
@@ -328,7 +328,7 @@ public class NewTemplateAction extends NodeAction {
             }
             return l2;
         } else {
-            return new ArrayList(0);
+            return new ArrayList<DataObject>(0);
         }
     }
 
@@ -367,11 +367,11 @@ public class NewTemplateAction extends NodeAction {
         return recentListFolder;
     }
     
-    private List getRecentList () {
+    private List<DataObject> getRecentList () {
         if (!recentChanged) return recentList;
         if (getRecentFolder () != null) {
             DataObject[] data = getRecentFolder ().getChildren ();
-            List l2 = new ArrayList(data.length);
+            List<DataObject> l2 = new ArrayList<DataObject>(data.length);
             for (int i=0; i<data.length; i++) {
                 DataObject dobj = data[i];
                 if (dobj instanceof DataShadow)
@@ -384,7 +384,7 @@ public class NewTemplateAction extends NodeAction {
             }
             recentList = l2;
         } else {
-            recentList = new ArrayList (0);
+            recentList = new ArrayList<DataObject> (0);
         }
         
         recentChanged = false;
@@ -562,7 +562,7 @@ public class NewTemplateAction extends NodeAction {
         /** node to display templates for or null if current selection
          * should be followed
          */
-        private WeakReference current;
+        private WeakReference<Node> current;
         /** weak listener */
         private NodeListener listener = org.openide.nodes.NodeOp.weakNodeListener (this, null);
         
@@ -625,12 +625,13 @@ public class NewTemplateAction extends NodeAction {
                 return;
             }
             
-            if (current != null && current.get () != null) {
-                ((Node)current.get ()).removeNodeListener (listener);
+            Node prev = current != null? current.get(): null;
+            if (prev != null) {
+                prev.removeNodeListener (listener);
             }
             
             n.addNodeListener (listener);
-            current = new WeakReference (n);
+            current = new WeakReference<Node> (n);
         }
         
         /** Check whether the wizard was not updated.

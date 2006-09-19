@@ -102,7 +102,7 @@ implements java.io.Serializable {
      *
      * @return enumeration of loaders
      */
-    protected abstract Enumeration<DataLoader> loaders ();
+    protected abstract Enumeration<? extends DataLoader> loaders ();
     
     /** Add a new listener to the listener list. A listener is notified of
      * any change which was made to the loader pool (add, remove, or reorder).
@@ -235,7 +235,7 @@ implements java.io.Serializable {
      * @return enumeration of loaders
      */
     public final Enumeration<DataLoader> allLoaders () {
-        List all;
+        List<DataLoader> all;
         int oldcnt;
         synchronized (this) {
             all = this.allLoaders;
@@ -243,12 +243,12 @@ implements java.io.Serializable {
         }
         
         if (all == null) {
-            all = new ArrayList();
+            all = new ArrayList<DataLoader>();
             if (preferredLoader != null) {
                 all.add(preferredLoader);
             }
             all.addAll(Arrays.asList(getSystemLoaders()));
-            Enumeration en = loaders();
+            Enumeration<? extends DataLoader> en = loaders();
             while(en.hasMoreElements()) {
                 all.add(en.nextElement());
             }
@@ -273,13 +273,13 @@ implements java.io.Serializable {
         DataLoader[] localArray = loaderArray;
         if (localArray != null)
             return localArray;
-        ArrayList loaders = new ArrayList ();
-        Enumeration en = loaders ();
+        ArrayList<DataLoader> loaders = new ArrayList<DataLoader> ();
+        Enumeration<? extends DataLoader> en = loaders ();
         while (en.hasMoreElements ()) {
             loaders.add(en.nextElement ());
         }
         localArray = new DataLoader[loaders.size()];
-        localArray = (DataLoader[])loaders.toArray(localArray);
+        localArray = loaders.toArray(localArray);
         loaderArray = localArray;
         return localArray;
     }
@@ -432,9 +432,7 @@ implements java.io.Serializable {
             fo.setAttribute (DataObject.EA_ASSIGNED_LOADER, c.getName ());
             fo.setAttribute(DataObject.EA_ASSIGNED_LOADER_MODULE, modulename);
         }
-        java.util.HashSet single = new java.util.HashSet();
-        single.add(fo);
-        if (!DataObjectPool.getPOOL().revalidate(single).isEmpty()) {
+        if (!DataObjectPool.getPOOL().revalidate(Collections.singleton(fo)).isEmpty()) {
             DataObject.LOG.fine("It was not possible to invalidate data object: " + fo); // NOI18N
         }
     }
@@ -473,7 +471,7 @@ implements java.io.Serializable {
                 }
             } // else don't worry about it (compatibility)
             try {
-                ClassLoader load = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                ClassLoader load = Lookup.getDefault().lookup(ClassLoader.class);
                 if (load == null) {
                     load = DataLoaderPool.class.getClassLoader ();
                 }
@@ -544,13 +542,13 @@ implements java.io.Serializable {
      */
     private static final class DefaultPool extends DataLoaderPool implements LookupListener {
         
-        private final Lookup.Result result;
+        private final Lookup.Result<DataLoader> result;
         
         public DefaultPool() {
             result = Lookup.getDefault().lookupResult(DataLoader.class);
         }
         
-        protected Enumeration loaders() {
+        protected Enumeration<? extends DataLoader> loaders() {
             return Collections.enumeration(result.allInstances());
         }
         

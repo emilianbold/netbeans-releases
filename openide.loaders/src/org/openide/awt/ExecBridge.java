@@ -43,7 +43,7 @@ class ExecBridge extends Object implements ActionListener, PropertyChangeListene
     private static synchronized Class getExecCookieClass() {
         if (execCookieClass == null) {
             try {
-                execCookieClass = Class.forName("org.openide.cookies.ExecCookie", true, (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)); // NOI18N
+                execCookieClass = Class.forName("org.openide.cookies.ExecCookie", true, Lookup.getDefault().lookup(ClassLoader.class)); // NOI18N
             } catch (ClassNotFoundException cnfe) {
                 execCookieClass = ExecBridge.class;
             }
@@ -76,8 +76,8 @@ class ExecBridge extends Object implements ActionListener, PropertyChangeListene
         Node.Cookie ec = node.getCookie(c);
         if (ec != null) {
             try {
-                Method m = getExecCookieClass().getMethod("start", new Class[] {});
-                m.invoke(ec, new Object[] {});
+                Method m = getExecCookieClass().getMethod("start");
+                m.invoke(ec);
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }

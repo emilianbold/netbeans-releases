@@ -43,6 +43,7 @@ public final class SaveAsTemplateAction extends NodeAction {
     }
 
     /** @deprecated Should never be called publically. */
+    @Deprecated
     public String iconResource () {
         return super.iconResource ();
     }

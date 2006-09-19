@@ -51,37 +51,37 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     /** Listener attached to original DataObject. */
     private OrigL origL = null;
     /** List of nodes created for the DataShadow. */
-    private LinkedList nodes = new LinkedList ();
+    private LinkedList<ShadowNode> nodes = new LinkedList<ShadowNode> ();
 
     /** Extension name. */
     static final String SHADOW_EXTENSION = "shadow"; // NOI18N
     
     /** Map of all <FileObject, Set<DataShadow>>. Where the file object
      Is the original file */
-    private static Map allDataShadows;
+    private static Map<FileObject, Set<Reference<DataShadow>>> allDataShadows;
     
     private static Mutex MUTEX = new Mutex ();
 
     /** Getter for the Set that contains all DataShadows. */
-    private static synchronized Map getDataShadowsSet() {
+    private static synchronized Map<FileObject, Set<Reference<DataShadow>>> getDataShadowsSet() {
         if (allDataShadows == null) {
-            allDataShadows = new HashMap();
+            allDataShadows = new HashMap<FileObject, Set<Reference<DataShadow>>>();
         }
         return allDataShadows;
     }
     
     private static synchronized void enqueueDataShadow(DataShadow ds) {
-        Map m = getDataShadowsSet ();
+        Map<FileObject, Set<Reference<DataShadow>>> m = getDataShadowsSet ();
         
         FileObject prim = ds.original.getPrimaryFile ();
-        Reference ref = new DSWeakReference(ds);
-        Set s = (Set)m.get (prim);
+        Reference<DataShadow> ref = new DSWeakReference<DataShadow>(ds);
+        Set<Reference<DataShadow>> s = m.get (prim);
         if (s == null) {
             s = Collections.singleton (ref);
             getDataShadowsSet ().put (prim, s);
         } else {
             if (! (s instanceof HashSet)) {
-                s = new HashSet (s);
+                s = new HashSet<Reference<DataShadow>> (s);
                 getDataShadowsSet ().put (prim, s);
             }
             s.add (ref);
@@ -89,19 +89,19 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     }
 
     /** @return all active DataShadows or null */
-    private static synchronized List getAllDataShadows() {
+    private static synchronized List<DataShadow> getAllDataShadows() {
         if (allDataShadows == null || allDataShadows.isEmpty()) {
             return null;
         }
         
-        List ret = new ArrayList(allDataShadows.size());
-        Iterator it = allDataShadows.values ().iterator();
+        List<DataShadow> ret = new ArrayList<DataShadow>(allDataShadows.size());
+        Iterator<Set<Reference<DataShadow>>> it = allDataShadows.values ().iterator();
         while (it.hasNext()) {
-            Set ref = (Set) it.next();
-            Iterator refs = ref.iterator ();
+            Set<Reference<DataShadow>> ref = it.next();
+            Iterator<Reference<DataShadow>> refs = ref.iterator ();
             while (refs.hasNext ()) {
-                Reference r = (Reference)refs.next ();
-                DataShadow shadow = (DataShadow)r.get ();
+                Reference<DataShadow> r = refs.next ();
+                DataShadow shadow = r.get ();
                 if (shadow != null) {
                     ret.add (shadow);
                 }
@@ -120,19 +120,19 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             src = ((OperationEvent)ev).getObject();
         }
 
-        Set shadows = null;
+        Set<Reference<DataShadow>> shadows = null;
         synchronized (DataShadow.class) {
             if (allDataShadows == null || allDataShadows.isEmpty ()) return;
             
             if (src != null) {
-                shadows = (Set)allDataShadows.get (src.getPrimaryFile ());
+                shadows = allDataShadows.get (src.getPrimaryFile ());
                 if (shadows == null) {
                     // we know the source of the event and there are no
                     // shadows with such original
                     return;
                 }
                 // to prevent modifications
-                shadows = new HashSet (shadows);
+                shadows = new HashSet<Reference<DataShadow>> (shadows);
             }
         }
         
@@ -151,10 +151,8 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             // optimized for speed, we have found the shadow(s) that
             // belong to this FileObject
             //
-            Iterator refs = shadows.iterator ();
-            while (refs.hasNext ()) {
-                Reference r = (Reference)refs.next ();
-                DataShadow shadow = (DataShadow)r.get ();
+            for (Reference<DataShadow> r: shadows) {
+                DataShadow shadow = r.get ();
                 if (shadow != null) {
                     shadow.refresh (shadow.original == changed);
                 }
@@ -162,7 +160,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             return;
         }
         
-        List all = getAllDataShadows();
+        List<DataShadow> all = getAllDataShadows();
         if (all == null) {
             return;
         }
@@ -170,7 +168,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         
         int size = all.size();
         for (int i = 0; i < size; i++) {
-            DataShadow obj = (DataShadow)all.get(i);
+            DataShadow obj = all.get(i);
             // if original was renamed or moved update 
             // the file with the link
             obj.refresh (obj.original == changed);
@@ -199,6 +197,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * @param loader the loader that created the object
     * @deprecated Since 1.13 do not use this constructor, it is for backward compatibility only
     */
+    @Deprecated
     protected DataShadow (
         FileObject fo, DataObject original, DataLoader loader
     ) throws DataObjectExistsException {
@@ -301,8 +300,8 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         final String name, final String ext, final FileObject trg, final DataObject obj
     ) throws IOException {
         try {
-            return (FileObject) MUTEX.writeAccess (new Mutex.ExceptionAction () {
-                public Object run () throws IOException {
+            return MUTEX.writeAccess (new Mutex.ExceptionAction<FileObject> () {
+                public FileObject run () throws IOException {
                     FileObject fo;
                     if (trg.isData ()) {
                         fo = trg;
@@ -331,8 +330,8 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
      */
     static void writeOriginal (final FileObject shadow, final URL url) throws IOException {
         try {
-            MUTEX.writeAccess (new Mutex.ExceptionAction () {
-                public Object run () throws IOException {
+            MUTEX.writeAccess (new Mutex.ExceptionAction<Void> () {
+                public Void run () throws IOException {
                     writeShadowFile(shadow, url);
                     return null;
                 }
@@ -426,8 +425,8 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
         } else {
             try {
-                return (String[]) MUTEX.readAccess(new Mutex.ExceptionAction() {
-                    public Object run() throws IOException {
+                return MUTEX.readAccess(new Mutex.ExceptionAction<String[]>() {
+                    public String[] run() throws IOException {
                         BufferedReader ois = new BufferedReader(new InputStreamReader(f.getInputStream(), "UTF-8")); // NOI18N
                         try {
                             String s = ois.readLine();
@@ -656,12 +655,12 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     }
 
     private static class OrigL implements PropertyChangeListener {
-        WeakReference shadow = null;
+        Reference<DataShadow> shadow = null;
         public OrigL (DataShadow shadow) {
-            this.shadow = new WeakReference (shadow);
+            this.shadow = new WeakReference<DataShadow> (shadow);
         }
         public void propertyChange (PropertyChangeEvent evt) {
-            final DataShadow shadow = (DataShadow) this.shadow.get ();
+            final DataShadow shadow = this.shadow.get ();
 
             if (shadow != null && DataObject.PROP_VALID.equals (evt.getPropertyName ())) {
                 updateShadowOriginal(shadow);
@@ -1026,7 +1025,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         /** Class that renames the original object and also updates
         * the link
         */
-        private final class Name extends PropertySupport.ReadWrite {
+        private final class Name extends PropertySupport.ReadWrite<String> {
             public Name () {
                 super (
                     "OriginalName", // NOI18N
@@ -1036,20 +1035,18 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                 );
             }
 
-            public Object getValue () {
+            public String getValue () {
                 return obj.original.getName();
             }
 
-            public void setValue (Object val) throws IllegalAccessException,
+            public void setValue (String val) throws IllegalAccessException,
                 IllegalArgumentException, InvocationTargetException {
                 if (!canWrite())
                     throw new IllegalAccessException();
-                if (!(val instanceof String))
-                    throw new IllegalArgumentException();
 
                 try {
                     DataObject orig = obj.original;
-                    orig.rename ((String)val);
+                    orig.rename (val);
                     writeOriginal (null, null, obj.getPrimaryFile (), orig);
                 } catch (IOException ex) {
                     throw new InvocationTargetException (ex);
@@ -1081,12 +1078,12 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         }
     }
     
-    static final class DSWeakReference extends WeakReference 
+    static final class DSWeakReference<T> extends WeakReference<T>
     implements Runnable {
         private int hash;
         private FileObject original;
         
-        DSWeakReference(DataObject o) {
+        DSWeakReference(T o) {
             super(o, org.openide.util.Utilities.activeReferenceQueue());
             this.hash = o.hashCode();
             if (o instanceof DataShadow) {
@@ -1100,7 +1097,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         }
         
         public boolean equals(Object o) {
-            Object mine = get();
+            T mine = get();
             if (mine == null) {
                 return false;
             }
@@ -1120,7 +1117,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                 }            
             } else {
                 synchronized (BrokenDataShadow.getDataShadowsSet()) {
-                    BrokenDataShadow.getDataShadowsSet().remove(this);
+                    BrokenDataShadow.getDataShadowsSet().remove(this); // XXX this is wrong - key is String (URL of broken shadow)
                 }
             }
         }

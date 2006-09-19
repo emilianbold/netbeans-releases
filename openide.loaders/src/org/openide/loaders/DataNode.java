@@ -310,6 +310,7 @@ public class DataNode extends AbstractNode {
      * @deprecated Use {@link #getActions(boolean)} or do nothing and let the
      *             data loader specify actions.
     */
+    @Deprecated
     protected SystemAction[] createActions () {
         return null;
     }
@@ -334,6 +335,7 @@ public class DataNode extends AbstractNode {
     * @deprecated Use getActions(boolean)
     * @return array of actions or <code>null</code>
     */
+    @Deprecated
     public SystemAction[] getActions () {
         if (systemActions == null) {
             systemActions = createActions ();
@@ -413,7 +415,7 @@ public class DataNode extends AbstractNode {
         FileObject fo = getDataObject().getPrimaryFile();
         if (couldBeTemplate(fo) && fo.canWrite()) {
             try {            
-                p = new PropertySupport.Reflection(obj, Boolean.TYPE, "isTemplate", "setTemplate"); // NOI18N
+                p = new PropertySupport.Reflection<Boolean>(obj, Boolean.TYPE, "isTemplate", "setTemplate"); // NOI18N
                 p.setName(DataObject.PROP_TEMPLATE);
                 p.setDisplayName(DataObject.getString("PROP_template"));
                 p.setShortDescription(DataObject.getString("HINT_template"));
@@ -447,22 +449,22 @@ public class DataNode extends AbstractNode {
      * Sorted to first show primary file, then all secondary files alphabetically.
      * Shows absolute file path or the closest equivalent.
      */
-    private final class AllFilesProperty extends PropertySupport.ReadOnly {
+    private final class AllFilesProperty extends PropertySupport.ReadOnly<String[]> {
         
         public AllFilesProperty() {
             super(DataObject.PROP_FILES, String[].class,
                   DataObject.getString("PROP_files"), DataObject.getString("HINT_files"));
         }
        
-        public Object getValue() {
-            Set files = obj.files();
+        public String[] getValue() {
+            Set<FileObject> files = obj.files();
             FileObject primary = obj.getPrimaryFile();
             String[] res = new String[files.size()];
             assert files.contains(primary);
 
             int i=1;
-            for (Iterator it = files.iterator(); it.hasNext(); ) {
-                FileObject next = (FileObject)it.next();
+            for (Iterator<FileObject> it = files.iterator(); it.hasNext(); ) {
+                FileObject next = it.next();
                 res[next == primary ? 0 : i++] = name(next);
             }
             
@@ -476,25 +478,25 @@ public class DataNode extends AbstractNode {
         
     }
     
-    private final class SizeProperty extends PropertySupport.ReadOnly {
+    private final class SizeProperty extends PropertySupport.ReadOnly<Long> {
         
         public SizeProperty() {
             super("size", Long.TYPE, DataObject.getString("PROP_size"), DataObject.getString("HINT_size"));
         }
         
-        public Object getValue() {
+        public Long getValue() {
             return new Long(getDataObject().getPrimaryFile().getSize());
         }
         
     }
     
-    private final class LastModifiedProperty extends PropertySupport.ReadOnly {
+    private final class LastModifiedProperty extends PropertySupport.ReadOnly<Date> {
         
         public LastModifiedProperty() {
             super("lastModified", Date.class, DataObject.getString("PROP_lastModified"), DataObject.getString("HINT_lastModified"));
         }
         
-        public Object getValue() {
+        public Date getValue() {
             return getDataObject().getPrimaryFile().lastModified();
         }
         
@@ -539,7 +541,7 @@ public class DataNode extends AbstractNode {
         File file = FileUtil.toFile( fo );
         if( null != file ) {
             //windows & mac
-            final ArrayList list = new ArrayList(1);
+            final ArrayList<File> list = new ArrayList<File>(1);
             list.add( file );
             t.put( new ExTransferable.Single( DataFlavor.javaFileListFlavor ) {
                 public Object getData() {
@@ -568,17 +570,17 @@ public class DataNode extends AbstractNode {
     /** Creates a name property for given data object.
     */
     static Node.Property createNameProperty (final DataObject obj) {
-        Node.Property p = new org.openide.nodes.PropertySupport.ReadWrite(org.openide.loaders.DataObject.PROP_NAME,
-                                                        java.lang.String.class,
+        Node.Property p = new org.openide.nodes.PropertySupport.ReadWrite<String>(org.openide.loaders.DataObject.PROP_NAME,
+                                                        String.class,
                                                         org.openide.loaders.DataObject.getString("PROP_name"),
                                                         org.openide.loaders.DataObject.getString("HINT_name")) {
 
-            public java.lang.Object getValue() {
+            public String getValue() {
                 return obj.getName();
             }
 
-            public void setValue(java.lang.Object val) throws java.lang.IllegalAccessException,
-                                                              java.lang.IllegalArgumentException,
+            public void setValue(String val) throws IllegalAccessException,
+                                                              IllegalArgumentException,
                                                               java.lang.reflect.InvocationTargetException {
                 if (!canWrite())
                     throw new java.lang.IllegalAccessException();
@@ -609,9 +611,9 @@ public class DataNode extends AbstractNode {
             }
             // #33296 - suppress custom editor
 
-            public java.lang.Object getValue(java.lang.String key) {
+            public Object getValue(String key) {
                 if ("suppressCustomEditor".equals(key)) {
-                    return java.lang.Boolean.TRUE;
+                    return Boolean.TRUE;
                 } else {
                     return super.getValue(key);
                 }
@@ -739,8 +741,8 @@ public class DataNode extends AbstractNode {
      */
     private static RequestProcessor.Task refreshNamesIconsTask = null;
     /** nodes which should be refreshed */
-    private static Set refreshNameNodes = null; // Set<DataNode>
-    private static Set refreshIconNodes = null; // Set<DataNode>
+    private static Set<DataNode> refreshNameNodes = null;
+    private static Set<DataNode> refreshIconNodes = null;
     /** whether the task is current scheduled and will still look in above sets */
     private static boolean refreshNamesIconsRunning = false;
     private static final Object refreshNameIconLock = "DataNode.refreshNameIconLock"; // NOI18N
@@ -802,13 +804,13 @@ public class DataNode extends AbstractNode {
                     boolean post = false;
                     if (ev.isNameChange()) {
                         if (refreshNameNodes == null) {
-                            refreshNameNodes = new HashSet();
+                            refreshNameNodes = new HashSet<DataNode>();
                         }
                         post |= refreshNameNodes.add(DataNode.this);
                     }
                     if (ev.isIconChange()) {
                         if (refreshIconNodes == null) {
-                            refreshIconNodes = new HashSet();
+                            refreshIconNodes = new HashSet<DataNode>();
                         }
                         post |= refreshIconNodes.add(DataNode.this);
                     }
@@ -834,13 +836,13 @@ public class DataNode extends AbstractNode {
             DataNode[] _refreshNameNodes, _refreshIconNodes;
             synchronized (refreshNameIconLock) {
                 if (refreshNameNodes != null) {
-                    _refreshNameNodes = (DataNode[])refreshNameNodes.toArray(new DataNode[refreshNameNodes.size()]);
+                    _refreshNameNodes = refreshNameNodes.toArray(new DataNode[refreshNameNodes.size()]);
                     refreshNameNodes.clear();
                 } else {
                     _refreshNameNodes = new DataNode[0];
                 }
                 if (refreshIconNodes != null) {
-                    _refreshIconNodes = (DataNode[])refreshIconNodes.toArray(new DataNode[refreshIconNodes.size()]);
+                    _refreshIconNodes = refreshIconNodes.toArray(new DataNode[refreshIconNodes.size()]);
                     refreshIconNodes.clear();
                 } else {
                     _refreshIconNodes = new DataNode[0];
@@ -896,20 +898,20 @@ public class DataNode extends AbstractNode {
     /** Wrapping class for obj.files(). Used in getIcon() and getDisplayName()
         to have something lazy to pass to annotateIcon() and annotateName()
         instead of calling obj.files() immediately. */
-    private class LazyFilesSet implements Set {
+    private class LazyFilesSet implements Set<FileObject> {
         
-        private Set obj_files;
+        private Set<FileObject> obj_files;
         
         synchronized private void lazyInitialization () {
            obj_files = obj.files();
         }
         
-        public boolean add(Object o) {
+        public boolean add(FileObject o) {
             lazyInitialization();
             return obj_files.add(o);
         }
         
-        public boolean addAll(Collection c) {
+        public boolean addAll(Collection<? extends FileObject> c) {
             lazyInitialization();
             return obj_files.addAll(c);
         }
@@ -934,7 +936,7 @@ public class DataNode extends AbstractNode {
             return obj_files.isEmpty();
         }
         
-        public Iterator iterator() {
+        public Iterator<FileObject> iterator() {
             return new FilesIterator ();
         }
         
@@ -963,7 +965,7 @@ public class DataNode extends AbstractNode {
             return obj_files.toArray();
         }
         
-        public Object[] toArray(Object[] a) {
+        public <FileObject> FileObject[] toArray(FileObject[] a) {
             lazyInitialization();
             return obj_files.toArray(a);
         }
@@ -986,7 +988,7 @@ public class DataNode extends AbstractNode {
         /** Iterator for FilesSet. It returns the primaryFile first and 
          * then initialize the delegate iterator for secondary files.
          */
-        private final class FilesIterator implements Iterator {
+        private final class FilesIterator implements Iterator<FileObject> {
             /** Was the first element (primary file) already returned?
              */
             private boolean first = true;
@@ -994,7 +996,7 @@ public class DataNode extends AbstractNode {
             /** Delegation iterator for secondary files. It is lazy initialized after
              * the first element is returned.
              */
-            private Iterator itDelegate = null;
+            private Iterator<FileObject> itDelegate = null;
 
             FilesIterator() {}
 
@@ -1002,7 +1004,7 @@ public class DataNode extends AbstractNode {
                 return first ? true : getIteratorDelegate().hasNext();
             }
 
-            public Object next() {
+            public FileObject next() {
                 if (first) {
                     first = false;
                     return obj.getPrimaryFile ();
@@ -1018,7 +1020,7 @@ public class DataNode extends AbstractNode {
 
             /** Initialize the delegation iterator.
              */
-            private Iterator getIteratorDelegate() {
+            private Iterator<FileObject> getIteratorDelegate() {
                 if (itDelegate == null) {
                     lazyInitialization ();
                     // this should return iterator of all files of the MultiDataObject...

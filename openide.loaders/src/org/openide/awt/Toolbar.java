@@ -50,6 +50,7 @@ import org.openide.util.datatransfer.ExTransferable;
 public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInputListener*/ {
     /** Basic toolbar height.
      @deprecated Use getBasicHeight instead. */
+    @Deprecated
     public static final int BASIC_HEIGHT = 34;
     
     /** 5 pixels is tolerance of toolbar height so toolbar can be high (BASIC_HEIGHT + HEIGHT_TOLERANCE)
@@ -502,7 +503,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     }
     
     private void reorderButtons( DataObject objToMove, DataObject objUnderCursor ) throws IOException {
-        java.util.List children = new ArrayList( Arrays.asList( backingFolder.getChildren() ) );
+        java.util.List<DataObject> children = 
+                new ArrayList<DataObject>( Arrays.asList( backingFolder.getChildren() ) );
         if( null == objUnderCursor ) {
             children.remove( objToMove );
             children.add( objToMove );
@@ -515,7 +517,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             children.add( targetIndex, objToMove );
         }
 
-        backingFolder.setOrder( (DataObject[])children.toArray( new DataObject[children.size()]) );
+        backingFolder.setOrder( children.toArray( new DataObject[children.size()]) );
     }
     
     private DataObject getDataObjectUnderDropCursor( int dropIndex, boolean dropBefore ) {
@@ -903,7 +905,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             }
         }
         
-    private Map cookiesToObjects = new HashMap();
+    private Map<Object, Object> cookiesToObjects = new HashMap<Object, Object>();
     
     protected Object instanceForCookie (DataObject obj, InstanceCookie cookie)
     throws IOException, ClassNotFoundException {
@@ -1158,14 +1160,15 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
     }    
 
-    private static java.util.Map hintsMap = null;
+    private static java.util.Map<RenderingHints.Key, Object> hintsMap = null;
+    @SuppressWarnings("unchecked")
     static final Map getHints() {
         //XXX We REALLY need to put this in a graphics utils lib
         if (hintsMap == null) {
             //Thanks to Phil Race for making this possible
-            hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+            hintsMap = (Map<RenderingHints.Key, Object>)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
-                hintsMap = new HashMap();
+                hintsMap = new HashMap<RenderingHints.Key, Object>();
                 hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             }
         }

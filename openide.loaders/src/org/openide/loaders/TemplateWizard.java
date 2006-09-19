@@ -49,6 +49,7 @@ public class TemplateWizard extends WizardDescriptor {
     /** EA that defines resource string to the description instead of raw URL
      * @deprecated
      */
+    @Deprecated
     private static final String EA_DESC_RESOURCE = "templateWizardDescResource"; // NOI18N
     
     /** Defines the wizards description */
@@ -612,6 +613,7 @@ public class TemplateWizard extends WizardDescriptor {
      * @param rsrc a resource string, e.g. "com/foo/MyPage.html", or <code>null</code> to clear
      * @throws IOException if the attribute cannot be set
      */
+    @Deprecated
     public static void setDescriptionAsResource (DataObject obj, String rsrc) throws IOException {
         if (rsrc != null && rsrc.startsWith ("/")) { // NOI18N
             Logger.global.warning("auto-stripping leading slash from resource path in TemplateWizard.setDescriptionAsResource: " + rsrc);
@@ -625,6 +627,7 @@ public class TemplateWizard extends WizardDescriptor {
     * @return the resource path, or <code>null</code> if unset (incl. if only set as a raw URL)
     * @deprecated Use {@link #getDescription} instead.
     */
+    @Deprecated
     public static String getDescriptionAsResource (DataObject obj) {
         return (String) obj.getPrimaryFile ().getAttribute (EA_DESC_RESOURCE);
     }
@@ -643,6 +646,7 @@ public class TemplateWizard extends WizardDescriptor {
      *
     * @deprecated since 2.13 you should provide the iterator from <code>getCookie</code> method
     */
+    @Deprecated
     public static void setIterator (DataObject obj, Iterator iter)
     throws IOException {
         obj.getPrimaryFile().setAttribute(CUSTOM_ITERATOR, iter);

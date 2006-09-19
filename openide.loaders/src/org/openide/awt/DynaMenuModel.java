@@ -47,12 +47,12 @@ class DynaMenuModel {
     private static final Icon BLANK_ICON = new ImageIcon(
         Utilities.loadImage("org/openide/loaders/empty.gif")); // NOI18N            
     
-    private List menuItems;
-    private HashMap actionToMenuMap;
+    private List<JComponent> menuItems;
+    private HashMap<DynamicMenuContent, JComponent[]> actionToMenuMap;
     private boolean isWithIcons = false;
     /** Creates a new instance of DynaMenuModel */
     public DynaMenuModel() {
-        actionToMenuMap = new HashMap();
+        actionToMenuMap = new HashMap<DynamicMenuContent, JComponent[]>();
     }
     
     public void loadSubmenu(List cInstances, JMenu m) {
@@ -60,7 +60,7 @@ class DynaMenuModel {
         boolean addSeparator = false;
         Icon curIcon = null;
         Iterator it = cInstances.iterator();
-        menuItems = new ArrayList(cInstances.size());
+        menuItems = new ArrayList<JComponent>(cInstances.size());
         actionToMenuMap.clear();
         while (it.hasNext()) {
             Object obj = it.next();
@@ -118,8 +118,8 @@ class DynaMenuModel {
         // fill menu with built items
         JComponent curItem = null;
         boolean wasSeparator = false;
-        for (Iterator iter = menuItems.iterator(); iter.hasNext(); ) {
-            curItem = (JComponent)iter.next();
+        for (Iterator<JComponent> iter = menuItems.iterator(); iter.hasNext(); ) {
+            curItem = iter.next();
             if (curItem == null) {
                 // null means separator
                 curItem = new JSeparator();
@@ -149,13 +149,11 @@ class DynaMenuModel {
     }
     
     public void checkSubmenu(JMenu menu) {
-        Iterator it = actionToMenuMap.entrySet().iterator();
         boolean oldisWithIcons = isWithIcons;
         boolean changed = false;
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            DynamicMenuContent pres = (DynamicMenuContent)entry.getKey();
-            JComponent[] old = (JComponent[])entry.getValue();
+        for (Map.Entry<DynamicMenuContent, JComponent[]> entry: actionToMenuMap.entrySet()) {
+            DynamicMenuContent pres = entry.getKey();
+            JComponent[] old = entry.getValue();
             int oldIndex = 0;
             Component[] menuones = menu.getPopupMenu().getComponents();
             int menuIndex = old.length > 0 ? findFirstItemIndex(old[0], menuones) : -1;
@@ -282,11 +280,10 @@ class DynaMenuModel {
     
     /** Removes icons from all direct menu items of this menu.
      * Not recursive, */
-    private List alignVertically(List menuItems) {
-        List result = new ArrayList(menuItems.size());
+    private List<JComponent> alignVertically(List<JComponent> menuItems) {
+        List<JComponent> result = new ArrayList<JComponent>(menuItems.size());
         JMenuItem curItem = null;
-        for (Iterator iter = menuItems.iterator(); iter.hasNext(); ) {
-            Object obj = iter.next();
+        for (JComponent obj: menuItems) {
             if (obj instanceof JMenuItem) {
                 curItem = (JMenuItem)obj;
                 if (isWithIcons && curItem != null && curItem.getIcon() == null) {

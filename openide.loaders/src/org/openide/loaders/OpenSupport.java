@@ -122,7 +122,8 @@ public abstract class OpenSupport extends CloneableOpenSupport {
         // #27587
         /** Map of FileSystem to its listener (weak reference of it). 
          * One listener per one filesystem for all env's from that fs. */
-        private static final Map fsListenerMap = new WeakHashMap(30);
+        private static final Map<FileSystem, Reference<FileSystemNameListener>> fsListenerMap = 
+                new WeakHashMap<FileSystem, Reference<FileSystemNameListener>>(30);
         
         // A private lock  
         private static final Object LOCK_SUPPORT = new Object();
@@ -159,15 +160,15 @@ public abstract class OpenSupport extends CloneableOpenSupport {
             FileSystemNameListener fsListener;
             boolean initListening = false;
             synchronized(fsListenerMap) {
-                Reference fsListenerRef = (Reference)fsListenerMap.get(fs);
+                Reference<FileSystemNameListener> fsListenerRef = fsListenerMap.get(fs);
                 fsListener = fsListenerRef == null 
                                 ? null
-                                : (FileSystemNameListener)fsListenerRef.get();
+                                : fsListenerRef.get();
                         
                 if(fsListener == null) {
                     // Create listener for that filesystem.
                     fsListener = new FileSystemNameListener();
-                    fsListenerMap.put(fs, new WeakReference(fsListener));
+                    fsListenerMap.put(fs, new WeakReference<FileSystemNameListener>(fsListener));
                     initListening = true;
                 }
             }
@@ -342,7 +343,7 @@ public abstract class OpenSupport extends CloneableOpenSupport {
     private static final class FileSystemNameListener
     implements PropertyChangeListener, VetoableChangeListener {
         /** Set of Env's interested in changes on fs name. */
-        private final Set environments = new WeakSet(30);
+        private final Set<Env> environments = new WeakSet<Env>(30);
         
         public FileSystemNameListener() {
         }
@@ -356,13 +357,12 @@ public abstract class OpenSupport extends CloneableOpenSupport {
         
         public void propertyChange(PropertyChangeEvent evt) {
             if(FileSystem.PROP_SYSTEM_NAME.equals(evt.getPropertyName())) {
-                Set envs;
+                Set<Env> envs;
                 synchronized(environments) {
-                    envs = new HashSet(environments);
+                    envs = new HashSet<Env>(environments);
                 }
                 
-                for(Iterator it = envs.iterator(); it.hasNext(); ) {
-                    Env env = (Env)it.next();
+                for(Env env: envs){
                     env.firePropertyChange(DataObject.PROP_VALID,
                         Boolean.TRUE, Boolean.FALSE);
                 }
@@ -372,13 +372,12 @@ public abstract class OpenSupport extends CloneableOpenSupport {
         public void vetoableChange(PropertyChangeEvent evt) 
         throws PropertyVetoException {
             if(FileSystem.PROP_SYSTEM_NAME.equals(evt.getPropertyName())) {
-                Set envs;
+                Set<Env> envs;
                 synchronized(environments) {
-                    envs = new HashSet(environments);
+                    envs = new HashSet<Env>(environments);
                 }
                 
-                for(Iterator it = envs.iterator(); it.hasNext(); ) {
-                    Env env = (Env)it.next();
+                for(Env env: envs) {
                     env.fireVetoableChange(DataObject.PROP_VALID,
                         Boolean.TRUE, Boolean.FALSE);
                 }

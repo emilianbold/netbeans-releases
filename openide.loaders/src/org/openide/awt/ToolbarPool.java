@@ -47,9 +47,9 @@ public final class ToolbarPool extends JComponent implements Accessible {
     private DataFolder folder;
 
     /** Maps name to <code>Toolbar</code>s */
-    private Map toolbars;
+    private Map<String, Toolbar> toolbars;
     /** Maps name to <code>ToolbarPool.Configuration</code>s */
-    private Map toolbarConfigs;
+    private Map<String, ToolbarPool.Configuration> toolbarConfigs;
 
     /** Current name of selected configuration */
     private String name = ""; // NOI18N
@@ -103,8 +103,8 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
         setLayout (new BorderLayout ());
         listener = new PopupListener();
-        toolbars = new TreeMap();
-        toolbarConfigs = new TreeMap();
+        toolbars = new TreeMap<String, Toolbar>();
+        toolbarConfigs = new TreeMap<String, ToolbarPool.Configuration>();
 
         instance = new Folder (df);
 
@@ -216,7 +216,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @param toolbars map (String, Toolbar) of toolbars
      * @param conf map (String, Configuration) of configs
      */
-    void update (Map toolbars, Map conf) {
+    void update (Map<String, Toolbar> toolbars, Map<String, ToolbarPool.Configuration> conf) {
         this.toolbars = toolbars;
         this.toolbarConfigs = conf;
 
@@ -252,9 +252,9 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
     /** Sets DnDListener to all Toolbars. */
     public void setToolbarsListener (Toolbar.DnDListener l) {
-        Iterator it = toolbars.values().iterator();
-        while (it.hasNext())
-            ((Toolbar)it.next()).setDnDListener (l);
+        for (Toolbar t: toolbars.values()) {
+            t.setDnDListener (l);
+        }
     }
 
     /** Uses new component as a cental one. */
@@ -281,7 +281,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * @return a <code>Toolbar</code> to which this pool maps the name
      */
     public final Toolbar findToolbar (String name) {
-        return (Toolbar)toolbars.get (name);
+        return toolbars.get (name);
     }
 
     /**
@@ -315,7 +315,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
         Configuration config = null;
         if (n != null) {
-            config = (Configuration)toolbarConfigs.get (n);
+            config = toolbarConfigs.get (n);
         }
         if (config != null) { // if configuration found
             activate (config);
@@ -324,9 +324,9 @@ public final class ToolbarPool extends JComponent implements Accessible {
         } else {
             // line below commented - bugfix, we need default configuration always when unknown config name is used:
             // if (center == null) { // bad config name (n) and no configuration activated yet
-            config = (Configuration)toolbarConfigs.get (DEFAULT_CONFIGURATION);
+            config = toolbarConfigs.get (DEFAULT_CONFIGURATION);
             if (config == null) {
-                config = (Configuration)toolbarConfigs.values().iterator().next();
+                config = toolbarConfigs.values().iterator().next();
             }
             activate (config);
         }
@@ -347,17 +347,17 @@ public final class ToolbarPool extends JComponent implements Accessible {
      */
     public final synchronized Toolbar[] getToolbars() {
         Toolbar[] arr = new Toolbar[toolbars.size ()];
-        return (Toolbar[])toolbars.values ().toArray (arr);
+        return toolbars.values ().toArray (arr);
     }
 
     /**
      * @return the names of toolbar configurations contained in this pool
      */
     public final synchronized String[] getConfigurations () {
-        ArrayList list = new ArrayList( toolbarConfigs.keySet() );
+        ArrayList<String> list = new ArrayList<String>( toolbarConfigs.keySet() );
         Collections.sort( list );
         String[] arr = new String[ list.size() ];
-        return (String[]) list.toArray( arr );
+        return list.toArray( arr );
     }
 
         /** Read accessible context
@@ -423,7 +423,8 @@ public final class ToolbarPool extends JComponent implements Accessible {
      * from the given <code>DataFolder</code>.
      */
     private class Folder extends FolderInstance {
-        private WeakHashMap foldersCache = new WeakHashMap (15);
+        private WeakHashMap<DataFolder, InstanceCookie> foldersCache = 
+                new WeakHashMap<DataFolder, InstanceCookie> (15);
 
         public Folder (DataFolder f) {
             super (f);
@@ -469,7 +470,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
          * @return a <code>Toolbar.Folder</code> for the specified folder
          */
         protected InstanceCookie acceptFolder (DataFolder df) {
-            InstanceCookie ic = (InstanceCookie)foldersCache.get (df);
+            InstanceCookie ic = foldersCache.get (df);
             if (ic == null) {
                 ic = (FolderInstance)new Toolbar (df, true).waitFinished ();
                 foldersCache.put (df, ic);
@@ -487,8 +488,8 @@ public final class ToolbarPool extends JComponent implements Accessible {
         throws java.io.IOException, ClassNotFoundException {
             final int length = cookies.length;
 
-            final Map toolbars = new TreeMap ();
-            final Map conf = new TreeMap ();
+            final Map<String, Toolbar> toolbars = new TreeMap<String, Toolbar> ();
+            final Map<String, Configuration> conf = new TreeMap<String, Configuration> ();
 
             for (int i = 0; i < length; i++) {
                 try {
@@ -555,7 +556,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
          * Called when the sequence of mouse events should lead to actual showing popup menu
          */
         protected void showPopup (MouseEvent e) {
-            Configuration conf = (Configuration)toolbarConfigs.get (name);
+            Configuration conf = toolbarConfigs.get (name);
             if (conf != null) {
                 JPopupMenu pop = conf.getContextMenu();
                 pop.show (e.getComponent (), e.getX (), e.getY ());

@@ -87,30 +87,30 @@ final class BrokenDataShadow extends MultiDataObject {
     }
         
     /** Map of <String(nameoffileobject), DataShadow> */
-    private static Map allDataShadows;
+    private static Map<String, Set<Reference<BrokenDataShadow>>> allDataShadows;
     
     private static final long serialVersionUID = -3046981691235483810L;
     
     /** Getter for the Set that contains all DataShadows. */
-    static synchronized Map getDataShadowsSet() {
+    static synchronized Map<String, Set<Reference<BrokenDataShadow>>> getDataShadowsSet() {
        if (allDataShadows == null) {
-           allDataShadows = new HashMap();
+           allDataShadows = new HashMap<String, Set<Reference<BrokenDataShadow>>>();
        }
         return allDataShadows;
     }
     
     private static synchronized void enqueueBrokenDataShadow(BrokenDataShadow ds) {
-        Map m = getDataShadowsSet ();
+        Map<String, Set<Reference<BrokenDataShadow>>> m = getDataShadowsSet ();
         
         String prim = ds.getUrl().toExternalForm();
-        Reference ref = new DataShadow.DSWeakReference(ds);
-        Set s = (Set)m.get (prim);
+        Reference<BrokenDataShadow> ref = new DataShadow.DSWeakReference<BrokenDataShadow>(ds);
+        Set<Reference<BrokenDataShadow>> s = m.get (prim);
         if (s == null) {
-            s = java.util.Collections.singleton (ref);
+            s = java.util.Collections.<Reference<BrokenDataShadow>>singleton (ref);
             getDataShadowsSet ().put (prim, s);
         } else {
             if (! (s instanceof HashSet)) {
-                s = new HashSet (s);
+                s = new HashSet<Reference<BrokenDataShadow>> (s);
                 getDataShadowsSet ().put (prim, s);
             }
             s.add (ref);
@@ -118,19 +118,19 @@ final class BrokenDataShadow extends MultiDataObject {
     }
 
     /** @return all active DataShadows or null */
-    private static synchronized List getAllDataShadows() {
+    private static synchronized List<BrokenDataShadow> getAllDataShadows() {
         if (allDataShadows == null || allDataShadows.isEmpty()) {
             return null;
         }
         
-        List ret = new ArrayList(allDataShadows.size());
-        Iterator it = allDataShadows.values ().iterator();
+        List<BrokenDataShadow> ret = new ArrayList<BrokenDataShadow>(allDataShadows.size());
+        Iterator<Set<Reference<BrokenDataShadow>>> it = allDataShadows.values ().iterator();
         while (it.hasNext()) {
-            Set ref = (Set) it.next();
-            Iterator refs = ref.iterator ();
+            Set<Reference<BrokenDataShadow>> ref = it.next();
+            Iterator<Reference<BrokenDataShadow>> refs = ref.iterator ();
             while (refs.hasNext ()) {
-                Reference r = (Reference)refs.next ();
-                Object shadow = r.get();
+                Reference<BrokenDataShadow> r = refs.next ();
+                BrokenDataShadow shadow = r.get();
                 if (shadow != null) {
                     ret.add(shadow);
                 }
@@ -373,7 +373,7 @@ final class BrokenDataShadow extends MultiDataObject {
     
         /** Class for original name property of broken link
         */
-        private final class Name extends PropertySupport.ReadWrite {
+        private final class Name extends PropertySupport.ReadWrite<String> {
             
             public Name () {
                 super (
@@ -385,15 +385,13 @@ final class BrokenDataShadow extends MultiDataObject {
             }
 
             /* Getter */
-            public Object getValue () {
+            public String getValue () {
                 BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
                 return bds.getUrl().toExternalForm();
             }
             
             /* Does nothing, property is readonly */
-            public void setValue (Object val) {
-                String newLink = (String)val;
-
+            public void setValue (String newLink) {
                 BrokenDataShadow bds = (BrokenDataShadow)getDataObject();
                 try {
                     URL u = new URL(newLink);

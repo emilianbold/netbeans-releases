@@ -33,7 +33,7 @@ import org.openide.loaders.DataFolder.SortMode;
  *
  * @author  Jaroslav Tulach
  */
-final class FolderOrder extends Object implements Comparator {
+final class FolderOrder extends Object implements Comparator<DataObject> {
     /** Separator of names of two files. The first file should be before
      * the second one in partial ordering
      */
@@ -41,7 +41,8 @@ final class FolderOrder extends Object implements Comparator {
     
     /** a static map with (FileObject, Reference (Folder))
      */
-    private static final WeakHashMap map = new WeakHashMap (101);
+    private static final WeakHashMap<FileObject, Reference<FolderOrder>> map = 
+            new WeakHashMap<FileObject, Reference<FolderOrder>> (101);
     /** A static of known folder orders. Though we hold the
      * FolderOrder with a soft reference which can be collected, even
      * if this happens we would like the new FolderOrder to have any
@@ -50,11 +51,12 @@ final class FolderOrder extends Object implements Comparator {
      * endless loop recalculating folder orders, since they keep
      * getting collected.
      */
-    private static final Map knownOrders = Collections.synchronizedMap(new WeakHashMap(50)); // Map<FileObject, Object>
+    private static final Map<FileObject, Object> knownOrders = 
+            Collections.synchronizedMap(new WeakHashMap<FileObject, Object>(50));
     
 
     /** map of names of primary files of objects to their index or null */
-    private Map order; // Map<String,Integer>
+    private Map<String,Integer> order;
     /** file to store data in */
     private FileObject folder;
     /** if true, partial orderings on disk should be ignored for files in the order */
@@ -96,7 +98,7 @@ final class FolderOrder extends Object implements Comparator {
      */
     public synchronized void setOrder (DataObject[] arr) throws IOException {
         if (arr != null) {
-            order = new HashMap (arr.length * 4 / 3 + 1);
+            order = new HashMap<String, Integer> (arr.length * 4 / 3 + 1);
 
             // each object only once
             Enumeration en = org.openide.util.Enumerations.removeDuplicates (
@@ -109,7 +111,7 @@ final class FolderOrder extends Object implements Comparator {
                 FileObject fo = obj.getPrimaryFile ();
                 if (folder.equals (fo.getParent ())) {
                     // object for my folder
-                    order.put (fo.getNameExt (), new Integer (i++));
+                    order.put (fo.getNameExt (), Integer.valueOf (i++));
                 }
             }
             // Explicit order has been set, if written please clear affected
@@ -131,38 +133,34 @@ final class FolderOrder extends Object implements Comparator {
      * @param objects a collection of data objects known to be in the folder
      * @return a constraint map, or null if there are no constraints
      */
-    public synchronized Map getOrderingConstraints(Collection objects) {
-        final Set partials = readPartials ();
+    public synchronized Map<DataObject, List<DataObject>> getOrderingConstraints(Collection<DataObject> objects) {
+        final Set<String> partials = readPartials ();
         if (partials.isEmpty ()) {
             return null;
         } else {
-            Map objectsByName = new HashMap();
-            Iterator it = objects.iterator();
-            while (it.hasNext()) {
-                DataObject d = (DataObject)it.next();
+            Map<String, DataObject> objectsByName = new HashMap<String, DataObject>();
+            for (DataObject d: objects) {
                 objectsByName.put(d.getPrimaryFile().getNameExt(), d);
             }
-            Map m = new HashMap();
-            it = partials.iterator();
-            while (it.hasNext()) {
-                String constraint = (String)it.next();
+            Map<DataObject, List<DataObject>> m = new HashMap<DataObject, List<DataObject>>();
+            for (String constraint: partials) {
                 int idx = constraint.indexOf(SEP);
                 String a = constraint.substring(0, idx);
                 String b = constraint.substring(idx + 1);
                 if (ignorePartials && (order.containsKey(a) || order.containsKey(b))) {
                     continue;
                 }
-                DataObject ad = (DataObject)objectsByName.get(a);
+                DataObject ad = objectsByName.get(a);
                 if (ad == null) {
                     continue;
                 }
-                DataObject bd = (DataObject)objectsByName.get(b);
+                DataObject bd = objectsByName.get(b);
                 if (bd == null) {
                     continue;
                 }
-                List l = (List)m.get(ad);
+                List<DataObject> l = m.get(ad);
                 if (l == null) {
-                    m.put(ad, l = new LinkedList());
+                    m.put(ad, l = new LinkedList<DataObject>());
                 }
                 l.add(bd);
             }
@@ -174,11 +172,11 @@ final class FolderOrder extends Object implements Comparator {
      * Each element is a string of the form "a<b" for a, b filenames
      * with extension, where a should come before b.
      */
-    private Set readPartials () { // Set<String>
-        Enumeration e = folder.getAttributes ();
-        Set s = new HashSet ();
+    private Set<String> readPartials () {
+        Enumeration<String> e = folder.getAttributes ();
+        Set<String> s = new HashSet<String> ();
         while (e.hasMoreElements ()) {
-            String name = (String) e.nextElement ();
+            String name = e.nextElement ();
             if (name.indexOf (SEP) != -1) {
                 Object value = folder.getAttribute (name);
                 if ((value instanceof Boolean) && ((Boolean) value).booleanValue ())
@@ -190,12 +188,9 @@ final class FolderOrder extends Object implements Comparator {
 
     /** Compares two data object or two nodes.
     */
-    public int compare (Object o1, Object o2) {
-        DataObject obj1 = (DataObject) o1;
-        DataObject obj2 = (DataObject) o2;
-        
-        Integer i1 = (order == null) ? null : (Integer)order.get (obj1.getPrimaryFile ().getNameExt ());
-        Integer i2 = (order == null) ? null : (Integer)order.get (obj2.getPrimaryFile ().getNameExt ());
+    public int compare (DataObject obj1, DataObject obj2) {
+        Integer i1 = (order == null) ? null : order.get (obj1.getPrimaryFile ().getNameExt ());
+        Integer i2 = (order == null) ? null : order.get (obj2.getPrimaryFile ().getNameExt ());
 
         if (i1 == null) {
             if (i2 != null) return 1;
@@ -221,12 +216,12 @@ final class FolderOrder extends Object implements Comparator {
             folder.setAttribute (DataFolder.EA_ORDER, null);
         } else {
             // Stores list of file names separated by /
-            java.util.Iterator it = order.entrySet ().iterator ();
+            java.util.Iterator<Map.Entry<String, Integer>> it = order.entrySet ().iterator ();
             String[] filenames = new String[order.size ()];
             while (it.hasNext ()) {
-                Map.Entry en = (Map.Entry)it.next ();
-                String fo = (String)en.getKey ();
-                int indx = ((Integer)en.getValue ()).intValue ();
+                Map.Entry<String, Integer> en = it.next ();
+                String fo = en.getKey ();
+                int indx = en.getValue ().intValue ();
                 filenames[indx] = fo;
             }
             StringBuffer buf = new StringBuffer (255);
@@ -239,7 +234,7 @@ final class FolderOrder extends Object implements Comparator {
 
             // Read *before* setting EA_ORDER, since org.netbeans.modules.apisupport.project.layers.WritableXMLFileSystem
             // will kill off the partials when it gets that:
-            Set/*<String>*/ p = ignorePartials ? readPartials() : null;
+            Set<String> p = ignorePartials ? readPartials() : null;
             
             folder.setAttribute (DataFolder.EA_ORDER, buf.toString ());
 
@@ -247,15 +242,11 @@ final class FolderOrder extends Object implements Comparator {
                 // Reverse any existing partial orders among files explicitly
                 // mentioned in the order.
                 if (! p.isEmpty ()) {
-                    Set f = new HashSet (); // Set<String> for filenames
-                    it = order.keySet ().iterator ();
-                    while (it.hasNext ()) {
-                        String fo = (String) it.next ();
+                    Set<String> f = new HashSet<String> ();
+                    for (String fo: order.keySet()) {
                         f.add (fo);
                     }
-                    it = p.iterator ();
-                    while (it.hasNext ()) {
-                        String s = (String) it.next ();
+                    for (String s: p) {
                         int idx = s.indexOf (SEP);
                         if (f.contains (s.substring (0, idx)) &&
                             f.contains (s.substring (idx + 1))) {
@@ -368,10 +359,10 @@ final class FolderOrder extends Object implements Comparator {
             }
 
 
-            HashMap set = new HashMap (names.length);
+            Map<String, Integer> set = new HashMap<String, Integer> (names.length);
 
             for (int i = 0; i < names.length; i++) {
-                set.put (names[i], new Integer (i));
+                set.put (names[i], Integer.valueOf (i));
             }
             order = set;
             return;
@@ -379,12 +370,12 @@ final class FolderOrder extends Object implements Comparator {
         } else if (o instanceof String) {
             // Current format:
             String sepnames = (String) o;
-            HashMap set = new HashMap ();
+            Map<String, Integer> set = new HashMap<String, Integer> ();
             StringTokenizer tok = new StringTokenizer (sepnames, "/"); // NOI18N
             int i = 0;
             while (tok.hasMoreTokens ()) {
                 String file = tok.nextToken ();
-                set.put (file, new Integer (i));
+                set.put (file, Integer.valueOf (i));
                 i++;
             }
             
@@ -405,14 +396,14 @@ final class FolderOrder extends Object implements Comparator {
     public static FolderOrder findFor (FileObject folder) {
         FolderOrder order = null;
         synchronized (map) {
-            Reference ref = (Reference)map.get (folder);
-            order = ref == null ? null : (FolderOrder)ref.get ();
+            Reference<FolderOrder> ref = map.get (folder);
+            order = ref == null ? null : ref.get ();
             if (order == null) {
                 order = new FolderOrder (folder);
                 order.previous = knownOrders.get(folder);
                 order.doRead(order.previous);
                 
-                map.put (folder, new SoftReference (order));
+                map.put (folder, new SoftReference<FolderOrder> (order));
             }
         }
         // always reread the order from disk, so it is uptodate

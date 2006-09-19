@@ -253,7 +253,7 @@ public abstract class MultiFileLoader extends DataLoader {
         FileObject primary = obj.getPrimaryFile ();
         
         /*Set refusing = */DataObjectPool.getPOOL().revalidate (
-            new HashSet (Collections.singleton(primary))
+            new HashSet<FileObject> (Collections.singleton(primary))
         );
             // ok, the obj is discarded
         DataObject result = DataObjectPool.getPOOL().find (primary);

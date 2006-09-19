@@ -43,11 +43,11 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
     /** array of types */
     private ConnectionCookie.Type[] types;
     /** cached the return value for getTypes method */
-    private Set typesSet;
+    private Set<ConnectionCookie.Type> typesSet;
 
     /** table of listeners for non-persistent types. Array of Pairs.
     */
-    private LinkedList listeners;
+    private LinkedList<Pair> listeners;
 
     /** Creates new connection support for given file entry.
     * @param entry entry to store listener to its extended attributes
@@ -57,7 +57,7 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
         this.entry = entry;
         this.types = types;
         // #45750 - init list for CC.T which are not persistent
-        listeners = new LinkedList();
+        listeners = new LinkedList<Pair>();
     }
 
     /** Attaches new node to listen to events produced by this
@@ -78,26 +78,26 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
         testSupported (type);
 
         boolean persistent = type.isPersistent ();
-        LinkedList list;
+        LinkedList<Pair> list;
 
         if (persistent) {
-            list = (LinkedList)entry.getFile ().getAttribute (EA_LISTENERS);
+            list = (LinkedList<Pair>)entry.getFile ().getAttribute (EA_LISTENERS);
         } else {
             list = listeners;
         }
 
         if (list == null) {
             // empty list => create new
-            list = new LinkedList ();
+            list = new LinkedList<Pair> ();
         }
 
         //    System.out.println("======================================== ADD:"+entry.getFile().getName()); // NOI18N
         //    System.out.println(this);
         //    System.out.println("size:"+list.size()); // NOI18N
 
-        Iterator it = list.iterator ();
+        Iterator<Pair> it = list.iterator ();
         while (it.hasNext ()) {
-            Pair pair = (Pair)it.next ();
+            Pair pair = it.next ();
             //      System.out.println("test:"+pair.getType()); // NOI18N
             if (type.equals (pair.getType ())) {
                 Node n;
@@ -199,7 +199,7 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
     */
     public Set<ConnectionCookie.Type> getTypes () {
         if (typesSet == null)
-            typesSet = Collections.unmodifiableSet (new HashSet (Arrays.asList (types)));
+            typesSet = Collections.unmodifiableSet (new HashSet<ConnectionCookie.Type> (Arrays.asList (types)));
         return typesSet;
     }
 
@@ -209,19 +209,18 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
     * @return the list of ConnectionCookie.Type objects
     */
     public List<ConnectionCookie.Type> getRegisteredTypes() {
-        LinkedList typesList = new LinkedList();
+        LinkedList<ConnectionCookie.Type> typesList = new LinkedList<ConnectionCookie.Type>();
 
-        LinkedList list = listeners;
+        LinkedList<Pair> list = listeners;
         for (int i = 0; i <= 1; i++) {
             if (i == 1)
-                list = (LinkedList)entry.getFile ().getAttribute (EA_LISTENERS);
+                list = (LinkedList<Pair>)entry.getFile ().getAttribute (EA_LISTENERS);
 
             if (list == null)
                 continue;
 
-            Iterator it = list.iterator ();
-            while (it.hasNext ()) {
-                typesList.add(((Pair)it.next()).getType());
+            for (Pair p: list) {
+                typesList.add(p.getType());
             }
         }
 
@@ -232,7 +231,7 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
     * @param ev the event
     */
     public void fireEvent (ConnectionCookie.Event ev) {
-        LinkedList list;
+        LinkedList<Pair> list;
         ConnectionCookie.Type type;
         boolean persistent;
         
@@ -241,21 +240,21 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
 
             persistent = type.isPersistent ();
             if (persistent) {
-                list = (LinkedList)entry.getFile ().getAttribute (EA_LISTENERS);
+                list = (LinkedList<Pair>)entry.getFile ().getAttribute (EA_LISTENERS);
             } else {
                 list = listeners;
             }
 
             if (list == null) return;
          
-            list = (LinkedList)list.clone ();
+            list = (LinkedList<Pair>)list.clone ();
         }
 
         int size = list.size ();
 
-        Iterator it = list.iterator ();
+        Iterator<Pair> it = list.iterator ();
         while (it.hasNext ()) {
-            Pair pair = (Pair)it.next ();
+            Pair pair = it.next ();
 
             if (pair.getType ().overlaps(ev.getType())) {
                 try {
@@ -290,19 +289,19 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
     * @param type type of events to test
     * @return unmutable set of all listeners (Node) for a type
     */
-    public synchronized java.util.Set listenersFor (ConnectionCookie.Type type) {
-        LinkedList list;
+    public synchronized java.util.Set/*<Node>*/ listenersFor (ConnectionCookie.Type type) {
+        LinkedList<Pair> list;
 
         if (type.isPersistent ()) {
-            list = (LinkedList)entry.getFile ().getAttribute (EA_LISTENERS);
+            list = (LinkedList<Pair>)entry.getFile ().getAttribute (EA_LISTENERS);
         } else {
             list = listeners;
         }
 
-        if (list == null) return Collections.EMPTY_SET;
+        if (list == null) return Collections.emptySet();
 
-        Iterator it = list.iterator ();
-        HashSet set = new HashSet (7);
+        Iterator<Pair> it = list.iterator ();
+        HashSet<Node> set = new HashSet<Node> (7);
 
         while (it.hasNext ()) {
             Pair pair = (Pair)it.next ();

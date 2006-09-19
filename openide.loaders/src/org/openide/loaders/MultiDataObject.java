@@ -65,7 +65,7 @@ public class MultiDataObject extends DataObject {
     private Entry primary;
 
     /** Map of secondary entries and its files. (FileObject, Entry) */
-    private HashMap secondary;
+    private HashMap<FileObject,Entry> secondary;
 
     /** array of cookies for this object */
     private CookieSet cookieSet;
@@ -153,7 +153,7 @@ public class MultiDataObject extends DataObject {
     /* package-private */ Map<FileObject,Entry> getSecondary() {
         synchronized (secondaryCreationLock) {
             if (secondary == null) {
-                secondary = new HashMap(4);
+                secondary = new HashMap<FileObject,Entry>(4);
             }
             if (ERR.isLoggable(Level.FINE)) {
                 ERR.fine("getSecondary for " + this + " is " + secondary); // NOI18N
@@ -563,17 +563,18 @@ public class MultiDataObject extends DataObject {
         if (suffix == null)
             throw new org.openide.util.UserCancelException();
 
-        List backup = saveEntries();
+        List<Pair> backup = saveEntries();
 
         try {
-            HashMap add = null;
+            HashMap<FileObject,Entry> add = null;
 
-            ArrayList toRemove = new ArrayList();
-            Iterator it;
+            ArrayList<FileObject> toRemove = new ArrayList<FileObject>();
+            Iterator<Map.Entry<FileObject,Entry>> it;
             int count;
             synchronized ( synchObjectSecondary() ) {
                 removeAllInvalid ();
-                ArrayList list = new ArrayList(getSecondary().entrySet ());
+                ArrayList<Map.Entry<FileObject,Entry>> list = 
+                        new ArrayList<Map.Entry<FileObject,Entry>>(getSecondary().entrySet ());
                 count = list.size();
                 it = list.iterator();
             }
@@ -587,9 +588,9 @@ public class MultiDataObject extends DataObject {
 
             
             while (it.hasNext ()) {
-                Map.Entry e = (Map.Entry)it.next ();
+                Map.Entry<FileObject,Entry> e = it.next ();
                 if (ERR.isLoggable(Level.FINE)) ERR.fine("moving entry :" + e); // NOI18N
-                FileObject fo = ((Entry)e.getValue ()).move (df.getPrimaryFile (), suffix);
+                FileObject fo = (e.getValue ()).move (df.getPrimaryFile (), suffix);
                 if (ERR.isLoggable(Level.FINE)) ERR.fine("  moved to   :" + fo); // NOI18N
                 if (fo == null) {
                     // remove the entry
@@ -597,8 +598,8 @@ public class MultiDataObject extends DataObject {
                 } else {
                     if (!fo.equals (e.getKey ())) {
                         // put the new one into change table
-                        if (add == null) add = new HashMap ();
-                        Entry entry = (Entry)e.getValue ();
+                        if (add == null) add = new HashMap<FileObject,Entry> ();
+                        Entry entry = e.getValue ();
                         entry.changeFile (fo);
                         // using entry.getFile, so the file has correctly
                         // associated its isImportant flag
@@ -692,6 +693,7 @@ public class MultiDataObject extends DataObject {
     * @param s the cookie set to use
     * @deprecated just use getCookieSet().add(...) instead
     */
+    @Deprecated
     protected final void setCookieSet (CookieSet s) {
         setCookieSet(s, true);
     }
@@ -896,14 +898,12 @@ public class MultiDataObject extends DataObject {
     /** Save pairs Entry <-> Entry.getFile () in the list
      *  @return list of saved pairs
      */
-    final List saveEntries() {
+    final List<Pair> saveEntries() {
         synchronized ( synchObjectSecondary() ) {
-            LinkedList ll = new LinkedList();
-            Iterator it = secondaryEntries ().iterator ();
+            LinkedList<Pair> ll = new LinkedList<Pair>();
 
             ll.add (new Pair(getPrimaryEntry ()));
-            while (it.hasNext ()) {
-                MultiDataObject.Entry en = (MultiDataObject.Entry)it.next ();
+            for (MultiDataObject.Entry en: secondaryEntries()) {
                 ll.add (new Pair(en));
             }
             return ll;
@@ -915,10 +915,8 @@ public class MultiDataObject extends DataObject {
      * Entry is re-assigned to it.
      * @param backup list obtained from {@link #saveEntries ()} function
      */
-    final void restoreEntries(List backup) {
-        Iterator it = backup.iterator ();
-        while (it.hasNext ()) {
-            Pair p = (Pair)it.next ();
+    final void restoreEntries(List<Pair> backup) {
+        for (Pair p: backup) {
             if (p.entry.getFile ().equals (p.file))
                 continue;
             if (p.file.isValid()) {
@@ -940,7 +938,7 @@ public class MultiDataObject extends DataObject {
         }
     }
     
-    private final static class Pair {
+    final static class Pair {
         MultiDataObject.Entry entry;
         FileObject file;
 
@@ -963,7 +961,7 @@ public class MultiDataObject extends DataObject {
         /** This factory is used for creating new clones of the holding lock for internal
         * use of this DataObject. It factory is null it means that the file entry is not
         */
-        private transient WeakReference lock;
+        private transient WeakReference<FileLock> lock;
 
         protected Entry (FileObject file) {
             this.file = file;
@@ -1068,10 +1066,10 @@ public class MultiDataObject extends DataObject {
         * @throws IOException if the lock could not be taken
         */
         public FileLock takeLock() throws IOException {
-            FileLock l = lock == null ? null : (FileLock)lock.get ();
+            FileLock l = lock == null ? null : lock.get ();
             if (l == null || !l.isValid ()){
                 l = getFile ().lock ();
-                lock = new WeakReference (l);
+                lock = new WeakReference<FileLock> (l);
             }
             if (ERR.isLoggable(Level.FINE)) {
                 ERR.fine("takeLock: " + this + " is: " + l);
@@ -1083,7 +1081,7 @@ public class MultiDataObject extends DataObject {
          * @return <code>true</code> if so
          */
         public boolean isLocked() {
-            FileLock l = lock == null ? null : (FileLock)lock.get ();
+            FileLock l = lock == null ? null : lock.get ();
             return l != null && l.isValid ();
         }
 

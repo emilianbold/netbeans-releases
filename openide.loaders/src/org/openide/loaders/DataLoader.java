@@ -74,6 +74,7 @@ public abstract class DataLoader extends SharedClassObject {
     *    to best identify the loader's data objects to listeners.
     * @deprecated Use {@link #DataLoader(String)} instead.
     */
+    @Deprecated
     protected DataLoader(Class<? extends DataObject> representationClass) {
         putProperty (PROP_REPRESENTATION_CLASS, representationClass);
         putProperty (PROP_REPRESENTATION_CLASS_NAME, representationClass.getName());

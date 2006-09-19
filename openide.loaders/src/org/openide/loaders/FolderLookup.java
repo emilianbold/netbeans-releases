@@ -21,6 +21,7 @@ package org.openide.loaders;
 
 
 import java.io.*;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.*;
@@ -139,10 +140,10 @@ public class FolderLookup extends FolderInstance {
                     flData.items.addAll(((FolderLookupData)obj).items);
                     flData.lookups.addAll(((FolderLookupData)obj).lookups);
                 } else if(obj instanceof Lookup) {
-                    flData.lookups.add(obj);
+                    flData.lookups.add((Lookup)obj);
                 } else {
                     // Has to be ICItem.
-                    flData.items.add(obj);
+                    flData.items.add((ICItem)obj);
                 }
             } catch(IOException ex) {
                 exception(ex);
@@ -296,12 +297,12 @@ public class FolderLookup extends FolderInstance {
         }
         
         private void readObject (ObjectInputStream ois) throws IOException, ClassNotFoundException {
-            List ls = new ArrayList(); // List<Lookup>
+            List<Lookup> ls = new ArrayList<Lookup>();
             Lookup l;
             while ((l = (Lookup)ois.readObject()) != null) {
                 ls.add(l);
             }
-            Lookup[] arr = (Lookup[])ls.toArray(new Lookup[ls.size()]);
+            Lookup[] arr = ls.toArray(new Lookup[ls.size()]);
             DataFolder df = (DataFolder)ois.readObject ();
             String root = (String)ois.readObject ();
             
@@ -321,7 +322,7 @@ public class FolderLookup extends FolderInstance {
          * @param items Items to assign to all pairs
          * @param lookups delegates to delegate to (first item is null)
          */
-        public void update(Collection items, List lookups) {
+        public void update(Collection<ICItem> items, List<Lookup> lookups) {
             readFromStream = false;
             
             // remember the instance lookup 
@@ -399,7 +400,7 @@ public class FolderLookup extends FolderInstance {
         /** source data object */
         private transient DataObject obj;
         /** reference to created object */
-        private transient WeakReference ref;
+        private transient Reference<Object> ref;
         /** root folder */
         private String rootName;
 
@@ -511,7 +512,7 @@ public class FolderLookup extends FolderInstance {
             try {
                 Object obj = ic.instanceCreate();
                 if (ERR.isLoggable(Level.FINE)) ERR.fine("  getInstance: " + obj + " for " + this.obj); // NOI18N
-                ref = new WeakReference (obj);
+                ref = new WeakReference<Object> (obj);
                 return obj;
             } catch (ClassNotFoundException ex) {
                 exception(ex, fo);
@@ -573,7 +574,7 @@ public class FolderLookup extends FolderInstance {
          *  as obj.
          */
         protected boolean creatorOf(Object obj) {
-            WeakReference w = ref;
+            Reference w = ref;
             if (w != null && w.get () == obj) {
                 return true;
             }
@@ -609,17 +610,17 @@ public class FolderLookup extends FolderInstance {
 
         /** Collection of <code>ICItem</code>'s found in current 
          * folder and its sub-folders. */
-        private Collection items;
+        private Collection<ICItem> items;
         
         /** List of <code>Lookup</code>'s found in current folder
          * and its sub-folders. */
-        private List lookups;
+        private List<Lookup> lookups;
         
         
         /** Constructs data structure with inited fields. */
         public FolderLookupData() {
-            items = new ArrayList(30);
-            lookups = new ArrayList(5);
+            items = new ArrayList<ICItem>(30);
+            lookups = new ArrayList<Lookup>(5);
         }
         
     } // End of FolderLookupData class.

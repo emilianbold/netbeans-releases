@@ -98,7 +98,7 @@ public class ExtensionList extends Object
     */
     public synchronized void addMimeType (String mime) {
         if (mimeTypes == null) {
-            mimeTypes = new TreeSet ();
+            mimeTypes = new TreeSet<String> ();
         }
 
         mimeTypes.add (mime);
@@ -182,19 +182,18 @@ public class ExtensionList extends Object
     
     // Helper methods for equals/hashCode.
     // Note that these are unsorted sets; we don't care about order.
-    private static boolean equalSets(Set s1, Set s2, boolean flattenCase) {
+    private static boolean equalSets(Set<String> s1, Set<String> s2, boolean flattenCase) {
         if (s1 == null && s2 == null) return true; // quick return
         Set s1a = normalizeSet(s1, flattenCase);
         Set s2a = normalizeSet(s2, flattenCase);
         return s1a.equals(s2a);
     }
-    private static Set normalizeSet(Set s, boolean flattenCase) {
-        if (s == null || s.isEmpty()) return Collections.EMPTY_SET;
+    private static Set<String> normalizeSet(Set<String> s, boolean flattenCase) {
+        if (s == null || s.isEmpty()) return Collections.emptySet();
         if (flattenCase) {
-            Set s2 = new HashSet(s.size() * 4 / 3 + 1);
-            Iterator it = s.iterator();
-            while (it.hasNext()) {
-                s2.add(((String)it.next()).toLowerCase(Locale.US));
+            Set<String> s2 = new HashSet<String>(s.size() * 4 / 3 + 1);
+            for (String item: s) {
+                s2.add(item.toLowerCase(Locale.US));
             }
             return s2;
         } else {

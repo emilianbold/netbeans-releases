@@ -97,6 +97,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @exception DataObjectExistsException if there is one already
     * @exception IllegalArgumentException if <code>fo</code> is not folder
     */
+    @Deprecated
     public DataFolder (FileObject fo)
     throws DataObjectExistsException, IllegalArgumentException {
         this(fo, DataLoaderPool.getFolderLoader ());
@@ -121,6 +122,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     * @exception IllegalArgumentException if <code>fo</code> is not folder
     * @deprecated Since 1.13 do not use this constructor, it is for backward compatibility only.
     */
+    @Deprecated
     protected DataFolder (FileObject fo, DataLoader loader)
     throws DataObjectExistsException, IllegalArgumentException {
         super (fo, loader);
@@ -280,17 +282,16 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             return children();
         }
         
-        class Processor implements org.openide.util.Enumerations.Processor {
+        class Processor implements org.openide.util.Enumerations.Processor<DataObject, DataObject> {
             /** @param o processes object by adding its children to the queue */
-            public Object process (Object o, Collection toAdd) {
-                DataObject dataObj = (DataObject)o;
+            public DataObject process (DataObject dataObj, Collection<DataObject> toAdd) {
                 if (rec && dataObj instanceof DataFolder) {
                     toAdd.addAll (Arrays.asList (((DataFolder)dataObj).getChildren()));
                 }
-                return o;
+                return dataObj;
             }
         }
-        Enumeration en = org.openide.util.Enumerations.queue (
+        Enumeration<DataObject> en = org.openide.util.Enumerations.queue (
             org.openide.util.Enumerations.array (getChildren ()),
             new Processor ()
         );
@@ -621,7 +622,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         return super.handleRename (name);
     }
     
-    private static final ThreadLocal KEEP_ALIVE = new ThreadLocal();
+    private static final ThreadLocal<boolean[]> KEEP_ALIVE = new ThreadLocal<boolean[]>();
     
     /* Handles move of the object. Must be overriden in children. Since 1.13 move operation
     * behaves similar like copy, it merges folders whith existing folders in target location.
@@ -632,7 +633,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
     protected FileObject handleMove (DataFolder df) throws IOException {
         FileObject originalFolder = getPrimaryFile ();
         FileLock lock = originalFolder.lock();
-        List backup = saveEntries();
+        List<Pair> backup = saveEntries();
         
         boolean clearKeepAlive = false;
         try {
@@ -643,7 +644,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             DataFolder newFolder = null;
             boolean dispose = false;
             
-            boolean[] keepAlive = (boolean[])KEEP_ALIVE.get();
+            boolean[] keepAlive = KEEP_ALIVE.get();
             if (keepAlive == null) {
                 keepAlive = new boolean[] { false };
                 KEEP_ALIVE.set(keepAlive);
@@ -842,6 +843,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
          * @param df the data folder
          * @deprecated Please explicitly specify a node to be safe.
         */
+        @Deprecated
         public Index(final DataFolder df) {
             this (df, df.getNodeDelegate ());
         }
@@ -891,7 +893,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             
             // hashtable from names of nodes to their data objects for
             // nodes that do not express their data object as their cookie
-            HashMap names = new HashMap (2 * curObjs.length);
+            HashMap<String, DataObject> names = new HashMap<String, DataObject> (2 * curObjs.length);
             for (int i = 0; i < curObjs.length; i++) {
                 Node del = curObjs[i].getNodeDelegate ();
                 if (del.getCookie (DataObject.class) == null) {
@@ -905,7 +907,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 
                 if (d == null) {
                     // try to scan the names table too
-                    d = (DataObject)names.get (nodes[i].getName ());
+                    d = names.get (nodes[i].getName ());
                 }
                 
                 
@@ -917,7 +919,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 }
                 dperm[perm[i]] = d;
             }
-            Set dpermSet = new HashSet (Arrays.asList (dperm)); // Set<DataObject>
+            Set<DataObject> dpermSet = new HashSet<DataObject> (Arrays.asList (dperm));
             if (dpermSet.size () != dperm.length) {
                 throw new IllegalArgumentException ("duplicate DataObject's among reordered childen"); // NOI18N
             }
@@ -1199,18 +1201,18 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
 
             Node.Property p;
 
-            p = new PropertySupport.ReadWrite (
+            p = new PropertySupport.ReadWrite<SortMode> (
                     PROP_SORT_MODE, SortMode.class,
                     DataObject.getString("PROP_sort"),
                     DataObject.getString("HINT_sort")
                 ) {
-                    public Object getValue () {
+                    public SortMode getValue () {
                         return DataFolder.this.getSortMode ();
                     }
 
-                    public void setValue (Object o) throws InvocationTargetException {
+                    public void setValue (SortMode o) throws InvocationTargetException {
                         try {
-                            DataFolder.this.setSortMode ((SortMode)o);
+                            DataFolder.this.setSortMode (o);
                         } catch (IOException ex) {
                             throw new InvocationTargetException (ex);
                         }
@@ -1276,25 +1278,24 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         * @param t transferable to use
         * @param s list of {@link PasteType}s
         */
-        protected void createPasteTypes (Transferable t, java.util.List s) {
+        protected void createPasteTypes (Transferable t, java.util.List<PasteType> s) {
             super.createPasteTypes (t, s);
             if (getPrimaryFile().canWrite()) {
                 dataTransferSupport.createPasteTypes (t, s);
             }
 
-            List files = getDraggedFilesList( t );
+            List<File> files = getDraggedFilesList( t );
             if( null != files && !files.isEmpty() && s.isEmpty() ) {
                 //there are some files in the Transferable so let's try to
                 //convert them to DataObjects and create PasteTypes for them
-                List transferables = new ArrayList( files.size() );
-                for( Iterator i=files.iterator(); i.hasNext(); ) {
-                    File f = (File)i.next();
+                List<Transferable> transferables = new ArrayList<Transferable>( files.size() );
+                for(File f: files) {
                     Transferable nodeTransferable = createNodeTransferable( f );
                     if( null != nodeTransferable )
                         transferables.add( nodeTransferable );
                 }
                 ExTransferable.Multi multi = new ExTransferable.Multi(
-                        (Transferable[])transferables.toArray(new Transferable[transferables.size()]) );
+                        transferables.toArray(new Transferable[transferables.size()]) );
                 super.createPasteTypes (multi, s);
                 if (getPrimaryFile().canWrite()) {
                     dataTransferSupport.createPasteTypes (multi, s);
@@ -1327,11 +1328,11 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             return result;
         }
 
-        private List getDraggedFilesList( Transferable t ) {
+        private List<File> getDraggedFilesList( Transferable t ) {
             try {
                 if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
                     //windows & mac
-                    return (List)t.getTransferData( DataFlavor.javaFileListFlavor );
+                    return (List<File>)t.getTransferData( DataFlavor.javaFileListFlavor );
                 } else if( t.isDataFlavorSupported( getUriListDataFlavor() ) ) {
                     //linux
                     String uriList = (String)t.getTransferData( getUriListDataFlavor() );
@@ -1358,8 +1359,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
             return uriListDataFlavor;
         }
 
-        private List textURIListToFileList( String data ) {
-            List list = new ArrayList(1);
+        private List<File> textURIListToFileList( String data ) {
+            List<File> list = new ArrayList<File>(1);
             // XXX consider using BufferedReader(StringReader) instead
             for( StringTokenizer st = new StringTokenizer(data, "\r\n");
                 st.hasMoreTokens();) {
@@ -1645,7 +1646,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 LoaderTransfer.CLIPBOARD_COPY
             };
         }
-        protected void handleCreatePasteTypes (Transferable t, java.util.List s) {
+        protected void handleCreatePasteTypes (Transferable t, java.util.List<PasteType> s) {
             // These should only accept single-node transfers, since they require dialogs.
             Node node = NodeTransfer.node (t, NodeTransfer.CLIPBOARD_COPY);
 

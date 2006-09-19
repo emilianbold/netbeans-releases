@@ -53,14 +53,14 @@ abstract class DataTransferSupport {
      * @param t clipboard Transferable object, list of transfered DataObjects with their flavors
      * @param s list of paste types supported for transfered objects
      */
-    protected void handleCreatePasteTypes (Transferable t, java.util.List s) {
+    protected void handleCreatePasteTypes (Transferable t, java.util.List<PasteType> s) {
     }
     /** Fills in the list of paste types available for given set to transfered
      * DataObjects.
      * @param t clipboard Transferable object, list of transfered DataObjects with their flavors
      * @param s list of paste types supported for transfered objects
      */
-    public final void createPasteTypes (Transferable t, java.util.List s) {
+    public final void createPasteTypes (Transferable t, java.util.List<PasteType> s) {
         /** All supported operations. */
         int [] ops = defineOperations ();
 

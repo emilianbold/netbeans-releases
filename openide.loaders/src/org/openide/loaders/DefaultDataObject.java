@@ -101,7 +101,7 @@ implements org.openide.cookies.OpenCookie {
                     getPrimaryFile ().rename (lock, name.substring(0, pos), 
                         name.substring(pos+1, name.length()));
                     DataObjectPool.getPOOL().revalidate(
-                        new HashSet (java.util.Collections.singleton(getPrimaryFile ()))
+                        new HashSet<FileObject> (java.util.Collections.singleton(getPrimaryFile ()))
                     );
                 }
             }
@@ -132,7 +132,7 @@ implements org.openide.cookies.OpenCookie {
             ic.open();
         } else {
             // ask a query 
-            java.util.ArrayList options = new java.util.ArrayList ();
+            java.util.ArrayList<Object> options = new java.util.ArrayList<Object> ();
             options.add (NotifyDescriptor.OK_OPTION);
             options.add (NotifyDescriptor.CANCEL_OPTION);
             NotifyDescriptor nd = new NotifyDescriptor (
@@ -154,19 +154,19 @@ implements org.openide.cookies.OpenCookie {
 
     /** We implement OpenCookie and sometimes we also have cloneable
      * editor cookie */
-    public org.openide.nodes.Node.Cookie getCookie(Class c) {
+    public <T extends Node.Cookie> T getCookie(Class<T> c) {
         return getCookie (c, false);
     }
     
     /** Getter for cookie.
      * @param force if true, there are no checks for content of the file
      */
-    final org.openide.nodes.Node.Cookie getCookie (Class c, boolean force) {
+    final <T extends Node.Cookie> T getCookie(Class<T> c, boolean force) {
         if (c == org.openide.cookies.OpenCookie.class) {
-            return this;
+            return c.cast(this);
         }
 
-        org.openide.nodes.Node.Cookie cook = super.getCookie (c);
+        T cook = super.getCookie (c);
         if (cook != null) {
             return cook;
         }

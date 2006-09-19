@@ -53,7 +53,7 @@ final class FilesSet implements Set<FileObject> {
     /** The set containing all files. It is <code>null</code> and is lazy initialized
      * when necessary.
      */
-    private TreeSet delegate;
+    private TreeSet<FileObject> delegate;
     
     /** Creates a new instance of FilesSet for the MultiDataObject.
      * @param primaryFile The primary file - this object is returned first.

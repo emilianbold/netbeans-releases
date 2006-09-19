@@ -477,7 +477,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         public UnrecognizedSettingNode() {
             super(Children.LEAF);
             setName(NbBundle.getMessage(InstanceDataObject.class, "LBL_BrokenSettings")); //NOI18N
-            setIconBase("org/openide/loaders/instanceBroken"); //NOI18N
+            setIconBaseWithExtension("org/openide/loaders/instanceBroken.gif"); //NOI18N
             setShortDescription(InstanceDataObject.this.getPrimaryFile().toString());
         }
 
@@ -727,7 +727,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         return superName;
     }
 
-    private static final Set warnedAboutBrackets = new WeakSet(); // Set<FileObject>
+    private static final Set<FileObject> warnedAboutBrackets = new WeakSet<FileObject>();
     /** Make sure people stop using this syntax eventually.
      * It is better to use the file attribute, not least because some VMs
      * do not much like [] in file names (OpenVMS had problems at one point, e.g.).
@@ -1541,8 +1541,8 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     }
 
     /** filenames list of just created files; sync purpose */
-    private static final List createdIDOs =
-        Collections.synchronizedList(new ArrayList(1));
+    private static final List<String> createdIDOs =
+        Collections.synchronizedList(new ArrayList<String>(1));
 
     /** Clear name cache */
     void notifyAttributeChanged(org.openide.filesystems.FileAttributeEvent fae) {

@@ -115,11 +115,11 @@ final class DefaultSettingsContext implements Context, NameParser {
         return this;
     }
     
-    public NamingEnumeration list(String name) throws NamingException {
+    public NamingEnumeration/*<NameClassPair>*/ list(String name) throws NamingException {
         return list(parse(name));
     }
     
-    public NamingEnumeration list(Name name) throws NamingException {
+    public NamingEnumeration/*<NameClassPair>*/ list(Name name) throws NamingException {
         if (name == null) throw new InvalidNameException("name cannot be null"); // NOI18N
         
         int size = name.size();
@@ -131,11 +131,11 @@ final class DefaultSettingsContext implements Context, NameParser {
         return new BindingEnumeration(dobj.getPrimaryFile());
     }
     
-    public NamingEnumeration listBindings(Name name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(Name name) throws NamingException {
         return list(name);
     }
     
-    public NamingEnumeration listBindings(String name) throws NamingException {
+    public NamingEnumeration<Binding> listBindings(String name) throws NamingException {
         return list(name);
     }
     
@@ -261,9 +261,9 @@ final class DefaultSettingsContext implements Context, NameParser {
     
     /** Enumerates file attributes as jndi bindings.
      */
-    private static final class BindingEnumeration implements NamingEnumeration {
+    private static final class BindingEnumeration implements NamingEnumeration<Binding> {
         
-        private final Enumeration en;
+        private final Enumeration<String> en;
         private final FileObject fo;
         
         public BindingEnumeration(FileObject fo) {
@@ -282,12 +282,12 @@ final class DefaultSettingsContext implements Context, NameParser {
             return en.hasMoreElements();
         }
         
-        public Object next() throws NamingException {
+        public Binding next() throws NamingException {
             return nextElement();
         }
         
-        public Object nextElement() {
-            String name = (String) en.nextElement();
+        public Binding nextElement() {
+            String name = en.nextElement();
             Object val = fo.getAttribute(name);
             return new Binding(name, val);
         }

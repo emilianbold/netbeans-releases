@@ -68,7 +68,8 @@ implements FileChangeListener, DataObject.Container {
             );
     
     /** map of (FileObject, Reference (FolderList)) */
-    private static final Map map = new WeakHashMap (101);
+    private static final Map<FileObject, Reference<FolderList>> map = 
+            new WeakHashMap<FileObject, Reference<FolderList>> (101);
     
     /** refresh time in milliseconds */
     private static int REFRESH_TIME = -1; // will be updated in getRefreshTime
@@ -92,10 +93,10 @@ implements FileChangeListener, DataObject.Container {
 
     /** Primary files in this folder. Maps (FileObject, Reference (DataObject))
     */
-    transient private HashMap primaryFiles = null;
+    transient private HashMap<FileObject, Reference<DataObject>> primaryFiles = null;
 
     /** order of primary files (FileObject) */
-    transient private List order;
+    transient private List<FileObject> order;
 
     private static final Logger err = Logger.getLogger("org.openide.loaders.FolderList"); // NOI18N
     
@@ -151,11 +152,11 @@ implements FileChangeListener, DataObject.Container {
     public static FolderList find (FileObject folder, boolean create) {
         FolderList list = null;
         synchronized (FolderList.class) {
-            Reference ref = (Reference)map.get (folder);
-            list = ref == null ? null : (FolderList)ref.get ();
+            Reference<FolderList> ref = map.get (folder);
+            list = ref == null ? null : ref.get ();
             if (list == null && create) {
                 list = new FolderList (folder, true);
-                map.put (folder, new SoftReference (list));
+                map.put (folder, new SoftReference<FolderList> (list));
             }
         }
         return list;
@@ -218,7 +219,7 @@ implements FileChangeListener, DataObject.Container {
     * with this folder.
     */
     public DataObject[] getChildren () {
-        List res = getChildrenList ();
+        List<DataObject> res = getChildrenList ();
         DataObject[] arr = new DataObject[res.size ()];
         res.toArray (arr);
         return arr;
@@ -507,10 +508,10 @@ implements FileChangeListener, DataObject.Container {
     * @param f filter to be notified about additions
     * @return List with DataObject types
     */
-    private List getObjects (FolderListListener f) {
+    private List<DataObject> getObjects (FolderListListener f) {
         final boolean LOG = err.isLoggable(Level.FINE);
         if (LOG) err.fine("getObjects on " + folder);
-        List res;
+        List<DataObject> res;
         if (primaryFiles == null) {
             res = createBoth (f, false);
         } else {
@@ -543,7 +544,7 @@ implements FileChangeListener, DataObject.Container {
      * @param c a comparator and maybe partial comparator to use
      * @return the sorted list (may or may not be the same)
      */
-    private /*static*/ List carefullySort (List l, FolderOrder c) {
+    private /*static*/ List<DataObject> carefullySort (List<DataObject> l, FolderOrder c) {
         final boolean LOG = err.isLoggable(Level.FINE);
         if (LOG) err.fine("carefullySort on " + folder);
         // Not quite right: topologicalSort will not guarantee that these are left alone,
@@ -557,7 +558,7 @@ implements FileChangeListener, DataObject.Container {
         // the sort stabler would just cause it to fail. XXX could try to add in the
         // stabilizing constraints first, and if that fails, try again without them...
         Collections.sort (l, c);
-        Map constraints = c.getOrderingConstraints(l);
+        Map<DataObject, List<DataObject>> constraints = c.getOrderingConstraints(l);
         if (constraints == null) {
             return l;
         } else {
@@ -566,7 +567,7 @@ implements FileChangeListener, DataObject.Container {
             try {
                 return Utilities.topologicalSort(l, constraints);
             } catch (TopologicalSortException ex) {
-                List corrected = ex.partialSort();
+                List<DataObject> corrected = ex.partialSort();
                 if (err.isLoggable(Level.WARNING)) {
                     err.warning("Note: folder " + folder + " cannot be consistently sorted due to ordering conflicts."); // NOI18N
                     err.log(Level.WARNING, null, ex);
@@ -581,12 +582,12 @@ implements FileChangeListener, DataObject.Container {
     * @param list list of DataObject
     * @return list of FileObject
     */
-    private static List createOrder (List list) {
+    private static List<FileObject> createOrder (List<DataObject> list) {
         int size = list.size ();
-        List res = new ArrayList (size);
+        List<FileObject> res = new ArrayList<FileObject> (size);
 
         for (int i = 0; i < size; i++) {
-            res.add (((DataObject)list.get (i)).getPrimaryFile ());
+            res.add (list.get (i).getPrimaryFile ());
         }
 
         return res;
@@ -601,8 +602,8 @@ implements FileChangeListener, DataObject.Container {
     * which are accepted by the filter will be added. Null means no filtering.
     * @return array of data objects
     */
-    private /*static*/ List createObjects (
-        Collection order, Map map, FolderListListener f
+    private /*static*/ List<DataObject> createObjects (
+        Collection<FileObject> order, Map<FileObject, Reference<DataObject>> map, FolderListListener f
     ) {
         final boolean LOG = err.isLoggable(Level.FINE);
         if (LOG) {
@@ -612,9 +613,8 @@ implements FileChangeListener, DataObject.Container {
 
         Iterator it = order.iterator ();
 
-        List res = new ArrayList (size);
-        for (int i = 0; i < size; i++) {
-            org.openide.filesystems.FileObject fo = (org.openide.filesystems.FileObject) it.next();
+        List<DataObject> res = new ArrayList<DataObject> (size);
+        for (FileObject fo: order) {
 
             if (LOG) {
                 err.fine("  iterating" + fo);
@@ -625,9 +625,8 @@ implements FileChangeListener, DataObject.Container {
                 }
                 continue;
             }
-            java.lang.ref.Reference ref = (java.lang.ref.Reference) map.get(fo);
-            org.openide.loaders.DataObject obj = ref != null ? (org.openide.loaders.DataObject) ref.get()
-                                                             : null;
+            Reference<DataObject> ref = map.get(fo);
+            DataObject obj = ref != null ? ref.get(): null;
 
             if (obj == null) {
                 // try to find new data object
@@ -635,8 +634,8 @@ implements FileChangeListener, DataObject.Container {
                     err.fine("    reference is " + ref + " obj is " + obj);
                 }
                 try {
-                    obj = org.openide.loaders.DataObject.find(fo);
-                    ref = new java.lang.ref.SoftReference(obj);
+                    obj = DataObject.find(fo);
+                    ref = new java.lang.ref.SoftReference<DataObject>(obj);
                     map.put(fo, ref);
                 }
                 catch (org.openide.loaders.DataObjectNotFoundException ex) {
@@ -682,29 +681,31 @@ implements FileChangeListener, DataObject.Container {
      * @param notify true if changes in the children should be fired
      * @return vector of children
      */
-    private List createBoth (FolderListListener filter, boolean notify) {
+    private List<DataObject> createBoth (FolderListListener filter, boolean notify) {
         final boolean LOG = err.isLoggable(Level.FINE);
         if (LOG) err.fine("createBoth on " + folder);
         // map for (FileObject, DataObject)
-        final HashMap file = new HashMap ();
+        final HashMap<FileObject,Reference<DataObject>> file = 
+                new HashMap<FileObject, Reference<DataObject>> ();
 
         // list of all processed objects
-        List all = new ArrayList ();
+        List<DataObject> all = new ArrayList<DataObject> ();
         // result list to return from the method
-        List res = new ArrayList ();
+        List<DataObject> res = new ArrayList<DataObject> ();
 
         // map of current objects (FileObject, DataObject)
-        final HashMap remove = primaryFiles == null ?
-                               new HashMap () : (HashMap)primaryFiles.clone ();
+        final HashMap<FileObject, Reference<DataObject>> remove = primaryFiles == null ?
+                               new HashMap<FileObject, Reference<DataObject>> () : 
+                               (HashMap<FileObject, Reference<DataObject>>)primaryFiles.clone ();
 
         // list of new objects to add
-        final List add = new ArrayList ();
+        final List<DataObject> add = new ArrayList<DataObject> ();
 
         DataLoaderPool pool = DataLoaderPool.getDefault();
 
         // hashtable with FileObjects that are marked to be recognized
         // and that is why being out of enumeration
-        final HashSet marked = new HashSet ();
+        final HashSet<FileObject> marked = new HashSet<FileObject> ();
         DataLoader.RecognizedFiles recog = new DataLoader.RecognizedFiles () {
                                                /** Adds the file object to the marked hashtable.
                                                * @param fo file object (can be <CODE>null</CODE>)
@@ -716,9 +717,9 @@ implements FileChangeListener, DataObject.Container {
                                                }
                                            };
         // enumeration of all files in the folder
-        Enumeration en = folder.getChildren (false);
+        Enumeration<? extends FileObject> en = folder.getChildren (false);
         while (en.hasMoreElements ()) {
-            FileObject fo = (FileObject)en.nextElement ();
+            FileObject fo = en.nextElement ();
             if (!marked.contains (fo)) {
                 // the object fo has not been yet marked as recognized
                 // => continue in computation
@@ -750,14 +751,14 @@ implements FileChangeListener, DataObject.Container {
                         // if we have not created primaryFiles before, then it is new
                         boolean goIn = primaryFiles == null;
                         if (!goIn) {
-                            Reference r = (Reference)primaryFiles.get (primary);
+                            Reference<DataObject> r = primaryFiles.get (primary);
                             // if its primary file is not between original primary files
                             // then data object is new
                             goIn = r == null;
                             if (!goIn) {
                                 // if the primary file is there, but the previous data object
                                 // exists and is different, then this one is new
-                                DataObject obj2 = (DataObject)r.get ();
+                                DataObject obj2 = r.get ();
                                 goIn = obj2 == null || obj2 != obj;
                                 if (goIn) {
                                     doNotRemovePrimaryFile = true;
@@ -792,7 +793,7 @@ implements FileChangeListener, DataObject.Container {
                     }
 
                     // add it to the list of primary files
-                    file.put (primary, new SoftReference (obj));
+                    file.put (primary, new SoftReference<DataObject> (obj));
                 } else {
                     // 1. nothing to add to data object list
                     // 2. remove this object if it was in list of previous ones
@@ -887,7 +888,7 @@ implements FileChangeListener, DataObject.Container {
             this.filter = filter;
         }
 
-        public List result;
+        public List<DataObject> result;
         public RequestProcessor.Task task;
 
         public void run () {

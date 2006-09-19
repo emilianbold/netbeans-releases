@@ -44,10 +44,10 @@ interface FolderListListener {
     * @param arr array where the implementation should add the 
     *    object
     */
-    public void process (DataObject obj, java.util.List arr);
+    public void process (DataObject obj, java.util.List<DataObject> arr);
 
     /** All objects has been recognized.
     * @param arr list of DataObjects
     */
-    public void finished (java.util.List arr);
+    public void finished (java.util.List<DataObject> arr);
 }

@@ -591,18 +591,18 @@ public class DataEditorSupport extends CloneableEditorSupport {
     */
     private static final class EnvListener extends FileChangeAdapter {
         /** Reference (Env) */
-        private Reference env;
+        private Reference<Env> env;
         
         /** @param env environement to use
         */
         public EnvListener (Env env) {
-            this.env = new java.lang.ref.WeakReference (env);
+            this.env = new java.lang.ref.WeakReference<Env> (env);
         }
 
 
         /** Handles <code>FileObject</code> deletion event. */
         public void fileDeleted(FileEvent fe) {
-            Env env = (Env)this.env.get();
+            Env env = this.env.get();
             FileObject fo = fe.getFile();
             if(env == null || env.getFileImpl() != fo) {
                 // the Env change its file and we are not used
@@ -621,7 +621,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * @param fe the event describing context where action has taken place
         */
         public void fileChanged(FileEvent fe) {
-            Env env = (Env)this.env.get ();
+            Env env = this.env.get ();
             if (env == null || env.getFileImpl () != fe.getFile ()) {
                 // the Env change its file and we are not used
                 // listener anymore => remove itself from the list of listeners

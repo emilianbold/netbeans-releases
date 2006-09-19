@@ -224,7 +224,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
      * @param arr array of instance cookies
      * @param list list to add created objects to
      */
-    static void allInstances (InstanceCookie[] arr, java.util.List list) {
+    static void allInstances (InstanceCookie[] arr, java.util.List<Object> list) {
         Exception ex = null;
         
         for (int i = 0; i < arr.length; i++) {
@@ -256,7 +256,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
      */
     private final class MenuBarFolder extends FolderInstance {
         /** List of the components this FolderInstance manages. */
-        private ArrayList managed = new ArrayList();
+        private ArrayList<Component> managed = new ArrayList<Component>();
 
         /** Creates a new menubar folder on the specified <code>DataFolder</code>.
          * @param folder a <code>DataFolder</code> to work with
@@ -269,8 +269,8 @@ public class MenuBar extends JMenuBar implements Externalizable {
         /** Removes the components added by this FolderInstance from the MenuBar.
          * Called when menu is refreshed. */
         private void cleanUp() {
-            for (Iterator it = managed.iterator(); it.hasNext(); ) {
-                MenuBar.this.remove((Component)it.next());
+            for (Iterator<Component> it = managed.iterator(); it.hasNext(); ) {
+                MenuBar.this.remove(it.next());
             }
             managed.clear();
         }

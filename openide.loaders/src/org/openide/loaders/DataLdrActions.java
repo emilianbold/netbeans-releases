@@ -32,7 +32,7 @@ import org.openide.util.actions.SystemAction;
  */
 final class DataLdrActions extends FolderInstance {
     /** Reference<DataLoader> to know for what loader we work */
-    private java.lang.ref.Reference ref;
+    private java.lang.ref.Reference<DataLoader> ref;
     /** last creating task */
     private org.openide.util.Task creation;
     /** processor to use */
@@ -41,7 +41,7 @@ final class DataLdrActions extends FolderInstance {
     public DataLdrActions (DataFolder f, DataLoader l) {
         super (f);
         
-        this.ref = new java.lang.ref.WeakReference (l);
+        this.ref = new java.lang.ref.WeakReference<DataLoader> (l);
     }
     
     /** Asks the manager to store these actions to disk. Provided for
@@ -56,8 +56,8 @@ final class DataLdrActions extends FolderInstance {
              */
             private void work () throws IOException {
                 DataObject[] now = folder.getChildren ();
-                HashMap nowToObj = new HashMap ();
-                LinkedList sepObjs = new LinkedList ();
+                Map<Object, DataObject> nowToObj = new HashMap<Object, DataObject> ();
+                LinkedList<DataObject> sepObjs = new LinkedList<DataObject> ();
                 for (int i = 0; i < now.length; i++) {
                     org.openide.cookies.InstanceCookie ic = (org.openide.cookies.InstanceCookie) now[i].getCookie(org.openide.cookies.InstanceCookie.class);
 
@@ -80,7 +80,7 @@ final class DataLdrActions extends FolderInstance {
                     }
                 }
                 
-                ArrayList order = new ArrayList ();
+                ArrayList<DataObject> order = new ArrayList<DataObject> ();
                 
                 for (int i = 0; i < arr.length; i++) {
                     DataObject obj = (DataObject)nowToObj.remove (arr[i]);
@@ -89,7 +89,7 @@ final class DataLdrActions extends FolderInstance {
                             obj = InstanceDataObject.create (folder, null, arr[i].getClass ());
                         } else {
                             if (!sepObjs.isEmpty ()) {
-                                obj = (DataObject)sepObjs.removeFirst ();
+                                obj = sepObjs.removeFirst ();
                             } else {
                                 obj = InstanceDataObject.create (folder, "Separator" + order.size (), javax.swing.JSeparator.class);
                             }
@@ -99,16 +99,14 @@ final class DataLdrActions extends FolderInstance {
                 }
                 
                 // these were there but are not there anymore
-                for (Iterator it = nowToObj.values ().iterator (); it.hasNext (); ) {
-                    DataObject obj = (DataObject)it.next ();
+                for (DataObject obj: nowToObj.values ()) {
                     obj.delete ();
                 }
-                for (Iterator it = sepObjs.iterator (); it.hasNext (); ) {
-                    DataObject obj = (DataObject)it.next ();
+                for (DataObject obj: sepObjs) {
                     obj.delete ();
                 }
                 
-                folder.setOrder ((DataObject[])order.toArray (new DataObject[0]));
+                folder.setOrder (order.toArray (new DataObject[0]));
             }
             
             public void run () {
@@ -136,7 +134,7 @@ final class DataLdrActions extends FolderInstance {
     /** Creates the actions and notifies the loader.
      */
     protected Object createInstance (org.openide.cookies.InstanceCookie[] cookies) throws java.io.IOException, ClassNotFoundException {
-        ArrayList list = new ArrayList ();
+        ArrayList<javax.swing.Action> list = new ArrayList<javax.swing.Action> ();
         for (int i = 0; i < cookies.length; i++) {
             Class clazz = cookies[i].instanceClass ();
             if (javax.swing.JSeparator.class.isAssignableFrom (clazz)) {
@@ -146,12 +144,12 @@ final class DataLdrActions extends FolderInstance {
             
             Object action = cookies[i].instanceCreate ();
             if (action instanceof javax.swing.Action) {
-                list.add (action);
+                list.add ((javax.swing.Action)action);
                 continue;
             }
         }
         
-        DataLoader l = (DataLoader)ref.get ();
+        DataLoader l = ref.get ();
         if (l != null) {
             l.setSwingActions (list);
         }
