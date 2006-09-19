@@ -35,7 +35,7 @@ import org.netbeans.junit.NbTestCase;
  */
 public class LineBreakpointTest extends NbTestCase {
 
-    private static final String TEST_APP = System.getProperty ("test.dir.src") + 
+    private static final String TEST_APP = "file://"+System.getProperty ("test.dir.src") + 
         "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java";
     
     

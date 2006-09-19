@@ -45,6 +45,7 @@ public class LocalVariablesTest extends NbTestCase {
     public void testWatches () throws Exception {
         try {
             LineBreakpoint lb = LineBreakpoint.create (CLASS_NAME, 40);
+            lb.setPreferredClassName(CLASS_NAME);
             dm.addBreakpoint (lb);
 
             support = JPDASupport.attach (CLASS_NAME);

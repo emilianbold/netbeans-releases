@@ -44,9 +44,11 @@ public class CallStackTest extends NbTestCase {
         try {
             JPDASupport.removeAllBreakpoints ();
             LineBreakpoint lb = LineBreakpoint.create (
-                "org.netbeans.api.debugger.jpda.testapps.CallStackApp", 
+                "file://"+System.getProperty ("test.dir.src") + 
+                "org/netbeans/api/debugger/jpda/testapps/CallStackApp.java",
                 30
             );
+            lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.CallStackApp");
             DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
             support = JPDASupport.attach (
                 "org.netbeans.api.debugger.jpda.testapps.CallStackApp"
@@ -143,9 +145,11 @@ public class CallStackTest extends NbTestCase {
         try {
             JPDASupport.removeAllBreakpoints ();
             LineBreakpoint lb = LineBreakpoint.create (
-                "org.netbeans.api.debugger.jpda.testapps.CallStackApp", 
+                "file://"+System.getProperty ("test.dir.src") + 
+                "org/netbeans/api/debugger/jpda/testapps/CallStackApp.java",
                 30
             );
+            lb.setPreferredClassName("org.netbeans.api.debugger.jpda.testapps.CallStackApp");
             DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
             support = JPDASupport.attach (
                 "org.netbeans.api.debugger.jpda.testapps.CallStackApp"
