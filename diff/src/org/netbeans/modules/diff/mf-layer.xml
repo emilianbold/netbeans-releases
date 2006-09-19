@@ -69,6 +69,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-diff-sidebar-DiffSidebarFactory.instance/org-netbeans-modules-web-core-syntax-folding-JspCodeFoldingSideBarFactory.instance" boolvalue="true"/>
         </folder>
 
+<!--
         <folder name="text">
             <folder name="base">
                 <folder name="UpToDateStatusProvider">
@@ -78,6 +79,7 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
             </folder>
         </folder>
+-->
     </folder>
 
     <folder name="Menu">
