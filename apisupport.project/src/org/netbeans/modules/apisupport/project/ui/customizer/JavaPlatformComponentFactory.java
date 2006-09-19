@@ -48,14 +48,12 @@ public class JavaPlatformComponentFactory {
     
     private JavaPlatformComponentFactory() {}
     
-    private static final ComboBoxModel MODEL = new Model();
     public static ComboBoxModel/*<JavaPlatform>*/ javaPlatformListModel() {
-        return MODEL;
+        return new Model();
     }
     
-    private static final ListCellRenderer RENDERER = new Renderer();
     public static ListCellRenderer/*<JavaPlatform>*/ javaPlatformListCellRenderer() {
-        return RENDERER;
+        return new Renderer();
     }
     
     private static final class Model implements ComboBoxModel/*<JavaPlatform>*/, PropertyChangeListener, Comparator/*<JavaPlatform>*/ {

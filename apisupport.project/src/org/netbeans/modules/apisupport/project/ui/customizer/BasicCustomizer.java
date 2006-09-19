@@ -246,27 +246,28 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
                 }
             }
             save();
-            
-            // Close & dispose the dialog
-            if (dialog != null) {
-                dialog.setVisible(false);
-                dialog.dispose();
-            }
         }
         
         // remove dialog for this customizer's project
         public void windowClosed(WindowEvent e) {
-            dialog = null;
+            doClose();
         }
         
         public void windowClosing(WindowEvent e) {
             // Dispose the dialog otherwise the
             // {@link WindowAdapter#windowClosed} may not be called
+            doClose();
+        }
+        
+        public void doClose() {
             if (dialog != null) {
+                dialog.removeWindowListener(this);
                 dialog.setVisible(false);
                 dialog.dispose();
             }
+            dialog = null;
         }
+        
     }
     
     /**
