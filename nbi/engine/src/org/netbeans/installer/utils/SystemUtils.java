@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import org.netbeans.installer.download.DownloadManager;
 import org.netbeans.installer.utils.exceptions.DownloadException;
@@ -326,9 +327,17 @@ public abstract class SystemUtils {
         }
     }
     
-    private static class WindowsSystemUtils extends GenericSystemUtils {
+    public static class WindowsSystemUtils extends GenericSystemUtils {
         
         public static final String WIN32_DLL_LOCATION = "native/win32.dll";
+        
+        public static final String UNINSTALL_KEY =
+                "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";//NOI18N
+        
+        public static final String DISPLAY_NAME = "DisplayName";
+        public static final String DISPLAY_ICON = "DisplayIcon";
+        public static final String UNINSTALL_STRING = "UninstallString";
+        public static final String INSTALL_LOCATION = "InstallLocation";
         
         public static final Win32Registry registry = Win32Registry.getInstance();
         
@@ -343,14 +352,197 @@ public abstract class SystemUtils {
         
         public int createShortcut(Shortcut shortcut) {
             return createShortcut0(shortcut);
-        }        
+        }
         
         protected String getNativeLibraryPath() {
             return WIN32_DLL_LOCATION;
         }
+        
         public Win32Registry getWin32Registry() {
             return registry;
         }
+        
+        private boolean addAditionalParameters(String uid, HashMap <String, Object> additionalParameters) {
+            boolean result = true;
+            if(additionalParameters==null) {
+                return true;
+            }
+            
+            int size = additionalParameters.size();
+            if(size==0) {
+                return true;
+            }
+            
+            LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                    "Trying to set " + size + " additional parameters");
+            Object [] keys = additionalParameters.keySet().toArray();
+            
+            for(int i=0;i<size;i++) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                        SystemUtils.getInstance().getLineSeparator());
+                LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                        "ValueName = " + keys[i].toString());
+                if(! (keys[i] instanceof String)) {
+                    continue;
+                }
+                
+                Object value = additionalParameters.get(keys[i]);
+                LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                        "Value = " + value.toString());
+                
+                if(value instanceof Short) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                            "Type is short. Set REG_DWORD value");
+                    result = result &&
+                            registry.set32BitValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                            UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                            (String)keys[i], ((Short)value).intValue());
+                } else if(value instanceof Integer) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                            "Type is integer. Set REG_DWORD value");
+                    result = result &&
+                            registry.set32BitValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                            UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                            (String)keys[i], ((Integer)value).intValue());
+                } else if(value instanceof Long) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                            "Type is long. Set REG_DWORD value");
+                    result = result &&
+                            registry.set32BitValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                            UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                            (String)keys[i], ((Long)value).intValue());
+                } else if(value instanceof byte[]) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                            "Type is byte[]. Set REG_BINARY value");
+                    result = result &&
+                            registry.setBinaryValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                            UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                            (String)keys[i], (byte[])value);
+                } else if(value instanceof String[]) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                            "Type is String[]. Set REG_MULTI_SZ value");
+                    result = result &&
+                            registry.setMultiStringValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                            UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                            (String)keys[i], (String[]) value);
+                } else if(value instanceof String) {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                            "Type is String. Set REG_SZ value");
+                    result = result &&
+                            registry.setStringValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                            UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                            (String)keys[i], (String)value, false);
+                } else {
+                    LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                            "Type can`t be determined. Set REG_SZ value");
+                    result = result &&
+                            registry.setStringValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                            UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                            (String)keys[i], value.toString(), false);
+                }
+                
+            }
+            return result;
+        }
+        
+        /** Add new entry in Add/Remove programs.<br>
+         *
+         * @param uid
+         *      The uid of the entry<br>
+         *
+         * @param displayName
+         *      The name that would be displayed in Add/Remove window<br>
+         *
+         * @param displayIcon
+         *      The icon that would be displayed in Add/Remove window<br>
+         *
+         * @param installLocation
+         *      The location of the installation<br>
+         *
+         * @param uninstallString
+         *      The uninstaller location<br>
+         *
+         * @param additionalParameters
+         *      The hashmap of additional parametrs.<br>
+         *      The possible values are : <br>
+         *      <ul>
+         *      <li>int(Integer), long (Long), short(Short) -> REG_DWORD <br></li>
+         *      <li>byte[] -> REG_BINARY <br></li>
+         *      <li>String[] ->REG_MULTI_SZ <br></li>
+         *      <li>String - > REG_SZ <br></li></ul>
+         *
+         *      Other values would be set as REG_SZ with value .toString()
+         *
+         *
+         * @return <i>true</i> if everything is OK, <i>false</i> otherwise.
+         */
+        public boolean addRemoveProgramsInstall(String uid,String displayName,
+                String displayIcon, String installLocation,
+                String uninstallString, HashMap <String, Object> additionalParameters) {
+            
+            LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                    "Add new Add/Remove Programs entry with id [" + uid + "]");
+            
+            if(registry.isKeyExists(Win32Registry.HKEY_LOCAL_MACHINE,
+                    UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid)) {
+                
+                LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                        "This entry already exist. No modification is done. Just exit");
+                return false;
+            }
+            boolean result = registry.createKey(Win32Registry.HKEY_LOCAL_MACHINE,
+                    UNINSTALL_KEY,uid);
+            if(!result) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                        "The new regitsry key can`t be created. Exit.");
+                return false;
+            }
+            if(displayName!=null) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                        "Set '" + DISPLAY_NAME + "' = [" + displayName + "]");
+                result = result &&
+                        registry.setStringValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                        UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                        DISPLAY_NAME, displayName, false);
+            }
+            
+            if(installLocation!=null) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                        "Set '" + INSTALL_LOCATION + "' = [" + installLocation+ "]");
+                result = result &&
+                        registry.setStringValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                        UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                        INSTALL_LOCATION, installLocation, false);
+            }
+            if(displayIcon!=null) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                        "Set '" + DISPLAY_ICON + "' = [" + displayIcon+ "]");
+                result = result &&
+                        registry.setStringValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                        UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                        DISPLAY_ICON, displayIcon, false);
+            }
+            if(uninstallString!=null) {
+                LogManager.getInstance().log(ErrorLevel.MESSAGE,
+                        "Set '" + UNINSTALL_STRING + "' = [" + uninstallString+ "]");
+                result = result &&
+                        registry.setStringValue(Win32Registry.HKEY_LOCAL_MACHINE,
+                        UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid,
+                        UNINSTALL_STRING, uninstallString, false);
+            }
+            result = result && addAditionalParameters(uid,additionalParameters);
+            return result;
+        }
+        
+        public boolean addRemoveProgramsUninstall(String uid) {
+            if(!registry.isKeyExists(Win32Registry.HKEY_LOCAL_MACHINE,
+                    UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid)) {
+                return false;
+            }
+            return registry.deleteKey(Win32Registry.HKEY_LOCAL_MACHINE,
+                    UNINSTALL_KEY + Win32Registry.WR_SEPARATOR + uid);
+        }
+        
     }
     
     public static enum Platform {
@@ -478,59 +670,59 @@ public abstract class SystemUtils {
         private String iconPath;
         private String workingDirectory;
         private String arguments;
-
+        
         public String getShortcutName() {
             return shortcutName;
         }
-
+        
         public void setShortcutName(String shortcutName) {
             this.shortcutName = shortcutName;
         }
-
+        
         public String getShortcutPath() {
             return shortcutPath;
         }
-
+        
         public void setShortcutPath(String shortcutPath) {
             this.shortcutPath = shortcutPath;
         }
-
+        
         public String getPath() {
             return path;
         }
-
+        
         public void setPath(String path) {
             this.path = path;
         }
-
+        
         public String getDescription() {
             return description;
         }
-
+        
         public void setDescription(String description) {
             this.description = description;
         }
-
+        
         public String getIconPath() {
             return iconPath;
         }
-
+        
         public void setIconPath(String iconPath) {
             this.iconPath = iconPath;
         }
-
+        
         public String getWorkingDirectory() {
             return workingDirectory;
         }
-
+        
         public void setWorkingDirectory(String workingDirectory) {
             this.workingDirectory = workingDirectory;
         }
-
+        
         public String getArguments() {
             return arguments;
         }
-
+        
         public void setArguments(String arguments) {
             this.arguments = arguments;
         }

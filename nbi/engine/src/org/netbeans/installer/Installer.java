@@ -26,7 +26,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
 import org.netbeans.installer.wizard.components.actions.InitalizeRegistryAction;
@@ -48,11 +47,11 @@ public class Installer {
      * @param arguments The command line arguments
      * @see #start(String[])
      */
-    public static void main(String[] arguments) {        
-        new Installer(arguments).start();        
+    public static void main(String[] arguments) {
+        new Installer(arguments).start();
     }
     
-   
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_LOCAL_DIRECTORY_PATH =
