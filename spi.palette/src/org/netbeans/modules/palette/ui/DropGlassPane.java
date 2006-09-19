@@ -44,9 +44,9 @@ final class DropGlassPane extends JPanel {
     final static private int MIN_Y = 0;//3;
     final static private int MIN_WIDTH = 0;//10;
     final static private int MIN_HEIGTH = 0;//3;
-    transient static private Component oldPane;
-    transient static private JComponent originalSource;
-    transient static private boolean wasVisible;
+    static private Component oldPane;
+    static private JComponent originalSource;
+    static private boolean wasVisible;
     Line2D line = null;
     Rectangle prevLineRect = null;
 
