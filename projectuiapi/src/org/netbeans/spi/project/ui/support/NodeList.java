@@ -54,12 +54,12 @@ public interface NodeList<K> {
      */
     Node node(K key);
     /**
-     * callback from Children instance of the parent node, equal in semantics to <code>Children.addNotify()</code>
+     * callback from Children instance of the parent node, called by the infrastructure at <code>Children.addNotify()</code> time.
      * To be used primarily for registering of listeners and caching of state.
      */
     void addNotify();
     /**
-     * callback from Children instance of the parent node, equal in semantics to <code>Children.removeNotify()</code>
+     * callback from Children instance of the parent node, called by the infrastructure at <code>Children.removeNotify()</code> time.
      * To be used primarily for unregistering of listeners and general cleanup.
      */
     void removeNotify();
