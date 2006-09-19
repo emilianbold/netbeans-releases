@@ -80,9 +80,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     
     private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
     
-    private String nbDestination;
+    private String nbDestination = "";
     
-    private String asDestination;
+    private String asDestination = "";
     
     public void build(WizardBuilderSupport support) {
         super.build(support);
@@ -457,6 +457,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	return true;
     }
     
+    /** Called in GUI mode. */
     public void exited (WizardBeanEvent event) {
         logEvent(this, Log.DBG, "exited ENTER");
         super.exited(event);
@@ -480,6 +481,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         Util.setASInstallDir(asDestination);
     }
     
+    /** Called in silent mode. */
     public void execute (WizardBeanEvent event) {
         logEvent(this, Log.DBG, "execute ENTER");
         super.execute(event);

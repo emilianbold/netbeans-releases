@@ -30,7 +30,7 @@ import com.installshield.wizard.service.WizardServicesUI;
 
 public class JDKSelectionPanel extends DirectoryChooserPanel {
 
-    private String jdkHome;
+    private String jdkHome = "";
     
     private static final String BUNDLE = "$L(org.netbeans.installer.Bundle,";
     
@@ -101,17 +101,17 @@ public class JDKSelectionPanel extends DirectoryChooserPanel {
         return true;
     }
     
+    /** Called in GUI mode. */
     public void exited (WizardBeanEvent event) {
         logEvent(this, Log.DBG, "exited ENTER");
         super.exited(event);
-        logEvent(this, Log.DBG, "exited call of Util.setJdkHome(" + jdkHome + ")");
         Util.setJdkHome(jdkHome);
     }
     
+    /** Called in silent mode. */
     public void execute (WizardBeanEvent event) {
         logEvent(this, Log.DBG, "execute ENTER");
         super.execute(event);
-        logEvent(this, Log.DBG, "execute call of Util.setJdkHome(" + jdkHome + ")");
         Util.setJdkHome(jdkHome);
     }
     
