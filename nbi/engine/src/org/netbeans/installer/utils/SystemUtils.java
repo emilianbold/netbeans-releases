@@ -20,18 +20,11 @@
  */
 package org.netbeans.installer.utils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import org.netbeans.installer.download.DownloadManager;
-import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.system.GenericSystemUtils;
 import org.netbeans.installer.utils.system.UnixSystemUtils;
@@ -56,6 +49,7 @@ public abstract class SystemUtils {
                 case SOLARIS_SPARC:
                 case LINUX:
                     instance = new UnixSystemUtils();
+                    break;
                 default:
                     instance = new GenericSystemUtils();
                     break;
@@ -219,7 +213,7 @@ public abstract class SystemUtils {
             return stdErr;
         }
     }
-   
+    
     
     public static final long MAX_EXECUTION_TIME = 120000; // 2 minutes seconds
     public static final int  BUFFER_SIZE        = 4096;   // 4 kilobytes
