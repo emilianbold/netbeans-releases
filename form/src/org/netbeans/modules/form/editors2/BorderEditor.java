@@ -108,7 +108,7 @@ public final class BorderEditor extends PropertyEditorSupport
 
         if (value instanceof BorderDesignSupport) {
             borderSupport = (BorderDesignSupport) value;
-        } else {
+        } else if (value != null) {
             assert (value instanceof Border);
             if (!(value instanceof javax.swing.plaf.UIResource))
                 borderSupport = new BorderDesignSupport((Border)value);
