@@ -161,6 +161,45 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             super.run(result);
         }
     }
+
+    private static void appendThread(StringBuffer sb, String indent, Thread t, Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Thread ").append(t.getName()).append('\n');
+        indent = indent.concat("  ");
+        for (StackTraceElement e : data.get(t)) {
+            sb.append(indent).append(e.getClassName()).append('.').append(e.getMethodName())
+                    .append(':').append(e.getLineNumber()).append('\n');
+        }
+    }
+    
+    private static void appendGroup(StringBuffer sb, String indent, ThreadGroup tg, Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Group ").append(tg.getName()).append('\n');
+        indent = indent.concat("  ");
+
+        int groups = tg.activeGroupCount();
+        ThreadGroup[] chg = new ThreadGroup[groups];
+        tg.enumerate(chg);
+        for (ThreadGroup inner : chg) {
+            appendGroup(sb, indent, inner, data);
+        }
+
+        int threads = tg.activeCount();
+        Thread[] cht= new Thread[threads];
+        tg.enumerate(cht);
+        for (Thread t : cht) {
+            appendThread(sb, indent, t, data);
+        }
+    }
+    
+    private static String threadDump() {
+        Map<Thread,StackTraceElement[]> all = Thread.getAllStackTraces();
+        ThreadGroup root = Thread.currentThread().getThreadGroup();
+        while (root.getParent() != null) root = root.getParent();
+
+        StringBuffer sb = new StringBuffer();
+        appendGroup(sb, "", root, all);
+        return sb.toString();
+    }
+
     
     /**
      * Runs the bare test sequence. It checks {@link #runInEQ} and possibly 
@@ -208,9 +247,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 }
 
                 if (!finished) {
-                    Logger dump = Logger.getLogger("thread.dump"); // NOI18N
-                    Log.threadDump(dump);
-                    throw new AssertionFailedError ("The test " + getName() + " did not finish in " + time + "ms");
+                    throw new AssertionFailedError ("The test " + getName() + " did not finish in " + time + "ms\n" +
+                        threadDump());
                 }
             }
         }

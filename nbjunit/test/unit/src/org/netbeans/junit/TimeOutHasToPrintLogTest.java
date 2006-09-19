@@ -71,13 +71,12 @@ public class TimeOutHasToPrintLogTest extends NbTestCase {
     public void testThreadDumpPrinted() throws Exception {
         TimeOutHasToPrintLogTest t = new TimeOutHasToPrintLogTest("justTimeOutInOneOfMyMethods");
         
-        CharSequence seq = Log.enable("thread.dump", Level.FINE);
-        
         TestResult res = t.run();
         
         assertEquals("One test has been run", 1, res.runCount());
-        
-        String s = seq.toString();
+        TestFailure failure = (TestFailure)res.failures().nextElement();
+        String s = failure.exceptionMessage();
+
         if (s.indexOf("justTimeOutInOneOfMyMethods") == -1) {
             fail("There should be thread dump reported in case of timeout:\n" + s);
         }
