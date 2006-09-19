@@ -31,7 +31,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -218,7 +217,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_RootFolder", ROOT_MODULE_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
         return null;
     }
@@ -235,7 +234,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_RootFolder", ROOT_LOCAL_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
         return null;
     }
@@ -267,7 +266,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_CompsFolder", COMPS_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
         return null;
     }
@@ -284,7 +283,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_CompsFolder", COMPS_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
         return null;
     }
@@ -302,7 +301,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_GroupsFolder", GROUPS_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
         return null;
     }
@@ -320,7 +319,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_GroupsFolder", GROUPS_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
         return null;
     }
@@ -338,7 +337,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_ModesFolder", MODES_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
         return null;
     }
@@ -356,7 +355,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_ModesFolder", MODES_FOLDER);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
         return null;
     }
@@ -697,11 +696,11 @@ public final class PersistenceManager implements PropertyChangeListener {
                     // #36916: Handle case when TC is not serializable.
                     String id = (String) topComponent2IDMap.get(curTC);
                     // #75247: Log warning when TC is not serializable.
-                    Logger.global.log(Level.WARNING, "TopComponent " + id + " is not serializable.", nse); //NOI18N
+                    LOG.log(Level.WARNING, "TopComponent " + id + " is not serializable.", nse); //NOI18N
                     removeTCFromConfig(wmc,id);
                 } catch (IOException exc) {
                     // some problem with saving of top component, log warning
-                    Logger.global.log(Level.WARNING, null, exc);
+                    LOG.log(Level.WARNING, null, exc);
                     String id = (String) topComponent2IDMap.get(curTC);
                     removeTCFromConfig(wmc,id);
                 } catch (RuntimeException exc) {
@@ -710,7 +709,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                             PersistenceManager.class,"EXC_CannotSaveTCSettings",
                             curTC.getName());
                     Exceptions.attachLocalizedMessage(exc, annotation);
-                    Logger.global.log(Level.WARNING, null, exc);
+                    LOG.log(Level.WARNING, null, exc);
                     String id = (String) topComponent2IDMap.get(curTC);
                     removeTCFromConfig(wmc,id);
                 } catch (LinkageError le) {
@@ -718,7 +717,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                             PersistenceManager.class,"EXC_CannotSaveTCSettings",
                             curTC.getName());
                     Exceptions.attachLocalizedMessage(le, annotation);
-                    Logger.global.log(Level.WARNING, null, le);
+                    LOG.log(Level.WARNING, null, le);
                     String id = (String) topComponent2IDMap.get(curTC);
                     removeTCFromConfig(wmc,id);
                 }
@@ -908,7 +907,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     (reading ? "FMT_TCReadError" : "FMT_TCWriteError"),
                     new Object[] {name});
             Exceptions.attachLocalizedMessage(e, message);
-            Logger.global.log(Level.WARNING, null, e);
+            LOG.log(Level.WARNING, null, e);
         }
         
         // clear for futher use
@@ -1037,7 +1036,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         try {
             wmc = wmParser.load();
         } catch (IOException exc) {
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
         
         //Check used TcIds
@@ -1074,7 +1073,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             //diff = end - start;
             //System.out.println("Saving of window system takes " + diff + " ms");
         } catch (IOException exc) {
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
     }
     
@@ -1179,7 +1178,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             String annotation = NbBundle.getMessage(PersistenceManager.class,
                 "EXC_CopyFails", destFolder);
             Exceptions.attachLocalizedMessage(exc, annotation);
-            Logger.global.log(Level.WARNING, null, exc);
+            LOG.log(Level.WARNING, null, exc);
         }
     }
 
@@ -1231,7 +1230,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             try {
                 release = Integer.parseInt(strRelease);
             } catch(NumberFormatException nfe) {
-                Logger.global.log(Level.WARNING, null, nfe);
+                LOG.log(Level.WARNING, null, nfe);
             }
         }
         if(strSpec != null) {
