@@ -32,7 +32,7 @@ import org.netbeans.junit.NbTestCase;
 public class StepTest extends NbTestCase {
 
     private DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-    private String          sourceRoot = System.getProperty ("test.dir.src");
+    private String          sourceRoot = "file://" + System.getProperty ("test.dir.src");
     private JPDASupport     support;
 
     public StepTest (String s) {

@@ -39,12 +39,12 @@ public class EvaluationTest extends NbTestCase {
     protected void setUp () throws Exception {
         super.setUp ();
         JPDASupport.removeAllBreakpoints ();
-        DebuggerManager.getDebuggerManager ().addBreakpoint (
-            LineBreakpoint.create (
-                "org.netbeans.api.debugger.jpda.testapps.EvalApp",
+        LineBreakpoint lb = LineBreakpoint.create (
+                "file://"+System.getProperty ("test.dir.src")+
+                "org/netbeans/api/debugger/jpda/testapps/EvalApp.java",
                 34
-            )
-        );
+            );
+        DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
         support = JPDASupport.attach (
             "org.netbeans.api.debugger.jpda.testapps.EvalApp"
         );

@@ -44,7 +44,10 @@ public class LocalVariablesTest extends NbTestCase {
 
     public void testWatches () throws Exception {
         try {
-            LineBreakpoint lb = LineBreakpoint.create (CLASS_NAME, 40);
+            LineBreakpoint lb = LineBreakpoint.create (
+                    "file://" + System.getProperty ("test.dir.src") + 
+                    "org/netbeans/api/debugger/jpda/testapps/LocalVariablesApp.java",
+                    40);
             lb.setPreferredClassName(CLASS_NAME);
             dm.addBreakpoint (lb);
 

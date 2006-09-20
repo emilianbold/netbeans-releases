@@ -34,7 +34,7 @@ import org.netbeans.junit.NbTestCase;
  */
 public class BreakpointResumeTest  extends NbTestCase {
 
-    private String          sourceRoot = System.getProperty ("test.dir.src");
+    private String          sourceRoot = "file://"+System.getProperty ("test.dir.src");
 
     public BreakpointResumeTest (String s) {
         super (s);

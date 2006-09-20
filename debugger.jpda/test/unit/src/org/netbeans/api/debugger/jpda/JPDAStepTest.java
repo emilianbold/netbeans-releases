@@ -37,7 +37,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 public class JPDAStepTest extends NbTestCase {
 
     private DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-    private String          sourceRoot = System.getProperty ("test.dir.src");
+    private String          sourceRoot = "file://"+System.getProperty ("test.dir.src");
     private JPDASupport     support;
     
     private Object STEP_LOCK = new Object();

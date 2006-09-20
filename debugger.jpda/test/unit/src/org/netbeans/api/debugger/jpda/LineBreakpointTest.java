@@ -320,8 +320,8 @@ public class LineBreakpointTest extends NbTestCase {
     public void testBreakpointUnambiguity2 () throws Exception {
         try {
             LineBreakpoint lb1 = LineBreakpoint.create(
-                    System.getProperty("user.home") + java.io.File.separator +
-                    //System.getProperty ("test.dir.src") +
+                    "file://" + System.getProperty ("user.home") + // intentionally bad path
+                    java.io.File.separator +
                     "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java", 39);
             //lb1.setSourceRoot(System.getProperty ("test.dir.src") + "_2");
             DebuggerManager dm = DebuggerManager.getDebuggerManager ();
