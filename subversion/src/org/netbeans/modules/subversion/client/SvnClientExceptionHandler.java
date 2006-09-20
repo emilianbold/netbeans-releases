@@ -100,14 +100,13 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     }  
     
     public boolean handleException() throws Exception {
-        if(isAuthentication(getException())) {
+        if(handleConnectErrors && isAuthentication(getException())) {
             return handleRepositoryConnectError(false);
         } if(isNoCertificate(getException())) {                        
             return handleNoCertificateError();
         } if(handleConnectErrors && isHostNotFound(getException())) {
             return handleRepositoryConnectError(false);
         }
-            
 
         throw getException();
     }
