@@ -45,7 +45,7 @@ public final class NbProcessDescriptor extends Object implements Serializable {
 
     private static final long serialVersionUID = -4535211234565221486L;
     
-    /** ErrorManager for logging execs */
+    /** Logger for logging execs */
     private static Logger execLog;
 
     /** The name of the executable to run */
