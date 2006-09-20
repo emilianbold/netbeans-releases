@@ -20,6 +20,7 @@
 package org.netbeans.modules.welcome;
 
 import java.lang.ref.WeakReference;
+import org.netbeans.modules.welcome.content.ContentPanel;
 import org.openide.util.NbBundle;
 import org.openide.windows.*;
 import java.awt.*;
@@ -161,6 +162,25 @@ public class WelcomeComponent extends TopComponent {
                 close();
             }
         }
+    }
+
+    protected void componentActivated() {
+        super.componentActivated();
+        focusAnyContentPanel( content );
+    }
+
+    private boolean focusAnyContentPanel( Container comp ) {
+        Component[] children = comp.getComponents();
+        for( int i=0; i<children.length; i++ ) {
+            if( children[i] instanceof ContentPanel ) {
+                ((ContentPanel)children[i]).switchFocus();
+                return true;
+            } else if( children[i] instanceof Container 
+                    && focusAnyContentPanel( (Container)children[i] ) ) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
