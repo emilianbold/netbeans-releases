@@ -167,9 +167,7 @@ public class WorkingCopyDetails {
 
     File getPropertiesFile() throws IOException {
         if (propertiesFile == null) {
-            // unchanged properties have only the base file
-            boolean modified = true;
-            propertiesFile = SvnWcUtils.getPropertiesFile(file, modified ? false : true);
+            propertiesFile = SvnWcUtils.getPropertiesFile(file, false);
         }
         return propertiesFile;
     }
