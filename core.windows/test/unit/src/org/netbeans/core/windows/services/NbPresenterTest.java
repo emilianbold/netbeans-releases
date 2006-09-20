@@ -95,6 +95,15 @@ public class NbPresenterTest extends NbTestCase {
         rescue.doClick ();
         assertEquals ("Rescue was invoked again on reused dialog.", rescue.getText (), ((JButton)dd.getValue ()).getText ());
         presenter.dispose ();
+        
+        presenter = new NbDialog (dd, (JFrame)null);
+        presenter.setVisible (true);
+
+        cancel.doClick ();
+        assertEquals ("Cancel was invoked of reused dialog.", cancel.getText (), ((JButton)dd.getValue ()).getText ());
+        cancel.doClick ();
+        assertEquals ("Cancel was invoked again on reused dialog.", cancel.getText (), ((JButton)dd.getValue ()).getText ());
+        presenter.dispose ();
     }
     
     public void testNbPresenterComparator () {
