@@ -25,6 +25,7 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.swing.tabcontrol.*;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
@@ -52,8 +53,8 @@ import org.openide.windows.TopComponent;
 import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 
 /** Represents org.openide.windows.TopComponent. It is IDE wrapper for a lot of
- * panels in IDE. TopComponent is for example Filesystems panel, every editor 
- * panel or execution panel. TopComponent can be located by TopComponentOperator 
+ * panels in IDE. TopComponent is for example Filesystems panel, every editor
+ * panel or execution panel. TopComponent can be located by TopComponentOperator
  * anywhere inside IDE, if it is opened. It is by default activated which means
  * it is put to foreground if there exist more top components in a split area.
  * TopComponent can also be located explicitly inside some Container.
@@ -81,19 +82,19 @@ import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 public class TopComponentOperator extends JComponentOperator {
     /** "Close Window" popup menu item. */
     private static final String closeWindowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                                                                          "LBL_CloseWindowAction");
+            "LBL_CloseWindowAction");
     /** "Close All Documents" popup menu item. */
     private static final String closeAllDocumentsItem = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                                                                                "LBL_CloseAllDocumentsAction");
+            "LBL_CloseAllDocumentsAction");
     
     static {
         // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
         JellyVersion.checkJemmyVersion();
         // need to set timeout for the case it was not set previously
         JemmyProperties.getCurrentTimeouts().initDefault("EventDispatcher.RobotAutoDelay", 0);
-        DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, 
-        new MouseRobotDriver(JemmyProperties.getCurrentTimeouts().create("EventDispatcher.RobotAutoDelay"), 
-                             new String[] {TopComponentOperator.class.getName()}));
+        DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID,
+                new MouseRobotDriver(JemmyProperties.getCurrentTimeouts().create("EventDispatcher.RobotAutoDelay"),
+                new String[] {TopComponentOperator.class.getName()}));
     }
     
     /** Waits for index-th TopComponent with given name in specified container.
@@ -141,7 +142,7 @@ public class TopComponentOperator extends JComponentOperator {
      */
     public TopComponentOperator(String topComponentName, int index) {
         this(waitTopComponent(topComponentName, index));
-
+        
     }
     
     /** Waits for first TopComponent with given name in whole IDE.
@@ -151,7 +152,7 @@ public class TopComponentOperator extends JComponentOperator {
     public TopComponentOperator(String topComponentName) {
         this(topComponentName, 0);
     }
-  
+    
     /** Creates new instance from given TopComponent.
      * It is activated by default.
      * This constructor is used in properties.PropertySheetOperator.
@@ -161,16 +162,16 @@ public class TopComponentOperator extends JComponentOperator {
         super(jComponent);
         makeComponentVisible();
     }
-
+    
     /** Makes active window in which this top component resides (main window
      * in joined mode) and then activates this top component to be in the
      * foreground.
-     */    
+     */
     public void makeComponentVisible() {
-        // Make active window in which this TopComponent resides. 
+        // Make active window in which this TopComponent resides.
         // It is necessary e.g. for keyboard focus
         super.makeComponentVisible();
-        //  Check if it is really TopComponent. It doesn't have to be 
+        //  Check if it is really TopComponent. It doesn't have to be
         // for example for PropertySheetOperator in Options window.
         // In that case do nothing.
         if(getSource() instanceof TopComponent) {
@@ -183,25 +184,25 @@ public class TopComponentOperator extends JComponentOperator {
             });
         }
     }
-
+    
     /** Attaches this top component to a new position defined by target top
      * component and side.
      * @param targetTopComponentName name of top component defining a position
      * where to attach top component
-     * @param side side where to attach top component ({@link AttachWindowAction#LEFT}, 
-     * {@link AttachWindowAction#RIGHT}, {@link AttachWindowAction#TOP}, 
+     * @param side side where to attach top component ({@link AttachWindowAction#LEFT},
+     * {@link AttachWindowAction#RIGHT}, {@link AttachWindowAction#TOP},
      * {@link AttachWindowAction#BOTTOM}, {@link AttachWindowAction#AS_LAST_TAB})
      */
     public void attachTo(String targetTopComponentName, String side) {
         new AttachWindowAction(targetTopComponentName, side).perform(this);
     }
-
+    
     /** Attaches this top component to a new position defined by target top
      * component and side.
      * @param targetTopComponentOperator operator of top component defining a position
      * where to attach top component
-     * @param side side where to attach top component ({@link AttachWindowAction#LEFT}, 
-     * {@link AttachWindowAction#RIGHT}, {@link AttachWindowAction#TOP}, 
+     * @param side side where to attach top component ({@link AttachWindowAction#LEFT},
+     * {@link AttachWindowAction#RIGHT}, {@link AttachWindowAction#TOP},
      * {@link AttachWindowAction#BOTTOM}, {@link AttachWindowAction#AS_LAST_TAB})
      */
     public void attachTo(TopComponentOperator targetTopComponentOperator, String side) {
@@ -212,7 +213,7 @@ public class TopComponentOperator extends JComponentOperator {
     public void maximize() {
         new MaximizeWindowAction().perform(this);
     }
-
+    
     /** Restores maximized window. */
     public void restore() {
         new RestoreWindowAction().perform(this);
@@ -224,7 +225,7 @@ public class TopComponentOperator extends JComponentOperator {
         new CloneViewAction().perform(this);
     }
     
-    /** Closes this TopComponent and wait until it is closed. 
+    /** Closes this TopComponent and wait until it is closed.
      * TopComponent is activated before action is performed. */
     public void closeWindow() {
         if(isModified()) {
@@ -238,7 +239,7 @@ public class TopComponentOperator extends JComponentOperator {
             waitComponentShowing(false);
         }
     }
-
+    
     /** Closes this TopComponent instance by IDE API call and wait until
      * it is not closed. If this TopComponent is modified (e.g. editor top
      * component), it discards possible changes.
@@ -263,7 +264,7 @@ public class TopComponentOperator extends JComponentOperator {
             }
         }
     }
-
+    
     /** Returns true if this top component is modified (e.g. source in editor)
      * @return boolean true if this object is modified; false otherwise
      */
@@ -285,8 +286,8 @@ public class TopComponentOperator extends JComponentOperator {
         // it cannot be modified at all
         return false;
     }
-
-    /** Saves content of this TopComponent. If it is not applicable or content 
+    
+    /** Saves content of this TopComponent. If it is not applicable or content
      * of TopComponent is not modified, it does nothing.
      */
     public void save() {
@@ -307,9 +308,9 @@ public class TopComponentOperator extends JComponentOperator {
         }
     }
     
-    /** Closes this TopComponent instance by IDE API call and wait until 
+    /** Closes this TopComponent instance by IDE API call and wait until
      * it is not closed. If this TopComponent is modified (e.g. editor top
-     * component), question dialog is shown and you have to close it. To close 
+     * component), question dialog is shown and you have to close it. To close
      * this TopComponent and discard possible changes use {@link #closeDiscard}
      * method.
      */
@@ -336,10 +337,10 @@ public class TopComponentOperator extends JComponentOperator {
             waitComponentShowing(false);
         }
     }
-
+    
     /** Closes all opened documents and waits until this top component is closed. */
     public void closeAllDocuments() {
-        DataObject[] modifs = DataObject.getRegistry ().getModified ();
+        DataObject[] modifs = DataObject.getRegistry().getModified();
         if(modifs.length != 0) {
             // some object modified => need to call in new thread because modal question dialog appears
             new Thread(new Runnable() {
@@ -353,15 +354,15 @@ public class TopComponentOperator extends JComponentOperator {
             waitComponentShowing(false);
         }
     }
-
+    
     /** Saves this document by popup menu on tab. */
     public void saveDocument() {
         // Save Document
         String saveItem = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                                                      "LBL_SaveDocumentAction");
+                "LBL_SaveDocumentAction");
         pushMenuOnTab(saveItem);
     }
-
+    
     /** Finds index-th TopComponent with given name in whole IDE.
      * @param name name of TopComponent
      * @param index index of TopComponent
@@ -370,7 +371,7 @@ public class TopComponentOperator extends JComponentOperator {
     public static JComponent findTopComponent(String name, int index) {
         return findTopComponent(null, name,  index, null);
     }
-
+    
     /** Finds index-th TopComponent with given name in IDE registry.
      * @param cont container where to search
      * @param name name of TopComponent
@@ -378,46 +379,52 @@ public class TopComponentOperator extends JComponentOperator {
      * @param subchooser ComponentChooser to determine exact TopComponent
      * @return TopComponent instance or null if noone matching criteria was found
      */
-    protected static JComponent findTopComponent(ContainerOperator cont, String name, int index, ComponentChooser subchooser) {
-        Object tc[]=TopComponent.getRegistry().getOpened().toArray();
-        StringComparator comparator=cont==null?Operator.getDefaultStringComparator():cont.getComparator();
-        TopComponent c;
-        // loop through showing TopComponents
-        for (int i=0; i<tc.length; i++) {
-            c=(TopComponent)tc[i];
-            if (c.isShowing() && 
-                    (comparator.equals(c.getName(), name) || comparator.equals(c.getDisplayName(), name)) &&
-                    isUnder(cont, c)) {
-
-                JComponent result = checkSubchooser(c, subchooser);
-                if(result != null) {
-                    if (--index<0) {
-                        return result;
+    protected static JComponent findTopComponent(final ContainerOperator cont, final String name, final int index, final ComponentChooser subchooser) {
+        // run in dispatch thread
+        return (JComponent)new QueueTool().invokeSmoothly(new QueueTool.QueueAction("findTopComponent") {    // NOI18N
+            public Object launch() {
+                int counter = index;
+                Object tc[]=TopComponent.getRegistry().getOpened().toArray();
+                StringComparator comparator=cont==null?Operator.getDefaultStringComparator():cont.getComparator();
+                TopComponent c;
+                // loop through showing TopComponents
+                for (int i=0; i<tc.length; i++) {
+                    c=(TopComponent)tc[i];
+                    if (c.isShowing() &&
+                            (comparator.equals(c.getName(), name) || comparator.equals(c.getDisplayName(), name)) &&
+                            isUnder(cont, c)) {
+                        
+                        JComponent result = checkSubchooser(c, subchooser);
+                        if(result != null) {
+                            if (--counter<0) {
+                                return result;
+                            }
+                        }
                     }
                 }
-            }
-        }
-        // loop through NOT showing TopComponents but parent has to be showing
-        for (int i=0; i<tc.length; i++) {
-            c=(TopComponent)tc[i];
-            if ((!c.isShowing()) && isParentShowing(c) && 
-                    (comparator.equals(c.getName(), name) || comparator.equals(c.getDisplayName(), name)) &&
-                    isUnder(cont, c)) {
-                
-                JComponent result = checkSubchooser(c, subchooser);
-                if(result != null) {
-                    if (--index<0) {
-                        return result;
+                // loop through NOT showing TopComponents but parent has to be showing
+                for (int i=0; i<tc.length; i++) {
+                    c=(TopComponent)tc[i];
+                    if ((!c.isShowing()) && isParentShowing(c) &&
+                            (comparator.equals(c.getName(), name) || comparator.equals(c.getDisplayName(), name)) &&
+                            isUnder(cont, c)) {
+                        
+                        JComponent result = checkSubchooser(c, subchooser);
+                        if(result != null) {
+                            if (--counter<0) {
+                                return result;
+                            }
+                        }
                     }
                 }
+                return null;
             }
-        }
-        return null;
+        });
     }
-
+    
     /** If subchooser is null, return TopComponent.
      * Else if c is instance of MultiViewCloneableTopComponent try to find
-     * and return sub component in MVCTC corresponding to sub chooser. Else 
+     * and return sub component in MVCTC corresponding to sub chooser. Else
      * check TC in sub chooser and return it if matches. MVCTC can host
      * several views, e.g. source and design view in form editor or xml, servlets,
      * overview views in web.xml editor. Then EditorOperator is able to find
@@ -489,9 +496,9 @@ public class TopComponentOperator extends JComponentOperator {
                 }
                 public String getDescription() {
                     return("Wait TopComponent with name="+name+
-                           " index="+String.valueOf(index)+
-                           (subchooser == null ? "" : " subchooser="+subchooser.getDescription())+
-                           " loaded");
+                            " index="+String.valueOf(index)+
+                            (subchooser == null ? "" : " subchooser="+subchooser.getDescription())+
+                            " loaded");
                 }
             });
             Timeouts times = JemmyProperties.getCurrentTimeouts().cloneThis();
@@ -527,7 +534,7 @@ public class TopComponentOperator extends JComponentOperator {
         }
     }
     
-    /** Returns TabbedAdapter component from parents hierarchy. 
+    /** Returns TabbedAdapter component from parents hierarchy.
      * Used also in EditorWindowOperator.
      */
     TabbedAdapter findTabbedAdapter() {
@@ -541,13 +548,13 @@ public class TopComponentOperator extends JComponentOperator {
         }
         return null;
     }
-
+    
     Container findTabDisplayer() {
         return ContainerOperator.findContainer(findTabbedAdapter(), new ComponentChooser() {
             public boolean checkComponent(Component comp) {
                 return comp.getClass().getName().endsWith("TabDisplayer");
             }
-        
+            
             public String getDescription() {
                 return "org.netbeans.swing.tabcontrol.TabDisplayer";
             }
@@ -557,19 +564,19 @@ public class TopComponentOperator extends JComponentOperator {
      * Waits the topcomponent to be closed.
      */
     public void waitClosed() {
-	getOutput().printLine("Wait topcomponent to be closed \n    : "+
-			      getSource().toString());
-	getOutput().printGolden("Wait topcomponent to be closed");
-	waitState(new ComponentChooser() {
-		public boolean checkComponent(Component comp) {
-		    return(!comp.isVisible());
-		}
-		public String getDescription() {
-		    return("Closed topcomponent");
-		}
-	    });
+        getOutput().printLine("Wait topcomponent to be closed \n    : "+
+                getSource().toString());
+        getOutput().printGolden("Wait topcomponent to be closed");
+        waitState(new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                return(!comp.isVisible());
+            }
+            public String getDescription() {
+                return("Closed topcomponent");
+            }
+        });
     }
-
+    
     /** Returns true if this TopComponent is opened. If it is not opened, it
      * usually means it is contained within MultiviewTopComponent.
      * @return true if open, false otherwise
@@ -582,7 +589,7 @@ public class TopComponentOperator extends JComponentOperator {
             }
         });
     }
-
+    
     /** Returns TopComponentOperator from parents hierarchy. It should be
      * MultiviewTopComponent.
      */
