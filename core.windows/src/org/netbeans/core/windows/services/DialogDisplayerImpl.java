@@ -67,8 +67,8 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                 }
                 else {
                     Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
-                    // don't set non-ide window as parent
-                    if (! (w instanceof NbPresenter)) {
+                    if (! w.isVisible () || ! (w instanceof NbPresenter)) {
+                        // don't set non-ide window as parent
                         w = WindowManager.getDefault ().getMainWindow ();
                     } else if (w instanceof NbPresenter && ((NbPresenter) w).isLeaf ()) {
                         w = WindowManager.getDefault ().getMainWindow ();
