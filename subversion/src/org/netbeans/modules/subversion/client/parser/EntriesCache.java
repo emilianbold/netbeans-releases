@@ -87,7 +87,7 @@ public class EntriesCache {
     private static final Set<String> BOOLEAN_ATTRIBUTES = new java.util.HashSet<String>();
     static {
         BOOLEAN_ATTRIBUTES.add("has-props");
-        BOOLEAN_ATTRIBUTES.add("has-props-mod");
+        BOOLEAN_ATTRIBUTES.add("has-prop-mods");
         BOOLEAN_ATTRIBUTES.add("copied");
         BOOLEAN_ATTRIBUTES.add("deleted");
     }
