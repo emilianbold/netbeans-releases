@@ -515,6 +515,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     {
         final UIDefaults uiDefaults = FormLAF.initPreviewLaf(previewLaf);
         Container result = null;
+        Locale defaultLocale = switchToDesignLocale(metacomp.getFormModel());
         try {
             FormLAF.setUsePreviewDefaults(true, previewLaf, uiDefaults);
             result = (Container) FormLAF.executeWithLookAndFeel(
@@ -556,8 +557,29 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         );
         } finally {
             FormLAF.setUsePreviewDefaults(false, null, null);
+            if (defaultLocale != null)
+                Locale.setDefault(defaultLocale);
         }
         return result;
+    }
+
+    private static Locale switchToDesignLocale(FormModel formModel) {
+        Locale defaultLocale = null;
+        String locale = FormEditor.getI18nSupport(formModel).getDesignLocale();
+        if (locale != null && !locale.equals("")) { // NOI18N
+            defaultLocale = Locale.getDefault();
+
+            String[] parts = locale.split("_"); // NOI18N
+            int i = 0;
+            if ("".equals(parts[i])) // NOI18N
+                i++;
+            String language = i < parts.length ? parts[i++] : null;
+            String country = i < parts.length ? parts[i++] : ""; // NOI18N
+            String variant = i < parts.length ? parts[i] : ""; // NOI18N
+            if (language != null)
+                Locale.setDefault(new Locale(language, country, variant));
+        }
+        return defaultLocale;
     }
 
     Container getTopVisualContainer() {
@@ -866,6 +888,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             ComponentInspector ci = ComponentInspector.getInstance();
             if (ci.getFocusedForm() != formEditor)
                 return;
+
 
             Node[] selectedNodes = new Node[] { node };
             try {
@@ -2031,10 +2054,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             this.events = events;
 
-            if (lafBlock) // Look&Feel UI defaults remapping needed
-                FormLAF.executeWithLookAndFeel(this);
-            else
-                run();
+            if (lafBlock) { // Look&Feel UI defaults remapping needed
+                Locale defaultLocale = switchToDesignLocale(getFormModel());
+                try {
+                    FormLAF.executeWithLookAndFeel(this);
+                }
+                finally {
+                    if (defaultLocale != null)
+                        Locale.setDefault(defaultLocale);
+                }
+            }
+            else run();
         }
 
         public void run() {
