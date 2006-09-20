@@ -15,27 +15,54 @@ package org.netbeans.api.visual.anchor;
 import java.awt.*;
 
 /**
+ * Represents a point shape. Usually used for control points and end points of a connection widget.
  * @author David Kaspar
  */
 public interface PointShape {
 
+    /**
+     * Returns a radius of the shape.
+     * @return the radius
+     */
     public int getRadius ();
 
+    /**
+     * Renders a shape into the graphics instance
+     * @param graphics
+     */
     public void paint (Graphics2D graphics);
 
+    /**
+     * The empty point shape.
+     */
     public static final PointShape NONE = new PointShape () {
         public int getRadius () { return 0; }
         public void paint (Graphics2D graphics) {}
     };
 
+    /**
+     * The 8px big filled-square shape.
+     */
     public static final PointShape SQUARE_FILLED_BIG = new Square (4, true);
+
+    /**
+     * The 6px big filled-square shape.
+     */
     public static final PointShape SQUARE_FILLED_SMALL = new Square (3, true);
 
+    /**
+     * Represents a square point shape.
+     */
     public static final class Square implements PointShape {
 
         private int size;
         private boolean filled;
 
+        /**
+         * Creates a square shape.
+         * @param size the size
+         * @param filled if true, then the shape is filled
+         */
         public Square (int size, boolean filled) {
             this.size = size;
             this.filled = filled;

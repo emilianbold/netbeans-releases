@@ -27,6 +27,8 @@ import java.util.*;
 import java.awt.*;
 
 /**
+ * Manages all animations on a scene. An animation can be registered and started by calling Animator.start method.
+ * The class contains a few built-in animators: preferredLocation, preferredBounds, background, foreground, zoomFactor.
  * @author David Kaspar
  */
 public final class SceneAnimator {
@@ -46,10 +48,18 @@ public final class SceneAnimator {
     private ZoomAnimator zoomAnimator = new ZoomAnimator (this);
     private ColorAnimator colorAnimator = new ColorAnimator (this);
 
+    /**
+     * Creates a scene animator.
+     * @param scene
+     */
     public SceneAnimator (Scene scene) {
         this.scene = scene;
     }
 
+    /**
+     * Returns an assigned scene.
+     * @return the scene
+     */
     public Scene getScene () {
         return scene;
     }
@@ -75,63 +85,100 @@ public final class SceneAnimator {
         return false;
     }
 
+    /**
+     * Returns whether a preferredLocation animator for a specified widget is running.
+     * @param widget the widget
+     * @return true if running
+     */
     public boolean isAnimatingPreferredLocation (Widget widget) {
         return isRunning (preferredLocationAnimator);
     }
 
+    /**
+     * Starts preferredLocation animation for a specified widget.
+     * @param widget the widget
+     * @param targetPreferredLocation the target preferred location
+     */
     public void animatePreferredLocation (Widget widget, Point targetPreferredLocation) {
         preferredLocationAnimator.setPreferredLocation (widget, targetPreferredLocation);
     }
 
+    /**
+     * Returns whether a preferredBounds animator for a specified widget is running.
+     * @param widget the widget
+     * @return true if running
+     */
     public boolean isAnimatingPreferredBounds (Widget widget) {
         return isRunning (preferredBoundsAnimator);
     }
 
+    /**
+     * Starts preferredBounds animation for a specified widget.
+     * @param widget the widget
+     * @param targetPreferredBounds the target preferred bounds
+     */
     public void animatePreferredBounds (Widget widget, Rectangle targetPreferredBounds) {
         preferredBoundsAnimator.setPreferredBounds (widget, targetPreferredBounds);
     }
 
+    /**
+     * Returns whether a zoomFactor animator is running.
+     * @return true if running
+     */
     public boolean isAnimatingZoomFactor () {
         return isRunning (zoomAnimator);
     }
 
+    /**
+     * Returns a target zoom factor.
+     * @return the target zoom factor
+     */
     public double getTargetZoomFactor () {
         return zoomAnimator.getTargetZoom ();
     }
 
+    /**
+     * Starts zoomFactor animation.
+     * @param targetZoomFactor the target zoom factor
+     */
     public void animateZoomFactor (double targetZoomFactor) {
         zoomAnimator.setZoomFactor (targetZoomFactor);
     }
 
+    /**
+     * Returns whether a backgroundColor animator for a specified widget is running.
+     * @param widget the widget
+     * @return true if running
+     */
     public boolean isAnimatingBackgroundColor (Widget widget) {
         return isRunning (colorAnimator);
     }
 
+    /**
+     * Starts backgroundColor animation for a specified widget.
+     * @param widget the widget
+     * @param targetBackgroundColor the target background color
+     */
     public void animateBackgroundColor (Widget widget, Color targetBackgroundColor) {
         colorAnimator.setBackgroundColor (widget, targetBackgroundColor);
     }
 
+    /**
+     * Returns whether a foregroundColor animator for a specified widget is running.
+     * @param widget the widget
+     * @return true if running
+     */
     public boolean isAnimatingForegroundColor (Widget widget) {
         return isRunning (colorAnimator);
     }
 
+    /**
+     * Starts foregroundColor animation for a specified widget.
+     * @param widget the widget
+     * @param targetForegroundColor the target foreground color
+     */
     public void animateForegroundColor (Widget widget, Color targetForegroundColor) {
         colorAnimator.setForegroundColor (widget, targetForegroundColor);
-    }
-
-    @Deprecated
-    public PreferredLocationAnimator getPreferredLocationAnimator () {
-        return preferredLocationAnimator;
-    }
-
-    @Deprecated
-    public PreferredBoundsAnimator getPreferredBoundsAnimator () {
-        return preferredBoundsAnimator;
-    }
-
-    @Deprecated
-    public ZoomAnimator getZoomAnimator () {
-        return zoomAnimator;
     }
 
     private class UpdateTask implements Runnable {
