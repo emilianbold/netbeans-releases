@@ -264,7 +264,7 @@ public final class Log extends Handler {
             return ne;
         }
 
-        if (ex instanceof RuntimeException) {
+        if (ex instanceof Exception) {
             return new InvocationTargetException(ex, ex.getMessage() + " Log:\n" + messages);
         }
 

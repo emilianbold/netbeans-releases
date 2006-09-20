@@ -27,13 +27,16 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import junit.framework.TestFailure;
+import junit.framework.TestResult;
 
 /** Checks that we can do proper logging.
  *
  * @author Jaroslav Tulach
  */
 public class LoggingTest extends NbTestCase {
-
+    private Throwable toThrow;
+    
     public LoggingTest(String testName) {
         super(testName);
     }
@@ -51,6 +54,12 @@ public class LoggingTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         clearWorkDir();
+    }
+    
+    public void throwThrowable() throws Throwable {
+        Logger log = Logger.getLogger(getName());
+        log.warning("Going to throw: " + toThrow);
+        throw toThrow;
     }
     
     public void testLogFileName() throws Exception {
@@ -155,4 +164,39 @@ public class LoggingTest extends NbTestCase {
             fail("There should the message\n" + s);
         }
     }
+    public void testIOExceptionIsWrappedWithLogMsg() throws Exception {
+        
+        LoggingTest inner = new LoggingTest("throwThrowable");
+        inner.toThrow = new IOException("Ahoj");
+        
+        TestResult res = inner.run();
+        assertEquals("One error", 1, res.errorCount());
+        assertEquals("No failure", 0, res.failureCount());
+        
+        TestFailure f = (TestFailure)res.errors().nextElement();
+        
+        if (f.exceptionMessage().indexOf("Going to throw") == -1) {
+            fail("There should be output of the log:\n" + f.exceptionMessage());
+        }
+    }
+    public void testMyExceptionIsWrappedWithLogMsg() throws Exception {
+        
+        LoggingTest inner = new LoggingTest("throwThrowable");
+        
+        class MyEx extends Exception {
+        }
+        
+        inner.toThrow = new MyEx();
+        
+        TestResult res = inner.run();
+        assertEquals("One error", 1, res.errorCount());
+        assertEquals("No failure", 0, res.failureCount());
+        
+        TestFailure f = (TestFailure)res.errors().nextElement();
+        
+        if (f.exceptionMessage() == null || f.exceptionMessage().indexOf("Going to throw") == -1) {
+            fail("There should be output of the log:\n" + f.exceptionMessage());
+        }
+    }
+
 }
