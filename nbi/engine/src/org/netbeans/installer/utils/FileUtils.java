@@ -160,6 +160,8 @@ public abstract class FileUtils {
     
     public abstract void copyFile(File source, File destination, boolean recurseToSubDirs) throws IOException;
     
+    public abstract boolean isWritable(File file);
+    
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static class GenericFileUtils extends FileUtils {
@@ -559,6 +561,38 @@ public abstract class FileUtils {
             
             return true;
         }
+        /**
+         * Checks whether the given file is writable.
+         *
+         * @param file the file to check
+         * @return true is the file is writable
+         */
+        public  boolean isWritable(File file) {
+            if (file == null) {
+                return false;
+            }
+            
+            if (!file.exists()) {
+                return isWritable(file.getParentFile());
+            } else {
+                if (!file.isDirectory()) {
+                    return file.canWrite();
+                } else {
+                    File temp = null;
+                    try {
+                        temp = File.createTempFile("111", "222", file);//NOI18N
+                        return true;
+                    } catch (IOException e) {
+                        return false;
+                    } finally {
+                        if (temp != null) {
+                            temp.delete();
+                        }
+                    }
+                }
+            }
+        }
+        
     }
     
     public static class UnixFileUtils extends GenericFileUtils {
