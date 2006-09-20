@@ -269,7 +269,11 @@ public class BasicInfoVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         if (!moduleTypeGroupAttached) {
             moduleTypeGroup.add(standAloneModule);
             moduleTypeGroup.add(suiteComponent);
-            moduleTypeGroup.setSelected(lastSelectedType, true);
+            if (isLibraryWizard()) {
+                suiteComponent.setSelected(true);
+            } else {
+                moduleTypeGroup.setSelected(lastSelectedType, true);
+            }
             moduleTypeGroupAttached = true;
         }
     }
