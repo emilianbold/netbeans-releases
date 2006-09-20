@@ -81,7 +81,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         /** Initilizes accessible contexts */
         initAccessibility();
     }
-    private final static String CANCEL_COMMAND = "Cancel"; // NOI18N
+    private final static String ESCAPE_COMMAND = "Escape"; // NOI18N
     
     private Component currentMessage;
     private JScrollPane currentScrollPane;
@@ -175,7 +175,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         
         getRootPane().registerKeyboardAction(
             buttonListener,
-            CANCEL_COMMAND,
+            ESCAPE_COMMAND,
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
             JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
         );
@@ -966,9 +966,10 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             
             Object pressedOption = evt.getSource();
             // handle ESCAPE
-            if (CANCEL_COMMAND.equals(evt.getActionCommand())) {
+            if (ESCAPE_COMMAND.equals (evt.getActionCommand ())) {
                 pressedOption = NotifyDescriptor.CLOSED_OPTION;
             } else {
+                // handle buttons
                 if (evt.getSource() == stdHelpButton) {
                     org.netbeans.core.NbTopManager.get().showHelp(currentHelp);
                     return;
