@@ -28,6 +28,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
 import org.netbeans.api.debugger.ActionsManagerListener;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.debugger.ui.Utils;
@@ -45,7 +46,7 @@ public class DebuggerAction extends AbstractAction {
     private DebuggerAction (Object action) {
         this.action = action;
         new Listener (this);
-        setEnabled (getCurrentActionsManager ().isEnabled (getAction ()));
+        setEnabled (isEnabled (getAction ()));
     }
     
     public Object getAction () {
@@ -67,15 +68,52 @@ public class DebuggerAction extends AbstractAction {
     
     public void actionPerformed (ActionEvent evt) {
         // Post the action asynchronously, since we're on AWT
-        getCurrentActionsManager().postAction(getAction());
+        getActionsManager(action).postAction(action);
     }
-        
-    private static ActionsManager getCurrentActionsManager () {
-        return DebuggerManager.getDebuggerManager ().
-            getCurrentEngine () == null ? 
-            DebuggerManager.getDebuggerManager ().getActionsManager () :
-            DebuggerManager.getDebuggerManager ().getCurrentEngine ().
-                getActionsManager ();
+    
+    /**
+     * Get the actions manager of the current engine (if any).
+     * @return The actions manager or <code>null</code>.
+     */
+    private static ActionsManager getCurrentEngineActionsManager() {
+        DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (engine != null) {
+            return engine.getActionsManager();
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Test whether the given action is enabled in either the current engine's
+     * action manager, or the default action manager.
+     * We need to take the default actions into account so that actions provided
+     * by other debuggers are not ignored.
+     */
+    private static boolean isEnabled(Object action) {
+        ActionsManager manager = getCurrentEngineActionsManager();
+        if (manager != null) {
+            if (manager.isEnabled(action)) {
+                return true;
+            }
+        }
+        return DebuggerManager.getDebuggerManager().getActionsManager().isEnabled(action);
+    }
+    
+    /**
+     * Get the actions manager for which the action is enabled.
+     * It returns either the current engine's manager, or the default one.
+     * @param the action
+     * @return the actions manager
+     */
+    private static ActionsManager getActionsManager(Object action) {
+        ActionsManager manager = getCurrentEngineActionsManager();
+        if (manager != null) {
+            if (manager.isEnabled(action)) {
+                return manager;
+            }
+        }
+        return DebuggerManager.getDebuggerManager().getActionsManager();
     }
     
     public static DebuggerAction createContinueAction() {
@@ -247,6 +285,10 @@ public class DebuggerAction extends AbstractAction {
                 DebuggerManager.PROP_CURRENT_ENGINE,
                 this
             );
+            DebuggerManager.getDebuggerManager ().getActionsManager().addActionsManagerListener(
+                ActionsManagerListener.PROP_ACTION_STATE_CHANGED,
+                this
+            );
             updateCurrentActionsManager ();
         }
         
@@ -254,7 +296,7 @@ public class DebuggerAction extends AbstractAction {
             final DebuggerAction da = getDebuggerAction ();
             if (da == null) return;
             updateCurrentActionsManager ();
-            final boolean en = currentActionsManager.isEnabled (da.getAction ());
+            final boolean en = DebuggerAction.isEnabled (da.getAction ());
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     da.setEnabled (en);
@@ -271,15 +313,18 @@ public class DebuggerAction extends AbstractAction {
             final DebuggerAction da = getDebuggerAction ();
             if (da == null) return;
             if (action != da.getAction ()) return;
+            // ignore the enabled argument, check it with respect to the proper
+            // actions manager.
+            final boolean en = DebuggerAction.isEnabled (da.getAction ());
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
-                    da.setEnabled (enabled);
+                    da.setEnabled (en);
                 }
             });
         }
         
         private void updateCurrentActionsManager () {
-            ActionsManager newActionsManager = getCurrentActionsManager ();
+            ActionsManager newActionsManager = getCurrentEngineActionsManager ();
             if (currentActionsManager == newActionsManager) return;
             
             if (currentActionsManager != null)
@@ -296,6 +341,10 @@ public class DebuggerAction extends AbstractAction {
             if (da == null) {
                 DebuggerManager.getDebuggerManager ().removeDebuggerListener (
                     DebuggerManager.PROP_CURRENT_ENGINE,
+                    this
+                );
+                DebuggerManager.getDebuggerManager ().getActionsManager().removeActionsManagerListener(
+                    ActionsManagerListener.PROP_ACTION_STATE_CHANGED,
                     this
                 );
                 if (currentActionsManager != null)
