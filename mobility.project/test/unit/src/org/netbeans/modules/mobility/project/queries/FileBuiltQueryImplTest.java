@@ -144,7 +144,7 @@ public class FileBuiltQueryImplTest extends NbTestCase {
         assertNotNull(roots);
         assertTrue(roots.length==0);
         
-        result=instance.findJavadoc(FileUtil.normalizeFile(new File(projDir.getPath()+File.separatorChar+"dist")).toURI().toURL());
+        result=instance.findJavadoc(aph.resolveFile("dist").toURL());
         assertNotNull(result);
         roots=result.getRoots();
         assertNotNull(roots);

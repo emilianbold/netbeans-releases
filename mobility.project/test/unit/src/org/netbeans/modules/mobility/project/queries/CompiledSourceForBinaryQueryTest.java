@@ -106,7 +106,7 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
         URL binRoot=null;
         try {
             projRoot = projDir.getURL();
-            binRoot=FileUtil.normalizeFile(new File(projDir.getPath()+File.separatorChar+"dist")).toURI().toURL();
+            binRoot=aph.resolveFile("dist").toURL();
         } catch (FileStateInvalidException ex) {
             ex.printStackTrace();
             fail("Can't get URL");
