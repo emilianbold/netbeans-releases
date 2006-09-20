@@ -581,12 +581,22 @@ is divided into following sections:
         <antcall target="-native-platform-clean">
             <param name="native.directory"  value="${native.windows.dir}"/>
         </antcall> 
+        <!--
+        <antcall target="-native-platform-clean">
+            <param name="native.directory"  value="${native.linux.dir}"/>
+        </antcall> 
+        -->
     </target>    
     
     <target name="-native-pre-compile" description="Precompile native projects">            
         <antcall target="-native-platform-pre-compile">
             <param name="native.directory"  value="${native.windows.dir}"/>
         </antcall>
+        <!--
+        <antcall target="-native-platform-pre-compile">
+            <param name="native.directory"  value="${native.linux.dir}"/>
+        </antcall>
+        -->
     </target>
     
     <target name="-native-compile" depends="-native-pre-compile" description="Compile native projects">    
@@ -594,6 +604,11 @@ is divided into following sections:
         <antcall target="-native-platform-compile">
             <param name="native.directory"  value="${native.windows.dir}"/>
         </antcall>
+        <!--
+        <antcall target="-native-platform-compile">
+            <param name="native.directory"  value="${native.linux.dir}"/>
+        </antcall>
+        -->
     </target>
     
     <target name="-native-post-compile" description="Post compile native projects">
@@ -601,6 +616,10 @@ is divided into following sections:
         <antcall target="-native-platform-post-compile">
             <param name="native.directory"  value="${native.windows.dir}"/>
         </antcall> 
+        
+        <antcall target="-native-platform-post-compile">
+            <param name="native.directory"  value="${native.linux.dir}"/>
+        </antcall>         
     </target>
     
     
@@ -626,6 +645,10 @@ is divided into following sections:
         <antcall target="-copy-platform-lib">
             <param name="native.directory"  value="${native.windows.dir}"/>
             <param name="native.file"  value="${native.windows.file}"/>
+        </antcall>
+        <antcall target="-copy-platform-lib">
+            <param name="native.directory"  value="${native.linux.dir}"/>
+            <param name="native.file"  value="${native.linux.file}"/>
         </antcall>
     </target>
     
