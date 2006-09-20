@@ -741,9 +741,9 @@ public abstract class SharedClassObject extends Object implements Externalizable
             Method result = null;
 
             //  try ANY-MODIFIER occurences; search also in superclasses
-            for (Class i = clazz; i != null; i = i.getSuperclass()) {
+            for (Class<?> i = clazz; i != null; i = i.getSuperclass()) {
                 try {
-                    result = accept(i.getDeclaredMethod("readResolve", new Class[0])); // NOI18N
+                    result = accept(i.getDeclaredMethod("readResolve")); // NOI18N
 
                     // get out of cycle if method found
                     if (result != null) {
