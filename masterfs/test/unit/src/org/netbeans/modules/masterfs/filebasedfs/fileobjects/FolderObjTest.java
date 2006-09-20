@@ -36,7 +36,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
@@ -44,6 +43,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -92,6 +93,25 @@ public class FolderObjTest extends NbTestCase {
         abstract protected void processLogRecord(final LogRecord record);
         public void flush() {}
         public void close() { flush(); }
+    }
+
+    public void testMove85336() throws Exception {
+        final FileObject workDirFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        FolderObj to =  (FolderObj)FileUtil.createFolder(workDirFo, "a/b/c");
+        FolderObj from =  (FolderObj)FileUtil.createFolder(workDirFo, "aa/b/c");        
+        assertNotNull(to);
+        assertNotNull(from);
+        BaseFileObj what =  (BaseFileObj)FileUtil.createData(from, "hello.txt");        
+        assertNotNull(what);
+        FileLock lck = what.lock();
+        ProvidedExtensions.IOHandler io = new ProvidedExtensionsTest.ProvidedExtensionsImpl().
+                getMoveHandler(what.getFileName().getFile(), new File(to.getFileName().getFile(),what.getNameExt())); 
+        to.getChildren();
+        try {
+            what.move(lck, to, what.getName(), what.getExt(), io);
+        } finally {
+            lck.releaseLock();
+        }        
     }
     
     public void testCreateFolder72617() throws IOException {

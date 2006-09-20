@@ -127,10 +127,12 @@ public abstract class BaseFileObj extends FileObject {
         return false;
     }
 
-    public void move(FileLock lock, BaseFileObj target, String name, String ext, ProvidedExtensions.IOHandler moveHandler) throws IOException {
+    public void move(FileLock lock, FolderObj target, String name, String ext, ProvidedExtensions.IOHandler moveHandler) throws IOException {
         moveHandler.handle();
+        String nameExt = FileInfo.composeName(name,ext);
+        target.getChildrenCache().getChild(nameExt, true);
         BaseFileObj result = (BaseFileObj)FileBasedFileSystem.getFileObject(
-                new File(target.getFileName().getFile(),FileInfo.composeName(name,ext)));
+                new File(target.getFileName().getFile(),nameExt));
         assert result != null;
         result.fireFileDataCreatedEvent(false);
         fireFileDeletedEvent(false);
