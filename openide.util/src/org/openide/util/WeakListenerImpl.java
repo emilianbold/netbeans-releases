@@ -367,7 +367,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 Constructor proxyConstructor = (ref == null) ? null : (Constructor) ref.get();
 
                 if (proxyConstructor == null) {
-                    Class proxyClass = Proxy.getProxyClass(c.getClassLoader(), new Class[] { c });
+                    Class<?> proxyClass = Proxy.getProxyClass(c.getClassLoader(), new Class[] { c });
                     proxyConstructor = proxyClass.getConstructor(new Class[] { InvocationHandler.class });
                     constructors.put(c, new SoftReference<Constructor>(proxyConstructor));
                 }
@@ -566,8 +566,8 @@ abstract class WeakListenerImpl implements java.util.EventListener {
         }
 
         /* can return null */
-        private Method getRemoveMethod(Class methodClass, String methodName, Class listenerClass) {
-            final Class[] clarray = new Class[] { listenerClass };
+        private Method getRemoveMethod(Class<?> methodClass, String methodName, Class listenerClass) {
+            final Class<?>[] clarray = new Class<?>[] { listenerClass };
             Method m = null;
 
             try {
