@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.system.GenericSystemUtils;
-import org.netbeans.installer.utils.system.LinuxSystemUtils;
 import org.netbeans.installer.utils.system.UnixSystemUtils;
 import org.netbeans.installer.utils.system.WindowsSystemUtils;
 
@@ -47,12 +46,12 @@ public abstract class SystemUtils {
                     instance = new WindowsSystemUtils();
                     break;
                 case LINUX:
-                    instance = new LinuxSystemUtils();
-                    break;
                 case SOLARIS_X86:
                 case SOLARIS_SPARC:
                     instance = new UnixSystemUtils();
                     break;
+                case MACOS_X_PPC:
+                case MACOS_X_X86:
                 default:
                     instance = new GenericSystemUtils();
                     break;
