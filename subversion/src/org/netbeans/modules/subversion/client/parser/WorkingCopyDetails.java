@@ -85,8 +85,7 @@ public class WorkingCopyDetails {
                     File getPropertiesFile() throws IOException {
                         if (propertiesFile == null) {
                             // unchanged properties have only the base file
-                            boolean modified = true;
-                            modified = getBooleanValue("has-prop-mods");                                // NOI18N
+                            boolean modified = getBooleanValue("has-prop-mods");                                // NOI18N
                             propertiesFile = SvnWcUtils.getPropertiesFile(getFile(), modified ? false : true);
                         }
                         return propertiesFile;
