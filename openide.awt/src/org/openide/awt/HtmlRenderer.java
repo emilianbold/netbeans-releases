@@ -905,7 +905,7 @@ public final class HtmlRenderer {
                 }
 
                 for (int i = pos; i < chars.length; i++) {
-                    if (((chars[i] == '<') && (!nextLtIsEntity)) || ((chars[i] == '&') && !isAmp)) { //NOI18N
+                    if ((chars[i] == '<' && !nextLtIsEntity) || (chars[i] == '&' && !isAmp && i != chars.length - 1)) {
                         nextTag = i - 1;
 
                         break;
