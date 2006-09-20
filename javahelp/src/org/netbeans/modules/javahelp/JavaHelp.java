@@ -90,7 +90,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      */
     private HelpSet master = null;
     /** map from help sets to (soft refs to) components showing them */
-    private Map availableJHelps = new HashMap(); // Map<HelpSet,Reference<JHelp>>
+    private Map<HelpSet,Reference<JHelp>> availableJHelps = new HashMap<HelpSet,Reference<JHelp>>();
     /** viewer (may be invisible) showing help normally; null until first used; if invisible, is empty */
     private JFrame frameViewer = null;
     /** viewer showing help parented to current modal dialog; initially null */
@@ -103,7 +103,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      */
     private boolean reparentToFrameLater = false;
     /** the modal dialog(s) currently in effect */
-    private Stack currentModalDialogs = new Stack(); // Stack<Dialog>
+    private Stack<Dialog> currentModalDialogs = new Stack<Dialog>();
     /** modal dialogs stack has been used successfully */
     private boolean currentModalDialogsReady = false;
     /** last-displayed JHelp */
@@ -122,20 +122,16 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             ClassLoader loader = JavaHelp.class.getClassLoader();
             try {
                 master = new HelpSet(loader, new URL("nbresloc:/org/netbeans/modules/javahelp/resources/masterHelpSet.xml")); // NOI18N
-                Collection sets = getHelpSets();
-                List toMerge = new ArrayList(Math.min(1, sets.size()));
-                Iterator it = sets.iterator();
-                while (it.hasNext()) {
-                    HelpSet hs = (HelpSet) it.next();
+                Collection<? extends HelpSet> sets = getHelpSets();
+                List<HelpSet> toMerge = new ArrayList<HelpSet>(Math.min(1, sets.size()));
+                for (HelpSet hs: sets) {
                     if (shouldMerge(hs)) {
                         toMerge.add(hs);
                     }
                 }
                 mergeModel.setValue(0);
                 mergeModel.setMaximum(toMerge.size());
-                it = toMerge.iterator();
-                while (it.hasNext()) {
-                    HelpSet hs = (HelpSet) it.next();
+                for (HelpSet hs: toMerge) {
                     master.add(hs);
                     mergeModel.setValue(mergeModel.getValue() + 1);
                 }
@@ -791,9 +787,9 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         if (hs == null) throw new NullPointerException();
         JHelp jh;
         synchronized (availableJHelps) {
-            Reference r = (Reference) availableJHelps.get(hs);
+            Reference<JHelp> r = availableJHelps.get(hs);
             if (r != null) {
-                jh = (JHelp) r.get();
+                jh = r.get();
                 if (jh != null) {
                     return jh;
                 }
@@ -808,7 +804,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             return null;
         }
         synchronized (availableJHelps) {
-            availableJHelps.put(hs, new SoftReference(jh));
+            availableJHelps.put(hs, new SoftReference<JHelp>(jh));
         }
         try {
             javax.help.Map.ID home = hs.getHomeID();
@@ -830,9 +826,9 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             modalExcludedSupported = 0;
             
             try {
-                Class clazz = Class.forName("sun.awt.SunToolkit"); // NOI18N
-                Method m = clazz.getMethod("isModalExcludedSupported", null); // NOI18N
-                Boolean b = (Boolean) m.invoke(null, null);
+                Class<?> clazz = Class.forName("sun.awt.SunToolkit"); // NOI18N
+                Method m = clazz.getMethod("isModalExcludedSupported"); // NOI18N
+                Boolean b = (Boolean) m.invoke(null);
                 modalExcludedSupported = b.booleanValue() ? 1 : 0;
                 Installer.log.fine("isModalExcludedSupported = " + modalExcludedSupported); // NOI18N
             } catch (ThreadDeath ex) {
@@ -850,9 +846,9 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             return;
         
         try {
-            Class clazz = Class.forName("sun.awt.SunToolkit"); // NOI18N
-            Method m = clazz.getMethod("setModalExcluded", new Class [] { Window.class }); // NOI18N
-            m.invoke(null, new Object[] { window });
+            Class<?> clazz = Class.forName("sun.awt.SunToolkit"); // NOI18N
+            Method m = clazz.getMethod("setModalExcluded", Window.class); // NOI18N
+            m.invoke(null, window);
         } catch (ThreadDeath ex) {
             throw ex;
         } catch (Throwable ex) {

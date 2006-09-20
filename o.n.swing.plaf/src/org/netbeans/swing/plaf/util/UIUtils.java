@@ -33,7 +33,7 @@ import java.util.Map;
  * @author  Dafe Simonek
  */
 public final class UIUtils {
-    private static HashMap hintsMap = null;
+    private static HashMap<RenderingHints.Key, Object> hintsMap = null;
     private static final boolean noAntialias =
         Boolean.getBoolean("nb.no.antialias"); //NOI18N
 
@@ -66,12 +66,12 @@ public final class UIUtils {
         return isXP == null ? false : isXP.booleanValue();
     }
 
-     public static final Map getHints() {
+     private static final Map<RenderingHints.Key, Object> getHints() {
         //XXX should do this in update() in the UI instead
         //Note for this method we do NOT want only text antialiasing - we 
         //want antialiased curves.
         if (hintsMap == null) {
-            hintsMap = new HashMap();
+            hintsMap = new HashMap<RenderingHints.Key, Object>();
             hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             hintsMap.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
@@ -139,7 +139,7 @@ public final class UIUtils {
     }
 
     private static Boolean openideAvailable = null;
-    private static Class utilsClass = null;
+    private static Class<?> utilsClass = null;
     private static Method utilsMethod = null;
 
     //XXX move/duplicate org.netbeans.swing.tabcontrol.plaf.ColorUtil gradient paint caching?

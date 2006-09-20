@@ -115,7 +115,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
     private static final String WHITE = "white"; // NOI18N
     private static final String BLACK = "black"; // NOI18N
 
-    private HashSet activeThemes=null;
+    private HashSet<String> activeThemes=null;
     private boolean inActiveTheme=false;
     private URL themeURL = null;
     
@@ -181,7 +181,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
             String themes = atts.getValue (ACTIVE_ATTR);
             if (themes != null) {
                 StringTokenizer tok = new StringTokenizer (themes, ","); //NOI18N
-                activeThemes = new HashSet (tok.countTokens() + 1);
+                activeThemes = new HashSet<String> (tok.countTokens() + 1);
                 while (tok.hasMoreTokens()) {
                     activeThemes.add(tok.nextToken().trim());
                 }

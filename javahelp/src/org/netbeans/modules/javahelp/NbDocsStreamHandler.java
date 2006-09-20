@@ -159,13 +159,9 @@ final class NbDocsStreamHandler extends URLStreamHandler {
          * future releases
          */
         private static ModuleInfo findModule (String codeNameBase) {
-            Lookup.Result modulesResult = 
-                Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class));
-            Collection infos = modulesResult.allInstances();
-            ModuleInfo curInfo = null;
-            boolean equalsName = false;
-            for (Iterator iter = infos.iterator(); iter.hasNext(); ) {
-                curInfo = (ModuleInfo)iter.next();
+            Lookup.Result<ModuleInfo> modulesResult = 
+                Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
+            for (ModuleInfo curInfo: modulesResult.allInstances()) {
                 if (curInfo.getCodeNameBase().equals(codeNameBase)) {
                     return curInfo;
                 }

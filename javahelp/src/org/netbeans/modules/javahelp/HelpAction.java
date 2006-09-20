@@ -58,7 +58,7 @@ public class HelpAction extends SystemAction
     }
 
     static class WindowActivatedDetector implements AWTEventListener {
-        private static java.lang.ref.WeakReference currentWindowRef;
+        private static java.lang.ref.WeakReference<Window> currentWindowRef;
         private static WindowActivatedDetector detector = null;
 
         static synchronized void install() {
@@ -77,7 +77,7 @@ public class HelpAction extends SystemAction
         
         static synchronized Window getCurrentActivatedWindow() {
             if (currentWindowRef != null) {
-                return (Window) currentWindowRef.get();
+                return currentWindowRef.get();
             }
             else {
                 return null;
@@ -85,7 +85,7 @@ public class HelpAction extends SystemAction
         }
 
         private static synchronized void setCurrentActivatedWindow(Window w) {
-            currentWindowRef = new java.lang.ref.WeakReference(w);
+            currentWindowRef = new java.lang.ref.WeakReference<Window>(w);
         }
 
         public void eventDispatched (AWTEvent ev) {

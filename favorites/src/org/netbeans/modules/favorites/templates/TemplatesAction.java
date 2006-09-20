@@ -50,7 +50,7 @@ import org.openide.nodes.Node;
 public class TemplatesAction extends CallableSystemAction {
 
     /** Weak reference to the dialog showing singleton Template Manager. */
-    private Reference dialogWRef = new WeakReference (null);
+    private Reference<Dialog> dialogWRef = new WeakReference<Dialog> (null);
     
     public TemplatesAction() {
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
@@ -58,7 +58,7 @@ public class TemplatesAction extends CallableSystemAction {
     
     public void performAction () {
         
-        Dialog dialog = (Dialog) dialogWRef.get ();
+        Dialog dialog = dialogWRef.get ();
 
         if (dialog == null || ! dialog.isShowing ()) {
 
@@ -85,7 +85,7 @@ public class TemplatesAction extends CallableSystemAction {
             
             dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
-            dialogWRef = new WeakReference (dialog);
+            dialogWRef = new WeakReference<Dialog> (dialog);
             
         } else {
             dialog.toFront ();
@@ -175,8 +175,8 @@ public class TemplatesAction extends CallableSystemAction {
         }
     }
     
-    static private Set getNodes2Open (Node [] nodes) {
-        Set/*<Node>*/ nodes2open = new HashSet (nodes.length);
+    static private Set<Node> getNodes2Open (Node [] nodes) {
+        Set<Node> nodes2open = new HashSet<Node> (nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             if (nodes [i].isLeaf ()) {
                 nodes2open.add (nodes [i]);

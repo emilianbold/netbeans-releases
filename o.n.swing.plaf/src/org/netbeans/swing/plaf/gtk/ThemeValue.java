@@ -165,20 +165,20 @@ final class ThemeValue implements UIDefaults.ActiveValue {
             synthUI = Class.forName ("sun.swing.plaf.synth.SynthUI"); //NOI18N
 
 
-            synthContextConstructor = synthContext.getDeclaredConstructor(new Class[] {
+            synthContextConstructor = synthContext.getDeclaredConstructor(
                 JComponent.class,
                 region, synthStyle,
                 Integer.TYPE
-            });
+            );
             synthContextConstructor.setAccessible(true);
 
-            synthStyle_getColorForState = synthStyle.getDeclaredMethod ("getColorForState", new Class[] { //NOI18N
-                 synthContext, colorType });
+            synthStyle_getColorForState = synthStyle.getDeclaredMethod ("getColorForState",  //NOI18N
+                 synthContext, colorType );
                  
             synthStyle_getColorForState.setAccessible(true);
             
-            synthStyle_getFontForState = synthStyle.getDeclaredMethod ("getFontForState", new Class[] { //NOI18N
-                synthContext });
+            synthStyle_getFontForState = synthStyle.getDeclaredMethod ("getFontForState", //NOI18N
+                synthContext );
                 
             synthStyle_getFontForState.setAccessible(true);
             
@@ -199,9 +199,8 @@ final class ThemeValue implements UIDefaults.ActiveValue {
             synthContext_getContext.setAccessible(true);
 
             synthLookAndFeel_getStyle = synthLookAndFeel.getDeclaredMethod ("getStyle",
-                    new Class[] {
                         JComponent.class, region
-                    });
+                    );
             synthLookAndFeel_getStyle.setAccessible (true);
 
             REGION_BUTTON = valueOfField (region, "BUTTON"); //NOI18N
@@ -210,7 +209,7 @@ final class ThemeValue implements UIDefaults.ActiveValue {
             REGION_TAB = valueOfField (region, "TABBED_PANE_TAB"); //NOI18N
             REGION_INTFRAME = valueOfField (region, "INTERNAL_FRAME_TITLE_PANE"); //NOI18N
             
-            synthUI_getContext = synthUI.getDeclaredMethod ("getContext", new Class[] { JComponent.class} ); //NOI18N
+            synthUI_getContext = synthUI.getDeclaredMethod ("getContext", JComponent.class ); //NOI18N
 
             functioning = Boolean.TRUE;
         } catch (Exception e) {
@@ -270,14 +269,14 @@ final class ThemeValue implements UIDefaults.ActiveValue {
         return f.get(null);
     }
 
-    private static Class synthLookAndFeel = null;
-    private static Class gtkLookAndFeel = null;
-    private static Class colorType = null;
-    private static Class region = null;
-    private static Class synthStyle = null;
-    private static Class synthContext = null;
-    private static Class gtkColorType = null;
-    private static Class synthUI = null;
+    private static Class<?> synthLookAndFeel = null;
+    private static Class<?> gtkLookAndFeel = null;
+    private static Class<?> colorType = null;
+    private static Class<?> region = null;
+    private static Class<?> synthStyle = null;
+    private static Class<?> synthContext = null;
+    private static Class<?> gtkColorType = null;
+    private static Class<?> synthUI = null;
 
     private static Constructor synthContextConstructor;
     private static Method synthStyle_getColorForState = null;
@@ -304,13 +303,13 @@ final class ThemeValue implements UIDefaults.ActiveValue {
     static Object /* <ColorType> */ FOCUS = null;    
     
     
-    private static HashSet instances = null;
+    private static HashSet<ThemeValue> instances = null;
     /** 
      * Unbeautiful caching - the reflection lookup has serious performance
      * issues - we will cache values instead.  */
     private static synchronized void register (ThemeValue value) {
         if (instances == null) {
-            instances = new HashSet();
+            instances = new HashSet<ThemeValue>();
             registerPcl();
         }
         instances.add (value);
@@ -349,10 +348,8 @@ final class ThemeValue implements UIDefaults.ActiveValue {
                         "gnome.Net/ThemeName", this); //NOI18N
                 }
             } else {
-                Iterator i = instances.iterator();
-                
-                while (i.hasNext()) {
-                    ((ThemeValue)i.next()).clear();
+                for (ThemeValue tv: instances) {
+                    tv.clear();
                 }
             }
         }

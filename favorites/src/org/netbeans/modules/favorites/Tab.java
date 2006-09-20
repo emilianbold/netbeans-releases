@@ -144,6 +144,7 @@ implements Runnable, ExplorerManager.Provider {
     }
     
     /** Transfer focus to view. */
+    @SuppressWarnings("deprecation") @Override
     public void requestFocus () {
         super.requestFocus();
         if (view != null) {
@@ -152,6 +153,7 @@ implements Runnable, ExplorerManager.Provider {
     }
 
     /** Transfer focus to view. */
+    @SuppressWarnings("deprecation") @Override
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow();
         if (view != null) {
@@ -335,7 +337,7 @@ implements Runnable, ExplorerManager.Provider {
     private static Node findClosestNode (DataObject obj, Node start, boolean useLogicalViews) {
         DataObject original = obj;
         
-        Stack stack = new Stack ();
+        Stack<DataObject> stack = new Stack<DataObject> ();
         while (obj != null) {
             stack.push(obj);
             DataObject tmp = obj.getFolder();
@@ -363,7 +365,7 @@ implements Runnable, ExplorerManager.Provider {
         int topIdx = stack.size();
         int i = 0;
         while (i < topIdx) {
-            Node n = findDataObject (current, (DataObject)stack.get (i));
+            Node n = findDataObject (current, stack.get (i));
             if (n != null) {
                 current = n;
                 topIdx = i;

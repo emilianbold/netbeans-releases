@@ -42,16 +42,16 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
     
     /** the results of the search for helpsets
      */    
-    private Lookup.Result helpsets = null;
+    private Lookup.Result<HelpSet> helpsets = null;
     /** Get all available help sets.
      * Pay attention to {@link #helpSetsChanged} to see
      * when this set will change.
      * @return a collection of HelpSet
      */    
-    protected final Collection getHelpSets() {
+    protected final Collection<? extends HelpSet> getHelpSets() {
         if (helpsets == null) {
             Installer.log.fine("searching for instances of HelpSet...");
-            helpsets = Lookup.getDefault().lookup(new Lookup.Template(HelpSet.class));
+            helpsets = Lookup.getDefault().lookup(new Lookup.Template<HelpSet>(HelpSet.class));
             helpsets.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
                     helpSetsChanged();
@@ -59,12 +59,11 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
             });
             fireChangeEvent(); // since someone may be listening to whether they are ready
         }
-        Collection c = helpsets.allInstances();
+        Collection<? extends HelpSet> c = helpsets.allInstances();
         if (Installer.log.isLoggable(Level.FINE)) {
-            List l = new ArrayList(Math.min(1, c.size()));
-            Iterator it = c.iterator();
-            while (it.hasNext()) {
-                l.add(((HelpSet)it.next()).getTitle());
+            List<String> l = new ArrayList<String>(Math.min(1, c.size()));
+            for (HelpSet hs: c) {
+                l.add(hs.getTitle());
             }
             Installer.log.fine("listing helpsets: " + l);
         }
@@ -111,7 +110,7 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
     
     /** all change listeners
      */    
-    private final Set listeners = new HashSet(1); // Set<ChangeListener>
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     /** Fire a change event to all listeners.
      */    
@@ -124,14 +123,14 @@ public abstract class AbstractHelp extends Help implements HelpConstants {
             });
             return;
         }
-        Iterator it;
+        Set<ChangeListener> lsnrs;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            lsnrs = new HashSet<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
         Installer.log.fine("Help.stateChanged");
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener chl: lsnrs) {
+            chl.stateChanged(ev);
         }
     }
     

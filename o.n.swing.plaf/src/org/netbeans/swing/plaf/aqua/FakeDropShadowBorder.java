@@ -201,9 +201,9 @@ public class FakeDropShadowBorder implements Border {
     
     //Only one instance in VM, so perfectly safe to use instance cache - won't
     //be populated unless used
-    private static Map imgs = new HashMap();
+    private static Map<String, BufferedImage> imgs = new HashMap<String, BufferedImage>();
     private static BufferedImage getImage(String s) {
-        BufferedImage result = (BufferedImage) imgs.get(s);
+        BufferedImage result = imgs.get(s);
         if (result == null) {
             Exception e1 = null;
             try {

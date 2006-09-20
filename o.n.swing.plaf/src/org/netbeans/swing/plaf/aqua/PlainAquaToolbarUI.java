@@ -84,10 +84,10 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
     /** Cache for images - normally only ever two - one for editor toolbar
      * height and one for main window toolbar height
      */
-    private static Map icache = new HashMap();
+    private static Map<Integer, BufferedImage> icache = new HashMap<Integer, BufferedImage>();
     
     private BufferedImage getCacheImage(JComponent c) {
-        BufferedImage img = (BufferedImage) icache.get(new Integer(c.getHeight()));
+        BufferedImage img = icache.get(new Integer(c.getHeight()));
         //Don't make a cache image for very small sizes - we're probably just
         //initializing, and if not, painting will be cheap enough.  Also
         //ensure that the mid area width is at least a reasonable width for
@@ -97,7 +97,7 @@ public class PlainAquaToolbarUI extends BasicToolBarUI implements ContainerListe
                 BufferedImage.TYPE_INT_ARGB_PRE); //INT_ARGB_PRE is native raster format on mac os
             
             paintInto (img.getGraphics(), c);
-            icache.put (new Integer(c.getHeight()), img);
+            icache.put (Integer.valueOf(c.getHeight()), img);
         }
         return img;
     }

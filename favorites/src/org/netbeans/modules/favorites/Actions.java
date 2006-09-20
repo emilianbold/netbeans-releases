@@ -335,7 +335,7 @@ public final class Actions extends Object {
         protected void performAction (final Node[] activatedNodes) {
             final DataFolder f = Favorites.getFolder();            
             final DataObject [] arr = f.getChildren();
-            final List listAdd = new ArrayList();
+            final List<DataObject> listAdd = new ArrayList<DataObject>();
             
             DataObject createdDO = null;
             Node[] toShadows = activatedNodes; 
@@ -433,7 +433,7 @@ public final class Actions extends Object {
             }
         }
 
-        private static DataObject createShadows(final DataFolder favourities, final Node[] activatedNodes, final List listAdd) {
+        private static DataObject createShadows(final DataFolder favourities, final Node[] activatedNodes, final List<DataObject> listAdd) {
             DataObject createdDO = null;
             for (int i = 0; i < activatedNodes.length; i++) {
                 DataObject obj = (DataObject) activatedNodes[i].getCookie(DataObject.class);
@@ -456,8 +456,8 @@ public final class Actions extends Object {
             return createdDO;
         }
 
-        private static void reorderAfterAddition(final DataFolder favourities, final DataObject[] children, final List listAdd) {
-            List listDest = new ArrayList();
+        private static void reorderAfterAddition(final DataFolder favourities, final DataObject[] children, final List<DataObject> listAdd) {
+            List<DataObject> listDest = new ArrayList<DataObject>();
             if (listAdd.size() > 0) {
                 //Insert new nodes just before last (root) node
                 DataObject root = null;
@@ -484,7 +484,7 @@ public final class Actions extends Object {
                     listDest.addAll(listAdd);
                 }
                 //Set desired order
-                DataObject [] newOrder = (DataObject []) listDest.toArray(new DataObject[listDest.size()]);
+                DataObject [] newOrder = listDest.toArray(new DataObject[listDest.size()]);
                 try {
                     favourities.setOrder(newOrder);
                 } catch (IOException ex) {

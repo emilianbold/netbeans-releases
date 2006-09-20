@@ -162,8 +162,7 @@ final class Favorites extends FilterNode {
             VisibilityQuery.getDefault().addChangeListener(weak);
         }
         
-        protected Node[] createNodes(Object key) {
-            Node node = (Node)key;
+        protected Node[] createNodes(Node node) {
             if (hideHidden) {
                 DataObject obj = (DataObject)node.getCookie(DataObject.class);
                 if (obj != null && !VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile())) {
@@ -314,7 +313,7 @@ final class Favorites extends FilterNode {
         /** Add action 'Remove from Favorites'. */
         private Action [] createActionsForFavoriteFolder (Action [] arr) {
             boolean added = false;
-            List newArr = new ArrayList();
+            List<Action> newArr = new ArrayList<Action>();
             for (int i = 0; i < arr.length; i++) {
                 //Add before CopyAction or CutAction
                 if (!added && ((arr[i] instanceof CopyAction) || (arr[i] instanceof CutAction))) {
@@ -333,13 +332,13 @@ final class Favorites extends FilterNode {
                 newArr.add(Actions.remove());
             }
             
-            return (Action[])newArr.toArray (new Action[newArr.size()]);
+            return newArr.toArray (new Action[newArr.size()]);
         }
         
         /** Add action 'Remove from Favorites'. */
         private Action [] createActionsForFavoriteFile (Action [] arr) {
             boolean added = false;
-            List newArr = new ArrayList();
+            List<Action> newArr = new ArrayList<Action>();
             for (int i = 0; i < arr.length; i++) {
                 //Add before CopyAction or CutAction
                 if (!added && ((arr[i] instanceof CopyAction) || (arr[i] instanceof CutAction))) {
@@ -357,13 +356,13 @@ final class Favorites extends FilterNode {
                 newArr.add(null);
                 newArr.add(Actions.remove());
             }
-            return (Action[])newArr.toArray (new Action[newArr.size()]);
+            return newArr.toArray (new Action[newArr.size()]);
         }
         
         /** Add action 'Add to Favorites'. */
         private Action [] createActionsForFolder (Action [] arr) {
             boolean added = false;
-            List newArr = new ArrayList();
+            List<Action> newArr = new ArrayList<Action>();
             for (int i = 0; i < arr.length; i++) {
                 //Add before CopyAction or CutAction
                 if (!added && ((arr[i] instanceof CopyAction) || (arr[i] instanceof CutAction))) {
@@ -378,13 +377,13 @@ final class Favorites extends FilterNode {
                 newArr.add(null);
                 newArr.add(Actions.add());
             }
-            return (Action[])newArr.toArray (new Action[newArr.size()]);
+            return newArr.toArray (new Action[newArr.size()]);
         }
         
         /** Add action 'Add to Favorites'. */
         private Action [] createActionsForFile (Action [] arr) {
             boolean added = false;
-            List newArr = new ArrayList();
+            List<Action> newArr = new ArrayList<Action>();
             for (int i = 0; i < arr.length; i++) {
                 //Add before CopyAction or CutAction
                 if (!added && ((arr[i] instanceof CopyAction) || (arr[i] instanceof CutAction))) {
@@ -399,7 +398,7 @@ final class Favorites extends FilterNode {
                 newArr.add(null);
                 newArr.add(Actions.add());
             }
-            return (Action[])newArr.toArray (new Action[newArr.size()]);
+            return newArr.toArray (new Action[newArr.size()]);
         }
         
     }

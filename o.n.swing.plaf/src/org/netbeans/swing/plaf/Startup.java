@@ -233,7 +233,7 @@ public final class Startup {
         assert globalCustoms != null;
 
         if (curCustoms != null) {
-            Set keep = new HashSet (Arrays.asList(globalCustoms.allKeys()));
+            Set<Object> keep = new HashSet<Object> (Arrays.asList(globalCustoms.allKeys()));
             Object[] arr = curCustoms.allKeys();
 
             for (int i=0; i < arr.length; i++) {

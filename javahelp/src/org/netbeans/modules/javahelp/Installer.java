@@ -65,13 +65,13 @@ public class Installer extends ModuleInstall {
         cleanDefaults(UIManager.getLookAndFeelDefaults());
     }
     private static void cleanDefaults(UIDefaults d) {
-        Set badKeys = new HashSet(10); // Set<Object>
-        Iterator it = d.entrySet().iterator();
+        Set<Object> badKeys = new HashSet<Object>(10);
+        Iterator<Map.Entry<Object, Object>> it = d.entrySet().iterator();
         ClassLoader aboutToDie = Installer.class.getClassLoader();
         while (it.hasNext()) {
-            Map.Entry e;
+            Map.Entry<Object, Object> e;
             try {
-                e = (Map.Entry) it.next();
+                e = it.next();
             } catch (ConcurrentModificationException x) {
                 // Seems to be possible during shutdown. Just skip the hack in this case.
                 return;
@@ -92,9 +92,8 @@ public class Installer extends ModuleInstall {
         }
         if (!badKeys.isEmpty()) {
             log.fine("Cleaning up old UIDefaults keys (JRE bug #4675772): " + badKeys);
-            it = badKeys.iterator();
-            while (it.hasNext()) {
-                d.put(it.next(), null);
+            for (Object o: badKeys) {
+                d.put(o, null);
             }
         }
     }

@@ -506,7 +506,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             super (n);
         }
         
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(Node key) {
             Node n = (Node) key;
             Node [] orig = super.createNodes (key);
             Node [] filtered = new Node [orig.length];
