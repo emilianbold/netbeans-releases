@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     description_key='HINT_MIXED_BREAKPOINTS'
     localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
     visible='true'
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/MultiBreakpoint.gif'
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/MultiBreakpoint.png'
     highlight='0xFC9D9F'
     type='line'
     severity='ok'
@@ -32,11 +32,10 @@ Microsystems, Inc. All Rights Reserved.
     custom_sidebar_color='0xFF8FD5'>
 
     <combination tiptext_key='HINT_MIXED_BREAKPOINTS_TOOLTIP' order='300' min_optionals='1'>
-        <combine annotationtype='debugger-diff_BP' optional='true'/>
-        <combine annotationtype='debugger-multi_BP' optional='true'/>
-        <combine annotationtype='debugger-multi_CBP' optional='true'/>
-        <combine annotationtype='debugger-multi_DBP' optional='true'/>
-        <combine annotationtype='debugger-multi_DCBP' optional='true'/>
+        <combine annotationtype='debugger-mixed_BPD' optional='true'/>
+        <combine annotationtype='debugger-mixed_CBPD' optional='true'/>
+        <combine annotationtype='debugger-mixed_DBP' optional='true'/>
+        <combine annotationtype='debugger-mixed_DCBP' optional='true'/>
     </combination>
     
 </type>

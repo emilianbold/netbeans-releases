@@ -21,6 +21,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.net.URL;
 import java.util.Vector;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -52,6 +53,18 @@ public class BreakpointsNodeModel implements NodeModel {
         "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint";
     public static final String LINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";
+    public static final String CURRENT_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpointHit";
+    public static final String CURRENT_LINE_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointHit";
+    public static final String DISABLED_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint";
+    public static final String DISABLED_LINE_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint";
+    public static final String DISABLED_CURRENT_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpointHit";
+    public static final String DISABLED_CURRENT_LINE_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpointHit";
 
     private Vector listeners = new Vector ();
 
@@ -358,23 +371,38 @@ public class BreakpointsNodeModel implements NodeModel {
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {
+        boolean current = currentBreakpoint == o;
+        boolean disabled = !((Breakpoint) o).isEnabled();
         if (o instanceof LineBreakpoint) {
-            return LINE_BREAKPOINT;
+            if (current) {
+                if (disabled) {
+                    return DISABLED_CURRENT_LINE_BREAKPOINT;
+                } else {
+                    return CURRENT_LINE_BREAKPOINT;
+                }
+            } else if (disabled) {
+                return DISABLED_LINE_BREAKPOINT;
+            } else {
+                return LINE_BREAKPOINT;
+            }
         } else
-        if (o instanceof ThreadBreakpoint) {
-            return BREAKPOINT;
-        } else
-        if (o instanceof FieldBreakpoint) {
-            return BREAKPOINT;
-        } else
-        if (o instanceof MethodBreakpoint) {
-            return BREAKPOINT;
-        } else
-        if (o instanceof ClassLoadUnloadBreakpoint) {
-            return BREAKPOINT;
-        } else
-        if (o instanceof ExceptionBreakpoint) {
-            return BREAKPOINT;
+        if (o instanceof ThreadBreakpoint ||
+            o instanceof FieldBreakpoint ||
+            o instanceof MethodBreakpoint ||
+            o instanceof ClassLoadUnloadBreakpoint ||
+            o instanceof ExceptionBreakpoint) {
+            
+            if (current) {
+                if (disabled) {
+                    return DISABLED_CURRENT_BREAKPOINT;
+                } else {
+                    return CURRENT_BREAKPOINT;
+                }
+            } else if (disabled) {
+                return DISABLED_BREAKPOINT;
+            } else {
+                return BREAKPOINT;
+            }
         } else
         throw new UnknownTypeException (o);
     }
