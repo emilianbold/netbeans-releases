@@ -146,8 +146,7 @@ public final class PaletteItemNode extends FilterNode {
     }
 
     public Transferable drag() throws IOException {
-        Transferable t = clipboardCopy();
-        return t;
+        return clipboardCopy();
     }
 
     private static class ActiveEditorDropTransferable extends ExTransferable.Single {

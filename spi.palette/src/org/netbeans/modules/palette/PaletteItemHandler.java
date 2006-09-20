@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.palette;
 import java.util.LinkedList;
+import java.util.List;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -57,7 +58,6 @@ public final class PaletteItemHandler extends DefaultHandler {
 //    private HashMap attributeMap;
     private String body;
     private String className;
-    private String customizerName;
     
     private String icon16URL;
     private String icon32URL;
@@ -84,7 +84,7 @@ public final class PaletteItemHandler extends DefaultHandler {
                 String message = NbBundle.getBundle(PaletteItemHandler.class)
                     .getString("MSG_UnknownEditorPaletteItemVersion"); // NOI18N
                 throw new SAXException(message);
-            } else if (!version.equals("1.0")) { // NOI18N
+            } else if (!"1.0".equals(version)) { // NOI18N
                 String message = NbBundle.getBundle(PaletteItemHandler.class)
                     .getString("MSG_UnsupportedEditorPaletteItemVersion"); // NOI18N
                 throw new SAXException(message);
@@ -133,7 +133,7 @@ public final class PaletteItemHandler extends DefaultHandler {
     /**
      * Trims empty lines from the beginning and the end of the line list
      */
-    private String trimSurroundingLines(LinkedList/*<String>*/ lines) {
+    private String trimSurroundingLines(List<String> lines) {
         
         int nlines = lines.size();
         
@@ -150,14 +150,14 @@ public final class PaletteItemHandler extends DefaultHandler {
         
         //going from the end and skipping empty lines until the first nonempty line occurs
         for (int i = nlines - 1; i > lastNonEmpty; i--) {
-            String line = (String)lines.get(i);
+            String line = lines.get(i);
             if (line.trim().length() != 0)
                 lastNonEmpty = i;
         }
 
         StringBuffer sb = new StringBuffer();
         for (int i = firstNonEmpty; i <= lastNonEmpty; i++)
-            sb.append((String)lines.get(i));
+            sb.append(lines.get(i));
         
         String body = sb.toString();
         if (body.length() > 0  && body.charAt(body.length() - 1) == '\n') // cut trailing new-line

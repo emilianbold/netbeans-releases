@@ -255,9 +255,7 @@ public class PalettePanel extends JPanel implements Scrollable {
         if( item != null ) {
             selectedCategory = category;
          }
-        if( descriptor != null ) {
-            descriptor.setSelectedItem( item );
-        }
+        descriptor.setSelectedItem( item );
     }
 
     private CategoryDescriptor findDescriptorFor( Category category ) {
@@ -432,16 +430,16 @@ public class PalettePanel extends JPanel implements Scrollable {
         if( null == settingsListener ) {
             settingsListener = new PropertyChangeListener() {
                 public void propertyChange( PropertyChangeEvent evt ) {
-                    if( evt.getPropertyName().equals( PaletteController.ATTR_IS_VISIBLE ) ) {
+                    if( PaletteController.ATTR_IS_VISIBLE.equals( evt.getPropertyName() ) ) {
                         PalettePanel.this.refresh();
                         for( int i=0; null != descriptors && i<descriptors.length; i++ ) {
                             descriptors[i].computeItems();
                         }
-                    } else if( evt.getPropertyName().equals( PaletteController.ATTR_ICON_SIZE ) ) {
+                    } else if( PaletteController.ATTR_ICON_SIZE.equals( evt.getPropertyName() ) ) {
                         
                         setIconSize( getSettings().getIconSize() );
                         
-                    } else if( evt.getPropertyName().equals( PaletteController.ATTR_SHOW_ITEM_NAMES ) ) {
+                    } else if( PaletteController.ATTR_SHOW_ITEM_NAMES.equals( evt.getPropertyName() ) ) {
                         
                         setShowItemNames( getSettings().getShowItemNames() );
                         setItemWidth( getSettings().getShowItemNames() ? getSettings().getItemWidth() : -1 );

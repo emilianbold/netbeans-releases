@@ -362,7 +362,7 @@ public class CategoryList extends JList implements Autoscroll {
         }
 
         public int getPreferredHeight (int width) {
-            ((CategoryList) list).tempWidth = new Integer (width);
+            ((CategoryList) list).tempWidth = Integer.valueOf (width);
             int result;
             try {
                 result = (int) getPreferredSize (list).getHeight ();

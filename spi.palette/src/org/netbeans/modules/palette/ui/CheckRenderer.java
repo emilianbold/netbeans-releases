@@ -87,7 +87,7 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
         }
 
         if( check != null ) {
-            Node node = null;
+            Node node;
             if( value instanceof Node ) {
                 node = (Node)value;
             } else {

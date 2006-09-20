@@ -152,7 +152,7 @@ public final class PaletteFactory {
     }
     
     private static FileObject getPaletteFolder( String folderName ) throws IOException {
-        FileObject paletteFolder = null;
+        FileObject paletteFolder;
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         paletteFolder = fs.findResource( folderName );
         if (paletteFolder == null) { // not found, cannot continue

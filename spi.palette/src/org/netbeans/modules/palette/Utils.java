@@ -54,10 +54,7 @@ import org.openide.util.datatransfer.ExClipboard;
  */
 public final class Utils {
 
-    private static FileObject paletteFolder;
-    private static DataFolder paletteDataFolder;
-    
-    private static Logger ERR = Logger.getLogger( "org.netbeans.modules.palette" ); // NOI18N
+    private static final Logger ERR = Logger.getLogger( "org.netbeans.modules.palette" ); // NOI18N
 
     private Utils() {
     }
@@ -127,8 +124,7 @@ public final class Utils {
      * @return Category with the given name or null.
      */
     public static Node findCategoryNode( Node root, String categoryName ) {
-        Node category = root.getChildren().findChild( categoryName );
-        return category;
+        return root.getChildren().findChild( categoryName );
     }
     
     public static void resetPalette( final PaletteController controller, final Settings settings ) {
@@ -242,8 +238,7 @@ public final class Utils {
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
                 boolean showNames = settings.getShowItemNames();
-                String name = getBundleString(showNames ? "CTL_HideNames" : "CTL_ShowNames"); // NOI18N
-                return name;
+                return getBundleString(showNames ? "CTL_HideNames" : "CTL_ShowNames"); // NOI18N
             } else {
                 return super.getValue(key);
             }
@@ -271,9 +266,8 @@ public final class Utils {
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
                 String namePattern = getBundleString("CTL_IconSize"); // NOI18N
-                String name = MessageFormat.format(namePattern,
-                new Object[] {new Integer(settings.getIconSize())});
-                return name;
+                return MessageFormat.format(namePattern,
+                new Object[] {Integer.valueOf(settings.getIconSize())});
             } else {
                 return super.getValue(key);
             }
@@ -348,7 +342,7 @@ public final class Utils {
             desc.setInputText(categoryNode.getName());
 
             if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
-                String newName = null;
+                String newName;
                 try {
                     newName = desc.getInputText();
                     if (!"".equals(newName)) // NOI18N

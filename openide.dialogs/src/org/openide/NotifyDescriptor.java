@@ -225,10 +225,6 @@ public class NotifyDescriptor extends Object {
     /** Checks for initialization.
      */
     final void getterCalled() {
-        if (changeSupport != null) {
-            return;
-        }
-
         boolean init = false;
 
         synchronized (this) {
@@ -792,7 +788,8 @@ public class NotifyDescriptor extends Object {
                 Throwable target = ((InvocationTargetException) detail).getTargetException();
                 this.setMessage(target);
 
-                if ((this.getMessage() == null) || "".equals(this.getMessage())) { // NOI18N
+                Object msgObj = this.getMessage();
+                if ((msgObj == null) || "".equals(msgObj)) { // NOI18N
 
                     String msg = target.getMessage();
                     msg = org.openide.util.Utilities.wrapString(
@@ -802,8 +799,9 @@ public class NotifyDescriptor extends Object {
                 }
             }
 
+            Object obj = this.getMessage();
             // emphasize user-non-friendly exceptions
-            if ((this.getMessage() == null) || "".equals(this.getMessage())) { // NOI18N
+            if ((obj == null) || "".equals(obj)) { // NOI18N
                 this.setMessage(
                     NbBundle.getMessage(
                         NotifyDescriptor.class, "NTF_ExceptionalException", detail.getClass().getName(),

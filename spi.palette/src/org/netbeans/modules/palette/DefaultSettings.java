@@ -174,7 +174,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
     }
 
     private int get( Node node, String attrName, int defaultValue ) {
-        Object value = get( node, attrName, new Integer( defaultValue ) );
+        Object value = get( node, attrName, Integer.valueOf( defaultValue ) );
         try {
             if( null != value )
                 return Integer.parseInt( value.toString() );
@@ -214,7 +214,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
     }
     
     private void set( Node node, String attrName, int newValue, int defaultValue ) {
-        set( node, attrName, new Integer( newValue ), new Integer( defaultValue ) );
+        set( node, attrName, Integer.valueOf( newValue ), Integer.valueOf( defaultValue ) );
     }
     
     private void set( Node node, String attrName, Object newValue, Object defaultValue ) {
@@ -382,10 +382,11 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
 
     private FileObject createSettingsFile() throws IOException {
         FileObject settingsRoot = findOrCreateSettingsFolder();
-        FileObject res = settingsRoot.getFileObject( model.getName(), "settings" );
+        String modelName = model.getName();
+        FileObject res = settingsRoot.getFileObject( modelName, "settings" );
         if( null == res ) {
             try {
-                res = settingsRoot.createData( model.getName(), "settings" );
+                res = settingsRoot.createData( modelName, "settings" );
             } catch( FileNotFoundException fnfE ) {
                 return null;
             }

@@ -130,8 +130,9 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                 XMLReader reader = XMLUtil.createXMLReader(true);
                 reader.setContentHandler(handler);
                 reader.setEntityResolver(EntityCatalog.getDefault());
-                String urlString = xmlDataObject.getPrimaryFile().getURL().toExternalForm();
-                InputSource is = new InputSource(xmlDataObject.getPrimaryFile().getInputStream());
+                FileObject fo = xmlDataObject.getPrimaryFile();
+                String urlString = fo.getURL().toExternalForm();
+                InputSource is = new InputSource(fo.getInputStream());
                 is.setSystemId(urlString);
                 reader.parse(is);
             }
@@ -153,12 +154,16 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
             String name = xmlDataObject.getName();
             
             InstanceContent ic = new InstanceContent();
-            if (handler.getClassName() != null)
-                ic.add(handler.getClassName(), ActiveEditorDropProvider.getInstance());
-            else if (handler.getBody() != null)
-                ic.add(handler.getBody(), ActiveEditorDropDefaultProvider.getInstance());
+            String s = handler.getClassName();
+            if (s != null)
+                ic.add(s, ActiveEditorDropProvider.getInstance());
+            else {
+                s = handler.getBody();
+                if (s != null)
+                    ic.add(s, ActiveEditorDropDefaultProvider.getInstance());
+            }
             
-            PaletteItemNode node = new PaletteItemNode(
+            return new PaletteItemNode(
                     new DataNode(xmlDataObject, Children.LEAF), 
                     name, 
                     handler.getBundleName(), 
@@ -169,8 +174,6 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                     handler.getIcon32URL(), 
                     ic
             );
-
-            return node;
         }
     }        
 

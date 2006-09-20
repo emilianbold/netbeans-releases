@@ -58,7 +58,7 @@ final class DropGlassPane extends JPanel {
      * @param comp
      * @return  */
     synchronized static public DropGlassPane getDefault(JComponent comp) {
-        Integer id = new Integer(System.identityHashCode(comp));
+        Integer id = Integer.valueOf(System.identityHashCode(comp));
 
         if ((map.get(id)) == null) {
             DropGlassPane dgp = new DropGlassPane();

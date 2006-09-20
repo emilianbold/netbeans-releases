@@ -212,7 +212,7 @@ public class WizardDescriptor extends DialogDescriptor {
     private Set /*<Object>*/ newObjects = Collections.EMPTY_SET;
 
     /** a component with wait cursor */
-    transient private Component waitingComponent;
+    private Component waitingComponent;
     private boolean changeStateInProgress = false;
 
     /** Whether wizard panel will be constructed from <CODE>WizardDescriptor.getProperty()</CODE>/
@@ -436,8 +436,8 @@ public class WizardDescriptor extends DialogDescriptor {
     * @param panels the new list of {@link WizardDescriptor.Panel}s
     */
     public final synchronized void setPanels(Iterator panels) {
-        if (panels != null) {
-            panels.removeChangeListener(weakChangeListener);
+        if (this.panels != null) {
+            this.panels.removeChangeListener(weakChangeListener);
         }
 
         this.panels = panels;
@@ -572,7 +572,7 @@ public class WizardDescriptor extends DialogDescriptor {
     * @param value value of property
     */
     public void putProperty(final String name, final Object value) {
-        Object oldValue = null;
+        Object oldValue;
 
         synchronized (this) {
             if (properties == null) {
@@ -916,8 +916,9 @@ public class WizardDescriptor extends DialogDescriptor {
         
         if (wizardPanel != null) {
             // save escapeActionListener for normal state
-            escapeActionListener = wizardPanel.getRootPane ().getActionForKeyStroke (KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0));
-            wizardPanel.getRootPane ().unregisterKeyboardAction (KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0));
+            KeyStroke ks = KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0);
+            escapeActionListener = wizardPanel.getRootPane ().getActionForKeyStroke (ks);
+            wizardPanel.getRootPane ().unregisterKeyboardAction (ks);
         }
 
         waitingComponent = wizardPanel.getRootPane().getContentPane();
@@ -1209,12 +1210,9 @@ public class WizardDescriptor extends DialogDescriptor {
                     }
 
                     // focus source of this problem
-                    if (wve.getSource() != null) {
-                        final JComponent comp = (JComponent) wve.getSource();
-
-                        if (comp.isFocusable()) {
-                            comp.requestFocus();
-                        }
+                    final JComponent comp = (JComponent) wve.getSource();
+                    if (comp != null && comp.isFocusable()) {
+                        comp.requestFocus();
                     }
                 }
 
@@ -1748,8 +1746,9 @@ public class WizardDescriptor extends DialogDescriptor {
                 wizardPanel.setErrorMessage(" ", null); //NOI18N
             }
 
-            err.log (Level.FINE, "actionPerformed entry. Source: " + ev.getSource ()); // NOI18N
-            if (ev.getSource() == nextButton) {
+            Object src = ev.getSource();
+            err.log (Level.FINE, "actionPerformed entry. Source: " + src); // NOI18N
+            if (src == nextButton) {
                 final Dimension previousSize = panels.current().getComponent().getSize();
                 Runnable onValidPerformer = new Runnable() {
 
@@ -1764,9 +1763,10 @@ public class WizardDescriptor extends DialogDescriptor {
                         }
                         catch (IllegalStateException ise) {
                             panels.previousPanel();
-                            if (ise.getMessage() != null) {
+                            String msg = ise.getMessage();
+                            if (msg != null) {
                                 // this is only for backward compatitility
-                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
                             } else {
                                 // this should be used (it checks for exception
                                 // annotations and severity)
@@ -1885,21 +1885,21 @@ public class WizardDescriptor extends DialogDescriptor {
             String propName = e.getPropertyName();
             setPanelProperties((JComponent) wizardPanel.getRightComponent());
 
-            if (propName.equals(PROP_CONTENT_DATA)) {
+            if (PROP_CONTENT_DATA.equals(propName)) {
                 wizardPanel.setContent(contentData);
                 updateButtonAccessibleDescription();
-            } else if (propName.equals(PROP_CONTENT_SELECTED_INDEX)) {
+            } else if (PROP_CONTENT_SELECTED_INDEX.equals(propName)) {
                 wizardPanel.setSelectedIndex(contentSelectedIndex);
                 updateButtonAccessibleDescription();
-            } else if (propName.equals(PROP_CONTENT_BACK_COLOR)) {
+            } else if (PROP_CONTENT_BACK_COLOR.equals(propName)) {
                 wizardPanel.setContentBackColor(contentBackColor);
-            } else if (propName.equals(PROP_CONTENT_FOREGROUND_COLOR)) {
+            } else if (PROP_CONTENT_FOREGROUND_COLOR.equals(propName)) {
                 wizardPanel.setContentForegroundColor(contentForegroundColor);
-            } else if (propName.equals(PROP_IMAGE)) {
+            } else if (PROP_IMAGE.equals(propName)) {
                 wizardPanel.setImage(image);
-            } else if (propName.equals(PROP_IMAGE_ALIGNMENT)) {
+            } else if (PROP_IMAGE_ALIGNMENT.equals(propName)) {
                 wizardPanel.setImageAlignment(imageAlignment);
-            } else if (propName.equals(PROP_HELP_URL)) {
+            } else if (PROP_HELP_URL.equals(propName)) {
                 wizardPanel.setHelpURL(helpURL);
             }
         }
@@ -2022,7 +2022,7 @@ public class WizardDescriptor extends DialogDescriptor {
          * Then invokes repaint when image is fully loaded.
          */
         public void run() {
-            Image localImage = null;
+            Image localImage;
 
             // grab value 
             synchronized (IMAGE_LOCK) {
@@ -2530,7 +2530,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 JComponent comp = (JComponent) rightComponent;
                 Container rootAnc = comp.getFocusCycleRootAncestor();
                 FocusTraversalPolicy policy = rootAnc.getFocusTraversalPolicy();
-                Component focus = policy.getComponentAfter(comp.getFocusCycleRootAncestor(), comp);
+                Component focus = policy.getComponentAfter(rootAnc, comp);
 
                 if (focus != null) {
                     focus.requestFocus();

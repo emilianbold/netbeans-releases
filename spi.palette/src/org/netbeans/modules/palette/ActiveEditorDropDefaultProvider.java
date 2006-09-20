@@ -60,8 +60,7 @@ class ActiveEditorDropDefaultProvider implements InstanceContent.Convertor<Strin
     
     private ActiveEditorDrop getActiveEditorDrop(String body) {
 
-        ActiveEditorDropDefault drop = new ActiveEditorDropDefault(body);
-        return drop;
+        return new ActiveEditorDropDefault(body);
     }
     
     private static class ActiveEditorDropDefault implements ActiveEditorDrop {

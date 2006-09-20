@@ -131,17 +131,18 @@ class CategoryNode extends FilterNode {
 
     public Action[] getActions(boolean context) {
         if (actions == null) {
+            Node n = getParentNode();
             actions = new Action[] {
                 new Utils.PasteItemAction( this ),
                 null,
-                new Utils.NewCategoryAction( getParentNode() ),
+                new Utils.NewCategoryAction( n ),
                 null,
                 new Utils.DeleteCategoryAction(this),
                 new Utils.RenameCategoryAction(this),
                 null,
                 new Utils.SortItemsAction(this),
                 null,
-                new Utils.SortCategoriesAction( getParentNode() ),
+                new Utils.SortCategoriesAction( n ),
                 null,
                 new Utils.RefreshPaletteAction()
             };

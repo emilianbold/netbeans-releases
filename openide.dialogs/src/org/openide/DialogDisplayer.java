@@ -118,34 +118,7 @@ public abstract class DialogDisplayer {
             final StandardDialog dialog = new StandardDialog(
                     dd.getTitle(), dd.isModal(), dd, dd.getClosingOptions(), dd.getButtonListener()
                 );
-            dd.addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent ev) {
-                        String pname = ev.getPropertyName();
-
-                        if (NotifyDescriptor.PROP_TITLE.equals(pname)) {
-                            dialog.setTitle(dd.getTitle());
-                        } else if (NotifyDescriptor.PROP_MESSAGE.equals(pname)) {
-                            dialog.updateMessage();
-                            dialog.validate();
-                            dialog.repaint();
-                        } else if (
-                            NotifyDescriptor.PROP_OPTIONS.equals(pname) ||
-                                NotifyDescriptor.PROP_OPTION_TYPE.equals(pname)
-                        ) {
-                            dialog.updateOptions();
-                            dialog.validate();
-                            dialog.repaint();
-                        } else {
-                            // Currently other kinds of changes are ignored.
-                            // Some may be private undocumented change events anyway.
-                            //System.err.println("WARNING - ignoring change " + pname);
-                        }
-
-                        // XXX currently PROP_VALID not handled
-                    }
-                }
-            );
+            dd.addPropertyChangeListener(new DialogUpdater(dialog, dd));
 
             return dialog;
         }
@@ -243,7 +216,7 @@ public abstract class DialogDisplayer {
         }
 
         private static final class StandardDialog extends JDialog {
-            private final NotifyDescriptor nd;
+            final NotifyDescriptor nd;
             private Component messageComponent;
             private final JPanel buttonPanel;
             private final Object[] closingOptions;
@@ -380,7 +353,7 @@ public abstract class DialogDisplayer {
                 } else {
                     // we will have to use dynamic method invocation to add the action listener
                     // to generic component (and we succeed only if it has the addActionListener method)
-                    java.lang.reflect.Method m = null;
+                    java.lang.reflect.Method m;
 
                     try {
                         m = comp.getClass().getMethod("addActionListener", new Class[] { ActionListener.class }); // NOI18N
@@ -428,5 +401,37 @@ public abstract class DialogDisplayer {
                     };
             }
         }
+
+        private static class DialogUpdater implements PropertyChangeListener {
+
+            private StandardDialog dialog;
+
+            private DialogDescriptor dd;
+
+            public DialogUpdater(StandardDialog dialog, DialogDescriptor dd) {
+                super();
+                this.dialog = dialog;
+                this.dd = dd;
+            }
+
+            public void propertyChange(PropertyChangeEvent ev) {
+                String pname = ev.getPropertyName();
+                if (NotifyDescriptor.PROP_TITLE.equals(pname)) {
+                    dialog.setTitle(dd.getTitle());
+                } else
+                    if (NotifyDescriptor.PROP_MESSAGE.equals(pname)) {
+                        dialog.updateMessage();
+                        dialog.validate();
+                        dialog.repaint();
+                    } else
+                        if (NotifyDescriptor.PROP_OPTIONS.equals(pname) || NotifyDescriptor.PROP_OPTION_TYPE.equals(pname)) {
+                            dialog.updateOptions();
+                            dialog.validate();
+                            dialog.repaint();
+                        } else {
+                        }
+            }
+        }
+
     }
 }

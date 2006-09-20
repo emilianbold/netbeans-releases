@@ -41,8 +41,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -59,12 +60,11 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
     
     final static private int DELAY_TIME_FOR_EXPAND = 1000;
 
-    private List<DragGestureRecognizer> recognizers = new ArrayList<DragGestureRecognizer>( 5 );
-    private List<DropTarget> dropTargets = new ArrayList<DropTarget>( 5 );
+    private Set<DragGestureRecognizer> recognizers = new HashSet<DragGestureRecognizer>( 5 );
+    private Set<DropTarget> dropTargets = new HashSet<DropTarget>( 5 );
 
     private Category draggingCategory;
     private Item draggingItem;
-    private Category dragSourceCategory;
     private CategoryList dragSourceCategoryList;
     private Item targetItem;
     
@@ -78,7 +78,7 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
     
     private Timer timer;
     
-    private static Logger ERR = Logger.getLogger("org.netbeans.modules.palette"); // NOI18N
+    private static final Logger ERR = Logger.getLogger("org.netbeans.modules.palette"); // NOI18N
     
     /** Creates a new instance of DnDSupport */
     public DnDSupport( PalettePanel palette ) {
@@ -138,7 +138,6 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
             }
             t = draggingItem.drag();
             dragSourceCategoryList = list;
-            dragSourceCategory = list.getCategory();
         }
         if( null != t ) {
             dge.getDragSource().addDragSourceListener( getDragSourceListener() );
@@ -348,7 +347,6 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
         if( null != dragSourceCategoryList ) {
             dragSourceCategoryList.resetRollover();
         }
-        dragSourceCategory = null;
         dragSourceCategoryList = null;
         removeDropLine();
         if (DropGlassPane.isOriginalPaneStored()) {

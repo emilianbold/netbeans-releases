@@ -46,7 +46,7 @@ class ActiveEditorDropProvider implements InstanceContent.Convertor<String,Activ
     }
 
     public String id(String obj) {
-        return obj.toString();
+        return obj;
     }
 
     public String displayName(String obj) {

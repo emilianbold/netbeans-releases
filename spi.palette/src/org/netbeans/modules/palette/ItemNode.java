@@ -63,14 +63,15 @@ class ItemNode extends FilterNode {
 
     public Action[] getActions(boolean context) {
         if (actions == null) {
+            Node n = getParentNode();
             actions = new Action[] {
                 new Utils.CutItemAction( this ),
                 new Utils.CopyItemAction( this ),
-                new Utils.PasteItemAction( getParentNode() ),
+                new Utils.PasteItemAction( n ),
                 null,
                 new Utils.RemoveItemAction( this ),
                 null,
-                new Utils.SortItemsAction( getParentNode() ),
+                new Utils.SortItemsAction( n ),
                 null,
                 new Utils.RefreshPaletteAction()
             };
