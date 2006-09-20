@@ -19,7 +19,7 @@ is divided into following sections:
   - cleanup
 
 -->
-<project name="NetBeans_Installer_Engine-impl" default="default" basedir=".." xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/2" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1">
+<project name="NetBeans_Installer_Engine-impl" default="default" basedir=".." xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/2" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1">
     <target name="default" depends="test,jar,javadoc" description="Build and test whole project."/>
     <!-- 
     ======================
@@ -119,6 +119,7 @@ is divided into following sections:
         </condition>
         <property name="javac.debug" value="true"/>
         <property name="javadoc.preview" value="true"/>
+        <property name="application.args" value=""/>
     </target>
     <target name="-post-init">
         <!-- Empty placeholder for easier customization. -->
@@ -153,6 +154,11 @@ is divided into following sections:
             <attribute name="debug" default="${javac.debug}"/>
             <element name="customize" optional="true"/>
             <sequential>
+                <depend srcdir="@{srcdir}" destdir="@{destdir}" cache="${build.dir}/depcache">
+                    <classpath>
+                        <path path="@{classpath}"/>
+                    </classpath>
+                </depend>
                 <javac srcdir="@{srcdir}" destdir="@{destdir}" debug="@{debug}" deprecation="${javac.deprecation}" source="${javac.source}" target="${javac.target}" fork="yes" executable="${platform.javac}" tempdir="${java.io.tmpdir}" includeantruntime="false">
                     <classpath>
                         <path path="@{classpath}"/>
@@ -266,7 +272,7 @@ is divided into following sections:
     COMPILATION SECTION
     ===================
     -->
-    <target name="deps-jar" depends="init" unless="no.deps"/>    
+    <target name="deps-jar" depends="init" unless="no.deps"/>
     <target name="-pre-pre-compile" depends="init,deps-jar">
         <mkdir dir="${build.classes.dir}"/>
     </target>
@@ -278,13 +284,13 @@ is divided into following sections:
         <j2seproject3:javac/>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${build.classes.excludes}"/>
-        </copy>        
+        </copy>
     </target>
-    <target name="-post-compile" depends="-native-post-compile">
+    <target name="-post-compile">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-native-compile,-post-compile" description="Compile project."/>
+    <target name="compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile" description="Compile project."/>
     <target name="-pre-compile-single">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
@@ -570,91 +576,5 @@ is divided into following sections:
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="clean" depends="init,deps-clean,-native-clean,-do-clean,-post-clean" description="Clean build products."/>
-    
-    
-    
-    
-    <target name="-native-init" description="Init native"/>              
-    
-    <target name="-native-clean" depends="-native-init" description="Clean native projects">    
-        <antcall target="-native-platform-clean">
-            <param name="native.directory"  value="${native.windows.dir}"/>
-        </antcall> 
-        <!--
-        <antcall target="-native-platform-clean">
-            <param name="native.directory"  value="${native.linux.dir}"/>
-        </antcall> 
-        -->
-    </target>    
-    
-    <target name="-native-pre-compile" description="Precompile native projects">            
-        <antcall target="-native-platform-pre-compile">
-            <param name="native.directory"  value="${native.windows.dir}"/>
-        </antcall>
-        <!--
-        <antcall target="-native-platform-pre-compile">
-            <param name="native.directory"  value="${native.linux.dir}"/>
-        </antcall>
-        -->
-    </target>
-    
-    <target name="-native-compile" depends="-native-pre-compile" description="Compile native projects">    
-        <echo message="Native compile"/>
-        <antcall target="-native-platform-compile">
-            <param name="native.directory"  value="${native.windows.dir}"/>
-        </antcall>
-        <!--
-        <antcall target="-native-platform-compile">
-            <param name="native.directory"  value="${native.linux.dir}"/>
-        </antcall>
-        -->
-    </target>
-    
-    <target name="-native-post-compile" description="Post compile native projects">
-        <!--<echo message="Post-compile all native libraries"/>-->
-        <antcall target="-native-platform-post-compile">
-            <param name="native.directory"  value="${native.windows.dir}"/>
-        </antcall> 
-        
-        <antcall target="-native-platform-post-compile">
-            <param name="native.directory"  value="${native.linux.dir}"/>
-        </antcall>         
-    </target>
-    
-    
-    <target name="-native-platform-clean" description="Clean native">  
-        <!--<echo message="Clean native platform library in ${native.directory}"/>-->
-        <exec executable="make" dir="${native.directory}" >
-            <arg value="clean"/>
-        </exec>    
-    </target>
-    
-    <target name="-native-platform-compile" description="Compile Native">        
-        <echo message="Compile native platform library in ${native.directory}"/>
-        <exec executable="make" dir="${native.directory}">
-            <arg value="build"/>
-        </exec>    
-    </target>
-    
-    <target name="-native-platform-init" description="Native platform init"/>
-    <target name="-native-platform-pre-compile" description="Pre compile native"/>
-    
-    <target name="-native-platform-post-compile"  description="Pre compile native">        
-        <!--<echo message="Post compile native platform library"/>-->
-        <antcall target="-copy-platform-lib">
-            <param name="native.directory"  value="${native.windows.dir}"/>
-            <param name="native.file"  value="${native.windows.file}"/>
-        </antcall>
-        <antcall target="-copy-platform-lib">
-            <param name="native.directory"  value="${native.linux.dir}"/>
-            <param name="native.file"  value="${native.linux.file}"/>
-        </antcall>
-    </target>
-    
-    <target name="-copy-platform-lib" description="Copy native library">            
-        <!--<echo message="Copy native platform library"/>-->
-        <copy file="${native.directory}/dist/${native.file}" tofile="${build.classes.dir}/${native.jar.dir}/${native.file}"/>        
-    </target>
-    
+    <target name="clean" depends="init,deps-clean,-do-clean,-post-clean" description="Clean build products."/>
 </project>

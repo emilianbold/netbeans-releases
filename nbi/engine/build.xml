@@ -3,38 +3,93 @@
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
 <project name="NetBeans_Installer_Engine" default="default" basedir=".">
+    <property file="build.properties"/>
+    
     <description>Builds, tests, and runs the project NetBeans Installer Engine.</description>
     <import file="nbproject/build-impl.xml"/>
     <import file="nbproject/profiler-build-impl.xml"/>
+    
+    <target name="-post-clean" depends="native-clean"/>
+    <target name="-pre-jar" depends="native-build"/>
+    
+    <target name="native-init" depends="define-platform,init-windows" description="Inits the native library properties">
+        <property file="nbproject/project.properties"/>
+    </target>
+    
+    <target name="native-clean" depends="native-init" description="Cleans the native library project">
+        <exec executable="make" dir="${native.directory}">
+            <arg value="clean"/>
+        </exec>    
+    </target>    
+    
+    <target name="native-compile" depends="native-init,native-clean" description="Compile native library">
+        <exec executable="make" dir="${native.directory}">
+            <arg value="build"/>
+        </exec>
+    </target>
+    
+    <target name="native-build" depends="native-init,native-compile">
+        <copy file="${native.directory}/dist/${native.file}" tofile="${build.classes.dir}/${native.jar.dir}/${native.file}"/>
+    </target>
+    
+    <target name="define-platform">
+        <condition property="is.windows">
+            <contains string="${os.name}" substring="Windows"/>
+        </condition>
+        <condition property="is.linux">
+            <contains string="${os.name}" substring="Linux"/>
+        </condition>
+        <condition property="is.solaris-x86">
+            <and>
+                <contains string="${os.name}" substring="SunOS"/>
+                <contains string="${os.arch}" substring="x86"/>
+            </and>
+        </condition>
+        <condition property="is.solaris-sparc">
+            <and>
+                <contains string="${os.name}" substring="SunOS"/>
+                <contains string="${os.arch}" substring="sparc"/>
+            </and>
+        </condition>
+        <condition property="is.macosx">
+            <contains string="${os.name}" substring="Darwin"/>
+        </condition>
+    </target>
+    
+    <target name="init-windows" if="is.windows">
+        <property name="native.directory" value="${native.directory.windows}"/>
+        <property name="native.file" value="${native.file.windows}"/>
+    </target>
+    
     <!--
 
     There exist several targets which are by default empty and which can be 
     used for execution of your tasks. These targets are usually executed 
     before and after some main targets. They are: 
 
-      -pre-init:                 called before initialization of project properties
-      -post-init:                called after initialization of project properties
-      -pre-compile:              called before javac compilation
-      -post-compile:             called after javac compilation
-      -pre-compile-single:       called before javac compilation of single file
-      -post-compile-single:      called after javac compilation of single file
-      -pre-compile-test:         called before javac compilation of JUnit tests
-      -post-compile-test:        called after javac compilation of JUnit tests
-      -pre-compile-test-single:  called before javac compilation of single JUnit test
-      -post-compile-test-single: called after javac compilation of single JUunit test
-      -pre-jar:                  called before JAR building
-      -post-jar:                 called after JAR building
-      -post-clean:               called after cleaning build products
+    -pre-init:                 called before initialization of project properties
+    -post-init:                called after initialization of project properties
+    -pre-compile:              called before javac compilation
+    -post-compile:             called after javac compilation
+    -pre-compile-single:       called before javac compilation of single file
+    -post-compile-single:      called after javac compilation of single file
+    -pre-compile-test:         called before javac compilation of JUnit tests
+    -post-compile-test:        called after javac compilation of JUnit tests
+    -pre-compile-test-single:  called before javac compilation of single JUnit test
+    -post-compile-test-single: called after javac compilation of single JUunit test
+    -pre-jar:                  called before JAR building
+    -post-jar:                 called after JAR building
+    -post-clean:               called after cleaning build products
 
     (Targets beginning with '-' are not intended to be called on their own.)
 
     Example of inserting an obfuscator after compilation could look like this:
 
-        <target name="-post-compile">
-            <obfuscate>
-                <fileset dir="${build.classes.dir}"/>
-            </obfuscate>
-        </target>
+    <target name="-post-compile">
+    <obfuscate>
+    <fileset dir="${build.classes.dir}"/>
+    </obfuscate>
+    </target>
 
     For list of available properties check the imported 
     nbproject/build-impl.xml file. 
@@ -43,23 +98,23 @@
     Another way to customize the build is by overriding existing main targets.
     The targets of interest are: 
 
-      -init-macrodef-javac:     defines macro for javac compilation
-      -init-macrodef-junit:     defines macro for junit execution
-      -init-macrodef-debug:     defines macro for class debugging
-      -init-macrodef-java:      defines macro for class execution
-      -do-jar-with-manifest:    JAR building (if you are using a manifest)
-      -do-jar-without-manifest: JAR building (if you are not using a manifest)
-      run:                      execution of project 
-      -javadoc-build:           Javadoc generation
-      test-report:              JUnit report generation
+    -init-macrodef-javac:     defines macro for javac compilation
+    -init-macrodef-junit:     defines macro for junit execution
+    -init-macrodef-debug:     defines macro for class debugging
+    -init-macrodef-java:      defines macro for class execution
+    -do-jar-with-manifest:    JAR building (if you are using a manifest)
+    -do-jar-without-manifest: JAR building (if you are not using a manifest)
+    run:                      execution of project 
+    -javadoc-build:           Javadoc generation
+    test-report:              JUnit report generation
 
     An example of overriding the target for project execution could look like this:
 
-        <target name="run" depends="NetBeans_Installer_Engine-impl.jar">
-            <exec dir="bin" executable="launcher.exe">
-                <arg file="${dist.jar}"/>
-            </exec>
-        </target>
+    <target name="run" depends="NetBeans_Installer_Engine-impl.jar">
+    <exec dir="bin" executable="launcher.exe">
+    <arg file="${dist.jar}"/>
+    </exec>
+    </target>
 
     Notice that the overridden target depends on the jar target and not only on 
     the compile target as the regular run target does. Again, for a list of available 

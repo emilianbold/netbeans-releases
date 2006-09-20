@@ -120,13 +120,6 @@ public class Installer {
         
         instance = this;
         
-        logManager.log(MESSAGE, "initializing the local directory");
-        if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
-            localDirectory = new File(System.getProperty(
-                    LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
-        }
-        
-        
         logManager.unindent();
         logManager.log(MESSAGE, "... finished initializing the installer engine");
     }
@@ -218,6 +211,8 @@ public class Installer {
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equalsIgnoreCase("--look-and-feel")) {
                 logManager.log(MESSAGE, "parsing command line parameter \"--look-and-feel\"");
+                logManager.indent();
+                
                 if (i < arguments.length - 1) {
                     String value = arguments[i + 1];
                     System.setProperty(NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY, value);
@@ -229,11 +224,14 @@ public class Installer {
                     ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--look-and-feel\". Should be \"--look-and-feel <look-and-feel-class-name>\".");
                 }
                 
+                logManager.unindent();
                 continue;
             }
             
             if (arguments[i].equalsIgnoreCase("--target")) {
                 logManager.log(MESSAGE, "parsing command line parameter \"--target\"");
+                logManager.indent();
+                
                 if (i < arguments.length - 2) {
                     String uid = arguments[i + 1];
                     String version = arguments[i + 2];
@@ -246,6 +244,7 @@ public class Installer {
                     logManager.log(MESSAGE, "... version: " + version);
                 }
                 
+                logManager.unindent();
                 continue;
             }
             
@@ -291,7 +290,7 @@ public class Installer {
         logManager.log(MESSAGE, "dumping target system information");
         logManager.indent();
         
-        logManager.log(MESSAGE, "system properties");
+        logManager.log(MESSAGE, "system properties:");
         logManager.indent();
         
         Properties properties = System.getProperties();
@@ -304,5 +303,23 @@ public class Installer {
         
         logManager.unindent();
         logManager.log(MESSAGE, "... end of target system information");
+    }
+    
+    private void initLocalDirectory() {
+        logManager.log(MESSAGE, "initializing the local directory");
+        logManager.indent();
+        
+        if (System.getProperty(LOCAL_DIRECTORY_PATH_PROPERTY) != null) {
+            localDirectory = new File(System.getProperty(
+                    LOCAL_DIRECTORY_PATH_PROPERTY)).getAbsoluteFile();
+        } else {
+            localDirectory = new File(DEFAULT_LOCAL_DIRECTORY_PATH).getAbsoluteFile();
+            
+            logManager.log(MESSAGE, "... custom local directory was not specified, using the default");
+            logManager.log(MESSAGE, "... local directory: " + localDirectory);
+        }
+        
+        logManager.unindent();
+        logManager.log(MESSAGE, "... finished initializing local directory");
     }
 }
