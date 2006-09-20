@@ -1186,7 +1186,7 @@ public class Actions extends Object {
     }
 
     /** Component shown in toolbar, representing an action.
-    *
+    * @deprecated extends deprecated ToolbarButton
     */
     public static class ToolbarButton extends org.openide.awt.ToolbarButton {
         static final long serialVersionUID = 6564434578524381134L;
@@ -1220,6 +1220,7 @@ public class Actions extends Object {
     /** The Component for BooleeanState action that is to be shown
     * in a toolbar.
     *
+    * @deprecated extends deprecated ToolbarToggleButton
     */
     public static class ToolbarToggleButton extends org.openide.awt.ToolbarToggleButton {
         static final long serialVersionUID = -4783163952526348942L;
