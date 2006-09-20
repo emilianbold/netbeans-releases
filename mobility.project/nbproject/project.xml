@@ -335,10 +335,10 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.mobility.editor</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.mobility.plugins.blackberry</friend>
+                <friend>org.netbeans.modules.mobility.plugins.javase</friend>
                 <friend>org.netbeans.modules.mvd</friend>
                 <package>org.netbeans.api.mobility.project</package>
                 <package>org.netbeans.api.mobility.project.ui.customizer</package>
-                <package>org.netbeans.api.project.configurations</package>
                 <package>org.netbeans.modules.mobility.project</package>
                 <package>org.netbeans.modules.mobility.project.preprocessor</package>
                 <package>org.netbeans.modules.mobility.project.ui</package>

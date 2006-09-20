@@ -58,7 +58,8 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
     public static final String BUILD_ROOT_DIR = "build.root.dir"; //NOI18N
     public static final String DIST_ROOT_DIR = "dist.root.dir"; //NOI18N
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; //NOI18N
-    public static final String NO_DEPENDENCIES="no.dependencies"; //NOI18N
+    public static final String NO_DEPENDENCIES = "no.dependencies"; //NOI18N
+    public static final String PLATFORM_TRIGGER = "platform.trigger"; //NOI18N
     public static final String PLATFORM_ACTIVE = "platform.active"; //NOI18N
     public static final String PLATFORM_ACTIVE_DESCRIPTION = "platform.active.description";
     public static final String PLATFORM_DEVICE = "platform.device"; //NOI18N
@@ -142,6 +143,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(BUILD_DIR, true, DefaultPropertyParsers.STRING_PARSER, "build/${config.active}")); //NOI18N
             set.add(new PropertyDescriptor(BUILD_CLASSES_EXCLUDES, true, DefaultPropertyParsers.STRING_PARSER, "**/*.java,**/*.form,**/*.class,**/.nbintdb,**/*.mvd,**/*.wsclient")); //NOI18N
             set.add(new PropertyDescriptor(NO_DEPENDENCIES, true, DefaultPropertyParsers.INVERSE_BOOLEAN_PARSER, FALSE));
+            set.add(new PropertyDescriptor(PLATFORM_TRIGGER, true, DefaultPropertyParsers.STRING_PARSER, "CLDC")); //NOI18N
             set.add(new PropertyDescriptor(PLATFORM_ACTIVE, true, DefaultPropertyParsers.PLATFORM_PARSER));
             set.add(new PropertyDescriptor(PLATFORM_ACTIVE_DESCRIPTION, true, DefaultPropertyParsers.STRING_PARSER));
             set.add(new PropertyDescriptor(PLATFORM_DEVICE, true, DefaultPropertyParsers.STRING_PARSER));

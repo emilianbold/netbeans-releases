@@ -200,13 +200,14 @@ public class ObfuscateTask extends Task
                 args.put("classpath", tmp); // NO I18N
                 final String[] paths = classPath.list();
                 final StringBuffer sb = new StringBuffer();
-                if (paths != null  &&  paths.length > 0)
-                {
-                    for (int a = 0; a < paths.length; a ++)
-                    {
-                        if (a != 0)
-                            sb.append(File.pathSeparator);
-                        sb.append("'" + paths[a] + "'"); // NO I18N
+                if (paths != null  &&  paths.length > 0) {
+                    for (int a = 0; a < paths.length; a ++) {
+                        if (new File(paths[a]).exists()) {
+                            if (sb.length() > 0) sb.append(File.pathSeparator);
+                            sb.append("'" + paths[a] + "'"); // NO I18N
+                        } else {
+                            log(Bundle.getMessage("MSG_SkippingPathElement", paths[a]), Project.MSG_VERBOSE); // NO I18N
+                        }
                     }
                     args.put("quotedclasspath", sb.toString()); // NO I18N
                 }
@@ -225,7 +226,7 @@ public class ObfuscateTask extends Task
             while (e.hasMoreTokens())
                 excludeClasses.add(e.nextToken());
         }
-        log(Bundle.getMessage("MSG_ExcludingClasses", excludeClasses.toString()), Project.MSG_VERBOSE); // NO I18N
+        log(Bundle.getMessage("MSG_ExcludingClasses", excludeClasses.toString()), Project.MSG_VERBOSE); // NOI18N
         
         // opening output obfuscator script
         File script;

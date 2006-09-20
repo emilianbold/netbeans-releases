@@ -36,7 +36,7 @@
     <target name="do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <mkdir dir="${{build.classes.dir}}"/>
-        <javac includeantruntime="false" source="${{javac.source}}" target="${{javac.target}}" deprecation="${{javac.deprecation}}" optimize="${{javac.optimize}}" debug="${{javac.debug}}" srcdir="${{preprocessed.dir}}" destdir="${{build.classes.dir}}" bootclasspath="${{platform.bootclasspath}}" includes="${{javac.includes}}" encoding="${{javac.encoding}}">
+        <javac includeantruntime="false" source="${{javac.source}}" target="${{javac.target}}" deprecation="${{javac.deprecation}}" optimize="${{javac.optimize}}" debug="${{javac.debug}}" srcdir="${{buildsystem.baton}}" destdir="${{build.classes.dir}}" bootclasspath="${{platform.bootclasspath}}" includes="${{javac.includes}}" encoding="${{javac.encoding}}">
             <classpath>
                 <path path="${{libs.classpath}}"/>
             </classpath>

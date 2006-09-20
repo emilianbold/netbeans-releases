@@ -4,16 +4,13 @@
         <property name="platform.device" value=""/>
         <property name="dist.jad.url" value="file://"/>
         <property name="run.cmd.options" value=""/>
+        <property name="platform.trigger" value="CLDC"/>
         <condition property="evaluated.run.security.domain" value="">
             <isfalse value="${{run.use.security.domain}}"/>
         </condition>
         <property name="evaluated.run.security.domain" value="${{run.security.domain}}"/>
         <condition property="cldc-platform.trigger">
-            <or>
-                <equals arg1="UEI-1.0.1" arg2="${{platform.type}}" casesensitive="false"/>
-                <equals arg1="UEI-1.0" arg2="${{platform.type}}" casesensitive="false"/>
-                <equals arg1="CUSTOM" arg2="${{platform.type}}" casesensitive="false"/>
-            </or>
+            <equals arg1="CLDC" arg2="${{platform.trigger}}" casesensitive="false"/>
         </condition>
     </target>
     

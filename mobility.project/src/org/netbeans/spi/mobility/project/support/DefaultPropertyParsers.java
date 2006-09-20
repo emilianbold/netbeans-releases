@@ -74,7 +74,7 @@ public class DefaultPropertyParsers {
         }
         
         public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
-            return (String)value;
+            return value.toString();
         }
         
     }

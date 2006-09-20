@@ -20,16 +20,23 @@
 package org.netbeans.modules.mobility.project.ui.customizer;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
+import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.spi.mobility.project.ui.customizer.ComposedCustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.HelpCtxCallback;
@@ -46,13 +53,13 @@ import org.openide.util.NbBundle;
  *
  * @author  Adam Sotona
  */
-public class CustomizerPlatform extends JPanel implements ComposedCustomizerPanel, VisualPropertyGroup, ChangeListener {
+public class CustomizerPlatform extends JPanel implements ComposedCustomizerPanel, VisualPropertyGroup, ActionListener {
     
-    private final ArrayList<JComponent> customizers = new ArrayList();
-    private final ArrayList<String> names = new ArrayList();
+    private final ArrayList<TypeComboElement> typeElements = new ArrayList();
+    private ProjectProperties props;
+    private boolean useDefault;
     
     private HelpCtxCallback callback;
-    private JTabbedPane tab;
     
     /** Creates new form CustomizerPlatform */
     public CustomizerPlatform() {
@@ -61,27 +68,25 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
         DataFolder df = DataFolder.findFolder(fo);
         DataObject dob[] = df.getChildren();
         for (int i=0; i<dob.length; i++) {
-            JComponent c = (JComponent)dob[i].getPrimaryFile().getAttribute("customizerPanelClass");
-            if (c != null) {
-                customizers.add(c);
-                names.add(dob[i].getNodeDelegate().getDisplayName());
-            }
+            typeElements.add(new TypeComboElement(dob[i].getPrimaryFile().getName(), dob[i].getNodeDelegate().getDisplayName(), (JComponent)dob[i].getPrimaryFile().getAttribute("customizerPanelClass"))); //NOI18N
         }
-        if (customizers.size() == 1) {
-            add(customizers.get(0), BorderLayout.CENTER);
-        } else if (customizers.size() > 1) {
-            tab = new JTabbedPane();
-            for (int i=0; i<customizers.size(); i++) {
-                JComponent c = customizers.get(i);
-                c.setBorder(BorderFactory.createEmptyBorder(5, 8, 8, 8));
-                tab.add(names.get(i), c);
-            }
-            add(tab, BorderLayout.CENTER );
-            tab.addChangeListener(this);
-//            Integer i = tabSelections.get(node);
-//            if (i != null && i < tab.getTabCount()) {
-//                tab.setSelectedIndex(i);
-//            }
+        if (typeElements.size() <= 1) {
+            remove(jLabel1);
+            remove(jComboBox1);
+        } else {
+            final ListCellRenderer lcr = jComboBox1.getRenderer();
+            jComboBox1.setRenderer(new ListCellRenderer() {
+                public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                    return lcr.getListCellRendererComponent(list, value instanceof TypeComboElement ? ((TypeComboElement)value).getDisplayName() : value, index, isSelected, cellHasFocus);
+                }
+            });
+            jComboBox1.setModel(new DefaultComboBoxModel(typeElements.toArray()));
+            jComboBox1.addActionListener(this);
+        }
+        jPanel1.add(new JPanel(), "none"); //NOI18N
+        for (int i=0; i<typeElements.size(); i++) {
+            JComponent c = typeElements.get(i).getCustomizer();
+            jPanel1.add(c == null ? new JPanel() : c, typeElements.get(i).toString());
         }
     }
     
@@ -92,35 +97,89 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        defaultCheckBox = new javax.swing.JCheckBox();
+        java.awt.GridBagConstraints gridBagConstraints;
 
-        setLayout(new java.awt.BorderLayout(0, 12));
+        defaultCheckBox = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        jComboBox1 = new javax.swing.JComboBox();
+        jPanel1 = new javax.swing.JPanel();
+
+        setLayout(new java.awt.GridBagLayout());
 
         defaultCheckBox.setText(NbBundle.getMessage(CustomizerPlatform.class, "LBL_Use_Default")); // NOI18N
         defaultCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        add(defaultCheckBox, java.awt.BorderLayout.NORTH);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(defaultCheckBox, gridBagConstraints);
+
+        jLabel1.setText(NbBundle.getMessage(CustomizerPlatform.class, "CustomizerPlatform.jLabel1.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        add(jLabel1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        add(jComboBox1, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.CardLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(jPanel1, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
 
     public void initValues(ProjectProperties props, String configuration) {
-        for (int i=0; i<customizers.size(); i++) {
-            Component c = customizers.get(i);
+        this.props = props;
+        for (int i=0; i<typeElements.size(); i++) {
+            JComponent c = typeElements.get(i).getCustomizer();
             if (c instanceof CustomizerPanel) ((CustomizerPanel)c).initValues(props, configuration);
         }
-        VisualPropertySupport.getDefault(props).register(defaultCheckBox, configuration, this);
+        VisualPropertySupport vps = VisualPropertySupport.getDefault(props);
+        vps.register(defaultCheckBox, configuration, this);
     }
 
     public void initGroupValues(boolean useDefault) {
-        for (int i=0; i<customizers.size(); i++) {
-            Component c = customizers.get(i);
+        this.useDefault = useDefault;
+        VisualPropertySupport.getDefault(props).register(jComboBox1, null, DefaultPropertiesDescriptor.PLATFORM_TRIGGER, useDefault);
+        actionPerformed(null);
+    }
+    
+    public void actionPerformed(ActionEvent e) {
+        Object o = jComboBox1.getSelectedItem();
+        JComponent c = null;
+        if (o instanceof TypeComboElement) {
+            TypeComboElement tce = (TypeComboElement)o;
+            ((CardLayout)jPanel1.getLayout()).show(jPanel1, tce.toString());
+            c = tce.getCustomizer();
             if (c instanceof VisualPropertyGroup) ((VisualPropertyGroup)c).initGroupValues(useDefault);
+        } else {
+            ((CardLayout)jPanel1.getLayout()).show(jPanel1, "none"); //NOI18N
         }
+        if (callback != null) callback.updateHelpCtx(new HelpCtx(c == null ? this.getClass() : c.getClass()));
     }
 
     public String[] getGroupPropertyNames() {
         ArrayList<String> names = new ArrayList();
-        for (int i=0; i<customizers.size(); i++) {
-            Component c = customizers.get(i);
+        names.add(DefaultPropertiesDescriptor.PLATFORM_TRIGGER);
+        for (int i=0; i<typeElements.size(); i++) {
+            JComponent c = typeElements.get(i).getCustomizer();
             if (c instanceof VisualPropertyGroup) names.addAll(Arrays.asList(((VisualPropertyGroup)c).getGroupPropertyNames()));
         }
         return names.toArray(new String[names.size()]);
@@ -128,17 +187,47 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
 
     public void setHelpContextCallback(HelpCtxCallback callback) {
         this.callback = callback;
-        if (customizers.size() == 1) callback.updateHelpCtx(new HelpCtx(customizers.get(0).getClass()));
-        if (tab != null) stateChanged(null);
+        if (typeElements.size() == 1) callback.updateHelpCtx(new HelpCtx(typeElements.get(0).getCustomizer().getClass()));
+        actionPerformed(null);
     }
 
-    public void stateChanged(ChangeEvent e) {
-        if (callback != null) callback.updateHelpCtx(new HelpCtx(tab.getSelectedComponent().getClass()));
+    private class TypeComboElement {
+        
+        private String name, displayName;
+        JComponent customizer;
+        
+        public TypeComboElement(String name, String displayName, JComponent customizer) {
+            this.name = name;
+            this.displayName = displayName;
+            this.customizer = customizer;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
+        
+        public JComponent getCustomizer() {
+            return customizer;
+        }
+        
+        public String toString() {
+            return name;
+        }
+
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+        public boolean equals(Object obj) {
+            return obj != null && name.equals(obj.toString());
+        }
     }
-    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox defaultCheckBox;
+    private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
     
 }
