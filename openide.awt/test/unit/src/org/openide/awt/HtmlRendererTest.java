@@ -56,6 +56,7 @@ public class HtmlRendererTest extends TestCase {
         doTestRender("<html>text</h</html>");
         doTestRender("<html>text</</html>");
         doTestRender("<html>text<</html>");
+        doTestRender("<html>text<</html>&");
         doTestRender55310();
     }
     
