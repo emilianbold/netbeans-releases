@@ -93,7 +93,9 @@ public class AsynchStepTest extends NbTestCase {
             support.doContinue ();
             support.waitState (JPDADebugger.STATE_DISCONNECTED);
         } finally {
-            support.doFinish ();
+            if (support != null) {
+                support.doFinish ();
+            }
         }
     }
 
@@ -163,7 +165,9 @@ public class AsynchStepTest extends NbTestCase {
             support.doContinue ();
             support.waitState (JPDADebugger.STATE_DISCONNECTED);
         } finally {
-            support.doFinish ();
+            if (support != null) {
+                support.doFinish ();
+            }
         }
     }
 
@@ -226,7 +230,9 @@ public class AsynchStepTest extends NbTestCase {
             support.doContinue ();
             support.waitState (JPDADebugger.STATE_DISCONNECTED);
         } finally {
-            support.doFinish ();
+            if (support != null) {
+                support.doFinish ();
+            }
         }
     }
 

@@ -57,7 +57,9 @@ public class BreakpointResumeTest  extends NbTestCase {
             support.waitState (JPDADebugger.STATE_DISCONNECTED);
             DebuggerManager.getDebuggerManager ().removeBreakpoint (lb);
         } finally {
-            support.doFinish ();
+            if (support != null) {
+                support.doFinish ();
+            }
         }
     }
 
