@@ -198,7 +198,8 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         "platform.apis",
         "platform.configuration",
         "platform.device",
-        "platform.profile"
+        "platform.profile",
+        "platform.trigger",
     };
     
     private final static String[][] manifestData = {
