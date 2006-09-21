@@ -26,15 +26,36 @@ package org.netbeans.spi.mobility.cldcplatform;
 import java.io.File;
 
 /**
- *
+ * CustomCLDCPlatformConfigurator is an SPI for service providing information about some non-standard CLDC platform (SDK, emulator).
+ * This interface has to be implemented and registered in module META-INF/services/org.netbeans.spi.mobility.cldcplatform.CustomCLDCPlatformConfigurator
+ * #position=xx attribute of the registration is important if two different CustomCLDCPlatformConfigurator implementation recognize the same platform.
  * @author Adam Sotona
  */
 public interface CustomCLDCPlatformConfigurator {
     
+    /**
+     * This method must provide just quick answer if the given folder might be a home for a platform recognized by this configurator.
+     * This method is not intended to perform any deep detection.
+     * The best way is to just check for any unique files inside.
+     * @param platformPath Given platform home directory to query.
+     * @return True if this configurator recognizes the folder as possible known platform home directory.
+     */
     public boolean isPossiblePlatform(File platformPath);
     
+    /**
+     * This method is called when the previous for deep detection of the platform.
+     * The method should return full platform descriptor or null.
+     * @param platformPath Given platform home for the detection.
+     * @return CLDCPlatformDescriptor with full information about the platform or null.
+     */
     public CLDCPlatformDescriptor getPlatform(File platformPath);
     
+    /**
+     * Optional method helping the automated platforms detection using Windows registry.
+     * If the platform installer stores any keys pointing to the platform installation directory then this method is usefull.
+     * Usual pattern is to store such information somewhere under HKEY_LOCAL_MACHINE/Software/&lt;provider name&gt; or HKEY_CURRENT_USER/Software/&lt;provider name&gt;
+     * @return Part of the provider name that may help to locate registry key with reference to the platform installation (f.ex.: Nokia)
+     */
     public String getRegistryProviderName();
     
 }
