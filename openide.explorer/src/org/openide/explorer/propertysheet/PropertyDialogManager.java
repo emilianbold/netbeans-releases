@@ -19,6 +19,7 @@
 package org.openide.explorer.propertysheet;
 
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -44,9 +45,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Jancura, Dafe Simonek, David Strupl
  */
-final class PropertyDialogManager implements VetoableChangeListener {
-    private static ThreadLocal<PropertyDialogManager> caller = new ThreadLocal<PropertyDialogManager>();
-
+final class PropertyDialogManager implements VetoableChangeListener, ActionListener {
     /** Name of the custom property that can be passed in PropertyEnv. */
     private static final String PROPERTY_DESCRIPTION = "description"; // NOI18N
     private static Throwable doNotNotify;
@@ -83,24 +82,17 @@ final class PropertyDialogManager implements VetoableChangeListener {
     /** */
     private Runnable errorPerformer;
     private boolean okButtonState = true;
-    private boolean defaultValue = false;
-    private boolean isModal = true;
-    private String title = null;
-    private HelpCtx helpCtx = null;
-    private Object defaultOption;
-    private Object[] options;
     private Object envStateBeforeDisplay = null;
 
     /** Environment passed to the property editor. */
     private PropertyEnv env;
-    private ActionListener actionListener;
     private Object lastValueFromEditor;
     private boolean cancelled = false;
     private boolean ok = false;
     private boolean reset = false;
 
     public PropertyDialogManager(
-        final String title, final boolean isModal, final PropertyEditor editor, PropertyModel model,
+        String title, final boolean isModal, final PropertyEditor editor, PropertyModel model,
         final PropertyEnv env
     ) {
         this.editor = editor;
@@ -120,15 +112,8 @@ final class PropertyDialogManager implements VetoableChangeListener {
 
         this.model = model;
         this.env = env;
-        this.title = title;
-        this.isModal = isModal;
 
-        actionListener = new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        doButtonPressed(evt);
-                    }
-                };
-
+        HelpCtx helpCtx = null;
         if (env != null) {
             Object helpID = env.getFeatureDescriptor().getValue(ExPropertyEditor.PROPERTY_HELP_ID);
 
@@ -143,12 +128,12 @@ final class PropertyDialogManager implements VetoableChangeListener {
             Object compTitle = ((JComponent) component).getClientProperty("title");
 
             if (compTitle instanceof String) {
-                this.title = (String) compTitle;
+                title = (String) compTitle;
             }
         }
 
         // create dialog instance and initialize listeners
-        createDialog();
+        createDialog(isModal, title, helpCtx);
         initializeListeners();
     }
 
@@ -181,7 +166,7 @@ final class PropertyDialogManager implements VetoableChangeListener {
     /** Creates proper DialogDescriptor and obtain dialog instance
      * via DialogDisplayer.createDialog() call.
      */
-    private void createDialog() {
+    private void createDialog(boolean isModal, String title, HelpCtx helpCtx) {
         if (component instanceof Window) {
             // custom component is already a window --> just return it
             // from getDialog
@@ -193,6 +178,7 @@ final class PropertyDialogManager implements VetoableChangeListener {
 
         // prepare our options (buttons)
         boolean cannotWrite = false;
+        boolean defaultValue = false;
 
         if (model instanceof ExPropertyModel) {
             FeatureDescriptor fd = ((ExPropertyModel) model).getFeatureDescriptor();
@@ -203,6 +189,9 @@ final class PropertyDialogManager implements VetoableChangeListener {
                 defaultValue = PropUtils.shallBeRDVEnabled(prop);
             }
         }
+
+        Object defaultOption;
+        Object[] options;
 
         if ((editor == null) || (cannotWrite)) {
             JButton closeButton = new JButton(getString("CTL_Close"));
@@ -254,39 +243,13 @@ final class PropertyDialogManager implements VetoableChangeListener {
             envStateBeforeDisplay = env.getState();
         }
 
-        try {
-            caller.set(this);
-
-            Class c = Class.forName("org.openide.explorer.propertysheet.PropertyDialogManager$CreateDialogInvoker"); // NOI18N
-            Runnable r = (Runnable) c.newInstance();
-            r.run();
-
-            return;
-        } catch (Exception e) {
-            // if something went wrong just
-            // resort to swing (IDE probably not present)
-        } catch (LinkageError e) {
-        }
-
-        if (dialog == null) {
-            JOptionPane jop = new JOptionPane(
-                    component, JOptionPane.PLAIN_MESSAGE, JOptionPane.NO_OPTION, null, options, defaultOption
-                );
-
-            if (okButton != null) {
-                okButton.addActionListener(actionListener);
-            }
-
-            dialog = jop.createDialog(null, title);
-        }
-
-        if (env != null) {
-            Object obj = env.getFeatureDescriptor().getValue(PROPERTY_DESCRIPTION);
-
-            if (obj instanceof String) {
-                dialog.getAccessibleContext().setAccessibleDescription((String) obj);
-            }
-        }
+        
+        // create dialog descriptor, create & return the dialog
+        // bugfix #24998, set helpCtx obtain from PropertyEnv.getFeatureDescriptor()
+        DialogDescriptor descriptor = new DialogDescriptor(component, title,
+                isModal, options, defaultOption, DialogDescriptor.DEFAULT_ALIGN,
+                helpCtx, this);
+        dialog = DialogDisplayer.getDefault().createDialog(descriptor);
     }
 
     /** Initializes dialog listeners. Must be called after
@@ -327,7 +290,7 @@ final class PropertyDialogManager implements VetoableChangeListener {
                                 Object newValue = ((EnhancedCustomPropertyEditor) component).getPropertyValue();
                                 model.setValue(newValue);
                             } catch (java.lang.reflect.InvocationTargetException ite) {
-                                notifyUser(ite, (prop == null) ? "" : prop.getDisplayName()); // NOI18N
+                                notifyUser(ite);
                             } catch (IllegalStateException ise) {
                                 notifyUser(ise);
                             }
@@ -335,7 +298,7 @@ final class PropertyDialogManager implements VetoableChangeListener {
                             try {
                                 model.setValue(lastValueFromEditor);
                             } catch (java.lang.reflect.InvocationTargetException ite) {
-                                notifyUser(ite, (prop == null) ? "" : prop.getDisplayName()); // NOI18N
+                                notifyUser(ite);
                             } catch (IllegalStateException ise) {
                                 notifyUser(ise);
                             }
@@ -456,7 +419,7 @@ final class PropertyDialogManager implements VetoableChangeListener {
      * dialog.
      * @param evt The button press event.
      */
-    private void doButtonPressed(ActionEvent evt) {
+    public void actionPerformed(ActionEvent evt) {
         String label = evt.getActionCommand();
 
         if (label.equals(getString("CTL_Cancel"))) {
@@ -474,9 +437,9 @@ final class PropertyDialogManager implements VetoableChangeListener {
                 try {
                     prop.restoreDefaultValue();
                 } catch (IllegalAccessException iae) {
-                    notifyUser(iae, prop.getDisplayName());
+                    notifyUser(iae);
                 } catch (java.lang.reflect.InvocationTargetException ite) {
-                    notifyUser(ite, prop.getDisplayName());
+                    notifyUser(ite);
                 }
             }
         }
@@ -498,28 +461,23 @@ final class PropertyDialogManager implements VetoableChangeListener {
                     Object newValue = ((EnhancedCustomPropertyEditor) component).getPropertyValue();
                     model.setValue(newValue);
                 } catch (java.lang.reflect.InvocationTargetException ite) {
-                    notifyUser(ite, (prop == null) ? "" : prop.getDisplayName()); // NOI18N
-
+                    notifyUser(ite);
                     return;
                 } catch (IllegalStateException ise) {
                     notifyUser(ise);
-
                     return;
                 } catch (IllegalArgumentException iae) {
                     notifyUser(iae);
-
                     return;
                 }
             } else if ((env != null) && (!env.isChangeImmediate())) {
                 try {
                     model.setValue(lastValueFromEditor);
                 } catch (java.lang.reflect.InvocationTargetException ite) {
-                    notifyUser(ite, (prop == null) ? "" : prop.getDisplayName()); // NOI18N
-
+                    notifyUser(ite);
                     return;
                 } catch (IllegalStateException ise) {
                     notifyUser(ise);
-
                     return;
                 }
             }
@@ -571,20 +529,6 @@ final class PropertyDialogManager implements VetoableChangeListener {
         Exceptions.printStackTrace(ex);
     }
 
-    /** Notifies an exception to error manager or prints its it to stderr.
-     * @param ex exception to notify
-     */
-    static void notify(int severity, Throwable ex) {
-        Throwable d = doNotNotify;
-        doNotNotify = null;
-
-        if (d == ex) {
-            return;
-        }
-
-        Logger.global.log(Level.WARNING, null, ex);
-    }
-
     /**
      * Tries to find an annotation with localized message(primarily) or general
      * message in all exception annotations. If the annotation with the message
@@ -597,13 +541,11 @@ final class PropertyDialogManager implements VetoableChangeListener {
         String userMessage = Exceptions.findLocalizedMessage(e);
 
         if (userMessage != null) {
-            // attach annotation and notify exception with original severity
-            Exceptions.attachLocalizedMessage(e, userMessage);
             Exceptions.printStackTrace(e);
         } else {
             // if there is not user message don't bother user, just log an
             // exception
-            Logger.global.log(Level.WARNING, null, e);
+            Logger.global.log(Level.INFO, null, e);
         }
     }
 
@@ -615,27 +557,4 @@ final class PropertyDialogManager implements VetoableChangeListener {
         return editor;
     }
 
-    private static void notifyUser(Exception e, String txt) {
-        notifyUser(e);
-    }
-
-    static class CreateDialogInvoker implements Runnable {
-        public void run() {
-            final PropertyDialogManager pdm = caller.get();
-            caller.set(null);
-
-            if (pdm == null) {
-                throw new IllegalStateException("Parameter caller not passed."); // NOI18N
-            }
-
-            // create dialog descriptor, create & return the dialog
-            // bugfix #24998, set helpCtx obtain from PropertyEnv.getFeatureDescriptor()
-            org.openide.DialogDescriptor descriptor = new org.openide.DialogDescriptor(
-                    pdm.component, pdm.title, pdm.isModal, pdm.options, pdm.defaultOption,
-                    org.openide.DialogDescriptor.DEFAULT_ALIGN, pdm.helpCtx, pdm.actionListener
-                );
-
-            pdm.dialog = org.openide.DialogDisplayer.getDefault().createDialog(descriptor);
-        }
-    }
 }
