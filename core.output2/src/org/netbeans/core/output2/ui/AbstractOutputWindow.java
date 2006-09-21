@@ -24,7 +24,9 @@
 
 package org.netbeans.core.output2.ui;
 
+import javax.swing.border.Border;
 import org.netbeans.core.output2.Controller;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
@@ -50,7 +52,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     
     /** Creates a new instance of AbstractOutputWindow */
     public AbstractOutputWindow() {
-        pane.addChangeListener (this);
+        pane.addChangeListener(this);
         pane.addPropertyChangeListener(CloseButtonTabbedPane.PROP_CLOSE, this);
         setFocusable(true);
         setBackground(UIManager.getColor("text")); //NOI18N
@@ -58,7 +60,6 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         toolbar.setOrientation(JToolBar.VERTICAL);
         toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
         toolbar.setFloatable(false);
-        
         Insets ins = toolbar.getMargin();
         JButton sample = new JButton();
         sample.setBorderPainted(false);
@@ -82,24 +83,25 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         toolbar.remove(sample);
         setLayout(new BorderLayout());
         add(toolbar, BorderLayout.WEST);
-
+        toolbar.setBorder(new VariableRightBorder(pane));
+        toolbar.setBorderPainted(true);
     }
-
-    public void propertyChange (PropertyChangeEvent pce) {
+    
+    public void propertyChange(PropertyChangeEvent pce) {
         if (CloseButtonTabbedPane.PROP_CLOSE.equals(pce.getPropertyName())) {
             AbstractOutputTab tab = (AbstractOutputTab) pce.getNewValue();
             closeRequest(tab);
         }
     }
-
+    
     protected abstract void closeRequest(AbstractOutputTab tab);
-
-    protected abstract void removed (AbstractOutputTab view);
-
+    
+    protected abstract void removed(AbstractOutputTab view);
+    
     protected void addImpl(Component c, Object constraints, int idx) {
-        setFocusable (false);
-        Component focusOwner = 
-            KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        setFocusable(false);
+        Component focusOwner =
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
         boolean hadFocus = hasFocus() || isAncestorOf(focusOwner);
         
         synchronized (getTreeLock()) {
@@ -109,29 +111,29 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     if (aop == c) {
                         return;
                     }
-                    super.remove (aop);
+                    super.remove(aop);
                     assert pane.getParent() != this;
-                    pane.add (aop);
+                    pane.add(aop);
                     setTabIcon(aop, (Icon)aop.getClientProperty(ICON_PROP));
-                    pane.add (c);
+                    pane.add(c);
                     setTabIcon((AbstractOutputTab)c, (Icon)((AbstractOutputTab)c).getClientProperty(ICON_PROP));
                     
-                    super.addImpl (pane, constraints, idx);
+                    super.addImpl(pane, constraints, idx);
                     updateSingletonName(null);
                     revalidate();
                 } else if (pane.getParent() == this) {
-                    pane.add (c);
+                    pane.add(c);
                     setTabIcon((AbstractOutputTab) c, (Icon)((AbstractOutputTab)c).getClientProperty(ICON_PROP));
                     revalidate();
                 } else {
-                    super.addImpl (c, constraints, idx);
+                    super.addImpl(c, constraints, idx);
                     setTabIcon((AbstractOutputTab) c, (Icon)((AbstractOutputTab)c).getClientProperty(ICON_PROP));
                     setToolbarButtons(((AbstractOutputTab)c).getToolbarButtons());
                     //#48819 - a bit obscure usecase, but revalidate() is call in the if branches above as well..
                     revalidate();
                 }
                 if (hadFocus) {
-                    //Do not call c.requestFocus() directly, it can be 
+                    //Do not call c.requestFocus() directly, it can be
                     //discarded when adding tabs and focus will go to null.
                     //@see AbstractOutputWindow.requestFocus()
                     requestFocus();
@@ -148,7 +150,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     }
     
     public final AbstractOutputTab[] getTabs() {
-        ArrayList al = new ArrayList (pane.getParent() == this ? pane.getTabCount() : getComponentCount());
+        ArrayList al = new ArrayList(pane.getParent() == this ? pane.getTabCount() : getComponentCount());
         if (pane.getParent() == this) {
             int tabs = pane.getTabCount();
             for (int i=0; i < tabs; i++) {
@@ -171,12 +173,12 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     }
     
     
-    public void remove (Component c) {
+    public void remove(Component c) {
         AbstractOutputTab removedSelectedView = null;
         synchronized (getTreeLock()) {
-        if (c.getParent() == pane && c instanceof AbstractOutputTab) {
+            if (c.getParent() == pane && c instanceof AbstractOutputTab) {
                 if (c == pane.getSelectedComponent()) {
-                    if (Controller.log) Controller.log ("Selected view is being removed: " + c.getName());
+                    if (Controller.log) Controller.log("Selected view is being removed: " + c.getName());
                     removedSelectedView = (AbstractOutputTab) c;
                 }
                 checkWinXPLFBug();
@@ -203,13 +205,13 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             }
         }
         if (c instanceof AbstractOutputTab && c.getParent() == null) {
-            removed ((AbstractOutputTab) c);
-        } 
+            removed((AbstractOutputTab) c);
+        }
         if (getComponentCount() == 2 && getComponent(1) instanceof AbstractOutputTab) {
             updateSingletonName(getComponent(1).getName());
-        }        
+        }
         revalidate();
-        setFocusable (getComponentCount() == 1);
+        setFocusable(getComponentCount() == 1);
     }
     
     private AbstractOutputTab getInternalTab() {
@@ -230,7 +232,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
     }
     
-    public void setSelectedTab (AbstractOutputTab op) {
+    public void setSelectedTab(AbstractOutputTab op) {
         assert (op.getParent() == this || op.getParent() == pane);
         if (Controller.log) {
             Controller.log("SetSelectedTab: " + op + " parent is " + op.getParent());
@@ -239,12 +241,12 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             pane.setSelectedComponent(op);
         }
         
-        getActionMap().setParent (op.getActionMap ());
+        getActionMap().setParent(op.getActionMap());
     }
-
-    public void setTabTitle (AbstractOutputTab tab, String name) {
+    
+    public void setTabTitle(AbstractOutputTab tab, String name) {
         if (tab.getParent() == pane) {
-            pane.setTitleAt (pane.indexOfComponent(tab), name);
+            pane.setTitleAt(pane.indexOfComponent(tab), name);
         } else if (tab.getParent() == this) {
             updateSingletonName(name);
         }
@@ -270,22 +272,22 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             //Adding the tab may yet need to be processed, so escape the
             //current event loop via invokeLater()
             pendingFocusRunnable = new Runnable() {
-                 public void run() {
+                public void run() {
                     AbstractOutputTab tab = getSelectedTab();
                     if (tab != null) {
                         tab.requestFocus();
                     }
                     pendingFocusRunnable = null;
-                 }
-             };
-             SwingUtilities.invokeLater(pendingFocusRunnable);
+                }
+            };
+            SwingUtilities.invokeLater(pendingFocusRunnable);
         } else {
             super.requestFocus();
         }
     }
     
     private Runnable pendingFocusRunnable = null;
-
+    
     /**
      * Updates the component name to include the name of a tab.  If passed null
      * arguments, should update the name to the default which does not include the
@@ -294,13 +296,13 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
      * @param name A name for the tab
      */
     protected abstract void updateSingletonName(String name);
-
-
+    
+    
     private AbstractOutputTab lastKnownSelection = null;
     protected void fire(AbstractOutputTab formerSelection) {
         AbstractOutputTab selection = getSelectedTab();
         if (formerSelection != selection) {
-            selectionChanged (formerSelection, selection);
+            selectionChanged(formerSelection, selection);
             lastKnownSelection = selection;
             if (selection != null) {
                 setToolbarButtons(selection.getToolbarButtons());
@@ -317,33 +319,33 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
         toolbar.revalidate();
         toolbar.repaint();
-                
+        
     }
-
+    
     public void stateChanged(ChangeEvent e) {
-        fire (lastKnownSelection);
+        fire(lastKnownSelection);
     }
-
-    protected abstract void selectionChanged (AbstractOutputTab former, AbstractOutputTab current);
+    
+    protected abstract void selectionChanged(AbstractOutputTab former, AbstractOutputTab current);
     
     private final boolean isGtk = "GTK".equals(UIManager.getLookAndFeel().getID()) || //NOI18N
-        UIManager.getLookAndFeel().getClass().getSuperclass().getName().indexOf ("Synth") != -1; //NOI18N
+            UIManager.getLookAndFeel().getClass().getSuperclass().getName().indexOf("Synth") != -1; //NOI18N
     /**
      * Overridden to fill in the background color, since Synth/GTKLookAndFeel ignores
      * setOpaque(true).
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=43024
      */
-    public void paint (Graphics g) {
+    public void paint(Graphics g) {
         if (isGtk) {
             //Presumably we can get this fixed for JDK 1.5.1
             Color c = getBackground();
             if (c == null) c = Color.WHITE;
-            g.setColor (c);
-            g.fillRect (0, 0, getWidth(), getHeight());
+            g.setColor(c);
+            g.fillRect(0, 0, getWidth(), getHeight());
         }
         super.paint(g);
-    } 
-   
+    }
+    
     /**
      * Set next tab relatively to the given tab. If the give tab is the last one
      * the first is selected.
@@ -360,7 +362,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             this.setSelectedTab(tabs[nextTabIndex]);
         }
     }
-
+    
     /**
      * Set previous tab relatively to the given tab. If the give tab is the
      * first one the last is selected.
@@ -377,7 +379,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             this.setSelectedTab(tabs[prevTabIndex]);
         }
     }
-
+    
     private int getSelectedTabIndex(AbstractOutputTab[] tabs, AbstractOutputTab tab) {
         for (int i = 0; i < tabs.length; i++) {
             if (tabs[i] == tab) {
@@ -386,11 +388,11 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
         return -1;
     }
-
-// JDK 1.5, Win L&F - removing a tab causes a relayout and that uses onl data in UI class,
-// causing it to throw ArrayOutofbounds if removing the last one.
+    
+    // JDK 1.5, Win L&F - removing a tab causes a relayout and that uses onl data in UI class,
+    // causing it to throw ArrayOutofbounds if removing the last one.
     // hacking around it by resetting the bad old data before removal.
-// #56628    
+    // #56628
     private void checkWinXPLFBug() {
         if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOi18N
             TabbedPaneUI ui = pane.getUI();
@@ -405,6 +407,48 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                 // well let's cross fingers and see..
             }
         }
+    }
+    
+    private class VariableRightBorder implements Border {
+        
+        private JTabbedPane pane;
+        
+        public VariableRightBorder(JTabbedPane pane) {
+            this.pane = pane;
+        }
+        
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            if (pane.getParent() != AbstractOutputWindow.this) {
+                Color old = g.getColor();
+                g.setColor(getColor());
+                g.drawLine(x + width - 1, y, x + width - 1, y + height);
+                g.setColor(old);
+            }
+        }
+        
+        public  Color getColor() {
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                Color c1 = UIManager.getColor("controlShadow");
+                Color c2 = UIManager.getColor("control");
+                return new Color((c1.getRed() + c2.getRed()) / 2,
+                        (c1.getGreen() + c2.getGreen()) / 2,
+                        (c1.getBlue() + c2.getBlue()) / 2);
+            } else {
+                return UIManager.getColor("controlShadow");
+            }
+        }
+        
+        public Insets getBorderInsets(Component c) {
+            if (pane.getParent() == AbstractOutputWindow.this) {
+                return new Insets(0,0,0,0);
+            }
+            return new Insets(0, 0, 0, 2);
+        }
+        
+        public boolean isBorderOpaque() {
+            return true;
+        }
+        
     }
     
 }
