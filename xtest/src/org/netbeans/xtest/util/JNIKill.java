@@ -55,7 +55,7 @@ public class JNIKill  {
         {"Windows_98,x86","lib.jnikill.win32.x86.dll"},
         {"Windows_Me,x86","lib.jnikill.win32.x86.dll"},
         {"Windows_2003,x86","lib.jnikill.win32.x86.dll"},
-        {"Windows_2003,amd64","lib.jnikill.win32.x86.dll"}
+        {"Windows_2003,amd64","lib.jnikill.amd64.x86.dll"}
     };
     
     // static initializer of JNIKill - just load appropriate dynamic library
