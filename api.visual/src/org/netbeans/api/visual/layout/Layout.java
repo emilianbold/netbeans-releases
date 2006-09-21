@@ -15,6 +15,9 @@ package org.netbeans.api.visual.layout;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
+ * This class is responsible for layout and justification of children widgets of a widget where the layout is assigned.
+ * Built-in layouts could be created by LayoutFactory class.
+ *
  * @author David Kaspar
  */
 public interface Layout {

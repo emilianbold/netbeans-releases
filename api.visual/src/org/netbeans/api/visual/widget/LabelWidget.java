@@ -12,7 +12,7 @@
  */
 package org.netbeans.api.visual.widget;
 
-import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.modules.visual.util.GeomUtil;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;

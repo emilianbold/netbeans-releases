@@ -15,7 +15,7 @@ package org.netbeans.modules.visual.action;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.action.ResizeStrategy;
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.modules.visual.util.GeomUtil;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;

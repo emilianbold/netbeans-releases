@@ -18,7 +18,7 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.modules.visual.util.GeomUtil;
 import org.openide.util.Lookup;
 
 import java.awt.*;

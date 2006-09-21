@@ -19,6 +19,8 @@ import org.netbeans.modules.visual.router.OrthogonalSearchRouter;
 import org.netbeans.modules.visual.router.WidgetsCollisionCollector;
 
 /**
+ * This class creates built-in routers.
+ *
  * @author David Kaspar
  */
 public final class RouterFactory {
@@ -30,23 +32,47 @@ public final class RouterFactory {
     private RouterFactory () {
     }
 
+    /**
+     * Creates a direct router. The path is direct (single-segment) line between source and target anchor of a connection widget.
+     * @return the direct router
+     */
     public static Router createDirectRouter () {
         return ROUTER_DIRECT;
     }
 
+    /**
+     * Creates a free router. The path persist control points created by users using AddRemoveControlPointAction.
+     * @return the free router
+     */
     public static Router createFreeRouter () {
         return ROUTER_FREE;
     }
 
+    /**
+     * Creates an orthogonal search router. The router gathers collision regions from widget that are placed in specified layers.
+     * @param layers the layers with widgets taken as collisions regions
+     * @return the orthogonal search router
+     */
     public static Router createOrthogonalSearchRouter (LayerWidget... layers) {
         return createOrthogonalSearchRouter (createWidgetsCollisionCollector (layers));
     }
 
+    /**
+     * Creates an orthogonal search router. The router uses collision regions from specified collector.
+     * @param collector the collision collector
+     * @return the orthogonal search router
+     */
     public static Router createOrthogonalSearchRouter (CollisionsCollector collector) {
         assert collector != null;
         return new OrthogonalSearchRouter (collector);
     }
 
+    /**
+     * Creates collision collector based on specified layers. The boundaries of widgets in specified layers are taken
+     * as collision regions.
+     * @param layers the layers with widgets
+     * @return the collision collector
+     */
     private static CollisionsCollector createWidgetsCollisionCollector (LayerWidget... layers) {
         return new WidgetsCollisionCollector (layers);
     }

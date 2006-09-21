@@ -12,7 +12,7 @@
  */
 package org.netbeans.api.visual.anchor;
 
-import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.modules.visual.util.GeomUtil;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 

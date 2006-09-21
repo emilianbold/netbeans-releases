@@ -12,7 +12,7 @@
  */
 package org.netbeans.modules.visual.border;
 
-import org.netbeans.api.visual.util.RenderUtil;
+import org.netbeans.modules.visual.util.RenderUtil;
 import org.netbeans.api.visual.border.Border;
 
 import java.awt.*;

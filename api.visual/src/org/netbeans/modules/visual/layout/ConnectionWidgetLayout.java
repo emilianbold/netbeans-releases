@@ -12,7 +12,7 @@
  */
 package org.netbeans.modules.visual.layout;
 
-import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.modules.visual.util.GeomUtil;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.layout.Layout;
@@ -88,7 +88,7 @@ public final class ConnectionWidgetLayout implements Layout {
         double totalDistance = 0.0;
         double[] distances = new double[empty ? 0 : controlPoints.size () - 1];
         for (int i = 0; i < distances.length; i ++)
-            distances[i] = totalDistance += GeomUtil.distance (controlPoints.get (i), controlPoints.get (i + 1));
+            distances[i] = totalDistance += GeomUtil.distanceSq (controlPoints.get (i), controlPoints.get (i + 1));
 
         for (Widget child : widget.getChildren ()) {
             Float percentage = percentagePlacements != null ? percentagePlacements.get (child) : null;

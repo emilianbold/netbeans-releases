@@ -15,6 +15,13 @@ package org.netbeans.api.visual.layout;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
+ * This is used for a one-time operations that had to be invoked after the scene is initialized and/or validated.
+ * This is usually used for applying graph-oriented layouts where the layout requires to calculate boundaries
+ * of widgets before the layout is invokes.
+ * <p>
+ * The SceneLayout can be invoked by SceneLayout.invokeLayout method. This method just schedules the scene layout
+ * to be performed after the scene validation is done.
+ *
  * @author David Kaspar
  */
 public abstract class SceneLayout {
@@ -23,6 +30,10 @@ public abstract class SceneLayout {
     private Scene scene;
     private volatile boolean attached;
 
+    /**
+     * Creates a scene layout that is related to a specific scene.
+     * @param scene the related scene
+     */
     protected SceneLayout (Scene scene) {
         assert scene != null;
         this.scene = scene;
@@ -46,11 +57,18 @@ public abstract class SceneLayout {
         scene.removeSceneListener (listener);
     }
 
-    public void invokeLayout () {
+    /**
+     * Schedule the performing of this scene layout just immediately after the scene validation.
+     * It also calls scene revalidation.
+     */
+    public final void invokeLayout () {
         attach ();
         scene.revalidate ();
     }
 
+    /**
+     * Called immediately after the scene validation and is responsible for performing the logic e.g. graph-oriented layout.
+     */
     protected abstract void performLayout ();
 
     private final class LayoutSceneListener implements Scene.SceneListener {

@@ -17,7 +17,7 @@ import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.laf.LookFeel;
-import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.modules.visual.util.GeomUtil;
 import org.netbeans.modules.visual.laf.DefaultLookFeel;
 import org.netbeans.modules.visual.widget.SatelliteComponent;
 

@@ -14,7 +14,7 @@ package org.netbeans.api.visual.graph;
 
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.modules.visual.util.GeomUtil;
 
 import java.util.*;
 

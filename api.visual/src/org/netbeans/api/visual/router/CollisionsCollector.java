@@ -13,12 +13,20 @@
 package org.netbeans.api.visual.router;
 
 import java.awt.*;
+import java.util.List;
 
 /**
+ * This class is used for collecting collision regions. There are two separate types of regions - vertical and horizontal.
+ *
  * @author David Kaspar
  */
 public interface CollisionsCollector {
 
-    public void collectCollisions (java.util.List<Rectangle> verticalCollisions, java.util.List<Rectangle> horizontalCollisions);
+    /**
+     * Gathers collision collections and fill up the lists of vertical and horizontal collisions.
+     * @param verticalCollisions the list of vertical collisions
+     * @param horizontalCollisions the list of horizontal collisions
+     */
+    public void collectCollisions (List<Rectangle> verticalCollisions, List<Rectangle> horizontalCollisions);
 
 }

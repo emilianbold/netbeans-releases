@@ -12,7 +12,7 @@
  */
 package org.netbeans.modules.visual.border;
 
-import org.netbeans.api.visual.util.GeomUtil;
+import org.netbeans.modules.visual.util.GeomUtil;
 import org.netbeans.api.visual.border.Border;
 
 import java.awt.*;
