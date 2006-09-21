@@ -55,7 +55,8 @@ public class NativeKill {
         {"Windows_XP,x86",WINDOWS},
         {"Windows_95,x86",WINDOWS},
         {"Windows_98,x86",WINDOWS},        
-        {"Windows_Me,x86",WINDOWS} 
+        {"Windows_Me,x86",WINDOWS},
+        {"Windows_2003,amd64",WINDOWS}
     };
     
     
