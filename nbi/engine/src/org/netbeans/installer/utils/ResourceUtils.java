@@ -15,18 +15,15 @@
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
- *  
+ *
  * $Id$
  */
 package org.netbeans.installer.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
-import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 /**
@@ -48,95 +45,72 @@ public abstract class ResourceUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     // Instance
-    public abstract ResourceBundle loadBundle(URL url) throws IOException;
-    
-    public abstract ResourceBundle loadBundle(File file) throws IOException;
-    
-    public abstract ResourceBundle loadBundle(String baseName);
-    
-    public abstract ResourceBundle loadBundle(Class clazz);
-    
-    public abstract String getString(URL url, String key) throws IOException;
-    
-    public abstract String getString(File file, String key) throws IOException;
-    
     public abstract String getString(String baseName, String key);
     
-    public abstract String getString(Class clazz, String key);
-    
-    public abstract String getString(URL url, String key, Object... arguments) throws IOException;
-    
-    public abstract String getString(File file, String key, Object... arguments) throws IOException;
+    public abstract String getString(String baseName, String key, ClassLoader loader);
     
     public abstract String getString(String baseName, String key, Object... arguments);
     
+    public abstract String getString(String baseName, String key, ClassLoader loader, Object... arguments);
+    
+    public abstract String getString(Class clazz, String key);
+    
     public abstract String getString(Class clazz, String key, Object... arguments);
+    
+    public abstract InputStream getResource(String path);
+    
+    public abstract InputStream getResource(String path, ClassLoader loader);
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private static class GenericResourceUtils extends ResourceUtils {
         private Map<Object, ResourceBundle> loadedBundles = new HashMap<Object, ResourceBundle>();
         
-        public ResourceBundle loadBundle(URL url) throws IOException {
-            ResourceBundle bundle = (ResourceBundle) loadedBundles.get(url);
-            
-            if (bundle == null) {
-                bundle = new PropertyResourceBundle(url.openStream());
-                loadedBundles.put(url, bundle);
-            }
-            
-            return bundle;
-        }
-        
-        public ResourceBundle loadBundle(File file) throws IOException {
-            return loadBundle(file.toURL());
-        }
-        
-        public ResourceBundle loadBundle(String baseName) {
+        private ResourceBundle loadBundle(String baseName, Locale locale, ClassLoader loader) {
             ResourceBundle bundle = (ResourceBundle) loadedBundles.get(baseName);
             
             if (bundle == null) {
-                bundle = ResourceBundle.getBundle(baseName);
+                bundle = ResourceBundle.getBundle(baseName, locale, loader);
                 loadedBundles.put(baseName, bundle);
             }
             
             return bundle;
         }
         
-        public ResourceBundle loadBundle(Class clazz) {
-            return loadBundle(clazz.getPackage().getName() + "." + "Bundle");
-        }
-        
-        public String getString(URL url, String key) throws IOException {
-            return loadBundle(url).getString(key);
-        }
-        
-        public String getString(File file, String key) throws IOException {
-            return loadBundle(file).getString(key);
+        private ResourceBundle loadBundle(Class clazz, Locale locale) {
+            return loadBundle(clazz.getPackage().getName() + "." + "Bundle", locale, clazz.getClassLoader());
         }
         
         public String getString(String baseName, String key) {
-            return loadBundle(baseName).getString(key);
-        }
-        
-        public String getString(Class clazz, String key) {
-            return loadBundle(clazz).getString(key);
-        }
-        
-        public String getString(URL url, String key, Object... arguments) throws IOException {
-            return StringUtils.getInstance().formatMessage(getString(url, key), arguments);
-        }
-        
-        public String getString(File file, String key, Object... arguments) throws IOException {
-            return StringUtils.getInstance().formatMessage(getString(file, key), arguments);
+            return loadBundle(baseName, Locale.getDefault(), getClass().getClassLoader()).getString(key);
         }
         
         public String getString(String baseName, String key, Object... arguments) {
             return StringUtils.getInstance().formatMessage(getString(baseName, key), arguments);
         }
         
+        public String getString(String baseName, String key, ClassLoader loader) {
+            return loadBundle(baseName, Locale.getDefault(), loader).getString(key);
+        }
+        
+        public String getString(String baseName, String key, ClassLoader loader, Object... arguments) {
+            return StringUtils.getInstance().formatMessage(getString(baseName, key, loader), arguments);
+        }
+        
+        public String getString(Class clazz, String key) {
+            return loadBundle(clazz, Locale.getDefault()).getString(key);
+        }
+        
         public String getString(Class clazz, String key, Object... arguments) {
             return StringUtils.getInstance().formatMessage(getString(clazz, key), arguments);
+        }
+        
+        public InputStream getResource(String name) {
+            return getResource(name, getClass().getClassLoader());
+        }
+        
+        public InputStream getResource(String path, ClassLoader loader) {
+            return loader.getResourceAsStream(path);
         }
     }
 }

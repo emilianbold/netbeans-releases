@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
  * @author ks152834
  */
 public abstract class FileUtils {
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static FileUtils instance;
     
@@ -59,58 +59,19 @@ public abstract class FileUtils {
         return instance;
     }
     
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    /**
-     * Reads a file into a string.
-     *
-     * @param file The file to read
-     * @throws java.io.IOException if an I/O error occurs
-     * @return the contents of the file
-     */
     public abstract String readFile(File file) throws IOException;
     
-    /**
-     * Writes the given contents to the file, overwriting its current contents.
-     *
-     * @param file the file to write to
-     * @param string the string to write
-     * @throws java.io.IOException if an I/O error occurs
-     */
     public abstract void writeFile(File file, String string) throws IOException;
     
     public abstract void appendFile(File file, String string) throws IOException;
     
-    /**
-     * Writes the given contents to the file, wither overwriting or appending to
-     * its current contents.
-     *
-     * @param file the file to write to
-     * @param string the string to write
-     * @param append whether to overwrite the current contents or append to them
-     * @throws java.io.IOException if an I/O error occurs
-     */
     public abstract void writeFile(File file, String string, boolean append) throws IOException;
-    
-    public abstract Date getLastModified(String fname);
     
     public abstract Date getLastModified(File f);
     
-    /**
-     * Returns size of <b>file</b>.
-     *
-     * @param file
-     *      File
-     * @return
-     *  -1 if
-     *         <b>file</b> is <i>null</i><br> or
-     *         <b>file</b> is a directory<br> or
-     *         <b>file</b> doesn`t exist<br><br>
-     *  size of file, otherwise
-     */
     public abstract long getFileSize(File file);
-    
-    public abstract long getFileSize(String filename);
     
     public abstract long getFreeSpace(File file);
     
@@ -152,13 +113,19 @@ public abstract class FileUtils {
     
     public abstract void modifyFile(File file, Map<String, String> replacementMap, boolean useRE) throws IOException;
     
-    public abstract void modifyFile(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException;
+    public abstract void modifyFiles(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException;
     
     public abstract void moveFile(File source, File destination) throws IOException;
     
     public abstract void copyFile(File source, File destination) throws IOException;
     
     public abstract void copyFile(File source, File destination, boolean recurseToSubDirs) throws IOException;
+    
+    public abstract boolean isEmpty(File file);
+    
+    public abstract boolean canRead(File file);
+    
+    public abstract boolean canWrite(File file);
     
     public abstract boolean isWritable(File file);
     
@@ -213,10 +180,6 @@ public abstract class FileUtils {
             outputStream.close();
         }
         
-        public Date getLastModified(String fname) {
-            return (fname==null) ? null : getLastModified(new File(fname));
-        }
-        
         public Date getLastModified(File f) {
             if(!f.exists()) {
                 return null;
@@ -240,10 +203,6 @@ public abstract class FileUtils {
             } catch(SecurityException ex) {
                 return -1;
             }
-        }
-        
-        public long getFileSize(String filename) {
-            return (filename==null) ? -1 : getFileSize(new File(filename));
         }
         
         public long getFreeSpace(File file) {
@@ -476,7 +435,7 @@ public abstract class FileUtils {
             }
         }
         
-        public void modifyFile(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException {
+        public void modifyFiles(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException {
             for (File file: files) {
                 modifyFile(file, replacementMap, useRE);
             }
@@ -561,6 +520,59 @@ public abstract class FileUtils {
             
             return true;
         }
+        
+        public boolean isEmpty(File file) {
+            if (!file.exists()) {
+                return true;
+            }
+            
+            if (file.isDirectory()) {
+                for (File child: file.listFiles()) {
+                    if (!isEmpty(child)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        public boolean canRead(File file) {
+            if (file.exists()) {
+                return file.canRead();
+            } else {
+                File parent = file;
+                do {
+                    parent = parent.getParentFile();
+                } while ((parent != null) && !parent.exists());
+                
+                if ((parent == null) || !parent.isDirectory()) {
+                    return false;
+                } else {
+                    return parent.canRead();
+                }
+            }
+        }
+        
+        public boolean canWrite(File file) {
+            if (file.exists()) {
+                return file.canWrite();
+            } else {
+                File parent = file;
+                do {
+                    parent = parent.getParentFile();
+                } while ((parent != null) && !parent.exists());
+                
+                if ((parent == null) || !parent.isDirectory()) {
+                    return false;
+                } else {
+                    return parent.canWrite();
+                }
+            }
+        }
+        
         /**
          * Checks whether the given file is writable.
          *

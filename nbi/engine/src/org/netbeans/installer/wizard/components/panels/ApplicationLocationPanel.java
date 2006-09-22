@@ -50,19 +50,19 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.wizard.components.panels.DefaultWizardPanel;
 
 /**
  *
  * @author ks152834
  */
 public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
-    private JTextPane    textPane;
-    private JLabel       locationFieldLabel;
+    private JTextPane    messagePane;
+    private JLabel       locationLabel;
     private JTextField   locationField;
-    private JButton      browseButton;
+    private JButton      locationButton;
     
     private JLabel       listLabel;
     private JList        list;
@@ -70,91 +70,93 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
     private JPanel       spacer;
     private JPanel       listReplacement;
     
+    private JLabel       errorLabel;
+    
     private JFileChooser fileChooser;
     
     public ApplicationLocationPanel() {
-        setProperty(TEXT_PROPERTY, DEFAULT_TEXT);
-        setProperty(LOCATION_FIELD_LABEL_PROPERTY, DEFAULT_LOCATION_FIELD_LABEL);
-        setProperty(BROWSE_BUTTON_LABEL_PROPERTY, DEFAULT_BROWSE_BUTTON_LABEL);
-        setProperty(LIST_LABEL_PROPERTY, DEFAULT_LIST_LABEL);
+        setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
+        setProperty(MESSAGE_TEXT_NOTHING_FOUND_PROPERTY, DEFAULT_MESSAGE_TEXT_NOTHING_FOUND);
+        setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
+        setProperty(LOCATION_LABEL_TEXT_PROPERTY, DEFAULT_LOCATION_LABEL_TEXT);
+        setProperty(LOCATION_BUTTON_TEXT_PROPERTY, DEFAULT_LOCATION_BUTTON_TEXT);
+        setProperty(LIST_LABEL_TEXT_PROPERTY, DEFAULT_LIST_LABEL_TEXT);
     }
     
     public void initialize() {
-        StringUtils stringUtils = StringUtils.getInstance();
+        final String messageContentType = systemUtils.parseString(getProperty(MESSAGE_CONTENT_TYPE_PROPERTY), getClassLoader());
+        messagePane.setContentType(messageContentType);
         
-        textPane.setText(getProperty(TEXT_PROPERTY));
+        final String messageText = systemUtils.parseString(getProperty(MESSAGE_TEXT_PROPERTY), getClassLoader());
+        messagePane.setText(messageText);
         
-        locationFieldLabel.setText(stringUtils.stripMnemonic(getProperty(LOCATION_FIELD_LABEL_PROPERTY)));
-        locationFieldLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(getProperty(LOCATION_FIELD_LABEL_PROPERTY)));
+        final String locationLabelText = systemUtils.parseString(getProperty(LOCATION_LABEL_TEXT_PROPERTY), getClassLoader());
+        locationLabel.setText(stringUtils.stripMnemonic(locationLabelText));
+        locationLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(locationLabelText));
         
-        browseButton.setText(stringUtils.stripMnemonic(getProperty(BROWSE_BUTTON_LABEL_PROPERTY)));
-        browseButton.setMnemonic(stringUtils.fetchMnemonic(getProperty(BROWSE_BUTTON_LABEL_PROPERTY)));
+        final String locationButtonText = systemUtils.parseString(getProperty(LOCATION_BUTTON_TEXT_PROPERTY), getClassLoader());
+        locationButton.setText(stringUtils.stripMnemonic(locationButtonText));
+        locationButton.setMnemonic(stringUtils.fetchMnemonic(locationButtonText));
         
-        listLabel.setText(stringUtils.stripMnemonic(getProperty(LIST_LABEL_PROPERTY)));
-        listLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(getProperty(LIST_LABEL_PROPERTY)));
+        final String listLabelText = systemUtils.parseString(getProperty(LIST_LABEL_TEXT_PROPERTY), getClassLoader());
+        listLabel.setText(stringUtils.stripMnemonic(listLabelText));
+        listLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(listLabelText));
         
         LocationsListModel model = new LocationsListModel(getLocations());
         
         list.setModel(model);
         
+        File selectedLocation = getSelectedLocation();
         if (model.getSize() > 0) {
-            if (getSelectedLocation() != null) {
-                locationField.setText(getSelectedLocation().getAbsolutePath());
+            if (selectedLocation != null) {
+                locationField.setText(selectedLocation.getAbsolutePath());
             } else {
                 locationField.setText(model.getLocationAt(0).getAbsolutePath());
             }
             
-            listLabel.setVisible(true);
-            listLabel.setEnabled(true);
-            
-            list.setVisible(true);
-            list.setEnabled(true);
-            
-            listReplacement.setVisible(false);
-            listReplacement.setEnabled(false);
+            setListVisibility(true);
         } else {
-            listLabel.setVisible(false);
-            listLabel.setEnabled(false);
+            if (selectedLocation != null) {
+                locationField.setText(selectedLocation.getAbsolutePath());
+            } else {
+                locationField.setText(SystemUtils.getInstance().parsePath(DEFAULT_LOCATION));
+            }
             
-            list.setVisible(false);
-            list.setEnabled(false);
-            
-            listReplacement.setVisible(true);
-            listReplacement.setEnabled(true);
+            setListVisibility(false);
         }
     }
     
     public void initComponents() {
         setLayout(new GridBagLayout());
         
-        textPane = new JTextPane();
-        textPane.setContentType("text/plain");
-        textPane.setOpaque(false);
-        textPane.setEditable(false);
+        messagePane = new JTextPane();
+        messagePane.setContentType("text/plain");
+        messagePane.setOpaque(false);
+        messagePane.setEditable(false);
         
         locationField = new JTextField();
         locationField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent event) {
-                fieldValueChanged();
+                locationChanged();
             }
             
             public void insertUpdate(DocumentEvent event) {
-                fieldValueChanged();
+                locationChanged();
             }
             
             public void removeUpdate(DocumentEvent event) {
-                fieldValueChanged();
+                locationChanged();
             }
         });
         
-        locationFieldLabel = new JLabel();
-        locationFieldLabel.setLabelFor(locationField);
+        locationLabel = new JLabel();
+        locationLabel.setLabelFor(locationField);
         
-        browseButton = new JButton();
+        locationButton = new JButton();
         if (SystemUtils.Platform.isMacOS()) {
-            browseButton.setOpaque(false);
+            locationButton.setOpaque(false);
         }
-        browseButton.addActionListener(new ActionListener() {
+        locationButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 browseButtonPressed();
             }
@@ -182,14 +184,19 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         listReplacement = new JPanel();
         listReplacement.setOpaque(false);
         
-        add(textPane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
-        add(locationFieldLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
+        errorLabel = new JLabel();
+        errorLabel.setIcon(emptyIcon);
+        errorLabel.setText(" ");
+        
+        add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
+        add(locationLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
         add(locationField, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 11, 0, 4), 0, 0));
-        add(browseButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(4, 0, 0, 11), 0, 0));
+        add(locationButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(4, 0, 0, 11), 0, 0));
         add(spacer, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.2, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 0, 11), 0, 0));
         add(listLabel, new GridBagConstraints(0, 4, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
         add(list, new GridBagConstraints(0, 5, 2, 1, 1.0, 0.5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 11, 11), 0, 0));
-        add(listReplacement, new GridBagConstraints(0, 6, 2, 1, 1.0, 0.5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 11, 11), 0, 0));
+        add(listReplacement, new GridBagConstraints(0, 6, 2, 1, 1.0, 0.5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 0, 11), 0, 0));
+        add(errorLabel, new GridBagConstraints(0, 7, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 11, 11, 11), 0, 0));
         
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -197,10 +204,13 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
     }
     
     public void evaluateNextButtonClick() {
-        File location = new File(locationField.getText());
+        String value    = locationField.getText().trim();
+        File   location = new File(value);
         
-        if (!validateLocation(location)) {
-            ErrorManager.getInstance().notify(ErrorLevel.ERROR, getErrorMessage());
+        String errorMessage = validateLocation(value);
+        
+        if (errorMessage != null) {
+            ErrorManager.getInstance().notify(ErrorLevel.ERROR, errorMessage);
         } else {
             setLocation(location);
             super.evaluateNextButtonClick();
@@ -209,13 +219,11 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
     
     public abstract Map<String, File> getLocations();
     
-    public abstract boolean validateLocation(File location);
+    public abstract File getSelectedLocation();
     
-    public abstract String getErrorMessage();
+    public abstract String validateLocation(String value);
     
     public abstract void setLocation(File location);
-    
-    public abstract File getSelectedLocation();
     
     private void browseButtonPressed() {
         fileChooser.setSelectedFile(new File(locationField.getText()));
@@ -238,13 +246,24 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         
     }
     
-    private void fieldValueChanged() {
+    private void locationChanged() {
         final LocationsListModel model = (LocationsListModel) list.getModel();
+        final String value = locationField.getText().trim();
         
-        final String value  = locationField.getText();
-        final int length = model.getSize();
+        final String errorMessage = validateLocation(value);
+        if (errorMessage == null) {
+            errorLabel.setIcon(emptyIcon);
+            errorLabel.setText(" ");
+            
+            getNextButton().setEnabled(true);
+        } else {
+            errorLabel.setIcon(errorIcon);
+            errorLabel.setText(errorMessage);
+            
+            getNextButton().setEnabled(false);
+        }
         
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < model.getSize(); i++) {
             final String element = (String) model.getLocationAt(i).getAbsolutePath();
             
             if (value.equals(element)) {
@@ -256,17 +275,36 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         list.clearSelection();
     }
     
-    public static final String TEXT_PROPERTY = "text";
-    public static final String LOCATION_FIELD_LABEL_PROPERTY = "location.field.label";
-    public static final String BROWSE_BUTTON_LABEL_PROPERTY = "browse.button.label";
-    public static final String LIST_LABEL_PROPERTY = "list.label";
+    private void setListVisibility(boolean state) {
+        listLabel.setVisible(state);
+        listLabel.setEnabled(state);
+        
+        list.setVisible(state);
+        list.setEnabled(state);
+        
+        listReplacement.setVisible(!state);
+        listReplacement.setEnabled(!state);
+    }
     
-    public static final String DEFAULT_TEXT = "";
-    public static final String DEFAULT_LOCATION_FIELD_LABEL = "";
-    public static final String DEFAULT_BROWSE_BUTTON_LABEL = "";
-    public static final String DEFAULT_LIST_LABEL = "";
+    private static StringUtils   stringUtils   = StringUtils.getInstance();
+    private static SystemUtils   systemUtils   = SystemUtils.getInstance();
+    private static ResourceUtils resourceUtils = ResourceUtils.getInstance();
     
-    public static final String DEFAULT_LOCATION = "";
+    public static final String MESSAGE_TEXT_PROPERTY = "message.text";
+    public static final String MESSAGE_TEXT_NOTHING_FOUND_PROPERTY = "message.text.nothing.found";
+    public static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";
+    public static final String LOCATION_LABEL_TEXT_PROPERTY = "location.label.text";
+    public static final String LOCATION_BUTTON_TEXT_PROPERTY = "location.button.text";
+    public static final String LIST_LABEL_TEXT_PROPERTY = "list.label.text";
+    
+    public static final String DEFAULT_MESSAGE_TEXT = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.message.text");
+    public static final String DEFAULT_MESSAGE_TEXT_NOTHING_FOUND = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.message.text.nothing.found");
+    public static final String DEFAULT_MESSAGE_CONTENT_TYPE = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.message.content.type");
+    public static final String DEFAULT_LOCATION_LABEL_TEXT = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.location.label.text");
+    public static final String DEFAULT_LOCATION_BUTTON_TEXT = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.location.button.text");
+    public static final String DEFAULT_LIST_LABEL_TEXT = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.list.label.text");
+    
+    public static final String DEFAULT_LOCATION = resourceUtils.getString(ApplicationLocationPanel.class, "ApplicationLocationPanel.default.location");
     
     private static class LocationsListCellRenderer extends JLabel implements ListCellRenderer {
         public LocationsListCellRenderer() {

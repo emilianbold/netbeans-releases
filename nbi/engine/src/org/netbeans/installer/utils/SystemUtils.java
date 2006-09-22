@@ -66,6 +66,8 @@ public abstract class SystemUtils {
     // Instance
     public abstract String parseString(String string);
     
+    public abstract String parseString(String string, ClassLoader loader);
+    
     public abstract String parsePath(String path);
     
     public abstract File resolvePath(String path);
@@ -95,6 +97,8 @@ public abstract class SystemUtils {
     public abstract ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException;
     
     public abstract ExecutionResults executeCommand(String... command) throws IOException;
+    
+    public abstract boolean isPathValid(String path);
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes

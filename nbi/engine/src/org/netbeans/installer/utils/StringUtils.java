@@ -21,14 +21,12 @@
 package org.netbeans.installer.utils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.prefs.AbstractPreferences;
-import java.util.prefs.BackingStoreException;
 import org.netbeans.installer.utils.SystemUtils.Platform;
 
 /**
@@ -42,8 +40,11 @@ public abstract class StringUtils {
     public static final String FORWARD_SLASH = "/"; //NOI18N
     public static final String DOUBLE_BACK_SLASH = "\\\\"; //NOI18N
     
-    public static final String CRLF = "\r\n";
+    public static final String CR = "\r";
+    public static final String LF = "\n";
+    public static final String CRLF = CR + LF;
     public static final String CRLFCRLF = CRLF + CRLF;
+    
     ////////////////////////////////////////////////////////////////////////////
     // Static
     private static StringUtils instance;
@@ -97,6 +98,8 @@ public abstract class StringUtils {
     public abstract String pad(String string, int number);
     
     public abstract String escapeForRE(String string);
+    
+    public abstract String readStream(InputStream stream) throws IOException;
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
@@ -369,6 +372,22 @@ public abstract class StringUtils {
         
         public String escapeForRE(String string) {
             return string.replace(BACK_SLASH, BACK_SLASH + BACK_SLASH);
+        }
+        
+        public String readStream(InputStream stream) throws IOException {
+            StringBuilder builder = new StringBuilder();
+            
+            byte[] buffer = new byte[1024];
+            while (stream.available() > 0) {
+                int read = stream.read(buffer);
+                
+                String readString = new String(buffer, 0, read);
+                for(String string : readString.split("(?:\n\r|\r\n|\n|\r)")) {
+                    builder.append(string).append("\n");
+                }
+            }
+            
+            return builder.toString();
         }
     }
     
