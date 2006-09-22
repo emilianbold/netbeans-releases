@@ -169,6 +169,7 @@ public class MultiViewActionMapTest extends NbTestCase {
         LookListener list = new LookListener();
         list.resetCount();
         result.addLookupListener(list);
+        result.allItems();
         
         tc.open();
         assertEquals(1, list.getCount());

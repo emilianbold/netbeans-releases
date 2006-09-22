@@ -18,14 +18,5 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="core/multiview" default="netbeans" basedir=".">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <!-- MVInnerComponentGetLookupTest extends org.openide.windows.TopComponentGetLookupTest; -->
-    <!-- needs to compile openide tests first -->
-    <target name="build-openide">
-        <ant dir="../../openide/test" target="buildtests"/>
-    </target>
-    <target name="test-build" depends="build-openide,projectized-common.test-build"/>
-
 </project>
