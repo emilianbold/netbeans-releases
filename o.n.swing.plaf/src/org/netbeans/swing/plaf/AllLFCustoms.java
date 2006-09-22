@@ -94,57 +94,6 @@ final class AllLFCustoms extends LFCustoms {
                 new Font ("Dialog", Font.PLAIN, fontsize)),
             
             DEFAULT_FONT_SIZE, new Integer(11),
-            //Used by tab popup
-            "ComboBox.background",
-               new GuaranteedValue ("ComboBox.background", Color.WHITE),
-
-            "ComboBox.foreground",
-               new GuaranteedValue ("ComboBox.foreground", Color.BLACK),
-
-            "ComboBox.selectionBackground",
-               new GuaranteedValue ("ComboBox.selectionBackground",
-               Color.BLUE),
-
-            "ComboBox.selectionForeground",
-               new GuaranteedValue ("ComboBox.selectionForeground",
-               Color.WHITE),
-
-            "ComboBox.font",
-               new GuaranteedValue ("ComboBox.font",
-               new Font ("Dialog", Font.PLAIN, fontsize)),
-
-            //Colors below are used by windows UI which is used for unknown
-            //look and feels
-/*
-             "InternalFrame.activeTitleBackground",
-                new GuaranteedValue("InternalFrame.activeTitleBackground",
-                Color.BLUE),
-                
-            "InternalFrame.borderShadow",
-                new GuaranteedValue("InternalFrame.borderShadow", Color.gray),
-
-            "InternalFrame.borderHighlight",
-                new GuaranteedValue("InternalFrame.borderHighlight",
-                Color.white),
-
-            "InternalFrame.borderDarkShadow",
-                new GuaranteedValue("InternalFrame.borderDarkShadow",
-                Color.darkGray),
-
-            "InternalFrame.borderLight",
-                new GuaranteedValue("InternalFrame.borderLight",
-                Color.lightGray),
-
-            "TabbedPane.background",
-                new GuaranteedValue("TabbedPane.background", Color.LIGHT_GRAY),
-
-            "TabbedPane.focus",
-                new GuaranteedValue("TabbedPane.focus", Color.GRAY),
-
-            "TabbedPane.highlight",
-                new GuaranteedValue("TabbedPane.highlight", Color.WHITE),
- */
-                
         };
         return uiDefaults;
     }
