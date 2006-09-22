@@ -19,10 +19,12 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
+import org.netbeans.test.subversion.operators.CommitOperator;
 import org.netbeans.test.subversion.operators.RefactoringOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
@@ -79,7 +81,7 @@ public class RefactoringTest extends JellyTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
         JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         TestKit.closeProject(PROJECT_NAME);
-        
+        JTableOperator table;
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         VersioningOperator vo = VersioningOperator.invoke();
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
@@ -150,5 +152,47 @@ public class RefactoringTest extends JellyTestCase {
         }
         result = TestKit.compareThem(expected, actual, false);
         assertEquals("Wrong status in Versioning View", 3, result);
+        
+        oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+        oto.clear(); 
+        node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
+        CommitOperator cmo = CommitOperator.invoke(node);
+        expected = new String[] {"Main.java", "Main.java", "javaapp_ren"};
+        actual = new String[cmo.tabFiles().getRowCount()];
+        for (int i = 0; i < actual.length; i++) {
+            actual[i] = cmo.tabFiles().getValueAt(i, 0).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong files in Commit dialog", 3, result);
+        
+        expected = new String[] {"Locally Deleted", "Locally New", "Locally Copied"};
+        actual = new String[cmo.tabFiles().getRowCount()];
+        for (int i = 0; i < actual.length; i++) {
+            actual[i] = cmo.tabFiles().getValueAt(i, 1).toString();
+        }
+        result = TestKit.compareThem(expected, actual, false);
+        assertEquals("Wrong status in Commit dialog", 3, result);
+        cmo.commit();
+        oto.waitText("Committing... finished.");
+        
+        Exception e = null;
+        try {
+            vo = VersioningOperator.invoke();
+            table = vo.tabFiles();
+        }
+        catch (Exception ex) {
+            e = ex;
+        }
+        assertNotNull("Unexpected behavior - Versioning view should be empty!!!", e);
+        
+        e = null;
+        try {
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+        } catch (Exception ex) {
+            e = ex;
+        }
+        assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
+        
     }
 }
