@@ -59,6 +59,9 @@ public class FormUtils
     static final Object PROP_EXPERT = new Object();
     static final Object PROP_HIDDEN = new Object();
 
+    static final String PROP_REQUIRES_PARENT = "thisPropertyRequiresParent"; // NOI18N
+    static final String PROP_REQUIRES_CHILDREN = "thisPropertyRequiresChildren"; // NOI18N
+
     /** Table defining categories of properties. It overrides original Swing
      * definition from beaninfo (which is often inadequate). */
     private static Object[][] propertyCategories = {
@@ -312,7 +315,20 @@ public class FormUtils
         { "javax.swing.JFrame", CLASS_AND_SUBCLASSES,
               "defaultCloseOperation", new Integer(FormProperty.DETACHED_WRITE) }
     };
-    
+
+    /** Table of properties that need the component to be added in the parent,
+     * or child components in the container before the property can be set.
+     * [We use one table though these are two distinct categories - it's fine
+     * until there is a property requiring both conditions.] */
+    private static Object[][] propertyContainerDeps = {
+        { "javax.swing.JTabbedPane", CLASS_AND_SUBCLASSES,
+                  "selectedIndex", PROP_REQUIRES_CHILDREN,
+                  "selectedComponent", PROP_REQUIRES_CHILDREN },
+        { "javax.swing.JInternalFrame", CLASS_AND_SUBCLASSES,
+                  "maximum", PROP_REQUIRES_PARENT,
+                  "icon", PROP_REQUIRES_PARENT }
+    };
+
     /** Table defining order of dependent properties. */
     private static Object[][] propertyOrder = {
         { "javax.swing.text.JTextComponent",
@@ -820,6 +836,16 @@ public class FormUtils
         return access == null ? 0 : ((Integer)access).intValue();
     }
 
+    static Object[] getPropertiesParentChildDepsClsf(Class beanClass) {
+        return collectPropertiesClsf(beanClass, propertyContainerDeps, null);
+    }
+
+    static String getPropertyParentChildDependency(PropertyDescriptor pd,
+                                                 Object[] propClsf)
+    {
+        return (String) findPropertyClsf(pd.getName(), propClsf);
+    }
+
     private static Object[] collectPropertiesClsf(Class beanClass,
                                                   Object[][] table,
                                                   java.util.List list)
@@ -867,10 +893,12 @@ public class FormUtils
         return null;
     }
 
-    static boolean isContainerContentDependentProperty(Class beanClass,
-                                                       String propName) {
-        return ("selectedIndex".equals(propName) || "selectedComponent".equals(propName)) // NOI18N
-               && javax.swing.JTabbedPane.class.isAssignableFrom(beanClass);
+    static boolean isMarkedParentDependentProperty(Node.Property prop) {
+        return Boolean.TRUE.equals(prop.getValue(PROP_REQUIRES_PARENT));
+    }
+
+    static boolean isMarkedChildrenDependentProperty(Node.Property prop) {
+        return Boolean.TRUE.equals(prop.getValue(PROP_REQUIRES_CHILDREN));
     }
 
     /** @return a formatted name of specified method

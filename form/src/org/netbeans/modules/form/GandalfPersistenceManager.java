@@ -144,8 +144,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private List nonfatalErrors;
 
-    // map of properties that cannot be loaded before a container is filled
-    private Map containerDependentProperties;
+    // maps of properties that cannot be loaded before component is added to
+    // parent container, or container is filled with sub-components
+    private Map<RADComponent, java.util.List> parentDependentProperties;
+    private Map<RADComponent, java.util.List> childrenDependentProperties;
 
     // map of loaded components (not necessarily added to FormModel yet)
     private Map loadedComponents;
@@ -411,7 +413,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             loadedComponents.clear();
         if (expressions != null)
             expressions.clear();
-        containerDependentProperties = null;
+        parentDependentProperties = null;
+        childrenDependentProperties = null;
         connectedProperties = null; 
 
         this.formModel = formModel;
@@ -440,7 +443,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // final cleanup
-        containerDependentProperties = null;
+        parentDependentProperties = null;
+        childrenDependentProperties = null;
         if (expressions != null)
             expressions.clear();
         if (loadedComponents != null)
@@ -881,12 +885,35 @@ public class GandalfPersistenceManager extends PersistenceManager {
         else // non-visual container
             container.initSubComponents(childComponents);
 
+        // hack for properties that can't be set until the component is added
+        // to the parent container
+        for (RADComponent childcomp : childComponents) {
+            List postProps;
+            if (parentDependentProperties != null
+                && (postProps = parentDependentProperties.get(childcomp)) != null)
+            {
+                for (Iterator it = postProps.iterator(); it.hasNext(); ) {
+                    RADProperty prop = (RADProperty) it.next();
+                    Object propValue = it.next();
+                    try {
+                        prop.setValue(propValue);
+                    }
+                    catch (Exception ex) { // ignore
+                        String msg = createLoadingErrorMessage(
+                            FormUtils.getBundleString("MSG_ERR_CannotSetLoadedValue"), // NOI18N
+                            node);
+                        ErrorManager.getDefault().annotate(ex, msg);
+                        nonfatalErrors.add(ex);
+                    }
+                }
+            }
+        }
+
         // hack for properties that can't be set until all subcomponents
         // are added to the container
         List postProps;
-        if (containerDependentProperties != null
-            && (postProps = (List) containerDependentProperties
-                                       .get(component)) != null)
+        if (childrenDependentProperties != null
+            && (postProps = childrenDependentProperties.get(component)) != null)
         {
             for (Iterator it = postProps.iterator(); it.hasNext(); ) {
                 RADProperty prop = (RADProperty) it.next();
@@ -1889,28 +1916,40 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	
 	// hack for properties that can't be set until all children 
         // are added to the container
-	if(metacomp!=null) {
-	    if (FormUtils.isContainerContentDependentProperty(
-				     metacomp.getBeanClass(),
-				     property.getName()))
-	    {
-		List propList;
-		if (containerDependentProperties != null) {
-		    propList = (List) containerDependentProperties.get(metacomp);
+	if (metacomp != null) {
+            List propList = null;
+            if (FormUtils.isMarkedParentDependentProperty(property)) {
+		if (parentDependentProperties != null) {
+		    propList = parentDependentProperties.get(metacomp);
 		}
 		else {
-		    containerDependentProperties = new HashMap();
+		    parentDependentProperties = new HashMap();
 		    propList = null;
 		}
 		if (propList == null) {
 		    propList = new LinkedList();
-		    containerDependentProperties.put(metacomp, propList);
+		    parentDependentProperties.put(metacomp, propList);
 		}
-
 		propList.add(property);
 		propList.add(value);
-		return;
-	    }	    
+            }
+            if (FormUtils.isMarkedChildrenDependentProperty(property)) {
+		if (childrenDependentProperties != null) {
+		    propList = childrenDependentProperties.get(metacomp);
+		}
+		else {
+		    childrenDependentProperties = new HashMap();
+		    propList = null;
+		}
+		if (propList == null) {
+		    propList = new LinkedList();
+		    childrenDependentProperties.put(metacomp, propList);
+		}
+		propList.add(property);
+		propList.add(value);
+            }
+            if (propList != null)
+                return;
 	}
 
 	// set the value to the property

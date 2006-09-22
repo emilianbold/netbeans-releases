@@ -227,9 +227,9 @@ public class RADMenuItemComponent extends RADComponent {
                             super.restoreDefaultValue();
                             accName = BeanSupport.NO_VALUE;
                         }
-                        String getPartialSetterCode() {
+                        String getPartialSetterCode(String javaInitStr) {
                             return "getAccessibleContext().setAccessibleName(" // NOI18N
-                                   + getJavaInitializationString() + ")"; // NOI18N
+                                   + javaInitStr + ")"; // NOI18N
                         }
                     },
 
@@ -259,10 +259,10 @@ public class RADMenuItemComponent extends RADComponent {
                             super.restoreDefaultValue();
                             accDescription = BeanSupport.NO_VALUE;
                         }
-                        String getPartialSetterCode() {
+                        String getPartialSetterCode(String javaInitStr) {
                             return
                               "getAccessibleContext().setAccessibleDescription(" // NOI18N
-                              + getJavaInitializationString() + ")"; // NOI18N
+                              + javaInitStr + ")"; // NOI18N
                         }
                     },
 
@@ -303,11 +303,10 @@ public class RADMenuItemComponent extends RADComponent {
                         public PropertyEditor getExpliciteEditor() {
                             return new AccessibleParentEditor();
                         }
-                        String getPartialSetterCode() {
-                            String str = getJavaInitializationString();
-                            return str == null ? null :
+                        String getPartialSetterCode(String javaInitStr) {
+                            return javaInitStr == null ? null :
                                 "getAccessibleContext().setAccessibleParent(" // NOI18N
-                                + str + ")"; // NOI18N
+                                + javaInitStr + ")"; // NOI18N
                         }
                     }
                 };

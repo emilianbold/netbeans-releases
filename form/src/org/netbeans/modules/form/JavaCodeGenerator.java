@@ -36,6 +36,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.editors.CustomCodeEditor;
 import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
+import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutCodeGenerator;
 
 import java.awt.*;
@@ -43,7 +44,6 @@ import java.beans.*;
 import java.io.*;
 import java.lang.reflect.*; 
 import java.util.*;
-import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 
 /**
  * JavaCodeGenerator is the default code generator which produces a Java source
@@ -63,9 +63,15 @@ class JavaCodeGenerator extends CodeGenerator {
     static final String PROP_CREATE_CODE_CUSTOM = "creationCodeCustom"; // NOI18N
     static final String PROP_INIT_CODE_PRE = "initCodePre"; // NOI18N
     static final String PROP_INIT_CODE_POST = "initCodePost"; // NOI18N
+    static final String PROP_LISTENERS_POST = "listenersCodePost"; // NOI18N
+    static final String PROP_ADDING_PRE = "addingCodePre"; // NOI18N
+    static final String PROP_ADDING_POST = "addingCodePost"; // NOI18N
+    static final String PROP_LAYOUT_PRE = "layoutCodePre"; // NOI18N
+    static final String PROP_LAYOUT_POST = "layoutCodePost"; // NOI18N
+    static final String PROP_ALL_SET_POST = "allCodePost"; // NOI18N
     static final String PROP_DECLARATION_PRE = "declarationPre"; // NOI18N
     static final String PROP_DECLARATION_POST = "declarationPost"; // NOI18N
-    static final String PROP_GENERATE_MNEMONICS = "generateMnemonicsCode"; // Mnemonics support NOI18N
+    static final String PROP_GENERATE_MNEMONICS = "generateMnemonicsCode"; // Mnemonics support // NOI18N
     static final String PROP_LISTENER_GENERATION_STYLE = "listenerGenerationStyle"; // NOI18N
 
     static final String AUX_VARIABLE_MODIFIER =
@@ -86,6 +92,18 @@ class JavaCodeGenerator extends CodeGenerator {
         "JavaCodeGenerator_InitCodePre"; // NOI18N
     static final String AUX_INIT_CODE_POST =
         "JavaCodeGenerator_InitCodePost"; // NOI18N
+    static final String AUX_LISTENERS_POST =
+        "JavaCodeGenerator_ListenersCodePost"; // NOI18N
+    static final String AUX_ADDING_PRE =
+        "JavaCodeGenerator_AddingCodePre"; // NOI18N
+    static final String AUX_ADDING_POST =
+        "JavaCodeGenerator_AddingCodePost"; // NOI18N
+    static final String AUX_LAYOUT_PRE =
+        "JavaCodeGenerator_LayoutCodePre"; // NOI18N
+    static final String AUX_LAYOUT_POST =
+        "JavaCodeGenerator_LayoutCodePost"; // NOI18N
+    static final String AUX_ALL_SET_POST =
+        "JavaCodeGenerator_allCodePost"; // NOI18N
     static final String AUX_DECLARATION_PRE =
         "JavaCodeGenerator_DeclarationPre"; // NOI18N
     static final String AUX_DECLARATION_POST =
@@ -108,6 +126,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private static final String DEFAULT_LISTENER_CLASS_NAME = "FormListener"; // NOI18N
 
+    static final String CUSTOM_CODE_MARK = "\u001F"; // NOI18N
     private static final String CODE_MARK = "*/\n\\"; // NOI18N
     private static final String MARKED_PROPERTY_CODE = "*/\n\\0"; // NOI18N
     private static final String PROPERTY_LINE_COMMENT = "*/\n\\1"; // NOI18N
@@ -141,10 +160,14 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private JavaEditor.SimpleSection initComponentsSection;
     private JavaEditor.SimpleSection variablesSection;
-       
+
+    private int emptyLineCounter;
+    private int emptyLineRequest;
+
     private Map constructorProperties;
-    private Map containerDependentProperties;
-    
+    private Map<RADComponent, java.util.List<FormProperty>> parentDependentProperties;
+    private Map<RADComponent, java.util.List<FormProperty>> childrenDependentProperties;
+
     private SwingLayoutCodeGenerator swingGenerator;
 
     private static class PropertiesFilter implements FormProperty.Filter {
@@ -238,17 +261,17 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
             });
 
-            propList.add(new PropertySupport.ReadWrite(
+            final FormProperty modifProp = new FormProperty(
                 PROP_VARIABLE_MODIFIER,
                 Integer.class,
                 bundle.getString("MSG_JC_VariableModifiers"), // NOI18N
-                bundle.getString("MSG_JC_VariableModifiersDesc")) // NOI18N
+                null)
             {
-                public void setValue(Object value) {
+                public void setTargetValue(Object value) {
                     if (!(value instanceof Integer))
                         throw new IllegalArgumentException();
 
-                    Object oldValue = getValue();
+                    Object oldValue = getTargetValue();
 
                     CodeStructure codeStructure = formModel.getCodeStructure();
                     CodeExpression exp = component.getCodeExpression();
@@ -257,15 +280,13 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     varType &= ~CodeVariable.ALL_MODIF_MASK;
                     varType |= ((Integer)value).intValue() & CodeVariable.ALL_MODIF_MASK;
-                    if ((varType & (CodeVariable.LOCAL | CodeVariable.FINAL))
-                            == CodeVariable.LOCAL)
-                        varType |= CodeVariable.EXPLICIT_DECLARATION;
 
                     if ((varType & CodeVariable.ALL_MODIF_MASK)
                             != (formModel.getSettings().getVariablesModifier()
                                 & CodeVariable.ALL_MODIF_MASK))
                     {   // non-default value
-                        component.setAuxValue(AUX_VARIABLE_MODIFIER, value);
+                        component.setAuxValue(AUX_VARIABLE_MODIFIER,
+                                new Integer(varType & CodeVariable.ALL_MODIF_MASK)); // value
                     }
                     else { // default value
                         varType = 0x30DF; // default
@@ -277,16 +298,9 @@ class JavaCodeGenerator extends CodeGenerator {
                     codeStructure.removeExpressionFromVariable(exp);
                     codeStructure.createVariableForExpression(
                                          exp, varType, varName);
-
-                    formModel.fireSyntheticPropertyChanged(
-                        component, PROP_VARIABLE_MODIFIER, oldValue, value);
-                    if (component.getNodeReference() != null) {
-                        component.getNodeReference().firePropertyChangeHelper(
-                            PROP_VARIABLE_MODIFIER, null, null);
-                    }
                 }
 
-                public Object getValue() {
+                public Object getTargetValue() {
                     Object val = component.getAuxValue(AUX_VARIABLE_MODIFIER);
                     if (val != null)
                         return val;
@@ -297,19 +311,32 @@ class JavaCodeGenerator extends CodeGenerator {
                 public boolean supportsDefaultValue() {
                     return component.getAuxValue(AUX_VARIABLE_LOCAL) == null;
                 }
-                
-                public void restoreDefaultValue() {
-                    if (component.getAuxValue(AUX_VARIABLE_LOCAL) == null)
-                        setValue(new Integer(formModel.getSettings().getVariablesModifier()));
+
+                public Object getDefaultValue() {
+                    return component.getAuxValue(AUX_VARIABLE_LOCAL) == null ?
+                           new Integer(formModel.getSettings().getVariablesModifier()) : null;
+                }
+
+                protected void propertyValueChanged(Object old, Object current) {
+                    super.propertyValueChanged(old, current);
+                    if (isChangeFiring()) {
+                        formModel.fireSyntheticPropertyChanged(
+                            component, getName(), old, current);
+                        if (component.getNodeReference() != null) {
+                            component.getNodeReference().firePropertyChangeHelper(
+                                getName(), null, null);
+                        }
+                    }
                 }
 
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
 
-                public PropertyEditor getPropertyEditor() {
+                public PropertyEditor getExpliciteEditor() { // getPropertyEditor
                     Boolean local = (Boolean) component.getAuxValue(AUX_VARIABLE_LOCAL);
-                    local = (local == null) ? Boolean.valueOf(formModel.getSettings().getVariablesLocal()) : local;
+                    if (local == null)
+                        local = Boolean.valueOf(formModel.getSettings().getVariablesLocal());
                     return Boolean.TRUE.equals(local) ?
                         new ModifierEditor(Modifier.FINAL)
                         :
@@ -321,20 +348,22 @@ class JavaCodeGenerator extends CodeGenerator {
                                            | Modifier.TRANSIENT
                                            | Modifier.VOLATILE);
                 }
-            });
+            };
+            modifProp.setShortDescription(bundle.getString("MSG_JC_VariableModifiersDesc")); // NOI18N
+            propList.add(modifProp);
 
-            propList.add(new PropertySupport.ReadWrite(
+            FormProperty localProp = new FormProperty(
                 PROP_VARIABLE_LOCAL,
                 Boolean.TYPE,
                 bundle.getString("MSG_JC_UseLocalVar"), // NOI18N
-                bundle.getString("MSG_JC_UseLocalVarDesc")) // NOI18N
+                null)
             {
-                public void setValue(Object value) {
+                public void setTargetValue(Object value) {
                     if (!(value instanceof Boolean))
                         throw new IllegalArgumentException();
 
-                    Boolean oldValue = (Boolean)getValue();
-                    if (value.equals(oldValue)) return;
+                    Boolean oldValue = (Boolean) getTargetValue();
+//                    if (value.equals(oldValue)) return;
 
                     CodeStructure codeStructure = formModel.getCodeStructure();
                     CodeExpression exp = component.getCodeExpression();
@@ -342,11 +371,9 @@ class JavaCodeGenerator extends CodeGenerator {
                     String varName = component.getName();
 
                     varType &= CodeVariable.FINAL
-                               | ~(CodeVariable.ALL_MODIF_MASK
-                                     | CodeVariable.SCOPE_MASK);
+                               | ~(CodeVariable.ALL_MODIF_MASK | CodeVariable.SCOPE_MASK);
                     if (Boolean.TRUE.equals(value))
-                        varType |= CodeVariable.LOCAL
-                                   | CodeVariable.EXPLICIT_DECLARATION;
+                        varType |= CodeVariable.LOCAL;
                     else
                         varType |= CodeVariable.FIELD
                                    | formModel.getSettings().getVariablesModifier();
@@ -355,32 +382,32 @@ class JavaCodeGenerator extends CodeGenerator {
                             != (formModel.getSettings().getVariablesLocal()))
                     {   // non-default value
                         component.setAuxValue(AUX_VARIABLE_LOCAL, value);
-                        component.setAuxValue(
-                            AUX_VARIABLE_MODIFIER,
-                            new Integer(varType & CodeVariable.ALL_MODIF_MASK));
+                        try {
+                            modifProp.setValue(new Integer(varType & CodeVariable.ALL_MODIF_MASK));
+                        }
+                        catch (Exception ex) { // should not happen
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        }
                     }
                     else { // default value
                         varType = 0x30DF; // default
                         if (component.getAuxValue(AUX_VARIABLE_LOCAL) != null) {
                             component.getAuxValues().remove(AUX_VARIABLE_LOCAL);
                         }
-                        if (component.getAuxValue(AUX_VARIABLE_MODIFIER) != null) {
-                            component.getAuxValues().remove(AUX_VARIABLE_MODIFIER);
+                        try {
+                            modifProp.restoreDefaultValue();
+                        }
+                        catch (Exception ex) { // should not happen
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
 
                     codeStructure.removeExpressionFromVariable(exp);
                     codeStructure.createVariableForExpression(
                                          exp, varType, varName);
-
-                    formModel.fireSyntheticPropertyChanged(
-                        component, PROP_VARIABLE_LOCAL, oldValue, value);
-                    if (component.getNodeReference() != null) {
-                        component.getNodeReference().fireComponentPropertySetsChange();
-                    }
                 }
 
-                public Object getValue() {
+                public Object getTargetValue() {
                     Object val = component.getAuxValue(AUX_VARIABLE_LOCAL);
                     if (val != null)
                         return val;
@@ -392,14 +419,28 @@ class JavaCodeGenerator extends CodeGenerator {
                     return true;
                 }
 
-                public void restoreDefaultValue() {
-                    setValue(Boolean.valueOf(formModel.getSettings().getVariablesLocal()));
+                public Object getDefaultValue() {
+                    return Boolean.valueOf(formModel.getSettings().getVariablesLocal());
                 }
-                    
+
+                protected void propertyValueChanged(Object old, Object current) {
+                    super.propertyValueChanged(old, current);
+                    if (isChangeFiring()) {
+                        formModel.fireSyntheticPropertyChanged(
+                            component, getName(), old, current);
+                        if (component.getNodeReference() != null) {
+                            component.getNodeReference().firePropertyChangeHelper(
+                                getName(), null, null);
+                        }
+                    }
+                }
+
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
-            });
+            };
+            localProp.setShortDescription(bundle.getString("MSG_JC_UseLocalVarDesc")); // NOI18N
+            propList.add(localProp);
 
             // Mnemonics support - start -
             if (javax.swing.JLabel.class.isAssignableFrom(component.getBeanClass())
@@ -437,6 +478,83 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                 });
             // Mnemonics support - end -
+
+            propList.add(new CodeProperty(
+                    component,
+                    PROP_CREATE_CODE_CUSTOM, AUX_CREATE_CODE_CUSTOM,
+                    bundle.getString("MSG_JC_CustomCreationCode"), // NOI18N
+                    bundle.getString("MSG_JC_CustomCreationCodeDesc"))); // NOI18N
+
+            propList.add(new CodeProperty(
+                    component,
+                    PROP_CREATE_CODE_PRE, AUX_CREATE_CODE_PRE,
+                    bundle.getString("MSG_JC_PreCreationCode"), // NOI18N
+                    bundle.getString("MSG_JC_PreCreationCodeDesc"))); // NOI18N
+            propList.add(new CodeProperty(
+                    component,
+                    PROP_CREATE_CODE_POST, AUX_CREATE_CODE_POST,
+                    bundle.getString("MSG_JC_PostCreationCode"), // NOI18N
+                    bundle.getString("MSG_JC_PostCreationCodeDesc"))); // NOI18N
+
+            propList.add(new CodeProperty(
+                    component,
+                    PROP_INIT_CODE_PRE, AUX_INIT_CODE_PRE,
+                    bundle.getString("MSG_JC_PreInitCode"), // NOI18N
+                    bundle.getString("MSG_JC_PreInitCodeDesc"))); // NOI18N
+            propList.add(new CodeProperty(
+                    component,
+                    PROP_INIT_CODE_POST, AUX_INIT_CODE_POST,
+                    bundle.getString("MSG_JC_PostInitCode"), // NOI18N
+                    bundle.getString("MSG_JC_PostInitCodeDesc"))); // NOI18N
+
+            propList.add(new CodeProperty(
+                    component,
+                    PROP_LISTENERS_POST, AUX_LISTENERS_POST,
+                    bundle.getString("MSG_JC_PostListenersCode"), // NOI18N
+                    bundle.getString("MSG_JC_PostListenersCodeDesc"))); // NOI18N
+
+            if (component.getParentComponent() != null) {
+                propList.add(new CodeProperty(
+                        component,
+                        PROP_ADDING_PRE, AUX_ADDING_PRE,
+                        bundle.getString("MSG_JC_PreAddCode"), // NOI18N
+                        bundle.getString("MSG_JC_PreAddCodeDesc"))); // NOI18N
+                propList.add(new CodeProperty(
+                        component,
+                        PROP_ADDING_POST, AUX_ADDING_POST,
+                        bundle.getString("MSG_JC_PostAddCode"), // NOI18N
+                        bundle.getString("MSG_JC_PostAddCodeDesc"))); // NOI18N
+            }
+
+            if (component instanceof ComponentContainer) {
+                propList.add(new CodeProperty(
+                        component,
+                        PROP_LAYOUT_PRE, AUX_LAYOUT_PRE,
+                        bundle.getString("MSG_JC_PrePopulationCode"), // NOI18N
+                        bundle.getString("MSG_JC_PrePopulationCodeDesc"))); // NOI18N
+                propList.add(new CodeProperty(
+                        component,
+                        PROP_LAYOUT_POST, AUX_LAYOUT_POST,
+                        bundle.getString("MSG_JC_PostPopulationCode"), // NOI18N
+                        bundle.getString("MSG_JC_PostPopulationCodeDesc"))); // NOI18N
+            }
+
+            propList.add(new CodeProperty(
+                    component,
+                    PROP_ALL_SET_POST, AUX_ALL_SET_POST,
+                    bundle.getString("MSG_JC_AfterAllSetCode"), // NOI18N
+                    bundle.getString("MSG_JC_AfterAllSetCodeDesc"))); // NOI18N
+
+            propList.add(new CodeProperty(
+                    component,
+                    PROP_DECLARATION_PRE, AUX_DECLARATION_PRE,
+                    bundle.getString("MSG_JC_PreDeclaration"), // NOI18N
+                    bundle.getString("MSG_JC_PreDeclarationDesc"))); // NOI18N
+            propList.add(new CodeProperty(
+                    component,
+                    PROP_DECLARATION_POST, AUX_DECLARATION_POST,
+                    bundle.getString("MSG_JC_PostDeclaration"), // NOI18N
+                    bundle.getString("MSG_JC_PostDeclarationDesc"))); // NOI18N
 
             propList.add(new PropertySupport.ReadWrite(
                 PROP_CODE_GENERATION,
@@ -488,210 +606,6 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
             });
 
-            propList.add(new CodePropertySupportRW(
-                PROP_CREATE_CODE_PRE,
-                String.class,
-                bundle.getString("MSG_JC_PreCreationCode"), // NOI18N
-                bundle.getString("MSG_JC_PreCreationCodeDesc")) // NOI18N
-            {
-                public void setValue(Object value) {
-                    if (!(value instanceof String))
-                        throw new IllegalArgumentException();
-
-                    Object oldValue = getValue();
-
-                    if (!"".equals(value))
-                        component.setAuxValue(AUX_CREATE_CODE_PRE, value);
-                    else if (component.getAuxValue(AUX_CREATE_CODE_PRE) != null) {
-                        component.getAuxValues().remove(AUX_CREATE_CODE_PRE);
-                    }
-
-                    formModel.fireSyntheticPropertyChanged(
-                        component, PROP_CREATE_CODE_PRE, oldValue, value);
-                    if (component.getNodeReference() != null) {
-                        component.getNodeReference().firePropertyChangeHelper(
-                            PROP_CREATE_CODE_PRE, null, null);
-                    }
-                }
-
-                public Object getValue() {
-                    Object value = component.getAuxValue(AUX_CREATE_CODE_PRE);
-                    if (value == null)
-                        value = ""; // NOI18N
-                    return value;
-                }
-            });
-
-            propList.add(new CodePropertySupportRW(
-                PROP_CREATE_CODE_POST,
-                String.class,
-                bundle.getString("MSG_JC_PostCreationCode"), // NOI18N
-                bundle.getString("MSG_JC_PostCreationCodeDesc")) // NOI18N
-            {
-                public void setValue(Object value) {
-                    if (!(value instanceof String))
-                        throw new IllegalArgumentException();
-
-                    Object oldValue = getValue();
-
-                    if (!"".equals(value))
-                        component.setAuxValue(AUX_CREATE_CODE_POST, value);
-                    else if (component.getAuxValue(AUX_CREATE_CODE_POST) != null) {
-                        component.getAuxValues().remove(AUX_CREATE_CODE_POST);
-                    }
-
-                    formModel.fireSyntheticPropertyChanged(
-                        component, PROP_CREATE_CODE_POST, oldValue, value);
-                    if (component.getNodeReference() != null) {
-                        component.getNodeReference().firePropertyChangeHelper(
-                            PROP_CREATE_CODE_POST, null, null);
-                    }
-                }
-
-                public Object getValue() {
-                    Object value = component.getAuxValue(AUX_CREATE_CODE_POST);
-                    if (value == null)
-                        value = ""; // NOI18N
-                    return value;
-                }
-            });
-
-            propList.add(new CodePropertySupportRW(
-                PROP_INIT_CODE_PRE,
-                String.class,
-                bundle.getString("MSG_JC_PreInitCode"), // NOI18N
-                bundle.getString("MSG_JC_PreInitCodeDesc")) // NOI18N
-            {
-                public void setValue(Object value) {
-                    if (!(value instanceof String))
-                        throw new IllegalArgumentException();
-
-                    Object oldValue = getValue();
-
-                    if (!"".equals(value))
-                        component.setAuxValue(AUX_INIT_CODE_PRE, value);
-                    else if (component.getAuxValue(AUX_INIT_CODE_PRE) != null) {
-                        component.getAuxValues().remove(AUX_INIT_CODE_PRE);
-                    }
-
-                    formModel.fireSyntheticPropertyChanged(
-                        component, PROP_INIT_CODE_PRE, oldValue, value);
-                    if (component.getNodeReference() != null) {
-                        component.getNodeReference().firePropertyChangeHelper(
-                            PROP_INIT_CODE_PRE, null, null);
-                    }
-                }
-
-                public Object getValue() {
-                    Object value = component.getAuxValue(AUX_INIT_CODE_PRE);
-                    if (value == null)
-                        value = ""; // NOI18N
-                    return value;
-                }
-            });
-
-            propList.add(new CodePropertySupportRW(
-                PROP_INIT_CODE_POST,
-                String.class,
-                bundle.getString("MSG_JC_PostInitCode"), // NOI18N
-                bundle.getString("MSG_JC_PostInitCodeDesc")) // NOI18N
-            {
-                public void setValue(Object value) {
-                    if (!(value instanceof String))
-                        throw new IllegalArgumentException();
-
-                    Object oldValue = getValue();
-
-                    if (!"".equals(value))
-                        component.setAuxValue(AUX_INIT_CODE_POST, value);
-                    else if (component.getAuxValue(AUX_INIT_CODE_POST) != null) {
-                        component.getAuxValues().remove(AUX_INIT_CODE_POST);
-                    }
-
-                    formModel.fireSyntheticPropertyChanged(
-                        component, PROP_INIT_CODE_POST, oldValue, value);
-                    if (component.getNodeReference() != null) {
-                        component.getNodeReference().firePropertyChangeHelper(
-                            PROP_INIT_CODE_POST, null, null);
-                    }
-                }
-
-                public Object getValue() {
-                    Object value = component.getAuxValue(AUX_INIT_CODE_POST);
-                    if (value == null)
-                        value = ""; // NOI18N
-                    return value;
-                }
-            });
-
-            propList.add(new CodePropertySupportRW(
-                PROP_DECLARATION_PRE,
-                String.class,
-                bundle.getString("MSG_JC_PreDeclaration"), // NOI18N
-                bundle.getString("MSG_JC_PreDeclarationDesc")) // NOI18N
-            {
-                public void setValue(Object value) {
-                    if (!(value instanceof String))
-                        throw new IllegalArgumentException();
-
-                    Object oldValue = getValue();
-
-                    if (!"".equals(value))
-                        component.setAuxValue(AUX_DECLARATION_PRE, value);
-                    else if (component.getAuxValue(AUX_DECLARATION_PRE) != null) {
-                        component.getAuxValues().remove(AUX_DECLARATION_PRE);
-                    }
-
-                    formModel.fireSyntheticPropertyChanged(
-                        component, PROP_DECLARATION_PRE, oldValue, value);
-                    if (component.getNodeReference() != null) {
-                        component.getNodeReference().firePropertyChangeHelper(
-                            PROP_DECLARATION_PRE, null, null);
-                    }
-                }
-
-                public Object getValue() {
-                    Object value = component.getAuxValue(AUX_DECLARATION_PRE);
-                    if (value == null)
-                        value = ""; // NOI18N
-                    return value;
-                }
-            });
-
-            propList.add(new CodePropertySupportRW(
-                PROP_DECLARATION_POST,
-                String.class,
-                bundle.getString("MSG_JC_PostDeclaration"), // NOI18N
-                bundle.getString("MSG_JC_PostDeclarationDesc")) // NOI18N
-            {
-                public void setValue(Object value) {
-                    if (!(value instanceof String))
-                        throw new IllegalArgumentException();
-
-                    Object oldValue = getValue();
-
-                    if (!"".equals(value))
-                        component.setAuxValue(AUX_DECLARATION_POST, value);
-                    else if (component.getAuxValue(AUX_DECLARATION_POST) != null) {
-                        component.getAuxValues().remove(AUX_DECLARATION_POST);
-                    }
-
-                    formModel.fireSyntheticPropertyChanged(
-                        component, PROP_DECLARATION_POST, oldValue, value);
-                    if (component.getNodeReference() != null) {
-                        component.getNodeReference().firePropertyChangeHelper(
-                            PROP_DECLARATION_POST, null, null);
-                    }
-                }
-
-                public Object getValue() {
-                    Object value = component.getAuxValue(AUX_DECLARATION_POST);
-                    if (value == null)
-                        value = ""; // NOI18N
-                    return value;
-                }
-            });
-
             propList.add(new PropertySupport.ReadWrite(
                 PROP_SERIALIZE_TO,
                 String.class,
@@ -704,7 +618,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     Object oldValue = getValue();
 
-                    if (!"".equals(value))
+                    if (!"".equals(value)) // NOI18N
                         component.setAuxValue(AUX_SERIALIZE_TO, value);
                     else if (component.getAuxValue(AUX_SERIALIZE_TO) != null) {
                         component.getAuxValues().remove(AUX_SERIALIZE_TO);
@@ -727,53 +641,6 @@ class JavaCodeGenerator extends CodeGenerator {
                     return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
                 }
             });
-
-            Integer generationType = (Integer)
-                component.getAuxValue(AUX_CODE_GENERATION);
-            if (generationType == null
-                || generationType.equals(VALUE_GENERATE_CODE))
-            {
-                propList.add(new CodePropertySupportRW(
-                    PROP_CREATE_CODE_CUSTOM,
-                    String.class,
-                    bundle.getString("MSG_JC_CustomCreationCode"), // NOI18N
-                    bundle.getString("MSG_JC_CustomCreationCodeDesc")) // NOI18N
-                {
-                    public void setValue(Object value) {
-                        if (!(value instanceof String))
-                            throw new IllegalArgumentException();
-
-                        Object oldValue = getValue();
-
-                        if (!"".equals(value))
-                            component.setAuxValue(AUX_CREATE_CODE_CUSTOM, value);
-                        else if (component.getAuxValue(AUX_CREATE_CODE_CUSTOM) != null) {
-                            component.getAuxValues().remove(AUX_CREATE_CODE_CUSTOM);
-                        }
-
-                        formModel.fireSyntheticPropertyChanged(
-                            component, PROP_CREATE_CODE_CUSTOM, oldValue, value);
-                        if (component.getNodeReference() != null) {
-                            component.getNodeReference().firePropertyChangeHelper(
-                                PROP_CREATE_CODE_CUSTOM, null, null);
-                        }
-                    }
-
-                    public Object getValue() {
-                        Object value = component.getAuxValue(AUX_CREATE_CODE_CUSTOM);
-                        if (value == null)
-                            value = ""; // NOI18N
-                        return value;
-                    }
-
-                    public boolean canWrite() {
-                        if (!JavaCodeGenerator.this.canGenerate && !component.isReadOnly())
-                            return false;
-                        Integer genType =(Integer)component.getAuxValue(AUX_CODE_GENERATION);
-                        return((genType == null) ||(genType.equals(VALUE_GENERATE_CODE)));
-                    }
-                });
-            }
         }
         else if (Component.class.isAssignableFrom(component.getBeanClass()))
         {
@@ -832,7 +699,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if(beanClass!=null) {
                         return beanClass.toString();
                     }
-                    return "";              
+                    return ""; // NOI18N
                 }
 
                 public boolean canWrite() {
@@ -876,13 +743,11 @@ class JavaCodeGenerator extends CodeGenerator {
         else {
             initCodeWriter = new CodeWriter(initCodeBuffer, true);
         }
-        
-        if (constructorProperties != null)
-            constructorProperties.clear();
-        if (containerDependentProperties != null)
-            containerDependentProperties.clear();
-	formModel.getCodeStructure().clearExternalVariableNames();
-	
+        // optimization - only properties need to go through CodeWriter
+        Writer writer = initCodeWriter.getWriter();
+
+        cleanup();
+
         try {
             boolean expandInitComponents = false;
             boolean foldGeneratedCode = formSettings.getFoldGeneratedCode();
@@ -894,126 +759,64 @@ class JavaCodeGenerator extends CodeGenerator {
                     Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
                     expandInitComponents = (fold != null) && foldDescription.equals(fold.getDescription()) && !fold.isCollapsed();
                 }
-                initCodeWriter.write("// <editor-fold defaultstate=\"collapsed\" desc=\""); // NOI18N
-                initCodeWriter.write(foldDescription);
-                initCodeWriter.write("\">\n"); // NOI18N
+                writer.write("// <editor-fold defaultstate=\"collapsed\" desc=\""); // NOI18N
+                writer.write(foldDescription);
+                writer.write("\">\n"); // NOI18N
             }
 
-            initCodeWriter.write("private void initComponents() {\n"); // NOI18N
+            writer.write("private void initComponents() {\n"); // NOI18N
 
-            if (addLocalVariables(initCodeWriter))
-                initCodeWriter.write("\n"); // NOI18N
+            addLocalVariables(writer);
 
+            emptyLineRequest++;
             Collection<RADComponent> otherComps = formModel.getOtherComponents();
             for (RADComponent metacomp : otherComps) {
                 addCreateCode(metacomp, initCodeWriter);
             }
             RADComponent top = formModel.getTopRADComponent();
             addCreateCode(top, initCodeWriter);
-            initCodeWriter.write("\n"); // NOI18N
 
             if (formModel.getSettings().getListenerGenerationStyle() == CEDL_INNERCLASS
                 && anyEvents())
             {
-                addDispatchListenerDeclaration(initCodeWriter.getWriter());
-                initCodeWriter.write("\n"); // NOI18N
+                emptyLineRequest++;
+                addDispatchListenerDeclaration(writer);
             }
 
             for (RADComponent metacomp : otherComps) {
-                addInitCode(metacomp, initCodeWriter, 0);
+                addInitCode(metacomp, initCodeWriter, null);
             }
-            if (otherComps.size() > 0)
-                initCodeWriter.write("\n"); // NOI18N
-            addInitCode(top, initCodeWriter, 0);
+            addInitCode(top, initCodeWriter, null);
 
-            // for visual forms append sizing text
-            if (formModel.getTopRADComponent() instanceof RADVisualFormContainer) {
-                RADVisualFormContainer visualForm =
-                    (RADVisualFormContainer) formModel.getTopRADComponent();
+            generateFormSizeCode(writer);
 
-                // generate size code according to form size policy
-                int formPolicy = visualForm.getFormSizePolicy();
-                boolean genSize = visualForm.getGenerateSize();
-                boolean genPosition = visualForm.getGeneratePosition();
-                boolean genCenter = visualForm.getGenerateCenter();
-                Dimension formSize = visualForm.getFormSize();
-                Point formPosition = visualForm.getFormPosition();
-
-                String sizeText = ""; // NOI18N
-
-                if (formPolicy == RADVisualFormContainer.GEN_PACK)
-                    sizeText = "pack();\n"; // NOI18N
-                else if (formPolicy == RADVisualFormContainer.GEN_BOUNDS) {
-                    if (genCenter) {
-                        StringBuffer sizeBuffer = new StringBuffer();
-                        if (genSize) {
-//                                sizeBuffer.append("pack();\n"); // NOI18N
-                            sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                            sizeBuffer.append("setBounds((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2, "+formSize.width + ", " + formSize.height + ");\n"); // NOI18N
-//                                sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
-//                                sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
-                        }
-                        else {
-                            sizeBuffer.append("pack();\n"); // NOI18N
-                            sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                            sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
-                            sizeBuffer.append("setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);\n"); // NOI18N
-                        }
-                        sizeText = sizeBuffer.toString();
-                    }
-                    else if (genPosition && genSize) // both size and position
-                        sizeText = "setBounds("+formPosition.x + ", " // NOI18N
-                                   + formPosition.y +", " // NOI18N
-                                   + formSize.width + ", " // NOI18N
-                                   + formSize.height + ");\n"; // NOI18N
-                    else if (genPosition) // position only
-                        sizeText = "setLocation(new java.awt.Point(" // NOI18N
-                                   + formPosition.x + ", " // NOI18N
-                                   + formPosition.y + "));\n"; // NOI18N
-                    else if (genSize) // size only
-                        sizeText = "setSize(new java.awt.Dimension(" // NOI18N
-                                   + formSize.width + ", " // NOI18N
-                                   + formSize.height + "));\n"; // NOI18N
-                }
-
-                initCodeWriter.write(sizeText);
-            }
-
-            // cleanup
-            if (constructorProperties != null)
-                constructorProperties.clear();
-            if (containerDependentProperties != null)
-                containerDependentProperties.clear();
-	    formModel.getCodeStructure().clearExternalVariableNames();
-            bundleVariables = null;
-
-            initCodeWriter.write("}"); // no new line because of fold footer // NOI18N
+            writer.write("}"); // no new line because of fold footer // NOI18N
 
             int listenerCodeStyle = formModel.getSettings().getListenerGenerationStyle();
             if ((listenerCodeStyle == CEDL_INNERCLASS
                   || listenerCodeStyle == CEDL_MAINCLASS)
                 && anyEvents())
             {
-                initCodeWriter.write("\n\n"); // NOI18N
-                initCodeWriter.write(getEventDispatchCodeComment());
-                initCodeWriter.write("\n"); // NOI18N
+                writer.write("\n\n"); // NOI18N
+                writer.write(getEventDispatchCodeComment());
+                writer.write("\n"); // NOI18N
 
-                generateDispatchListenerCode(initCodeWriter.getWriter());
+                generateDispatchListenerCode(writer);
             }
             else listenersInMainClass = null;
 
             if (foldGeneratedCode) {
-                initCodeWriter.write("// </editor-fold>\n"); // NOI18N
+                writer.write("// </editor-fold>\n"); // NOI18N
             }
             else {
-                initCodeWriter.write("\n"); // NOI18N
+                writer.write("\n"); // NOI18N
             }
-            initCodeWriter.getWriter().close();
+            writer.close();
 
              // set the text into the guarded block
             String newText = initCodeBuffer.toString();
             if (!formSettings.getUseIndentEngine()) {
-                newText = indentCode(newText, indentEngine);
+                newText = indentCode(newText, 1, indentEngine);
             }
             initComponentsSection.setText(newText);
             
@@ -1027,8 +830,23 @@ class JavaCodeGenerator extends CodeGenerator {
             clearUndo();
         }
         catch (IOException e) { // should not happen
-            e.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
+
+        cleanup();
+    }
+
+    private void cleanup() {
+        emptyLineCounter = 0;
+        emptyLineRequest = 0;
+        if (constructorProperties != null)
+            constructorProperties.clear();
+        if (parentDependentProperties != null)
+            parentDependentProperties.clear();
+        if (childrenDependentProperties != null)
+            childrenDependentProperties.clear();
+        formModel.getCodeStructure().clearExternalVariableNames();
+        bundleVariables = null;
     }
 
     private void regenerateVariables() {
@@ -1053,11 +871,10 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 	    
         try {
-	    
 	    variablesWriter.write(getVariablesHeaderComment());
             variablesWriter.write("\n"); // NOI18N
 
-            addVariables(variablesWriter);
+            addFieldVariables(variablesWriter);
             
             variablesWriter.write(getVariablesFooterComment());
             variablesWriter.write("\n"); // NOI18N
@@ -1065,7 +882,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
             String newText = variablesBuffer.toString();
             if (!formSettings.getUseIndentEngine())
-                newText = indentCode(newText, indentEngine);
+                newText = indentCode(newText, 1, indentEngine);
 
             variablesSection.setText(newText);        
             clearUndo();
@@ -1082,7 +899,7 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
 
         if (comp != formModel.getTopRADComponent()) {
-            generateComponentCreate(comp, initCodeWriter, true);
+            generateComponentCreate(comp, initCodeWriter, true, null);
         }
         if (comp instanceof ComponentContainer) {
             RADComponent[] children =((ComponentContainer)comp).getSubBeans();
@@ -1094,107 +911,169 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void addInitCode(RADComponent comp,
                              CodeWriter initCodeWriter,
-                             int level)
+                             CustomCodeData codeData)
         throws IOException
     {
         if (comp == null)
             return;
 
-        generateComponentInit(comp, initCodeWriter);
-        generateComponentEvents(comp, initCodeWriter.getWriter());
-        if (comp.getParentComponent() == null)
-            generateAccessibilityCode(comp, initCodeWriter);
+        Writer writer = initCodeWriter.getWriter();
+
+        int counter0 = emptyLineCounter;
+        int request0 = emptyLineRequest;
+        emptyLineRequest++;
+
+        generateComponentProperties(comp, initCodeWriter, codeData);
+        generateComponentEvents(comp, initCodeWriter, codeData);
 
         if (comp instanceof ComponentContainer) {
-            RADComponent[] children =((ComponentContainer)comp).getSubBeans();
-            for (int i = 0; i < children.length; i++) {
-                RADComponent subcomp = children[i];
-                addInitCode(subcomp, initCodeWriter, level);
+            boolean freeDesign = RADVisualContainer.isFreeDesignContainer(comp);
+            ComponentContainer cont = (ComponentContainer) comp;
+            if (!freeDesign) // layout and pre-population code before sub-components
+                generateOldLayout(cont, initCodeWriter, codeData);
 
-                if (comp instanceof RADVisualContainer) {
-                    // visual container
-                    generateComponentAddCode(subcomp,
-                                             (RADVisualContainer)comp,
-                                             initCodeWriter);
+            if (codeData == null) { // normal code generation
+                // generate code of sub-components
+                RADComponent[] subBeans = cont.getSubBeans();
+                for (RADComponent subcomp : subBeans) {
+                    addInitCode(subcomp, initCodeWriter, null);
                 }
-                else if (comp instanceof RADMenuComponent) {
-                    // menu
-                    generateMenuAddCode(subcomp,
-                                        (RADMenuComponent) comp,
-                                        initCodeWriter);
-                } // [PENDING - adding to non-visual containers]
-
-                generateAccessibilityCode(subcomp, initCodeWriter);
-
-                initCodeWriter.write("\n"); // NOI18N
-            }
-
-            // hack for properties that can't be set until all children 
-            // are added to the container
-            java.util.List postProps;
-            if (containerDependentProperties != null
-                && (postProps = (java.util.List)containerDependentProperties.get(comp))
-                    != null)
-            {
-                for (Iterator it = postProps.iterator(); it.hasNext(); ) {
-                    RADProperty prop = (RADProperty) it.next();
-                    generatePropertySetter(prop, comp, initCodeWriter);
-                }
-                initCodeWriter.write("\n"); // NOI18N
-            }
-            if (comp instanceof RADVisualContainer) {
-                RADVisualContainer cont = (RADVisualContainer)comp;
-                if (cont.getLayoutSupport() == null) {
-                    LayoutComponent layoutCont = formModel.getLayoutModel().getLayoutComponent(cont.getId());
-                    if (layoutCont != null) {
-                        RADVisualComponent[] comps = cont.getSubComponents();
-                        SwingLayoutCodeGenerator.ComponentInfo[] infos = new SwingLayoutCodeGenerator.ComponentInfo[comps.length];
-                        for (int i=0; i<comps.length; i++) {
-                            RADVisualComponent subComp = comps[i];
-                            SwingLayoutCodeGenerator.ComponentInfo info = new SwingLayoutCodeGenerator.ComponentInfo();
-                            info.id = subComp.getId();
-                            info.variableName = getExpressionJavaString(subComp.getCodeExpression(), ""); // NOI18N
-                            info.clazz = subComp.getBeanClass();
-                            Node.Property minProp = subComp.getPropertyByName("minimumSize"); // NOI18N
-                            Node.Property prefProp = subComp.getPropertyByName("preferredSize"); // NOI18N
-                            Node.Property maxProp = subComp.getPropertyByName("maximumSize"); // NOI18N
-                            info.sizingChanged = !(((minProp == null) || minProp.isDefaultValue())
-                                && ((prefProp == null) || prefProp.isDefaultValue())
-                                && ((maxProp == null) || maxProp.isDefaultValue()));
-                            info.minSize = ((Component)subComp.getBeanInstance()).getMinimumSize();
-                            infos[i] = info;
-                        }
-                        CodeExpression contExpr = LayoutSupportManager.containerDelegateCodeExpression(
-                                                    cont, formModel.getCodeStructure());
-                        String contExprStr = getExpressionJavaString(contExpr, ""); // NOI18N
-                        CodeVariable contVar = cont.getCodeExpression().getVariable();
-                        String contVarName = (contVar == null) ? null : contVar.getName();
-                        SwingLayoutCodeGenerator swingGenerator = getSwingGenerator();
-                        swingGenerator.generateContainerLayout(
-                            initCodeWriter.getWriter(),
-                            layoutCont,
-                            contExprStr,
-                            contVarName,
-                            infos,
-                            formModel.getSettings().getLayoutCodeTarget() == LAYOUT_CODE_LIBRARY);
+                if (freeDesign) { // generate complete layout code
+                    // GroupLayout setup code also adds all sub-components
+                    RADVisualContainer visualCont = (RADVisualContainer) cont;
+                    emptyLineRequest++;
+                    generatePrePopulationCode(visualCont, writer, null);
+                    emptyLineRequest++;
+                    for (RADComponent subcomp : visualCont.getSubComponents()) {
+                        generateComponentAddPre(subcomp, writer, null);
                     }
+                    emptyLineRequest++;
+                    generateFreeDesignLayoutCode(visualCont, initCodeWriter); // this always generates something
+                    emptyLineRequest++;
+                    // some code for belonging to sub-components is generated
+                    // after adding (a11y, after-all-set)
+                    for (RADComponent subcomp : visualCont.getSubComponents()) { // excluding menu
+                        generateComponentAddPost(subcomp, initCodeWriter, null);
+                        generateAccessibilityCode(subcomp, initCodeWriter, null);
+                        generateAfterAllSetCode(subcomp, writer, null);
+                    }
+                    emptyLineRequest++;
                 }
-//                generateVisualCode((RADVisualContainer)comp, initCodeWriter);
+                else if (subBeans.length > 0)
+                    emptyLineRequest++; // empty line after sub-components
+            }
+            else { // build code data for editing
+                if (RADVisualContainer.isFreeDesignContainer(comp)) {
+                    String substCode = "// " + FormUtils.getBundleString("CustomCode-SubstSub"); // NOI18N
+                    codeData.addGuardedBlock(substCode);
+                    generatePrePopulationCode(comp, writer, codeData);
+                    substCode = "// " + FormUtils.getBundleString("CustomCode-SubstLayout"); // NOI18N
+                    codeData.addGuardedBlock(substCode);
+                }
+                else { // with LM, the pre-layout code is elsewhere (before properties)
+                    String substCode = "// " + FormUtils.getBundleString("CustomCode-SubstSubAndLayout"); // NOI18N
+                    codeData.addGuardedBlock(substCode);
+                }
             }
 
+            int counter1 = emptyLineCounter;
+            emptyLineRequest++;
+            generatePostPopulationCode(comp, initCodeWriter, codeData);
+            if (emptyLineCounter == counter1)
+                emptyLineRequest--; // no post-population code, don't force empty line
+            else
+                emptyLineRequest++; // force empty line after post-population
+        }
+
+        if (emptyLineCounter == counter0)
+            emptyLineRequest = request0; // no code was generated, don't force empty line
+
+        if (!RADVisualContainer.isInFreeDesign(comp)) { // in container with LM, or menu component
+            // add to parent container (if not root itself)
+            generateComponentAddCode(comp, initCodeWriter, codeData);
+            boolean endingCode = false;
+            if (generateAccessibilityCode(comp, initCodeWriter, codeData))
+                endingCode = true;
+            if (generateAfterAllSetCode(comp, writer, codeData))
+                endingCode = true;
+            if (endingCode)
+                emptyLineRequest++; // force empty line after
+        }
+        else if (codeData != null) { // build code data for editing
+            // In free design this is generated with parent container (see above).
+            // But building code data is invoked only for the component itself,
+            // not for its parent, so we must do it here.
+            generateComponentAddPre(comp, writer, codeData);
+            String substCode = "// " + FormUtils.getBundleString("CustomCode-SubstAdding"); // NOI18N
+            codeData.addGuardedBlock(substCode);
+            generateComponentAddPost(comp, initCodeWriter, codeData);
+            generateAccessibilityCode(comp, initCodeWriter, codeData);
+            generateAfterAllSetCode(comp, writer, codeData);
         }
     }
-    
-    private SwingLayoutCodeGenerator getSwingGenerator() {
-        if (swingGenerator == null) {
-            swingGenerator = new SwingLayoutCodeGenerator(formModel.getLayoutModel());
+
+    private void generateOldLayout(ComponentContainer cont,
+                                   CodeWriter initCodeWriter,
+                                   CustomCodeData codeData)
+        throws IOException
+    {
+        RADVisualContainer visualCont = cont instanceof RADVisualContainer ?
+                                        (RADVisualContainer) cont : null;
+        LayoutSupportManager layoutSupport = visualCont != null ?
+                                             visualCont.getLayoutSupport() : null;
+
+        if (layoutSupport != null) { // setLayout code for old layout support
+            if (layoutSupport.isLayoutChanged()) {
+                Iterator it = layoutSupport.getLayoutCode().getStatementsIterator();
+                if (codeData == null && it.hasNext())
+                    generateEmptyLineIfNeeded(initCodeWriter.getWriter());
+                while (it.hasNext()) {
+                    CodeStatement statement = (CodeStatement) it.next();
+                    initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
+                    initCodeWriter.write("\n"); // NOI18N
+                }
+
+                if (codeData != null) { // build code data for editing
+                    String code = indentCode(initCodeWriter.extractString());
+                    codeData.addGuardedBlock(code);
+                }
+            }
         }
-        return swingGenerator;
+
+        generatePrePopulationCode((RADComponent)cont, initCodeWriter.getWriter(), codeData);
+    }
+
+    private boolean generateAfterAllSetCode(RADComponent comp,
+                                            Writer writer,
+                                            CustomCodeData codeData)
+        throws IOException
+    {
+        boolean generated = false;
+
+        String postCode = (String) comp.getAuxValue(AUX_ALL_SET_POST);
+        if (codeData != null) { // build code data for editing
+            codeData.addEditableBlock(postCode,
+                                      (FormProperty) comp.getSyntheticProperty(PROP_ALL_SET_POST),
+                                      0,
+                                      FormUtils.getBundleString("CustomCode-AfterAllSet"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PostPopulationCodeDesc")); // NOI18N
+        }
+        // normal code generation
+        else if (postCode != null && !postCode.equals("")) { // NOI18N
+            generateEmptyLineIfNeeded(writer);
+            writer.write(postCode);
+            if (!postCode.endsWith("\n")) // NOI18N
+                writer.write("\n"); // NOI18N
+            generated = true;
+        }
+
+        return generated;
     }
 
     private void generateComponentCreate(RADComponent comp,
                                          CodeWriter initCodeWriter,
-                                         boolean insideMethod)
+                                         boolean insideMethod, // if this for initComponents
+                                         CustomCodeData codeData)
         throws IOException
     {
         if (comp instanceof RADMenuItemComponent
@@ -1204,26 +1083,43 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
         }
 
+        // optimization - only properties need to go through CodeWriter
+        Writer writer = initCodeWriter.getWriter();
+
         CodeVariable var = comp.getCodeExpression().getVariable();
         int varType = var.getType();
+        boolean localVariable = (varType & CodeVariable.SCOPE_MASK) == CodeVariable.LOCAL;
 
         if (insideMethod) {
-            int finalField = CodeVariable.FIELD | CodeVariable.FINAL;
-            if ((varType & finalField) == finalField)
-                return;
+            if (isFinalFieldVariable(varType))
+                return; // is generated in field variables (here we are in initComponents)
 
             String preCode = (String) comp.getAuxValue(AUX_CREATE_CODE_PRE);
-            if (preCode != null && !preCode.equals("")) { // NOI18N
-                initCodeWriter.write(preCode);
-                initCodeWriter.write("\n"); // NOI18N
+            if (codeData != null) { // build code data for editing
+                codeData.addEditableBlock(preCode,
+                                          (FormProperty) comp.getSyntheticProperty(PROP_CREATE_CODE_PRE),
+                                          2, // preference index
+                                          FormUtils.getBundleString("CustomCode-PreCreation"), // NOI18N
+                                          FormUtils.getBundleString("MSG_JC_PreCreationCodeDesc")); // NOI18N
             }
+            else if (preCode != null && !preCode.equals("")) { // NOI18N
+                // normal generation of custom pre-creation code
+                generateEmptyLineIfNeeded(writer);
+                writer.write(preCode);
+                if (!preCode.endsWith("\n")) // NOI18N
+                    writer.write("\n"); // NOI18N
+            }
+
+            if (localVariable)
+                generateDeclarationPre(comp, writer, codeData);
         }
 
+        String customCode = null; // for code data editing
+        boolean codeCustomized = false; // for code data editing
+
         Integer generationType = (Integer)comp.getAuxValue(AUX_CODE_GENERATION);
-        if (comp.hasHiddenState()
-            || (generationType != null
-                && generationType.equals(VALUE_SERIALIZE)))
-        {   // generate code for restoring serialized component
+        if (comp.hasHiddenState() || VALUE_SERIALIZE.equals(generationType)) {
+            // generate code for restoring serialized component [only works for field variables]
             if (!insideMethod)
                 return;
 
@@ -1232,36 +1128,36 @@ class JavaCodeGenerator extends CodeGenerator {
                 serializeTo = getDefaultSerializedName(comp);
                 comp.setAuxValue(AUX_SERIALIZE_TO, serializeTo);
             }
-            initCodeWriter.write("try {\n"); // NOI18N
-            initCodeWriter.write(comp.getName());
-            initCodeWriter.write(" =("); // NOI18N
-            initCodeWriter.write(getSourceClassName(comp.getBeanClass()));
-            initCodeWriter.write(")java.beans.Beans.instantiate(getClass().getClassLoader(), \""); // NOI18N
+            if (codeData == null)
+                generateEmptyLineIfNeeded(writer);
+            writer.write("try {\n"); // NOI18N
+            writer.write(comp.getName());
+            writer.write(" =("); // NOI18N
+            writer.write(getSourceClassName(comp.getBeanClass()));
+            writer.write(")java.beans.Beans.instantiate(getClass().getClassLoader(), \""); // NOI18N
 
             // write package name
             FileObject fo = formEditorSupport.getFormDataObject().getPrimaryFile();
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             String packageName = cp.getResourceName(fo.getParent());
             if (!"".equals(packageName)) { // NOI18N
-                initCodeWriter.write(packageName + "."); // NOI18N
+                writer.write(packageName + "."); // NOI18N
             }
-            initCodeWriter.write(serializeTo);
-            initCodeWriter.write("\");\n"); // NOI18N
-            initCodeWriter.write("} catch (ClassNotFoundException e) {\n"); // NOI18N
-            initCodeWriter.write("e.printStackTrace();\n"); // NOI18N
-            initCodeWriter.write("} catch (java.io.IOException e) {\n"); // NOI18N
-            initCodeWriter.write("e.printStackTrace();\n"); // NOI18N
-            initCodeWriter.write("}\n"); // NOI18N
+            writer.write(serializeTo);
+            writer.write("\");\n"); // NOI18N
+            writer.write("} catch (ClassNotFoundException e) {\n"); // NOI18N
+            writer.write("e.printStackTrace();\n"); // NOI18N
+            writer.write("} catch (java.io.IOException e) {\n"); // NOI18N
+            writer.write("e.printStackTrace();\n"); // NOI18N
+            writer.write("}\n"); // NOI18N
         }
         else { // generate standard component creation code
+            if (codeData == null)
+                generateEmptyLineIfNeeded(writer);
+
             StringBuffer varBuf = new StringBuffer();
 
-            int declareMask = CodeVariable.SCOPE_MASK
-                              | CodeVariable.DECLARATION_MASK;
-
-            if ((varType & CodeVariable.FINAL) == CodeVariable.FINAL
-                || (varType & declareMask) == CodeVariable.LOCAL)
-            {   // generate a variable declaration together with the assignment
+            if (localVariable || isFinalFieldVariable(varType)) { // also generate declaration
                 varBuf.append(Modifier.toString(
                                 varType & CodeVariable.ALL_MODIF_MASK));
                 varBuf.append(" "); // NOI18N
@@ -1272,13 +1168,25 @@ class JavaCodeGenerator extends CodeGenerator {
             varBuf.append(var.getName());
 
             String customCreateCode = (String) comp.getAuxValue(AUX_CREATE_CODE_CUSTOM);
-            if (customCreateCode != null && !"".equals(customCreateCode)) { // NOI18N
-                initCodeWriter.write(varBuf.toString());
-                initCodeWriter.write(" = "); // NOI18N
-                initCodeWriter.write(customCreateCode);
-                initCodeWriter.write("\n"); // NOI18N
+            if (customCreateCode != null && !customCreateCode.equals("")) { // NOI18N
+                // there is a custom creation code provided
+                if (codeData == null) { // normal code generation
+                    writer.write(varBuf.toString());
+                    writer.write(" = "); // NOI18N
+                    writer.write(customCreateCode);
+                    if (!customCreateCode.endsWith(";")) // NOI18N
+                        writer.write(";"); // NOI18N
+                    writer.write("\n"); // NOI18N
+                }
+                else { // build code data for editing
+                    if (customCreateCode.endsWith(";")) // NOI18N
+                        customCreateCode = customCreateCode.substring(0, customCreateCode.length()-1);
+                    customCode = composeCustomCreationCode(varBuf, customCreateCode);
+                    codeCustomized = true;
+                }
             }
-            else {
+            if (customCreateCode == null || customCreateCode.equals("") || codeData != null) { // NOI18N
+                // compose default creation code
                 CreationDescriptor desc = CreationFactory.getDescriptor(
                                                               comp.getBeanClass());
                 if (desc == null)
@@ -1293,20 +1201,20 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 Class[] exceptions = creator.getExceptionTypes();
                 if (insideMethod && needTryCode(exceptions)) {
-                    if ((varType & declareMask) == CodeVariable.LOCAL) {
-                        initCodeWriter.write(varBuf.toString());
-                        initCodeWriter.write(";\n"); // NOI18N
+                    if (localVariable) {
+                        writer.write(varBuf.toString());
+                        writer.write(";\n"); // NOI18N
                     }
-                    initCodeWriter.write("try {\n"); // NOI18N
-                    initCodeWriter.write(var.getName());
+                    writer.write("try {\n"); // NOI18N
+                    writer.write(var.getName());
                 }
                 else {
-                    initCodeWriter.write(varBuf.toString());
+                    writer.write(varBuf.toString());
                     exceptions = null;
                 }
 
-                initCodeWriter.write(" = "); // NOI18N
-		
+                writer.write(" = "); // NOI18N
+
                 String[] propNames = creator.getPropertyNames();		
                 FormProperty[] props;
                 if (propNames.length > 0) {
@@ -1325,93 +1233,144 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
                 else props = RADComponent.NO_PROPERTIES;
 
-                initCodeWriter.write(creator.getJavaCreationCode(props, null) + ";\n"); // NOI18N
+                String defaultCreationCode = creator.getJavaCreationCode(props, null);
+                initCodeWriter.write(defaultCreationCode + ";\n"); // NOI18N
+
+                if (codeData != null && customCode == null) // get default custom code (without try/catch)
+                    customCode = composeCustomCreationCode(varBuf, defaultCreationCode);
 
                 if (exceptions != null)
-                    generateCatchCode(exceptions, initCodeWriter.getWriter());
+                    generateCatchCode(exceptions, writer);
             }
+        }
+        if (codeData != null) {
+            String defaultCode = indentCode(initCodeWriter.extractString());
+            codeData.addGuardedBlock(defaultCode, customCode, CUSTOM_CODE_MARK, codeCustomized,
+                                     (FormProperty) comp.getSyntheticProperty(PROP_CREATE_CODE_CUSTOM),
+                                     FormUtils.getBundleString("CustomCode-Creation"), // NOI18N
+                                     FormUtils.getBundleString("CustomCode-Creation_Hint")); // NOI18N
         }
 
         if (insideMethod) {
+            if (localVariable)
+                generateDeclarationPost(comp, writer, codeData);
+
             String postCode = (String) comp.getAuxValue(AUX_CREATE_CODE_POST);
-            if (postCode != null && !postCode.equals("")) { // NOI18N
-                initCodeWriter.write(postCode);
-                initCodeWriter.write("\n"); // NOI18N
+            if (codeData != null) { // build code data for editing
+                codeData.addEditableBlock(postCode,
+                                          (FormProperty) comp.getSyntheticProperty(PROP_CREATE_CODE_POST),
+                                          0, // preference index
+                                          FormUtils.getBundleString("CustomCode-PostCreation"), // NOI18N
+                                          FormUtils.getBundleString("MSG_JC_PostCreationCodeDesc")); // NOI18N
+            }
+            else if (postCode != null && !postCode.equals("")) { // NOI18N
+                // normal generation of post-creation code
+                writer.write(postCode);
+                if (!postCode.endsWith("\n")) // NOI18N
+                    writer.write("\n"); // NOI18N
             }
         }
     }
 
-    private void generateComponentInit(RADComponent comp,
-                                       CodeWriter initCodeWriter)
-        throws IOException
-    {             
-        if (comp instanceof RADVisualContainer) {
-            LayoutSupportManager layoutSupport =
-                ((RADVisualContainer)comp).getLayoutSupport();
+    // used only when building "code data" for editing
+    private String composeCustomCreationCode(StringBuffer buf, String creationCode) {
+        buf.append(" = "); // NOI18N
+        buf.append(CUSTOM_CODE_MARK);
+        buf.append(creationCode);
+        buf.append(CUSTOM_CODE_MARK);
+        buf.append(";\n"); // NOI18N
+        return indentCode(buf.toString());
+    }
 
-            if (layoutSupport != null && layoutSupport.isLayoutChanged()) {
-                Iterator it = layoutSupport.getLayoutCode().getStatementsIterator();
-                while (it.hasNext()) {
-                    CodeStatement statement = (CodeStatement) it.next();
-                    initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
-                    initCodeWriter.write("\n"); // NOI18N
-                }
-                initCodeWriter.write("\n"); // NOI18N
-            }
+    private void generateComponentProperties(RADComponent comp,
+                                             CodeWriter initCodeWriter,
+                                             CustomCodeData codeData)
+        throws IOException
+    {
+        Writer writer = initCodeWriter.getWriter();
+
+        String preCode = (String) comp.getAuxValue(AUX_INIT_CODE_PRE);
+        if (codeData != null) { // build code data for editing
+            codeData.addEditableBlock(preCode,
+                                      (FormProperty) comp.getSyntheticProperty(PROP_INIT_CODE_PRE),
+                                      10, // preference index
+                                      FormUtils.getBundleString("CustomCode-PreInit"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PreInitCodeDesc")); // NOI18N
+        }
+        else if (preCode != null && !preCode.equals("")) { // NOI18N
+            generateEmptyLineIfNeeded(writer);
+            writer.write(preCode);
+            if (!preCode.endsWith("\n")) // NOI18N
+                writer.write("\n"); // NOI18N
         }
 
         Object genType = comp.getAuxValue(AUX_CODE_GENERATION);
-        String preCode = (String) comp.getAuxValue(AUX_INIT_CODE_PRE);
-        String postCode = (String) comp.getAuxValue(AUX_INIT_CODE_POST);
-        if (preCode != null && !preCode.equals("")) { // NOI18N
-            initCodeWriter.write(preCode);
-            initCodeWriter.write("\n"); // NOI18N
-        }
-
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
-        {   // not serialized
+        {   // not serialized, generate properties
 	    java.util.List usedProperties = constructorProperties != null ? (java.util.List)constructorProperties.get(comp) : null;
             Iterator it = comp.getBeanPropertiesIterator(new PropertiesFilter(usedProperties), false);
             while (it.hasNext()) {
                 FormProperty prop = (FormProperty) it.next();
 
-                if (!FormUtils.isContainerContentDependentProperty(
-                                comp.getBeanClass(), prop.getName()))
-                {
-                    generatePropertySetter(prop, comp, initCodeWriter);
-                }
-                else {
-                    // hack for properties that can't be set until all
-                    // children are added to the container
-                    java.util.List propList;
-                    if (containerDependentProperties != null)
-                        propList = (java.util.List)
-                                   containerDependentProperties.get(comp);
+                java.util.List<FormProperty> depPropList = null;
+                if (FormUtils.isMarkedParentDependentProperty(prop)) {
+                    // needs to be generated after the component is added to the parent container
+                    if (parentDependentProperties != null)
+                        depPropList = parentDependentProperties.get(comp);
                     else {
-                        containerDependentProperties = new HashMap();
-                        propList = null;
+                        parentDependentProperties = new HashMap();
+                        depPropList = null;
                     }
-                    if (propList == null) {
-                        propList = new LinkedList();
-                        containerDependentProperties.put(comp, propList);
+                    if (depPropList == null) {
+                        depPropList = new LinkedList();
+                        parentDependentProperties.put(comp, depPropList);
                     }
-
-                    propList.add(prop);
+                    depPropList.add(prop);
+                }
+                if (FormUtils.isMarkedChildrenDependentProperty(prop)) {
+                    // needs to be added after all sub-components are added to this container
+                    if (childrenDependentProperties != null)
+                        depPropList = childrenDependentProperties.get(comp);
+                    else {
+                        childrenDependentProperties = new HashMap();
+                        depPropList = null;
+                    }
+                    if (depPropList == null) {
+                        depPropList = new LinkedList();
+                        childrenDependentProperties.put(comp, depPropList);
+                    }
+                    depPropList.add(prop);
+                }
+                
+                if (depPropList == null) { // independent property, generate here directly
+                    generateProperty(prop, comp, null, initCodeWriter, codeData);
                 }
             }
         }
 
-        if ((postCode != null) &&(!postCode.equals(""))) { // NOI18N
-            initCodeWriter.write(postCode);
-            initCodeWriter.write("\n"); // NOI18N
+        String postCode = (String) comp.getAuxValue(AUX_INIT_CODE_POST);
+        if (codeData != null) { // build code data for editing
+            codeData.addEditableBlock(postCode,
+                                      (FormProperty) comp.getSyntheticProperty(PROP_INIT_CODE_POST),
+                                      7, // preference index
+                                      FormUtils.getBundleString("CustomCode-PostInit"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PostInitCodeDesc")); // NOI18N
+        }
+        else if (postCode != null && !postCode.equals("")) { // NOI18N
+            generateEmptyLineIfNeeded(writer);
+            writer.write(postCode);
+            if (!postCode.endsWith("\n")) // NOI18N
+                writer.write("\n"); // NOI18N
         }
     }
 
-    private void generateAccessibilityCode(RADComponent comp,
-                                           CodeWriter initCodeWriter)
+    private boolean generateAccessibilityCode(RADComponent comp,
+                                              CodeWriter initCodeWriter,
+                                              CustomCodeData codeData)
         throws IOException
     {
+        boolean generated = false;
         Object genType = comp.getAuxValue(AUX_CODE_GENERATION);
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
@@ -1421,28 +1380,40 @@ class JavaCodeGenerator extends CodeGenerator {
                 props = ((RADVisualComponent)comp).getAccessibilityProperties();
             else if (comp instanceof RADMenuItemComponent)
                 props = ((RADMenuItemComponent)comp).getAccessibilityProperties();
-            else return;
+            else return false;
 
             for (int i=0; i < props.length; i++) {
-                FormProperty prop = props[i];
-                if (prop.isChanged() || prop.getPreCode() != null
-                                     || prop.getPostCode() != null)
-                    generatePropertySetter(prop, comp, initCodeWriter);
+                boolean gen = generateProperty(props[i], comp, null, initCodeWriter, codeData);
+                if (gen)
+                    generated = true;
             }
         }
+        return generated;
     }
 
     private void generateComponentAddCode(RADComponent comp,
-                                          RADVisualContainer container,
-                                          CodeWriter initCodeWriter)
+                                          CodeWriter initCodeWriter,
+                                          CustomCodeData codeData)
         throws IOException
     {
+        RADComponent parent = comp.getParentComponent();
+        if (parent == null)
+            return;
+
+        // optimization - only properties need to go through CodeWriter
+        Writer writer = initCodeWriter.getWriter();
+
+        generateComponentAddPre(comp, initCodeWriter.getWriter(), codeData);
+
         if (comp instanceof RADVisualComponent) {
-            LayoutSupportManager laysup = container.getLayoutSupport();
+            // adding visual component to container with old layout support
+            LayoutSupportManager laysup = ((RADVisualComponent)comp).getParentLayoutSupport();
             CodeGroup componentCode = laysup != null ?
                 laysup.getComponentCode((RADVisualComponent)comp) : null;
             if (componentCode != null) {
                 Iterator it = componentCode.getStatementsIterator();
+                if (codeData == null && it.hasNext())
+                    generateEmptyLineIfNeeded(writer);
                 while (it.hasNext()) {
                     CodeStatement statement = (CodeStatement) it.next();
                     initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
@@ -1450,132 +1421,432 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
             }
         }
-        else if (comp instanceof RADMenuComponent) {
-            String menuCode;
-            RADMenuComponent menuComp = (RADMenuComponent) comp;
-            Class contClass = container.getBeanClass();
+        else if (comp instanceof RADMenuItemComponent) {
+            RADMenuItemComponent menuComp = (RADMenuItemComponent) comp;
+            if (parent instanceof RADVisualContainer) { // menu bar to visual container
+                String menuCode;
+                Class contClass = parent.getBeanClass();
 
-            if (menuComp.getMenuItemType() == RADMenuItemComponent.T_JMENUBAR
-                    && javax.swing.RootPaneContainer.class.isAssignableFrom(contClass))
-                menuCode = "setJMenuBar"; // NOI18N
-            else if (menuComp.getMenuItemType() == RADMenuItemComponent.T_MENUBAR
-                     && java.awt.Frame.class.isAssignableFrom(contClass))
-                menuCode = "setMenuBar"; // NOI18N
-            else
-                menuCode = null;
+                if (menuComp.getMenuItemType() == RADMenuItemComponent.T_JMENUBAR
+                        && javax.swing.RootPaneContainer.class.isAssignableFrom(contClass))
+                    menuCode = "setJMenuBar"; // NOI18N
+                else if (menuComp.getMenuItemType() == RADMenuItemComponent.T_MENUBAR
+                         && java.awt.Frame.class.isAssignableFrom(contClass))
+                    menuCode = "setMenuBar"; // NOI18N
+                else
+                    menuCode = null;
 
-            if (menuCode != null) {
-                initCodeWriter.write(getComponentInvokeString(container, true));
-                initCodeWriter.write(menuCode);
-                initCodeWriter.write("("); // NOI18N
-                initCodeWriter.write(getComponentParameterString(menuComp, true));
-                initCodeWriter.write(");\n"); // NOI18N
+                if (menuCode != null) {
+                    if (codeData == null)
+                        generateEmptyLineIfNeeded(writer);
+                    writer.write(getComponentInvokeString(parent, true));
+                    writer.write(menuCode);
+                    writer.write("("); // NOI18N
+                    writer.write(getComponentParameterString(menuComp, true));
+                    writer.write(");\n"); // NOI18N
+                }
+            }
+            else { // menu component to another component
+                assert parent instanceof RADMenuComponent;
+                if (codeData == null)
+                    generateEmptyLineIfNeeded(writer);
+                if (menuComp.getMenuItemType() == RADMenuItemComponent.T_SEPARATOR) {
+                    // treat AWT Separator specially - it is not a regular component
+                    writer.write(getComponentInvokeString(parent, true));
+                    writer.write("addSeparator();"); // NOI18N
+                }
+                else {
+                    writer.write(getComponentInvokeString(parent, true));
+                    writer.write("add("); // NOI18N
+                    writer.write(getComponentParameterString(comp, true));
+                    writer.write(");\n"); // NOI18N
+                }
+            }
+        }
+        // no other type of adding supported [assert false ?]
+
+        if (codeData != null) { // build code data for editing
+            String code = initCodeWriter.extractString();
+            if (code != null && !code.equals("")) // NOI18N
+                codeData.addGuardedBlock(indentCode(code));
+        }
+
+        generateComponentAddPost(comp, initCodeWriter, codeData);
+    }
+
+    private void generateComponentAddPre(RADComponent comp,
+                                         Writer writer,
+                                         CustomCodeData codeData)
+        throws IOException
+    {
+        String preCode = (String) comp.getAuxValue(AUX_ADDING_PRE);
+        if (codeData != null) { // build code data for editing
+            codeData.addEditableBlock(preCode,
+                                      (FormProperty) comp.getSyntheticProperty(PROP_ADDING_PRE),
+                                      0, // preference index
+                                      FormUtils.getBundleString("CustomCode-PreAdding"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PreAddCodeDesc")); // NOI18N
+        }
+        else if (preCode != null && !preCode.equals("")) { // NOI18N
+            generateEmptyLineIfNeeded(writer);
+            writer.write(preCode);
+            if (!preCode.endsWith("\n")) // NOI18N
+                writer.write("\n"); // NOI18N
+        }
+    }
+
+    private void generateComponentAddPost(RADComponent comp,
+                                          CodeWriter initCodeWriter,
+                                          CustomCodeData codeData)
+        throws IOException
+    {
+        // some known (i.e. hardcoded) properties need to be set after
+        // the component is added to the parent container
+        java.util.List<FormProperty> postProps;
+        if (parentDependentProperties != null
+            && (postProps = parentDependentProperties.get(comp)) != null)
+        {
+            for (FormProperty prop : postProps) {
+                generateProperty(prop, comp, null, initCodeWriter, codeData);
+            }
+        }
+
+        String postCode = (String) comp.getAuxValue(AUX_ADDING_POST);
+        if (codeData != null) { // build code data for editing
+            codeData.addEditableBlock(postCode,
+                                      (FormProperty) comp.getSyntheticProperty(PROP_ADDING_POST),
+                                      0, // preference index
+                                      FormUtils.getBundleString("CustomCode-PostAdding"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PostAddCodeDesc")); // NOI18N
+        }
+        else if (postCode != null && !postCode.equals("")) { // NOI18N
+            generateEmptyLineIfNeeded(initCodeWriter.getWriter());
+            initCodeWriter.getWriter().write(postCode);
+            if (!postCode.endsWith("\n")) // NOI18N
+                initCodeWriter.getWriter().write("\n"); // NOI18N
+        }
+    }
+
+    private void generateFreeDesignLayoutCode(RADVisualContainer cont, CodeWriter initCodeWriter)
+        throws IOException
+    {
+        LayoutComponent layoutCont = formModel.getLayoutModel().getLayoutComponent(cont.getId());
+        if (layoutCont == null)
+            return;
+
+        // optimization - only properties need to go through CodeWriter
+        Writer writer = initCodeWriter.getWriter();
+
+        RADVisualComponent[] comps = cont.getSubComponents();
+
+        // layout code and adding sub-components
+        generateEmptyLineIfNeeded(writer);
+        SwingLayoutCodeGenerator.ComponentInfo[] infos = new SwingLayoutCodeGenerator.ComponentInfo[comps.length];
+        for (int i=0; i<comps.length; i++) {
+            RADVisualComponent subComp = comps[i];
+            SwingLayoutCodeGenerator.ComponentInfo info = new SwingLayoutCodeGenerator.ComponentInfo();
+            info.id = subComp.getId();
+            info.variableName = getExpressionJavaString(subComp.getCodeExpression(), ""); // NOI18N
+            info.clazz = subComp.getBeanClass();
+            Node.Property minProp = subComp.getPropertyByName("minimumSize"); // NOI18N
+            Node.Property prefProp = subComp.getPropertyByName("preferredSize"); // NOI18N
+            Node.Property maxProp = subComp.getPropertyByName("maximumSize"); // NOI18N
+            info.sizingChanged = !(((minProp == null) || minProp.isDefaultValue())
+                && ((prefProp == null) || prefProp.isDefaultValue())
+                && ((maxProp == null) || maxProp.isDefaultValue()));
+            info.minSize = ((Component)subComp.getBeanInstance()).getMinimumSize();
+            infos[i] = info;
+        }
+        CodeExpression contExpr = LayoutSupportManager.containerDelegateCodeExpression(
+                                    cont, formModel.getCodeStructure());
+        String contExprStr = getExpressionJavaString(contExpr, ""); // NOI18N
+        CodeVariable contVar = cont.getCodeExpression().getVariable();
+        String contVarName = (contVar == null) ? null : contVar.getName();
+        SwingLayoutCodeGenerator swingGenerator = getSwingGenerator();
+        swingGenerator.generateContainerLayout(
+            writer,
+            layoutCont,
+            contExprStr,
+            contVarName,
+            infos,
+            formModel.getSettings().getLayoutCodeTarget() == LAYOUT_CODE_LIBRARY);
+    }
+
+    private SwingLayoutCodeGenerator getSwingGenerator() {
+        if (swingGenerator == null) {
+            swingGenerator = new SwingLayoutCodeGenerator(formModel.getLayoutModel());
+        }
+        return swingGenerator;
+    }
+
+    private void generatePrePopulationCode(RADComponent cont,
+                                           Writer writer,
+                                           CustomCodeData codeData)
+        throws IOException
+    {
+        String preCode = (String) cont.getAuxValue(AUX_LAYOUT_PRE);
+        if (codeData != null) { // build code data for editing
+            codeData.addEditableBlock(preCode,
+                                      (FormProperty) cont.getSyntheticProperty(PROP_LAYOUT_PRE),
+                                      2, // preference index
+                                      FormUtils.getBundleString("CustomCode-PrePopulation"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PrePopulationCodeDesc")); // NOI18N
+        }
+        else if (preCode != null && !preCode.equals("")) { // NOI18N
+            generateEmptyLineIfNeeded(writer);
+            writer.write(preCode);
+            if (!preCode.endsWith("\n")) // NOI18N
+                writer.write("\n"); // NOI18N
+        }
+    }
+
+    private void generatePostPopulationCode(RADComponent cont,
+                                            CodeWriter initCodeWriter,
+                                            CustomCodeData codeData)
+        throws IOException
+    {
+        // some known (i.e. hardcoded) container properties need to be set after
+        // all sub-components are added
+        java.util.List<FormProperty> postProps;
+        if (childrenDependentProperties != null
+            && (postProps = childrenDependentProperties.get(cont)) != null)
+        {
+            for (FormProperty prop : postProps) {
+                generateProperty(prop, cont, null, initCodeWriter, codeData);
+            }
+        }
+
+        // custom post-layout (post-population) code
+        String postCode = (String) cont.getAuxValue(AUX_LAYOUT_POST);
+        if (codeData != null) { // build code data for editing
+            codeData.addEditableBlock(postCode,
+                                      (FormProperty) cont.getSyntheticProperty(PROP_LAYOUT_POST),
+                                      4, // preference index
+                                      FormUtils.getBundleString("CustomCode-PostPopulation"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PostPopulationCodeDesc")); // NOI18N
+        }
+        else if (postCode != null && !postCode.equals("")) { // NOI18N
+            generateEmptyLineIfNeeded(initCodeWriter.getWriter());
+            initCodeWriter.getWriter().write(postCode);
+            if (!postCode.endsWith("\n")) // NOI18N
+                initCodeWriter.getWriter().write("\n"); // NOI18N
+        }
+    }
+
+    private void generateFormSizeCode(Writer writer) throws IOException {
+        if (formModel.getTopRADComponent() instanceof RADVisualFormContainer) {
+            RADVisualFormContainer visualForm =
+                (RADVisualFormContainer) formModel.getTopRADComponent();
+
+            // generate size code according to form size policy
+            int formPolicy = visualForm.getFormSizePolicy();
+            boolean genSize = visualForm.getGenerateSize();
+            boolean genPosition = visualForm.getGeneratePosition();
+            boolean genCenter = visualForm.getGenerateCenter();
+            Dimension formSize = visualForm.getFormSize();
+            Point formPosition = visualForm.getFormPosition();
+
+            String sizeText = ""; // NOI18N
+
+            if (formPolicy == RADVisualFormContainer.GEN_PACK)
+                sizeText = "pack();\n"; // NOI18N
+            else if (formPolicy == RADVisualFormContainer.GEN_BOUNDS) {
+                if (genCenter) {
+                    StringBuffer sizeBuffer = new StringBuffer();
+                    if (genSize) {
+//                                sizeBuffer.append("pack();\n"); // NOI18N
+                        sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                        sizeBuffer.append("setBounds((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2, "+formSize.width + ", " + formSize.height + ");\n"); // NOI18N
+//                                sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
+//                                sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
+                    }
+                    else {
+                        sizeBuffer.append("pack();\n"); // NOI18N
+                        sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
+                        sizeBuffer.append("java.awt.Dimension dialogSize = getSize();\n"); // NOI18N
+                        sizeBuffer.append("setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);\n"); // NOI18N
+                    }
+                    sizeText = sizeBuffer.toString();
+                }
+                else if (genPosition && genSize) // both size and position
+                    sizeText = "setBounds("+formPosition.x + ", " // NOI18N
+                               + formPosition.y +", " // NOI18N
+                               + formSize.width + ", " // NOI18N
+                               + formSize.height + ");\n"; // NOI18N
+                else if (genPosition) // position only
+                    sizeText = "setLocation(new java.awt.Point(" // NOI18N
+                               + formPosition.x + ", " // NOI18N
+                               + formPosition.y + "));\n"; // NOI18N
+                else if (genSize) // size only
+                    sizeText = "setSize(new java.awt.Dimension(" // NOI18N
+                               + formSize.width + ", " // NOI18N
+                               + formSize.height + "));\n"; // NOI18N
+            }
+
+            if (!sizeText.equals("")) { // NOI18N
+                emptyLineRequest++;
+                generateEmptyLineIfNeeded(writer);
+                writer.write(sizeText);
             }
         }
     }
 
-    private void generateMenuAddCode(RADComponent comp,
-                                     RADMenuComponent container,
-                                     CodeWriter initCodeWriter)
+    private boolean generateProperty(FormProperty prop,
+                                     RADComponent comp,
+                                     String setterVariable,
+                                     CodeWriter initCodeWriter,
+                                     CustomCodeData codeData)
         throws IOException
     {
-        if (comp instanceof RADMenuItemComponent
-            && ((RADMenuItemComponent)comp).getMenuItemType()
-                             == RADMenuItemComponent.T_SEPARATOR)
-        {   // treat AWT Separator specially - it is not a regular component
-            initCodeWriter.write(getComponentInvokeString(container, true));
-            initCodeWriter.write("addSeparator();"); // NOI18N
+        String preCode = prop.getPreCode();
+        String postCode = prop.getPostCode();
+        boolean valueSet = prop.isChanged();
+
+        if ((preCode == null || preCode.equals("")) // NOI18N
+            && (postCode == null || postCode.equals("")) // NOI18N
+            && !valueSet)
+            return false; // nothing set
+
+        if (codeData == null)
+            generateEmptyLineIfNeeded(initCodeWriter.getWriter());
+
+        // 1. pre-initialization code
+        if (codeData != null) { // build code data for editing
+            String name;
+            if (prop.getWriteMethod() != null)
+                name = prop.getWriteMethod().getName();
+            else {
+                name = prop.getName();
+                if (name.indexOf('.') >= 0)
+                    name = name.substring(name.lastIndexOf('.')+1);
+            }
+            codeData.addEditableBlock(
+                    preCode, prop, 0, // preference index
+                    FormUtils.getFormattedBundleString("CustomCode-PreProperty_Format", // NOI18N
+                                                       new Object[] { name }),
+                    FormUtils.getBundleString("CustomCode-PreProperty_Hint"), // NOI18N
+                    true, false);
         }
-        else {
-            initCodeWriter.write(getComponentInvokeString(container, true));
-            initCodeWriter.write("add("); // NOI18N
-            initCodeWriter.write(getComponentParameterString(comp, true));
-            initCodeWriter.write(");\n"); // NOI18N
+        else if (preCode != null && !preCode.equals("")) { // NOI18N
+            initCodeWriter.getWriter().write(preCode);
+            if (!preCode.endsWith("\n")) // NOI18N
+                initCodeWriter.getWriter().write("\n"); // NOI18N
         }
+
+        // 2. property setter code
+        if (valueSet) {
+	    if (setterVariable == null)
+		setterVariable = getComponentInvokeString(comp, true);
+
+            generatePropertySetter(prop, comp, setterVariable, initCodeWriter, codeData);
+
+            if (codeData != null) { // build code data for editing
+                String customCode = indentCode(initCodeWriter.extractString());
+                String defaultCode;
+                boolean codeCustomized = isPropertyWithCustomCode(prop);
+                if (codeCustomized)
+                    defaultCode = "// " + FormUtils.getBundleString("CustomCode-SubstNoValue"); // NOI18N
+                else {
+                    generatePropertySetter(prop, comp, setterVariable, initCodeWriter, null);
+                    defaultCode = indentCode(initCodeWriter.extractString());
+                }
+                codeData.addGuardedBlock(defaultCode, customCode, CUSTOM_CODE_MARK, codeCustomized,
+                                         prop,
+                                         FormUtils.getBundleString("CustomCode-Property"), // NOI18N
+                                         FormUtils.getBundleString("CustomCode-Property_Hint")); // NOI18N
+            }
+        }
+
+        // 3. post-initialization code
+        if (codeData != null) { // build code data for editing
+            String name;
+            if (prop.getWriteMethod() != null)
+                name = prop.getWriteMethod().getName();
+            else {
+                name = prop.getName();
+                if (name.indexOf('.') >= 0)
+                    name = name.substring(name.lastIndexOf('.')+1);
+            }
+            codeData.addEditableBlock(
+                    postCode, prop, 0, // preference index
+                    FormUtils.getFormattedBundleString("CustomCode-PostProperty_Format", // NOI18N
+                                                       new Object[] { name }),
+                    FormUtils.getBundleString("CustomCode-PostProperty_Hint"), // NOI18N
+                    false, true);
+        }
+        else if (postCode != null && !postCode.equals("")) { // NOI18N
+            initCodeWriter.getWriter().write(postCode);
+            if (!postCode.endsWith("\n")) // NOI18N
+                initCodeWriter.getWriter().write("\n"); // NOI18N
+        }
+
+        return true;
+    }
+
+    static boolean isPropertyWithCustomCode(Node.Property prop) {
+        try {
+            Object value = prop.getValue();
+            return value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue
+                   && ((RADConnectionPropertyEditor.RADConnectionDesignValue)value).getType()
+                        == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_CODE;
+        }
+        catch (Exception ex) {} // should not happen
+        return false;
     }
 
     private void generatePropertySetter(FormProperty prop,
                                         RADComponent comp,
-                                        CodeWriter initCodeWriter)
-	throws IOException
-    {
-	generatePropertySetter(prop, comp, null, initCodeWriter);
-    }		    
-    
-    private void generatePropertySetter(FormProperty prop,
-                                        RADComponent comp,
-					String setterVariable,
-                                        CodeWriter initCodeWriter)
+                                        String setterVariable,
+                                        CodeWriter initCodeWriter,
+                                        CustomCodeData codeData)
         throws IOException
     {
-        // 1. pre-initialization code
-        String preCode = prop.getPreCode();
-        if (preCode != null) {
-            initCodeWriter.write(preCode);
-            if (!preCode.endsWith("\n")) // NOI18N
-                initCodeWriter.write("\n"); // NOI18N
-        }        
-        
-        // 2. property setter code
-        if (prop.isChanged()) {
+        Object value = null;
+        try {
+            value = prop.getValue();
+        }
+        catch (Exception ex) { // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return;
+        }
+
+        if( prop.getCurrentEditor() instanceof BeanPropertyEditor && value != null) {
+            generatePropertyBeanSetterCode(prop, value, setterVariable, initCodeWriter, codeData);
+        }
+        else {
+            String propValueCode = prop.getJavaInitializationString();
+            if (codeData != null) // building code data for editing
+                propValueCode = CUSTOM_CODE_MARK + propValueCode + CUSTOM_CODE_MARK;
             String javaStr = null;
-	    //Object value = null;	    
-	    
-	    if(setterVariable == null) {
-		setterVariable = getComponentInvokeString(comp, true);
-	    }
-	
-	    Object value = null;
-	    try {
-		value = prop.getValue();    		    
-	    } catch (IllegalAccessException ex) {
-		ErrorManager.getDefault().notify(ex); // should not happen
-		return;	    
-	    } catch (InvocationTargetException ex) {    	    
-		ErrorManager.getDefault().notify(ex); // should not happen
-		return;                                      	
-	    }
-	    
-	    if( prop.getCurrentEditor() instanceof BeanPropertyEditor && value != null) {		    		    		   		    						
-		generatePropertyBeanSetterCode(prop, value, setterVariable, initCodeWriter);		
-	    } else if ((javaStr = prop.getWholeSetterCode()) != null) {
+
+            if ((javaStr = prop.getWholeSetterCode(propValueCode)) != null) { // button group property
                 initCodeWriter.write(javaStr);
                 if (!javaStr.endsWith("\n")) // NOI18N
                     initCodeWriter.write("\n"); // NOI18N
             }
             // Mnemonics support - start -
-            else if (comp != null 
-		     && "text".equals(prop.getName()) // NOI18N
+            else if (comp != null
+                     && "text".equals(prop.getName()) // NOI18N
                      && canUseMnemonics(comp) && isUsingMnemonics(comp))
             {
-                if ((javaStr = prop.getJavaInitializationString()) != null) {
+                if (propValueCode != null) {
                     initCodeWriter.write("org.openide.awt.Mnemonics.setLocalizedText(" // NOI18N
-                        + comp.getName() + ", " + javaStr + ");\n"); // NOI18N
+                        + comp.getName() + ", " + propValueCode + ");\n"); // NOI18N
                 }
             }
-            // Mnemonics support - end -	     
-	    else if ((javaStr = prop.getPartialSetterCode()) != null) {	    	    			    			    						
-		generateSimpleSetterCode(prop, 
-					  javaStr, 
-					  setterVariable, 
-					  initCodeWriter);
-
-	    } 
-        }
-
-        // 3. post-initialization code
-        String postCode = prop.getPostCode();
-        if (postCode != null) {
-            initCodeWriter.write(postCode);
-            if (!postCode.endsWith("\n")) // NOI18N
-                initCodeWriter.write("\n"); // NOI18N
+            // Mnemonics support - end -
+            else if ((javaStr = prop.getPartialSetterCode(propValueCode)) != null) {
+                // this is a normal property
+                generateSimpleSetterCode(prop, javaStr, setterVariable, initCodeWriter);
+            }
         }
     }
 
     private void generatePropertyBeanSetterCode(FormProperty prop, 	
 						Object value,
 						String setterVariable, 						
-						CodeWriter initCodeWriter)
+						CodeWriter initCodeWriter,
+                                                CustomCodeData codeData)
 	throws IOException
     {
 	
@@ -1587,8 +1858,8 @@ class JavaCodeGenerator extends CodeGenerator {
 	prop.getCurrentEditor().setValue(value);
 	BeanPropertyEditor beanPropertyEditor = (BeanPropertyEditor) prop.getCurrentEditor();	    		    
 	properties = (FormProperty[]) beanPropertyEditor.getProperties();	    
-	if ((properties == null) || (properties.length == 0)) return;
-        
+        if ((properties == null) || (properties.length == 0)) return;
+
 	CreationDescriptor.Creator creator = getPropertyCreator(propertyType, properties);
 	java.util.List creatorProperties = getCreatorProperties(creator, properties);
 															
@@ -1606,19 +1877,20 @@ class JavaCodeGenerator extends CodeGenerator {
 	String propertyInitializationString = 
 		creator.getJavaCreationCode(
 		    (FormProperty[])creatorProperties.toArray(new FormProperty[creatorProperties.size()]), prop.getValueType());
-	
-	String javaStr = "";  // NOI18N
+        if (codeData != null)
+            propertyInitializationString = CUSTOM_CODE_MARK + propertyInitializationString + CUSTOM_CODE_MARK;
+
 	if(remainingProperties.size() == 0) {		    		    
 	    generateSimpleSetterCode(prop, 
-				      prop.getWriteMethod().getName() + "(" + propertyInitializationString + ")", // NOI18N 
-				      setterVariable, 
-				      initCodeWriter);
+				     prop.getPartialSetterCode(propertyInitializationString),
+				     setterVariable, 
+				     initCodeWriter);
 	} else if(remainingProperties.size() > 0) {
 	    generateWholePropertyInitialization(prop, propertyType, setterVariable, 
 				 propertyInitializationString, remainingProperties, initCodeWriter);	    	    
 	}
     }
-            
+
     private java.util.List getCreatorProperties(CreationDescriptor.Creator creator, FormProperty[] properties) {
 	String[] propNames = creator.getPropertyNames();	
 	java.util.List creatorProperties; 
@@ -1660,19 +1932,19 @@ class JavaCodeGenerator extends CodeGenerator {
 	initCodeWriter.write(";\n"); // NOI18N		    		
 
 	for (Iterator it = remainingProperties.iterator(); it.hasNext();) {
-	    generatePropertySetter((FormProperty) it.next(), null, variableName + ".", initCodeWriter); // NOI18N 	
+	    generateProperty((FormProperty) it.next(), null, variableName + ".", initCodeWriter, null); // NOI18N 	
 	}
 
-	generateSimpleSetterCode(prop, 
-				  prop.getWriteMethod().getName() + "(" + variableName + ")", // NOI18N 
-				  setterVariable, 
-				  initCodeWriter);	    
+	generateSimpleSetterCode(prop,
+				 prop.getWriteMethod().getName() + "(" + variableName + ")", // NOI18N
+				 setterVariable,
+				 initCodeWriter);
     }
     
-    private void generateSimpleSetterCode(FormProperty prop, 
-					   String partialSetterCode, 
-	                                   String setterVariable, 
-					   CodeWriter initCodeWriter)
+    private void generateSimpleSetterCode(FormProperty prop,
+				          String partialSetterCode,
+	                                  String setterVariable,
+				          CodeWriter initCodeWriter)
 	throws IOException
     {
 
@@ -1694,13 +1966,16 @@ class JavaCodeGenerator extends CodeGenerator {
 	if (exceptions != null)
 	    generateCatchCode(exceptions, initCodeWriter.getWriter());
     }    
-    
+
     // generates code for handling events of one component
     // (all component.addXXXListener() calls)
     private void generateComponentEvents(RADComponent component,
-                                         Writer initCodeWriter)
+                                         CodeWriter initCodeWriter,
+                                         CustomCodeData codeData)
         throws IOException
     {
+        Writer writer = initCodeWriter.getWriter();
+
         EventSetDescriptor lastEventSetDesc = null;
         java.util.List listenerEvents = null;
 
@@ -1721,9 +1996,11 @@ class JavaCodeGenerator extends CodeGenerator {
             if (eventSetDesc != lastEventSetDesc) {
                 if (lastEventSetDesc != null) {
                     // new listener encountered, generate the previous one
-                    generateListenerAddCode(component, lastEventSetDesc, listenerEvents, mode, initCodeWriter);
+                    if (codeData == null)
+                        generateEmptyLineIfNeeded(writer);
+                    generateListenerAddCode(component, lastEventSetDesc, listenerEvents, mode, writer);
                     if (mixedMode)
-                        generateListenerAddCode(component, lastEventSetDesc, listenerEvents, defaultMode, initCodeWriter);
+                        generateListenerAddCode(component, lastEventSetDesc, listenerEvents, defaultMode, writer);
                     if (listenerEvents != null)
                         listenerEvents.clear();
                 }
@@ -1748,10 +2025,29 @@ class JavaCodeGenerator extends CodeGenerator {
 
         if (lastEventSetDesc != null) {
             // generate the last listener
-            generateListenerAddCode(component, lastEventSetDesc, listenerEvents, mode, initCodeWriter);
+            if (codeData == null)
+                generateEmptyLineIfNeeded(writer);
+            generateListenerAddCode(component, lastEventSetDesc, listenerEvents, mode, writer);
             if (mixedMode)
-                generateListenerAddCode(component, lastEventSetDesc, listenerEvents, defaultMode, initCodeWriter);
-            initCodeWriter.write("\n"); // NOI18N
+                generateListenerAddCode(component, lastEventSetDesc, listenerEvents, defaultMode, writer);
+        }
+
+        String postCode = (String) component.getAuxValue(AUX_LISTENERS_POST);
+        if (codeData != null) { // build code data for editing
+            String code = initCodeWriter.extractString();
+            if (code != null && !code.equals("")) // NOI18N
+                codeData.addGuardedBlock(indentCode(code));
+            codeData.addEditableBlock(postCode,
+                                      (FormProperty) component.getSyntheticProperty(PROP_LISTENERS_POST),
+                                      0, // preference index
+                                      FormUtils.getBundleString("CustomCode-PostListeners"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PostListenersCodeDesc")); // NOI18N
+        }
+        else if (postCode != null && !postCode.equals("")) { // NOI18N
+            generateEmptyLineIfNeeded(writer);
+            writer.write(postCode);
+            if (!postCode.endsWith("\n")) // NOI18N
+                writer.write("\n"); // NOI18N
         }
     }
 
@@ -1846,7 +2142,7 @@ class JavaCodeGenerator extends CodeGenerator {
         return metacomp;
     }
 
-    private void addVariables(CodeWriter variablesWriter)
+    private void addFieldVariables(CodeWriter variablesWriter)
         throws IOException
     {
         Iterator it = getSortedVariables(CodeVariable.FIELD,
@@ -1855,64 +2151,112 @@ class JavaCodeGenerator extends CodeGenerator {
         while (it.hasNext()) {
             CodeVariable var = (CodeVariable) it.next();
             RADComponent metacomp = codeVariableToRADComponent(var);
-            if (metacomp == null) continue;
-
-            generateDeclarationPre(variablesWriter, metacomp);
-
-            if ((var.getType() & CodeVariable.FINAL) == CodeVariable.FINAL) {
-                // final field variable - add also creation assignment
-                generateComponentCreate(metacomp, variablesWriter, false);
-            }
-            else { // simple field variable declaration
-                variablesWriter.write(
-                    var.getDeclaration().getJavaCodeString(null, null));
-                variablesWriter.write("\n"); // NOI18N
-            }
-
-            generateDeclarationPost(variablesWriter, metacomp);
+            if (metacomp != null)
+                generateComponentFieldVariable(metacomp, variablesWriter, null);
+            // there should not be other than component variables as fields
         }
     }
 
-    private boolean addLocalVariables(CodeWriter initCodeWriter)
+    private void addLocalVariables(Writer writer)
         throws IOException
     {
         Iterator it = getSortedVariables(
             CodeVariable.LOCAL | CodeVariable.EXPLICIT_DECLARATION,
             CodeVariable.SCOPE_MASK | CodeVariable.DECLARATION_MASK);
 
-        boolean anyVariable = false;
+        if (it.hasNext())
+            generateEmptyLineIfNeeded(writer);
+
         while (it.hasNext()) {
             CodeVariable var = (CodeVariable) it.next();
-            RADComponent metacomp = codeVariableToRADComponent(var);
-            if (metacomp != null) {
-                generateDeclarationPre(initCodeWriter, metacomp);
+            if (codeVariableToRADComponent(var) == null) {
+                // other than component variable (e.g. GridBagConstraints)
+                writer.write(var.getDeclaration().getJavaCodeString(null, null));
+                writer.write("\n"); // NOI18N
             }
-            initCodeWriter.write(
-                var.getDeclaration().getJavaCodeString(null, null));
-            initCodeWriter.write("\n"); // NOI18N
-            if (metacomp != null) {
-                generateDeclarationPost(initCodeWriter, metacomp);
-            }
-            anyVariable = true;
         }
-
-        return anyVariable;
     }
 
-    private void generateDeclarationPre(CodeWriter writer, RADComponent metacomp) throws IOException {
-        String preCode = (String)metacomp.getAuxValue(AUX_DECLARATION_PRE);
-        if (preCode != null && !preCode.equals("")) { // NOI18N
+    private void generateComponentFieldVariable(RADComponent metacomp,
+                                           CodeWriter codeWriter,
+                                           CustomCodeData codeData)
+        throws IOException
+    {
+        // optimization - only properties need to go through CodeWriter
+        Writer writer = codeWriter.getWriter();
+
+        generateDeclarationPre(metacomp, writer, codeData);
+
+        CodeVariable var = metacomp.getCodeExpression().getVariable();
+        if (isFinalFieldVariable(var.getType())) { // add also creation assignment
+            generateComponentCreate(metacomp, codeWriter, false, codeData);
+        }
+        else { // simple declaration
+            writer.write(var.getDeclaration().getJavaCodeString(null, null));
+            writer.write("\n"); // NOI18N
+
+            if (codeData != null) { // build code data for editing
+                String code = indentCode(codeWriter.extractString());
+                codeData.addGuardedBlock(code);
+            }
+        }
+
+        generateDeclarationPost(metacomp, writer, codeData);
+    }
+
+    private static boolean isFinalFieldVariable(int varType) {
+        return (varType & (CodeVariable.FINAL | CodeVariable.SCOPE_MASK))
+                == (CodeVariable.FINAL | CodeVariable.FIELD);
+    }
+
+    private static void generateDeclarationPre(RADComponent metacomp,
+                                               Writer writer,
+                                               CustomCodeData codeData)
+        throws IOException
+    {
+        String preCode = (String) metacomp.getAuxValue(AUX_DECLARATION_PRE);
+        if (codeData != null) { // build code data for editing
+            codeData.addEditableBlock(preCode,
+                                      (FormProperty) metacomp.getSyntheticProperty(PROP_DECLARATION_PRE),
+                                      0, // preference index
+                                      FormUtils.getBundleString("CustomCode-PreDeclaration"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PreDeclarationDesc")); // NOI18N
+        }
+        else if (preCode != null && !preCode.equals("")) { // NOI18N
             writer.write(preCode);
-            writer.write("\n"); // NOI18N
+            if (!preCode.endsWith("\n")) // NOI18N
+                writer.write("\n"); // NOI18N
         }
     }
 
-    private void generateDeclarationPost(CodeWriter writer, RADComponent metacomp) throws IOException {
-        String postCode = (String)metacomp.getAuxValue(AUX_DECLARATION_POST);
-        if (postCode != null && !postCode.equals("")) { // NOI18N
+    private static void generateDeclarationPost(RADComponent metacomp,
+                                                Writer writer,
+                                                CustomCodeData codeData)
+        throws IOException
+    {
+        String postCode = (String) metacomp.getAuxValue(AUX_DECLARATION_POST);
+        if (codeData != null) { // build code data for editing
+            codeData.addEditableBlock(postCode,
+                                      (FormProperty) metacomp.getSyntheticProperty(PROP_DECLARATION_POST),
+                                      0, // preference index
+                                      FormUtils.getBundleString("CustomCode-PostDeclaration"), // NOI18N
+                                      FormUtils.getBundleString("MSG_JC_PostDeclarationDesc")); // NOI18N
+        }
+        else if (postCode != null && !postCode.equals("")) { // NOI18N
             writer.write(postCode);
+            if (!postCode.endsWith("\n")) // NOI18N
+                writer.write("\n"); // NOI18N
+        }
+    }
+
+    /** Adds new empty line if currentAreaNumber has raised from last time.
+     * Should never be called when building "code data" for editing.
+     */
+    private void generateEmptyLineIfNeeded(Writer writer) throws IOException {
+        if (emptyLineCounter != emptyLineRequest) {
             writer.write("\n"); // NOI18N
         }
+        emptyLineCounter = emptyLineRequest;
     }
 
     private Iterator getSortedVariables(int type, int typeMask) {
@@ -2035,8 +2379,8 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write(") {\n"); // NOI18N
             initCodeWriter.write(varName);
             initCodeWriter.write(".printStackTrace();\n"); // NOI18N
+            // [shouldn't return be generated here?]
             initCodeWriter.write("}"); // NOI18N
-                        
         }
         initCodeWriter.write("\n"); // NOI18N
     }
@@ -2044,6 +2388,8 @@ class JavaCodeGenerator extends CodeGenerator {
     private void addDispatchListenerDeclaration(Writer codeWriter)
         throws IOException
     {
+        generateEmptyLineIfNeeded(codeWriter);
+
         listenerVariableName = null;
         codeWriter.write(getListenerClassName());
         codeWriter.write(" "); // NOI18N
@@ -2151,7 +2497,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         if (innerclass)
-            codeWriter.write("}"); // last char NOI18N
+            codeWriter.write("}"); // last char // NOI18N
     }
 
     // modifies the form class declaration to implement required listeners
@@ -2384,7 +2730,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.write(bodyText);
             codeWriter.flush();
             i2 = buffer.getBuffer().length();
-            codeWriter.write("}\n"); //NOI18N // footer with new line
+            codeWriter.write("}\n"); // footer with new line // NOI18N
             codeWriter.flush();
 
             sec.setHeader(buffer.getBuffer().substring(0,i1));
@@ -2624,11 +2970,54 @@ class JavaCodeGenerator extends CodeGenerator {
             regenerateVariables();
             regenerateInitComponents();
             ensureMainClassImplementsListeners();            
-            FormModel.t("code regenerated"); //NOI18N	    
+            FormModel.t("code regenerated"); // NOI18N	    
         }
     }
-    
-    private String indentCode(String code, IndentEngine refEngine) {
+
+    static CustomCodeData getCodeData(RADComponent metacomp) {
+        CodeGenerator gen = FormEditor.getCodeGenerator(metacomp.getFormModel());
+        return gen instanceof JavaCodeGenerator ?
+            ((JavaCodeGenerator)gen).getCodeData0(metacomp) : null;
+    }
+
+    private CustomCodeData getCodeData0(RADComponent metacomp) {
+        CustomCodeData codeData = new CustomCodeData();
+        codeData.setDefaultCategory(CustomCodeData.CodeCategory.CREATE_AND_INIT);
+        CodeWriter codeWriter = new CodeWriter(new StringWriter(1024), true);
+        cleanup();
+
+        CodeVariable var = metacomp.getCodeExpression().getVariable();
+
+        try { // creation & init code
+            if (var != null && !isFinalFieldVariable(var.getType()))
+                generateComponentCreate(metacomp, codeWriter, true, codeData);
+            // with final field variable the creation statement is part of declaration
+
+            addInitCode(metacomp, codeWriter, codeData);
+
+            if (var != null) { // add declaration
+                boolean fieldVariable = (var.getType() & CodeVariable.SCOPE_MASK) == CodeVariable.FIELD;
+                if (fieldVariable) {
+                    codeData.setDefaultCategory(CustomCodeData.CodeCategory.DECLARATION);
+                    generateComponentFieldVariable(metacomp, codeWriter, codeData);
+                }
+                codeData.setDeclarationData(!fieldVariable, var.getType() & CodeVariable.ALL_MODIF_MASK);
+            }
+        }
+        catch (IOException ex) { // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+
+        cleanup();
+
+        return codeData;
+    }
+
+    private String indentCode(String code) {
+        return indentCode(code, 0, null);
+    }
+
+    private String indentCode(String code, int minIndentLevel, IndentEngine refEngine) {
         int spacesPerTab = 4;
         boolean braceOnNewLine = false;
         
@@ -2653,7 +3042,7 @@ class JavaCodeGenerator extends CodeGenerator {
         for (int i=0; i < spacesPerTab; i++)
             tab.append(" "); // NOI18N
         
-        return doIndentation(code, 1, tab.toString(), braceOnNewLine);
+        return doIndentation(code, minIndentLevel, tab.toString(), braceOnNewLine);
     }
     
     // simple indentation method
@@ -2920,6 +3309,19 @@ class JavaCodeGenerator extends CodeGenerator {
         Writer getWriter() {
             return writer;
         }
+
+        void clearBuffer() {
+            if (writer instanceof StringWriter) {
+                StringBuffer buf = ((StringWriter)writer).getBuffer();
+                buf.delete(0, buf.length());
+            }
+        }
+
+        public String extractString() {
+            String str = writer.toString();
+            clearBuffer();
+            return str;
+        }
     }
 
     //
@@ -3140,20 +3542,75 @@ class JavaCodeGenerator extends CodeGenerator {
     // }}}
 
     //
-    // {{{ CodePropertySupportRW
+    // {{{ CodeProperty
     //
 
-    abstract class CodePropertySupportRW extends PropertySupport.ReadWrite
-    {
-        CodePropertySupportRW(String name, Class type,
-                              String displayName, String shortDescription) {
-            super(name, type, displayName, shortDescription);
+    private class CodeProperty extends FormProperty {
+        // using FormProperty to be able to disable change firing for temporary
+        // changes in CodeCustomizer
+        private String auxKey;
+        private RADComponent component;
+        
+        CodeProperty(RADComponent metacomp,
+                     String propertyName, String auxKey ,
+                     String displayName, String shortDescription)
+        {
+            super(propertyName, String.class, displayName, null);
+            setShortDescription(shortDescription); // FormProperty adds the type to the tooltip
+            this.auxKey = auxKey;
+            component = metacomp;
+            try {
+                reinstateProperty();
+            }
+            catch (Exception ex) { // should not happen
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
         }
 
-        public PropertyEditor getPropertyEditor() {
+        public void setTargetValue(Object value) {
+            if (value != null && !(value instanceof String))
+                throw new IllegalArgumentException();
+
+            Object oldValue = getTargetValue();
+
+            if (value != null && !value.equals("")) // NOI18N
+                component.setAuxValue(auxKey, value);
+            else if (component.getAuxValue(auxKey) != null) {
+                component.getAuxValues().remove(auxKey);
+            }
+        }
+
+        public Object getTargetValue() {
+            Object value = component.getAuxValue(auxKey);
+            if (value == null)
+                value = ""; // NOI18N
+            return value;
+        }
+
+        public boolean supportsDefaultValue () {
+            return true;
+        }
+
+        public Object getDefaultValue() {
+            return ""; // NOI18N
+        }
+
+        protected void propertyValueChanged(Object old, Object current) {
+            super.propertyValueChanged(old, current);
+            if (isChangeFiring()) {
+                formModel.fireSyntheticPropertyChanged(
+                    component, getName(), old, current);
+                if (component.getNodeReference() != null) {
+                    component.getNodeReference().firePropertyChangeHelper(
+                        getName(), null, null);
+                }
+            }
+        }
+
+        public PropertyEditor getExpliciteEditor() {
             return new PropertyEditorSupport() {
                 public Component getCustomEditor() {
-                    return new CustomCodeEditor(CodePropertySupportRW.this,
+                    return new CustomCodeEditor(CodeProperty.this,
                                                 FormEditor.createCodeEditorPane(formModel));
                 }
 
@@ -3190,15 +3647,14 @@ class JavaCodeGenerator extends CodeGenerator {
             int varType;
             int variablesModifier = newValue.intValue();
             if (formModel.getSettings().getVariablesLocal()) {
-                varType = CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL) | CodeVariable.EXPLICIT_DECLARATION;
+                varType = CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL); // | CodeVariable.EXPLICIT_DECLARATION;
             } else varType = CodeVariable.FIELD | variablesModifier;
 
             formModel.getCodeStructure().setDefaultVariableType(varType);
             formModel.getSettings().setVariablesModifier(variablesModifier);
             formModel.fireSyntheticPropertyChanged(null, PROP_VARIABLE_MODIFIER, oldValue, newValue);
             FormEditor formEditor = FormEditor.getFormEditor(formModel);
-            FormRootNode formRootNode = (FormRootNode)formEditor.getFormRootNode();
-            formRootNode.firePropertyChangeHelper(
+            formEditor.getFormRootNode().firePropertyChangeHelper(
                 PROP_VARIABLE_MODIFIER, oldValue, newValue);
         }
         
@@ -3260,7 +3716,7 @@ class JavaCodeGenerator extends CodeGenerator {
             Integer oldModif = new Integer(formModel.getSettings().getVariablesModifier());
             Integer newModif = new Integer(variablesModifier);
             int varType = variablesLocal ?
-                CodeVariable.LOCAL | variablesModifier | CodeVariable.EXPLICIT_DECLARATION
+                CodeVariable.LOCAL | variablesModifier // | CodeVariable.EXPLICIT_DECLARATION
                 : CodeVariable.FIELD | variablesModifier;
 
             formModel.getCodeStructure().setDefaultVariableType(varType);
@@ -3269,7 +3725,7 @@ class JavaCodeGenerator extends CodeGenerator {
             formModel.fireSyntheticPropertyChanged(null, PROP_VARIABLE_LOCAL, oldValue, newValue);
             formModel.fireSyntheticPropertyChanged(null, PROP_VARIABLE_MODIFIER, oldModif, newModif);
             FormEditor formEditor = FormEditor.getFormEditor(formModel);
-            FormRootNode formRootNode = (FormRootNode)formEditor.getFormRootNode();
+            FormNode formRootNode = formEditor.getFormRootNode();
             formRootNode.firePropertyChangeHelper(
                 PROP_VARIABLE_LOCAL, oldValue, newValue);
             formRootNode.firePropertyChangeHelper(
@@ -3317,8 +3773,7 @@ class JavaCodeGenerator extends CodeGenerator {
             formModel.getSettings().setGenerateMnemonicsCode(newValue.booleanValue());
             formModel.fireSyntheticPropertyChanged(null, PROP_GENERATE_MNEMONICS, oldValue, newValue);
             FormEditor formEditor = FormEditor.getFormEditor(formModel);
-            FormRootNode formRootNode = (FormRootNode)formEditor.getFormRootNode();
-            formRootNode.firePropertyChangeHelper(
+            formEditor.getFormRootNode().firePropertyChangeHelper(
                 PROP_GENERATE_MNEMONICS, oldValue, newValue);
         }
         
@@ -3363,8 +3818,7 @@ class JavaCodeGenerator extends CodeGenerator {
             formModel.getSettings().setListenerGenerationStyle(newValue.intValue());
             formModel.fireSyntheticPropertyChanged(null, PROP_LISTENER_GENERATION_STYLE, oldValue, newValue);
             FormEditor formEditor = FormEditor.getFormEditor(formModel);
-            FormRootNode formRootNode = (FormRootNode)formEditor.getFormRootNode();
-            formRootNode.firePropertyChangeHelper(
+            formEditor.getFormRootNode().firePropertyChangeHelper(
                 PROP_LISTENER_GENERATION_STYLE, oldValue, newValue);
         }
         
@@ -3415,8 +3869,7 @@ class JavaCodeGenerator extends CodeGenerator {
             FormEditor formEditor = FormEditor.getFormEditor(formModel);
             formEditor.updateProjectForNaturalLayout();
             formModel.fireSyntheticPropertyChanged(null, FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, oldValue, newValue);
-            FormRootNode formRootNode = (FormRootNode) formEditor.getFormRootNode();
-            formRootNode.firePropertyChangeHelper(
+            formEditor.getFormRootNode().firePropertyChangeHelper(
                 FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, oldValue, newValue);
         }
 

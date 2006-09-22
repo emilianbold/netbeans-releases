@@ -665,13 +665,24 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                      || propertyType.isAssignableFrom(prop.getClass())) ?
                prop : null;
     }
-    
+
+    /**
+     * @return bean or event property
+     */
     public Node.Property getPropertyByName(String name) {
         return getPropertyByName(name, null, true);
     }
 
     public final RADProperty getBeanProperty(String name) {
         return (RADProperty) getPropertyByName(name, RADProperty.class, true);
+    }
+
+    final Node.Property getSyntheticProperty(String name) {
+        for (Node.Property prop : getSyntheticProperties()) {
+            if (prop.getName().equals(name))
+                return prop;
+        }
+        return null;
     }
 
     public RADProperty[] getFakeBeanProperties(String[] propNames, Class[] propertyTypes) {
@@ -691,6 +702,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         int validCount = 0;
         List newProps = null;
         Object[] propAccessClsf = null;
+        Object[] propParentChildDepClsf = null;
 
         int descIndex = 0;
         for (int i=0; i < propNames.length; i++) {
@@ -714,10 +726,12 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
                 int j = descIndex;
                 do {
                     if (descriptors[j].getName().equals(name)) {
-                        if (propAccessClsf == null)
+                        if (propAccessClsf == null) {
                             propAccessClsf = FormUtils.getPropertiesAccessClsf(beanClass);
+                            propParentChildDepClsf = FormUtils.getPropertiesParentChildDepsClsf(beanClass);
+                        }
 
-                            prop = createBeanProperty(descriptors[j], propAccessClsf);    
+                        prop = createBeanProperty(descriptors[j], propAccessClsf, propParentChildDepClsf);
 
                         if (!empty) {
                             if (newProps == null)
@@ -1041,6 +1055,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         Object[] propsCats = FormUtils.getPropertiesCategoryClsf(
                                  beanClass, getBeanInfo().getBeanDescriptor());
         Object[] propsAccess = FormUtils.getPropertiesAccessClsf(beanClass);
+        Object[] propParentChildDepClsf = FormUtils.getPropertiesParentChildDepsClsf(beanClass);
 
         PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
         for (int i = 0; i < props.length; i++) {
@@ -1069,7 +1084,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             
             FormProperty prop = (FormProperty) nameToProperty.get(pd.getName());
             if (prop == null)
-                prop = createBeanProperty(pd, propsAccess);
+                prop = createBeanProperty(pd, propsAccess, propParentChildDepClsf);
 
             if (prop != null) {
                 listToAdd.add(prop);
@@ -1176,7 +1191,8 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
     }
 
     protected RADProperty createBeanProperty(PropertyDescriptor desc,
-                                             Object[] propAccessClsf)
+                                             Object[] propAccessClsf,
+                                             Object[] propParentChildDepClsf)
     {
         if (desc.getPropertyType() == null)
             return null;
@@ -1196,6 +1212,11 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
 	int access = FormUtils.getPropertyAccess(desc, propAccessClsf);
 	if (access != 0)
 	    prop.setAccessType(access);
+
+        String parentChildDependency = FormUtils.getPropertyParentChildDependency(
+                                         desc, propParentChildDepClsf);
+        if (parentChildDependency != null)
+            prop.setValue(parentChildDependency, Boolean.TRUE);
 
 	setPropertyListener(prop);
 
@@ -1464,8 +1485,7 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             return new ButtonGroupPropertyEditor();
         }
 
-        String getWholeSetterCode() {
-            String groupName = getJavaInitializationString();
+        String getWholeSetterCode(String groupName) {
             return groupName != null ?
                 groupName + ".add(" + getRADComponent().getName() + ");" : // NOI18N
                 null;

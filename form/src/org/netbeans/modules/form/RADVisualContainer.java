@@ -94,6 +94,16 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 //        return layoutSupport.getLayoutDelegate() != null;
 //    }
 
+    public static boolean isFreeDesignContainer(RADComponent metacomp) {
+        return metacomp instanceof RADVisualContainer
+               && ((RADVisualContainer)metacomp).getLayoutSupport() == null;
+    }
+
+    public static boolean isInFreeDesign(RADComponent metacomp) {
+        return metacomp instanceof RADVisualComponent
+               && isFreeDesignContainer(metacomp.getParentComponent());
+    }
+
     void setOldLayoutSupport(boolean old) {
         if (old) {
             if (layoutSupport == null) {

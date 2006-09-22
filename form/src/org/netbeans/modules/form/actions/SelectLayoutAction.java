@@ -143,7 +143,7 @@ public class SelectLayoutAction extends CallableSystemAction {
                 popup.addSeparator();
 
                 RADVisualContainer container = getContainer(nodes[0]);                
-                boolean hasFreeDesignSupport = hasFreeDesignSupport(container);
+                boolean hasFreeDesignSupport = RADVisualContainer.isFreeDesignContainer(container);
                 if(hasFreeDesignSupport){
                     setBoldFontForMenuText(mi);                        
                 }
@@ -162,10 +162,6 @@ public class SelectLayoutAction extends CallableSystemAction {
             }
             return popup;
         }
-        
-        private boolean hasFreeDesignSupport(RADVisualContainer container){
-            return container != null && container.getLayoutSupport() == null;
-        }        
         
         private boolean isContainersLayout(RADVisualContainer container, PaletteItem layout){
             return container != null 

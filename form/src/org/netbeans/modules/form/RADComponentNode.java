@@ -217,6 +217,9 @@ public class RADComponentNode extends FormNode
                 if (component != topComp) {
                     actions.add(SystemAction.get(DeleteAction.class));
                 }
+
+                actions.add(null);
+                actions.add(SystemAction.get(CustomCodeAction.class));
             }
             actions.add(null);
 

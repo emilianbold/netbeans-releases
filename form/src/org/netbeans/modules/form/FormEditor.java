@@ -888,22 +888,12 @@ public class FormEditor {
 
     /** @return JEditorPane set up with the actuall forms java source*/
     public static JEditorPane createCodeEditorPane(FormModel formModel) {                        
-        FormCodeEditorPane codePane = new FormCodeEditorPane(formModel);
-        codePane.regenerateSource();   
+        JEditorPane codePane = new JEditorPane();
+        codePane.setContentType("text/x-java");  // NOI18N
+        codePane.getDocument().putProperty(Document.StreamDescriptionProperty, getFormDataObject(formModel));
+        JavaCodeGenerator codeGen = (JavaCodeGenerator) FormEditor.getCodeGenerator(formModel);
+        codeGen.regenerateCode();                                                    
         return codePane;
-    }
-    
-    private static class FormCodeEditorPane extends JEditorPane {
-        private final FormModel formModel;
-        private FormCodeEditorPane(FormModel formModel) {                        
-            this.formModel = formModel;
-            setContentType("text/x-java");  // NOI18N    
-            getDocument().putProperty(Document.StreamDescriptionProperty, getFormDataObject(formModel));    
-        }
-        void regenerateSource() {
-            JavaCodeGenerator codeGen = (JavaCodeGenerator) FormEditor.getCodeGenerator(formModel);
-            codeGen.regenerateCode();                                                    
-        }
     }
 
     public static synchronized AssistantModel getAssistantModel(FormModel formModel) {

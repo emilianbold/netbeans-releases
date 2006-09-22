@@ -763,7 +763,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                           (RADVisualFormContainer) topDesignComponent : null;
         if (formCont == null
             || formCont.hasExplicitSize()
-            || !isFreeDesignContainer())
+            || !RADVisualContainer.isFreeDesignContainer(topDesignComponent))
         {   // try to obtain stored designer size
             if (formCont != null)
                 size = formCont.getDesignerSize();
@@ -783,7 +783,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     private void checkDesignerSize() {
-        if ((formModel.isFreeDesignDefaultLayout() || isFreeDesignContainer())
+        if ((formModel.isFreeDesignDefaultLayout()
+                || RADVisualContainer.isFreeDesignContainer(topDesignComponent))
             && topDesignComponent instanceof RADVisualComponent
             && (!(topDesignComponent instanceof RADVisualFormContainer)
                 || !((RADVisualFormContainer)topDesignComponent).hasExplicitSize()))
@@ -828,11 +829,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 storeDesignerSize(designerSize);
             }
         }
-    }
-
-    private boolean isFreeDesignContainer() {
-        return topDesignComponent instanceof RADVisualContainer
-               && ((RADVisualContainer)topDesignComponent).getLayoutSupport() == null;
     }
 
     // ---------

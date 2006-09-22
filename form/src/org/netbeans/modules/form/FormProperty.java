@@ -18,9 +18,11 @@
  */
 
 package org.netbeans.modules.form;
+
 import java.beans.*;
 import java.lang.reflect.*;
 import org.openide.nodes.Node;
+
 /**
  * This class provides basic implementation of properties used in form module
  * which are generated in the java code. FormProperty can use multiple property
@@ -611,25 +613,22 @@ public abstract class FormProperty extends Node.Property {
      * on which the property is set, and without semicolon at the end).
      * This method is optional. Example: setText("Button 1")
      */
-    // [This method is to be removed in the future.]
-    String getPartialSetterCode() {
+    String getPartialSetterCode(String javaInitStr) {
+        if (javaInitStr == null)
+            return null;
+
         Method writeMethod = getWriteMethod();
         if (writeMethod == null)
             return null;
 
-        String str = getJavaInitializationString();
-        if (str == null)
-            return null;
-
-        return writeMethod.getName() + "(" + str + ")"; // NOI18N
+        return writeMethod.getName() + "(" + javaInitStr + ")"; // NOI18N
     }
 
     /** Gets the complete java code for setting the property, including the
      * semicolon at the end of the line. This method is optional.
      * Example: jButton1.setText("Button 1");
      */
-    // [This method is to be removed in the future.]
-    String getWholeSetterCode() {
+    String getWholeSetterCode(String javaInitStr) {
         return null;
     }
 
