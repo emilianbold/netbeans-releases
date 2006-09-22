@@ -44,8 +44,8 @@ public class AsynchStepTest extends NbTestCase {
         try {
             JPDASupport.removeAllBreakpoints ();
             LineBreakpoint lb = LineBreakpoint.create (
-                "file://"+sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java",
+                Utils.getURL(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java"),
                 30
             );
             dm.addBreakpoint (lb);
@@ -103,8 +103,8 @@ public class AsynchStepTest extends NbTestCase {
         try {
             JPDASupport.removeAllBreakpoints ();
             LineBreakpoint lb = LineBreakpoint.create (
-                "file://"+sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java",
+                Utils.getURL(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java"),
                 30
             );
             dm.addBreakpoint (lb);
@@ -175,8 +175,8 @@ public class AsynchStepTest extends NbTestCase {
         try {
             JPDASupport.removeAllBreakpoints ();
             LineBreakpoint lb = LineBreakpoint.create (
-                "file://"+sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java",
+                Utils.getURL(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/AsynchStepApp.java"),
                 30
             );
             dm.addBreakpoint (lb);

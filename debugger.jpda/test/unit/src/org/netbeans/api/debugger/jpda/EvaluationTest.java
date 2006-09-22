@@ -40,8 +40,8 @@ public class EvaluationTest extends NbTestCase {
         super.setUp ();
         JPDASupport.removeAllBreakpoints ();
         LineBreakpoint lb = LineBreakpoint.create (
-                "file://"+System.getProperty ("test.dir.src")+
-                "org/netbeans/api/debugger/jpda/testapps/EvalApp.java",
+                Utils.getURL(System.getProperty ("test.dir.src")+
+                             "org/netbeans/api/debugger/jpda/testapps/EvalApp.java"),
                 34
             );
         DebuggerManager.getDebuggerManager ().addBreakpoint (lb);

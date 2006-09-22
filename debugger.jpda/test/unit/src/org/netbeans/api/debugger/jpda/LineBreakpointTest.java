@@ -35,8 +35,8 @@ import org.netbeans.junit.NbTestCase;
  */
 public class LineBreakpointTest extends NbTestCase {
 
-    private static final String TEST_APP = "file://"+System.getProperty ("test.dir.src") + 
-        "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java";
+    private static final String TEST_APP = Utils.getURL(System.getProperty ("test.dir.src") + 
+        "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java");
     
     
     private JPDASupport support;
@@ -320,9 +320,9 @@ public class LineBreakpointTest extends NbTestCase {
     public void testBreakpointUnambiguity2 () throws Exception {
         try {
             LineBreakpoint lb1 = LineBreakpoint.create(
-                    "file://" + System.getProperty ("user.home") + // intentionally bad path
+                    Utils.getURL(System.getProperty ("user.home") + // intentionally bad path
                     java.io.File.separator +
-                    "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java", 39);
+                    "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java"), 39);
             //lb1.setSourceRoot(System.getProperty ("test.dir.src") + "_2");
             DebuggerManager dm = DebuggerManager.getDebuggerManager ();
             dm.addBreakpoint (lb1);

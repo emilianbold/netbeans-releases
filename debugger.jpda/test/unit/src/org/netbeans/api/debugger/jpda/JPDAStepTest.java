@@ -37,7 +37,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 public class JPDAStepTest extends NbTestCase {
 
     private DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-    private String          sourceRoot = "file://"+System.getProperty ("test.dir.src");
+    private String          sourceRoot = System.getProperty ("test.dir.src");
     private JPDASupport     support;
     
     private Object STEP_LOCK = new Object();
@@ -52,8 +52,8 @@ public class JPDAStepTest extends NbTestCase {
         try {
             JPDASupport.removeAllBreakpoints ();
             LineBreakpoint lb = LineBreakpoint.create (
-                sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
+                Utils.getURL(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java"),
                 30
             );
             dm.addBreakpoint (lb);
@@ -115,8 +115,8 @@ public class JPDAStepTest extends NbTestCase {
         try {
             JPDASupport.removeAllBreakpoints ();
             LineBreakpoint lb = LineBreakpoint.create (
-                sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
+                Utils.getURL(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java"),
                 30
             );
             dm.addBreakpoint (lb);
@@ -173,8 +173,8 @@ public class JPDAStepTest extends NbTestCase {
         try {
             JPDASupport.removeAllBreakpoints ();
             LineBreakpoint lb = LineBreakpoint.create (
-                sourceRoot + 
-                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
+                Utils.getURL(sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java"),
                 30
             );
             dm.addBreakpoint (lb);

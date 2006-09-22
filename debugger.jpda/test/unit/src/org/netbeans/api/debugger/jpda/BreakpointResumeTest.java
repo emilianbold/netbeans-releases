@@ -34,7 +34,7 @@ import org.netbeans.junit.NbTestCase;
  */
 public class BreakpointResumeTest  extends NbTestCase {
 
-    private String          sourceRoot = "file://"+System.getProperty ("test.dir.src");
+    private String          sourceRoot = System.getProperty ("test.dir.src");
 
     public BreakpointResumeTest (String s) {
         super (s);
@@ -45,7 +45,7 @@ public class BreakpointResumeTest  extends NbTestCase {
         JPDASupport.removeAllBreakpoints ();
         try {
             LineBreakpoint lb = LineBreakpoint.create (
-                sourceRoot + "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java", 
+                Utils.getURL(sourceRoot + "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java"), 
                 36
             );
             lb.addJPDABreakpointListener (new TestBreakpointListener ());
