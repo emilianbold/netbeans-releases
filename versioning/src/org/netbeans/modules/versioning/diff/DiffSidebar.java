@@ -24,15 +24,20 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.diff.Difference;
+import org.netbeans.api.diff.Diff;
+import org.netbeans.api.diff.StreamSource;
+import org.netbeans.api.diff.DiffView;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.openide.ErrorManager;
+import org.openide.windows.TopComponent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.HelpCtx;
 
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
@@ -72,7 +77,8 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     
     private final DiffSidebarProvider.OriginalContent originalContent;
     private String                              originalContentBuffer;
-    
+    private String                              originalContentMimeType;
+
     private RequestProcessor.Task   refreshDiffTask;
 
     public DiffSidebar(JTextComponent target, DiffSidebarProvider.OriginalContent content) {
@@ -130,8 +136,17 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
     private void showPopup(MouseEvent event, final Difference diff) {
         JPopupMenu menu = new JPopupMenu();
+        JMenuItem item;
 
-        JMenuItem item = new JMenuItem("Rollback");
+        item = new JMenuItem("Open Diff");
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                openDiff();
+            }
+        });
+        menu.add(item);
+
+        item = new JMenuItem("Rollback");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 rollback(diff);
@@ -139,7 +154,92 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         });
         menu.add(item);
 
+        menu.add(new JSeparator());
+        item = new JMenuItem("Rollback All");
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                rollbackAll();
+            }
+        });
+        menu.add(item);
+
         menu.show(event.getComponent(), event.getX(), event.getY());
+    }
+
+    private void openDiff() {
+        try {
+            DiffView view = Diff.getDefault().createDiff(new SidebarStreamSource(true), new SidebarStreamSource(false));
+            JComponent c = (JComponent) view.getComponent();
+            DiffTopComponent tc = new DiffTopComponent(c);
+            tc.setName(originalContent.getWorkingCopy().getName() + " [Diff]");
+            tc.open();
+            tc.requestActive();
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+
+    private static class DiffTopComponent extends TopComponent {
+
+        public DiffTopComponent() {
+        }
+
+        public DiffTopComponent(JComponent c) {
+            setLayout(new BorderLayout());
+            c.putClientProperty(TopComponent.class, this);
+            add(c, BorderLayout.CENTER);
+//            getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
+//            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
+        }
+
+        public int getPersistenceType(){
+            return TopComponent.PERSISTENCE_NEVER;
+        }
+
+        protected String preferredID(){
+            return "DiffSidebarTopComponent";    // NOI18N
+        }
+
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(getClass());
+        }
+    }
+
+    private class SidebarStreamSource extends StreamSource {
+
+        private final boolean isFirst;
+
+        public SidebarStreamSource(boolean isFirst) {
+            this.isFirst = isFirst;
+        }
+
+        public String getName() {
+            return "name";
+        }
+
+        public String getTitle() {
+            return originalContent.getWorkingCopy().getName();
+        }
+
+        public String getMIMEType() {
+            return originalContentMimeType;
+        }
+
+        public Reader createReader() throws IOException {
+            return isFirst ? new StringReader(originalContentBuffer) : getDocumentReader();
+        }
+
+        public Writer createWriter(Difference[] conflicts) throws IOException {
+            return null;
+        }
+    }
+
+    private void rollbackAll() {
+        try {
+            document.replace(0, document.getLength(), originalContentBuffer, null);
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+        }
     }
 
     private void rollback(Difference diff) {
@@ -158,7 +258,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             }
             refreshDiff();
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            ErrorManager.getDefault().notify(e);
         }
     }
 
@@ -250,6 +350,11 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         super.paintComponent(g);
 
         Rectangle clip = g.getClipBounds();
+        if (clip.y >= 16) {
+            // compensate for scrolling: marks on bottom/top edges are not drawn completely while scrolling
+            clip.y -= 16;
+            clip.height += 16;
+        }
 
         JTextComponent component = editorUI.getComponent();
         if (component == null) return;
@@ -301,10 +406,10 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
                             if (ad.getType() == Difference.DELETE) {
                                 yCoords[0] = y + editorUI.getLineAscent();
                                 yCoords[1] = y + editorUI.getLineAscent() * 3 / 2;
-                                yCoords[2] = y + editorUI.getLineAscent() * 2 - 1;
+                                yCoords[2] = y + editorUI.getLineAscent() * 2;
                                 g.fillPolygon(new int [] { 2, BAR_WIDTH, 2 }, yCoords, 3);
                                 g.setColor(colorBorder);
-                                g.drawLine(2, yCoords[0], 2, yCoords[2]);
+                                g.drawLine(2, yCoords[0], 2, yCoords[2] - 1);
                             } else {
                                 g.fillRect(3, y, BAR_WIDTH - 3, editorUI.getLineHeight());
                                 g.setColor(colorBorder);
@@ -491,7 +596,8 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             
             StringWriter w = new StringWriter(2048);
             try {
-                Reader original = EncodedReaderFactory.getDefault().getReader(file, fo.getMIMEType());
+                originalContentMimeType = fo.getMIMEType();
+                Reader original = EncodedReaderFactory.getDefault().getReader(file, originalContentMimeType);
                 copyStreamsCloseAll(w, original);
                 originalContentBuffer = w.toString();
             } catch (IOException e) {
