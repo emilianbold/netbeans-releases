@@ -19,6 +19,19 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.WeakListeners;
+
 
 /**
  * Notifies about line breakpoint events.
@@ -60,7 +73,8 @@ public class LineBreakpoint extends JPDABreakpoint {
     private String                      className = null;
 
     
-    private LineBreakpoint () {
+    private LineBreakpoint (String url) {
+        this.url = url;
     }
     
     /**
@@ -74,8 +88,7 @@ public class LineBreakpoint extends JPDABreakpoint {
         String url,
         int lineNumber
     ) {
-        LineBreakpoint b = new LineBreakpointImpl ();
-        b.setURL (url);
+        LineBreakpoint b = new LineBreakpointImpl (url);
         b.setLineNumber (lineNumber);
         return b;
     }
@@ -103,7 +116,7 @@ public class LineBreakpoint extends JPDABreakpoint {
             if ( (url == this.url) ||
                  ((url != null) && (this.url != null) && url.equals (this.url))
             ) return;
-            old = url;
+            old = this.url;
             this.url = url;
         }
         firePropertyChange (PROP_URL, old, url);
@@ -289,9 +302,21 @@ public class LineBreakpoint extends JPDABreakpoint {
         return "LineBreakpoint " + url + " : " + lineNumber;
     }
     
-    private static class LineBreakpointImpl extends LineBreakpoint implements Comparable {
+    private static class LineBreakpointImpl extends LineBreakpoint implements Comparable, FileChangeListener {
         
-        public LineBreakpointImpl() {
+       // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
+       private FileObject fo;
+       
+       public LineBreakpointImpl(String url) {
+            super(url);
+            try {
+                fo = URLMapper.findFileObject(new URL(url));
+                if (fo != null) {
+                    fo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fo));
+                }
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
         
         public int compareTo(Object o) {
@@ -307,6 +332,31 @@ public class LineBreakpoint extends JPDABreakpoint {
             } else {
                 return -1;
             }
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+        }
+
+        public void fileChanged(FileEvent fe) {
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(this);
+            fo = null;
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            try {
+                this.setURL(((FileObject) fe.getSource()).getURL().toString());
+            } catch (FileStateInvalidException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
         }
     
     }

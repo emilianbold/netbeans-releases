@@ -20,11 +20,13 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import java.beans.PropertyChangeEvent;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
+
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
-
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
@@ -35,6 +37,10 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+
 /**
  * Listens on DebuggerManager and:
  * - loads all breakpoints. Watches are loaded by debuggercore's PersistentManager.
@@ -44,13 +50,36 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
  */
 public class PersistenceManager implements LazyDebuggerManagerListener {
     
-    public Breakpoint[] initBreakpoints () {
+    public synchronized Breakpoint[] initBreakpoints () {
         Properties p = Properties.getDefault ().getProperties ("debugger").
             getProperties (DebuggerManager.PROP_BREAKPOINTS);
-        return (Breakpoint[]) p.getArray (
+        Breakpoint[] breakpoints = (Breakpoint[]) p.getArray (
             "jpda", 
             new Breakpoint [0]
         );
+        for (int i = 0; i < breakpoints.length; i++) {
+            if (breakpoints[i] instanceof LineBreakpoint) {
+                LineBreakpoint lb = (LineBreakpoint) breakpoints[i];
+                try {
+                    FileObject fo = URLMapper.findFileObject(new URL(lb.getURL()));
+                    if (fo == null) {
+                        // The file is gone - we should remove the breakpoint as well.
+                        Breakpoint[] breakpoints2 = new Breakpoint[breakpoints.length - 1];
+                        if (i > 0) {
+                            System.arraycopy(breakpoints, 0, breakpoints2, 0, i);
+                        }
+                        if (i < breakpoints2.length) {
+                            System.arraycopy(breakpoints, i + 1, breakpoints2, i, breakpoints2.length - i);
+                        }
+                        breakpoints = breakpoints2;
+                        i--;
+                    }
+                } catch (MalformedURLException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        }
+        return breakpoints;
     }
     
     public void initWatches () {
@@ -141,4 +170,5 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         bs = new Breakpoint [bb.size ()];
         return bb.toArray (bs);
     }
+
 }

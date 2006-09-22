@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -37,7 +39,7 @@ import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
  *
  * @author Jan Jancura
  */
-public class BreakpointsReader implements Properties.Reader {
+public class BreakpointsReader implements Properties.Reader, PropertyChangeListener {
     
     private Map<JPDABreakpoint, String> cachedClassNames = new WeakHashMap<JPDABreakpoint, String>();
     private Map<JPDABreakpoint, String> cachedSourceRoots = new WeakHashMap<JPDABreakpoint, String>();
@@ -59,6 +61,11 @@ public class BreakpointsReader implements Properties.Reader {
     
     void storeCachedClassName(JPDABreakpoint b, String className) {
         synchronized (this) {
+            if (b instanceof LineBreakpoint && !cachedClassNames.containsKey(b)) {
+                // Line breakpoint, class name is cached for the first time.
+                // We need to listen on URL changes and clear the cache then.
+                b.addPropertyChangeListener(LineBreakpoint.PROP_URL, this);
+            }
             cachedClassNames.put(b, className);
         }
         PersistenceManager.storeBreakpoints();
@@ -88,6 +95,8 @@ public class BreakpointsReader implements Properties.Reader {
             );
             synchronized (this) {
                 cachedClassNames.put(lb, properties.getString("className", null));
+                // We need to listen on URL changes and clear the cache then.
+                lb.addPropertyChangeListener(LineBreakpoint.PROP_URL, this);
                 cachedSourceRoots.put(lb, properties.getString("sourceRoot", null));
             }
             b = lb;
@@ -336,4 +345,12 @@ public class BreakpointsReader implements Properties.Reader {
         }
         return;
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (LineBreakpoint.PROP_URL.equals(evt.getPropertyName())) {
+            LineBreakpoint lb = (LineBreakpoint) evt.getSource();
+            storeCachedClassName(lb, null);
+        }
+    }
+    
 }
