@@ -46,6 +46,7 @@ public final class LayoutFactory {
 
     /**
      * Creates an absolute layout where widgets are located at placed defined by their preferredLocation.
+     * The instance can be shared by multiple widgets.
      * @return the absolute layout
      */
     public static Layout createAbsoluteLayout () {
@@ -54,6 +55,7 @@ public final class LayoutFactory {
 
     /**
      * Creates a vertical box layout with default style where widgets are placed vertically one to the bottom from another.
+     * The instance can be shared by multiple widgets.
      * @return the vertical box layout
      */
     public static Layout createVerticalLayout () {
@@ -62,6 +64,7 @@ public final class LayoutFactory {
 
     /**
      * Creates a vertical box layout with a specific style where widgets are placed vertically one to the bottom from another.
+     * The instance can be shared by multiple widgets.
      * @param alignment the alignment
      * @param gap the gap between widgets
      * @return the vertical box layout
@@ -72,6 +75,7 @@ public final class LayoutFactory {
 
     /**
      * Creates a horizontal box layout with default style where widgets are placed horizontally one to the right from another.
+     * The instance can be shared by multiple widgets.
      * @return the horizontal box layout
      */
     public static Layout createHorizontalLayout () {
@@ -80,6 +84,7 @@ public final class LayoutFactory {
 
     /**
      * Creates a horizontal box layout with a specific style where widgets are placed horizontally one to the right from another.
+     * The instance can be shared by multiple widgets.
      * @param alignment the alignment
      * @param gap the gap between widgets
      * @return the horizontal box layout
@@ -91,6 +96,7 @@ public final class LayoutFactory {
     /**
      * Creates a card layout where all children widgets except the active one are hidden. The active one is the only shown.
      * The active widget could be managed using LayoutFactory.getActiveCard and LayoutFactory.setActiveCard methods.
+     * The instance cannot be shared.
      * @param cardLayoutWidget the widget where the card layout is going to be used
      * @return the card layout
      */
@@ -123,6 +129,7 @@ public final class LayoutFactory {
     /**
      * Returns a fill layout where all children widgets has the boundary at the biggest one of them or
      * they are expanded to the parent widget boundaries during justification.
+     * The instance can be shared by multiple widgets.
      * @return the fill layout
      */
     public static Layout createFillLayout () {
@@ -131,6 +138,7 @@ public final class LayoutFactory {
 
     /**
      * Returns a scene layout which performs one-time layout using specified devolve-layout.
+     * The instance cannot be shared.
      * @param widget the
      * @param devolveLayout the layout that is going to be used for one-time layout
      * @param animate if true, then setting preferredLocation is gone animated

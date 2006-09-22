@@ -19,7 +19,7 @@ import org.netbeans.modules.visual.anchor.*;
 import java.awt.*;
 
 /**
- * This is a factory of all built-in anchor implementations.
+ * This is a factory of all built-in anchor implementations. Anchors are designed to be shared by multiple instances of proxy anchors and connection widgets.
  * @author David Kaspar
  */
 public final class AnchorFactory {

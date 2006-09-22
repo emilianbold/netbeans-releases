@@ -18,6 +18,7 @@ import org.netbeans.api.visual.widget.Scene;
  * Represents an animator. An animator is registed to a scene animator and could be started.
  * From that moment the scene animator automatically calls Animator.tick method for a solid period of time set by the scene animator.
  * In the tick method the animation has to implemented. The animation should be independent on time-duration.
+ * 
  * @author David Kaspar
  */
 public abstract class Animator {

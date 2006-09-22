@@ -30,7 +30,7 @@ public abstract class LookFeel {
     private static final LookFeel DEFAULT = new DefaultLookFeel ();
 
     /**
-     * Creates a default look and feel.
+     * Creates a default look and feel. The instance can be shared by multiple scenes.
      * @return the default look and feel
      */
     public static LookFeel createDefaultLookFeel () {

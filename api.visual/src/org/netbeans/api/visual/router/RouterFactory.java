@@ -19,7 +19,7 @@ import org.netbeans.modules.visual.router.OrthogonalSearchRouter;
 import org.netbeans.modules.visual.router.WidgetsCollisionCollector;
 
 /**
- * This class creates built-in routers.
+ * This class creates built-in routers. All implementations can be shared by multiple widgets.
  *
  * @author David Kaspar
  */
@@ -34,6 +34,7 @@ public final class RouterFactory {
 
     /**
      * Creates a direct router. The path is direct (single-segment) line between source and target anchor of a connection widget.
+     * The instance can be shared by multiple widgets.
      * @return the direct router
      */
     public static Router createDirectRouter () {
@@ -42,6 +43,7 @@ public final class RouterFactory {
 
     /**
      * Creates a free router. The path persist control points created by users using AddRemoveControlPointAction.
+     * The instance can be shared by multiple widgets.
      * @return the free router
      */
     public static Router createFreeRouter () {
@@ -50,6 +52,7 @@ public final class RouterFactory {
 
     /**
      * Creates an orthogonal search router. The router gathers collision regions from widget that are placed in specified layers.
+     * The instance can be shared by multiple widgets.
      * @param layers the layers with widgets taken as collisions regions
      * @return the orthogonal search router
      */
@@ -59,6 +62,7 @@ public final class RouterFactory {
 
     /**
      * Creates an orthogonal search router. The router uses collision regions from specified collector.
+     * The instance can be shared by multiple widgets.
      * @param collector the collision collector
      * @return the orthogonal search router
      */
@@ -69,6 +73,7 @@ public final class RouterFactory {
 
     /**
      * Creates collision collector based on specified layers. The boundaries of widgets in specified layers are taken
+     * The instance can be shared by multiple widgets.
      * as collision regions.
      * @param layers the layers with widgets
      * @return the collision collector

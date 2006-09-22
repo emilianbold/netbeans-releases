@@ -29,6 +29,7 @@ import java.awt.*;
 /**
  * Manages all animations on a scene. An animation can be registered and started by calling Animator.start method.
  * The class contains a few built-in animators: preferredLocation, preferredBounds, background, foreground, zoomFactor.
+ * 
  * @author David Kaspar
  */
 public final class SceneAnimator {
