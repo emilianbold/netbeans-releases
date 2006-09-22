@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="MozillaBrowser.settings/NetscapeBrowser.settings" boolvalue="true"/>
 
       <!-- Other browsers order -->
-      <attr name="SimpleExtBrowser.settings/SwingBrowser.ser" boolvalue="true"/>
+      <attr name="SimpleExtBrowser.settings/SwingBrowser.settings" boolvalue="true"/>
             
      </folder>
   </folder>
