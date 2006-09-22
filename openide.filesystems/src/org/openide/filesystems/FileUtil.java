@@ -266,7 +266,7 @@ public final class FileUtil extends Object {
 
     /** Factory method that creates an empty implementation of a filesystem that
      * completely resides in a memory.
-     * @return a blank writeable filesystem
+     * @return a blank writable filesystem
      * @since 4.43
      */
     public static FileSystem createMemoryFileSystem() {
@@ -466,7 +466,7 @@ public final class FileUtil extends Object {
     /** Finds appropriate java.io.File to FileObject if possible.
      * If not possible then null is returned.
      * This is the inverse operation of {@link #toFileObject}.
-     * @param fo FileObject whose coresponding File will be looked for
+     * @param fo FileObject whose corresponding File will be looked for
      * @return java.io.File or null if no corresponding File exists.
      * @since 1.29
      */
@@ -934,7 +934,7 @@ public final class FileUtil extends Object {
     * to a case-insensitive match.
     * @param ext the extension: <code>"jar"</code>, <code>"zip"</code>, etc.
     * @return the MIME type for the extension, or <code>null</code> if the extension is unrecognized
-    * @deprecated in favour of {@link #getMIMEType(FileObject) getMIMEType(FileObject)} as MIME cannot
+    * @deprecated use {@link #getMIMEType(FileObject) getMIMEType(FileObject)} as MIME cannot
     * be generally detected by file object extension.
     */
     @Deprecated
@@ -986,7 +986,7 @@ public final class FileUtil extends Object {
      * relevant (for example <samp>*.C</samp> for C++) but if you register
      * a lowercase extension it will by default apply to uppercase extensions
      * too (for use on Windows or generally for situations where filenames
-     * become accidentally upcased).
+     * become accidentally uppercase).
      * @param ext the file extension (should be lowercase unless you specifically care about case)
      * @param mimeType the new MIME type
      * @throws IllegalArgumentException if this extension was already registered with a <em>different</em> MIME type
@@ -1099,8 +1099,8 @@ public final class FileUtil extends Object {
     /**
      * Get an appropriate display name for a file object.
      * If the file corresponds to a path on disk, this will be the disk path.
-     * Otherwise the name will mention the filesystem name or archiv name in case
-     * the file comes from archiv and relative path. Relative path will be mentioned
+     * Otherwise the name will mention the filesystem name or archive name in case
+     * the file comes from archive and relative path. Relative path will be mentioned
      * just in case that passed <code>FileObject</code> isn't root {@link FileObject#isRoot}.
      *
      * @param fo a file object
@@ -1171,7 +1171,7 @@ public final class FileUtil extends Object {
      * Generally it should be called on <em>incoming</em> pathnames that are gotten from user input
      * (including filechoosers), configuration files, Ant properties, etc. <em>Internal</em>
      * calculations should not need to renormalize paths since {@link File#listFiles},
-     * {@link File#getParentFile}, etc. will not produce nonnormal variants.
+     * {@link File#getParentFile}, etc. will not produce abnormal variants.
      * @param file file to normalize
      * @return normalized file
      * @since 4.48
@@ -1335,7 +1335,7 @@ public final class FileUtil extends Object {
     }
 
     /**
-     * Returns a FileObject representing an archive file containg the
+     * Returns a FileObject representing an archive file containing the
      * FileObject given by the parameter.
      * <strong>Remember</strong> that any path within the archive is discarded
      * so you may need to check for non-root entries.
