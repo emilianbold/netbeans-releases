@@ -21,6 +21,7 @@ package org.netbeans.api.project.libraries;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +80,7 @@ public final class Library {
      * @param volumeType which resources to return.
      * @return path of URLs of given type (possibly empty but never <code>null</code>)
      */
-    public List/*<URL>*/ getContent(final String volumeType) {
+    public List<URL> getContent(final String volumeType) {
         return this.impl.getContent (volumeType);
     } // end getContent
 

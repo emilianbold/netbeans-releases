@@ -150,26 +150,24 @@ public final class LibraryManager {
         if ( newLibraryName == null || getLibrary(newLibraryName)!= null) {
             throw new IllegalArgumentException ("Library hasn't name or the name is already used: " + newLibraryName); //NOI18N
         }
-        final Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template (WritableLibraryProvider.class));
-        final Collection/*<WriteableLibraryProvider>*/ providers = result.allInstances();
+        final Collection<? extends WritableLibraryProvider> providers = Lookup.getDefault().lookupAll(WritableLibraryProvider.class);
         assert providers.size() == 1;        
-        ((WritableLibraryProvider)providers.iterator().next()).addLibrary(library.getLibraryImplementation());
+        providers.iterator().next().addLibrary(library.getLibraryImplementation());
     }
     
     /**
      * Removes installed library 
      * @param library to be removed. 
      * @throws IOException when library cannot be deleted.
-     * @throws IllegalArgumentException when library is not installed in a writeable 
+     * @throws IllegalArgumentException when library is not installed in a writable
      * {@link org.netbeans.spi.project.libraries.LibraryProvider}
      * @since org.netbeans.modules.project.libraries/1 1.14
      */
     public void removeLibrary (final Library library) throws IOException, IllegalArgumentException {
         assert library != null;
-        final Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template (WritableLibraryProvider.class));
-        final Collection/*<WriteableLibraryProvider>*/ providers = result.allInstances();
+        final Collection<? extends WritableLibraryProvider> providers = Lookup.getDefault().lookupAll(WritableLibraryProvider.class);
         assert providers.size() == 1;
-        ((WritableLibraryProvider)providers.iterator().next()).removeLibrary(library.getLibraryImplementation());
+        providers.iterator().next().removeLibrary(library.getLibraryImplementation());
     }
 
     /**

@@ -145,9 +145,9 @@ public class LibraryManagerTest extends NbTestCase {
         lm.addLibrary(newLibrary);
         libs = lm.getLibraries();
         assertEquals ("Libraries count", 3, libs.length);
-        List newLibs = new ArrayList (Arrays.asList(impls));
+        List<LibraryImplementation> newLibs = new ArrayList<LibraryImplementation>(Arrays.asList(impls));
         newLibs.add (newLibImplementation);
-        assertLibsEquals (libs, (LibraryImplementation[])newLibs.toArray(new LibraryImplementation[newLibs.size()]));
+        assertLibsEquals(libs, newLibs.toArray(new LibraryImplementation[newLibs.size()]));
         lm.removeLibrary(newLibrary);
         libs = lm.getLibraries();
         assertEquals("Libraries count",2,libs.length);
@@ -193,11 +193,11 @@ public class LibraryManagerTest extends NbTestCase {
     static class TestLibraryProvider implements WritableLibraryProvider  {
         
         private PropertyChangeSupport support;
-        private List libraries;
+        private List<LibraryImplementation> libraries;
         
         public TestLibraryProvider () {
             this.support = new PropertyChangeSupport (this);
-            this.libraries = new ArrayList();
+            this.libraries = new ArrayList<LibraryImplementation>();
         }
         
         public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -209,11 +209,11 @@ public class LibraryManagerTest extends NbTestCase {
         }
 
         public LibraryImplementation[] getLibraries() {
-            return (LibraryImplementation[]) this.libraries.toArray(new LibraryImplementation[libraries.size()]);
+            return this.libraries.toArray(new LibraryImplementation[libraries.size()]);
         }                
         
         public void setLibraries (LibraryImplementation[] libraries) {
-            this.libraries = new ArrayList(Arrays.asList(libraries));
+            this.libraries = new ArrayList<LibraryImplementation>(Arrays.asList(libraries));
             this.support.firePropertyChange(PROP_LIBRARIES,null,null);
         }
 
@@ -297,7 +297,7 @@ public class LibraryManagerTest extends NbTestCase {
         private PropertyChangeSupport support;
         
         static {            
-            supportedTypes = Collections.unmodifiableSet(new HashSet(Arrays.asList(VOLUME_TYPES)));
+            supportedTypes = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(VOLUME_TYPES)));
         }
         
         public TestLibraryImplementation () {
