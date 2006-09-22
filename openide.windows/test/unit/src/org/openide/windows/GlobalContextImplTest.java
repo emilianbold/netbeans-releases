@@ -20,10 +20,13 @@
 package org.openide.windows;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import javax.swing.ActionMap;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /** Tests behaviour of GlobalContextProviderImpl
  * and its cooperation with activated and current nodes.
@@ -148,6 +151,28 @@ implements org.openide.util.LookupListener {
 
         assertActionMap ();
     }
+    
+    public void testComponentChangeActionMapIsPropagatedToGlobalLookup() throws Exception {
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup al = new AbstractLookup(ic);
+        tc = new TopComponent (al);
+        
+        ActionMap myMap = new ActionMap();
+        myMap.put (this, sampleAction);
+        tc.requestActive();
+        
+        
+        result = lookup.lookup (new Lookup.Template (ActionMap.class));
+        result.addLookupListener (this);
+        result.allItems();
+        
+        assertEquals(0, cnt);
+        
+        ic.set(Collections.singleton(new ActionMap()), null);
+        
+        assertEquals("One change in ActiomMap delivered", 1, cnt);
+    }
+    
     
     public void resultChanged(org.openide.util.LookupEvent ev) {
         cnt++;
