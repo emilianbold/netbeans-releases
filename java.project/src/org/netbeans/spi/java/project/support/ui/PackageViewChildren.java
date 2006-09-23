@@ -33,6 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -99,7 +100,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     static final String SUBTYPE = "x-java-org-netbeans-modules-java-project-packagenodednd";    //NOI18N
     static final String MASK = "mask";  //NOI18N
 
-    private java.util.Map<String,Object/*NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|?PackageNode?*/> names2nodes;
+    private java.util.Map<String,Object/*NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|PackageNode*/> names2nodes;
     private final FileObject root;
     private FileChangeListener wfcl;    // Weak listener on the system filesystem
     private ChangeListener wvqcl;       // Weak listener on the VisibilityQuery
@@ -134,7 +135,6 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 n = new PackageNode( root, DataFolder.findFolder( fo ), true );
             }
             else {
-                // XXX why does this not use the following? n = (PackageNode) o;
                 n = new PackageNode( root, DataFolder.findFolder( fo ) );
             }            
             names2nodes.put(path, n);
@@ -217,7 +217,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         // XXX this is not going to perform too well for a huge source root...
         // However we have to go through the whole hierarchy in order to find
         // all packages (Hrebejk)
-        names2nodes = new TreeMap<String,Object>();
+        names2nodes = Collections.synchronizedMap(new TreeMap<String,Object>());
         findNonExcludedPackages( root );
     }
     
@@ -263,6 +263,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         assert path != null : "Adding wrong folder " + fo +"(valid="+fo.isValid()+")"+ "under root" + this.root + "(valid="+this.root.isValid()+")";
         if ( get( fo ) == null ) { 
             names2nodes.put( path, empty ? NODE_NOT_CREATED_EMPTY : NODE_NOT_CREATED );
+            refreshKeysAsync();
         }
     }
 
