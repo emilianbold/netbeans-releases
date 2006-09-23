@@ -203,7 +203,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         return panels[index];
     }
     
-    private transient Set listeners = new HashSet(1); // Set<ChangeListener>
+    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     public final void addChangeListener(ChangeListener l) {
         synchronized(listeners) {
@@ -216,13 +216,13 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.Instantiating
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        ChangeListener[] ls;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            ls = listeners.toArray(new ChangeListener[listeners.size()]);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
      

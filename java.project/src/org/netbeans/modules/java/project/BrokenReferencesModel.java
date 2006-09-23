@@ -25,15 +25,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
-
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
@@ -58,7 +56,7 @@ public class BrokenReferencesModel extends AbstractListModel {
     private String[] platformsProps;
     private AntProjectHelper helper;
     private ReferenceHelper resolver;
-    private ArrayList references;
+    private List<OneReference> references;
 
     public BrokenReferencesModel(AntProjectHelper helper, 
             ReferenceHelper resolver, String[] props, String[] platformsProps) {
@@ -66,13 +64,13 @@ public class BrokenReferencesModel extends AbstractListModel {
         this.platformsProps = platformsProps;
         this.resolver = resolver;
         this.helper = helper;
-        references = new ArrayList();
+        references = new ArrayList<OneReference>();
         refresh();
     }
     
     public void refresh() {
-        Set all = new LinkedHashSet();
-        Set s = getReferences(helper, helper.getStandardPropertyEvaluator(), props, false);
+        Set<OneReference> all = new LinkedHashSet<OneReference>();
+        Set<OneReference> s = getReferences(helper, helper.getStandardPropertyEvaluator(), props, false);
         all.addAll(s);
         s = getPlatforms(helper.getStandardPropertyEvaluator(), platformsProps, false);
         all.addAll(s);
@@ -132,12 +130,11 @@ public class BrokenReferencesModel extends AbstractListModel {
 
     public OneReference getOneReference(int index) {
         assert index>=0 && index<references.size();
-        return (OneReference)references.get(index);
+        return references.get(index);
     }
     
     public boolean isBroken(int index) {
-        OneReference or = (OneReference)references.get(index);
-        return or.broken;
+        return references.get(index).broken;
     }
     
     public int getSize() {
@@ -145,7 +142,7 @@ public class BrokenReferencesModel extends AbstractListModel {
     }
 
     public static boolean isBroken(AntProjectHelper helper, PropertyEvaluator evaluator, String[] props, String[] platformsProps) {
-        Set s = getReferences(helper, evaluator, props, true);
+        Set<OneReference> s = getReferences(helper, evaluator, props, true);
         if (s.size() > 0) {
             return true;
         }
@@ -153,13 +150,13 @@ public class BrokenReferencesModel extends AbstractListModel {
         return s.size() > 0;
     }
 
-    private static Set getReferences(AntProjectHelper helper, PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
-        Set set = new LinkedHashSet();
+    private static Set<OneReference> getReferences(AntProjectHelper helper, PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
+        Set<OneReference> set = new LinkedHashSet<OneReference>();
         StringBuffer all = new StringBuffer();
-        for (int i=0; i<ps.length; i++) {
+        for (String p : ps) {
             // evaluate given property and tokenize it
             
-            String prop = evaluator.getProperty(ps[i]);
+            String prop = evaluator.getProperty(p);
             if (prop == null) {
                 continue;
             }
@@ -167,22 +164,22 @@ public class BrokenReferencesModel extends AbstractListModel {
                         
             // no check whether after evaluating there are still some 
             // references which could not be evaluated
-            for (int j=0; j<vals.length; j++) {
+            for (String v : vals) {
                 // we are checking only: project reference, file reference, library reference
-                if (!(vals[j].startsWith("${file.reference.") || vals[j].startsWith("${project.") || vals[j].startsWith("${libs."))) {
-                    all.append(vals[j]);
+                if (!(v.startsWith("${file.reference.") || v.startsWith("${project.") || v.startsWith("${libs."))) {
+                    all.append(v);
                     continue;
                 }
-                if (vals[j].startsWith("${project.")) {
+                if (v.startsWith("${project.")) {
                     // something in the form: "${project.<projID>}/dist/foo.jar"
-                    String val = vals[j].substring(2, vals[j].indexOf('}'));
+                    String val = v.substring(2, v.indexOf('}'));
                     set.add(new OneReference(REF_TYPE_PROJECT, val, true));
                 } else {
                     int type = REF_TYPE_LIBRARY;
-                    if (vals[j].startsWith("${file.reference")) {
+                    if (v.startsWith("${file.reference")) {
                         type = REF_TYPE_FILE;
                     }
-                    String val = vals[j].substring(2, vals[j].length()-1);
+                    String val = v.substring(2, v.length() - 1);
                     set.add(new OneReference(type, val, true));
                 }
                 if (abortAfterFirstProblem) {
@@ -198,11 +195,9 @@ public class BrokenReferencesModel extends AbstractListModel {
         // If they are not report them as broken reference.
         // XXX: there will be API in PropertyUtils for listing of Ant 
         // prop names in String. Consider using it here.
-        Iterator it = evaluator.getProperties().entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            String key = (String)entry.getKey();
-            String value = (String)entry.getValue();
+        for (Map.Entry<String, String> entry : evaluator.getProperties().entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
             if (key.startsWith("project.")) { // NOI18N
                 File f = getFile(helper, evaluator, value);
                 if (f.exists()) {
@@ -225,23 +220,21 @@ public class BrokenReferencesModel extends AbstractListModel {
         }
         
         //Check for libbraries with broken classpath content
-        Set usedLibraries = new HashSet ();
+        Set<String> usedLibraries = new HashSet<String>();
         Pattern libPattern = Pattern.compile("\\$\\{(lib.[-._a-zA-Z0-9]+.classpath)\\}"); //NOI18N
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        for (int i=0; i<ps.length; i++) { 
-            String propertyValue = ep.getProperty(ps[i]);
+        for (String p : ps) {
+            String propertyValue = ep.getProperty(p);
             if (propertyValue != null) {
-                String[] vals = PropertyUtils.tokenizePath(propertyValue);
-                for (int j=0; j<vals.length; j++) {
-                    Matcher m = libPattern.matcher(vals[j]);
+                for (String v : PropertyUtils.tokenizePath(propertyValue)) {
+                    Matcher m = libPattern.matcher(v);
                     if (m.matches()) {
                         usedLibraries.add (m.group(1));
                     }
                 }
             }
         }
-        for (Iterator lit = usedLibraries.iterator(); lit.hasNext(); ) {
-            String libraryRef = (String) lit.next ();
+        for (String libraryRef : usedLibraries) {
             String libraryName = libraryRef.substring(5,libraryRef.length()-10);
             Library lib = LibraryManager.getDefault().getLibrary (libraryName);
             if (lib == null) {
@@ -249,9 +242,7 @@ public class BrokenReferencesModel extends AbstractListModel {
             }
             else {
                 //XXX: Should check all the volumes (sources, javadoc, ...)?
-                List/*<URL>*/ cp = lib.getContent("classpath");    //NOI18N
-                for (Iterator cpIt = cp.iterator(); cpIt.hasNext();) {
-                    URL url = (URL) cpIt.next();
+                for (URL url : lib.getContent("classpath")) { // NOI18N
                     if ("jar".equals(url.getProtocol())) {   //NOI18N
                         url = FileUtil.getArchiveFile (url);
                     }
@@ -280,10 +271,10 @@ public class BrokenReferencesModel extends AbstractListModel {
         }
     }
 
-    private static Set getPlatforms(PropertyEvaluator evaluator, String[] platformsProps, boolean abortAfterFirstProblem) {
-        Set set = new LinkedHashSet();
-        for (int i=0; i<platformsProps.length; i++) {
-            String prop = evaluator.getProperty(platformsProps[i]);
+    private static Set<OneReference> getPlatforms(PropertyEvaluator evaluator, String[] platformsProps, boolean abortAfterFirstProblem) {
+        Set<OneReference> set = new LinkedHashSet<OneReference>();
+        for (String pprop : platformsProps) {
+            String prop = evaluator.getProperty(pprop);
             if (prop == null) {
                 continue;
             }
@@ -292,8 +283,8 @@ public class BrokenReferencesModel extends AbstractListModel {
                 // XXX: the J2ME stores in project.properties also platform 
                 // display name and so show this display name instead of just
                 // prop ID if available.
-                if (evaluator.getProperty(platformsProps[i]+".description") != null) {
-                    prop = evaluator.getProperty(platformsProps[i]+".description");
+                if (evaluator.getProperty(pprop + ".description") != null) {
+                    prop = evaluator.getProperty(pprop + ".description");
                 }
                 
                 set.add(new OneReference(REF_TYPE_PLATFORM, prop, true));
@@ -305,19 +296,15 @@ public class BrokenReferencesModel extends AbstractListModel {
         return set;
     }
     
-    private static void updateReferencesList(List oldBroken, Set newBroken) {
-        Iterator it = oldBroken.iterator();
-        while (it.hasNext()) {
-            OneReference or = (OneReference)it.next();
+    private static void updateReferencesList(List<OneReference> oldBroken, Set<OneReference> newBroken) {
+        for (OneReference or : oldBroken) {
             if (newBroken.contains(or)) {
                 or.broken = true;
             } else {
                 or.broken = false;
             }
         }
-        it = newBroken.iterator();
-        while (it.hasNext()) {
-            OneReference or = (OneReference)it.next();
+        for (OneReference or : newBroken) {
             if (!oldBroken.contains(or)) {
                 oldBroken.add(or);
             }
@@ -328,11 +315,10 @@ public class BrokenReferencesModel extends AbstractListModel {
         if (platform.equals("default_platform")) { // NOI18N
             return true;
         }
-        JavaPlatform plats[] = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        for (int i=0; i<plats.length; i++) {
+        for (JavaPlatform plat : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
             // XXX: this should be defined as PROPERTY somewhere
-            if (platform.equals(plats[i].getProperties().get("platform.ant.name")) &&
-                plats[i].getInstallFolders().size()>0) { // NOI18N
+            if (platform.equals(plat.getProperties().get("platform.ant.name")) && // NOI18N
+                    plat.getInstallFolders().size() > 0) {
                 return true;
             }
         }
@@ -451,7 +437,7 @@ public class BrokenReferencesModel extends AbstractListModel {
             }
         }
 
-        public boolean equals(java.lang.Object o) {
+        public boolean equals(Object o) {
             if (o == this) {
                 return true;
             }

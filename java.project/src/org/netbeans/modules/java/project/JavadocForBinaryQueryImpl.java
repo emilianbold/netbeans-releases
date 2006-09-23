@@ -44,9 +44,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
         boolean log = ERR.isLoggable(ErrorManager.INFORMATIONAL);
         Project project = FileOwnerQuery.getOwner(URI.create(binary.toString()));
         if (project != null) {
-            JavadocForBinaryQueryImplementation jfbqi =
-                (JavadocForBinaryQueryImplementation)project.getLookup().lookup(
-                    JavadocForBinaryQueryImplementation.class);
+            JavadocForBinaryQueryImplementation jfbqi = project.getLookup().lookup(JavadocForBinaryQueryImplementation.class);
             if (jfbqi != null) {
                 JavadocForBinaryQuery.Result result = jfbqi.findJavadoc(binary);
                 if (log) ERR.log("Project " + project + " reported for " + binary + ": " + (result != null ? Arrays.asList(result.getRoots()) : null));

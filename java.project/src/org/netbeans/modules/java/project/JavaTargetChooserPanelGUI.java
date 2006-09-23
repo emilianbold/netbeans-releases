@@ -59,12 +59,12 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private static final String NEW_CLASS_PREFIX = 
         NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_NewJavaClassPrefix" ); // NOI18N
     
-    /** prefered dimmension of the panel */
+    /** preferred dimension of the panel */
     private static final Dimension PREF_DIM = new Dimension(500, 340);
     
     private Project project;
     private String expectedExtension;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private int type;
     private SourceGroup groups[];
     private boolean ignoreRootCombo;
@@ -227,9 +227,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     private void fireChange() {
         ChangeEvent e = new ChangeEvent(this);
-        Iterator it = listeners.iterator();
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(e);
+        for (ChangeListener l : listeners) {
+            l.stateChanged(e);
         }
     }
         

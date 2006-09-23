@@ -39,7 +39,7 @@ public class ProjectClassPathProvider implements ClassPathProvider {
     public ClassPath findClassPath(FileObject file, String type) {
         Project p = FileOwnerQuery.getOwner(file);
         if (p != null) {
-            ClassPathProvider cpp = (ClassPathProvider)p.getLookup().lookup(ClassPathProvider.class);
+            ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
             if (cpp != null) {
                 return cpp.findClassPath(file, type);
             } else {

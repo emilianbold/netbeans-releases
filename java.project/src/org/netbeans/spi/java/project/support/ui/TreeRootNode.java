@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -45,7 +44,6 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -75,11 +73,11 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     
     private TreeRootNode (Node originalNode, SourceGroup g) {
         super(originalNode, new PackageFilterChildren(originalNode),
-            new ProxyLookup(new Lookup[] {
+            new ProxyLookup(
                 originalNode.getLookup(),
-                Lookups.singleton(new PathFinder(g)),
+                Lookups.singleton(new PathFinder(g))
                 // no need for explicit search info
-            }));
+            ));
         this.g = g;
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
@@ -91,11 +89,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             Image image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
             return Utilities.mergeImages(image, PackageRootNode.PACKAGE_BADGE, 7, 7);
         } else {
-            if (icon instanceof ImageIcon) {
-                return ((ImageIcon) icon).getImage();
-            } else {
-                return PackageRootNode.icon2image(icon);
-            }
+            return Utilities.icon2Image(icon);
         }
     }
     
@@ -157,7 +151,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             if (FileUtil.isParentOf(groupRoot, fo) /* && group.contains(fo) */) {
                 FileObject folder = fo.isFolder() ? fo : fo.getParent();
                 String relPath = FileUtil.getRelativePath(groupRoot, folder);
-                List/*<String>*/ path = new ArrayList();
+                List<String> path = new ArrayList<String>();
                 StringTokenizer strtok = new StringTokenizer(relPath, "/"); // NOI18N
                 while (strtok.hasMoreTokens()) {
                     String token = strtok.nextToken();
@@ -228,14 +222,13 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     
     private static final class PackageFilterChildren extends FilterNode.Children {
         
-                
         public PackageFilterChildren (final Node originalNode) {
             super (originalNode);
         }       
                 
-        
-        protected /*@Override*/ Node copyNode (final Node originalNode) {
-            DataObject dobj = (DataObject) originalNode.getLookup().lookup (DataObject.class);
+        @Override
+        protected Node copyNode(final Node originalNode) {
+            DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
             return (dobj instanceof DataFolder) ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
         }
     }
@@ -246,7 +239,8 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             super (origNode, new PackageFilterChildren (origNode));
         }
         
-        public /*@Override*/ void setName (final String name) {
+        @Override
+        public void setName (final String name) {
             if (Utilities.isJavaIdentifier (name)) {
                 super.setName (name);
             }

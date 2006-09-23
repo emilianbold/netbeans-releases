@@ -34,6 +34,7 @@ import org.openide.filesystems.FileObject;
  * Delegates {@link UnitTestForSourceQueryImplementation} to the project which
  * owns the binary file.
  */
+@SuppressWarnings("deprecation")
 public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImplementation, MultipleRootsUnitTestForSourceQueryImplementation {
     
     /** Default constructor for lookup. */
@@ -43,9 +44,7 @@ public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImpleme
     public URL findUnitTest(FileObject source) {
         Project project = FileOwnerQuery.getOwner(source);
         if (project != null) {
-            UnitTestForSourceQueryImplementation query =
-                (UnitTestForSourceQueryImplementation)project.getLookup().lookup(
-                    UnitTestForSourceQueryImplementation.class);
+            UnitTestForSourceQueryImplementation query = project.getLookup().lookup(UnitTestForSourceQueryImplementation.class);
             if (query != null) {
                 return query.findUnitTest(source);
             }
@@ -56,9 +55,7 @@ public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImpleme
     public URL[] findUnitTests(FileObject source) {
         Project project = FileOwnerQuery.getOwner(source);
         if (project != null) {
-            MultipleRootsUnitTestForSourceQueryImplementation query =
-                (MultipleRootsUnitTestForSourceQueryImplementation)project.getLookup().lookup(
-                    MultipleRootsUnitTestForSourceQueryImplementation.class);
+            MultipleRootsUnitTestForSourceQueryImplementation query = project.getLookup().lookup(MultipleRootsUnitTestForSourceQueryImplementation.class);
             if (query != null) {
                 return query.findUnitTests(source);
             }
@@ -69,9 +66,7 @@ public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImpleme
     public URL findSource(FileObject unitTest) {
         Project project = FileOwnerQuery.getOwner(unitTest);
         if (project != null) {
-            UnitTestForSourceQueryImplementation query =
-                (UnitTestForSourceQueryImplementation)project.getLookup().lookup(
-                    UnitTestForSourceQueryImplementation.class);
+            UnitTestForSourceQueryImplementation query = project.getLookup().lookup(UnitTestForSourceQueryImplementation.class);
             if (query != null) {
                 return query.findSource(unitTest);
             }
@@ -82,9 +77,7 @@ public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImpleme
     public URL[] findSources(FileObject unitTest) {
         Project project = FileOwnerQuery.getOwner(unitTest);
         if (project != null) {
-            MultipleRootsUnitTestForSourceQueryImplementation query =
-                (MultipleRootsUnitTestForSourceQueryImplementation)project.getLookup().lookup(
-                    MultipleRootsUnitTestForSourceQueryImplementation.class);
+            MultipleRootsUnitTestForSourceQueryImplementation query = project.getLookup().lookup(MultipleRootsUnitTestForSourceQueryImplementation.class);
             if (query != null) {
                 return query.findSources(unitTest);
             }

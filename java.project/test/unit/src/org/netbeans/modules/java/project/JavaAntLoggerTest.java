@@ -58,10 +58,10 @@ public final class JavaAntLoggerTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        MockServices.setServices(new Class[] {IOP.class, IFL.class, SFBQ.class});
+        MockServices.setServices(IOP.class, IFL.class, SFBQ.class);
         simpleAppDir = new File(getDataDir(), "simple-app");
         assertTrue("have dir " + simpleAppDir, simpleAppDir.isDirectory());
-        ((SFBQ) Lookup.getDefault().lookup(SFBQ.class)).setSimpleAppDir(simpleAppDir);
+        Lookup.getDefault().lookup(SFBQ.class).setSimpleAppDir(simpleAppDir);
         nonhyperlinkedOut.clear();
         nonhyperlinkedErr.clear();
         hyperlinkedOut.clear();
@@ -166,6 +166,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
             return new StringReader("");
         }
 
+        @SuppressWarnings("deprecation")
         public Reader flushReader() {
             return getIn();
         }
@@ -198,10 +199,10 @@ public final class JavaAntLoggerTest extends NbTestCase {
         
     }
     
-    private static final List/*<String>*/ nonhyperlinkedOut = new ArrayList();
-    private static final List/*<String>*/ nonhyperlinkedErr = new ArrayList();
-    private static final List/*<String>*/ hyperlinkedOut = new ArrayList();
-    private static final List/*<String>*/ hyperlinkedErr = new ArrayList();
+    private static final List<String> nonhyperlinkedOut = new ArrayList<String>();
+    private static final List<String> nonhyperlinkedErr = new ArrayList<String>();
+    private static final List<String> hyperlinkedOut = new ArrayList<String>();
+    private static final List<String> hyperlinkedErr = new ArrayList<String>();
     
     private static final class OW extends OutputWriter {
         
@@ -221,7 +222,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
         }
         
         private void message(String msg, boolean hyperlinked) {
-            List/*<String>*/ messages = hyperlinked ?
+            List<String> messages = hyperlinked ?
                 (err ? hyperlinkedErr : hyperlinkedOut) :
                 (err ? nonhyperlinkedErr : nonhyperlinkedOut);
             messages.add(msg);

@@ -559,7 +559,7 @@ public class PackageViewTest extends NbTestCase {
         Node[] resultNodes = nodes[1].getChildren().getNodes(true);
         assertEquals ("Wrong paste result",1, resultNodes.length);        
         assertEquals ("Wrong paste result",fileNodes[0].getDisplayName(), resultNodes[0].getDisplayName());                
-        ((DataObject)resultNodes[0].getCookie(DataObject.class)).delete();
+        resultNodes[0].getCookie(DataObject.class).delete();
         
         //Multiple files into package
         t = new ExTransferable.Multi (new Transferable[] {fileNodes[0].clipboardCopy(),
@@ -572,9 +572,8 @@ public class PackageViewTest extends NbTestCase {
             fileNodes[0].getDisplayName(),
             fileNodes[1].getDisplayName(),
         }, true);
-        resultNodes = nodes[1].getChildren().getNodes(true);
-        for (int i=0; i< resultNodes.length; i++) {
-            DataObject dobj = (DataObject) resultNodes[i].getCookie(DataObject.class);
+        for (Node n : nodes[1].getChildren().getNodes(true)) {
+            DataObject dobj = n.getCookie(DataObject.class);
             if (dobj != null)
                 dobj.delete ();
         }
@@ -590,15 +589,13 @@ public class PackageViewTest extends NbTestCase {
             "src1test1",
             "src1test2",
         }, true);
-        resultNodes = rn1.getChildren().getNodes (true);
-        for (int i=0; i< resultNodes.length; i++) {
-            if (defaultPackageName.equals (resultNodes[i].getDisplayName())) {
-                assertNodes (resultNodes[i].getChildren(), new String[] {
+        for (Node n : rn1.getChildren().getNodes(true)) {
+            if (defaultPackageName.equals(n.getDisplayName())) {
+                assertNodes(n.getChildren(), new String[] {
                     fileNodes[0].getDisplayName(),
                 }, true);
-                resultNodes = resultNodes[i].getChildren().getNodes(true);
-                for (int j=0; j<resultNodes.length; j++) {
-                    DataObject dobj = (DataObject) resultNodes[j].getCookie (DataObject.class);
+                for (Node n2 : n.getChildren().getNodes(true)) {
+                    DataObject dobj = n2.getCookie(DataObject.class);
                     if (dobj != null) {
                         dobj.delete ();
                     }
@@ -608,7 +605,7 @@ public class PackageViewTest extends NbTestCase {
         }        
         //Multiple files into source root
         //Verify preconditions
-        FileObject[] files = ((DataObject)rn1.getCookie(DataObject.class)).getPrimaryFile().getChildren();
+        FileObject[] files = rn1.getCookie(DataObject.class).getPrimaryFile().getChildren();
         assertEquals("Invalid initial file count",2,files.length);
 
         t = new ExTransferable.Multi (new Transferable[] {fileNodes[0].clipboardCopy(),
@@ -617,13 +614,13 @@ public class PackageViewTest extends NbTestCase {
         assertEquals ("Multiple files into source root",1, pts.length);        
         pts[0].paste();
         //Verify that the files was added, the used PasteType is DataFolder's PasteType
-        files = ((DataObject)rn1.getCookie(DataObject.class)).getPrimaryFile().getChildren();
+        files = rn1.getCookie(DataObject.class).getPrimaryFile().getChildren();
         assertEquals("Invalid final file count",4,files.length);
-        Set s = new HashSet ();
-        s.add (((DataObject)fileNodes[0].getCookie(DataObject.class)).getPrimaryFile().getNameExt());
-        s.add (((DataObject)fileNodes[1].getCookie(DataObject.class)).getPrimaryFile().getNameExt());
-        for (int i=0; i<files.length; i++) {
-            s.remove (files[i].getNameExt());
+        Set<String> s = new HashSet<String>();
+        s.add(fileNodes[0].getCookie(DataObject.class).getPrimaryFile().getNameExt());
+        s.add(fileNodes[1].getCookie(DataObject.class).getPrimaryFile().getNameExt());
+        for (FileObject f : files) {
+            s.remove(f.getNameExt());
         }
         assertTrue("The following files were not created: "+s.toString(),s.size()==0);
         assertNodes(rn1.getChildren(), new String[] {
@@ -631,16 +628,14 @@ public class PackageViewTest extends NbTestCase {
             "src1test1",
             "src1test2",
         }, true);
-        resultNodes = rn1.getChildren().getNodes (true);
-        for (int i=0; i< resultNodes.length; i++) {
-            if (defaultPackageName.equals (resultNodes[i].getDisplayName())) {
-                assertNodes (resultNodes[i].getChildren(), new String[] {
+        for (Node n : rn1.getChildren().getNodes(true)) {
+            if (defaultPackageName.equals(n.getDisplayName())) {
+                assertNodes(n.getChildren(), new String[] {
                     fileNodes[0].getDisplayName(),
                     fileNodes[1].getDisplayName()
                 }, true);
-                resultNodes = resultNodes[i].getChildren().getNodes(true);                
-                for (int j=0; j<resultNodes.length; j++) {
-                    DataObject dobj = (DataObject) resultNodes[j].getCookie (DataObject.class);
+                for (Node n2 : n.getChildren().getNodes(true)) {
+                    DataObject dobj = n2.getCookie(DataObject.class);
                     if (dobj != null) {
                         dobj.delete ();
                     }
@@ -655,7 +650,7 @@ public class PackageViewTest extends NbTestCase {
         assertEquals ("Single package into different source root",1,pts.length);
         pts[0].paste ();
         assertNodes (rn2.getChildren(), new String[] {"src1test1"}, true);
-        ((DataObject)rn2.getChildren().getNodes(true)[0].getCookie(DataObject.class)).delete();
+        rn2.getChildren().getNodes(true)[0].getCookie(DataObject.class).delete();
         
         //Multiple packages into different source root
         t = new ExTransferable.Multi (new Transferable[] {nodes[0].clipboardCopy(),
@@ -664,9 +659,8 @@ public class PackageViewTest extends NbTestCase {
         assertEquals ("Multiple packages into different source root",1,pts.length);
         pts[0].paste ();
         assertNodes (rn2.getChildren(), new String[] {"src1test1","src1test2"}, true);
-        resultNodes = rn2.getChildren().getNodes(true);
-        for (int i=0; i< resultNodes.length; i++) {
-            DataObject dobj = (DataObject) resultNodes[i].getCookie(DataObject.class);
+        for (Node n : rn2.getChildren().getNodes(true)) {
+            DataObject dobj = n.getCookie(DataObject.class);
             if (dobj != null)
                 dobj.delete ();
         }
@@ -677,9 +671,9 @@ public class PackageViewTest extends NbTestCase {
         FileObject defPkgFileRoot2 = createFile(root2, null, "TestDP2");
         
         Node defPkgNode = null;
-        for (int i=0; i< nodes.length; i++) {
-            if (nodes[i].getDisplayName().equals (defaultPackageName)) {
-                defPkgNode = nodes[i];
+        for (Node n : nodes) {
+            if (n.getDisplayName().equals (defaultPackageName)) {
+                defPkgNode = n;
                 break;
             }
         }
@@ -690,9 +684,8 @@ public class PackageViewTest extends NbTestCase {
         pts[0].paste();
         assertNodes (rn2.getChildren(), new String[] {defaultPackageName}, true);
         defPkgFileRoot1.delete();
-        resultNodes = rn2.getChildren().getNodes(true)[0].getChildren().getNodes(true);
-        for (int i=0; i< resultNodes.length; i++) {
-            DataObject dobj = (DataObject) resultNodes[i].getCookie(DataObject.class);
+        for (Node n : rn2.getChildren().getNodes(true)[0].getChildren().getNodes(true)) {
+            DataObject dobj = n.getCookie(DataObject.class);
             if (dobj != null) {
                 dobj.delete();
             }
@@ -832,7 +825,7 @@ public class PackageViewTest extends NbTestCase {
                 assertEquals( "Wrong nuber of children. Node: " + nodeNames[i] +".", childCount[i], nodes[i].getChildren().getNodes( true ).length );
                 
                 
-                DataObject.Container cont = (DataObject.Container)nodes[i].getCookie (DataObject.Container.class);
+                DataObject.Container cont = nodes[i].getCookie (DataObject.Container.class);
                 if (cont != null) {
                     Node[] arr = nodes[i].getChildren ().getNodes ( true );
                     DataObject[] child = cont.getChildren ();
@@ -840,7 +833,7 @@ public class PackageViewTest extends NbTestCase {
                         if ( !VisibilityQuery.getDefault().isVisible( child[k].getPrimaryFile() ) ) {
                             continue;
                         }
-                        DataObject myObj = (DataObject)arr[l].getCookie (DataObject.class);
+                        DataObject myObj = arr[l].getCookie(DataObject.class);
                         assertNotNull ("Data object should be found for " + arr[k], myObj);
                         if (child.length <= k) {
                             fail ("But there is no object for node: " + arr[k]);

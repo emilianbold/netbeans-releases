@@ -19,26 +19,26 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
-import java.awt.Component;
 import java.awt.Image;
-import java.awt.Panel;
-import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.FindAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -49,6 +49,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.PropertySupport;
@@ -57,6 +58,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
@@ -66,7 +68,6 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
-
 
 /** Node displaying a packages in given SourceGroup
  * @author Petr Hrebejk
@@ -80,7 +81,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     private SourceGroup group;
 
     private final FileObject file;
-    private final Set files;
+    private final Set<FileObject> files;
     private FileStatusListener fileSystemListener;
     private RequestProcessor.Task task;
     private volatile boolean iconChange;
@@ -92,8 +93,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     
     private PackageRootNode( SourceGroup group, InstanceContent ic ) {
         super( new PackageViewChildren( group.getRootFolder() ),
-               new ProxyLookup( new Lookup[] { createLookup ( group ),
-                                               new AbstractLookup( ic )} ) );
+                new ProxyLookup(createLookup(group), new AbstractLookup(ic)));
         ic.add(alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfoBySubnodes(this)));
         this.group = group;
         file = group.getRootFolder();
@@ -185,13 +185,13 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             actions = new Action[] {
                 CommonProjectActions.newFileAction(),
                 null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.FileSystemAction.class ),
+                SystemAction.get( FileSystemAction.class ),
                 null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.FindAction.class ),
+                SystemAction.get( FindAction.class ),
                 null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.PasteAction.class ),
+                SystemAction.get( PasteAction.class ),
                 null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.ToolsAction.class ),
+                SystemAction.get( ToolsAction.class ),
             };
         }
         return actions;            
@@ -206,19 +206,19 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
                 //Replace the Sheet.PROPERTIES by the new one
                 //having the ro name property and ro path property
                 properties[i] = Sheet.createPropertiesSet();
-                ((Sheet.Set)properties[i]).put( new PropertySupport.ReadOnly (DataObject.PROP_NAME, String.class,
-                    NbBundle.getMessage (PackageRootNode.class,"PROP_name"), NbBundle.getMessage (PackageRootNode.class,"HINT_name")) {
-
-                          public /*@Override*/ Object getValue () {
-                              return PackageRootNode.this.getDisplayName();
-                          }
+                ((Sheet.Set) properties[i]).put(new PropertySupport.ReadOnly<String>(DataObject.PROP_NAME, String.class,
+                        NbBundle.getMessage(PackageRootNode.class,"PROP_name"), NbBundle.getMessage(PackageRootNode.class,"HINT_name")) {
+                    @Override
+                    public String getValue() {
+                        return PackageRootNode.this.getDisplayName();
+                    }
                 });
-                ((Sheet.Set)properties[i]).put( new PropertySupport.ReadOnly ("ROOT_PATH", String.class,    //NOI18N
-                    NbBundle.getMessage (PackageRootNode.class,"PROP_rootpath"), NbBundle.getMessage (PackageRootNode.class,"HINT_rootpath")) {
-
-                          public /*@Override*/ Object getValue () {                              
-                              return FileUtil.getFileDisplayName(PackageRootNode.this.file);
-                          }
+                ((Sheet.Set) properties[i]).put(new PropertySupport.ReadOnly<String>("ROOT_PATH", String.class,    //NOI18N
+                        NbBundle.getMessage(PackageRootNode.class,"PROP_rootpath"), NbBundle.getMessage(PackageRootNode.class,"HINT_rootpath")) {
+                    @Override
+                    public String getValue() {
+                        return FileUtil.getFileDisplayName(PackageRootNode.this.file);
+                    }
                 });
             }
         }
@@ -226,11 +226,11 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     }
 
     // XXX Paste types - probably not very nice 
-    public void createPasteTypes( Transferable t, List list ) {
+    public void createPasteTypes(Transferable t, List<PasteType> list) {
         if (t.isDataFlavorSupported(ExTransferable.multiFlavor)) {
             try {
-                MultiTransferObject mto = (MultiTransferObject) t.getTransferData (ExTransferable.multiFlavor);
-                List l = new ArrayList ();
+                MultiTransferObject mto = (MultiTransferObject) t.getTransferData(ExTransferable.multiFlavor);
+                List<PackageViewChildren.PackageNode> l = new ArrayList<PackageViewChildren.PackageNode>();
                 boolean isPackageFlavor = false;
                 boolean hasTheSameRoot = false;
                 int op = -1;
@@ -255,9 +255,9 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
                     }
                 }
                 if (isPackageFlavor && !hasTheSameRoot) {
-                    list.add (new PackageViewChildren.PackagePasteType (this.group.getRootFolder(),
-                                    (PackageViewChildren.PackageNode[]) l.toArray(new PackageViewChildren.PackageNode[l.size()]),
-                                    op));
+                    list.add(new PackageViewChildren.PackagePasteType(this.group.getRootFolder(),
+                            l.toArray(new PackageViewChildren.PackageNode[l.size()]),
+                            op));
                 }
                 else if (!isPackageFlavor) {
                     list.addAll( Arrays.asList( getDataFolderNodeDelegate().getPasteTypes( t ) ) );
@@ -273,13 +273,13 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             FileObject root = this.group.getRootFolder();
             boolean isPackageFlavor = false;
             if (root!= null  && root.canWrite()) {
-                for (int i=0; i<flavors.length; i++) {
-                    if (PackageViewChildren.SUBTYPE.equals(flavors[i].getSubType ()) &&
-                            PackageViewChildren.PRIMARY_TYPE.equals(flavors[i].getPrimaryType ())) {
+                for (DataFlavor flavor : flavors) {
+                    if (PackageViewChildren.SUBTYPE.equals(flavor.getSubType ()) &&
+                            PackageViewChildren.PRIMARY_TYPE.equals(flavor.getPrimaryType ())) {
                         isPackageFlavor = true;
                         try {
-                            int op = Integer.valueOf (flavors[i].getParameter (PackageViewChildren.MASK)).intValue ();
-                            PackageViewChildren.PackageNode pkgNode = (PackageViewChildren.PackageNode) t.getTransferData(flavors[i]);
+                            int op = Integer.parseInt(flavor.getParameter(PackageViewChildren.MASK));
+                            PackageViewChildren.PackageNode pkgNode = (PackageViewChildren.PackageNode) t.getTransferData(flavor);
                             if ( !((PackageViewChildren)getChildren()).getRoot().equals( pkgNode.getRoot() ) ) {
                                 list.add(new PackageViewChildren.PackagePasteType (root, new PackageViewChildren.PackageNode[] {pkgNode}, op));
                             }
@@ -298,7 +298,8 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         }
     }
     
-    public /*@Override*/ PasteType getDropType(Transferable t, int action, int index) {        
+    @Override
+    public PasteType getDropType(Transferable t, int action, int index) {
         PasteType pasteType = super.getDropType(t, action, index);
         //The pasteType can be:
         // 1) PackagePasteType - the t.flavor is package flavor
@@ -312,7 +313,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     // Private methods ---------------------------------------------------------
     
     private Node getDataFolderNodeDelegate() {
-        return ((DataFolder)getLookup().lookup( DataFolder.class )).getNodeDelegate();
+        return getLookup().lookup(DataFolder.class).getNodeDelegate();
     }
     
     private Image computeIcon( boolean opened, int type ) {
@@ -325,34 +326,17 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             image = Utilities.mergeImages( image, PACKAGE_BADGE, 7, 7 );
         }
         else {
-            if ( icon instanceof ImageIcon ) {
-                image = ((ImageIcon)icon).getImage();
-            }
-            else {
-                image = icon2image( icon );
-            }
+            image = Utilities.icon2Image(icon);
         }
         
         return image;        
     }
     
-    private static Component CONVERTOR_COMPONENT = new Panel();
-    
-    static Image icon2image(Icon icon) {
-        int height = icon.getIconHeight();
-        int width = icon.getIconWidth();
-        
-        BufferedImage bImage = new BufferedImage( width, height, BufferedImage.TYPE_INT_ARGB );
-        icon.paintIcon( CONVERTOR_COMPONENT, bImage.getGraphics(), 0, 0 );
-        
-        return bImage;
-    }
-            
     private static Lookup createLookup( SourceGroup group ) {
         // XXX Remove DataFolder when paste, find and refresh are reimplemented
         FileObject rootFolder = group.getRootFolder();
         DataFolder dataFolder = DataFolder.findFolder( rootFolder );        
-        return Lookups.fixed( new Object[]{ dataFolder, new PathFinder( group ) } );
+        return Lookups.fixed(dataFolder, new PathFinder(group));
     }
     
     /** If contained in the lookup can perform the search for a node
@@ -387,11 +371,10 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
                     if (fo.isFolder()) {
                         return packageNode;
                     } else {
-                        Node[] childs = packageNode.getChildren().getNodes(true);
-                        for (int i = 0; i < childs.length; i++) {
-                           DataObject dobj = childs[i].getLookup().lookup(DataObject.class);
+                        for (Node child : packageNode.getChildren().getNodes(true)) {
+                           DataObject dobj = child.getLookup().lookup(DataObject.class);
                            if (dobj != null && dobj.getPrimaryFile().getNameExt().equals(fo.getNameExt())) {
-                               return childs[i];
+                               return child;
                            }
                         }
                     }

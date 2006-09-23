@@ -254,7 +254,7 @@ public class ProjectClassPathModifier {
         if (project == null) {
             return null;
         }
-        final ProjectClassPathModifierImplementation pm = (ProjectClassPathModifierImplementation) project.getLookup().lookup(ProjectClassPathModifierImplementation.class);
+        final ProjectClassPathModifierImplementation pm = project.getLookup().lookup(ProjectClassPathModifierImplementation.class);
         if (pm != null) {            
             final SourceGroup[] sgs = ProjectClassPathModifierAccessor.INSTANCE.getExtensibleSourceGroups(pm);
             assert sgs != null   : "Class: " + pm.getClass() + " returned null as source groups.";    //NOI18N

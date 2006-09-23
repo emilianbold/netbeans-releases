@@ -42,9 +42,7 @@ public class ProjectSourceForBinaryQuery implements SourceForBinaryQueryImplemen
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         Project project = FileOwnerQuery.getOwner(URI.create(binaryRoot.toString()));
         if (project != null) {
-            SourceForBinaryQueryImplementation sfbqi =
-                    (SourceForBinaryQueryImplementation)project.getLookup().lookup(
-                            SourceForBinaryQueryImplementation.class);
+            SourceForBinaryQueryImplementation sfbqi = project.getLookup().lookup(SourceForBinaryQueryImplementation.class);
             if (sfbqi != null) {
                 return sfbqi.findSourceRoots(binaryRoot);
             }

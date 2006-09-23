@@ -33,7 +33,8 @@ import org.openide.filesystems.FileObject;
  * @since org.netbeans.modules.java.project/1 1.3
  * @deprecated Please use the {@link ProjectClassPathModifier} instead.
  */
-public @Deprecated interface ProjectClassPathExtender {
+@Deprecated
+public interface ProjectClassPathExtender {
 
     /**
      * Adds a library into the project's compile classpath if the
@@ -43,6 +44,7 @@ public @Deprecated interface ProjectClassPathExtender {
      * @exception IOException in case the project metadata cannot be changed
      * @deprecated Please use {@link ProjectClassPathModifier#addLibrary} instead.
      */
+    @Deprecated
     boolean addLibrary(Library library) throws IOException;
 
     /**
@@ -53,6 +55,7 @@ public @Deprecated interface ProjectClassPathExtender {
      * @exception IOException in case the project metadata cannot be changed
      * @deprecated Please use {@link ProjectClassPathModifier#addArchive} instead.
      */
+    @Deprecated
     boolean addArchiveFile(FileObject archiveFile) throws IOException;
 
     /**
@@ -65,6 +68,7 @@ public @Deprecated interface ProjectClassPathExtender {
      * @exception IOException in case the project metadata cannot be changed
      * @deprecated Please use {@link ProjectClassPathModifier#addAntArtifact} instead.
      */
+    @Deprecated
     boolean addAntArtifact(AntArtifact artifact, URI artifactElement) throws IOException;
 
 }

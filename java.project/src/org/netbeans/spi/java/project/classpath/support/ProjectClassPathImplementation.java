@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -46,10 +47,10 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final File projectFolder;
-    private List/*<PathResourceImplementation>*/ resources;
+    private List<PathResourceImplementation> resources;
     private final PropertyEvaluator evaluator;
     private boolean dirty = false;
-    private final List/*<String>*/ propertyNames;
+    private final List<String> propertyNames;
 
     /**
      * Construct the implementation.
@@ -65,7 +66,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    public synchronized List/*<PathResourceImplementation>*/ getResources() {
+    public synchronized List<PathResourceImplementation> getResources() {
         if (this.resources == null) {
             this.resources = this.getPath ();
         }
@@ -97,7 +98,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     
     public void run() {
         dirty = false;
-        List newRoots = getPath ();
+        List<PathResourceImplementation> newRoots = getPath();
         boolean fire = false;
         synchronized (this) {
             if (this.resources != null && !this.resources.equals(newRoots)) {
@@ -110,15 +111,13 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
     }
     
-    private List/*<PathResourceImplementation>*/ getPath() {
-        List/*<PathResourceImplementation>*/ result = new ArrayList();
-        Iterator it = propertyNames.iterator();
-        while (it.hasNext()) {
-            String prop = evaluator.getProperty((String) it.next());
+    private List<PathResourceImplementation> getPath() {
+        List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        for (String p : propertyNames) {
+            String prop = evaluator.getProperty(p);
             if (prop != null) {
-                String[] pieces = PropertyUtils.tokenizePath(prop);
-                for (int i = 0; i < pieces.length; i++) {                    
-                    File f = PropertyUtils.resolveFile(this.projectFolder, pieces[i]); 
+                for (String piece : PropertyUtils.tokenizePath(prop)) {
+                    File f = PropertyUtils.resolveFile(this.projectFolder, piece);
                     try {
                         URL entry = f.toURI().toURL();
                         if (FileUtil.isArchiveFile(entry) || (f.isFile() && f.length()<4)) {    //XXX: Not yet closed archive file

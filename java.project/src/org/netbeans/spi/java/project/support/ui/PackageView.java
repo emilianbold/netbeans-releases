@@ -86,12 +86,12 @@ public class PackageView {
      */
     public static Node findPath(Node rootNode, Object object) {
         
-        PackageRootNode.PathFinder pf = (PackageRootNode.PathFinder)rootNode.getLookup().lookup( PackageRootNode.PathFinder.class );
+        PackageRootNode.PathFinder pf = rootNode.getLookup().lookup(PackageRootNode.PathFinder.class);
         
         if ( pf != null ) {
             return pf.findPath( rootNode, object );
         } else {
-            TreeRootNode.PathFinder pf2 = (TreeRootNode.PathFinder) rootNode.getLookup().lookup(TreeRootNode.PathFinder.class);
+            TreeRootNode.PathFinder pf2 = rootNode.getLookup().lookup(TreeRootNode.PathFinder.class);
             if (pf2 != null) {
                 return pf2.findPath(rootNode, object);
             } else {
@@ -114,12 +114,12 @@ public class PackageView {
      */
     
     public static ComboBoxModel createListView(SourceGroup group) {        
-        TreeSet data = new TreeSet();        
+        SortedSet<PackageItem> data = new TreeSet<PackageItem>();
         findNonExcludedPackages( data, group.getRootFolder(), group );
-        return new DefaultComboBoxModel( new Vector( data) );        
+        return new DefaultComboBoxModel(data.toArray(new PackageItem[data.size()]));
     }
     
-    /** Fills given collection with flatened packages under given folder
+    /** Fills given collection with flattened packages under given folder
      *@param target The collection to be filled
      *@param fo The folder to be scanned
      *@param group if null the collection will be filled with file objects if 
@@ -129,12 +129,12 @@ public class PackageView {
         findNonExcludedPackages( children, null, fo, null );
     }
     
-    static void findNonExcludedPackages( Collection target, FileObject fo, SourceGroup group ) {
+    static void findNonExcludedPackages(Collection<PackageItem> target, FileObject fo, SourceGroup group) {
         findNonExcludedPackages( null, target, fo, group );
     }
      
     
-    private static void findNonExcludedPackages( PackageViewChildren children, Collection target, FileObject fo, SourceGroup group ) {
+    private static void findNonExcludedPackages(PackageViewChildren children, Collection<PackageItem> target, FileObject fo, SourceGroup group) {
         
         assert fo.isFolder() : "Package view only accepts folders"; // NOI18N
                
@@ -142,14 +142,13 @@ public class PackageView {
             return; // Don't show hidden packages
         }
         
-        FileObject[] kids = fo.getChildren();
         boolean hasSubfolders = false;
         boolean hasFiles = false;
-        for (int i = 0; i < kids.length; i++) {            
+        for (FileObject kid : fo.getChildren()) {
             // XXX could use PackageDisplayUtils.isSignificant here
-            if ( VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
-                if (kids[i].isFolder() ) {
-                    findNonExcludedPackages( children, target, kids[i], group );
+            if (VisibilityQuery.getDefault().isVisible(kid)) {
+                if (kid.isFolder()) {
+                    findNonExcludedPackages(children, target, kid, group);
                     hasSubfolders = true;
                 } 
                 else {
@@ -242,9 +241,9 @@ public class PackageView {
     /**
      * Model item representing one package.
      */
-    static final class PackageItem implements Comparable {
+    static final class PackageItem implements Comparable<PackageItem> {
         
-        private static IdentityHashMap/*<Image,Icon>*/ image2icon = new IdentityHashMap();
+        private static Map<Image,Icon> image2icon = new IdentityHashMap<Image,Icon>();
         
         private final boolean empty;
         private final FileObject pkg;
@@ -270,7 +269,7 @@ public class PackageView {
         public Icon getIcon() {
             if ( icon == null ) {
                 Image image = PackageDisplayUtils.getIcon(pkg, pkgname, empty);                
-                icon = (Icon)image2icon.get( image );
+                icon = image2icon.get(image);
                 if ( icon == null ) {            
                     icon = new ImageIcon( image );
                     image2icon.put( image, icon );
@@ -279,8 +278,8 @@ public class PackageView {
             return icon;
         }
 
-        public int compareTo(Object obj) {
-            return pkgname.compareTo(((PackageItem) obj).pkgname);
+        public int compareTo(PackageItem p) {
+            return pkgname.compareTo(p.pkgname);
         }
         
     }

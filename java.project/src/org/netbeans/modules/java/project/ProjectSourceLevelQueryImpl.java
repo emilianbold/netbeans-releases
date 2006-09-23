@@ -36,9 +36,7 @@ public class ProjectSourceLevelQueryImpl implements SourceLevelQueryImplementati
     public String getSourceLevel(org.openide.filesystems.FileObject javaFile) {
         Project project = FileOwnerQuery.getOwner(javaFile);
         if (project != null) {
-            SourceLevelQueryImplementation slq =
-                    (SourceLevelQueryImplementation)project.getLookup().lookup(
-                            SourceLevelQueryImplementation.class);
+            SourceLevelQueryImplementation slq = project.getLookup().lookup(SourceLevelQueryImplementation.class);
             if (slq != null) {
                 return slq.getSourceLevel(javaFile);
             }

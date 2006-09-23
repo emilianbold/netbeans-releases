@@ -36,9 +36,7 @@ public class ProjectAccessibilityQuery implements AccessibilityQueryImplementati
     public Boolean isPubliclyAccessible(FileObject pkg) {
         Project project = FileOwnerQuery.getOwner(pkg);
         if (project != null) {
-            AccessibilityQueryImplementation aqi =
-                (AccessibilityQueryImplementation)project.getLookup().lookup(
-                    AccessibilityQueryImplementation.class);
+            AccessibilityQueryImplementation aqi = project.getLookup().lookup(AccessibilityQueryImplementation.class);
             if (aqi != null) {
                 return aqi.isPubliclyAccessible(pkg);
             }

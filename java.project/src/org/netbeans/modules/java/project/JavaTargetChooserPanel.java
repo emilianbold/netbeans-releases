@@ -51,7 +51,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
     private static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
 
     private final SpecificationVersion JDK_14 = new SpecificationVersion ("1.4");   //NOI18N
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private JavaTargetChooserPanelGUI gui;
     private WizardDescriptor.Panel bottomPanel;
     private WizardDescriptor wizard;

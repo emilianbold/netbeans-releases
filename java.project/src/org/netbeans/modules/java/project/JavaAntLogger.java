@@ -79,7 +79,7 @@ public final class JavaAntLogger extends AntLogger {
     
     /**
      * Regexp matching part of a Java task's invocation debug message
-     * that specificies the classpath.
+     * that specifies the classpath.
      * Hack to find the classpath an Ant task is using.
      * Cf. Commandline.describeArguments, issue #28190.
      * Captured groups:
@@ -91,7 +91,7 @@ public final class JavaAntLogger extends AntLogger {
     
     /**
      * Regexp matching part of a Java task's invocation debug message
-     * that specificies java executable.
+     * that specifies java executable.
      * Hack to find JDK used for execution.
      */
     private static final Pattern JAVA_EXECUTABLE = Pattern.compile("^Executing '(.*)' with arguments:$", Pattern.MULTILINE); // NOI18N
@@ -123,7 +123,7 @@ public final class JavaAntLogger extends AntLogger {
     private static final class SessionData {
         public ClassPath platformSources = null;
         public String classpath = null;
-        public Collection/*<FileObject>*/ classpathSourceRoots = null;
+        public Collection<FileObject> classpathSourceRoots = null;
         public String possibleExceptionText = null;
         public String lastExceptionMessage = null;
         public SessionData() {}
@@ -235,13 +235,12 @@ public final class JavaAntLogger extends AntLogger {
     }
     
     private ClassPath findPlatformSources(String javaExecutable) {
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        for (int i=0; i<platforms.length; i++) {
-            FileObject fo = platforms[i].findTool("java"); // NOI18N
+        for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            FileObject fo = p.findTool("java"); // NOI18N
             if (fo != null) {
                 File f = FileUtil.toFile(fo);
                 if (f.getAbsolutePath().startsWith(javaExecutable)) {
-                    return platforms[i].getSourceFolders();
+                    return p.getSourceFolders();
                 }
             }
         }
@@ -268,7 +267,7 @@ public final class JavaAntLogger extends AntLogger {
             return Collections.EMPTY_SET;
         }
         if (data.classpathSourceRoots == null) {
-            data.classpathSourceRoots = new LinkedHashSet();
+            data.classpathSourceRoots = new LinkedHashSet<FileObject>();
             StringTokenizer tok = new StringTokenizer(data.classpath, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 String binrootS = tok.nextToken();
@@ -286,7 +285,7 @@ public final class JavaAntLogger extends AntLogger {
                     }
                 }
                 FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(binroot).getRoots();
-                data.classpathSourceRoots.addAll(Arrays.asList((Object[]) someRoots));
+                data.classpathSourceRoots.addAll(Arrays.asList(someRoots));
             }
             if (data.platformSources != null) {
                 data.classpathSourceRoots.addAll(Arrays.asList(data.platformSources.getRoots()));

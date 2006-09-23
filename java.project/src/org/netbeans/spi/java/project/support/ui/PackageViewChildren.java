@@ -19,21 +19,24 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -50,6 +53,8 @@ import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -83,7 +88,7 @@ import org.openidex.search.SearchInfoFactory;
  * Display of Java sources in a package structure rather than folder structure.
  * @author Adam Sotona, Jesse Glick, Petr Hrebejk, Tomas Zezula
  */
-final class PackageViewChildren extends Children.Keys/*<String>*/ implements FileChangeListener, ChangeListener, Runnable {
+final class PackageViewChildren extends Children.Keys<String> implements FileChangeListener, ChangeListener, Runnable {
     
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
     private static final String NODE_NOT_CREATED_EMPTY = "NNC_E"; //NOI18N
@@ -94,7 +99,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     static final String SUBTYPE = "x-java-org-netbeans-modules-java-project-packagenodednd";    //NOI18N
     static final String MASK = "mask";  //NOI18N
 
-    private java.util.Map/*<String,NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|PackageNode>*/ names2nodes;
+    private java.util.Map<String,Object/*NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|?PackageNode?*/> names2nodes;
     private final FileObject root;
     private FileChangeListener wfcl;    // Weak listener on the system filesystem
     private ChangeListener wvqcl;       // Weak listener on the VisibilityQuery
@@ -117,10 +122,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         return root; // Used from PackageRootNode
     }
     
-    protected Node[] createNodes( Object obj ) {
-        FileObject fo = root.getFileObject( (String)obj );
+    protected Node[] createNodes(String path) {
+        FileObject fo = root.getFileObject(path);
         if ( fo != null && fo.isValid()) {
-            Object o = names2nodes.get( obj );
+            Object o = names2nodes.get(path);
             PackageNode n;
             if ( o == NODE_NOT_CREATED ) {
                 n = new PackageNode( root, DataFolder.findFolder( fo ), false );
@@ -129,9 +134,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 n = new PackageNode( root, DataFolder.findFolder( fo ), true );
             }
             else {
+                // XXX why does this not use the following? n = (PackageNode) o;
                 n = new PackageNode( root, DataFolder.findFolder( fo ) );
             }            
-            names2nodes.put( obj, n );
+            names2nodes.put(path, n);
             return new Node[] {n};
         }
         else {
@@ -166,7 +172,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         refreshKeys();
         try { 
             FileSystem fs = root.getFileSystem();
-            wfcl = (FileChangeListener)WeakListeners.create( FileChangeListener.class, this, fs );
+            wfcl = FileUtil.weakFileChangeListener(this, fs);
             fs.addFileChangeListener( wfcl );
         }
         catch ( FileStateInvalidException e ) {
@@ -185,7 +191,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         catch ( FileStateInvalidException e ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
         }
-        setKeys(Collections.EMPTY_SET);
+        setKeys(new String[0]);
         names2nodes.clear();
         super.removeNotify();
     }
@@ -200,7 +206,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
      * See related issue: #61027
      */
     private void refreshKeysAsync () {
-        SwingUtilities.invokeLater(new Runnable () {
+        EventQueue.invokeLater(new Runnable() {
             public void run () {
                 refreshKeys();
             }
@@ -211,7 +217,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         // XXX this is not going to perform too well for a huge source root...
         // However we have to go through the whole hierarchy in order to find
         // all packages (Hrebejk)
-        names2nodes = new TreeMap();
+        names2nodes = new TreeMap<String,Object>();
         findNonExcludedPackages( root );
     }
     
@@ -269,13 +275,13 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     private void removeSubTree (FileObject fo) {
         String path = FileUtil.getRelativePath( root, fo );
         assert path != null : "Removing wrong folder" + fo;
-        Collection keys = new HashSet (names2nodes.keySet());
-        names2nodes.remove(path);
+        Set<String> keys = names2nodes.keySet();
+        keys.remove(path);
         path = path + '/';  //NOI18N
-        for (Iterator it = keys.iterator(); it.hasNext();) {
-            String key = (String) it.next();
-            if (key.startsWith(path)) {
-                names2nodes.remove(key);
+        Iterator<String> it = keys.iterator();
+        while (it.hasNext()) {
+            if (it.next().startsWith(path)) {
+                it.remove();
             }
         }
     }
@@ -408,11 +414,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     private boolean toBeRemoved( FileObject folder ) {
         boolean ignoredOnly = true;
         boolean foldersOnly = true;
-        FileObject kids[] = folder.getChildren();
-        for ( int i = 0; i < kids.length; i++ ) {
-            if ( VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
+        for (FileObject kid : folder.getChildren()) {
+            if (VisibilityQuery.getDefault().isVisible(kid)) {
                 ignoredOnly = false;
-                if ( !kids[i].isFolder() ) {
+                if (!kid.isFolder()) {
                     foldersOnly = false;
                     break;
                 }
@@ -438,15 +443,15 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             boolean doUpdate = false;
             
             // Find all entries which have to be updated
-            ArrayList needsUpdate = new ArrayList();            
-            for( Iterator it = names2nodes.keySet().iterator(); it.hasNext(); ) {
-                String p = (String)it.next();
+            List<String> needsUpdate = new ArrayList<String>();
+            for (Iterator<String> it = names2nodes.keySet().iterator(); it.hasNext(); ) {
+                String p = it.next();
                 if ( p.startsWith( oldPath ) ) { 
                     if ( visible ) {
                         needsUpdate.add( p );
                     }
                     else {
-                        names2nodes.remove( p );
+                        it.remove();
                         doUpdate = true;
                     }
                 }    
@@ -462,9 +467,8 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             
             int oldPathLen = oldPath.length();
             String newPath = FileUtil.getRelativePath( root, fo );
-            for( Iterator it = needsUpdate.iterator(); it.hasNext(); ) {
-                String p = (String)it.next();
-                StringBuffer np = new StringBuffer( p );
+            for (String p : needsUpdate) {
+                StringBuilder np = new StringBuilder(p);
                 np.replace( 0, oldPathLen, newPath );                    
                 PackageNode n = updatePath( p, np.toString() ); // Replace entries in cache
                 if ( n != null ) {
@@ -543,16 +547,14 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         public PackageNode( FileObject root, DataFolder dataFolder, boolean empty ) {    
             super( dataFolder.getNodeDelegate(), 
                    empty ? Children.LEAF : dataFolder.createNodeChildren( NO_FOLDERS_FILTER ),
-                   new ProxyLookup(new Lookup[] {
+                   new ProxyLookup(
                         Lookups.singleton(new NoFoldersContainer (dataFolder)),
                         dataFolder.getNodeDelegate().getLookup(),
                         Lookups.singleton(PackageRootNode.alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfo(
                                                   dataFolder.getPrimaryFile(),
                                                   false,      //not recursive
                                                   new FileObjectFilter[] {
-                                                          SearchInfoFactory.VISIBILITY_FILTER}))),
-                   })
-            );
+                                                          SearchInfoFactory.VISIBILITY_FILTER})))));
             this.root = root;
             this.dataFolder = dataFolder;
             this.isDefaultPackage = root.equals( dataFolder.getPrimaryFile() );
@@ -574,18 +576,18 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 if ( actions == null ) {                
                     // Copy actions and leave out the PropertiesAction and FileSystemAction.                
                     Action superActions[] = super.getActions( context );            
-                    ArrayList actionList = new ArrayList( superActions.length );
+                    List<Action> actionList = new ArrayList<Action>(superActions.length);
                     
                     for( int i = 0; i < superActions.length; i++ ) {
 
-                        if ( superActions[ i ] == null && superActions[i + 1] instanceof org.openide.actions.PropertiesAction ) {
+                        if ( superActions[ i ] == null && superActions[i + 1] instanceof PropertiesAction ) {
                             i ++;
                             continue;
                         }
-                        else if ( superActions[i] instanceof org.openide.actions.PropertiesAction ) {
+                        else if ( superActions[i] instanceof PropertiesAction ) {
                             continue;
                         }
-                        else if ( superActions[i] instanceof org.openide.actions.FileSystemAction ) {
+                        else if ( superActions[i] instanceof FileSystemAction ) {
                             actionList.add (null); // insert separator and new action
                             actionList.add (FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, 
                                 NbBundle.getMessage( PackageViewChildren.class, "LBL_CompilePackage_Action" ), // NOI18N
@@ -719,13 +721,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }
 
         private static synchronized PackageRenameHandler getRenameHandler() {
-            Lookup.Result renameImplementations = Lookup.getDefault().lookup(new Lookup.Template(PackageRenameHandler.class));
-            List handlers = (List) renameImplementations.allInstances();
+            Collection<? extends PackageRenameHandler> handlers = Lookup.getDefault().lookupAll(PackageRenameHandler.class);
             if (handlers.size()==0)
                 return null;
             if (handlers.size()>1)
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "Multiple instances of PackageRenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
-            return (PackageRenameHandler) handlers.get(0); 
+            return handlers.iterator().next(); 
         }
         
         public void setName(String name) {
@@ -843,10 +844,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             String name = getDisplayName();
             try {
                 FileObject fo = dataFolder.getPrimaryFile();
-                Set set = new NonRecursiveFolderSet(fo);
-                org.openide.filesystems.FileSystem.Status status = fo.getFileSystem().getStatus();
-                if (status instanceof org.openide.filesystems.FileSystem.HtmlStatus) {
-                    name = ((org.openide.filesystems.FileSystem.HtmlStatus) status).annotateNameHtml(name, set);
+                Set<FileObject> set = new NonRecursiveFolderSet(fo);
+                FileSystem.Status status = fo.getFileSystem().getStatus();
+                if (status instanceof FileSystem.HtmlStatus) {
+                    name = ((FileSystem.HtmlStatus) status).annotateNameHtml(name, set);
                 } else {
                     name = status.annotateName(name, set);
                 }
@@ -876,12 +877,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             return PackageDisplayUtils.getToolTip(folder, path.replace('/', '.'));
         }
 
-        public java.awt.Image getIcon (int type) {
-            java.awt.Image img = getMyIcon (type);
+        public Image getIcon (int type) {
+            Image img = getMyIcon (type);
 
             try {
                 FileObject fo = dataFolder.getPrimaryFile();
-                Set set = new NonRecursiveFolderSet(fo);
+                Set<FileObject> set = new NonRecursiveFolderSet(fo);
                 img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, set);
             } catch (FileStateInvalidException e) {
                 // no fs, do nothing
@@ -890,12 +891,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             return img;
         }
 
-        public java.awt.Image getOpenedIcon (int type) {
-            java.awt.Image img = getMyOpenedIcon(type);
+        public Image getOpenedIcon (int type) {
+            Image img = getMyOpenedIcon(type);
 
             try {
                 FileObject fo = dataFolder.getPrimaryFile();
-                Set set = new NonRecursiveFolderSet(fo);
+                Set<FileObject> set = new NonRecursiveFolderSet(fo);
                 img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, set);
             } catch (FileStateInvalidException e) {
                 // no fs, do nothing
@@ -940,32 +941,31 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             }
         }
         
-        
-        public /*@Override*/ Node.PropertySet[] getPropertySets () {
+        @Override
+        public Node.PropertySet[] getPropertySets () {
             Node.PropertySet[] properties = super.getPropertySets ();
             for (int i=0; i< properties.length; i++) {
                 if (Sheet.PROPERTIES.equals(properties[i].getName())) {
                     //Replace the Sheet.PROPERTIES by the new one
                     //having only the name property which does refactoring
                     properties[i] = Sheet.createPropertiesSet();
-                    ((Sheet.Set)properties[i]).put( new PropertySupport.ReadWrite (DataObject.PROP_NAME, String.class,
-                        NbBundle.getMessage (PackageViewChildren.class,"PROP_name"), NbBundle.getMessage (PackageViewChildren.class,"HINT_name")) {
-                        
-                              public /*@Override*/ Object getValue () {
-                                  return PackageViewChildren.PackageNode.this.getName();
-                              }
-
-                              public /*@Override*/ void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                                  if (!canRename())
-                                      throw new IllegalAccessException();
-                                  if (!(val instanceof String))
-                                      throw new IllegalArgumentException();
-                                  PackageViewChildren.PackageNode.this.setName((String)val);
-                              }
-
-                              public /*@Override*/ boolean canWrite () {
-                                  return PackageViewChildren.PackageNode.this.canRename();
-                              }
+                    ((Sheet.Set) properties[i]).put(new PropertySupport.ReadWrite<String>(DataObject.PROP_NAME, String.class,
+                            NbBundle.getMessage(PackageViewChildren.class,"PROP_name"), NbBundle.getMessage(PackageViewChildren.class,"HINT_name")) {
+                        @Override
+                        public String getValue() {
+                            return PackageViewChildren.PackageNode.this.getName();
+                        }
+                        @Override
+                        public void setValue(String n) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                            if (!canRename()) {
+                                throw new IllegalAccessException();
+                            }
+                            PackageViewChildren.PackageNode.this.setName(n);
+                        }
+                        @Override
+                        public boolean canWrite() {
+                            return PackageViewChildren.PackageNode.this.canRename();
+                        }
                     });
                 }
             }
@@ -973,7 +973,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }
         
         private DataFolder getDataFolder() {
-            return (DataFolder)getCookie(DataFolder.class);
+            return getCookie(DataFolder.class);
         }
         
         private static boolean isEmpty( DataFolder dataFolder ) {
@@ -1023,7 +1023,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     }
     
     private static final class NoFoldersContainer 
-    implements DataObject.Container, java.beans.PropertyChangeListener,
+    implements DataObject.Container, PropertyChangeListener,
                NonRecursiveFolder {
         private DataFolder folder;
         private PropertyChangeSupport prop = new PropertyChangeSupport (this);
@@ -1038,24 +1038,24 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         public DataObject[] getChildren () {
             DataObject[] arr = folder.getChildren ();
-            ArrayList list = new ArrayList (arr.length);
+            List<DataObject> list = new ArrayList<DataObject>(arr.length);
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] instanceof DataFolder) continue;
                 
                 list.add (arr[i]);
             }
-            return list.size () == arr.length ? arr : (DataObject[])list.toArray (new DataObject[0]);
+            return list.size() == arr.length ? arr : list.toArray(new DataObject[0]);
         }
 
-        public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        public void addPropertyChangeListener(PropertyChangeListener l) {
             prop.addPropertyChangeListener (l);
         }
 
-        public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        public void removePropertyChangeListener(PropertyChangeListener l) {
             prop.removePropertyChangeListener (l);
         }
 
-        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        public void propertyChange(PropertyChangeEvent evt) {
             if (DataObject.Container.PROP_CHILDREN.equals (evt.getPropertyName ())) {
                 prop.firePropertyChange (PROP_CHILDREN, null, null);
             }
@@ -1198,7 +1198,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
      * FileObject set that represents package. It means
      * that it's content must not be processed recursively.
      */
-    private static class NonRecursiveFolderSet extends HashSet implements NonRecursiveFolder {
+    private static class NonRecursiveFolderSet extends HashSet<FileObject> implements NonRecursiveFolder {
         
         private final FileObject folder;
         
