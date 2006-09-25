@@ -61,7 +61,7 @@ public class Utils {
         String webBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.options.general.Bundle", "CTL_Web_Browser");
         JLabelOperator jloWebBrowser = new JLabelOperator(optionsOper, webBrowserLabel);
         // "Swing HTML Browser"
-        String swingBrowserLabel = Bundle.getString("org.netbeans.core.ui.Bundle", "Services/Browsers/SwingBrowser.ser");
+        String swingBrowserLabel = Bundle.getString("org.netbeans.core.ui.Bundle", "Services/Browsers/SwingBrowser.settings");
         new JComboBoxOperator((JComboBox)jloWebBrowser.getLabelFor()).selectItem(swingBrowserLabel);
         optionsOper.ok();
     }
