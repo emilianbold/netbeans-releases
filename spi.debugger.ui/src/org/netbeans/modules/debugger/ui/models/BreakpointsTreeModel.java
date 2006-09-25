@@ -42,9 +42,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 public class BreakpointsTreeModel implements TreeModel {
     
-    private static final Comparator BREAKPOINTS_COMPARATOR = 
-        new BreakpointsComparator ();
-    
     private Listener listener;
     private Vector listeners = new Vector ();
     
@@ -66,7 +63,7 @@ public class BreakpointsTreeModel implements TreeModel {
         if (parent == ROOT) {
             Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                 getBreakpoints ();
-            Set l = new TreeSet (BREAKPOINTS_COMPARATOR);
+            ArrayList l = new ArrayList();
             int i, k = bs.length;
             for (i = 0; i < k; i++)
                 if (bs [i].getGroupName ().equals (""))
@@ -76,16 +73,16 @@ public class BreakpointsTreeModel implements TreeModel {
             if (listener == null)
                 listener = new Listener (this);
             if (to == 0)
-                return new ArrayList (l).toArray ();
+                return l.toArray ();
             to = Math.min(l.size(), to);
             from = Math.min(l.size(), from);
-            return new ArrayList (l).subList (from, to).toArray ();
+            return l.subList (from, to).toArray ();
         } else
         if (parent instanceof String) {
             String groupName = (String) parent;
             Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                 getBreakpoints ();
-            Set l = new TreeSet (BREAKPOINTS_COMPARATOR);
+            ArrayList l = new ArrayList();
             int i, k = bs.length;
             for (i = 0; i < k; i++)
                 if (bs [i].getGroupName ().equals (groupName))
@@ -93,10 +90,10 @@ public class BreakpointsTreeModel implements TreeModel {
             if (listener == null)
                 listener = new Listener (this);
             if (to == 0)
-                return new ArrayList (l).toArray ();
+                return l.toArray ();
             to = Math.min(l.size(), to);
             from = Math.min(l.size(), from);
-            return new ArrayList (l).subList (from, to).toArray ();
+            return l.subList (from, to).toArray ();
         } else
         throw new UnknownTypeException (parent);
     }
@@ -222,27 +219,4 @@ public class BreakpointsTreeModel implements TreeModel {
         }
     }
     
-    private static class BreakpointsComparator implements Comparator {
-        public BreakpointsComparator () {
-        }
-        
-        public int compare (Object o1, Object o2) {
-            if (o1 instanceof Comparable && o1.getClass() == o2.getClass()) {
-                return ((Comparable) o1).compareTo(o2);
-            }
-            
-            if (o1 instanceof String) {
-                if (o2 instanceof String)
-                    return ((String) o1).compareTo ((String) o2);
-                else
-                    return -1;
-            } else
-            if (o2 instanceof String)
-                return 1;
-            else
-                return ((Breakpoint) o1).toString ().compareTo (
-                    ((Breakpoint) o2).toString ()
-                );
-        }
-    }
 }
