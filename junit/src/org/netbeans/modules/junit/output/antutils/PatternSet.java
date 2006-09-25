@@ -102,15 +102,21 @@ final class PatternSet {
     /**
      */
     Collection<String> getIncludePatterns() {
-        return includePatterns != null ? includePatterns
-                                       : Collections.EMPTY_LIST;
+        if (includePatterns != null) {
+            return includePatterns;
+        } else {
+            return Collections.emptyList();
+        }
     }
     
     /**
      */
     Collection<String> getExcludePatterns() {
-        return excludePatterns != null ? excludePatterns
-                                       : Collections.EMPTY_LIST;
+        if (excludePatterns != null) {
+            return excludePatterns;
+        } else {
+            return Collections.emptyList();
+        }
     }
     
     /**

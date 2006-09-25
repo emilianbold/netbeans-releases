@@ -95,7 +95,7 @@ class FileSetScanner {
             if (file.exists()) {
                 return Collections.singleton(file);
             } else {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
         }
         
@@ -347,7 +347,7 @@ class FileSetScanner {
                      * It excludes everything - there is no need to search
                      * at all.
                      */
-                    return Collections.EMPTY_LIST;
+                    return Collections.emptyList();
                 } else {
                     result.add(new PatternTest(pattern, false, 1));
                 }
