@@ -167,7 +167,7 @@ final class ResultDisplayHandler {
      * {@link #treePanel} once it is initialized
      */
     private String runningSuite;
-    private List reports;
+    private List<Report> reports;
     private String message;
     
     /**
@@ -202,7 +202,7 @@ final class ResultDisplayHandler {
         synchronized (this) {
             if (treePanel == null) {
                 if (reports == null) {
-                    reports = new ArrayList(10);
+                    reports = new ArrayList<Report>(10);
                 }
                 reports.add(report);
                 runningSuite = null;

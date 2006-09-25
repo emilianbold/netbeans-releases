@@ -140,17 +140,15 @@ final class RegexpUtils {
                               Pattern.MULTILINE);
 
     /** */
-    private static Reference instRef;
+    private static Reference<RegexpUtils> instRef;
     
     /**
      */
     static synchronized RegexpUtils getInstance() {
-        Object inst;
-        RegexpUtils instance;
-        if ((instRef == null) || ((inst = instRef.get()) == null)) {
-            instRef = new WeakReference(instance = new RegexpUtils());
-        } else {
-            instance = (RegexpUtils) inst;
+        RegexpUtils instance = (instRef != null) ? instRef.get() : null;
+        if (instance == null) {
+            instance = new RegexpUtils();
+            instRef = new WeakReference<RegexpUtils>(instance);
         }
         return instance;
     }

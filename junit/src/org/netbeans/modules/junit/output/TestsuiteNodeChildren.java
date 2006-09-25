@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import org.openide.nodes.Children;
@@ -68,7 +69,8 @@ final class TestsuiteNodeChildren extends Children.Keys<Report.Testcase> {
     protected void removeNotify() {
         super.removeNotify();
         
-        setKeys(Collections.EMPTY_SET);
+        final Collection<Report.Testcase> emptySet = Collections.emptySet();
+        setKeys(emptySet);
         //live = false;                         //PENDING
     }
     

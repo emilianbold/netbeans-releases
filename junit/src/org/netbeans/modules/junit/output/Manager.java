@@ -43,7 +43,7 @@ final class Manager {
      * Strong references to the singleton are kept in instances of
      * {@link JUnitOutputReader JUnitOutputReader}.
      */
-    private static Reference instanceRef;
+    private static Reference<Manager> instanceRef;
     
     /** list of sessions without windows displayed */
     //private List/*<AntSession>*/ pendingSessions;
@@ -71,13 +71,10 @@ final class Manager {
      * @return  singleton of this class
      */
     static Manager getInstance() {
-        Manager instance;
-        Object inst = (instanceRef != null) ? instanceRef.get() : null;
-        if (inst != null) {
-            instance = (Manager) inst;
-        } else {
+        Manager instance = (instanceRef != null) ? instanceRef.get() : null;
+        if (instance == null) {
             instance = new Manager();
-            instanceRef = new WeakReference(instance);
+            instanceRef = new WeakReference<Manager>(instance);
         }
         return instance;
     }
@@ -351,21 +348,17 @@ final class Manager {
     }
     
     /** singleton of the <code>ResultDisplayHandler</code> */
-    private Map/*<AntSession, ResultDisplayHandler>*/ displayHandlers;
+    private Map<AntSession,ResultDisplayHandler> displayHandlers;
     
     /**
      */
     private ResultDisplayHandler getDisplayHandler(final AntSession session) {
-        ResultDisplayHandler displayHandler;
-        
-        Object o = (displayHandlers != null)
-                   ? displayHandlers.get(session)
-                   : null;
-        if (o != null) {
-            displayHandler = (ResultDisplayHandler) o;
-        } else {
+        ResultDisplayHandler displayHandler = (displayHandlers != null)
+                                              ? displayHandlers.get(session)
+                                              : null;
+        if (displayHandler == null) {
             if (displayHandlers == null) {
-                displayHandlers = new WeakHashMap(7);
+                displayHandlers = new WeakHashMap<AntSession,ResultDisplayHandler>(7);
             }
             displayHandler = new ResultDisplayHandler();
             displayHandlers.put(session, displayHandler);
@@ -374,7 +367,7 @@ final class Manager {
     }
     
     /** */
-    private Map/*<AntSession, Boolean>*/ displaysMap;
+    private Map<AntSession,Boolean> displaysMap;
     
     /**
      */
@@ -382,7 +375,7 @@ final class Manager {
         if (displaysMap == null) {
             return -1;
         }
-        Object o = displaysMap.get(session);
+        Boolean o = displaysMap.get(session);
         return (o != null) ? 0 : -1;
     }
     
@@ -390,7 +383,7 @@ final class Manager {
      */
     private void addDisplay(final AntSession session) {
         if (displaysMap == null) {
-            displaysMap = new WeakHashMap(4);
+            displaysMap = new WeakHashMap<AntSession,Boolean>(4);
         }
         displaysMap.put(session, Boolean.TRUE);
     }

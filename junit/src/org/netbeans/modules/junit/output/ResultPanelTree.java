@@ -150,13 +150,13 @@ final class ResultPanelTree extends JPanel
     /**
      * @param  reports  non-empty list of reports to be displayed
      */
-    void displayReports(final List/*<Report>*/ reports) {
+    void displayReports(final List<Report> reports) {
         assert EventQueue.isDispatchThread();
         
         /* Called from the EventDispatch thread */
         
         if (reports.size() == 1) {
-            displayReport((Report) reports.get(0));
+            displayReport(reports.get(0));
         } else {
             rootNode.displayReports(reports);
         }

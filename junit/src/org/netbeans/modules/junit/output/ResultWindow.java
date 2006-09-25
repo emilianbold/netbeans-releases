@@ -43,7 +43,7 @@ public final class ResultWindow extends TopComponent {
      *
      * @see  #getInstance
      */
-    private static WeakReference instance = null;
+    private static WeakReference<ResultWindow> instance = null;
     
     /**
      * Returns a singleton of this class.
@@ -70,11 +70,10 @@ public final class ResultWindow extends TopComponent {
      * @return  singleton - instance of this class
      */
     public static synchronized ResultWindow getDefault() {
-        ResultWindow window;
-        if ((instance == null)
-                || ((window = (ResultWindow) instance.get()) == null)) {
+        ResultWindow window = (instance != null) ? instance.get() : null;
+        if (window == null) {
             window = new ResultWindow();
-            instance = new WeakReference(window);
+            instance = new WeakReference<ResultWindow>(window);
         }
         return window;
     }

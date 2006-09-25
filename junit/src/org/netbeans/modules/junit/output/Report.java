@@ -113,7 +113,8 @@ final class Report {
         
         //PENDING - should be synchronized
         if (tests.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            final Collection<Testcase> emptyList = Collections.emptyList();
+            return emptyList;
         } else {
             return new ArrayList<Testcase>(tests);
         }

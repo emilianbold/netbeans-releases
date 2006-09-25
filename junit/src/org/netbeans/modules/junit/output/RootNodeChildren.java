@@ -36,7 +36,7 @@ final class RootNodeChildren extends Children.Array {
     /** */
     private volatile boolean filtered;
     /** */
-    private Collection/*<Report>*/ reports;
+    private Collection<Report> reports;
     /** */
     private volatile int passedSuites;
     /** */
@@ -94,7 +94,7 @@ final class RootNodeChildren extends Children.Array {
         TestsuiteNode correspondingNode;
         
         if (reports == null) {
-            reports = new ArrayList(10);
+            reports = new ArrayList<Report>(10);
         }
         reports.add(report);
 
@@ -132,41 +132,39 @@ final class RootNodeChildren extends Children.Array {
     
     /**
      */
-    void displayReports(final Collection/*<Report>*/ newReports) {
+    void displayReports(final Collection<Report> newReports) {
         assert EventQueue.isDispatchThread();
         
         if (reports == null) {
-            reports = new ArrayList(newReports);
+            reports = new ArrayList<Report>(newReports);
         } else {
             reports.addAll(newReports);
         }
         
         if (!live) {
-            for (Iterator it = reports.iterator(); it.hasNext(); ) {
-                updateStatistics((Report) it.next());
+            for (Report report : reports) {
+                updateStatistics(report);
             }
         } else {
             Node[] nodesToAdd;
             if (!filtered) {
                 nodesToAdd = new Node[newReports.size()];
                 int index = 0;
-                for (Iterator it = newReports.iterator(); it.hasNext(); index++) {
-                    Report report = (Report) it.next();
+                for (Report report : newReports) {
                     updateStatistics(report);
-                    nodesToAdd[index] = createNode(report);
+                    nodesToAdd[index++] = createNode(report);
                 }
                 add(nodesToAdd);
             } else {
-                List toAdd = new ArrayList(newReports.size());
-                for (Iterator it = newReports.iterator(); it.hasNext(); ) {
-                    Report report = (Report) it.next();
+                List<Node> toAdd = new ArrayList<Node>(newReports.size());
+                for (Report report : newReports) {
                     boolean isFailed = updateStatistics(report);
                     if (isFailed) {
                         toAdd.add(createNode(report));
                     }
                 }
                 if (!toAdd.isEmpty()) {
-                    nodesToAdd = (Node[]) toAdd.toArray(new Node[toAdd.size()]);
+                    nodesToAdd = toAdd.toArray(new Node[toAdd.size()]);
                     add(nodesToAdd);
                 }
             }
@@ -227,10 +225,10 @@ final class RootNodeChildren extends Children.Array {
                                : matchingNodesCount;
         if (nodesCount != 0) {
             final Node[] nodes = new Node[nodesCount];
-            final Iterator i = reports.iterator();
+            final Iterator<Report> i = reports.iterator();
             int index = 0;
             while (index < matchingNodesCount) {
-                Report report = (Report) i.next();
+                Report report = i.next();
                 if (!filterOn || report.containsFailed()) {
                     nodes[index++] = createNode(report);
                 }

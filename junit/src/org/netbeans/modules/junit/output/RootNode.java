@@ -112,13 +112,12 @@ final class RootNode extends AbstractNode {
     
     /**
      */
-    void displayReports(final Collection/*<Report>*/ reports) {
+    void displayReports(final Collection<Report> reports) {
         assert EventQueue.isDispatchThread();
         
         /* Called from the EventDispatch thread */
         
-        for (Iterator i = reports.iterator(); i.hasNext(); ) {
-            final Report report = (Report) i.next();
+        for (Report report : reports) {
             updateStatistics(report);
         }
         updateDisplayName();

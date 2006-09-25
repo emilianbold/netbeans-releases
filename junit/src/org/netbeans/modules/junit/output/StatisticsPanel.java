@@ -128,7 +128,7 @@ public final class StatisticsPanel extends JPanel implements ItemListener {
     
     /**
      */
-    void displayReports(final List/*<Report>*/ reports) {
+    void displayReports(final List<Report> reports) {
         if (reports.isEmpty()) {
             return;
         }
