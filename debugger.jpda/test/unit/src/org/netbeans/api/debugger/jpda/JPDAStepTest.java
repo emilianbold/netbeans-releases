@@ -19,8 +19,11 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import com.sun.jdi.StackFrame;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.junit.NbTestCase;
 
 import java.beans.PropertyChangeListener;
@@ -57,6 +60,11 @@ public class JPDAStepTest extends NbTestCase {
                 30
             );
             dm.addBreakpoint (lb);
+            lb.addJPDABreakpointListener(new JPDABreakpointListener() {
+                public void breakpointReached(JPDABreakpointEvent event) {
+                    System.err.println("Breakpoint Reached: "+event.getSource());
+                }
+            });
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.StepApp");
             support.waitState (JPDADebugger.STATE_STOPPED);
@@ -281,8 +289,19 @@ public class JPDAStepTest extends NbTestCase {
         String className = null;
         
         try {
-            className = ((JPDAThreadImpl)debugger.getCurrentThread()).
-                getThreadReference().frame(0).location().declaringType().name();
+            JPDAThreadImpl jpdaThread = (JPDAThreadImpl) debugger.getCurrentThread();
+            if (jpdaThread == null) {
+                System.err.println("NULL Current Thread!");
+                Thread.dumpStack();
+            } else {
+                StackFrame sf = jpdaThread.getThreadReference().frame(0);
+                if (sf == null) {
+                    System.err.println("No stack frame!");
+                    Thread.dumpStack();
+                } else {
+                    className = sf.location().declaringType().name();
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
