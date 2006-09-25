@@ -103,6 +103,7 @@ public class SearchHistoryUITest extends JellyTestCase{
         wdso.setLocalFolder(work.getCanonicalPath());
         wdso.checkCheckoutContentOnly(false);
         OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         wdso.finish();
         //open project
@@ -113,19 +114,21 @@ public class SearchHistoryUITest extends JellyTestCase{
         ProjectSupport.waitScanFinished();
         
         oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
         SearchHistoryOperator sho = SearchHistoryOperator.invoke(node);
-        sho.verify();
         oto.waitText("Searching History... finished.");
         oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
+        
         RepositoryBrowserOperator rbo = sho.getRevisionFrom();
         oto.waitText("Loading... finished.");
         rbo.verify();
         rbo.cancel();
         
         oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         rbo = sho.getRevisionTo();
         oto.waitText("Loading... finished.");

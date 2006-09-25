@@ -406,7 +406,7 @@ public class SearchHistoryOperator extends TopComponentOperator {
         }
         
         public String getDescription() {
-            return " org.netbeans.modules.versioning.system.cvss.ui.history.SearchHistoryTopComponent";
+            return " org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent";
         }
     }
     
