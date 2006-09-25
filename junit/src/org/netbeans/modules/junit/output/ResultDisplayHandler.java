@@ -232,7 +232,7 @@ final class ResultDisplayHandler {
     }
     
     /** */
-    private Map/*<String, Method>*/ methodsMap;
+    private Map<String,Method> methodsMap;
     
     /**
      * Calls a given display-method of class {@code ResutlPanelTree}
@@ -270,10 +270,10 @@ final class ResultDisplayHandler {
         Method method;
         
         if (methodsMap == null) {
-            methodsMap = new HashMap/*<String, Method>*/(4);
+            methodsMap = new HashMap<String,Method>(4);
             method = null;
         } else {
-            method = (Method) methodsMap.get(methodName);
+            method = methodsMap.get(methodName);
         }
         
         if ((method == null) && !methodsMap.containsKey(methodName)) {
