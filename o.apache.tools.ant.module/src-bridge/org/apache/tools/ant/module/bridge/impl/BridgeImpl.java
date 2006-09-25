@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DemuxOutputStream;
 import org.apache.tools.ant.IntrospectionHelper;
@@ -268,11 +270,8 @@ public class BridgeImpl implements BridgeInterface {
                 defs.put("type", NbCollections.checkedMapByCopy(p2.getDataTypeDefinitions(), String.class, Class.class, true));
                 custom.scanProject(defs);
                 logger.shutdown();
-                // #8993: also try to refresh masterfs...this is hackish...
-                // cf. also RefreshAllFilesystemsAction
-                for (FileSystem fs : getFileSystems()) {
-                    fs.refresh(false);                    
-                }                                
+                // #85698: do not invoke multiple refreshes at once
+                refreshFilesystemsTask.schedule(0);
                 gutProject(p2);
                 if (!ant16) {
                     // #36393 - memory leak in Ant 1.5.
@@ -295,6 +294,17 @@ public class BridgeImpl implements BridgeInterface {
         
         return ok;
     }
+
+    private static final RequestProcessor.Task refreshFilesystemsTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            // #8993: also try to refresh masterfs...this is hackish...
+            // cf. also RefreshAllFilesystemsAction
+            for (FileSystem fs : getFileSystems()) {
+                Logger.getLogger(BridgeImpl.class.getName()).log(Level.FINE, "Refreshing filesystem {0}", fs);
+                fs.refresh(false);
+            }
+        }
+    });
 
     public void stop(final Thread process) {
         NbBuildLogger logger;
