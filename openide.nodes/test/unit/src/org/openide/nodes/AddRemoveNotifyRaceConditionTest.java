@@ -60,7 +60,7 @@ public class AddRemoveNotifyRaceConditionTest extends NbTestCase {
         assertEquals("Ok, one", 1, arr.length);
         ErrorManager.getDefault().log("Array initialized");
 
-        final Reference ref = new SoftReference(arr[0]);
+        final Reference<Node> ref = new SoftReference<Node>(arr[0]);
         arr = null;
         
         class R implements Runnable {

@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.openide.nodes.Node.Property;
 
 /**
  * Regression test for bug #21285<br>
@@ -74,7 +75,7 @@ public class BeanNodeBug21285 extends NbTestCase {
         
         try {
             for (int i = 0; i < ps.length; i++) {
-                 Set props = new HashSet( 
+                 Set<Property> props = new HashSet<Property>( 
                     Arrays.asList(ps[i].getProperties()));
             }
         }

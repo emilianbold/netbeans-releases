@@ -42,6 +42,7 @@ public class BeanChildrenTest extends NbTestCase {
         TestRunner.run(new NbTestSuite(BeanChildrenTest.class));
     }
     
+    @SuppressWarnings("unchecked")
     private static BeanContext makeContext() {
         BeanContext bc = new BeanContextSupport();
         bc.add("one");
@@ -64,8 +65,8 @@ public class BeanChildrenTest extends NbTestCase {
         // Note that BeanContextSupport keeps a HashMap of children
         // so the order is not deterministic.
         assertEquals("correct subnodes",
-            new HashSet(Arrays.asList(new String[] {"one", "two", "three"})),
-            new HashSet(Arrays.asList(nodes2Names(c.getNodes()))));
+            new HashSet<String>(Arrays.asList(new String[] {"one", "two", "three"})),
+            new HashSet<String>(Arrays.asList(nodes2Names(c.getNodes()))));
     }
     
     public void testRemoveBeanRemovesChild() throws Exception {
@@ -73,8 +74,8 @@ public class BeanChildrenTest extends NbTestCase {
         final Children c = new BeanChildren(bc, new SimpleFactory());
         bc.remove("two");
         assertEquals("correct beans",
-            new HashSet(Arrays.asList(new String[] {"one", "three"})),
-            new HashSet(Arrays.asList(bc.toArray())));
+            new HashSet<String>(Arrays.asList(new String[] {"one", "three"})),
+            new HashSet<Object>(Arrays.asList(bc.toArray())));
         // Make sure we let the children thread run to completion.
         // Check the result in the reader.
         // First make sure it is initialized. Otherwise Children.Keys.getNodes
@@ -82,14 +83,14 @@ public class BeanChildrenTest extends NbTestCase {
         // next asked has them all. Checking outside the mutex seems to block
         // until the nodes have been initialized.
         Node[] nodes = c.getNodes(true);
-        nodes = (Node[])Children.MUTEX.readAccess(new Mutex.Action() {
-            public Object run() {
+        nodes = Children.MUTEX.readAccess(new Mutex.Action<Node[]>() {
+            public Node[] run() {
                 return c.getNodes();
             }
         });
         assertEquals("correct subnodes",
-            new HashSet(Arrays.asList(new String[] {"one", "three"})),
-            new HashSet(Arrays.asList(nodes2Names(nodes))));
+            new HashSet<String>(Arrays.asList(new String[] {"one", "three"})),
+            new HashSet<String>(Arrays.asList(nodes2Names(nodes))));
     }
     
     // Cf. #7925.
@@ -101,14 +102,14 @@ public class BeanChildrenTest extends NbTestCase {
         assertEquals("two", n.getName());
         n.destroy();
         // Wait for changes, maybe:
-        Children.MUTEX.readAccess(new Mutex.Action() {
-            public Object run() {
+        Children.MUTEX.readAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 return null;
             }
         });
         assertEquals("correct beans",
-            new HashSet(Arrays.asList(new String[] {"one", "three"})),
-            new HashSet(Arrays.asList(bc.toArray())));
+            new HashSet<String>(Arrays.asList(new String[] {"one", "three"})),
+            new HashSet<Object>(Arrays.asList(bc.toArray())));
     }
     
     private static final class SimpleFactory implements BeanChildren.Factory {
