@@ -162,6 +162,10 @@ final class ResultDisplayHandler {
     //------------------- DISPLAYING TREE -----------------------//
     
     static final String ANONYMOUS_SUITE = new String();
+    /**
+     * name of the currently running suite - to be passed to the
+     * {@link #treePanel} once it is initialized
+     */
     private String runningSuite;
     private List reports;
     private String message;
@@ -322,6 +326,7 @@ final class ResultDisplayHandler {
             treePanel.displaySuiteRunning(runningSuite != ANONYMOUS_SUITE
                                           ? runningSuite
                                           : null);
+            runningSuite = null;
         }
     }
 
