@@ -120,7 +120,7 @@ final class JUnitOutputReader {
     private String suiteName;
     
     /** */
-    private List/*<String>*/ callstackBuffer;
+    private List<String> callstackBuffer;
     
     /** */
     private StringBuffer xmlOutputBuffer;
@@ -246,7 +246,7 @@ final class JUnitOutputReader {
                 if (callstackBuffer != null) {
                     
                     /* finalize the trouble and clear buffers: */
-                    trouble.stackTrace = (String[]) callstackBuffer.toArray(
+                    trouble.stackTrace = callstackBuffer.toArray(
                                             new String[callstackBuffer.size()]);
                     callstackBuffer = null;
                 }
@@ -264,7 +264,7 @@ final class JUnitOutputReader {
                 matcher = regexp.getCallstackLinePattern().matcher(msg);
                 if (matcher.matches()) {
                     if (callstackBuffer == null) {
-                        callstackBuffer = new ArrayList(8);
+                        callstackBuffer = new ArrayList<String>(8);
                     }
                     callstackBuffer.add(
                             trimmed.substring(
