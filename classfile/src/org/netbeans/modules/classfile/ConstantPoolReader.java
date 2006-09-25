@@ -94,7 +94,7 @@ public final class ConstantPoolReader extends FilterInputStream implements DataI
 	int ch2 = in.read();
 	if ((ch1 | ch2) < 0)
 	     throw new EOFException();
-	return (short)((ch1 << 8) + (ch2 << 0));
+	return (short)((ch1 << 8) + ch2);
     }
 
     public int readUnsignedShort() throws IOException {
@@ -103,7 +103,7 @@ public final class ConstantPoolReader extends FilterInputStream implements DataI
 	int ch2 = in.read();
 	if ((ch1 | ch2) < 0)
 	     throw new EOFException();
-	return (ch1 << 8) + (ch2 << 0);
+	return (ch1 << 8) + ch2;
     }
 
     public char readChar() throws IOException {
@@ -118,7 +118,7 @@ public final class ConstantPoolReader extends FilterInputStream implements DataI
 	int ch4 = in.read();
 	if ((ch1 | ch2 | ch3 | ch4) < 0)
 	     throw new EOFException();
-	return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0));
+	return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + ch4);
     }
 
     public long readLong() throws IOException {
