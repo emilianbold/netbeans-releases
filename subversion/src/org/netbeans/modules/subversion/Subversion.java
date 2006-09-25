@@ -347,42 +347,40 @@ public class Subversion {
      * @return true if file is listed in parent's ignore list
      * or IDE thinks it should be.
      */
-    boolean isIgnored(File file) {
+    synchronized boolean isIgnored(File file) {
         String name = file.getName();
 
         // ask SVN
 
         File parent = file.getParentFile();
         if (parent != null) {
-            synchronized (this) {
-                int pstatus = fileStatusCache.getStatus(parent).getStatus();
-                if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
-                    try {
-                        SvnClient client = getClient(false);
+            int pstatus = fileStatusCache.getStatus(parent).getStatus();
+            if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
+                try {
+                    SvnClient client = getClient(false);
 
-                        // XXX property can contain shell patterns (almost identical to RegExp)
-                        List<String> patterns = client.getIgnoredPatterns(parent);
-                        List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
-                        for (Iterator<String> it = gignores.iterator();
-                             it.hasNext();
-                             patterns.add(it.next()));
+                    // XXX property can contain shell patterns (almost identical to RegExp)
+                    List<String> patterns = client.getIgnoredPatterns(parent);
+                    List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
+                    for (Iterator<String> it = gignores.iterator();
+                         it.hasNext();
+                         patterns.add(it.next()));
 
-                        for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
-                            try {
-                                String patternString = regExpToFilePatterns(i.next());                            
-                                Pattern pattern =  Pattern.compile(patternString);
-                                if (pattern.matcher(name).matches()) {
-                                    return true;
-                                }
-                            } catch (PatternSyntaxException e) {
-                                // XXX it's difference between shell and regexp
-                                // or user error (set invalid property), rethrow?
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
+                        try {
+                            String patternString = regExpToFilePatterns(i.next());                            
+                            Pattern pattern =  Pattern.compile(patternString);
+                            if (pattern.matcher(name).matches()) {
+                                return true;
                             }
+                        } catch (PatternSyntaxException e) {
+                            // XXX it's difference between shell and regexp
+                            // or user error (set invalid property), rethrow?
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         }
-                    } catch (SVNClientException ex)  {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
+                } catch (SVNClientException ex)  {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
         }
@@ -391,38 +389,36 @@ public class Subversion {
         
         int sharability = SharabilityQuery.getSharability(file);
         
-        synchronized (this) {
-            if (sharability == SharabilityQuery.NOT_SHARABLE) {
-                try {
-                    // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
-                    FileInformation info = fileStatusCache.getCachedStatus(file); // getStatus may cause stack overflow
-                    if (SubversionVisibilityQuery.isHiddenFolder(info, file)) {
-                        return false;
-                    }
-                    // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
-                    if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
-                        if ((fileStatusCache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                            List<String> patterns = getClient(true).getIgnoredPatterns(parent);
-                            if (patterns.contains(file.getName()) == false) {
-                                patterns.add(file.getName());
-                                getClient(true).setIgnoredPatterns(parent, patterns);
-                            } else {
-                                assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName(); // NOI18N
-                            }
+        if (sharability == SharabilityQuery.NOT_SHARABLE) {
+            try {
+                // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
+                FileInformation info = fileStatusCache.getCachedStatus(file); // getStatus may cause stack overflow
+                if (SubversionVisibilityQuery.isHiddenFolder(info, file)) {
+                    return false;
+                }
+                // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
+                if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
+                    if ((fileStatusCache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+                        List<String> patterns = getClient(true).getIgnoredPatterns(parent);
+                        if (patterns.contains(file.getName()) == false) {
+                            patterns.add(file.getName());
+                            getClient(true).setIgnoredPatterns(parent, patterns);
+                        } else {
+                            assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName(); // NOI18N
                         }
                     }
-                } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
-                return true;
-            } else {
-                // backward compatability #68124
-                if (".nbintdb".equals(name)) {  // NOI18N
-                    return true;
-                }
-
-                return false;
+            } catch (SVNClientException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
+            return true;
+        } else {
+            // backward compatability #68124
+            if (".nbintdb".equals(name)) {  // NOI18N
+                return true;
+            }
+
+            return false;
         }
 
     }    

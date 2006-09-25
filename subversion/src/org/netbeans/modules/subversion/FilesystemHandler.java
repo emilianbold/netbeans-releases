@@ -123,9 +123,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         cleanupDeletedFiles(file);
         if (Thread.currentThread() == ignoredThread) return;
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            eventProcessor.post(new FileCreatedTask(file));
-        }
+        eventProcessor.post(new FileCreatedTask(file));
     }
 
     public void fileDataCreated(FileEvent fe) {
@@ -133,9 +131,7 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         cleanupDeletedFiles(file);
         if (Thread.currentThread() == ignoredThread) return;
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-            eventProcessor.post(new FileCreatedTask(file));
-        }
+        eventProcessor.post(new FileCreatedTask(file));
     }
     
     public void fileChanged(FileEvent fe) {
@@ -558,7 +554,9 @@ class FilesystemHandler extends ProvidedExtensions implements FileChangeListener
         }
         
         public void run() {
-            fileCreatedImpl(file);
+            if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                fileCreatedImpl(file);
+            }
         }
     }
 
