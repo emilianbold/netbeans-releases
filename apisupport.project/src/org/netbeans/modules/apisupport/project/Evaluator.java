@@ -658,6 +658,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 unprocessed.addAll(Arrays.asList(newDeps));
             }
         }
+        ModuleEntry myself = ml.getEntry(project.getCodeNameBase());
+        if (myself != null) {
+            // #76341: must include <class-path-extension>s in ${run.cp} too.
+            cp.append(myself.getClassPathExtensions());
+        }
         return cp.toString();
     }
 

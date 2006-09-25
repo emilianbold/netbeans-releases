@@ -240,6 +240,8 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/org-openide-text.jar"));
         expectedRoots.add(urlForJar("java/parser/dist/java-parser.jar"));
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
+        assertTrue("#76341: EXECUTE classpath also has extension",
+                urlsOfCp(ClassPath.getClassPath(src, ClassPath.EXECUTE)).contains(urlForJar("java/parser/dist/java-parser.jar")));
     }
     
     public void testExtraCompilationUnits() throws Exception {
