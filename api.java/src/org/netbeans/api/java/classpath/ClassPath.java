@@ -196,7 +196,7 @@ public final class ClassPath {
     public FileObject[]  getRoots() {
         long current;
         synchronized (this) {
-            if (rootsCache != null && rootsListener != null) {
+            if (rootsCache != null) {
                 return this.rootsCache;
             }
             current = this.invalidRoots;
@@ -206,7 +206,8 @@ public final class ClassPath {
         synchronized (this) {
             if (this.invalidRoots == current) {                            
                 if (rootsCache == null || rootsListener == null) {
-                    this.rootsCache = createRoots (entries);
+                    attachRootsListener();
+                    this.rootsCache = createRoots (entries);                    
                 }
                 ret = this.rootsCache;
             }
@@ -428,17 +429,7 @@ public final class ClassPath {
      * Adds a property change listener to the bean.
      */
     public final synchronized void addPropertyChangeListener(PropertyChangeListener l) {
-        if (this.rootsListener == null) {
-            this.rootsListener = new RootsListener (this);
-            if (this.rootsCache!=null) {
-                //Client already called getRoots need to sync
-                List entries = this.entries();
-                for (Iterator it = entries.iterator(); it.hasNext();) {
-                    Entry entry = (Entry) it.next();
-                    this.rootsListener.addRoot (entry.getURL());
-                }
-            }
-        }        
+        attachRootsListener ();        
         propSupport.addPropertyChangeListener(l);
     }
 
@@ -599,6 +590,18 @@ public final class ClassPath {
     //-------------------- Implementation details ------------------------//
 
     private PropertyChangeSupport   propSupport;
+    
+    
+    /**
+     * Attaches the listener to the ClassPath.entries.
+     * Not synchronized, HAS TO be called from the synchronized block!
+     */
+    private void attachRootsListener () {
+        if (this.rootsListener == null) {
+            assert this.rootsCache == null;
+            this.rootsListener = new RootsListener (this);
+        }
+    }
 
     /**
      * Returns an array of pairs of strings, first string in the pair is the
