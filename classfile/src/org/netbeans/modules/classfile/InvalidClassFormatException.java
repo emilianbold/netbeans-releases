@@ -57,15 +57,13 @@ public final class InvalidClassFormatException extends IOException {
 
     /**
      * Constructs an <code>InvalidClassFormatException</code> with the 
-     * specified cause, which is used to define the error message.  The 
-     * cause cannot be retrieved by <code>Throwable.getCause()</code>,
-     * since the <code>IOException(Throwable)</code> constructor was
-     * added in Java 6.
+     * specified cause, which is used to define the error message.
      *
      * @param cause   the exception which is used to define the error message.
      */
     InvalidClassFormatException(Throwable cause) {
         super(cause.getLocalizedMessage());
+        initCause(cause);
     }
 }
 

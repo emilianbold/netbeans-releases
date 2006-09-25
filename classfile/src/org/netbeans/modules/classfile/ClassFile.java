@@ -160,18 +160,8 @@ public class ClassFile {
             methods = Method.loadMethods(in, constantPool, this, includeCode);
             attributes = AttributeMap.load(in, constantPool);
         } catch (IOException ioe) {
-	    throw new InvalidClassFormatException(makeErrorMsg(ioe));
+	    throw new InvalidClassFormatException(ioe);
         }
-    }
-
-    private String makeErrorMsg(IOException ioe) {
-	StringBuffer sb = new StringBuffer();
-	if (sourceFileName != null)
-	    sb.append(sourceFileName);
-	sb.append('(');
-	sb.append(ioe.getMessage());
-	sb.append(')');
-	return sb.toString();
     }
 
     private ConstantPool loadClassHeader(DataInputStream in) throws IOException {
