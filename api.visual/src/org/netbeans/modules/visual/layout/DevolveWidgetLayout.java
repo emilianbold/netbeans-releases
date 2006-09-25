@@ -40,6 +40,7 @@ public final class DevolveWidgetLayout extends SceneLayout {
                 widget.getScene ().getSceneAnimator ().animatePreferredLocation (child, child.getLocation ());
             else
                 child.setPreferredLocation (child.getLocation ());
+            child.revalidate ();
         }
     }
 
