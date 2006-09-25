@@ -32,15 +32,13 @@ import java.util.Arrays;
  * @author  Tim Boudreau
  */
 final class IntList {
-    private int initialCapacity;
     private int[] array;
     private int used = 0;
     private int lastAdded = Integer.MIN_VALUE;
 
     /** Creates a new instance of IntMap */
     IntList(int capacity) {
-        initialCapacity = capacity;
-        array = allocArray (initialCapacity);
+        array = allocArray (capacity);
     }
     
     /** Add an integer to the lineStartList.  Must be greater than the preceding value

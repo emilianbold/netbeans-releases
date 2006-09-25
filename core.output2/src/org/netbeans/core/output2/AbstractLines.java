@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.logging.Logger;
@@ -56,7 +57,7 @@ abstract class AbstractLines implements Lines, Runnable {
 
 
     AbstractLines() {
-        if (Controller.log) Controller.log ("Creating a new AbstractLines");
+        if (Controller.LOG) Controller.log ("Creating a new AbstractLines");
         init();
     }
 
@@ -74,7 +75,7 @@ abstract class AbstractLines implements Lines, Runnable {
              //a disposed document.  Should never appear on screen, but it can
              //be requested to calculate the preferred size this will
              //make sure it's noticable if it does.
-             if (Controller.log) {
+             if (Controller.LOG) {
                  Controller.log (this + "  !!!!!REQUEST FOR SUBRANGE " + start + "-" + end + " AFTER OUTWRITER HAS BEEN DISPOSED!!");
 
              }
@@ -183,7 +184,7 @@ abstract class AbstractLines implements Lines, Runnable {
         if (isTrouble()) {
             return;
         }
-        if (Controller.log) Controller.log (this + ": Writer firing " + getStorage().size() + " bytes written");
+        if (Controller.LOG) Controller.log (this + ": Writer firing " + getStorage().size() + " bytes written");
         if (listener != null) {
             Mutex.EVENT.readAccess(this);
         }
@@ -325,8 +326,7 @@ abstract class AbstractLines implements Lines, Runnable {
         if (i != -1) {
             return i;
         }
-        i = lineStartList.findNearest(bytePos);
-        return i;
+        return lineStartList.findNearest(bytePos);
     }
 
     public int getLineCount() {
@@ -659,7 +659,7 @@ abstract class AbstractLines implements Lines, Runnable {
     }
 
     public void lineStarted(int start) {
-        if (Controller.verbose) Controller.log("AbstractLines.lineStarted " + start); //NOI18N
+        if (Controller.VERBOSE) Controller.log("AbstractLines.lineStarted " + start); //NOI18N
         int lineCount = 0;
         synchronized (readLock()) {
             setLastWrappedLineCount(-1);
@@ -670,7 +670,7 @@ abstract class AbstractLines implements Lines, Runnable {
         }
         if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
             //Fire again after the first 20 lines
-            if (Controller.log) Controller.log("Firing initial write event");
+            if (Controller.LOG) Controller.log("Firing initial write event");
             fire();
         }
     }
@@ -719,7 +719,7 @@ abstract class AbstractLines implements Lines, Runnable {
     }
     
     public void lineWritten(int start, int lineLength) {
-        if (Controller.verbose) Controller.log("AbstractLines.lineWritten " + start + " length:" + lineLength); //NOI18N
+        if (Controller.VERBOSE) Controller.log("AbstractLines.lineWritten " + start + " length:" + lineLength); //NOI18N
         int lineCount = 0;
         synchronized (readLock()) {
             setLastWrappedLineCount(-1);
@@ -736,7 +736,7 @@ abstract class AbstractLines implements Lines, Runnable {
         }
         if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
             //Fire again after the first 20 lines
-            if (Controller.log) Controller.log("Firing initial write event");
+            if (Controller.LOG) Controller.log("Firing initial write event");
             fire();
         }
     }
@@ -751,8 +751,7 @@ abstract class AbstractLines implements Lines, Runnable {
      * makes the intent clearer when encountered in code */
     static int toCharIndex (int byteIndex) {
         assert byteIndex % 2 == 0 : "bad index: " + byteIndex;  //NOI18N
-        int result = byteIndex >> 1;
-        return result;
+        return byteIndex >> 1;
     }
 
     public void saveAs(String path) throws IOException {
@@ -763,16 +762,20 @@ abstract class AbstractLines implements Lines, Runnable {
         CharBuffer cb = getStorage().getReadBuffer(0, getStorage().size()).asCharBuffer();
 
         FileOutputStream fos = new FileOutputStream (f);
-        String encoding = System.getProperty ("file.encoding"); //NOI18N
-        if (encoding == null) {
-            encoding = "UTF-8"; //NOI18N
+        try {
+            String encoding = System.getProperty ("file.encoding"); //NOI18N
+            if (encoding == null) {
+                encoding = "UTF-8"; //NOI18N
+            }
+            Charset charset = Charset.forName (encoding); //NOI18N
+            CharsetEncoder encoder = charset.newEncoder ();
+            ByteBuffer bb = encoder.encode (cb);
+            FileChannel ch = fos.getChannel();
+            ch.write(bb);
+            ch.close();
+        } finally {
+            fos.close();
         }
-        Charset charset = Charset.forName (encoding); //NOI18N
-        CharsetEncoder encoder = charset.newEncoder ();
-        ByteBuffer bb = encoder.encode (cb);
-        FileChannel ch = fos.getChannel();
-        ch.write(bb);
-        ch.close();
     }
 
     private String lastSearchString = null;
@@ -805,7 +808,7 @@ abstract class AbstractLines implements Lines, Runnable {
     }
 
     public Matcher find(String s) {
-        if (Controller.log) Controller.log (this + ": Executing find for string " + s + " on " );
+        if (Controller.LOG) Controller.log (this + ": Executing find for string " + s + " on " );
         Storage storage = getStorage();
         if (storage == null) {
             return null;

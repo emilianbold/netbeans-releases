@@ -168,8 +168,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
             }
         }
         AbstractOutputTab[] result = new AbstractOutputTab[al.size()];
-        result = (AbstractOutputTab[]) al.toArray(result);
-        return result;
+        return (AbstractOutputTab[]) al.toArray(result);
     }
     
     
@@ -178,7 +177,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         synchronized (getTreeLock()) {
             if (c.getParent() == pane && c instanceof AbstractOutputTab) {
                 if (c == pane.getSelectedComponent()) {
-                    if (Controller.log) Controller.log("Selected view is being removed: " + c.getName());
+                    if (Controller.LOG) Controller.log("Selected view is being removed: " + c.getName());
                     removedSelectedView = (AbstractOutputTab) c;
                 }
                 checkWinXPLFBug();
@@ -234,7 +233,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     
     public void setSelectedTab(AbstractOutputTab op) {
         assert (op.getParent() == this || op.getParent() == pane);
-        if (Controller.log) {
+        if (Controller.LOG) {
             Controller.log("SetSelectedTab: " + op + " parent is " + op.getParent());
         }
         if (pane.getParent() == this && op != pane.getSelectedComponent()) {

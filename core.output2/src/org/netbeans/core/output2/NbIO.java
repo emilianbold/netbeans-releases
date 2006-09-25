@@ -66,9 +66,9 @@ class NbIO implements InputOutput {
     }
     
     public void closeInputOutput() {
-        if (Controller.log) Controller.log("CLOSE INPUT OUTPUT CALLED FOR " + this);
+        if (Controller.LOG) Controller.log("CLOSE INPUT OUTPUT CALLED FOR " + this);
         if (out != null) {
-            if (Controller.log) Controller.log (" - Its output is non null, calling close() on " + out);
+            if (Controller.LOG) Controller.log (" - Its output is non null, calling close() on " + out);
             out.close();
         }
         post (this, IOEvent.CMD_CLOSE, true);
@@ -87,9 +87,9 @@ class NbIO implements InputOutput {
     }
 
     void dispose() {
-        if (Controller.log) Controller.log (this + ": IO " + getName() + " is being disposed");
+        if (Controller.LOG) Controller.log (this + ": IO " + getName() + " is being disposed");
         if (out != null) {
-            if (Controller.log) Controller.log (this + ": Still has an OutWriter.  Disposing it");
+            if (Controller.LOG) Controller.log (this + ": Still has an OutWriter.  Disposing it");
             out().dispose();
             out = null;
             if (in != null) {
@@ -137,7 +137,7 @@ class NbIO implements InputOutput {
     }
     
     public void select() {
-        if (Controller.log) Controller.log (this + ": select");
+        if (Controller.LOG) Controller.log (this + ": select");
         post (this, IOEvent.CMD_SELECT, true);
     }
     
@@ -155,7 +155,7 @@ class NbIO implements InputOutput {
     }
     
     public void setInputVisible(boolean value) {
-        if (Controller.log) Controller.log(NbIO.this + ": SetInputVisible");
+        if (Controller.LOG) Controller.log(NbIO.this + ": SetInputVisible");
         post (this, IOEvent.CMD_INPUT_VISIBLE, value);
     }
     
@@ -170,7 +170,7 @@ class NbIO implements InputOutput {
     private boolean streamClosed = false;
     private boolean streamClosedSet = false;
     public void setStreamClosed(boolean value) {
-        if (Controller.log) Controller.log ("setStreamClosed on " + this + " to " + value);
+        if (Controller.LOG) Controller.log ("setStreamClosed on " + this + " to " + value);
         if (streamClosed != value || !streamClosedSet) {
             streamClosed = value;
             streamClosedSet = true;
@@ -195,7 +195,7 @@ class NbIO implements InputOutput {
     
     private boolean wasReset = false;
     public void reset() {
-        if (Controller.log) Controller.log (this + ": reset");
+        if (Controller.LOG) Controller.log (this + ": reset");
         closed = null;
         boolean wasReset = true;
         streamClosedSet = false;
@@ -220,10 +220,10 @@ class NbIO implements InputOutput {
 
     static void post (IOEvent evt) {
         if (SwingUtilities.isEventDispatchThread()) {
-            if (Controller.log) Controller.log ("Synchronously dispatching " + evt + " from call on EQ");
+            if (Controller.LOG) Controller.log ("Synchronously dispatching " + evt + " from call on EQ");
             evt.dispatch();
         } else {
-            if (Controller.log) Controller.log ("Asynchronously posting " + evt + " to EQ");
+            if (Controller.LOG) Controller.log ("Asynchronously posting " + evt + " to EQ");
             EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
             eq.postEvent(evt);
         }
@@ -275,7 +275,7 @@ class NbIO implements InputOutput {
         }
         
         public void pushText (String txt) {
-            if (Controller.log) Controller.log (NbIO.this + ": Input text: " + txt);
+            if (Controller.LOG) Controller.log (NbIO.this + ": Input text: " + txt);
             synchronized (lock) {
                 buffer().append (txt);
                 lock.notifyAll();
@@ -304,7 +304,7 @@ class NbIO implements InputOutput {
         }
        
         public int read(char cbuf[], int off, int len) throws IOException {
-             if (Controller.log) Controller.log  (NbIO.this + ":Input read: " + off + " len " + len);
+             if (Controller.LOG) Controller.log  (NbIO.this + ":Input read: " + off + " len " + len);
             checkPristine();
             synchronized (lock) {
                 while (!inputClosed && buffer().length() == 0) {
@@ -327,7 +327,7 @@ class NbIO implements InputOutput {
         }
         
         public int read() throws IOException {
-            if (Controller.log) Controller.log (NbIO.this + ": Input read one char");
+            if (Controller.LOG) Controller.log (NbIO.this + ": Input read one char");
             checkPristine();
             synchronized (lock) {
                 while (!inputClosed && buffer().length() == 0) {
@@ -355,7 +355,7 @@ class NbIO implements InputOutput {
         }
         
         public long skip(long n) throws IOException {
-            if (Controller.log) Controller.log (NbIO.this + ": Input skip " + n);
+            if (Controller.LOG) Controller.log (NbIO.this + ": Input skip " + n);
             checkPristine();
             synchronized (lock) {
                 while (!inputClosed && buffer().length() == 0) {
@@ -377,7 +377,7 @@ class NbIO implements InputOutput {
         }
 
         public void close() throws IOException {
-            if (Controller.log) Controller.log (NbIO.this + ": Input close");
+            if (Controller.LOG) Controller.log (NbIO.this + ": Input close");
             setInputVisible(false);
             synchronized (lock) {
                 inputClosed = true;

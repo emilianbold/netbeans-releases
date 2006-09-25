@@ -88,7 +88,7 @@ public class OutputWindow extends AbstractOutputWindow {
     }
 
     OutputWindow (Controller controller) {
-        if (Controller.log) Controller.log("Created an output window");
+        if (Controller.LOG) Controller.log("Created an output window");
         this.controller = controller;
         setDisplayName (NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT")); //NOI18N
         // setting name to satisfy the accesible name requirement for window.
@@ -155,7 +155,7 @@ public class OutputWindow extends AbstractOutputWindow {
     }
 
     public void requestVisible () {
-        if (Controller.log) {
+        if (Controller.LOG) {
             Controller.log("Request visible");
             Controller.logStack();
         }
@@ -163,13 +163,13 @@ public class OutputWindow extends AbstractOutputWindow {
     }
     
     void requestVisibleForNewTab() {
-        if (Controller.log) Controller.log("Request visible for new tab");
+        if (Controller.LOG) Controller.log("Request visible for new tab");
         if (isOpened() && isShowing()) {
             if (!isActivated()) {
                 super.requestVisible();
             }
         } else {
-            if (Controller.log) Controller.log ("CALLING OPEN() ON OUTPUT WINDOW!");
+            if (Controller.LOG) Controller.log ("CALLING OPEN() ON OUTPUT WINDOW!");
             open();
             super.requestVisible();
             if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
@@ -207,7 +207,7 @@ public class OutputWindow extends AbstractOutputWindow {
     
     public void requestActive() {
         boolean activated = isActivated();
-        if (Controller.log) Controller.log("Request active");
+        if (Controller.LOG) Controller.log("Request active");
         super.requestActive();
         if (!activated) {
             requestFocus();
@@ -216,7 +216,7 @@ public class OutputWindow extends AbstractOutputWindow {
     
     private boolean activated = false;
     protected void componentActivated () {
-        if (Controller.log) Controller.log("ComponentActivated");
+        if (Controller.LOG) Controller.log("ComponentActivated");
         super.componentActivated();
         activated = true;
         controller.notifyActivated (this);
@@ -224,14 +224,14 @@ public class OutputWindow extends AbstractOutputWindow {
     }
     
     protected void componentDeactivated() {
-        if (Controller.log) Controller.log("ComponentDeactivated");
+        if (Controller.LOG) Controller.log("ComponentDeactivated");
         super.componentDeactivated();
         activated = false;
     }
     
     protected void removed(AbstractOutputTab view) {
-        if (Controller.log) Controller.log("Removed tab " + view);
-        if (Controller.log) Controller.log ("Tab has been removed.  Notifying controller.");
+        if (Controller.LOG) Controller.log("Removed tab " + view);
+        if (Controller.LOG) Controller.log ("Tab has been removed.  Notifying controller.");
         controller.notifyRemoved((OutputTab) view);
     }
 
@@ -302,8 +302,7 @@ public class OutputWindow extends AbstractOutputWindow {
     public OutputTab[] getHiddenTabs() {
         if (hiddenTabs != null && !hiddenTabs.isEmpty()) {
             OutputTab[] result = new OutputTab[hiddenTabs.size()];
-            result = (OutputTab[]) hiddenTabs.toArray(result);
-            return result;
+            return (OutputTab[]) hiddenTabs.toArray(result);
         }
         return new OutputTab[0];
     }
@@ -325,7 +324,7 @@ public class OutputWindow extends AbstractOutputWindow {
     }
 
     public void eventDispatched(IOEvent ioe) {
-            if (Controller.log) Controller.log ("Event received: " + ioe);
+            if (Controller.LOG) Controller.log ("Event received: " + ioe);
             NbIO io = ioe.getIO();
             int command = ioe.getCommand();
             boolean value = ioe.getValue();
@@ -339,7 +338,7 @@ public class OutputWindow extends AbstractOutputWindow {
                     return;
                 }
             }
-            if (Controller.log) Controller.log ("Passing command to controller " + ioe);
+            if (Controller.LOG) Controller.log ("Passing command to controller " + ioe);
             controller.performCommand (this, comp, io, command, value, data);
             ioe.consume();
     }
@@ -357,12 +356,12 @@ public class OutputWindow extends AbstractOutputWindow {
     }
 
     public void inputEof(OutputTab tab) {
-        if (Controller.log) Controller.log ("Input EOF on " + this);
+        if (Controller.LOG) Controller.log ("Input EOF on " + this);
         controller.inputEof(tab);
     }
 
     public void inputSent(OutputTab c, String txt) {
-        if (Controller.log) Controller.log ("Notifying controller input sent " + txt);
+        if (Controller.LOG) Controller.log ("Notifying controller input sent " + txt);
         controller.notifyInput(this, c, txt);
     }
 }

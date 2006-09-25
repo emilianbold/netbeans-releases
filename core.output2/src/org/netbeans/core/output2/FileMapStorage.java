@@ -39,6 +39,10 @@ class FileMapStorage implements Storage {
      * needed. */
     private static final int BASE_BUFFER_SIZE = 8196;
     /**
+     * max possible range to map.. 20 MB
+     */
+    private static final long MAX_MAP_RANGE = 1024 * 1024 * 20;
+    /**
      * The byte getWriteBuffer that write operations write into.  Actual buffers are
      * provided for writing by calling master.slice(); this getWriteBuffer simply
      * pre-allocates a fairly large chunk of memory to reduce repeated
@@ -54,10 +58,6 @@ class FileMapStorage implements Storage {
      * contents bufffer will be replaced by a larger one */
     private long mappedRange;
     
-    /**
-     * max possible range to map.. 20 MB
-     */
-    private final long MAX_MAP_RANGE = 1024 * 1024 * 20;
     /**
      * start of the mapped range..
      */
@@ -116,11 +116,12 @@ class FileMapStorage implements Storage {
             //#47196 - if user holds down F9, many threads can enter this method
             //simultaneously and all try to create the same file
             synchronized (FileMapStorage.class) {
-                String fname = outdir + "output" + Long.toString(System.currentTimeMillis()); //NOI18N
-                outfile = new File (fname);
+                StringBuilder fname = new StringBuilder(outdir)
+                        .append("output").append(Long.toString(System.currentTimeMillis())); //NOI18N
+                outfile = new File (fname.toString());
                 while (outfile.exists()) {
-                    fname += "x"; //NOI18N
-                    outfile = new File(fname);
+                    fname.append('x'); //NOI18N
+                    outfile = new File(fname.toString());
                 }
                 outfile.createNewFile();
                 outfile.deleteOnExit();
@@ -222,7 +223,7 @@ class FileMapStorage implements Storage {
     }
 
     public synchronized void dispose() {
-        if (Controller.log) {
+        if (Controller.LOG) {
             Controller.log ("Disposing file map storage");
             Controller.logStack();
         }
@@ -307,8 +308,7 @@ class FileMapStorage implements Storage {
         }
         int limit = Math.min(cont.limit(), byteCount);
         try {
-            ByteBuffer toReturn = (ByteBuffer) cont.slice().limit(limit);
-            return toReturn;
+            return (ByteBuffer) cont.slice().limit(limit);
         } catch (Exception e) {
             throw new IllegalStateException ("Error setting limit to " + limit //NOI18N
             + " contents size = " + cont.limit() + " requested: read " + //NOI18N
@@ -322,7 +322,7 @@ class FileMapStorage implements Storage {
 
     public void flush() throws IOException {
         if (buffer != null) {
-            if (Controller.log) Controller.log("FILEMAP STORAGE flush(): " + outstandingBufferCount);
+            if (Controller.LOG) Controller.log("FILEMAP STORAGE flush(): " + outstandingBufferCount);
             write (buffer, false);
             writeChannel.force(false);
             buffer = null;
@@ -334,7 +334,7 @@ class FileMapStorage implements Storage {
             flush();
             writeChannel.close();
             writeChannel = null;
-            if (Controller.log) Controller.log("FILEMAP STORAGE CLOSE.  Outstanding buffer count: " + outstandingBufferCount);
+            if (Controller.LOG) Controller.log("FILEMAP STORAGE CLOSE.  Outstanding buffer count: " + outstandingBufferCount);
         }
     }
 

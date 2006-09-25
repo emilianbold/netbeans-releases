@@ -38,7 +38,7 @@ public final class NbIOProvider extends IOProvider {
         "LBL_STDOUT"); //NOI18N
     
     public OutputWriter getStdOut() {
-        if (Controller.log) {
+        if (Controller.LOG) {
             Controller.log("NbIOProvider.getStdOut");
         }
         InputOutput stdout = getIO (STDOUT, false, null);
@@ -71,7 +71,7 @@ public final class NbIOProvider extends IOProvider {
     }
     
     private InputOutput getIO(String name, boolean newIO, Action[] toolbarActions) {
-        if (Controller.log) {
+        if (Controller.LOG) {
             Controller.log("GETIO: " + name + " new:" + newIO);
         }
         NbIO result = namesToIos.get(name);

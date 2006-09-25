@@ -190,8 +190,8 @@ final class IntMap {
     }
     
     public String toString() {
-        StringBuffer sb = new StringBuffer("IntMap@" + 
-            System.identityHashCode(this)); //NOI18N
+        StringBuffer sb = new StringBuffer("IntMap@") //NOI18N
+                .append(System.identityHashCode(this));
         
         for (int i=0; i < size(); i++) {
             sb.append ("["); //NOI18N

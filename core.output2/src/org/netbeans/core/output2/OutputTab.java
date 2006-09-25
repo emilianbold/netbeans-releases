@@ -40,7 +40,7 @@ final class OutputTab extends AbstractOutputTab {
 
     OutputTab (NbIO io) {
         this.io = io;
-        if (Controller.log) Controller.log ("Created an output component for " + io);
+        if (Controller.LOG) Controller.log ("Created an output component for " + io);
         OutputDocument doc = new OutputDocument (((NbWriter) io.getOut()).out());
         setDocument (doc);
     }
@@ -56,7 +56,7 @@ final class OutputTab extends AbstractOutputTab {
     }
 
     public void setDocument (Document doc) {
-        if (Controller.log) Controller.log ("Set document on " + this + " with " + io);
+        if (Controller.LOG) Controller.log ("Set document on " + this + " with " + io);
         assert SwingUtilities.isEventDispatchThread();
         Document old = getDocument();
         hasOutputListeners = false;
@@ -68,7 +68,7 @@ final class OutputTab extends AbstractOutputTab {
     }
 
     public void setIO (NbIO io) {
-        if (Controller.log) Controller.log ("Replacing io on " + this + " with " + io + " out is " + (io != null ? io.getOut() : null));
+        if (Controller.LOG) Controller.log ("Replacing io on " + this + " with " + io + " out is " + (io != null ? io.getOut() : null));
         if (io != null) {
             setDocument (new OutputDocument(((NbWriter) io.getOut()).out()));
             io.setClosed(false);
@@ -92,13 +92,13 @@ final class OutputTab extends AbstractOutputTab {
     }
 
     protected void inputSent(String txt) {
-        if (Controller.log) Controller.log("Input sent on OutputTab: " + txt);
+        if (Controller.LOG) Controller.log("Input sent on OutputTab: " + txt);
         getOutputPane().lockScroll();
         findOutputWindow().inputSent(this, txt);
     }
 
     protected void inputEof() {
-        if (Controller.log) Controller.log ("Input EOF on OutputTab: ");
+        if (Controller.LOG) Controller.log ("Input EOF on OutputTab: ");
         findOutputWindow().inputEof(this);
     }
 
@@ -168,7 +168,7 @@ final class OutputTab extends AbstractOutputTab {
         int result = -1;
         OutWriter out = io.out();
         if (out != null) {
-            if (Controller.log) Controller.log ("Looking for first appropriate" +
+            if (Controller.LOG) Controller.log ("Looking for first appropriate" +
                 " listener line to send the caret to");
             result = out.getLines().firstImportantListenerLine();
         }

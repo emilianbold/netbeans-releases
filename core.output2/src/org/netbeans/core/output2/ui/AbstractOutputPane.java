@@ -603,9 +603,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         public void setBlinkRate(int rate) {
             super.setBlinkRate(0);
         }
-        public void setVisible(boolean b) {
-            super.setVisible(true);
-        }
  
         public boolean isVisible() { return true; }
         

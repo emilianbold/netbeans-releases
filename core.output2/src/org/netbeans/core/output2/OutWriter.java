@@ -141,7 +141,7 @@ class OutWriter extends PrintWriter {
                 boolean lastWasNewLine = true;
                 while (tok.hasMoreTokens()) {
                     String token = tok.nextToken();
-                    if (token.equals("\n")) {
+                    if ("\n".equals(token)) {
                         if (lastWasNewLine) {
                             doPrintln("");
                             result++;
@@ -195,7 +195,7 @@ class OutWriter extends PrintWriter {
                                               NbBundle.getMessage(OutWriter.class,
                                                                   "MSG_GenericError")); //NOI18N
         }
-        if (Controller.log) {
+        if (Controller.LOG) {
             StackTraceElement[] el = e.getStackTrace();
             Controller.log ("EXCEPTION: " + e.getClass() + e.getMessage());
             for (int i=1; i < el.length; i++) {
@@ -256,7 +256,7 @@ class OutWriter extends PrintWriter {
         }
         if (completeLine) {
             if (lineStart >= 0 && !terminated && lines != null) {
-                if (Controller.verbose) Controller.log (this + ": Wrote " +
+                if (Controller.VERBOSE) Controller.log (this + ": Wrote " +
                         ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
                 if (startedNow) {
                     lines.lineWritten (lineStart, lineLength);
@@ -288,7 +288,7 @@ class OutWriter extends PrintWriter {
      */
     void threadDeathClose() {
         terminated = true;
-        if (Controller.log) Controller.log (this + " Close due to termination");
+        if (Controller.LOG) Controller.log (this + " Close due to termination");
         ErrWriter err = owner.writer().err();
         if (err != null) {
             err.closed=true;
@@ -308,7 +308,7 @@ class OutWriter extends PrintWriter {
             //ant module tries to reuse the tab -
             return;
         }
-        if (Controller.log) Controller.log (this + ": OutWriter.dispose - owner is " + (owner == null ? "null" : owner.getName()));
+        if (Controller.LOG) Controller.log (this + ": OutWriter.dispose - owner is " + (owner == null ? "null" : owner.getName()));
         clearListeners();
         if (storage != null) {
             storage.dispose();
@@ -318,14 +318,14 @@ class OutWriter extends PrintWriter {
             lines.clear();
         }
         trouble = true;
-        if (Controller.log) Controller.log (this + ": Setting owner to null, trouble to true, dirty to false.  This OutWriter is officially dead.");
+        if (Controller.LOG) Controller.log (this + ": Setting owner to null, trouble to true, dirty to false.  This OutWriter is officially dead.");
         owner = null;
         disposed = true;
     }
 
 
     private void clearListeners() {
-        if (Controller.log) Controller.log (this + ": Sending outputLineCleared to all listeners");
+        if (Controller.LOG) Controller.log (this + ": Sending outputLineCleared to all listeners");
         if (owner == null) {
             //Somebody called reset() twice
             return;
@@ -336,7 +336,7 @@ class OutWriter extends PrintWriter {
                 Controller.ControllerOutputEvent e = new Controller.ControllerOutputEvent(owner, 0);
                 for (int i=0; i < listenerLines.length; i++) {
                     OutputListener ol = (OutputListener) lines.getListenerForLine(listenerLines[i]);
-                    if (Controller.log) {
+                    if (Controller.LOG) {
                         Controller.log("Clearing listener " + ol);
                     }
                     e.setLine(listenerLines[i]);
@@ -348,7 +348,7 @@ class OutWriter extends PrintWriter {
                     }
                 }
             } else {
-                if (Controller.log) Controller.log (this + ": No listeners to clear");
+                if (Controller.LOG) Controller.log (this + ": No listeners to clear");
             }
         }
     }
@@ -406,10 +406,6 @@ class OutWriter extends PrintWriter {
 
         public boolean checkError() {
             return disposed || trouble;
-        }
-
-        protected void setError() {
-            trouble = true;
         }
 
         public synchronized void write(int c) {

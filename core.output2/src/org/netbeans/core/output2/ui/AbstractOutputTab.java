@@ -145,7 +145,7 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
             buttons[i].setText(null);
             buttons[i].putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
             if (a[i].getValue (Action.SMALL_ICON) == null) {
-                throw new IllegalStateException ("No icon provided for " + a); //NOI18N
+                throw new IllegalStateException ("No icon provided for " + a[i]); //NOI18N
             }
         }
     }
@@ -182,7 +182,7 @@ public abstract class AbstractOutputTab extends JComponent implements ActionList
         }
         name = (String) a.getValue(Action.NAME);
         if (accel != null) {
-            if (Controller.log) Controller.log ("Installed action " + name + " on " + accel);
+            if (Controller.LOG) Controller.log ("Installed action " + name + " on " + accel);
             // if the logic here changes, check the popup escaping hack in Controller
             // it temporarily removes the VK_ESCAPE from input maps..
             JComponent c = getOutputPane().textView;

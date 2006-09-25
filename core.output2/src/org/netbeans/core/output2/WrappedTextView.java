@@ -581,7 +581,7 @@ public class WrappedTextView extends View {
                 column = lineLength-1;
             }
 
-            int result = wraps > 0 ?
+            return wraps > 0 ?
                 Math.min(od.getLineEnd(logicalLine) - 1, lineStart + (ln[1] * charsPerLine) + column)
                 : lineStart + column;
 /*            System.err.println ("ViewToModel " + ix + "," + iy + " = " + result + " physical ln " + physicalLine +
@@ -589,9 +589,6 @@ public class WrappedTextView extends View {
                     charsPerLine + " column " + column + " line length " + lineLength);
 //            System.err.println ("v2m: [" + ix + "," + iy + "] = " + result);
 */
-                
-            return result;
-
         } else {
             return 0;
         }

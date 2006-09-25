@@ -52,7 +52,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
    
     /** Creates a new instance of OutputDocument */
     OutputDocument(OutWriter writer) {
-        if (Controller.log) {
+        if (Controller.LOG) {
             Controller.log ("Creating a Document for " + writer);
         }
         this.writer = writer;
@@ -64,7 +64,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
      * in the UI when this method is called.
      */
     public void dispose() {
-        if (Controller.log) Controller.log ("Disposing document and backing storage for " + getLines().readLock());
+        if (Controller.LOG) Controller.log ("Disposing document and backing storage for " + getLines().readLock());
         disposeQuietly();
         writer.dispose();
         writer = null;
@@ -132,11 +132,10 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         if (length == 0) {
             return ""; //NOI18N
         }
-        String result1;
+        String result;
         synchronized (getLines().readLock()) {
-            result1 = getLines().getText(offset,offset + length);
+            result = getLines().getText(offset,offset + length);
         }
-        String result = result1;
         return result;
     }
     
@@ -294,14 +293,14 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     private int lastFiredLine = -1;
     private int lastFiredlength = -1;
     public void stateChanged(ChangeEvent changeEvent) {
-        if (Controller.verbose) Controller.log (changeEvent != null ? "Document got change event from writer" : "Document timer polling");
+        if (Controller.VERBOSE) Controller.log (changeEvent != null ? "Document got change event from writer" : "Document timer polling");
         if (dlisteners.isEmpty()) {
-            if (Controller.verbose) Controller.log ("listeners empty, not firing");
+            if (Controller.VERBOSE) Controller.log ("listeners empty, not firing");
             return;
         }
         if (getLines().checkDirty(true)) {
             if (lastEvent != null && !lastEvent.isConsumed()) {
-                if (Controller.verbose) Controller.log ("Last event not consumed, not firing");
+                if (Controller.VERBOSE) Controller.log ("Last event not consumed, not firing");
                 return;
             }
             boolean noPostedLine = lastPostedLine == - 1;
@@ -311,23 +310,23 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             lastPostedLine = lineCount;
             lastPostedLength = size;
             
-            if (Controller.verbose) Controller.log ("Document may fire event - last fired getLine=" + lastFiredLine + " getLine count now " + lineCount);
+            if (Controller.VERBOSE) Controller.log ("Document may fire event - last fired getLine=" + lastFiredLine + " getLine count now " + lineCount);
             if ((lastFiredLine != lastPostedLine  || lastPostedLength != lastFiredlength) || noPostedLine) {
                 lastEvent = new DO(Math.max(0, lastFiredLine == lastPostedLine ? lastFiredLine - 1 : lastFiredLine), noPostedLine);
 //                evts.add (lastEvent);
                 Mutex.EVENT.readAccess (new Runnable() {
                     public void run() {
-                        if (Controller.verbose) Controller.log("Firing document event on EQ with start index " + lastEvent.start);
+                        if (Controller.VERBOSE) Controller.log("Firing document event on EQ with start index " + lastEvent.start);
                         fireDocumentEvent (lastEvent);
                     }
                 });
                 lastFiredLine = lastPostedLine;
                 lastFiredlength = lastPostedLength;
             } else {
-                if (Controller.verbose) Controller.log ("Line count is still " + lineCount + " - not firing");
+                if (Controller.VERBOSE) Controller.log ("Line count is still " + lineCount + " - not firing");
             }
         } else {
-            if (Controller.verbose) Controller.log ("Writer says it is not dirty, firing no change");
+            if (Controller.VERBOSE) Controller.log ("Writer says it is not dirty, firing no change");
         }
         updateTimerState();
     }    
@@ -340,7 +339,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         updatingTimerState = true;
         long newTime = System.currentTimeMillis();
         if (timer == null && getLines().isGrowing()) {
-            if (Controller.log) Controller.log("Starting timer");
+            if (Controller.LOG) Controller.log("Starting timer");
             //Run the timer fast and furious at first, slowing down after
             //the initial output has been captured
             timer = new javax.swing.Timer(50, this);
@@ -366,7 +365,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
         if (timer != null && timer.getDelay() < 350) {
             timer.setDelay (timer.getDelay() + 20);
-            if (Controller.verbose) Controller.log ("Decreased timer interval to " + timer.getDelay());
+            if (Controller.VERBOSE) Controller.log ("Decreased timer interval to " + timer.getDelay());
         }
         lastFireTime = newTime;
         updatingTimerState = false;
@@ -415,8 +414,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     
     final class ODEndPosition implements Position {
         public int getOffset() {
-            int result = getLines().getCharCount();
-            return result;
+            return getLines().getCharCount();
         }
         
         private Document doc() {
@@ -615,7 +613,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             if (!consumed) {
 //                synchronized (writer) {
                     consumed = true;
-                    if (Controller.verbose) Controller.log ("EVENT CONSUMED: " + start);
+                    if (Controller.VERBOSE) Controller.log ("EVENT CONSUMED: " + start);
                 int charsWritten = getLines().getCharCount();
                     if (initial) {
                         first = 0;

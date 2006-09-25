@@ -154,23 +154,23 @@ public class Controller { //XXX public only for debug access to logging code
     private OutputTab createOutputTab (OutputWindow win, NbIO io, boolean activateContainer, boolean reuse) {
         AbstractOutputTab[] ov = win.getTabs();
         OutputTab result = null;
-        if (log) log ("Find or create component for nbio " + io);
+        if (LOG) log ("Find or create component for nbio " + io);
         
         for (int i=0; i < ov.length; i++) {
             OutputTab oc = (OutputTab) ov[i];
             if (oc.getIO() == io) {
-                if (log) log ("Found an existing tab");
+                if (LOG) log ("Found an existing tab");
                 result = oc;
                 break;
             }
         }
         if (result == null) {
-            if (log) log ("Didn't find an existing open tab, checking hidden tabs");
+            if (LOG) log ("Didn't find an existing open tab, checking hidden tabs");
             OutputTab[] hidden = win.getHiddenTabs();
             for (int i=0; i < hidden.length; i++) {
                 OutputTab oc = hidden[i];
                 if (hidden[i].getIO() == io) {
-                    if (log) log ("Found a hidden tab with the same IO.  Unhiding it for reuse");
+                    if (LOG) log ("Found a hidden tab with the same IO.  Unhiding it for reuse");
                     result = oc;
                     unhideHiddenView (win, result);
                     break;
@@ -178,11 +178,11 @@ public class Controller { //XXX public only for debug access to logging code
             }
         }
         
-        if (log) log ("FindOrCreate: " + io.getName() + " found=" + (result != 
+        if (LOG) log ("FindOrCreate: " + io.getName() + " found=" + (result != 
             null) + " for io " + io);
         
         if (result == null) {
-            if (log) log ("Find or create creating " + io.getName());
+            if (LOG) log ("Find or create creating " + io.getName());
             result = createAndInstallView (win, io);
         }
         if (result != null) {
@@ -208,7 +208,7 @@ public class Controller { //XXX public only for debug access to logging code
      * @return A new OutputTab attached to the passed IO
      */
     private OutputTab createAndInstallView (OutputWindow win, NbIO io) {
-        if (log) log ("Create and install a new tab for : " + io.getName());
+        if (LOG) log ("Create and install a new tab for : " + io.getName());
         OutputTab result = new OutputTab (io);
         result.setName (io.getName() + " ");
         Action[] a = io.getToolbarActions();
@@ -219,7 +219,7 @@ public class Controller { //XXX public only for debug access to logging code
             result.installKeyboardAction(kbdActions[i]);
         }
         
-        if (log) log ("Adding and selecting new tab " + result);
+        if (LOG) log ("Adding and selecting new tab " + result);
         win.add (result);
         win.setSelectedTab(result);
         //Make sure names are boldfaced for all open streams - if the tabbed
@@ -242,7 +242,7 @@ public class Controller { //XXX public only for debug access to logging code
      * @param hidden The output component which is hidden but was not closed when it was hidden
      */
     private void unhideHiddenView (OutputWindow win, OutputTab hidden) {
-        if (log) log ("Unhiding hidden tab for " + hidden.getIO());
+        if (LOG) log ("Unhiding hidden tab for " + hidden.getIO());
         win.add (hidden);
         win.removeHiddenView(hidden);
     }
@@ -258,7 +258,7 @@ public class Controller { //XXX public only for debug access to logging code
      */
     private void updateName (OutputWindow win, OutputTab tab) {
         if (nameUpdater == null) {
-            if (log) log ("Update name for " + tab.getIO() + " dispatching a name updater");
+            if (LOG) log ("Update name for " + tab.getIO() + " dispatching a name updater");
             nameUpdater = new CoalescedNameUpdater(win);
             SwingUtilities.invokeLater(nameUpdater);
         }
@@ -302,7 +302,7 @@ public class Controller { //XXX public only for debug access to logging code
             for (Iterator i=components.iterator(); i.hasNext();) {
                 OutputTab t = (OutputTab) i.next();
                 NbIO io = t.getIO();
-                if (log) {
+                if (LOG) {
                     log ("Update name for " + io.getName() + " stream " +
                         "closed is " + io.isStreamClosed());
                 }
@@ -320,7 +320,7 @@ public class Controller { //XXX public only for debug access to logging code
                             "<html><b>" + escaped 
                             + " </b>&nbsp;</html>";  //NOI18N
                     
-                    if (log) log ("  set name to " + name);
+                    if (LOG) log ("  set name to " + name);
                     
                     win.setTabTitle (t, name);
                 }
@@ -330,9 +330,9 @@ public class Controller { //XXX public only for debug access to logging code
     }
     
     private void forceName(OutputWindow win, OutputTab tab) {
-        if (log) log ("ForceName ensuring non-html tab name");
+        if (LOG) log ("ForceName ensuring non-html tab name");
         if (nameUpdater != null) {
-            if (log) log ("  an update was queued, aborting it");
+            if (LOG) log ("  an update was queued, aborting it");
             nameUpdater.remove(tab);
         }
         if (win.isAncestorOf(tab)) {
@@ -342,7 +342,7 @@ public class Controller { //XXX public only for debug access to logging code
             } catch (CharConversionException e) {
                 escaped = tab.getIO().getName() + " ";
             }
-            if (log) log ("  setting non-html name " + escaped);
+            if (LOG) log ("  setting non-html name " + escaped);
             win.setTabTitle (tab, escaped);
         }
     }
@@ -399,40 +399,40 @@ public class Controller { //XXX public only for debug access to logging code
                 findPrevious (tab);
                 break;
             case ACTION_NAVTOLINE :
-                if (log) log ("Action NAVTOLINE received");
+                if (LOG) log ("Action NAVTOLINE received");
                 openLineIfError (tab);
                 break;
             case ACTION_POSTMENU :
-                if (log) log ("Action POSTMENU received");
+                if (LOG) log ("Action POSTMENU received");
                 postPopupMenu(win, tab, new Point(0,0), tab);
                 break;
             case ACTION_CLEAR :
-                if (log) log ("Action CLEAR receieved");
+                if (LOG) log ("Action CLEAR receieved");
                 NbIO io = tab.getIO();
 
                 if (io != null) {
                     NbWriter writer = io.writer();
                     if (writer != null) {
                         try {
-                            if (log) log ("Resetting the writer for Clear");
+                            if (LOG) log ("Resetting the writer for Clear");
                             writer.reset();
                             forceName(win, tab);
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
-                    } else if (log) {
+                    } else if (LOG) {
                         log ("IO's NbWriter is null");
                     }
-                } else if (log) {
+                } else if (LOG) {
                     log ("Clear on a tab with no IO");
                 }
                 break;
             case ACTION_NEXTTAB :
-                if (log) log ("Action NEXTTAB received");
+                if (LOG) log ("Action NEXTTAB received");
                 win.selectNextTab(tab);
                 break;
             case ACTION_PREVTAB :
-                if (log) log ("Action PREVTAB received");
+                if (LOG) log ("Action PREVTAB received");
                 win.selectPreviousTab(tab);
                 break;
 // #issue 59447                
@@ -463,7 +463,7 @@ public class Controller { //XXX public only for debug access to logging code
             int line = tab.getOutputPane().getCaretLine();
             OutputListener lis = out.getLines().getListenerForLine(line);
             if (lis != null) {
-                if (log) log (" Sending action for getLine " + line);
+                if (LOG) log (" Sending action for getLine " + line);
                 ignoreCaretChanges = true;
                 tab.getOutputPane().sendCaretToLine(line, true);
                 ignoreCaretChanges = false;
@@ -524,7 +524,7 @@ public class Controller { //XXX public only for debug access to logging code
             if (pos >= tab.getOutputPane().getLength()-1 || pos < 0) {
                 pos = 0;
             }
-            if (log) log ("Reverse search from " + pos);
+            if (LOG) log ("Reverse search from " + pos);
             if (matcher != null && matcher.find (pos)) {
                 int start = length - matcher.end();
                 int end = length - matcher.start();
@@ -578,17 +578,17 @@ public class Controller { //XXX public only for debug access to logging code
         win.remove(tab);  //Triggers a call to notifyRemoved()
         boolean winClosed = false;
         if (!programmatic && win.getTabs().length == 0) {
-            if (log) log ("Last tab closed by user, closing output window.");
+            if (LOG) log ("Last tab closed by user, closing output window.");
             win.close();
             winClosed = true;
         }
         if (hadFocus) {
             if (!winClosed && win.getSelectedTab() != null) {
-                if (log) log ("Trying to send focus to the newly selected tab");
+                if (LOG) log ("Trying to send focus to the newly selected tab");
                 win.getSelectedTab().requestFocus();
             }
         }
-        if (log) log ("Close received, removing " + tab + " from component");
+        if (LOG) log ("Close received, removing " + tab + " from component");
     }
 
     /**
@@ -734,7 +734,7 @@ public class Controller { //XXX public only for debug access to logging code
             //FirstF12: #48485 - caret is already on the first listener line,
             //so F12 jumps to the second error.  So search from 0 the first time after a reset
             int newline = out.getLines().nearestListenerLine(line, backward);
-            if (log) {
+            if (LOG) {
                 log ("sendCaretToError - caret line: " + line + 
                     " nearest listener line " + newline);
             }
@@ -748,7 +748,7 @@ public class Controller { //XXX public only for debug access to logging code
                 }
             }
             if (newline != -1) {
-                if (log)
+                if (LOG)
                     log("Sending caret to error line " + newline);
                 tab.getOutputPane().sendCaretToLine(newline, true);
                 if (!win.isActivated()) {
@@ -770,7 +770,7 @@ public class Controller { //XXX public only for debug access to logging code
      */
     public void notifyRemoved(OutputTab tab) {
         assert SwingUtilities.isEventDispatchThread();
-        if (log) log ("Tab " + tab + " has been CLOSED.  Disposing its IO.");
+        if (LOG) log ("Tab " + tab + " has been CLOSED.  Disposing its IO.");
         NbIO io = tab.getIO();
         if (io != null) {
             io.setClosed(true);
@@ -794,12 +794,12 @@ public class Controller { //XXX public only for debug access to logging code
      * @param txt The input entered
      */
     public void notifyInput(OutputWindow win, OutputTab tab, String txt) {
-        if (Controller.log) Controller.log ("Notify input on " + tab + " - " + txt);
+        if (Controller.LOG) Controller.log ("Notify input on " + tab + " - " + txt);
         NbIO io = tab.getIO();
         if (io != null) {
             NbIO.IOReader in = io.in();
             if (in != null) {
-                if (Controller.log) Controller.log ("Sending input to " + in);
+                if (Controller.LOG) Controller.log ("Sending input to " + in);
 
                 in.pushText (txt + "\n");
 				//#56070 - copy input to output, TODO - make it more different color..
@@ -848,7 +848,7 @@ public class Controller { //XXX public only for debug access to logging code
      * @param src The source of the click event
      */
     public void postPopupMenu(OutputWindow win, OutputTab tab, Point p, Component src) {
-        if (log) {
+        if (LOG) {
             log ("post popup menu for " + tab.getName());
         }
         JPopupMenu popup = new JPopupMenu();
@@ -895,7 +895,7 @@ public class Controller { //XXX public only for debug access to logging code
         
     }
     
-    private class ProxyAction implements Action {
+    private static class ProxyAction implements Action {
         private Action orig;
         ProxyAction(Action original) {
             orig = original;
@@ -986,7 +986,7 @@ public class Controller { //XXX public only for debug access to logging code
     public void caretEnteredLine(OutputTab tab, int line) {
         if (!ignoreCaretChanges) {
             OutputListener l = listenerForLine (tab, line);
-            if (log) {
+            if (LOG) {
                 log ("Caret entered line " + line + " notifying listener " + l);
             }
             if (l != null) {
@@ -994,7 +994,7 @@ public class Controller { //XXX public only for debug access to logging code
                 l.outputLineSelected(oe);
             }
         } else {
-            if (log) {
+            if (LOG) {
                 log ("Caret entered line " + line + " which has no listener");
             }
         }
@@ -1037,7 +1037,7 @@ public class Controller { //XXX public only for debug access to logging code
     public void performCommand(OutputWindow win, OutputTab tab, NbIO io, int command,
                                boolean value, Object data) {
 
-        if (log) {
+        if (LOG) {
             log ("PERFORMING: " +  IOEvent.cmdToString(command) + " value=" + value + " on " + io + " tob " + tab);
         }
 
@@ -1127,18 +1127,18 @@ public class Controller { //XXX public only for debug access to logging code
             case IOEvent.CMD_RESET :
                 firstF12 = true;
                 if (tab == null) {
-                    if (log) log ("Got a reset on an io with no tab.  Creating a tab.");
-                    performCommand (win, tab, io, IOEvent.CMD_CREATE, value, data);
+                    if (LOG) log ("Got a reset on an io with no tab.  Creating a tab.");
+                    performCommand (win, null, io, IOEvent.CMD_CREATE, value, data);
                     win.requestVisible();
                     return;
                 }
-                if (log) log ("Setting io " + io + " on tab " + tab);
+                if (LOG) log ("Setting io " + io + " on tab " + tab);
 //                tab.setDocument (new OutputDocument((OutWriter)io.getOut()));
                 tab.setIO(io);
                 win.setSelectedTab(tab);
                 updateName(win, tab);
                 // Undesirable in practice: win.requestVisibleForNewTab();
-                if (log) log ("Reset on " + tab + " tab displayable " + tab.isDisplayable() + " io " + io + " io.out " + io.out());
+                if (LOG) log ("Reset on " + tab + " tab displayable " + tab.isDisplayable() + " io " + io + " io.out " + io.out());
                 break;
             case IOEvent.CMD_ICON :
                 win.setTabIcon(tab, io.getIcon());
@@ -1156,7 +1156,7 @@ public class Controller { //XXX public only for debug access to logging code
         OutWriter out = comp.getIO().out();
         if (out != null) {
             int line = comp.getFirstNavigableListenerLine();
-            if (Controller.log) Controller.log ("NAV TO FIRST LISTENER LINE: " + line);
+            if (Controller.LOG) Controller.log ("NAV TO FIRST LISTENER LINE: " + line);
             if (line > 0) {
                 comp.getOutputPane().sendCaretToLine (line, false);
                 if (isSDI(comp)) {
@@ -1260,7 +1260,7 @@ public class Controller { //XXX public only for debug access to logging code
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (log) log ("ACTION PERFORMED: " + getValue(NAME));
+            if (LOG) log ("ACTION PERFORMED: " + getValue(NAME));
             Component c = (Component) e.getSource();
 
             OutputTab outComp = c instanceof OutputTab ? (OutputTab) c :
@@ -1291,17 +1291,6 @@ public class Controller { //XXX public only for debug access to logging code
                 cont.actionPerformed (win, outComp, getID());
             }
         }
-
-        /**
-         * Set the enabled state of the action.  Updates the action performer for its
-         * action class as needed.
-         *
-         * @param val The state
-         */
-        public void setEnabled (boolean val) {
-            super.setEnabled(val);
-        }
-
     }
 
     /**
@@ -1344,9 +1333,9 @@ public class Controller { //XXX public only for debug access to logging code
         }
     }
 
-    public static boolean log = Boolean.getBoolean("nb.output.log") || Boolean.getBoolean("nb.output.log.verbose"); //NOI18N
-    public static boolean verbose = Boolean.getBoolean("nb.output.log.verbose");
-    static boolean logStdOut = Boolean.getBoolean("nb.output.log.stdout"); //NOI18N
+    public static final boolean LOG = Boolean.getBoolean("nb.output.log") || Boolean.getBoolean("nb.output.log.verbose"); //NOI18N
+    public static final boolean VERBOSE = Boolean.getBoolean("nb.output.log.verbose");
+    static final boolean logStdOut = Boolean.getBoolean("nb.output.log.stdout"); //NOI18N
     public static void log (String s) {
         s = Long.toString(System.currentTimeMillis()) + ":" + s + "(" + Thread.currentThread() + ")  ";
         if (logStdOut) {
@@ -1407,7 +1396,7 @@ public class Controller { //XXX public only for debug access to logging code
     }
 
     public void inputEof(OutputTab tab) {
-        if (Controller.log) Controller.log ("Input EOF");
+        if (Controller.LOG) Controller.log ("Input EOF");
         NbIO io = tab.getIO();
         NbIO.IOReader in = io.in();
         if (in != null) {
