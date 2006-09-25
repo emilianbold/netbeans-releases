@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 
 /**
  * Data structure (model) of results of JUnit task results.
@@ -41,7 +42,7 @@ final class Report {
     String suiteClassName;
     String classpath;
     ClassPath platformSources;
-    Collection/*<FileObject>*/ classpathSourceRoots;
+    Collection<FileObject> classpathSourceRoots;
     String[] outputStd;
     String[] outputErr;
     int totalTests;
@@ -52,7 +53,7 @@ final class Report {
      * number of recognized (by the parser) passed test reports
      */
     int detectedPassedTests;
-    private Collection/*<Testcase>*/ tests;
+    private Collection<Testcase> tests;
     private boolean closed = false;
     
     /**
@@ -60,7 +61,7 @@ final class Report {
     Report(String suiteClassName) {
         this.suiteClassName = suiteClassName;
         this.antScript = antScript;
-        this.tests = new ArrayList(10);
+        this.tests = new ArrayList<Testcase>(10);
     }
     
     /**
@@ -100,7 +101,7 @@ final class Report {
     
     /**
      */
-    Collection getTests() {
+    Collection<Testcase> getTests() {
         
         /*
          * May be called both from the EventDispatch thread and
@@ -114,7 +115,7 @@ final class Report {
         if (tests.isEmpty()) {
             return Collections.EMPTY_LIST;
         } else {
-            return new ArrayList(tests);
+            return new ArrayList<Testcase>(tests);
         }
     }
     

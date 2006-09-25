@@ -28,7 +28,7 @@ import org.openide.nodes.Node;
  *
  * @author Marian Petras
  */
-final class TestsuiteNodeChildren extends Children.Keys {
+final class TestsuiteNodeChildren extends Children.Keys<Report.Testcase> {
 
     /** */
     private static final Node[] EMPTY_NODE_ARRAY = new Node[0];
@@ -74,8 +74,7 @@ final class TestsuiteNodeChildren extends Children.Keys {
     
     /**
      */
-    protected Node[] createNodes(Object key) {
-        final Report.Testcase testcase = (Report.Testcase) key;
+    protected Node[] createNodes(final Report.Testcase testcase) {
         if (filtered && (testcase.trouble == null)) {
             return EMPTY_NODE_ARRAY;
         }
@@ -95,8 +94,7 @@ final class TestsuiteNodeChildren extends Children.Keys {
         }
                 
         if (isInitialized()) {
-            for (Iterator i = report.getTests().iterator(); i.hasNext(); ) {
-                Report.Testcase testcase = (Report.Testcase) i.next();
+            for (Report.Testcase testcase : report.getTests()) {
                 if (testcase.trouble == null) {
                     refreshKey(testcase);
                 }

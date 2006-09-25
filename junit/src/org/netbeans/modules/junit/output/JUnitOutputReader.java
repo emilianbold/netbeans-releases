@@ -481,7 +481,7 @@ final class JUnitOutputReader {
             return;
         }
         
-        Collection/*<FileObject>*/ sourceRoots = new LinkedHashSet();
+        Collection<FileObject> sourceRoots = new LinkedHashSet<FileObject>();
         final StringTokenizer tok = new StringTokenizer(report.classpath,
                                                         File.pathSeparator);
         while (tok.hasMoreTokens()) {
@@ -501,7 +501,7 @@ final class JUnitOutputReader {
             }
             FileObject[] someRoots = SourceForBinaryQuery
                                      .findSourceRoots(binroot).getRoots();
-            sourceRoots.addAll(Arrays.asList((Object[]) someRoots));
+            sourceRoots.addAll(Arrays.asList(someRoots));
         }
 
         if (report.platformSources != null) {

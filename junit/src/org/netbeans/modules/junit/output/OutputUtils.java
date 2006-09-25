@@ -45,7 +45,7 @@ final class OutputUtils {
     static void openCallstackFrame(Node node,
                                    String frameInfo) {
         Report report = getTestsuiteNode(node).getReport();
-        Collection/*<FileObject>*/ srcRoots = report.classpathSourceRoots;
+        Collection<FileObject> srcRoots = report.classpathSourceRoots;
         if ((srcRoots == null) || srcRoots.isEmpty()) {
             return;
         }
