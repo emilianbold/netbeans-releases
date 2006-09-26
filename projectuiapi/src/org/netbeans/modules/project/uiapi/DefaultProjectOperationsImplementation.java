@@ -625,6 +625,7 @@ public final class DefaultProjectOperationsImplementation {
         
         dialog[0].setVisible(true);
         
+        dialog[0].dispose();
         dialog[0] = null;
     }
     
