@@ -121,7 +121,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         Dimension panel2Size = this.jPanel2.getPreferredSize();
         Dimension bottomPanelSize = this.bottomPanelContainer.getPreferredSize ();
         Dimension splitterSize = this.targetSeparator.getPreferredSize();        
-        int vmax = panel2Size.height + bottomPanelSize.height + splitterSize.height;
+        int vmax = panel2Size.height + bottomPanelSize.height + splitterSize.height + 12;   //Insets=12
         //Update only height, keep the wizard width
         if (vmax > PREF_DIM.height) {
             this.setPreferredSize (new Dimension (PREF_DIM.width,vmax));
