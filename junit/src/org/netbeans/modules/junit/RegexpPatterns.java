@@ -28,13 +28,10 @@ public final class RegexpPatterns {
 
     /** */
     private static final String JAVA_ID_START_REGEX
-            = "\\p{Lu}|\\p{Ll}|\\p{Lt}|\\p{Lm}" +                       //NOI18N
-              "|\\p{Lo}|\\p{Nl}|\\p{Sc}|\\p{Pc}";                       //NOI18N
+            = "\\p{javaJavaIdentifierStart}";                           //NOI18N
     /** */
     private static final String JAVA_ID_PART_REGEX
-            = JAVA_ID_START_REGEX +
-              "|\\p{Mn}|\\p{Mc}|\\p{Nd}|\\p{Cf}" +                      //NOI18N
-              "|[\\x00-\\x08\\x0e-\\x1b\\x7f-\\x9f]";                   //NOI18N
+            = "\\p{javaJavaIdentifierPart}";                            //NOI18N
     /** */
     public static final String JAVA_ID_REGEX
             = "(?:" + JAVA_ID_START_REGEX + ')' +                       //NOI18N
