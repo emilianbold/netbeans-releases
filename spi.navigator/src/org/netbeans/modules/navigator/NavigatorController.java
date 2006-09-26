@@ -189,22 +189,26 @@ public final class NavigatorController implements LookupListener, ActionListener
         return nodeList.isEmpty() ? null : (Node)nodeList.iterator().next();
     }
     
+    private boolean isNoActivatedNode () {
+        return TopComponent.getRegistry().getCurrentNodes() == null;
+    }
+    
     /** Important worker method, sets navigator content (available panels)
      * according to providers found in current lookup context.
      */
     private void updateContext () {
+        // #80155: don't empty navigator for Properties window and similar
+        // which don't define activated nodes
+        Node node = obtainFirstCurNode();
+        if (node == null && isNoActivatedNode()) {
+            return;
+        }
+        
         // #63165: curNode has to be modified only in updateContext
         // body, to prevent situation when curNode is null in getLookup
-        curNode = obtainFirstCurNode();
-        Node node = curNode;
+        curNode = node;
         
         Node oldNode = oldNodeRef != null ? (Node)oldNodeRef.get() : null;
-        
-        //commented out because of activated nodes problems when using NavigatorLookupHint-s.
-//        if ((oldNode != null) && (oldNode.equals(node))) {
-//            return;
-//        }
-        
         oldNodeRef = node != null ? new WeakReference(node) : null;
         
         List providers = obtainProviders(node);
