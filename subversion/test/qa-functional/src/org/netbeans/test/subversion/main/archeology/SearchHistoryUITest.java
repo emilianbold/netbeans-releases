@@ -21,6 +21,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.subversion.operators.CheckoutWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryBrowserOperator;
+import org.netbeans.test.subversion.operators.RepositoryBrowserSearchHistoryOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.SearchHistoryOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
@@ -73,7 +74,7 @@ public class SearchHistoryUITest extends JellyTestCase{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new SearchHistoryUITest("testInvokeSearch"));      
+        suite.addTest(new SearchHistoryUITest("testInvokeSearch"));
         return suite;
     }
     
@@ -118,17 +119,17 @@ public class SearchHistoryUITest extends JellyTestCase{
         oto.clear();
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
         SearchHistoryOperator sho = SearchHistoryOperator.invoke(node);
+        
         oto.waitText("Searching History... finished.");
         oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
-        
+        sho.verify();
         RepositoryBrowserOperator rbo = sho.getRevisionFrom();
         oto.waitText("Loading... finished.");
         rbo.verify();
         rbo.cancel();
         
         oto = new OutputTabOperator("file:///tmp/repo");
-        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         rbo = sho.getRevisionTo();
         oto.waitText("Loading... finished.");

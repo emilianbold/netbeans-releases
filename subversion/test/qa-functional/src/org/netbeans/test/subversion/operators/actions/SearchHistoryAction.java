@@ -9,13 +9,13 @@
 
 package org.netbeans.test.subversion.operators.actions;
 
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.Action;
 
 /**
  *
  * @author peter
  */
-public class SearchHistoryAction extends ActionNoBlock{
+public class SearchHistoryAction extends Action{
     
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
