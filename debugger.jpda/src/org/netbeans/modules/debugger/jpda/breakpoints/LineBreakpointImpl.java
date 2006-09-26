@@ -62,7 +62,6 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
     
-    private LineBreakpoint      breakpoint;
     private int                 lineNumber;
     private BreakpointsReader   reader;
     
@@ -76,19 +75,23 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     ) {
         super (breakpoint, reader, debugger, session);
         this.reader = reader;
-        this.breakpoint = breakpoint;
         lineNumber = breakpoint.getLineNumber ();
         setSourceRoot(sourcePath.getSourceRoot(breakpoint.getURL()));
         set ();
     }
+
+    protected LineBreakpoint getBreakpoint() {
+        return (LineBreakpoint) super.getBreakpoint();
+    }
     
     void fixed () {
         logger.fine("LineBreakpoint fixed: "+this);
-        lineNumber = breakpoint.getLineNumber ();
+        lineNumber = getBreakpoint().getLineNumber ();
         super.fixed ();
     }
     
     protected void setRequests () {
+        LineBreakpoint breakpoint = getBreakpoint();
         lineNumber = breakpoint.getLineNumber ();
         String className = breakpoint.getPreferredClassName();
         if (className == null) {
@@ -125,6 +128,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
 
     protected void classLoaded (ReferenceType referenceType) {
+        LineBreakpoint breakpoint = getBreakpoint();
         logger.fine("Class "+referenceType+" loaded for breakpoint "+breakpoint);
         
         String[] reason = new String[] { null };
@@ -157,7 +161,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     public boolean exec (Event event) {
         if (event instanceof BreakpointEvent) {
             return perform (
-                breakpoint.getCondition (),
+                getBreakpoint().getCondition (),
                 ((BreakpointEvent) event).thread (),
                 ((LocatableEvent) event).location ().declaringType (),
                 null
