@@ -263,6 +263,7 @@ public abstract class TreeView extends JScrollPane {
     void initializeTree() {
         // initilizes the JTree
         treeModel = createModel();
+        treeModel.addView(this);
 
         tree = new ExplorerTree(treeModel);
 
@@ -1012,6 +1013,28 @@ public abstract class TreeView extends JScrollPane {
         }
 
         return newSelection;
+    }
+
+    // Workaround for JDK issue 6472844 (NB #84970)
+    void removedNodes(List<VisualizerNode> removed) {
+        TreeSelectionModel sm = tree.getSelectionModel();
+	TreePath[] selPaths = (sm != null) ? sm.getSelectionPaths() : null;
+        if (selPaths == null) return;
+        
+        List remSel = null;
+        for (VisualizerNode vn : removed) {
+            TreePath path = new TreePath(treeModel.getPathToRoot(vn));
+	    for(TreePath tp : selPaths) {
+                if (path.isDescendant(tp)) {
+                    if (remSel == null) remSel = new ArrayList();
+                    remSel.add(tp);
+                }
+	    }
+        }
+        
+        if (remSel != null) {
+            sm.removeSelectionPaths((TreePath[]) remSel.toArray(new TreePath[remSel.size()]));
+        }
     }
 
     private static class CursorR implements Runnable {

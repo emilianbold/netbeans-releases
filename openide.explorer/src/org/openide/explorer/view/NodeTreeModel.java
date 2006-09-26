@@ -18,6 +18,7 @@
  */
 package org.openide.explorer.view;
 
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 
@@ -41,6 +42,13 @@ public class NodeTreeModel extends DefaultTreeModel {
     /** listener used to listen to changes in trees */
     private transient Listener listener;
 
+    // Workaround for JDK issue 6472844 (NB #84970)
+    // second part is in the listener and third in the TreeView
+    private CopyOnWriteArrayList<TreeView> views = new CopyOnWriteArrayList<TreeView>();
+    void addView(TreeView tw) {
+        views.add(tw);
+    }
+    
     /** Creates new NodeTreeModel
     */
     public NodeTreeModel() {
@@ -161,7 +169,9 @@ public class NodeTreeModel extends DefaultTreeModel {
             if (m == null) {
                 return;
             }
-
+            
+            for (TreeView tw : m.views) tw.removedNodes(ev.removed);
+            
             m.nodesWereRemoved(ev.getVisualizer(), ev.getArray(), ev.removed.toArray());
         }
 
