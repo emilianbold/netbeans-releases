@@ -362,7 +362,13 @@ public class RunTask extends Task
         exec.setCommandline(Commandline.translateCommandline(commandLine));
         if (classPath != null && isClassFileAvailable()) exec.setStreamHandler(new RunTask.StackTraceTranslatorHandler(getProject().getBaseDir(), classPath.list()));
         log(Bundle.getMessage("MSG_ExecCmd", commandLine), Project.MSG_VERBOSE); // No I18N
-        int i = exec.execute();
+	int i = 0;
+        try {
+            exec.execute();
+        } catch (IllegalThreadStateException itse) {
+            //workaround for bug #85200, ITSE here is a race condition caused by JDK
+            log(itse.getLocalizedMessage(), Project.MSG_VERBOSE);
+        }
         if (i == 0 && listCommandLine != null)
         {
             listCommandLine = EMapFormat.format(listCommandLine, args);
@@ -372,7 +378,12 @@ public class RunTask extends Task
             exec.setCommandline(Commandline.translateCommandline(listCommandLine));
             exec.setStreamHandler(new RunTask.ListStreamHandler());
             log(Bundle.getMessage("MSG_ExecCmd", listCommandLine), Project.MSG_VERBOSE); // No I18N
-            i = exec.execute();
+            try {
+                i = exec.execute();
+            } catch (IllegalThreadStateException itse) {
+                //workaround for bug #85200, ITSE here is a race condition caused by JDK
+                log(itse.getLocalizedMessage(), Project.MSG_VERBOSE);
+            }
         }
         if (otaRunCommandLine != null)
         {
@@ -383,7 +394,12 @@ public class RunTask extends Task
             exec.setCommandline(Commandline.translateCommandline(otaRunCommandLine));
             if (classPath != null && isClassFileAvailable()) exec.setStreamHandler(new RunTask.StackTraceTranslatorHandler(getProject().getBaseDir(), classPath.list()));
             log(Bundle.getMessage("MSG_ExecCmd", otaRunCommandLine), Project.MSG_VERBOSE); // No I18N
-            i = exec.execute();
+            try {
+                i = exec.execute();
+            } catch (IllegalThreadStateException itse) {
+                //workaround for bug #85200, ITSE here is a race condition caused by JDK
+                log(itse.getLocalizedMessage(), Project.MSG_VERBOSE);
+            }
         }
         return i;
     }
