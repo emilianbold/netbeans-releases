@@ -19,6 +19,7 @@
 package org.netbeans.xtest.plugin.ide;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -100,15 +101,35 @@ public class IdeWatchdog implements Runnable {
     }
     
     public void run() {
-        File finishFile = new File(xtestWorkdir, "watchdog.finish");
-        if(finishFile.exists()) {
-            if(!finishFile.delete()) {
-                System.out.println(System.currentTimeMillis()+" IdeWatchdog: "+finishFile+" cannot be deleted.");
+        // Remove all signal files to suppress concurrent running of two watchdogs
+        File xtestWorkdirFile = new File(xtestWorkdir);
+        File[] filesToRemove = xtestWorkdirFile.listFiles(new FileFilter() {
+            public boolean accept(File pathname) {
+                return pathname.isFile() && pathname.getName().startsWith("watchdog");
+            }
+        });
+        for(int i=0;i<filesToRemove.length;i++) {
+            if(!filesToRemove[i].delete()) {
+                System.out.println(System.currentTimeMillis()+" IdeWatchdog: "+filesToRemove[i]+" cannot be deleted.");
             }
         }
+        // create a file to be used for handling unexpected crashes of tests
+        File watchdogRunningFile = null;
+        try {
+            watchdogRunningFile = new File(xtestWorkdir, "watchdog"+System.currentTimeMillis()+".running");
+            watchdogRunningFile.createNewFile();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        File finishFile = new File(xtestWorkdir, "watchdog.finish");
         while(true) {
             if(finishFile.exists()) {
                 System.out.println(System.currentTimeMillis()+" IdeWatchdog: IDE Finished before timeout expires.");
+                return;
+            }
+            if(!watchdogRunningFile.exists()) {
+                // watchdog should be finished (tests were killed in the middle and started another ones)
+                System.out.println(System.currentTimeMillis()+" IdeWatchdog: IDE and tests killed - watchdog will be finished.");
                 return;
             }
             try {

@@ -31,6 +31,22 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+    
+    <testbag testattribs="stable" executor="ide" name="Watchdog - prepare" prio="1" timeout="60000">
+        <testset dir="unit/src">
+            <patternset>
+		<include name="**/IdeWatchdogTest.class/testDoNotStopWatchdog"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="stable" executor="ide" name="Watchdog" prio="2">
+        <testset dir="unit/src">
+            <patternset>
+		<include name="**/IdeWatchdogTest.class/testShouldNotBeKilled"/>
+            </patternset>
+        </testset>
+    </testbag>
 
     <executor name="jvm" antfile="build-unit.xml" target="run-jvm" default="true"/>
     <executor name="ide" antfile="build-unit.xml" target="run-ide"/>
