@@ -20,6 +20,8 @@ package org.openide.nodes;
 
 import java.lang.ref.Reference;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** Holder of nodes for a children object. Communicates
@@ -37,6 +39,9 @@ final class ChildrenArray extends NodeAdapter {
     private Map<Children.Info,Collection<Node>> map;
     /** the reference that points to us */
     private Reference<ChildrenArray> ref;
+
+    private static final Logger LOG_NODES_FOR = Logger.getLogger(
+            "org.openide.nodes.ChildrenArray.nodesFor"); // NOI18N
 
     /** Creates new ChildrenArray */
     public ChildrenArray() {
@@ -114,22 +119,40 @@ final class ChildrenArray extends NodeAdapter {
         return nodes != null;
     }
 
+    private String logInfo(Children.Info info) {
+        return info.toString() + '[' + Integer.toHexString(System.identityHashCode(info)) + ']';
+    }
+
     /** Gets the nodes for given info.
     * @param info the info
     * @return the nodes
     */
     public synchronized Collection<Node> nodesFor(Children.Info info) {
+        final boolean IS_LOG = LOG_NODES_FOR.isLoggable(Level.FINE);
+        if (IS_LOG) {
+            LOG_NODES_FOR.fine("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
+        }
         if (map == null) {
             map = new WeakHashMap<Children.Info,Collection<Node>>(7);
         }
         Collection<Node> nodes = map.get(info);
 
+        if (IS_LOG) {
+            LOG_NODES_FOR.fine("  map size=" + map.size() + ", nodes=" + nodes); // NOI18N
+        }
+
         if (nodes == null) {
             nodes = info.entry.nodes();
             info.length = nodes.size();
             map.put(info, nodes);
+            if (IS_LOG) {
+                LOG_NODES_FOR.fine("  created nodes=" + nodes); // NOI18N
+            }
         }
 
+        if (IS_LOG) {
+            LOG_NODES_FOR.fine("  leaving nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
+        }
         return nodes;
     }
 
