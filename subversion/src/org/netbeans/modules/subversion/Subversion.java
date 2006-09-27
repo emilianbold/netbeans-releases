@@ -338,8 +338,6 @@ public class Subversion {
 
     /**
      * Non-recursive ignore check.
-     * This method is synchronized because it reads and eventually sets the svn:ignore property and this reads/writes
-     * need to be synchronized.
      *
      * <p>Side effect: if under SVN version control
      * it sets svn:ignore property
@@ -347,7 +345,7 @@ public class Subversion {
      * @return true if file is listed in parent's ignore list
      * or IDE thinks it should be.
      */
-    synchronized boolean isIgnored(File file) {
+    boolean isIgnored(File file) {
         String name = file.getName();
 
         // ask SVN
@@ -399,12 +397,15 @@ public class Subversion {
                 // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
                 if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
                     if ((fileStatusCache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
-                        List<String> patterns = getClient(true).getIgnoredPatterns(parent);
-                        if (patterns.contains(file.getName()) == false) {
-                            patterns.add(file.getName());
-                            getClient(true).setIgnoredPatterns(parent, patterns);
-                        } else {
-                            assert false : "Matcher failed for: " + parent.getAbsolutePath() + " file: " + file.getName(); // NOI18N
+                        // synchronize read/write access to folder properties; do NOT put getSharability() into synchronized block, it
+                        // had caused numerous problems when creating new projects
+                        // technically, this block need not be synchronized but we want to have svn:ignore property set correctly at all times
+                        synchronized(this) {
+                            List<String> patterns = getClient(true).getIgnoredPatterns(parent);
+                            if (patterns.contains(file.getName()) == false) {
+                                patterns.add(file.getName());
+                                getClient(true).setIgnoredPatterns(parent, patterns);
+                            }
                         }
                     }
                 }
