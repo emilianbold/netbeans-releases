@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
@@ -100,7 +102,7 @@ public abstract class CLIHandler extends Object {
     
     /** Testing output of the threads.
      */
-    private static PrintStream OUTPUT = Integer.getInteger("org.netbeans.CLIHandler", 0).intValue() < 0 ? System.err : null; // NOI18N
+    private static Logger OUTPUT = Logger.getLogger("org.netbeans.CLIHandler"); // NOI18N
     
     private int when;
     
@@ -143,17 +145,10 @@ public abstract class CLIHandler extends Object {
      * algorithm in any place in the initialize method.
      */
     private static void enterState(int state, Integer block) {
-        PrintStream output = OUTPUT;
-        if (output != null) {
-            synchronized (output) {
+        if (OUTPUT.isLoggable(Level.FINEST)) {
+            synchronized (OUTPUT) {
                 // for easier debugging of CLIHandlerTest
-                output.print ("state: "); // NOI18N
-                output.print (state);
-                output.print (" thread: "); // NOI18N
-                output.print (Thread.currentThread());
-                if (block == null) {
-                    output.println ();
-                }
+                OUTPUT.finest("state: " + state + " thread: " + Thread.currentThread()); // NOI18N
             }
         }
         
@@ -162,8 +157,8 @@ public abstract class CLIHandler extends Object {
         
         synchronized (block) {
             if (state == block.intValue()) {
-                if (output != null) {
-                    output.println (" blocked"); // NOI18N
+                if (OUTPUT.isLoggable(Level.FINEST)) {
+                    OUTPUT.finest(state + " blocked"); // NOI18N
                 }
                 block.notifyAll();
                 try {
@@ -172,8 +167,8 @@ public abstract class CLIHandler extends Object {
                     throw new IllegalStateException();
                 }
             } else {
-                if (output != null) {
-                    output.println(" not blocked"); // NOI18N
+                if (OUTPUT.isLoggable(Level.FINEST)) {
+                    OUTPUT.finest(state + " not blocked"); // NOI18N
                 }
             }
         }
@@ -420,12 +415,6 @@ public abstract class CLIHandler extends Object {
         if (s != null) {
             s.stopServer ();
         }
-    }
-    
-    /** Registers debugging output for tests.
-     */
-    static void registerDebug (PrintStream sb) {
-        OUTPUT = sb;
     }
     
     /** Enhanced search for localhost address that works also behind VPN

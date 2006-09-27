@@ -20,9 +20,10 @@
 package org.netbeans;
 
 import java.io.*;
+import java.util.logging.Level;
 import org.netbeans.junit.*;
 import java.util.*;
-import junit.framework.AssertionFailedError;
+import java.util.logging.Logger;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -34,8 +35,8 @@ public class CLIHandlerTest extends NbTestCase {
     private static ByteArrayInputStream nullInput = new ByteArrayInputStream(new byte[0]);
     private static ByteArrayOutputStream nullOutput = new ByteArrayOutputStream();
 
-    private ByteArrayOutputStream sb;
-    private PrintStream ps;
+    
+    private Logger LOG;
     
     public CLIHandlerTest(String name) {
         super(name);
@@ -47,6 +48,8 @@ public class CLIHandlerTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        LOG = Logger.getLogger("TEST-" + getName());
+        
         super.setUp();
 
         // all handlers shall be executed immediatelly
@@ -68,22 +71,9 @@ public class CLIHandlerTest extends NbTestCase {
         }
     }
     
-    protected void runTest () throws Throwable {
-        sb = new ByteArrayOutputStream();
-        ps = new PrintStream(sb);
-        CLIHandler.registerDebug (ps);
-        try {
-            super.runTest ();
-        } catch (AssertionFailedError ex) {
-            ps.flush();
-            AssertionFailedError ne = new AssertionFailedError ("Failed as " + ex.getMessage () + " with text:\n" + sb.toString ());
-            ne.setStackTrace (ex.getStackTrace ());
-            throw ne;
-        } finally {
-            // clean the debug
-            CLIHandler.registerDebug (null);
-        }
-    }    
+    protected Level logLevel() {
+        return Level.FINEST;
+    }
     
     
     public void testFileExistsButItCannotBeRead() throws Exception {
@@ -443,10 +433,7 @@ public class CLIHandlerTest extends NbTestCase {
             
             protected int cli (Args args) {
                 cnt++;
-                ps.print("Increased cnt to: ");
-                ps.print(cnt);
-                ps.print(" by thread ");
-                ps.print(Thread.currentThread ());
+                LOG.info("Increased cnt to: " + cnt + " by thread " + Thread.currentThread());
                 return afterFinish;
             }
             
