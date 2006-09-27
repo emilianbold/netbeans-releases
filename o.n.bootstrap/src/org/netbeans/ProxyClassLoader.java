@@ -32,6 +32,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 
@@ -46,9 +48,8 @@ import org.openide.util.Lookup;
  * @author  Petr Nejedly, Jesse Glick
  */
 public class ProxyClassLoader extends ClassLoader {
-    
-    /** #38368: Allow disabling the default package warning */
-    private static final boolean DO_NOT_WARN_DEFAULT_PACKAGE = Boolean.getBoolean("org.netbeans.do_not_warn_default_package"); // NOI18N
+
+    private static final Logger LOGGER = Logger.getLogger(ProxyClassLoader.class.getName());
     
     /**
      * All known package owners.
@@ -133,9 +134,10 @@ public class ProxyClassLoader extends ClassLoader {
     }
 
     private void zombieCheck(String hint) {
-        if (/*dead*/false/* suppress this warning for now, more confusing than useful */) {
-            IllegalStateException ise = new IllegalStateException("WARNING - attempting to use a zombie classloader " + this + " on " + hint + ". This means classes from a disabled module are still active. May or may not be a problem."); // NOI18N
-            JarClassLoader.notify(0, ise);
+        if (dead) {
+            /* suppress this warning for now, more confusing than useful
+            LOGGER.log(Level.WARNING, "WARNING - attempting to use a zombie classloader " + this + " on " + hint + ". This means classes from a disabled module are still active. May or may not be a problem.", new IllegalStateException());
+             */
             // don't warn again for same loader... this was enough
             dead = false;
         }
@@ -452,9 +454,8 @@ public class ProxyClassLoader extends ClassLoader {
      */
     private static void printDefaultPackageWarning(String name) {
         // #42201 - commons-logging lib tries to read its config from this file, ignore
-        if (! DO_NOT_WARN_DEFAULT_PACKAGE && !"commons-logging.properties".equals(name)) { // NOI18N
-            System.err.println("You are trying to access file: " + name + " from the default package."); // NOI18N
-            System.err.println("Please see http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package"); // NOI18N
+        if (!"commons-logging.properties".equals(name)) { // NOI18N
+            LOGGER.log(Level.WARNING, "You are trying to access file: {0} from the default package. Please see http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/classpath.html#default_package", name);
         }
     }
     

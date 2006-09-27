@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -44,6 +43,8 @@ import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.openide.util.Union2;
 
@@ -54,11 +55,12 @@ import org.openide.util.Union2;
  * @author  Petr Nejedly
  */
 public class JarClassLoader extends ProxyClassLoader {
+
+    private static final Logger LOGGER = Logger.getLogger(JarClassLoader.class.getName());
+
     private Source[] sources;
     /** temp copy JARs which ought to be deleted */
     private Set<JarFile> deadJars = null;
-    private static final boolean VERBOSE =
-        Boolean.getBoolean("netbeans.classloader.verbose"); // NOI18N
     
     /** Creates new JarClassLoader.
      * Gives transitive flag as true.
@@ -254,11 +256,11 @@ public class JarClassLoader extends ProxyClassLoader {
                     origJar.close();
                     deadJars.add(tempJar);
                     sources[i] = new JarSource(tempJar, this);
-                    log("#21114: replacing " + orig + " with " + temp);
+                    LOGGER.log(Level.FINE, "#21114: replacing {0} with {1}", new Object[] {orig, temp});
                 }
             }
         } catch (IOException ioe) {
-            JarClassLoader.notify(0, ioe);
+            LOGGER.log(Level.WARNING, null, ioe);
         }
     }
 
@@ -273,9 +275,9 @@ public class JarClassLoader extends ProxyClassLoader {
                 File f = new File(j.getName());
                 j.close();
                 if (deadJars != null && deadJars.contains(j)) {
-                    log("#21114: closing and deleting temporary JAR " + f);
+                    LOGGER.log(Level.FINE, "#21114: closing and deleting temporary JAR {0}", f);
                     if (f.isFile() && !f.delete()) {
-                        log("(but failed to delete it)");
+                        LOGGER.log(Level.FINE, "(but failed to delete {0})", f);
                     }
                 }
             }
@@ -309,7 +311,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 return doGetResource(name);
             } catch (Exception e) {
                 // can't get the resource. E.g. already closed JarFile
-                log(e.toString());
+                LOGGER.log(Level.FINE, null, e);
             }
             return null;
         }
@@ -320,7 +322,7 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 return readClass(name, path);
             } catch (IOException e) {
-                log(e.toString());
+                LOGGER.log(Level.FINE, null, e);
             }
             return null;
         }
@@ -363,11 +365,11 @@ public class JarClassLoader extends ProxyClassLoader {
                 // without this catch statement the tests fail
                 return null;
             }
-            if (VERBOSE) {
-                if (ze != null)
-                    System.err.println("Loading " + name + " from " + src.getName()); // NOI18N
+            if (ze == null) {
+                return null;
             }
-            return ze == null ? null : new URL(resPrefix + ze.getName());
+            LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {name, src.getName()});
+            return new URL(resPrefix + ze.getName());
         }
         
         protected byte[] readClass(String name, String path) throws IOException {
@@ -379,10 +381,10 @@ public class JarClassLoader extends ProxyClassLoader {
                 // without this catch statement the tests fail
                 return null;
             }
-            if (ze == null) return null;
-            if (VERBOSE) {
-                System.err.println("Loading " + path + " from " + src.getName()); // NOI18N
+            if (ze == null) {
+                return null;
             }
+            LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {path, src.getName()});
             
             int len = (int)ze.getSize();
             byte[] data = new byte[len];
@@ -424,25 +426,4 @@ public class JarClassLoader extends ProxyClassLoader {
         
     }
     
-    //
-    // ErrorManager's methods
-    // (do not want to depend on ErrorManager however)
-    //
-    
-    static void log (String msg) {
-        if ("0".equals(System.getProperty("org.netbeans.core.modules"))) { // NOI18N
-            System.err.println(msg);
-        }
-    }
-    
-    static Throwable annotate (
-        Throwable t, int x, String s, Object o1, Object o2, Object o3
-    ) {
-        System.err.println("annotated: " + t.getMessage () + " - " + s); // NOI18N
-        return t;
-    }
-    
-    static void notify (int x, Throwable t) {
-        t.printStackTrace();
-    }
 }
