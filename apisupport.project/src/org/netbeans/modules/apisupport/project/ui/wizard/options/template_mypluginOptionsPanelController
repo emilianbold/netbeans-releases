@@ -6,7 +6,7 @@ import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-  
+
 final class @@OptionsPanelController_CLASS_NAME@@ extends OptionsPanelController {
 
     private @@Panel_CLASS_NAME@@ panel;
@@ -17,28 +17,28 @@ final class @@OptionsPanelController_CLASS_NAME@@ extends OptionsPanelController
         getPanel().load();
         changed = false;
     }
-    
+
     public void applyChanges() {
         getPanel().store();
         changed = false;
     }
-    
+
     public void cancel() {
         // need not do anything special, if no changes have been persisted yet
     }
-    
+
     public boolean isValid() {
         return getPanel().valid();
     }
-    
+
     public boolean isChanged() {
         return changed;
     }
-    
+
     public HelpCtx getHelpCtx() {
         return null; // new HelpCtx("...ID") if you have a help set
     }
-    
+
     public JComponent getComponent(Lookup masterLookup) {
         return getPanel();
     }

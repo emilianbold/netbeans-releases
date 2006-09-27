@@ -20,7 +20,7 @@ public final class @@OptionsCategory_CLASS_NAME@@ extends OptionsCategory {
     public String getTitle() {
         return NbBundle.getMessage(@@OptionsCategory_CLASS_NAME@@.class, "OptionsCategory_Title");
     }
-    
+
     public OptionsPanelController create() {
         return new @@OptionsPanelController_CLASS_NAME@@();
     }
