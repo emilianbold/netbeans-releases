@@ -599,7 +599,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     }
     
     private static RequestProcessor RP = new RequestProcessor("DataShadow validity check");
-    private static volatile org.openide.util.Task lastTask = org.openide.util.Task.EMPTY;
+    private static Reference<Task> lastTask = new WeakReference<Task>(null);
 
     private static void updateShadowOriginal(DataShadow shadow) {
         class Updator implements Runnable {
@@ -629,14 +629,17 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         u.sh = shadow;
         u.primary = u.sh.original.getPrimaryFile ();
         ERR.fine("updateShadowOriginal: " + u.sh + " primary " + u.primary); // NOI18N
-        lastTask = RP.post(u, 100, Thread.MIN_PRIORITY + 1);
+        lastTask = new WeakReference<Task>(RP.post(u, 100, Thread.MIN_PRIORITY + 1));
     }
     
     /** For use in tests that need to be sure that all updators have finished.
      */
     static final void waitUpdatesProcessed() {
         if (!RP.isRequestProcessorThread()) {
-            lastTask.waitFinished();
+            Task t = lastTask.get();
+            if (t != null) {
+                t.waitFinished();
+            }
         }
     }
     
