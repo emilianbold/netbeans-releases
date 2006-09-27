@@ -21,46 +21,27 @@ package org.netbeans.core;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
-import junit.framework.*;
 import org.netbeans.core.startup.Main;
-import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.*;
 import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
-import junit.textui.TestRunner;
 
-public class ShortcutsFolderTest extends LoggingTestCaseHid {
+public class ShortcutsFolderTest extends NbTestCase {
     private ErrorManager err;
     private Keymap keymap;
     
@@ -71,8 +52,12 @@ public class ShortcutsFolderTest extends LoggingTestCaseHid {
         super(s);
     }
     
+    protected Level logLevel() {
+        return Level.ALL;
+    }
+    
     protected void setUp() throws Exception {
-        registerIntoLookup(new ENV());
+        MockServices.setServices(ENV.class);
 
         Main.initializeURLFactory ();
         keymap = Lookup.getDefault().lookup(Keymap.class);
@@ -154,7 +139,9 @@ public class ShortcutsFolderTest extends LoggingTestCaseHid {
         ShortcutsFolder.waitFinished ();
 
         Action action = keymap.getAction(stroke);
-        assertNotNull ("There is some action", action);
+        if (action == null) {
+            fail("There should be some action for " + stroke + " in:\n" + keymap);
+        }
         
         inst.delete ();
         ShortcutsFolder.waitFinished ();
