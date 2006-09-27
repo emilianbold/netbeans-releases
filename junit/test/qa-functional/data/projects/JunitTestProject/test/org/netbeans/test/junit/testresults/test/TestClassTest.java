@@ -7,7 +7,6 @@
 
 package org.netbeans.test.junit.testresults.test;
 
-import junit.framework.TestCase;
 import junit.framework.*;
 
 /**
@@ -24,6 +23,12 @@ public class TestClassTest extends TestCase {
     }
 
     protected void tearDown() throws Exception {
+    }
+    
+    public static Test suite() {
+        junit.framework.TestSuite suite = 
+                new junit.framework.TestSuite(TestClassTest.class);
+        return suite;
     }
 
     /**

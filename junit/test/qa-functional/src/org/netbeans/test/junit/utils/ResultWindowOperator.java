@@ -23,9 +23,10 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.modules.junit.actions.ResultWindowViewAction;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
- *
+ * This Operator operates JUnit Tests Results Window
  * @author Max Sauer
  */
 public class ResultWindowOperator extends TopComponentOperator {
@@ -36,19 +37,19 @@ public class ResultWindowOperator extends TopComponentOperator {
      * Creates a new instance of ResultWindowOperator
      */
     public ResultWindowOperator() {
-        /* In IDE OutputWindow top component is singleton but in sense of
-         jellytools, it is not singleton. It can be closed/hidden and
-         again opened/shown, so it make sense to wait for OutputWindow
-         top component again.
+        /* In IDE ResultWindow top component is singleton but in sense of
+         * jellytools, it is not singleton. It can be closed/hidden and
+         * again opened/shown, so it make sense to wait for OutputWindow
+         * top component again.
          */
         super(waitTopComponent(null, null, 0, resultsSubchooser));
     }
     
     /**
-     * 
+     *
      * Opens JUnit Test Results from main menu Window|JUnit Test Results and
      * returns ResultWindowOperator.
-     * 
+     *
      * @return instance of ResultsWindowOperatorOperator
      */
     public static ResultWindowOperator invoke() {
@@ -56,8 +57,31 @@ public class ResultWindowOperator extends TopComponentOperator {
         return new ResultWindowOperator();
     }
     
+    /**
+     * Returns operator of Statistics Panel
+     * @return the operator of statistics panel 
+     * (left of the two JUnit Test Result Window panels in a JSplitPane)
+     */ 
+    public StatisticsPanelOperator getLeftPanelOperator() {
+        return new StatisticsPanelOperator();
+    }
     
-    /** 
+    /**
+     * Test whether the Results Filter toggle button is enabled
+     * @return true if the button os enabled
+     */ 
+    public boolean isFilterButtonEnabled() {
+        return (new JToggleButtonOperator(new StatisticsPanelOperator(), 0).isEnabled());
+    }
+    
+    /**
+     * Pushes Filter Button
+     */
+    public void pushFilterButton() {
+        new JToggleButtonOperator(new StatisticsPanelOperator(), 0).push();
+    }
+    
+    /**
      * SubChooser to determine ResultsWindow TopComponent
      * Used in constructor.
      */
@@ -70,5 +94,4 @@ public class ResultWindowOperator extends TopComponentOperator {
             return "component instanceof org.netbeans.modules.junit.output.ResultWindow";// NOI18N
         }
     };
-    
 }

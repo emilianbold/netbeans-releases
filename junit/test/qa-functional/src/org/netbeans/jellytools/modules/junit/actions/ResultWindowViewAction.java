@@ -18,7 +18,6 @@
  */
 package org.netbeans.jellytools.modules.junit.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
@@ -32,7 +31,7 @@ public class ResultWindowViewAction extends Action {
             Bundle.getStringTrimmed("org.netbeans.core.Bundle",
             "Menu/Window") +
             "|" +
-            Bundle.getStringTrimmed("org.netbeans.junit.output.Bundle",
+            Bundle.getStringTrimmed("org.netbeans.modules.junit.output.Bundle",
             "ACSN_TestResults");
     
     
