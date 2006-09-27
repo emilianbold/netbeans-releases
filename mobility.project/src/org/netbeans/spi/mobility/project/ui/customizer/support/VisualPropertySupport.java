@@ -128,9 +128,9 @@ public final class VisualPropertySupport {
      */
     public void register( final JCheckBox component, final String propertyName ) {
         component.removeActionListener( componentListener );
-        final Boolean value = (Boolean)getAsType( propertyName, Boolean.class );
+        final Object value = properties.get(propertyName);
         component2property.put( component, propertyName );
-        component.setSelected( value != null && value.booleanValue() );
+        component.setSelected((value instanceof Boolean && ((Boolean)value).booleanValue()) || (value instanceof String && Boolean.parseBoolean((String) value)));
         component.addActionListener( componentListener );
     }
     
@@ -153,9 +153,8 @@ public final class VisualPropertySupport {
      */
     public void register( final JTextComponent component, final String propertyName ) {
         component.getDocument().removeDocumentListener( componentListener );
-        final String value = (String)getAsType( propertyName, String.class );
         component2property.put( component.getDocument(), propertyName );
-        component.setText( value );
+        component.setText(String.valueOf(properties.get(propertyName)));
         component.getDocument().addDocumentListener( componentListener );
     }
     
@@ -237,9 +236,9 @@ public final class VisualPropertySupport {
      */
     public void register( final JSlider component, final String propertyName ) {
         component.removeChangeListener( componentListener );
-        final Integer value = (Integer)getAsType( propertyName, Integer.class );
+        final Object value = properties.get(propertyName);
         component2property.put( component, propertyName );
-        component.setValue( value == null ? component.getMinimum() : value.intValue() );
+        component.setValue((value instanceof Number ? ((Number)value).intValue() : (value instanceof String ? Integer.parseInt((String) value) : component.getMinimum())));
         component.addChangeListener( componentListener );
     }
     
@@ -258,9 +257,9 @@ public final class VisualPropertySupport {
      */
     public void register( final JSpinner component, final String propertyName ) {
         component.removeChangeListener( componentListener );
-        final Integer value = (Integer)getAsType( propertyName, Integer.class );
+        final Object value = properties.get(propertyName);
         component2property.put( component, propertyName );
-        component.setValue( value );
+        component.setValue((value instanceof Number ? ((Number)value).intValue() : (value instanceof String ? Integer.parseInt((String) value) : 0)));
         component.addChangeListener( componentListener );
     }
     
@@ -277,9 +276,9 @@ public final class VisualPropertySupport {
      */
     public void register( final JRadioButton component, final String propertyName ) {
         component.removeActionListener( componentListener );
-        final String value = (String)getAsType( propertyName, String.class );
+        final Object value = properties.get(propertyName);
         component2property.put( component, propertyName );
-        component.setSelected(value != null && value.equals(readValue(component)));
+        component.setSelected(value != null && value.toString().equals(readValue(component)));
         component.addActionListener( componentListener );
     }
     
@@ -342,27 +341,6 @@ public final class VisualPropertySupport {
     }
     
     // Private methods ---------------------------------------------------------
-    
-    private Object getAsType( final String propertyName, final Class expectedType ) {
-        return getAsType( propertyName, expectedType, true );
-    }
-    
-    private Object getAsType( final String propertyName, final Class expectedType, final boolean throwException ) {
-        
-        
-        final Object value = properties.get( propertyName );
-        
-        if ( expectedType.isInstance( value ) || value == null ) {
-            return value;
-        } else if ( throwException ) {
-            throw new IllegalArgumentException( "Value of property: " + propertyName +        // NOI18N
-                    " expected to be: " + expectedType.getName() + // NOI18N
-                    " but was: " + value.getClass().getName() + "!" );   // NOI18N
-        } else {
-            return WRONG_TYPE;
-        }
-        
-    }
     
     private boolean testForNonDefaultValue(final String[] propertyNames) {
         if (configuration == null) return true;

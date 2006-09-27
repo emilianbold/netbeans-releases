@@ -43,7 +43,7 @@ public class SonyEricssonDeploymentPlugin implements DeploymentPlugin {
         return "SonnyEricsson"; // NOI18N
     }
     
-    public synchronized Component createCustomizerPanel() {
+    public synchronized Component createProjectCustomizerPanel() {
         return new SonyEricssonCustomizerPanel();
     }
     
@@ -51,7 +51,15 @@ public class SonyEricssonDeploymentPlugin implements DeploymentPlugin {
         return NbBundle.getMessage(SonyEricssonDeploymentPlugin.class, "LBL_SonyEricssonTypeName"); //NOI18N
     }
     
-    public Map getPropertyDefaultValues() {
+    public Map getProjectPropertyDefaultValues() {
         return Collections.EMPTY_MAP;
+    }
+
+    public Map<String, Object> getGlobalPropertyDefaultValues() {
+        return Collections.EMPTY_MAP;
+    }
+
+    public Component createGlobalCustomizerPanel() {
+        return null;
     }
 }

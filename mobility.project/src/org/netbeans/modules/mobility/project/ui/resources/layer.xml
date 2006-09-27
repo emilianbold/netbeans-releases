@@ -33,7 +33,11 @@ Microsystems, Inc. All Rights Reserved.
  
     <folder name="Menu">
         <folder name="Tools">
-            <attr name="LibrariesCustomizerAction.instance/SecurityManagerAction.instance" boolvalue="true"/>
+            <attr name="LibrariesCustomizerAction.instance/MobilityDeploymentManagerAction.instance" boolvalue="true"/>
+            <file name="MobilityDeploymentManagerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.project.deployment.MobilityDeploymentManagerAction"/>
+            </file>
+            <attr name="MobilityDeploymentManagerAction.instance/SecurityManagerAction.instance" boolvalue="true"/>
             <file name="SecurityManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction"/>
             </file>

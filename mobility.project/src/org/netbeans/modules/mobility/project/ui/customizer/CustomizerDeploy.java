@@ -72,7 +72,7 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         for ( DeploymentPlugin p : Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class)).allInstances() )
         {
             plugins.put(p.getDeploymentMethodDisplayName(), p);
-            propNames.addAll(p.getPropertyDefaultValues().keySet());
+            propNames.addAll(p.getProjectPropertyDefaultValues().keySet());
         }
         propertyGroup = propNames.toArray(new String[propNames.size()]);
         methodNames = plugins.keySet().toArray(new String[plugins.size()]);
@@ -213,8 +213,8 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         if (e == null || e.getSource().equals(jComboBoxMethod)) {
             final String method = (String)jComboBoxMethod.getSelectedItem();
             final DeploymentPlugin p = method == null ? null : plugins.get(method);
-            final Component c = p == null ? null : p.createCustomizerPanel();
-            if (c != null) registerSubcomponents(c, p.getPropertyDefaultValues().keySet());
+            final Component c = p == null ? null : p.createProjectCustomizerPanel();
+            if (c != null) registerSubcomponents(c, p.getProjectPropertyDefaultValues().keySet());
             customPanel.setVisible(false);
             customPanel.removeAll();
             if (c != null) customPanel.add(c);

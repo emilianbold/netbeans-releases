@@ -74,11 +74,19 @@ public class ScpDeploymentPlugin implements DeploymentPlugin {
         return NbBundle.getMessage(ScpDeploymentPlugin.class, "LBL_ScpTypeName"); //NOI18N
     }
     
-    public synchronized Component createCustomizerPanel() {
+    public synchronized Component createProjectCustomizerPanel() {
         return new ScpCustomizerPanel();
     }
     
-    public Map<String,Object> getPropertyDefaultValues() {
+    public Map<String,Object> getProjectPropertyDefaultValues() {
         return propertyDefValues;
+    }
+
+    public Map<String, Object> getGlobalPropertyDefaultValues() {
+        return Collections.EMPTY_MAP;
+    }
+
+    public Component createGlobalCustomizerPanel() {
+        return null;
     }
 }

@@ -43,7 +43,7 @@ public class NoneDeploymentPlugin implements DeploymentPlugin {
         return null;
     }
     
-    public Component createCustomizerPanel() {
+    public Component createProjectCustomizerPanel() {
         final JLabel l = new JLabel(NbBundle.getMessage(NoneDeploymentPlugin.class, "LBL_NoneTypeDesciption")); //NOI18N
         l.setHorizontalAlignment(SwingConstants.CENTER);
         return l;
@@ -57,8 +57,16 @@ public class NoneDeploymentPlugin implements DeploymentPlugin {
         return NbBundle.getMessage(NoneDeploymentPlugin.class, "LBL_NoneTypeName"); //NOI18N
     }
     
-    public Map<String, Object> getPropertyDefaultValues() {
+    public Map<String, Object> getProjectPropertyDefaultValues() {
         return Collections.EMPTY_MAP;
+    }
+
+    public Map<String, Object> getGlobalPropertyDefaultValues() {
+        return Collections.EMPTY_MAP;
+    }
+
+    public Component createGlobalCustomizerPanel() {
+        return null;
     }
     
 }

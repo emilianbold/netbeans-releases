@@ -72,11 +72,19 @@ public class FtpDeploymentPlugin implements DeploymentPlugin {
         return NbBundle.getMessage(FtpDeploymentPlugin.class, "LBL_FtpTypeName"); //NOI18N
     }
     
-    public Component createCustomizerPanel() {
+    public Component createProjectCustomizerPanel() {
         return new FtpCustomizerPanel();
     }
     
-    public Map<String,Object> getPropertyDefaultValues() {
+    public Map<String,Object> getProjectPropertyDefaultValues() {
         return propertyDefValues;
+    }
+
+    public Map<String, Object> getGlobalPropertyDefaultValues() {
+        return Collections.EMPTY_MAP;
+    }
+
+    public Component createGlobalCustomizerPanel() {
+        return null;
     }
 }

@@ -67,11 +67,19 @@ public class WebDAVDeploymentPlugin implements DeploymentPlugin {
         return NbBundle.getMessage(WebDAVDeploymentPlugin.class, "LBL_WebDAVTypeName"); //NOI18N
     }
     
-    public synchronized Component createCustomizerPanel() {
+    public synchronized Component createProjectCustomizerPanel() {
         return new WebDAVCustomizerPanel();
     }
     
-    public Map<String,Object> getPropertyDefaultValues() {
+    public Map<String,Object> getProjectPropertyDefaultValues() {
         return propertyDefValues;
+    }
+
+    public Map<String, Object> getGlobalPropertyDefaultValues() {
+        return Collections.EMPTY_MAP;
+    }
+
+    public Component createGlobalCustomizerPanel() {
+        return null;
     }
 }

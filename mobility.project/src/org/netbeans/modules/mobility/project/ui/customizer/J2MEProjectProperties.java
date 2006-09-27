@@ -85,7 +85,7 @@ public class J2MEProjectProperties implements ProjectProperties {
             PROPERTY_DESCRIPTORS.addAll(p.getPropertyDescriptors());
         }
         for (DeploymentPlugin p : Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class)).allInstances() ) {
-            final Iterator it2 = p.getPropertyDefaultValues().entrySet().iterator();
+            final Iterator it2 = p.getProjectPropertyDefaultValues().entrySet().iterator();
             while (it2.hasNext()) {
                 final Map.Entry en = (Map.Entry)it2.next();
                 final Object v = en.getValue();

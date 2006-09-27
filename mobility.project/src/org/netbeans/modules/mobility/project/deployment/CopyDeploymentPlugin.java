@@ -44,7 +44,7 @@ public class CopyDeploymentPlugin implements DeploymentPlugin {
         return "modules/scr/deploy-copy-impl.xml"; // NOI18N
     }
     
-    public Component createCustomizerPanel() {
+    public Component createProjectCustomizerPanel() {
         return new CopyCustomizerPanel();
     }
     
@@ -56,8 +56,16 @@ public class CopyDeploymentPlugin implements DeploymentPlugin {
         return NbBundle.getMessage(CopyDeploymentPlugin.class, "LBL_CopyTypeName"); //NOI18N
     }
     
-    public Map<String, Object> getPropertyDefaultValues() {
+    public Map<String, Object> getProjectPropertyDefaultValues() {
         return propDefValues;
+    }
+
+    public Map<String, Object> getGlobalPropertyDefaultValues() {
+        return Collections.EMPTY_MAP;
+    }
+
+    public Component createGlobalCustomizerPanel() {
+        return null;
     }
     
 }

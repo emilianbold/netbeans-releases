@@ -20,7 +20,6 @@
 /*
  * DeploymentPluginProvider.java
  *
- * Created on 7. prosinec 2004, 15:27
  */
 package org.netbeans.spi.mobility.deployment;
 
@@ -39,7 +38,11 @@ public interface DeploymentPlugin {
     
     public String getAntScriptLocation();
     
-    public Map<String,Object> getPropertyDefaultValues();
+    public Map<String,Object> getProjectPropertyDefaultValues();
     
-    public Component createCustomizerPanel();
+    public Map<String,Object> getGlobalPropertyDefaultValues();
+    
+    public Component createProjectCustomizerPanel();
+
+    public Component createGlobalCustomizerPanel();
 }
