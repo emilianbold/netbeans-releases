@@ -627,12 +627,12 @@ public class LayerUtils {
     /**
      * Get the platform JARs associated with a standalone module project.
      */
-    static Set/*<File>*/ getPlatformJarsForStandaloneProject(NbModuleProject project) {
+    public static Set/*<File>*/ getPlatformJarsForStandaloneProject(NbModuleProject project) {
         NbPlatform platform = project.getPlatform(true);
         return getPlatformJars(platform, null, null, null);
     }
     
-    static Set/*<File>*/ getPlatformJarsForSuiteComponentProject(NbModuleProject project, SuiteProject suite) {
+    public static Set/*<File>*/ getPlatformJarsForSuiteComponentProject(NbModuleProject project, SuiteProject suite) {
         NbPlatform platform = suite.getPlatform(true);
         PropertyEvaluator eval = suite.getEvaluator();
         String[] includedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
@@ -641,7 +641,7 @@ public class LayerUtils {
         return getPlatformJars(platform, includedClusters, excludedClusters, excludedModules);
     }
     
-    static Set/*<NbModuleProject>*/ getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
+    public static Set/*<NbModuleProject>*/ getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
         ModuleList list = project.getModuleList();
         Set/*<NbModuleProject>*/ projects = new HashSet();
         projects.add(project);

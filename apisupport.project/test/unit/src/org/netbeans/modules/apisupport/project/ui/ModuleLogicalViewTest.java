@@ -65,11 +65,11 @@ public class ModuleLogicalViewTest extends TestBase {
         assertNotNull("have the Important Files node", iFiles);
         iFiles.getChildren().getNodes(true); // ping
         waitForChildrenUpdate();
-        assertEquals("four important files", 4, iFiles.getChildren().getNodes(true).length);
+        assertEquals("five important files", 5, iFiles.getChildren().getNodes(true).length);
         FileUtil.createData(p.getProjectDirectory(), "nbproject/project.properties");
         iFiles.getChildren().getNodes(true); // ping
         waitForChildrenUpdate();
-        assertEquals("nbproject/project.properties noticed", 5, iFiles.getChildren().getNodes(true).length);
+        assertEquals("nbproject/project.properties noticed", 6, iFiles.getChildren().getNodes(true).length);
     }
     
     private Node find(LogicalViewProvider lvp, String path) throws Exception {

@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -381,9 +382,11 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 }
             } else if (key instanceof LayerUtils.LayerHandle) {
                 return new Node[] {/* #68240 */ new SpecialFileNode(new LayerNode((LayerUtils.LayerHandle) key), null)};
+            } else if (key instanceof ServiceNodeHandler) {
+                return new Node[]{((ServiceNodeHandler)key).createServiceRootNode()};
             } else {
                 throw new AssertionError(key);
-            }
+            } 
         }
         
         private void refreshKeys() {
@@ -411,6 +414,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             }
             if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
+                visibleFiles.add(project.getLookup().lookup(ServiceNodeHandler.class));
                 RP.post(new Runnable() { // #72471
                     public void run() {
                         setKeys(visibleFiles);

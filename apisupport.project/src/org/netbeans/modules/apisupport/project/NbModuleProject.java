@@ -44,6 +44,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType;
+import org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
@@ -217,6 +218,7 @@ public final class NbModuleProject implements Project {
             new ModuleProjectClassPathExtender(this),
             new LocalizedBundleInfoProvider(),
             new ModuleOperations(this),
+            new ServiceNodeHandler(this)
         });
     }
     

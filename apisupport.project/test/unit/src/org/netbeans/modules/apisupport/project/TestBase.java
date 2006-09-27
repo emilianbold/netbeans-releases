@@ -58,6 +58,7 @@ public abstract class TestBase extends NbTestCase {
 
     public static final String CLUSTER_IDE = "ide8";
     public static final String CLUSTER_PLATFORM = "platform7";
+    public static final String CLUSTER_ENTERPRISE = "enterprise4";
     
     protected TestBase(String name) {
         super(name);
