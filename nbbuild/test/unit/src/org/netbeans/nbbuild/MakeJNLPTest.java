@@ -26,10 +26,13 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Random;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -800,23 +803,36 @@ public class MakeJNLPTest extends NbTestCase {
     }
     
     private final File genereteKeystore(String alias, String password) throws Exception {
-        File where = new File(getWorkDir(), "key.ks");
-        
-        String script = 
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Generate Keystore\" basedir=\".\" default=\"all\" >" +
-            "<target name=\"all\" >" +
-            "<genkey \n" +
-              "alias='" + alias + "' \n" +
-              "keystore='" + where + "' \n" +
-              "storepass='" + password + "' \n" +
-              "dname='CN=A NetBeans Friend, OU=NetBeans, O=netbeans.org, C=US' \n" +
-            "/>\n" +
-            "</target></project>\n";
-        
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
-        
-        return where;
+        Error lastEx = null;
+        for (int i = 0; i < 10; i++) {
+            File where = new File(getWorkDir(), "key" + i + ".ks");
+
+            String script = 
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<project name=\"Generate Keystore\" basedir=\".\" default=\"all\" >" +
+                "<target name=\"all\" >" +
+                "<genkey \n" +
+                  "alias='" + alias + "' \n" +
+                  "keystore='" + where + "' \n" +
+                  "storepass='" + password + "' \n" +
+                  "dname='CN=A NetBeans Friend, OU=NetBeans, O=netbeans.org, C=US' \n" +
+                "/>\n" +
+                "</target></project>\n";
+
+            java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
+            try {
+                PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+            } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+                Logger.getAnonymousLogger().log(Level.WARNING, "Failed for " + i, ex);
+                lastEx = ex;
+                if (ex.getMessage().indexOf("CKR_KEY_SIZE_RANGE") >= 0) {
+                    Thread.sleep(new Random().nextInt(1000));
+                    continue;
+                }
+                throw ex;
+            }
+            return where;
+        }
+        throw lastEx;
     }
 }
