@@ -21,31 +21,19 @@ package org.openide.loaders;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import junit.extensions.*;
-import junit.textui.TestRunner;
 
 import org.openide.filesystems.*;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.IOException;
-import org.openide.loaders.DataLoader.RecognizedFiles;
-import org.openide.nodes.Node;
-import java.lang.ref.WeakReference;
-import java.io.*;
 import java.util.*;
-import java.beans.PropertyVetoException;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
+import java.util.logging.Level;
 import org.openide.*;
 import org.openide.util.Enumerations;
-import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
-import org.openide.nodes.CookieSet;
 
 /**
  * @author Jaroslav Tulach
  */
-public class MultiDataObjectTest extends LoggingTestCaseHid {
+public class MultiDataObjectTest extends NbTestCase {
     FileSystem fs;
     DataObject one;
     DataFolder from;
@@ -58,12 +46,16 @@ public class MultiDataObjectTest extends LoggingTestCaseHid {
         super (name);
     }
     
+    protected Level logLevel() {
+        return Level.INFO;
+    }
+    
     public void setUp() throws Exception {
         clearWorkDir();
         
         super.setUp();
         
-        registerIntoLookup(new Pool());
+        MockServices.setServices(Pool.class);
         
         err = ErrorManager.getDefault().getInstance("TEST-" + getName());
         
@@ -247,7 +239,7 @@ public class MultiDataObjectTest extends LoggingTestCaseHid {
         assertEquals("Fourty deleted files:" + que.deleted, 40, que.deleted.size());
     }
     
-    private static class Pool extends DataLoaderPool {
+    public static final class Pool extends DataLoaderPool {
         protected Enumeration loaders() {
             return Enumerations.singleton(SimpleLoader.getLoader(SimpleLoader.class));
         }
