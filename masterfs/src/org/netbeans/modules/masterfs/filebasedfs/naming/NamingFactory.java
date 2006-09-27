@@ -88,7 +88,7 @@ public final class NamingFactory {
             Integer id = (Integer)entry.getKey();
             //TODO: handle possible List            
             FileNaming fN = (FileNaming)((Reference)entry.getValue()).get(); 
-            
+            if (fN == null) continue;
             Integer computedId = NamingFactory.createID(fN.getFile()); 
                     
 
