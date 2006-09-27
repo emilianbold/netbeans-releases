@@ -30,7 +30,7 @@ import javax.swing.ActionMap;
 import org.openide.ErrorManager;
 
 import org.openide.actions.FindAction;
-import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.SharedClassObject;
 import org.openide.util.WeakSet;
 import org.openide.util.Mutex;
@@ -163,7 +163,7 @@ final class FindActionManager implements PropertyChangeListener, Runnable {
     private void someoneActivated() {
         TopComponent window = TopComponent.getRegistry().getActivated();
 
-        if ((window == null) || (window instanceof CloneableEditor)) {
+        if ((window == null) || (window instanceof CloneableEditorSupport.Pane)) {
             return;
         }
             
