@@ -30,11 +30,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
@@ -55,9 +56,8 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
     }
     
     protected void setUp() throws Exception {
-        ErrManager.log = getLog();
+        MockServices.setServices();
         
-        MockServices.setServices(ErrManager.class);
         
         class EmptyTrans  implements Transferable, ClipboardOwner {
             public DataFlavor[] getTransferDataFlavors() {
@@ -175,10 +175,11 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
     }
     
     public void testClipboard() throws Exception {
-        MockServices.setServices(ErrManager.class, Cnv.class);
+        MockServices.setServices(Cnv.class);
         Clipboard c = Lookup.getDefault().lookup(Clipboard.class);
         ExClipboard ec = Lookup.getDefault().lookup(ExClipboard.class);
         assertEquals("Clipboard == ExClipboard", c, ec);
+        assertNotNull(Lookup.getDefault().lookup(ExClipboard.Convertor.class));
         assertEquals(Cnv.class, Lookup.getDefault().lookup(ExClipboard.Convertor.class).getClass());
         c.setContents(new ExTransferable.Single(DataFlavor.stringFlavor) {
             protected Object getData() throws IOException, UnsupportedFlavorException {
@@ -195,7 +196,7 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
     private static final DataFlavor MYFLAV = new DataFlavor("text/x-integer", "Integer"); // data: java.lang.Integer
     public static final class Cnv implements ExClipboard.Convertor {
         public Transferable convert(Transferable t) {
-            System.err.println("converting...");//XXX
+            Logger.getAnonymousLogger().info("converting...");
             if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                 final ExTransferable t2 = ExTransferable.create(t);
                 if (t2.isDataFlavorSupported(DataFlavor.stringFlavor) && !t2.isDataFlavorSupported(MYFLAV)) {
@@ -263,76 +264,9 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
             throw new AssertionFailedErrorException(ex);
         }
     }
-    
-    //
-    // Logging support
-    //
-    public static final class ErrManager extends ErrorManager {
-        public static final StringBuffer messages = new StringBuffer ();
-        
-        private String prefix;
 
-        private static PrintStream log;
-        
-        public ErrManager () {
-            this (null);
-        }
-        public ErrManager (String prefix) {
-            this.prefix = prefix;
-        }
-        
-        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations (Throwable t, ErrorManager.Annotation[] arr) {
-            return t;
-        }
-        
-        public ErrorManager.Annotation[] findAnnotations (Throwable t) {
-            return null;
-        }
-        
-        public ErrorManager getInstance (String name) {
-            if (
-                true
-//                name.startsWith ("org.openide.loaders.FolderList")
-//              || name.startsWith ("org.openide.loaders.FolderInstance")
-            ) {
-                return new ErrManager ('[' + name + ']');
-            } else {
-                // either new non-logging or myself if I am non-logging
-                return new ErrManager ();
-            }
-        }
-        
-        public void log (int severity, String s) {
-            if (prefix != null) {
-                messages.append (prefix);
-                messages.append (s);
-                messages.append ('\n');
-                
-                if (messages.length() > 30000) {
-                    messages.delete(0, 15000);
-                }
-                
-                log.print(prefix);
-                log.println(s);
-            }
-        }
-        
-        public void notify (int severity, Throwable t) {
-            log (severity, t.getMessage ());
-        }
-        
-        public boolean isNotifiable (int severity) {
-            return prefix != null;
-        }
-        
-        public boolean isLoggable (int severity) {
-            return prefix != null;
-        }
-        
-    } // end of ErrManager
+    protected Level logLevel() {
+        return Level.ALL;
+    }
     
 }
