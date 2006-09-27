@@ -69,8 +69,6 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
         }
         
         
-        assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
-       
         err = Logger.getLogger("TEST-" + getName());
     }
 
@@ -716,7 +714,6 @@ public class FolderInstanceTest extends LoggingTestCaseHid {
         
         private Lkp(org.openide.util.lookup.InstanceContent ic) {
             super(ic);
-            ic.add(new ErrManager());
             ic.add(new Pool ());
         }
     }

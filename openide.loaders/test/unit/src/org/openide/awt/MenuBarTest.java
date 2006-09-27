@@ -21,18 +21,16 @@ package org.openide.awt;
 
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
-import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.logging.Level;
 import javax.swing.JMenu;
-import javax.swing.SwingUtilities;
-import junit.framework.*;
+import org.netbeans.junit.Log;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.LoggingTestCaseHid.ErrManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallbackSystemAction;
@@ -148,6 +146,8 @@ public class MenuBarTest extends LoggingTestCaseHid implements ContainerListener
     }
     
     public void testSurviveInvalidationOfAFolder() throws Exception {
+        CharSequence seq = Log.enable("", Level.ALL);
+        
         
         FileObject m1 = FileUtil.createFolder(df.getPrimaryFile(), "m1");
         final DataFolder f1 = DataFolder.findFolder(m1);
@@ -176,8 +176,8 @@ public class MenuBarTest extends LoggingTestCaseHid implements ContainerListener
         
         
         
-        if (ErrManager.messages.indexOf("fix your code") >= 0) {
-            fail("There were warnings about the use of invalid nodes");
+        if (seq.toString().indexOf("fix your code") >= 0) {
+            fail("There were warnings about the use of invalid nodes: " + seq);
         }
     }
     

@@ -20,6 +20,7 @@
 package org.openide.loaders;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
 import junit.framework.TestFailure;
 import junit.framework.TestResult;
 import org.openide.ErrorManager;
@@ -40,6 +41,10 @@ public class LoggingControlTest extends LoggingTestCaseHid {
 
     protected void setUp() throws Exception {
         err = ErrorManager.getDefault().getInstance("TEST-" + getName());
+    }
+    
+    protected Level logLevel() {
+        return Level.ALL;
     }
 
     public void testCorrectThreadSwitching() throws Exception {
