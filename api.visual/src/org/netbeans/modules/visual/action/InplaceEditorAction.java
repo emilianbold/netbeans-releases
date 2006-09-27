@@ -89,6 +89,7 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
         if (rectangle.height > size.height)
             size.height = rectangle.height;
         editor.setBounds (center.x - size.width / 2, center.y - size.height / 2, size.width, size.height);
+        editor.repaint ();
         editor.requestFocus ();
 
         return true;
