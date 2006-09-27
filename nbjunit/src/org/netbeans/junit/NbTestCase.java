@@ -177,16 +177,16 @@ public abstract class NbTestCase extends TestCase implements NbTest {
 
         int groups = tg.activeGroupCount();
         ThreadGroup[] chg = new ThreadGroup[groups];
-        tg.enumerate(chg);
+        tg.enumerate(chg, false);
         for (ThreadGroup inner : chg) {
-            appendGroup(sb, indent, inner, data);
+            if (inner != null) appendGroup(sb, indent, inner, data);
         }
 
         int threads = tg.activeCount();
         Thread[] cht= new Thread[threads];
-        tg.enumerate(cht);
+        tg.enumerate(cht, false);
         for (Thread t : cht) {
-            appendThread(sb, indent, t, data);
+            if (t != null) appendThread(sb, indent, t, data);
         }
     }
     
