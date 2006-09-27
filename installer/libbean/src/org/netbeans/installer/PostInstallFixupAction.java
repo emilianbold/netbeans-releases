@@ -143,7 +143,9 @@ public class PostInstallFixupAction extends ProductAction {
         if (Util.isUnixOS()) {
             installGnomeIcon();
         }
-        
+        if (Util.isWindowsOS()) {
+            registerOpenWith();
+        }
         deleteUnusedFiles();
     }
     
@@ -291,6 +293,113 @@ public class PostInstallFixupAction extends ProductAction {
             fileService.updateAsciiFile(configFilename, new String[] {newLine}, whereToReplace);
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
+        }
+    }
+    
+    private void registerOpenWith() {
+        try {
+            logEvent(this, Log.DBG,"Checking Win32 Registry ... ");
+            Win32RegistryService rs = (Win32RegistryService)getService(Win32RegistryService.NAME);
+            int HKCR = Win32RegistryService.HKEY_CLASSES_ROOT;
+            String HKEY_nb = "Applications\\netbeans.exe";
+            if (!rs.keyExists(HKCR,"Applications\\netbeans.exe")) {
+                logEvent(this, Log.DBG,"Creating key [Applications\\netbeans.exe]");
+                rs.createKey(HKCR,"Applications","netbeans.exe");
+            } else {
+                logEvent(this, Log.DBG,"Key [Applications\\netbeans.exe] already exists");
+            }
+            if (!rs.keyExists(HKCR,"Applications\\netbeans.exe\\shell")) {
+                logEvent(this, Log.DBG,"Creating [Applications\\netbeans.exe\\shell]");
+                rs.createKey(HKCR,"Applications\\netbeans.exe","shell");
+            } else {
+                logEvent(this, Log.DBG,"Key [Applications\\netbeans.exe\\shell] already exists");
+            }
+            if (!rs.keyExists(HKCR,"Applications\\netbeans.exe\\shell\\open")) {
+                logEvent(this, Log.DBG,"Creating key [Applications\\netbeans.exe\\shell\\open]");
+                rs.createKey(HKCR,"Applications\\netbeans.exe\\shell","open");
+            } else {
+                logEvent(this, Log.DBG,"Key [Applications\\netbeans.exe\\shell\\open] already exists");
+            }
+            if (!rs.keyExists(HKCR,"Applications\\netbeans.exe\\shell\\open\\command")) {
+                logEvent(this, Log.DBG,"Creating key [Applications\\netbeans.exe\\shell\\open\\command]");
+                rs.createKey(HKCR,"Applications\\netbeans.exe\\shell\\open","command");
+            } else {
+                logEvent(this, Log.DBG,"Key [Applications\\netbeans.exe\\shell\\open\\command] already exists");
+            }
+            //Set values
+            if (rs.keyExists(HKCR,"Applications\\netbeans.exe\\shell\\open")) {
+                logEvent(this, Log.DBG,"Set default value for [Applications\\netbeans.exe\\shell\\open] \"FriendlyAppName\"");
+                rs.setStringValue(HKCR,"Applications\\netbeans.exe\\shell\\open","FriendlyAppName",false,"NetBeans IDE");
+            }
+            if (rs.keyExists(HKCR,"Applications\\netbeans.exe\\shell\\open\\command")) {
+                logEvent(this, Log.DBG,"Set default value for [Applications\\netbeans.exe\\shell\\open\\command]");
+                rs.setStringValue(HKCR,"Applications\\netbeans.exe\\shell\\open\\command","",false,
+                "\"" + binDir + sep + "netbeans.exe\" --open \"%1\"");
+            }
+            //Text types
+            setKey(rs,".java",true,"text");
+            setKey(rs,".dtd",true,"text");
+            setKey(rs,".xml",true,"text");
+            setKey(rs,".form",true,"text");
+            setKey(rs,".properties",true,"text");
+            setKey(rs,".htm",true,"text");
+            setKey(rs,".html",true,"text");
+            setKey(rs,".xsl",true,"text");
+            setKey(rs,".css",true,"text");
+            setKey(rs,".jsp",true,"text");
+            //Image types
+            setKey(rs,".gif",true,"image");
+            setKey(rs,".jpg",true,"image");
+            setKey(rs,".jpeg",true,"image");
+            setKey(rs,".png",true,"image");
+            //Others
+            setKey(rs,".ear",false,"");
+            setKey(rs,".har",false,"");
+            setKey(rs,".jar",false,"");
+            setKey(rs,".war",false,"");
+            setKey(rs,".zip",false,"");
+            setKey(rs,".nbm",false,"");
+            setKey(rs,".class",false,"");
+            setKey(rs,".ser",false,"");
+            setKey(rs,".url",false,"");
+            setKey(rs,".pdf",false,"");
+        } catch (Exception ex) {
+            logEvent(this, Log.ERROR, ex);
+            Util.logStackTrace(this,ex);
+        }
+    }
+    
+    private void setKey (Win32RegistryService rs, String key, boolean setPerceivedType, String perceivedType) throws ServiceException {
+        int HKCR = Win32RegistryService.HKEY_CLASSES_ROOT;
+        if (!rs.keyExists(HKCR,key)) {
+            logEvent(this, Log.DBG,"Creating key [" + key + "]");
+            rs.createKey(HKCR,"",key);
+        } else {
+            logEvent(this, Log.DBG,"Key [" + key + "] already exists");
+        }
+        if (setPerceivedType && rs.keyExists(HKCR,key)) {
+            if (!rs.valueExists(HKCR,key,"PerceivedType")) {
+                logEvent(this, Log.DBG,"Set value for " + key + " \"PerceivedType\" to \"" + perceivedType + "\"");
+                rs.setStringValue(HKCR,key,"PerceivedType",false,perceivedType);
+            } else {
+                logEvent(this, Log.DBG,"Value for [" + key + "] \"PerceivedType\" is already set");
+            }
+        }
+
+        String keyOWL = "OpenWithList";
+        if (!rs.keyExists(HKCR,key + "\\" + keyOWL)) {
+            logEvent(this, Log.DBG,"Creating key [" + key + "\\" + keyOWL + "]");
+            rs.createKey(HKCR,key,keyOWL);
+        } else {
+            logEvent(this, Log.DBG,"Key [" + key + "\\" + keyOWL + "] already exists");
+        }
+
+        String keyNB = "netbeans.exe";
+        if (!rs.keyExists(HKCR, key + "\\" + keyOWL + "\\" + keyNB)) {
+            logEvent(this, Log.DBG,"Creating key [" + key + "\\" + keyOWL + "\\" + keyNB + "]");
+            rs.createKey(HKCR, key + "\\" + keyOWL, keyNB);
+        } else {
+            logEvent(this, Log.DBG,"Key [" + key + "\\" + keyOWL + "\\" + keyNB + "] already exists");
         }
     }
     
