@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.subversion;
 
+import java.io.File;
 import java.util.regex.*;
 import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.versioning.util.ListenersSupport;
@@ -34,8 +35,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.ErrorManager;
 
-import java.io.*;
 import java.util.*;
+import org.openide.filesystems.FileSystem;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 
@@ -103,6 +104,8 @@ public class FileStatusCache implements ISVNNotifyListener {
     
     private Subversion     svn;
 
+    private Set<FileSystem> filesystemsToRefresh;
+    
     FileStatusCache() {
         this.svn = Subversion.getInstance();
         cacheProvider = new DiskMapTurboProvider();
@@ -762,7 +765,12 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     public void logCompleted(String message) {
-        // boring ISVNNotifyListener event
+        Set<FileSystem> filesystems = getFilesystemsToRefresh();
+        synchronized (filesystems) {
+            for(FileSystem filesystem : filesystems) {
+                filesystem.refresh(true);
+            }
+        }
     }
 
     public void onNotify(File path, SVNNodeKind kind) {
@@ -778,12 +786,15 @@ public class FileStatusCache implements ISVNNotifyListener {
         // invalidate cached status
         refresh(path, REPOSITORY_STATUS_UNKNOWN);
 
-        // notify FS about the external change
+        // collect the filesystems to notify them in logCompleted() about the external change
         for (;;) {
             FileObject fo = FileUtil.toFileObject(path);
             if (fo != null) {
                 try {
-                    fo.getFileSystem().refresh(true);
+                  Set<FileSystem> filesystems = getFilesystemsToRefresh();
+                  synchronized (filesystems) {
+                    filesystems.add(fo.getFileSystem());
+                  }
                 } catch (FileStateInvalidException e) {
                     // ignore invalid filesystems
                 }
@@ -795,6 +806,13 @@ public class FileStatusCache implements ISVNNotifyListener {
         }
     }
 
+    private Set<FileSystem> getFilesystemsToRefresh() {
+        if(filesystemsToRefresh == null) {
+            filesystemsToRefresh = new HashSet<FileSystem>();
+        }
+        return filesystemsToRefresh;
+    }
+        
     private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
         public Set<Entry<File, FileInformation>> entrySet() {
             return Collections.emptySet();
