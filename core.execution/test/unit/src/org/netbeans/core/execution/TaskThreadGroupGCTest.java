@@ -19,6 +19,7 @@
 
 package org.netbeans.core.execution;
 
+import java.awt.Dialog;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
@@ -33,6 +34,7 @@ import org.openide.execution.ExecutorTask;
  * @author Jesse Glick
  */
 public class TaskThreadGroupGCTest extends NbTestCase {
+    private Dialog d;
 
     public TaskThreadGroupGCTest(String name) {
         super(name);
@@ -43,9 +45,24 @@ public class TaskThreadGroupGCTest extends NbTestCase {
         
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
+	        d = new Dialog(null, false);
+		d.setVisible(true);
             }
         });
     }
+    
+    protected void tearDown() throws Exception {
+        
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+	        d.setVisible(false);
+		d.dispose();
+		d = null;
+            }
+        });
+        super.tearDown();
+    }
+    
 
     protected int timeOut() {
         return 5000;
