@@ -67,8 +67,9 @@ public class NavigatorTCTest extends NbTestCase {
     
     
     public void testCorrectCallsOfNavigatorPanelMethods () throws Exception {
+        System.out.println("Testing correct calls of NavigatorPanel methods...");
         InstanceContent ic = new InstanceContent();
-        GlobalLookup4Test nodesLkp = new GlobalLookup4Test(ic);
+        GlobalLookup4TestImpl nodesLkp = new GlobalLookup4TestImpl(ic);
         UnitTestUtils.prepareTest(new String [] { 
             "/org/netbeans/modules/navigator/resources/testCorrectCallsOfNavigatorPanelMethodsLayer.xml" }, 
             Lookups.singleton(nodesLkp)
@@ -112,13 +113,13 @@ public class NavigatorTCTest extends NbTestCase {
         assertEquals(0, prazak.getPanelDeactivatedCallsCount());
 
         ic.remove(prazskyHint);
-
+        ic.add(ostravskiHint);
         // wait for selected node change to be applied, because changes are
         // reflected with little delay
         waitForChange();
         
         selPanel = navTC.getSelectedPanel();
-        assertNull(selPanel);
+        assertNotNull("Selected panel is null", selPanel);
         
         assertEquals(1, prazak.getPanelDeactivatedCallsCount());
         assertTrue(prazak.wasGetCompBetween());
@@ -126,10 +127,43 @@ public class NavigatorTCTest extends NbTestCase {
         assertFalse(prazak.wasDeactCalledOnInactive());
         
         navTC.componentClosed();
+
         selPanel = navTC.getSelectedPanel();
-        assertNull(selPanel);
+        assertNull("Selected panel should be null", selPanel);
+        assertNull("Set of panels should be null", navTC.getPanels());
     }
     
+    public void testBugfix80155_NotEmptyOnProperties () throws Exception {
+        System.out.println("Testing bugfix 80155, keeping content on Properties window and similar...");
+        InstanceContent ic = new InstanceContent();
+        GlobalLookup4TestImpl nodesLkp = new GlobalLookup4TestImpl(ic);
+        UnitTestUtils.prepareTest(new String [] { 
+            "/org/netbeans/modules/navigator/resources/testCorrectCallsOfNavigatorPanelMethodsLayer.xml" }, 
+            Lookups.singleton(nodesLkp)
+        );
+
+        TestLookupHint ostravskiHint = new TestLookupHint("ostravski/gyzd");
+        ic.add(ostravskiHint);
+            
+        NavigatorTC navTC = NavigatorTC.getInstance();
+        navTC.componentOpened();
+
+        NavigatorPanel selPanel = navTC.getSelectedPanel();
+        
+        assertNotNull("Selected panel is null", selPanel);
+        
+        ic.remove(ostravskiHint);
+        
+        // wait for selected node change to be applied, because changes are
+        // reflected with little delay
+        waitForChange();
+
+        // after 80155 fix, previous navigator should keep its content even when
+        // new component was activated, but didn't contain any activated nodes or navigator lookup hint
+        selPanel = navTC.getSelectedPanel();
+        assertNotNull("Selected panel is null", selPanel);
+        assertTrue("Panel class not expected", selPanel instanceof OstravskiGyzdProvider);
+    }
     
     private void waitForChange () {
         synchronized (this) {
@@ -260,9 +294,9 @@ public class NavigatorTCTest extends NbTestCase {
     }
             
     
-    private static final class GlobalLookup4Test extends AbstractLookup implements ContextGlobalProvider {
+    private static final class GlobalLookup4TestImpl extends AbstractLookup implements ContextGlobalProvider {
         
-        public GlobalLookup4Test (AbstractLookup.Content content) {
+        public GlobalLookup4TestImpl (AbstractLookup.Content content) {
             super(content);
         }
         
@@ -272,9 +306,9 @@ public class NavigatorTCTest extends NbTestCase {
         
         /*public GlobalLookup4Test() {
             super(new Lookup[0]);
-        }*/
+        }
         
-        /*public void setNodes(Node[] nodes) {
+        public void setNodes(Node[] nodes) {
             setLookups(new Lookup[] {Lookups.fixed(nodes)});
         }*/
     }

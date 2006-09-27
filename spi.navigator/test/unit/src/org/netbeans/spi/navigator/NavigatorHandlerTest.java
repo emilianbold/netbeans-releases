@@ -71,7 +71,7 @@ public class NavigatorHandlerTest extends TestCase {
     public void testActivatePanel () throws Exception {
         System.out.println("Testing NavigatorHandlerTest.activatePanel");
         InstanceContent ic = new InstanceContent();
-        GlobalLookup4Test nodesLkp = new GlobalLookup4Test(ic);
+        GlobalLookup4TestImpl nodesLkp = new GlobalLookup4TestImpl(ic);
         UnitTestUtils.prepareTest(new String [] { 
             "/org/netbeans/modules/navigator/resources/NavigatorHandlerTestProvider.xml" }, 
             Lookups.singleton(nodesLkp)
@@ -179,9 +179,9 @@ public class NavigatorHandlerTest extends TestCase {
     }
     
 
-    private static final class GlobalLookup4Test extends AbstractLookup implements ContextGlobalProvider {
+    private static final class GlobalLookup4TestImpl extends AbstractLookup implements ContextGlobalProvider {
         
-        public GlobalLookup4Test (AbstractLookup.Content content) {
+        public GlobalLookup4TestImpl (AbstractLookup.Content content) {
             super(content);
         }
         

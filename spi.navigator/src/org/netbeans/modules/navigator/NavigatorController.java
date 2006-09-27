@@ -126,6 +126,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         curHints = null;
         curNode = null;
         lastActivatedRef = null;
+        navigatorTC.setPanels(null);
     }
     
     /** Returns lookup that delegates to lookup of currently active 
@@ -189,8 +190,13 @@ public final class NavigatorController implements LookupListener, ActionListener
         return nodeList.isEmpty() ? null : (Node)nodeList.iterator().next();
     }
     
-    private boolean isNoActivatedNode () {
-        return TopComponent.getRegistry().getCurrentNodes() == null;
+    /** @return True when update show be performed, false otherwise. Update 
+     * isn't needed when current nodes are null and no navigator lookup hints
+     * in lookup.
+     */
+    private boolean shouldUpdate () {
+        return TopComponent.getRegistry().getCurrentNodes() != null ||
+               Utilities.actionsGlobalContext().lookup(NavigatorLookupHint.class) != null;
     }
     
     /** Important worker method, sets navigator content (available panels)
@@ -200,7 +206,7 @@ public final class NavigatorController implements LookupListener, ActionListener
         // #80155: don't empty navigator for Properties window and similar
         // which don't define activated nodes
         Node node = obtainFirstCurNode();
-        if (node == null && isNoActivatedNode()) {
+        if (node == null && !shouldUpdate()) {
             return;
         }
         
