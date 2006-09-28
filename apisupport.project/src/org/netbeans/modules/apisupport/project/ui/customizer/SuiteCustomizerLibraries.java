@@ -300,7 +300,6 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
 
     private void javaPlatformComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_javaPlatformComboItemStateChanged
         getProperties().setActiveJavaPlatform((JavaPlatform) javaPlatformCombo.getSelectedItem());
-        refreshJavaPlatforms();
     }//GEN-LAST:event_javaPlatformComboItemStateChanged
     
     private void platformValueItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformValueItemStateChanged
