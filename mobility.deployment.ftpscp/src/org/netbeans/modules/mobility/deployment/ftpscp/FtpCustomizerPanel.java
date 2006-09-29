@@ -52,8 +52,6 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jTextFieldServer = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
-        jTextFieldFolder = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         jComboBoxSeparator = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
@@ -69,7 +67,7 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
 
         jLabel1.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Server").charAt(0));
         jLabel1.setLabelFor(jTextFieldServer);
-        jLabel1.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Server"));
+        jLabel1.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Server")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
@@ -80,31 +78,11 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jTextFieldServer, gridBagConstraints);
-        jTextFieldServer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Server"));
-
-        jLabel5.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Directory").charAt(0));
-        jLabel5.setLabelFor(jTextFieldFolder);
-        jLabel5.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Directory"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(jLabel5, gridBagConstraints);
-
-        jTextFieldFolder.setName(FtpDeploymentPlugin.PROP_REMOTEDIR);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        add(jTextFieldFolder, gridBagConstraints);
-        jTextFieldFolder.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Dir"));
+        jTextFieldServer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Server")); // NOI18N
 
         jLabel6.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Separator").charAt(0));
         jLabel6.setLabelFor(jComboBoxSeparator);
-        jLabel6.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Separator"));
+        jLabel6.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Separator")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -113,7 +91,7 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
         add(jLabel6, gridBagConstraints);
 
         jComboBoxSeparator.setEditable(true);
-        jComboBoxSeparator.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "/", "\\" }));
+        jComboBoxSeparator.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "/", "\\\\" }));
             jComboBoxSeparator.setName(FtpDeploymentPlugin.PROP_SEPARATOR);
             jComboBoxSeparator.setPreferredSize(new java.awt.Dimension(54, 20));
             gridBagConstraints = new java.awt.GridBagConstraints();
@@ -122,16 +100,16 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
             add(jComboBoxSeparator, gridBagConstraints);
-            jComboBoxSeparator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Separator"));
+            jComboBoxSeparator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Separator")); // NOI18N
 
             jLabel2.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Port").charAt(0));
             jLabel2.setLabelFor(jSpinnerPort);
-            jLabel2.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Port"));
+            jLabel2.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Port")); // NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
             gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
             add(jLabel2, gridBagConstraints);
-            jLabel2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Port"));
+            jLabel2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Port")); // NOI18N
 
             jSpinnerPort.setName(FtpDeploymentPlugin.PROP_PORT);
             jSpinnerPort.setPreferredSize(new java.awt.Dimension(54, 20));
@@ -142,10 +120,10 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
 
             jLabel3.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_User").charAt(0));
             jLabel3.setLabelFor(jTextFieldUser);
-            jLabel3.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_User"));
+            jLabel3.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_User")); // NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 2;
+            gridBagConstraints.gridy = 1;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
             add(jLabel3, gridBagConstraints);
@@ -153,19 +131,19 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
             jTextFieldUser.setName(FtpDeploymentPlugin.PROP_USERID);
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 2;
+            gridBagConstraints.gridy = 1;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
             add(jTextFieldUser, gridBagConstraints);
-            jTextFieldUser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_user"));
+            jTextFieldUser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_user")); // NOI18N
 
             jLabel4.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Password").charAt(0));
             jLabel4.setLabelFor(jPasswordField);
-            jLabel4.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Password"));
+            jLabel4.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Password")); // NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 3;
+            gridBagConstraints.gridy = 2;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
             add(jLabel4, gridBagConstraints);
@@ -174,32 +152,32 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
             jPasswordField.setPreferredSize(new java.awt.Dimension(6, 20));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 3;
+            gridBagConstraints.gridy = 2;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
             add(jPasswordField, gridBagConstraints);
-            jPasswordField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Password"));
+            jPasswordField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Password")); // NOI18N
 
             jCheckBoxPassive.setMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Passive").charAt(0));
-            jCheckBoxPassive.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Passive"));
+            jCheckBoxPassive.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Passive")); // NOI18N
             jCheckBoxPassive.setName(FtpDeploymentPlugin.PROP_PASSIVE);
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 4;
+            gridBagConstraints.gridy = 3;
             gridBagConstraints.gridwidth = 2;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
             add(jCheckBoxPassive, gridBagConstraints);
 
-            jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+            jTextArea1.setBackground(getBackground());
             jTextArea1.setEditable(false);
             jTextArea1.setLineWrap(true);
-            jTextArea1.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Notice"));
+            jTextArea1.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Notice")); // NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 5;
+            gridBagConstraints.gridy = 4;
             gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.weightx = 1.0;
@@ -207,8 +185,7 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
             gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
             add(jTextArea1, gridBagConstraints);
 
-        }
-        // </editor-fold>//GEN-END:initComponents
+        }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -218,12 +195,10 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
     javax.swing.JLabel jLabel2;
     javax.swing.JLabel jLabel3;
     javax.swing.JLabel jLabel4;
-    javax.swing.JLabel jLabel5;
     javax.swing.JLabel jLabel6;
     javax.swing.JPasswordField jPasswordField;
     javax.swing.JSpinner jSpinnerPort;
     javax.swing.JTextArea jTextArea1;
-    javax.swing.JTextField jTextFieldFolder;
     javax.swing.JTextField jTextFieldServer;
     javax.swing.JTextField jTextFieldUser;
     // End of variables declaration//GEN-END:variables

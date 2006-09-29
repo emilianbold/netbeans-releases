@@ -165,6 +165,11 @@ public class NewInstanceDialog extends JPanel implements DocumentListener, Actio
     public String getInstanceName() {
         return jTextFieldName.getText();
     }
+
+    public void addNotify() {
+        super.addNotify();
+        jTextFieldName.requestFocusInWindow();
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox jComboBoxType;

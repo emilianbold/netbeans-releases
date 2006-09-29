@@ -86,8 +86,6 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         jTextFieldServer = new javax.swing.JTextField();
         jLabelPort = new javax.swing.JLabel();
         jSpinnerPort = new javax.swing.JSpinner();
-        jLabelFolder = new javax.swing.JLabel();
-        jTextFieldFolder = new javax.swing.JTextField();
         jLabelUser = new javax.swing.JLabel();
         jTextFieldUser = new javax.swing.JTextField();
         jRadioButtonPassword = new javax.swing.JRadioButton();
@@ -105,7 +103,7 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
 
         jLabelServer.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Server").charAt(0));
         jLabelServer.setLabelFor(jTextFieldServer);
-        jLabelServer.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Server"));
+        jLabelServer.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Server")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabelServer, gridBagConstraints);
@@ -118,18 +116,18 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jTextFieldServer, gridBagConstraints);
-        jTextFieldServer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Server"));
+        jTextFieldServer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Server")); // NOI18N
 
         jLabelPort.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Port").charAt(0));
         jLabelPort.setLabelFor(jSpinnerPort);
-        jLabelPort.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Port"));
+        jLabelPort.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Port")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(jLabelPort, gridBagConstraints);
-        jLabelPort.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Port"));
+        jLabelPort.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Port")); // NOI18N
 
         jSpinnerPort.setName(ScpDeploymentPlugin.PROP_PORT);
         jSpinnerPort.setPreferredSize(new java.awt.Dimension(54, 20));
@@ -138,32 +136,12 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jSpinnerPort, gridBagConstraints);
 
-        jLabelFolder.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Directory").charAt(0));
-        jLabelFolder.setLabelFor(jTextFieldFolder);
-        jLabelFolder.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Directory"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(jLabelFolder, gridBagConstraints);
-
-        jTextFieldFolder.setName(ScpDeploymentPlugin.PROP_REMOTEDIR);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        add(jTextFieldFolder, gridBagConstraints);
-        jTextFieldFolder.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Dir"));
-
         jLabelUser.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_User").charAt(0));
         jLabelUser.setLabelFor(jTextFieldUser);
-        jLabelUser.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_User"));
+        jLabelUser.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_User")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jLabelUser, gridBagConstraints);
@@ -171,21 +149,21 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         jTextFieldUser.setName(ScpDeploymentPlugin.PROP_USERID);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jTextFieldUser, gridBagConstraints);
-        jTextFieldUser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_user"));
+        jTextFieldUser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_user")); // NOI18N
 
         buttonGroup1.add(jRadioButtonPassword);
         jRadioButtonPassword.setMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_UsePassword").charAt(0));
-        jRadioButtonPassword.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_UsePassword"));
+        jRadioButtonPassword.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_UsePassword")); // NOI18N
         jRadioButtonPassword.setActionCommand("no");
         jRadioButtonPassword.setName(ScpDeploymentPlugin.PROP_USE_KEYFILE);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -194,10 +172,10 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
 
         jLabelPassword.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Password").charAt(0));
         jLabelPassword.setLabelFor(jPasswordFieldPassword);
-        jLabelPassword.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Password"));
+        jLabelPassword.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Password")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jLabelPassword, gridBagConstraints);
@@ -206,21 +184,21 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         jPasswordFieldPassword.setPreferredSize(new java.awt.Dimension(6, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jPasswordFieldPassword, gridBagConstraints);
-        jPasswordFieldPassword.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Password"));
+        jPasswordFieldPassword.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Password")); // NOI18N
 
         buttonGroup1.add(jRadioButtonKey);
         jRadioButtonKey.setMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_UseKey").charAt(0));
-        jRadioButtonKey.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_UseKeyfile"));
+        jRadioButtonKey.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_UseKeyfile")); // NOI18N
         jRadioButtonKey.setActionCommand("yes");
         jRadioButtonKey.setName(ScpDeploymentPlugin.PROP_USE_KEYFILE);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -229,10 +207,10 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
 
         jLabelKeyfile.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_KeyFile").charAt(0));
         jLabelKeyfile.setLabelFor(jTextFieldKeyfile);
-        jLabelKeyfile.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Keyfile"));
+        jLabelKeyfile.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Keyfile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jLabelKeyfile, gridBagConstraints);
@@ -240,37 +218,36 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         jTextFieldKeyfile.setName(ScpDeploymentPlugin.PROP_KEYFILE);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jTextFieldKeyfile, gridBagConstraints);
-        jTextFieldKeyfile.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Keyfile"));
+        jTextFieldKeyfile.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Keyfile")); // NOI18N
 
         jButtonBrowse.setMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Browse").charAt(0));
-        jButtonBrowse.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Browse"));
+        jButtonBrowse.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Browse")); // NOI18N
         jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseActionPerformed(evt);
             }
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jButtonBrowse, gridBagConstraints);
-        jButtonBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Browse"));
+        jButtonBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Browse")); // NOI18N
 
         jLabelPassphrase.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Passphrase").charAt(0));
         jLabelPassphrase.setLabelFor(jPasswordFieldPassphrase);
-        jLabelPassphrase.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Passphrase"));
+        jLabelPassphrase.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Passphrase")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jLabelPassphrase, gridBagConstraints);
@@ -279,20 +256,20 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         jPasswordFieldPassphrase.setPreferredSize(new java.awt.Dimension(6, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jPasswordFieldPassphrase, gridBagConstraints);
-        jPasswordFieldPassphrase.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Passphrase"));
+        jPasswordFieldPassphrase.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Passphrase")); // NOI18N
 
-        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        jTextArea1.setBackground(getBackground());
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
-        jTextArea1.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Notice"));
+        jTextArea1.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Notice")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -300,8 +277,7 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jTextArea1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
         final String oldValue = jTextFieldKeyfile.getText();
@@ -318,7 +294,6 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     javax.swing.JButton jButtonBrowse;
-    javax.swing.JLabel jLabelFolder;
     javax.swing.JLabel jLabelKeyfile;
     javax.swing.JLabel jLabelPassphrase;
     javax.swing.JLabel jLabelPassword;
@@ -331,7 +306,6 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
     javax.swing.JRadioButton jRadioButtonPassword;
     javax.swing.JSpinner jSpinnerPort;
     javax.swing.JTextArea jTextArea1;
-    javax.swing.JTextField jTextFieldFolder;
     javax.swing.JTextField jTextFieldKeyfile;
     javax.swing.JTextField jTextFieldServer;
     javax.swing.JTextField jTextFieldUser;

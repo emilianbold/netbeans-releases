@@ -52,8 +52,6 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jTextFieldServer = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
-        jTextFieldFolder = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jSpinnerPort = new javax.swing.JSpinner();
         jLabel3 = new javax.swing.JLabel();
@@ -66,7 +64,7 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
 
         jLabel1.setDisplayedMnemonic(NbBundle.getMessage(WebDAVCustomizerPanel.class, "MNM_WebDAV_Server").charAt(0));
         jLabel1.setLabelFor(jTextFieldServer);
-        jLabel1.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Server"));
+        jLabel1.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Server")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
@@ -77,36 +75,16 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jTextFieldServer, gridBagConstraints);
-        jTextFieldServer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_Server"));
-
-        jLabel5.setDisplayedMnemonic(NbBundle.getMessage(WebDAVCustomizerPanel.class, "MNM_WebDAV_Directory").charAt(0));
-        jLabel5.setLabelFor(jTextFieldFolder);
-        jLabel5.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Directory"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(jLabel5, gridBagConstraints);
-
-        jTextFieldFolder.setName(WebDAVDeploymentPlugin.PROP_REMOTEDIR);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        add(jTextFieldFolder, gridBagConstraints);
-        jTextFieldFolder.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_Dir"));
+        jTextFieldServer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_Server")); // NOI18N
 
         jLabel2.setDisplayedMnemonic(NbBundle.getMessage(WebDAVCustomizerPanel.class, "MNM_WebDAV_Port").charAt(0));
         jLabel2.setLabelFor(jSpinnerPort);
-        jLabel2.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Port"));
+        jLabel2.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Port")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_Port"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_Port")); // NOI18N
 
         jSpinnerPort.setName(WebDAVDeploymentPlugin.PROP_PORT);
         jSpinnerPort.setPreferredSize(new java.awt.Dimension(54, 20));
@@ -117,10 +95,10 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
 
         jLabel3.setDisplayedMnemonic(NbBundle.getMessage(WebDAVCustomizerPanel.class, "MNM_WebDAV_User").charAt(0));
         jLabel3.setLabelFor(jTextFieldUser);
-        jLabel3.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_User"));
+        jLabel3.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_User")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jLabel3, gridBagConstraints);
@@ -128,19 +106,19 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
         jTextFieldUser.setName(WebDAVDeploymentPlugin.PROP_USERID);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jTextFieldUser, gridBagConstraints);
-        jTextFieldUser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_User"));
+        jTextFieldUser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_User")); // NOI18N
 
         jLabel4.setDisplayedMnemonic(NbBundle.getMessage(WebDAVCustomizerPanel.class, "MNM_WebDAV_Password").charAt(0));
         jLabel4.setLabelFor(jPasswordField);
-        jLabel4.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Password"));
+        jLabel4.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Password")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jLabel4, gridBagConstraints);
@@ -149,20 +127,20 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
         jPasswordField.setPreferredSize(new java.awt.Dimension(6, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jPasswordField, gridBagConstraints);
-        jPasswordField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_Password"));
+        jPasswordField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_Password")); // NOI18N
 
-        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        jTextArea1.setBackground(getBackground());
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
-        jTextArea1.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Notice"));
+        jTextArea1.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Notice")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -170,8 +148,7 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jTextArea1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -179,11 +156,9 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
     javax.swing.JLabel jLabel2;
     javax.swing.JLabel jLabel3;
     javax.swing.JLabel jLabel4;
-    javax.swing.JLabel jLabel5;
     javax.swing.JPasswordField jPasswordField;
     javax.swing.JSpinner jSpinnerPort;
     javax.swing.JTextArea jTextArea1;
-    javax.swing.JTextField jTextFieldFolder;
     javax.swing.JTextField jTextFieldServer;
     javax.swing.JTextField jTextFieldUser;
     // End of variables declaration//GEN-END:variables

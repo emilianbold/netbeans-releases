@@ -56,22 +56,22 @@ public class CopyCustomizerPanel extends javax.swing.JPanel {
 
         jLabelTarget.setDisplayedMnemonic(NbBundle.getMessage(CopyCustomizerPanel.class, "MNM_Copy_Target").charAt(0));
         jLabelTarget.setLabelFor(jTextFieldTarget);
-        jLabelTarget.setText(NbBundle.getMessage(CopyCustomizerPanel.class, "LBL_Copy_Target"));
+        jLabelTarget.setText(NbBundle.getMessage(CopyCustomizerPanel.class, "LBL_Copy_Target")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jLabelTarget, gridBagConstraints);
 
         jTextFieldTarget.setName(CopyDeploymentPlugin.PROP_TARGET);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jTextFieldTarget, gridBagConstraints);
-        jTextFieldTarget.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyCustomizerPanel.class, "ACSD_Copy_Target"));
+        jTextFieldTarget.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyCustomizerPanel.class, "ACSD_Copy_Target")); // NOI18N
 
         jButtonBrowse.setMnemonic(NbBundle.getMessage(CopyCustomizerPanel.class, "MNM_Copy_Browse").charAt(0));
-        jButtonBrowse.setText(NbBundle.getMessage(CopyCustomizerPanel.class, "LBL_Copy_Browse"));
+        jButtonBrowse.setText(NbBundle.getMessage(CopyCustomizerPanel.class, "LBL_Copy_Browse")); // NOI18N
         jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseActionPerformed(evt);
@@ -80,9 +80,10 @@ public class CopyCustomizerPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 12, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jButtonBrowse, gridBagConstraints);
-        jButtonBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyCustomizerPanel.class, "ACSD_Copy_Browse"));
+        jButtonBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyCustomizerPanel.class, "ACSD_Copy_Browse")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -92,8 +93,7 @@ public class CopyCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
         final String result = Utils.browseFolder(this, jTextFieldTarget.getText(), NbBundle.getMessage(CopyCustomizerPanel.class, "Title_Copy_SelectFolder"));//NOI18N

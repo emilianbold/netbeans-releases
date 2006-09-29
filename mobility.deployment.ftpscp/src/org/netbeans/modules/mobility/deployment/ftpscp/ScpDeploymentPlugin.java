@@ -53,7 +53,6 @@ public class ScpDeploymentPlugin implements DeploymentPlugin {
         HashMap<String,Object> m = new HashMap<String,Object>();
         m.put(PROP_SERVER, "");//NOI18N
         m.put(PROP_PORT, Integer.valueOf("22"));
-        m.put(PROP_REMOTEDIR, "");//NOI18N
         m.put(PROP_USERID, "");//NOI18N
         m.put(PROP_PASSWORD, "");//NOI18N
         m.put(PROP_PASSPHRASE, "");//NOI18N
@@ -75,18 +74,18 @@ public class ScpDeploymentPlugin implements DeploymentPlugin {
     }
     
     public synchronized Component createProjectCustomizerPanel() {
-        return new ScpCustomizerPanel();
+        return new ScpProjectCustomizerPanel();
     }
     
     public Map<String,Object> getProjectPropertyDefaultValues() {
-        return propertyDefValues;
+        return Collections.singletonMap(PROP_REMOTEDIR, (Object)"");//NOI18N
     }
 
     public Map<String, Object> getGlobalPropertyDefaultValues() {
-        return Collections.EMPTY_MAP;
+        return propertyDefValues;
     }
 
     public Component createGlobalCustomizerPanel() {
-        return null;
+        return new ScpCustomizerPanel();
     }
 }
