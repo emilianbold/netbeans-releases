@@ -392,16 +392,14 @@ public class BaseOptions extends OptionSupport {
     
     private Map computeTextAntialiasingMap( boolean aaSetting ) {
         
-        if ( !aaSetting ) {
-            return Collections.EMPTY_MAP;
-        }
-        
         Map result;
         
         Map defaultHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
                 "awt.font.desktophints")); //NOI18N        
         
         if ( defaultHints != null ) { // OK We're at 1.6 or higher
+            if (true) // On 1.6 always use the default rendering hints regardless of the aaSetting
+                return defaultHints;
             
             Object systemSetting = defaultHints.get( RenderingHints.KEY_TEXT_ANTIALIASING );
                         
@@ -416,6 +414,9 @@ public class BaseOptions extends OptionSupport {
             }
         }
         else {  // Lower than 1.6 Jdk            
+            if ( !aaSetting ) {
+                return Collections.EMPTY_MAP;
+            }
             result = new HashMap();
             result.put(RenderingHints.KEY_TEXT_ANTIALIASING,
                        RenderingHints.VALUE_TEXT_ANTIALIAS_ON);                        
