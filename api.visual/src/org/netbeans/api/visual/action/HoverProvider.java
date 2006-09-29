@@ -15,10 +15,16 @@ package org.netbeans.api.visual.action;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
+ * This interface controls hover action.
+ *
  * @author David Kaspar
  */
 public interface HoverProvider {
 
+    /**
+     * Called to notify that a specified widget is hovered.
+     * @param widget the hovered widget
+     */
     void widgetHovered (Widget widget);
 
 }

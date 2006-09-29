@@ -15,10 +15,17 @@ package org.netbeans.api.visual.action;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
+ * This interface decorates a rectangular select action.
+ *
  * @author David Kaspar
  */
 public interface RectangularSelectDecorator {
 
+    /**
+     * Creates a widget which will be resized and placed into a scene and will represent the rectangular selection.
+     * @return the selection widget
+     */
+    // TODO - API consistency maybe there could be a scene parameter added
     Widget createSelectionWidget ();
 
 }

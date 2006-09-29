@@ -58,7 +58,7 @@ public abstract class SceneLayout {
     }
 
     /**
-     * Schedule the performing of this scene layout just immediately after the scene validation.
+     * Schedules the performing of this scene layout just immediately after the scene validation.
      * It also calls scene revalidation.
      */
     public final void invokeLayout () {

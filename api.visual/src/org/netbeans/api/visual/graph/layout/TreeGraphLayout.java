@@ -19,6 +19,8 @@ import java.awt.*;
 import java.util.*;
 
 /**
+ * This class supplies the tree graph-oriented layout for a GraphScene.
+ *
  * @author David Kaspar
  */
 public class TreeGraphLayout<N, E> {
@@ -30,6 +32,15 @@ public class TreeGraphLayout<N, E> {
     private int horizontalGap;
     private boolean vertical;
 
+    /**
+     * Creates a graph-oriented tree layout.
+     * @param scene the GraphScene where the layout is used
+     * @param originX the x-axis origin
+     * @param originY the y-axis origin
+     * @param verticalGap the vertical gap between cells
+     * @param horizontalGap the horizontal gap between cells
+     * @param vertical if true, then layout organizes the graph vertically; if false, then horizontally
+     */
     public TreeGraphLayout (GraphScene<N, E> scene, int originX, int originY, int verticalGap, int horizontalGap, boolean vertical) {
         this.scene = scene;
         this.originX = originX;
@@ -39,6 +50,10 @@ public class TreeGraphLayout<N, E> {
         this.vertical = vertical;
     }
 
+    /**
+     * Invokes the layout for a specified root node.
+     * @param rootNode the root node
+     */
     public final void layout (N rootNode) {
         if (rootNode == null)
             return;
@@ -69,6 +84,11 @@ public class TreeGraphLayout<N, E> {
             scene.findWidget (entry.getKey ()).setPreferredLocation (entry.getValue ());
     }
 
+    /**
+     * Collects a collection of children nodes of a specified node.
+     * @param node the node
+     * @return the collection of children
+     */
     protected Collection<N> resolveChildren (N node) {
         Collection<E> edges = scene.findNodeEdges (node, false, true);
         HashSet<N> nodes = new HashSet<N> ();
@@ -87,7 +107,7 @@ public class TreeGraphLayout<N, E> {
         private int totalSpace;
         private Point point;
 
-        public Node (N node, HashSet<N> loadedSet) {
+        private Node (N node, HashSet<N> loadedSet) {
             this.node = node;
             loadedSet.add (node);
 
@@ -98,7 +118,7 @@ public class TreeGraphLayout<N, E> {
                     children.add (new Node (child, loadedSet));
         }
 
-        public int allocateHorizontally () {
+        private int allocateHorizontally () {
             Widget widget = scene.findWidget (node);
             widget.getLayout ().layout (widget);
             relativeBounds = widget.getPreferredBounds ();
@@ -112,7 +132,7 @@ public class TreeGraphLayout<N, E> {
             return totalSpace;
         }
 
-        public void resolveVertically (int x, int y) {
+        private void resolveVertically (int x, int y) {
             point = new Point (x + totalSpace / 2, y - relativeBounds.y);
             x += (totalSpace - space) / 2;
             y += relativeBounds.height + verticalGap;
@@ -122,7 +142,7 @@ public class TreeGraphLayout<N, E> {
             }
         }
 
-        public int allocateVertically () {
+        private int allocateVertically () {
             Widget widget = scene.findWidget (node);
             widget.getLayout ().layout (widget);
             relativeBounds = widget.getPreferredBounds ();
@@ -136,7 +156,7 @@ public class TreeGraphLayout<N, E> {
             return totalSpace;
         }
 
-        public void resolveHorizontally (int x, int y) {
+        private void resolveHorizontally (int x, int y) {
             point = new Point (x - relativeBounds.x, y + totalSpace / 2);
             x += relativeBounds.width + horizontalGap;
             y += (totalSpace - space) / 2;
@@ -146,7 +166,7 @@ public class TreeGraphLayout<N, E> {
             }
         }
 
-        public void upload (HashMap<N, Point> result) {
+        private void upload (HashMap<N, Point> result) {
             result.put (node, point);
             for (Node child : children)
                 child.upload (result);

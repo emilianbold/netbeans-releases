@@ -15,10 +15,16 @@ package org.netbeans.api.visual.action;
 import org.netbeans.api.visual.widget.Widget;
 
 /**
+ * This interface controls an edit action.
+ *
  * @author David Kaspar
  */
 public interface EditProvider {
 
+    /**
+     * Called when an editing is invoked by an user on a specified widget.
+     * @param widget the widget
+     */
     void edit (Widget widget);
 
 }

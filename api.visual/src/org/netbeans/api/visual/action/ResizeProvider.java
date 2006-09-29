@@ -19,14 +19,26 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public interface ResizeProvider {
 
+    /**
+     * This enum represents a control point of a resize action.
+     */
+    // TODO - could be moved to ResizeStrategy interface, where it is used
     public enum ControlPoint {
 
         TOP_CENTER, BOTTOM_CENTER, CENTER_LEFT, CENTER_RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
 
     }
 
+    /**
+     * Called to notify about the start of resizing.
+     * @param widget the resizing widget
+     */
     void resizingStarted (Widget widget);
 
+    /**
+     * Called to notify about the finish of resizing.
+     * @param widget the resized widget
+     */
     void resizingFinished (Widget widget);
 
 }

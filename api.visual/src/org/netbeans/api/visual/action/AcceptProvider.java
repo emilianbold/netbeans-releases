@@ -18,20 +18,27 @@ import java.awt.*;
 import java.awt.datatransfer.Transferable;
 
 /**
- * The class is used for specifying a logic for accept action. An accept action can be created  
+ * This interface controls an accept (drag & drop) action.
+ *
  * @author David Kaspar
  */
 public interface AcceptProvider {
 
     /**
-     *
-     * @param widget
-     * @param point
-     * @param transferable
-     * @return
+     * Checks whether a transferable can be dropped on a widget at a specific point.
+     * @param widget the widget could be dropped
+     * @param point the drop location in local coordination system of the widget
+     * @param transferable the transferable
+     * @return true, if it can be dropped; false, if it cannot
      */
     boolean isAcceptable (Widget widget, Point point, Transferable transferable);
 
+    /**
+     * Handles the drop of a transferable.
+     * @param widget the widget where the transferable is dropped
+     * @param point the drop location in local coordination system of the widget
+     * @param transferable the transferable
+     */
     void accept (Widget widget, Point point, Transferable transferable);
 
 }

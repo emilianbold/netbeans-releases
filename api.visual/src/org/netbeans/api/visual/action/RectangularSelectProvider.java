@@ -15,10 +15,15 @@ package org.netbeans.api.visual.action;
 import java.awt.*;
 
 /**
+ * This interface controls a rectangular select action.
  * @author David Kaspar
  */
 public interface RectangularSelectProvider {
 
+    /**
+     * Called for perfoming a selection specified by a rectangle in scene coordination system.
+     * @param sceneSelection the selection rectangle in scene coordination system.
+     */
     void performSelection (Rectangle sceneSelection);
 
 }

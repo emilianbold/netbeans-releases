@@ -18,10 +18,20 @@ import java.util.List;
 import java.awt.*;
 
 /**
+ * This interface controls a move control point action.
+ *
  * @author David Kaspar
  */
 public interface MoveControlPointProvider {
 
+    /**
+     * Called to resolve control points of a connection widget for specified suggested change of a location of a control point specified by its index.
+     * Usually used for supplying the move strategy of control points.
+     * @param connectionWidget the connection widget
+     * @param index the index of the control point which new location was suggested by an user
+     * @param suggestedLocation the suggested location (by an user) of a control point specified by its index
+     * @return the list of new control points of the connection widget
+     */
     List<Point> locationSuggested (ConnectionWidget connectionWidget, int index, Point suggestedLocation);
 
 }

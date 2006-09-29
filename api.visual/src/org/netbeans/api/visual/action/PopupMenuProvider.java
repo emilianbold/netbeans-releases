@@ -18,7 +18,9 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author David Kaspar
+ * This interface provides a popup menu.
+ *
+ * @author William Headrick, David Kaspar
  */
 public interface PopupMenuProvider {
 

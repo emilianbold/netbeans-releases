@@ -17,10 +17,20 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.*;
 
 /**
+ * This interfaces provides a movement strategy.
+ *
  * @author David Kaspar
  */
 public interface MoveStrategy {
 
+    /**
+     * Called after an user suggests a new location and before the suggested location is stored to a specified widget.
+     * This allows to manipulate with a suggested location to perform snap-to-grid, locked-axis on any other movement strategy.
+     * @param widget the moved widget
+     * @param originalLocation the original location specified by the MoveProvider.getOriginalLocation method
+     * @param suggestedLocation the location suggested by an user (usually by a mouse cursor position)
+     * @return the new (optional modified) location processed by the strategy
+     */
     Point locationSuggested (Widget widget, Point originalLocation, Point suggestedLocation);
 
 }
