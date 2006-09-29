@@ -29,6 +29,29 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * A scene is a tree of small building blocks called widgets and represented by this class.
+ * <p>
+ * Each widget has a origin location specified relatively to the location its parent widget
+ * and placement is specified be its boundary.
+ * <p>
+ * The widget is also responsible for rendering the region. The widget is an abstract implementation
+ * and does not have render anything except borders and background. There are various built-in widget
+ * each for a specific visualization. The widget also holds general properties like foreground, opacity, ...
+ * that could be reused by the high-level widgets.
+ * <p>
+ * The widget has a layout assigned. The layout takes care about resolving the placement of children widgets.
+ * For that it can use various properties like preferredLocation, preferredBounds, ...
+ * When the widget is resolved (placed) than the read only location and bounds properties contains
+ * resolved location and boundary of a widget.
+ * <p>
+ * Each widget has a chain of actions. Actions defined defines a behaviour of the widget. E.g. MoveAction
+ * makes the widget moveable. Also there is possible to create/assign other chains that will be activated
+ * based on the active tool of a scene.
+ * <p>
+ * The widget have its state specified by ObjectState class. When the widget state is change,
+ * notifyStateChanged is called to notify about it. The state is automatically updated by high-level scenes
+ * and actions. Yherefore you can define your own look and feel directly in the that method.
+ *
  * @author David Kaspar
  */
 // TODO - Should Widget be an abstract class?
@@ -74,6 +97,10 @@ public class Widget {
     private boolean requiresFullJustification;
     private boolean requiresPartJustification;
 
+    /**
+     * Creates a new widget which will be used in a specified scene.
+     * @param scene the scene where the widget is going to be used
+     */
     // TODO - replace Scene parameter with an interface
     public Widget (Scene scene) {
         if (scene == null)
@@ -101,22 +128,43 @@ public class Widget {
         requiresPartValidation = true;
     }
 
+    /**
+     * Returns a scene where the widget is assigned
+     * @return the scene
+     */
     public final Scene getScene () {
         return scene;
     }
 
+    /**
+     * Returns a Graphics2D instance with is assigned to the scene.
+     * Usually used in the calculatedClientArea and paintWidget method.
+     * @return the Graphics2D instance; null if the scene view is not created or visible yet
+     */
     protected Graphics2D getGraphics () {
         return scene.getGraphics ();
     }
 
+    /**
+     * Returns a parent widget.
+     * @return the parent widget
+     */
     public final Widget getParentWidget () {
         return parentWidget;
     }
 
+    /**
+     * Returns a list of children widgets.
+     * @return the list of children widgets
+     */
     public final List<Widget> getChildren () {
         return childrenUm;
     }
 
+    /**
+     * Adds a child widget as the last one.
+     * @param child the child widget to be added
+     */
     public final void addChild (Widget child) {
         assert child.parentWidget == null;
         Widget widget = this;
@@ -130,6 +178,11 @@ public class Widget {
         revalidate ();
     }
 
+    /**
+     * Adds a child at a specified index
+     * @param index the index (the child is added before the one that is not the index place)
+     * @param child the child widget
+     */
     public final void addChild (int index, Widget child) {
         assert child.parentWidget == null;
         children.add (index, child);
@@ -138,6 +191,10 @@ public class Widget {
         revalidate ();
     }
 
+    /**
+     * Removes a child widget.
+     * @param child the child widget
+     */
     public final void removeChild (Widget child) {
         assert child.parentWidget == this;
         child.parentWidget = null;
@@ -146,26 +203,43 @@ public class Widget {
         revalidate ();
     }
 
+    /**
+     * Removes the widget from its parent.
+     */
     public final void removeFromParent () {
         if (parentWidget != null)
             parentWidget.removeChild (this);
     }
 
+    /**
+     * Removes all children widgets.
+     */
     public final void removeChildren () {
         while (! children.isEmpty ())
             removeChild (children.get (0));
     }
 
+    /**
+     * Adds all children in a specified list.
+     * @param children the list of children widgets
+     */
     public final void addChildren (List<? extends Widget> children) {
         for (Widget child : children)
             addChild (child);
     }
 
+    /**
+     * Removes all children widget that are in a specified list.
+     * @param widgets the list of children widgets to be removed
+     */
     public final void removeChildren (List<Widget> widgets) {
         for (Widget widget : widgets)
             removeChild (widget);
     }
 
+    /**
+     * Brings the widget to the front. Means: the widget becomes the last child in the list of children of the parent widget.
+     */
     public final void bringToFront () {
         if (parentWidget == null)
             return;
@@ -179,6 +253,9 @@ public class Widget {
         parentWidget.revalidate ();
     }
 
+    /**
+     * Brings the widget to the back. Means: the widget becomes the first child in the list of children of the parent widget.
+     */
     public final void bringToBack () {
         if (parentWidget == null)
             return;
@@ -192,14 +269,28 @@ public class Widget {
         parentWidget.revalidate ();
     }
 
+    /**
+     * Returns a default action chain.
+     * @return the default action chain.
+     */
     public final WidgetAction.Chain getActions () {
         return actionsChain;
     }
 
+    /**
+     * Returns already created action chain for a specified tool.
+     * @param tool the tool
+     * @return the action chain; null, if no chain for the tool exists
+     */
     public final WidgetAction.Chain getActions (String tool) {
         return toolsActions.get (tool);
     }
 
+    /**
+     * Creates and returns an action chain for a specified tool.
+     * @param tool the tool
+     * @return the action chain
+     */
     public final WidgetAction.Chain createActions (String tool) {
         if (tool == null)
             return actionsChain;
@@ -215,62 +306,114 @@ public class Widget {
         return chain;
     }
 
+    /**
+     * Returns a lookup of the widget.
+     * @return the lookup
+     */
     public Lookup getLookup () {
         return Lookup.EMPTY;
     }
 
+    /**
+     * Adds a dependency listener which is notified when the widget placement or boundary is going to be changed or similar thing happens to its parent widget.
+     * @param dependency the dependency listener
+     */
     public final void addDependency (Widget.Dependency dependency) {
         if (dependencies == null)
             dependencies = new ArrayList<Widget.Dependency> ();
         dependencies.add (dependency);
     }
 
+    /**
+     * Removes a dependency listener.
+     * @param dependency the dependency listener
+     */
     public final void removeDependency (Widget.Dependency dependency) {
         if (dependencies == null)
             return;
         dependencies.remove (dependency);
     }
 
+    /**
+     * Returns whether the widget is opaque.
+     * @return true, if the widget is opaque
+     */
     public final boolean isOpaque () {
         return opaque;
     }
 
+    /**
+     * Sets the widget opacity.
+     * @param opaque if true, then the widget is opaque
+     */
     public final void setOpaque (boolean opaque) {
         this.opaque = opaque;
         repaint ();
     }
 
+    /**
+     * Returns the widget background paint.
+     * @return the background paint
+     */
     public final Paint getBackground () {
         return background != null ? background : parentWidget.getBackground ();
     }
 
+    /**
+     * Sets the widget background paint.
+     * @param background the background paint
+     */
     public final void setBackground (Paint background) {
         this.background = background;
         repaint ();
     }
 
+    /**
+     * Returns the widget foreground color.
+     * @return the foreground color
+     */
     public final Color getForeground () {
         return foreground != null ? foreground : parentWidget.getForeground ();
     }
 
+    /**
+     * Sets the widget foreground color.
+     * @param foreground the foreground color
+     */
     public final void setForeground (Color foreground) {
         this.foreground = foreground;
         repaint ();
     }
 
+    /**
+     * Returns the font assigned to the widget. If not set yet, then it returns the font of its parent widget.
+     * @return the font
+     */
     public final Font getFont () {
         return font != null ? font : parentWidget.getFont ();
     }
 
+    /**
+     * Sets the widget font.
+     * @param font the font; if null, then widget unassignes its font.
+     */
     public final void setFont (Font font) {
         this.font = font;
         revalidate ();
     }
 
+    /**
+     * Returns the border of the widget.
+     * @return the border
+     */
     public final Border getBorder () {
         return border;
     }
 
+    /**
+     * Sets the border of the widget.
+     * @param border the border
+     */
     public final void setBorder (Border border) {
         assert border != null;
         boolean repaintOnly = this.border.getInsets ().equals (border.getInsets ());
@@ -278,40 +421,76 @@ public class Widget {
         revalidate (repaintOnly);
     }
 
+    /**
+     * Sets the Swing border as the border of the widget.
+     * @param swingBorder the Swing border
+     */
     public final void setBorder (javax.swing.border.Border swingBorder) {
         assert swingBorder != null;
         setBorder (BorderFactory.createSwingBorder (scene, swingBorder));
     }
 
+    /**
+     * Returns the layout of the widget.
+     * @return the layout
+     */
     public final Layout getLayout () {
         return layout;
     }
 
+    /**
+     * Sets the layout of the widget.
+     * @param layout the layout
+     */
     public final void setLayout (Layout layout) {
         this.layout = layout;
         revalidate ();
     }
 
+    /**
+     * Returns a minimum bounds of the widget.
+     * @return the minimum bounds; if null, then no minumum bounds are set.
+     */
     public final Rectangle getMinimumBounds () {
         return minimumBounds != null ? new Rectangle (minimumBounds) : null;
     }
 
+    /**
+     * Sets a minumum bounds of the widget
+     * @param minimumBounds the minimumBounds; if null, then minimum bounds are unset.
+     */
     public final void setMinimumBounds (Rectangle minimumBounds) {
         this.minimumBounds = minimumBounds;
     }
 
+    /**
+     * Returns a maximum bounds of the widget.
+     * @return the maximum bounds; if null, then no maximum bounds are set.
+     */
     public final Rectangle getMaximumBounds () {
         return maximumBounds != null ? new Rectangle (maximumBounds) : null;
     }
 
+    /**
+     * Sets a maximum bounds of the widget
+     * @param maximumBounds the maximum bounds; if null, then maximum bounds are unset.
+     */
     public final void setMaximumBounds (Rectangle maximumBounds) {
         this.maximumBounds = maximumBounds;
     }
 
+    /**
+     * Returns a preferred location of the widget.
+     * @return the preferred location; if null, then no preferred location is set
+     */
     public final Point getPreferredLocation () {
         return preferredLocation != null ? new Point (preferredLocation) : null;
     }
 
+    /**
+     * Sets a preferred location of the widget.
+     * @param preferredLocation the preferred location; if null, then the preferred location is unset
+     */
     public final void setPreferredLocation (Point preferredLocation) {
         if (GeomUtil.equals (this.preferredLocation, preferredLocation))
             return;
@@ -319,10 +498,20 @@ public class Widget {
         revalidate ();
     }
 
+    /**
+     * Returns whether a preferred bounds are set.
+     * @return true, if preferred bounds are set
+     */
     public final boolean isPreferredBoundsSet () {
         return preferredBounds != null;
     }
 
+    /**
+     * Returns a preferred bounds. If no preferred bounds are set, then it returns a preferred bounds
+     * that are calculated from the calculateClientArea method of this widget and location and bounds of the children widgets.
+     * This calculated bounds are processed by the minimum and maximum bounds too.
+     * @return the preferred bounds
+     */
     public final Rectangle getPreferredBounds () {
         Rectangle rect;
         if (isPreferredBoundsSet ())
@@ -355,10 +544,18 @@ public class Widget {
         return clientArea;
     }
 
+    /**
+     * Called to calculate the client area required by the widget without the children widgets.
+     * @return the calculated client area
+     */
     protected Rectangle calculateClientArea () {
         return new Rectangle ();
     }
 
+    /**
+     * Sets a preferred bounds.
+     * @param preferredBounds the preferred bounds; if null, then the preferred bounds are unset
+     */
     public final void setPreferredBounds (Rectangle preferredBounds) {
         if (GeomUtil.equals (this.preferredBounds, preferredBounds))
             return;
@@ -366,44 +563,86 @@ public class Widget {
         revalidate ();
     }
 
+    /**
+     * Returns whether clipping is used in the widget.
+     * @return true, if the check clipping is used
+     */
     public final boolean isCheckClipping () {
         return checkClipping;
     }
 
+    /**
+     * Sets a clipping for the widget.
+     * @param checkClipping if true, then the clipping is used
+     */
     public final void setCheckClipping (boolean checkClipping) {
         this.checkClipping = checkClipping;
         repaint ();
     }
 
+    /**
+     * Returns a mouse cursor for the widget.
+     * @return the mouse cursor
+     */
     public final Cursor getCursor () {
         return cursor;
     }
 
+    /**
+     * Sets a cursor for the widget.
+     * @param cursor the mouse cursor; if null, the cursor is unset
+     */
     public final void setCursor (Cursor cursor) {
         this.cursor = cursor;
     }
 
+    /**
+     * Returns a tool-tip text of the widget.
+     * @return the tool-tip text
+     */
     public final String getToolTipText () {
         return toolTipText;
     }
 
+    /**
+     * Sets a tool-tip of the widget.
+     * @param toolTipText the tool tip text
+     */
     public final void setToolTipText (String toolTipText) {
         this.toolTipText = toolTipText;
     }
 
+    /**
+     * Returns a state of the widget.
+     * @return the widget state
+     */
     public final ObjectState getState () {
         return state;
     }
 
+    /**
+     * Sets a state of the widget.
+     * @param state the widget state
+     */
     public final void setState (ObjectState state) {
         ObjectState previousState = this.state;
         this.state = state;
         notifyStateChanged (previousState, state);
     }
 
+    /**
+     * Called to notify about the change of the widget state.
+     * @param previousState the previous state
+     * @param state the new state
+     */
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
     }
 
+    /**
+     * Converts a location in the local coordination system to the scene coordination system.
+     * @param localLocation the local location
+     * @return the scene location
+     */
     public final Point convertLocalToScene (Point localLocation) {
         Point sceneLocation = new Point (localLocation);
         Widget widget = this;
@@ -418,6 +657,11 @@ public class Widget {
         return sceneLocation;
     }
 
+    /**
+     * Converts a rectangle in the local coordination system to the scene coordination system.
+     * @param localRectangle the local rectangle
+     * @return the scene rectangle
+     */
     public final Rectangle convertLocalToScene (Rectangle localRectangle) {
         Rectangle sceneRectangle = new Rectangle (localRectangle);
         Widget widget = this;
@@ -432,6 +676,11 @@ public class Widget {
         return sceneRectangle;
     }
 
+    /**
+     * Converts a location in the scene coordination system to the local coordination system.
+     * @param sceneLocation the scene location
+     * @return the local location
+     */
     public final Point convertSceneToLocal (Point sceneLocation) {
         Point localLocation = new Point (sceneLocation);
         Widget widget = this;
@@ -446,19 +695,37 @@ public class Widget {
         return localLocation;
     }
 
+    /**
+     * Returns the resolved location of the widget. The location is specified relatively to the location of the parent widget.
+     * @return the location in the local coordination system of the parent widget
+     */
     public final Point getLocation () {
         return location != null ? new Point (location) : null;
     }
 
+    /**
+     * Returns the resolved bounds of the widget. The bounds are specified relatively to the location of the widget.
+     * @return the bounds in local coordination system
+     */
     public final Rectangle getBounds () {
         return bounds != null ? new Rectangle (bounds) : null;
     }
 
+    /**
+     * Sets resolved location and bounds of the widget
+     * This method is usually called from implementations of Layout interface.
+     * @param location the resolved location; if null then [0,0] point is used instead
+     * @param bounds the resolved bounds; if null then the preferred bounds are used instead
+     */
     public final void resolveBounds (Point location, Rectangle bounds) {
         this.location = location != null ? location : new Point ();
         this.bounds = bounds != null ? new Rectangle (bounds) : new Rectangle (getPreferredBounds ());
     }
 
+    /**
+     * Returns a client area of the widget.
+     * @return the client area
+     */
     public final Rectangle getClientArea () {
         Rectangle bounds = getBounds ();
         if (bounds == null)
@@ -467,19 +734,36 @@ public class Widget {
         return new Rectangle (bounds.x + insets.left, bounds.y + insets.top, bounds.width - insets.left - insets.right, bounds.height - insets.top - insets.bottom);
     }
 
+    /**
+     * Called to whether a particular location in local coordination system is controlled (otionally also painted) by the widget.
+     * @param localLocation the local location
+     * @return true, if the location belong to the widget
+     */
     public boolean isHitAt (Point localLocation) {
         return getBounds ().contains (localLocation);
     }
 
+    /**
+     * Schedules the widget for repainting.
+     */
     // NOTE - has to be called before a change is set into the widget when the change immediatelly affects calculation of the local/scene location/boundary (means any property used in convertLocalToScene) because repaint/revalidate needs to calculate old scene boundaries
     public final void repaint () {
         scene.revalidateWidget (this);
     }
 
+    /**
+     * Returns true if the widget is validated (is not scheduled to revalidation).
+     * @return true, if is validated
+     */
     public boolean isValidated () {
         return ! requiresPartValidation;
     }
 
+    /**
+     * Schedules the widget to repaint or revalidation.
+     * @param repaintOnly if true, then the widget is scheduled for repainting only;
+     *            if false, then widget is scheduled for revalidation (the Scene.validate method has to be called after all changes to invoke validation)
+     */
     // NOTE - has to be called before a change is set into the widget when the change affects the local/scene location/boundary because repaint/revalidate needs to calculate old scene boundaries
     public final void revalidate (boolean repaintOnly) {
         if (repaintOnly)
@@ -488,12 +772,21 @@ public class Widget {
             revalidate ();
     }
 
+    /**
+     * Schedules the widget for revalidation.
+     * The Scene.validate method has to be called after all changes to invoke validation. In some cases it is invoked automatically.
+     */
     // NOTE - has to be called before a change is set into the widget when the change affects the local/scene location/boundary because repaint/revalidate needs to calculate old scene boundaries
     public final void revalidate () {
         requiresFullValidation = true;
         revalidateUptoRoot ();
     }
 
+    /**
+     * Returns whether whole area of the widget has to be repainted after the validation of the widget.
+     * Used be LayerWidget for performance optiomalization.
+     * @return true, if requires; false, if does not require
+     */
     protected boolean isRepaintRequiredForRevalidating () {
         return true;
     }
@@ -562,6 +855,9 @@ public class Widget {
         requiresPartJustification = false;
     }
 
+    /**
+     * Paints the widget with its children widget into the Graphics2D instance acquired from Scene.getGraphics method.
+     */
     public final void paint () {
         assert bounds != null : "Scene.validate was not called";
         Graphics2D gr = scene.getGraphics ();
@@ -603,9 +899,15 @@ public class Widget {
         gr.setTransform(previousTransform);
     }
 
+    /**
+     * Called to paint the widget itself only using the Graphics2D instance acquired from Scene.getGraphics method.
+     */
     protected void paintWidget () {
     }
 
+    /**
+     * Called to paint the children widgets only using the Graphics2D instance acquired from Scene.getGraphics method.
+     */
     protected void paintChildren () {
         if (checkClipping) {
             Rectangle clipBounds = scene.getGraphics ().getClipBounds ();
@@ -621,12 +923,24 @@ public class Widget {
                 child.paint ();
     }
 
-    public final boolean equals (Object obj) {
-        return this == obj;
+    /**
+     * Returns whether a specified object is the same as the widget.
+     * @param object the object
+     * @return true if the object reference is the same as the widget
+     */
+    public final boolean equals (Object object) {
+        return this == object;
     }
 
+    /**
+     * The dependency listener which is used for notifying dependent widgets, anchor, ...
+     * that the widget (or one of its parent widget) location or bounds are going to or were changed.
+     */
     public interface Dependency {
 
+        /**
+         * Called when the widget (or one of its parent widget) location or bounds are going to or were changed.
+         */
         public void revalidateDependency ();
 
     }

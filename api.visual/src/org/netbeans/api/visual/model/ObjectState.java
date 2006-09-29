@@ -20,6 +20,7 @@ package org.netbeans.api.visual.model;
  *
  * @author David Kaspar
  */
+// TODO - rename to VisualState?
 public class ObjectState {
 
     private static final ObjectState NORMAL = new ObjectState (false, false, false, false, false);
