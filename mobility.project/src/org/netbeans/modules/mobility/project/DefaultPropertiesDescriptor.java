@@ -99,6 +99,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
     public static final String SIGN_ALIAS_PASSWORD = "sign.alias.password"; //NOI18N
     
     public static final String DEPLOYMENT_METHOD = "deployment.method"; //MOI18N
+    public static final String DEPLOYMENT_INSTANCE = "deployment.instance"; //MOI18N
     public static final String DEPLOYMENT_OVERRIDE_JARURL = "deployment.override.jarurl"; //MOI18N
     public static final String DEPLOYMENT_JARURL = "deployment.jarurl"; //MOI18N
     
@@ -185,6 +186,7 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(JAVADOC_PREVIEW, false, DefaultPropertyParsers.BOOLEAN_PARSER, TRUE));
         
             set.add(new PropertyDescriptor(DEPLOYMENT_METHOD, true, DefaultPropertyParsers.DEPLOYMENT_TYPE_PARSER, "NONE")); //NOI18N
+            set.add(new PropertyDescriptor(DEPLOYMENT_INSTANCE, true, DefaultPropertyParsers.STRING_PARSER)); //NOI18N
             set.add(new PropertyDescriptor(DEPLOYMENT_OVERRIDE_JARURL, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));
             set.add(new PropertyDescriptor(DEPLOYMENT_JARURL, true, DefaultPropertyParsers.STRING_PARSER, "${dist.jar}")); //NOI18N
             ref = new WeakReference(set);

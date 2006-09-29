@@ -46,13 +46,13 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
     public MobilityDeploymentProperties() {
         EditableProperties ep = PropertyUtils.getGlobalProperties();
         for (Map.Entry<String,String> en : ep.entrySet()) {
-            String key = en.getKey().toLowerCase();
+            String key = en.getKey();
             if (key.startsWith(DEPLOYMENT_PREFIX)) super.put(key, en.getValue());
         }
     }
     
     public Collection<String> getInstanceList(String deploymentTypeName) {
-        String pref = DEPLOYMENT_PREFIX + deploymentTypeName.toLowerCase() + '.';
+        String pref = DEPLOYMENT_PREFIX + deploymentTypeName + '.';
         int i = pref.length();
         HashSet<String> instances = new HashSet();
         for (String key : keySet()) {
@@ -65,7 +65,7 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
     }
     
     public void removeInstance(String deploymentTypeName, String instanceName) {
-        String pref = DEPLOYMENT_PREFIX + deploymentTypeName.toLowerCase() + '.' + instanceName + '.';
+        String pref = DEPLOYMENT_PREFIX + deploymentTypeName + '.' + instanceName + '.';
         for (String key : keySet().toArray(new String[0])) {
             if (key.startsWith(pref)) remove(key);
         }
@@ -75,7 +75,7 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
     public void createInstance(String deploymentTypeName, String instanceName) {
         for (DeploymentPlugin dp : Lookup.getDefault().lookupAll(DeploymentPlugin.class)) {
             if (deploymentTypeName.equalsIgnoreCase(dp.getDeploymentMethodName())) {
-                String pref = DEPLOYMENT_PREFIX + deploymentTypeName.toLowerCase() + '.' + instanceName + '.';
+                String pref = DEPLOYMENT_PREFIX + deploymentTypeName + '.' + instanceName + '.';
                 Map<String,Object> def = dp.getGlobalPropertyDefaultValues();
                 if (def != null) for (Map.Entry<String,Object> en : def.entrySet()) {
                    if (en.getValue() != null) super.put(pref+en.getKey(), en.getValue().toString());
@@ -88,7 +88,7 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
     public synchronized void run() {
         EditableProperties ep = PropertyUtils.getGlobalProperties();
         for (String key : ep.keySet().toArray(new String[0])) {
-            if (key.toLowerCase().startsWith(DEPLOYMENT_PREFIX)) ep.remove(key);
+            if (key.startsWith(DEPLOYMENT_PREFIX)) ep.remove(key);
         }
         for (Map.Entry<String,Object> en : entrySet()) {
             ep.put(en.getKey(), en.getValue().toString());

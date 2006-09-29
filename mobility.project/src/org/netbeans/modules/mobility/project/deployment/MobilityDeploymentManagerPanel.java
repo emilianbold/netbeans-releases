@@ -59,16 +59,24 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
     private final BeanTreeView btw = new BeanTreeView();
     private final MobilityDeploymentProperties props = new MobilityDeploymentProperties();
     private final VisualPropertySupport vps = VisualPropertySupport.getDefault(props);
+    private final String initialTypeName;
+
+    public static synchronized String manageDeployment(String deploymentTypeDisplayName, String instance) {
+        MobilityDeploymentManagerPanel mdmp = new MobilityDeploymentManagerPanel(deploymentTypeDisplayName, instance);
+        DialogDisplayer.getDefault().notify(new DialogDescriptor(mdmp, NbBundle.getMessage(MobilityDeploymentManagerAction.class, "Title_DeploymentManager"), true, new Object[] {DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(MobilityDeploymentManagerPanel.class), null));  //NOI18N
+        return mdmp.getSelectedInstanceName();
+    }
     
     
     /**
      * Creates new form MobilityDeploymentManagerPanel
      */
-    public MobilityDeploymentManagerPanel() {
+    private MobilityDeploymentManagerPanel(String deploymentTypeDisplayName, String instanceName) {
+        this.initialTypeName = deploymentTypeDisplayName;
         initComponents();
         btw.setRootVisible(false);
         manager.addPropertyChangeListener(this);
-        manager.setRootContext(new AbstractNode(new Children.Array() {
+        Children.Array ch = new Children.Array() {
             protected Collection<Node> initCollection() {
                 Collection<Node> nodes = new ArrayList();
                 for (DeploymentPlugin d : Lookup.getDefault().lookupAll(DeploymentPlugin.class)) {
@@ -76,8 +84,20 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
                 }
                 return nodes;
             }
-        }));
+        };
+        manager.setRootContext(new AbstractNode(ch));
         jPanel1.add(btw, BorderLayout.CENTER);
+        Node selType = deploymentTypeDisplayName != null ? ch.findChild(deploymentTypeDisplayName) : null;
+        Node selInstance = selType != null && instanceName != null ? selType.getChildren().findChild(instanceName) : null;
+        if (selType != null || selInstance != null) try {
+            manager.setExploredContextAndSelection(selType, new Node[]{selInstance == null ? selType : selInstance});
+        } catch (PropertyVetoException pve) {}
+    }
+    
+    public String getSelectedInstanceName() {
+        if (initialTypeName == null) return null;
+        Node[] n = manager.getSelectedNodes();
+        return n.length != 1 || !initialTypeName.equals(n[0].getParentNode().getDisplayName()) ? null : n[0].getName();
     }
     
     /** This method is called from within the constructor to
@@ -164,7 +184,8 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
 
     private void createInstance(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createInstance
         Node n[] = manager.getSelectedNodes();
-        if (n.length == 1 && !n[0].hasCustomizer()) {
+        if (n.length == 1) {
+            if (n[0].hasCustomizer()) n[0] = n[0].getParentNode();
             n[0].getCookie(DeploymentTypeNode.class).createInstance();
         }
     }//GEN-LAST:event_createInstance
@@ -181,7 +202,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
             if (instance) {
                 jPanel2.add(n[0].getCustomizer(), BorderLayout.CENTER);
             }
-            jButton1.setEnabled(!instance);
+            jButton1.setEnabled(true);
             jButton2.setEnabled(instance);
         } else {
             jButton1.setEnabled(false);
@@ -257,13 +278,17 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
             setName(name);
         }
 
+        public DeploymentPlugin getPlugin() {
+            return d;
+        }
+        
         public boolean hasCustomizer() {
             return true;
         }
 
         public Component getCustomizer() {
             Component c = d.createGlobalCustomizerPanel();
-            registerSubcomponents(c, MobilityDeploymentProperties.DEPLOYMENT_PREFIX+d.getDeploymentMethodName().toLowerCase()+'.'+getName().toLowerCase()+'.', d.getGlobalPropertyDefaultValues().keySet());
+            registerSubcomponents(c, MobilityDeploymentProperties.DEPLOYMENT_PREFIX+d.getDeploymentMethodName()+'.'+getName()+'.', d.getGlobalPropertyDefaultValues().keySet());
             return c;
         }
         

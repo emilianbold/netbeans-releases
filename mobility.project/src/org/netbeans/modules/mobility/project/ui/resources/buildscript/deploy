@@ -10,7 +10,7 @@
     <target name="do-deploy" if="deployment.method" unless="skip.deployment">
         <property name="deployment.number" value="0.0.1"/>
         <property name="deployment.counter" value="000002"/>
-        <fail unless="deployment.scriptfile">Property deployment.${{deployment.method}}.scriptfile not set. The property should point to an Ant script providing ${{deployment.method}} deployment.</fail>
+        <fail unless="deployment.scriptfile">Property deployment.${deployment.method}.scriptfile not set. The property should point to an Ant script providing ${deployment.method} deployment.</fail>
         <ant antfile="${{deployment.scriptfile}}" inheritall="true" inheritrefs="true">
             <property name="deployment.jad" location="${{dist.dir}}/${{dist.jad}}"/>
             <property name="deployment.jar" location="${{dist.dir}}/${{dist.jar}}"/>

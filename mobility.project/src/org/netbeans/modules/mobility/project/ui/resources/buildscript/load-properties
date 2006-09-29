@@ -24,13 +24,14 @@
             <filterchain>
                 <containsregex pattern="^configs\.${{config.active}}\.(.*)" replace="\1"/>
                 <concatfilter prepend="nbproject/project.properties"/>
-                <containsregex pattern="^platform.active=|^deployment.method="/>
+                <containsregex pattern="^platform.active=|^deployment.method=|^deployment.instance="/>
             </filterchain>
         </loadproperties>
         <loadproperties srcfile="${{user.properties.file}}">
             <filterchain>
                 <replaceregex pattern="^platforms\.${{platform.active}}\." replace="platform."/>
                 <replaceregex pattern="^deployment\.${{deployment.method}}\.scriptfile=" replace="deployment.scriptfile="/>
+                <replaceregex pattern="^deployments\.${{deployment.method}}\.${{deployment.instance}}\.([^=]+)=" replace="\1="/>
             </filterchain>
         </loadproperties>
         <loadproperties srcfile="nbproject/project.properties">

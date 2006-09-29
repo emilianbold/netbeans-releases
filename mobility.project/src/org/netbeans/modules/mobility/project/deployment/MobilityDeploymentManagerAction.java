@@ -34,9 +34,9 @@ public class MobilityDeploymentManagerAction extends CallableSystemAction {
     /** Creates a new instance of MobilityDeploymentManagerAction */
     public MobilityDeploymentManagerAction() {
     }
-
-    public synchronized void performAction() {
-        DialogDisplayer.getDefault().notify(new DialogDescriptor(new MobilityDeploymentManagerPanel(), NbBundle.getMessage(MobilityDeploymentManagerAction.class, "Title_DeploymentManager"), true, new Object[] {DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, getHelpCtx(), null));  //NOI18N
+    
+    public void performAction() {
+        MobilityDeploymentManagerPanel.manageDeployment(null, null);
     }
 
     public String getName() {
@@ -44,7 +44,7 @@ public class MobilityDeploymentManagerAction extends CallableSystemAction {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(MobilityDeploymentManagerPanel.class);
+        return new HelpCtx(MobilityDeploymentManagerAction.class);
     }
 
     protected boolean asynchronous() {

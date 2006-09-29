@@ -16,8 +16,8 @@
     
     <target name="basic-init" depends="exists.platform.active,exists.platform.configuration,exists.platform.profile">
         <fail unless="libs.j2me_ant_ext.classpath">Classpath to J2ME Ant extension library (libs.j2me_ant_ext.classpath property) is not set. For example: location of mobility/modules/org-netbeans-mobility-antext.jar file in the IDE installation directory.</fail>
-        <fail unless="platform.home">Platform home (platform.home property) is not set. Value of this property should be ${{platform.active.description}} emulator home directory location.</fail>
-        <fail unless="platform.bootclasspath">Platform boot classpath (platform.bootclasspath property) is not set. Value of this property should be ${{platform.active.description}} emulator boot classpath containing all J2ME classes provided by emulator.</fail>
+        <fail unless="platform.home">Platform home (platform.home property) is not set. Value of this property should be ${platform.active.description} emulator home directory location.</fail>
+        <fail unless="platform.bootclasspath">Platform boot classpath (platform.bootclasspath property) is not set. Value of this property should be ${platform.active.description} emulator boot classpath containing all J2ME classes provided by emulator.</fail>
         <fail unless="src.dir">Must set src.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
