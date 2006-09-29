@@ -29,6 +29,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -562,6 +563,11 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                     String actionName = dob.getName();
                     Action a = baseKit.getActionByName(actionName);
                     if (a != null) {
+                        // Wrap action to execute on the proper text component
+                        // because the default fallback in TextAction.getTextComponent()
+                        // might not work properly if the focus was switched
+                        // to e.g. a JTextField and then toolbar was clicked.
+                        a = new WrapperAction(a);
                         // Try to find an icon if not present
                         Object icon = a.getValue(Action.SMALL_ICON);
                         if (icon == null) {
@@ -778,4 +784,48 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         public void actionPerformed(ActionEvent e) {
         }
     }
+    
+    private final class WrapperAction implements Action {
+        
+        private Action delegate;
+        
+        WrapperAction(Action delegate) {
+            assert (delegate != null);
+            this.delegate = delegate;
+        }
+        
+        public Object getValue(String key) {
+            return delegate.getValue(key);
+        }
+
+        public void putValue(String key, Object value) {
+            delegate.putValue(key, value);
+        }
+
+        public void setEnabled(boolean b) {
+            delegate.setEnabled(b);
+        }
+
+        public boolean isEnabled() {
+            return delegate.isEnabled();
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            delegate.removePropertyChangeListener(listener);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent c = getComponent();
+            if (c != null) { // Override action event to text component
+                e = new ActionEvent(c, e.getID(), e.getActionCommand());
+            }
+            delegate.actionPerformed(e);
+        }
+        
+    }
+    
 }
