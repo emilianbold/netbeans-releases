@@ -20,6 +20,12 @@ import java.util.*;
 import java.awt.*;
 
 /**
+ * This class manages mapping between model-objects and widgets on a scene. Object mapping is added/removed using addObject and removeObject methods.
+ * You can query the mapping using the findWidget(Object) and the findObject(Widget) methods.
+ * <p>
+ * It also manages object-oriented states and creates a object-specific action that could be assigned to widgets to provide
+ * functionality like object-based selection, object-based hovering, ...
+ *
  * @author David Kaspar
  */
 public class ObjectScene extends Scene {
@@ -43,7 +49,12 @@ public class ObjectScene extends Scene {
     private WidgetAction selectAction = ActionFactory.createSelectAction (new ObjectSelectProvider ());
     private WidgetAction objectHoverAction;
 
-    public void addObject (Object object, Widget widget) {
+    /**
+     * Adds a mapping between an object and a widget.
+     * @param object the model object
+     * @param widget the scene widget; if null then the object is non-visual and does not have any widget assigned
+     */
+    public final void addObject (Object object, Widget widget) {
         assert object != null  &&  ! objects.containsKey (object);
         if (widget != null)
             assert ! widget2objects.containsKey (widget)  &&  widget.getScene () == this  &&  widget.getParentWidget () != null;
@@ -56,7 +67,11 @@ public class ObjectScene extends Scene {
         }
     }
 
-    public void removeObject (Object object) {
+    /**
+     * Removes a mapping for an object.
+     * @param object the object for which the mapping is removed
+     */
+    public final void removeObject (Object object) {
         assert object != null  &&   objects.containsKey (object);
         selectedObjects.remove (object);
         highlightedObjects.remove (object);
@@ -71,18 +86,36 @@ public class ObjectScene extends Scene {
         objects.remove (object);
     }
 
-    public Set<?> getObjects () {
+    /**
+     * Returns a set of objects with registered mapping.
+     * @return the set of register objects
+     */
+    public final Set<?> getObjects () {
         return objectsUm;
     }
 
-    public boolean isObject (Object object) {
+    /**
+     * Returns whether a specified object is registered.
+     * @param object the object to be checked
+     * @return true if the object is register; false if the object is not registered
+     */
+    public final boolean isObject (Object object) {
         return objects.containsKey (object);
     }
 
-    public Set<?> getSelectedObjects () {
+    /**
+     * Returns a set of selected objects.
+     * @return the set of selected objects
+     */
+    public final Set<?> getSelectedObjects () {
         return selectedObjectsUm;
     }
 
+    /**
+     * Sets a set of selected objects.
+     * @param selectedObjects the set of selected objects
+     */
+    // TODO - could be final?
     public void setSelectedObjects (Set<?> selectedObjects) {
         for (Iterator<Object> iterator = this.selectedObjects.iterator (); iterator.hasNext ();) {
             Object object = iterator.next ();
@@ -105,10 +138,19 @@ public class ObjectScene extends Scene {
         }
     }
 
-    public Set<?> getHighlightedObjects () {
+    /**
+     * Returns a set of highlighted objects.
+     * @return the set of highlighted objects
+     */
+    public final Set<?> getHighlightedObjects () {
         return highlightedObjectsUm;
     }
 
+    /**
+     * Sets a set of highlighted objects.
+     * @param highlightedObjects the set of highlighted objects
+     */
+    // TODO - could be final?
     public void setHighlightedObjects (Set<?> highlightedObjects) {
         for (Iterator<Object> iterator = this.highlightedObjects.iterator (); iterator.hasNext ();) {
             Object object = iterator.next ();
@@ -131,10 +173,19 @@ public class ObjectScene extends Scene {
         }
     }
 
-    public Object getHoveredObject () {
+    /**
+     * Returns a hovered object. There could be only one hovered object at maximum at the same time.
+     * @return the hovered object; null if no object is hovered
+     */
+    public final Object getHoveredObject () {
         return hoveredObject;
     }
 
+    /**
+     * Sets a hovered object.
+     * @param hoveredObject the hovered object; if null, then scene does not have hovered object
+     */
+    // TODO - could be final?
     public void setHoveredObject (Object hoveredObject) {
         if (hoveredObject != null) {
             if (hoveredObject.equals (this.hoveredObject))
@@ -158,11 +209,19 @@ public class ObjectScene extends Scene {
         }
     }
 
-    public WidgetAction createSelectAction () {
+    /**
+     * Creates a object-oriented select action.
+     * @return the object-oriented select action
+     */
+    public final WidgetAction createSelectAction () {
         return selectAction;
     }
 
-    public WidgetAction createObjectHoverAction () {
+    /**
+     * Returns a object-oriented hover action.
+     * @return the object-oriented hover action
+     */
+    public final WidgetAction createObjectHoverAction () {
         if (objectHoverAction == null) {
             objectHoverAction = ActionFactory.createHoverAction (new ObjectHoverProvider ());
             getActions ().addAction (objectHoverAction);
@@ -170,12 +229,23 @@ public class ObjectScene extends Scene {
         return objectHoverAction;
     }
 
-    public Widget findWidget (Object object) {
-        assert ! (object instanceof Widget);
+    /**
+     * Returns the widget that is mapped to a specified object.
+     * @param object the object
+     * @return the widget from the registered mapping; null if object is non-visual or no mapping is registered
+     */
+    public final Widget findWidget (Object object) {
+        assert ! (object instanceof Widget) : "Use findObject method for getting an object assigned to a specific Widget";
         return object2widgets.get (object);
     }
 
-    public Object findObject (Widget widget) {
+    /**
+     * Returns an object which is assigned to a widget.
+     * If the widget is not mapped to any object then the method recursively searches for an object of the parent widget.
+     * @param widget the widget
+     * @return the mapped object; null if no object is assigned to a widget or any of its parent widgets
+     */
+    public final Object findObject (Widget widget) {
         while (widget != null) {
             Object o = widget2objects.get (widget);
             if (o != null)
@@ -185,15 +255,32 @@ public class ObjectScene extends Scene {
         return null;
     }
 
-    public Object findStoredObject (Object object) {
+    /**
+     * Returns an instance of stored object.
+     * It searches for an instance of an object stored internally in the class using "equals" method on an object.
+     * @param object the object that is equals (observed by calling the "equals" method on the instances stored in the class)
+     * @return the stored instance of the object
+     */
+    public final Object findStoredObject (Object object) {
         assert ! (object instanceof Widget);
         return objects.get (object);
     }
 
-    public ObjectState getObjectState (Object object) {
+    /**
+     * Returns an object-state of a specified object.
+     * @param object the object
+     * @return the object-state of the specified object; null if the object is not registered
+     */
+    public final ObjectState getObjectState (Object object) {
         return objectStates.get (object);
     }
 
+    /**
+     * Set by actions for setting selected objects invoked by an user.
+     * @param suggestedSelectedObjects the selected objects suggested by an user
+     * @param invertSelection the invert selection is specified by an user
+     */
+    // TODO - could be final?
     public void userSelectionSuggested (Set<?> suggestedSelectedObjects, boolean invertSelection) {
         if (invertSelection) {
             HashSet<Object> objects = new HashSet<Object> (getSelectedObjects ());

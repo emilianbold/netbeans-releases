@@ -19,6 +19,19 @@ import org.netbeans.modules.visual.util.GeomUtil;
 import java.util.*;
 
 /**
+ * This class holds and manages graph-oriented model.
+ * <p>
+ * In comparison with the GraphScene class, in this class the graph consists of nodes and edges. Each edge could be attach to a single source and target node.
+ * <p>
+ * The class is abstract and manages only data model and mapping with widgets. The graphics (widgets) has to be supplied
+ * by a developer by overriding the attachNodeWidget, attachEdgeWidget, attachEdgeSourceAnchor and attachEdgeTargetAnchor abstract methods.
+ * <p>
+ * This class is using generics and allows you to specify type representation for nodes and edges in the graph model. Example:
+ * <pre>
+ * class MyGraph extends GraphScene&lt;MyNode, MyEdge&gt; { ... }
+ * </pre>
+ * Since the type of nodes and edges could be the same, all node and edge instances has to be unique within the whole scene.
+ *
  * @author David Kaspar
  */
 public abstract class GraphScene<N, E> extends ObjectScene {
@@ -35,9 +48,18 @@ public abstract class GraphScene<N, E> extends ObjectScene {
     private HashMap<N, List<E>> nodeInputEdges = new HashMap<N, List<E>> ();
     private HashMap<N, List<E>> nodeOutputEdges = new HashMap<N, List<E>> ();
 
+    /**
+     * Creates a graph scene.
+     */
     public GraphScene () {
     }
 
+    /**
+     * Adds a node.
+     * @param node the node to be added; the node must not be null, must not be already in the model and must be unique in the model
+     *           (means: there is no other node or edge in the model has is equal to this node)
+     * @return the widget that is created by attachNodeWidget; null if the node is non-visual
+     */
     public final Widget addNode (N node) {
         assert node != null  &&  ! nodes.contains (node);
         Widget widget = attachNodeWidget (node);
@@ -49,6 +71,10 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         return widget;
     }
 
+    /**
+     * Removes a node.
+     * @param node the node to be removed; the node must not be null and must be already in the model
+     */
     public final void removeNode (N node) {
         assert node != null  &&  nodes.contains (node);
         for (E edge : findNodeEdges (node, true, false))
@@ -63,6 +89,10 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         detachNodeWidget (node, widget);
     }
 
+    /**
+     * Removes a specified node with all edges that are attached to the node.
+     * @param node the node to be removed
+     */
     public final void removeNodeWithEdges (N node) {
         for (E edge : findNodeEdges (node, true, true))
             if (isEdge (edge))
@@ -70,10 +100,20 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         removeNode (node);
     }
 
+    /**
+     * Returns a collection of all nodes registered in the graph model.
+     * @return the collection of all nodes registered in the graph model
+     */
     public final Collection<N> getNodes () {
         return nodesUm;
     }
 
+    /**
+     * Adds an edge.
+     * @param edge the edge to be added; the edge must not be null, must not be already in the model and must be unique in the model
+     *           (means: there is no other node or edge in the model has is equal to this edge)
+     * @return the widget that is created by attachEdgeWidget; null if the edge is non-visual
+     */
     public final Widget addEdge (E edge) {
         assert edge != null  &&  ! edges.contains (edge);
         Widget widget = attachEdgeWidget (edge);
@@ -83,6 +123,10 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         return widget;
     }
 
+    /**
+     * Removes an edge and detaches it from its source and target nodes.
+     * @param edge the edge to be removed; the edge must not be null and must be already in the model
+     */
     public final void removeEdge (E edge) {
         assert edge != null  &&  edges.contains (edge);
         setEdgeSource (edge, null);
@@ -95,10 +139,19 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         detachEdgeWidget (edge, widget);
     }
 
+    /**
+     * Returns a collection of all edges registered in the graph model.
+     * @return the collection of all edges registered in the graph model
+     */
     public final Collection<E> getEdges () {
         return edgesUm;
     }
 
+    /**
+     * Sets an edge source.
+     * @param edge the edge which source is going to be changed
+     * @param sourceNode the source node; if null, then the edge source will be detached
+     */
     public final void setEdgeSource (E edge, N sourceNode) {
         assert edge != null  &&  edges.contains (edge);
         if (sourceNode != null)
@@ -113,6 +166,11 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         attachEdgeSourceAnchor (edge, oldNode, sourceNode);
     }
 
+    /**
+     * Sets an edge target.
+     * @param edge the edge which target is going to be changed
+     * @param targetNode the target node; if null, then the edge target will be detached
+     */
     public final void setEdgeTarget (E edge, N targetNode) {
         assert edge != null  &&  edges.contains (edge);
         if (targetNode != null)
@@ -127,14 +185,31 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         attachEdgeTargetAnchor (edge, oldNode, targetNode);
     }
 
+    /**
+     * Returns an edge source.
+     * @param edge the edge
+     * @return the edge source; null, if edge does not have source attached
+     */
     public final N getEdgeSource (E edge) {
         return edgeSourceNodes.get (edge);
     }
 
+    /**
+     * Returns an edge target.
+     * @param edge the edge
+     * @return the edge target; null, if edge does not have target attached
+     */
     public final N getEdgeTarget (E edge) {
         return edgeTargetNodes.get (edge);
     }
 
+    /**
+     * Returns a collection of edges that are attached to a specified node.
+     * @param node the node which edges connections are searched for
+     * @param allowOutputEdges if true, the output edges are included in the collection; if false, the output edges are not included
+     * @param allowInputEdges if true, the input edges are included in the collection; if false, the input edges are not included
+     * @return the collection of edges
+     */
     public final Collection<E> findNodeEdges (N node, boolean allowOutputEdges, boolean allowInputEdges) {
         ArrayList<E> list = new ArrayList<E> ();
         if (allowInputEdges)
@@ -144,11 +219,12 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         return list;
     }
 
-    @Deprecated
-    public final Collection<E> findEdgeBetween (N sourceNode, N targetNode) {
-        return findEdgesBetween (sourceNode, targetNode);
-    }
-
+    /**
+     * Returns a collection of edges that are between a specified source and target nodes.
+     * @param sourceNode the source node
+     * @param targetNode the target node
+     * @return the collection of edges with the specified source and target nodes
+     */
     public final Collection<E> findEdgesBetween (N sourceNode, N targetNode) {
         HashSet<E> list = new HashSet<E> ();
         List<E> inputEdges = nodeInputEdges.get (targetNode);
@@ -159,38 +235,115 @@ public abstract class GraphScene<N, E> extends ObjectScene {
         return list;
     }
 
+    /**
+     * Checks whether an object is registered as a node in the graph model.
+     * @param object the object
+     * @return true, if the object is registered as a node
+     */
     public boolean isNode (Object object) {
         return nodes.contains (object);
     }
-    
+
+    /**
+     * Checks whether an object is registered as a edge in the graph model.
+     * @param object the object
+     * @return true, if the object is registered as a edge
+     */
     public boolean isEdge (Object object) {
         return edges.contains (object);
     }
 
+    /**
+     * Called by the addNode method to notify that a node is added into the graph model.
+     * @param node the added node
+     * @param widget the widget created by the attachNodeWidget method as a visual representation of the node
+     */
     protected void notifyNodeAdded (N node, Widget widget) {
     }
 
+    /**
+     * Called by the addEdge method to notify that an edge is added into the graph model.
+     * @param edge the added node
+     * @param widget the widget created by the attachEdgeWidget method as a visual representation of the edge
+     */
     protected void notifyEdgeAdded (E edge, Widget widget) {
     }
 
+    /**
+     * Called by the removeNode method to notify that a node is removed from the graph model.
+     * The default implementation removes the node widget from its parent widget.
+     * @param node the removed node
+     * @param widget the removed node widget; null if the node is non-visual
+     */
     protected void detachNodeWidget (N node, Widget widget) {
         if (widget != null)
             widget.removeFromParent ();
     }
 
+    /**
+     * Called by the removeEdge method to notify that an edge is removed from the graph model.
+     * The default implementation removes the edge widget from its parent widget.
+     * @param edge the removed edge
+     * @param widget the removed edge widget; null if the edge is non-visual
+     */
     protected void detachEdgeWidget (E edge, Widget widget) {
         if (widget != null)
             widget.removeFromParent ();
     }
 
+    /**
+     * Called by the addNode method before the node is registered to acquire a widget that is going to represent the node in the scene.
+     * The method is responsible for creating the widget, adding it into the scene and returning it from the method.
+     * @param node the node that is going to be added
+     * @return the widget representing the node; null, if the node is non-visual
+     */
     protected abstract Widget attachNodeWidget (N node);
 
+    /**
+     * Called by the addEdge method before the edge is registered to acquire a widget that is going to represent the edge in the scene.
+     * The method is responsible for creating the widget, adding it into the scene and returning it from the method.
+     * @param edge the edge that is going to be added
+     * @return the widget representing the edge; null, if the edge is non-visual
+     */
     protected abstract Widget attachEdgeWidget (E edge);
 
+    /**
+     * Called by the setEdgeSource method to notify about the changing the edge source in the graph model.
+     * The method is responsible for attaching a new source node to the edge in the visual representation.
+     * <p>
+     * Usually it is implemented as:
+     * <pre>
+     * Widget sourceNodeWidget = findWidget (sourceNode);
+     * Anchor sourceAnchor = AnchorFactory.createRectangularAnchor (sourceNodeWidget)
+     * ConnectionWidget edgeWidget = (ConnectionWidget) findWidget (edge);
+     * edgeWidget.setSourceAnchor (sourceAnchor);
+     * </pre>
+     * @param edge the edge which source is changed in graph model
+     * @param oldSourceNode the old source node
+     * @param sourceNode the new source node
+     */
     protected abstract void attachEdgeSourceAnchor (E edge, N oldSourceNode, N sourceNode);
 
+    /**
+     * Called by the setEdgeTarget method to notify about the changing the edge target in the graph model.
+     * The method is responsible for attaching a new target node to the edge in the visual representation.
+     * <p>
+     * Usually it is implemented as:
+     * <pre>
+     * Widget targetNodeWidget = findWidget (targetNode);
+     * Anchor targetAnchor = AnchorFactory.createRectangularAnchor (targetNodeWidget)
+     * ConnectionWidget edgeWidget = (ConnectionWidget) findWidget (edge);
+     * edgeWidget.setTargetAnchor (targetAnchor);
+     * </pre>
+     * @param edge the edge which target is changed in graph model
+     * @param oldTargetNode the old target node
+     * @param targetNode the new target node
+     */
     protected abstract void attachEdgeTargetAnchor (E edge, N oldTargetNode, N targetNode);
-    
+
+    /**
+     * This class is a particular GraphScene where nodes and edges are represented with String class.
+     */
     public static abstract class StringGraph extends GraphScene<String, String> {
         
     }
