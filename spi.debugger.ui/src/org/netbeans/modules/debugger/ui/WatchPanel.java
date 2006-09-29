@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.debugger.ui;
 
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -48,7 +49,8 @@ public class WatchPanel {
         ResourceBundle bundle = NbBundle.getBundle(WatchPanel.class);
 
         panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
-        JLabel textLabel = new JLabel (bundle.getString ("CTL_Watch_Name")); // NOI18N
+        JLabel textLabel = new JLabel();
+        Mnemonics.setLocalizedText(textLabel, bundle.getString ("CTL_Watch_Name")); // NOI18N
         textLabel.setBorder (new EmptyBorder (0, 0, 0, 10));
         panel.setLayout (new BorderLayout ());
         panel.setBorder (new EmptyBorder (11, 12, 1, 11));
@@ -58,9 +60,6 @@ public class WatchPanel {
         textField.setBorder (
             new CompoundBorder (textField.getBorder (),
             new EmptyBorder (2, 0, 2, 0))
-        );
-        textLabel.setDisplayedMnemonic (
-            bundle.getString ("CTL_Watch_Name_Mnemonic").charAt (0) // NOI18N
         );
         String t = Utils.getIdentifier ();
         if (t != null) {

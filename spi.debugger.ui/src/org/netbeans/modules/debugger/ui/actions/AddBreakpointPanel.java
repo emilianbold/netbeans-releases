@@ -26,6 +26,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.util.HashSet;
 
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -122,12 +123,8 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         if (cathegories.size () > 1) {
                 jLabel1 = new javax.swing.JLabel ();
-                jLabel1.setText (NbBundle.getBundle (AddBreakpointPanel.class).
+                Mnemonics.setLocalizedText(jLabel1, NbBundle.getBundle (AddBreakpointPanel.class).
                     getString ("CTL_Breakpoint_cathegory")); // NOI18N
-                jLabel1.setDisplayedMnemonic (
-                    NbBundle.getBundle (AddBreakpointPanel.class).
-                        getString ("CTL_Breakpoint_cathegory_mnemonic").charAt (0) // NOI18N
-                );
                 gridBagConstraints1 = new java.awt.GridBagConstraints ();
                 gridBagConstraints1.gridwidth = 2;
                 gridBagConstraints1.insets = new java.awt.Insets (12, 12, 0, 0);
@@ -149,12 +146,8 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
         }
 
             jLabel2 = new javax.swing.JLabel ();
-            jLabel2.setText (NbBundle.getBundle (AddBreakpointPanel.class).
-                getString ("CTL_Breakpoint_type"));
-            jLabel2.setDisplayedMnemonic (
-                NbBundle.getBundle (AddBreakpointPanel.class).
-                    getString ("CTL_Breakpoint_type_mnemonic").charAt (0)
-            );
+            Mnemonics.setLocalizedText(jLabel2, NbBundle.getBundle (AddBreakpointPanel.class).
+                getString ("CTL_Breakpoint_type")); // NOI18N
             gridBagConstraints1 = new java.awt.GridBagConstraints ();
             gridBagConstraints1.gridwidth = 2;
             gridBagConstraints1.insets = new java.awt.Insets (12, 12, 0, 0);

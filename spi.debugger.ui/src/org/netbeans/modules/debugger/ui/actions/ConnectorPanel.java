@@ -43,6 +43,7 @@ import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.awt.Mnemonics;
 
 import org.openide.util.NbBundle;
 
@@ -102,13 +103,9 @@ Controller {
     }
     
     private void refresh (int index) {
-        JLabel cbLabel = new JLabel (
-            NbBundle.getMessage (ConnectorPanel.class, "CTL_Connect_through")
-        ); // NOI18N
-        cbLabel.setDisplayedMnemonic (
-            NbBundle.getMessage (ConnectorPanel.class, 
-                "CTL_Connect_through_Mnemonic").charAt (0)
-        ); // NOI18N
+        JLabel cbLabel = new JLabel();
+        Mnemonics.setLocalizedText(cbLabel,
+                NbBundle.getMessage (ConnectorPanel.class, "CTL_Connect_through"));
         cbLabel.getAccessibleContext ().setAccessibleDescription (
             NbBundle.getMessage (ConnectorPanel.class, 
                 "ACSD_CTL_Connect_through")// NOI18N
