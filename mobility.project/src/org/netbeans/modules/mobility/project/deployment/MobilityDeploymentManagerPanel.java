@@ -76,6 +76,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         initComponents();
         btw.setRootVisible(false);
         manager.addPropertyChangeListener(this);
+        jPanel1.add(btw, BorderLayout.CENTER);
         Children.Array ch = new Children.Array() {
             protected Collection<Node> initCollection() {
                 Collection<Node> nodes = new ArrayList();
@@ -86,7 +87,6 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
             }
         };
         manager.setRootContext(new AbstractNode(ch));
-        jPanel1.add(btw, BorderLayout.CENTER);
         Node selType = deploymentTypeDisplayName != null ? ch.findChild(deploymentTypeDisplayName) : null;
         Node selInstance = selType != null && instanceName != null ? selType.getChildren().findChild(instanceName) : null;
         if (selType != null || selInstance != null) try {
@@ -186,10 +186,34 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         Node n[] = manager.getSelectedNodes();
         if (n.length == 1) {
             if (n[0].hasCustomizer()) n[0] = n[0].getParentNode();
-            n[0].getCookie(DeploymentTypeNode.class).createInstance();
+            createNewInstance(n[0].getCookie(DeploymentTypeNode.class).getPlugin());
+        } else {
+            createNewInstance(null);
         }
     }//GEN-LAST:event_createInstance
 
+            
+    private void createNewInstance(DeploymentPlugin d) {
+        NewInstanceDialog nid = new NewInstanceDialog(props, d);
+        DialogDescriptor dd = new DialogDescriptor(nid, NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "TitleNewInstance"), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(NewInstanceDialog.class), null); //NOI18N
+        nid.setDialogDescriptor(dd);
+        if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
+            DeploymentPlugin dp = nid.getDeploymentPlugin();
+            if (dp != null) {
+                String name = nid.getInstanceName();
+                props.createInstance(dp.getDeploymentMethodName(), name);
+                Node n = manager.getRootContext().getChildren().findChild(dp.getDeploymentMethodDisplayName());
+                if (n != null) try {
+                    DeploymentTypeNode dtn = n.getCookie(DeploymentTypeNode.class);
+                    dtn.refresh();
+                    Node selInstance = n.getChildren().findChild(name);
+                    manager.setExploredContextAndSelection(n, new Node[]{selInstance == null ? n : selInstance});
+                } catch (PropertyVetoException pve) {}
+            }
+        }
+    }
+
+    
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -202,10 +226,8 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
             if (instance) {
                 jPanel2.add(n[0].getCustomizer(), BorderLayout.CENTER);
             }
-            jButton1.setEnabled(true);
             jButton2.setEnabled(instance);
         } else {
-            jButton1.setEnabled(false);
             jButton2.setEnabled(false);
         }
         jPanel2.validate();
@@ -234,24 +256,12 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
             setIconBaseWithExtension("org/netbeans/modules/mobility/project/ui/resources/deploy.gif");//NOI18N
         }
         
-        public void createInstance() {
-            NewInstanceDialog nid = new NewInstanceDialog();
-            DialogDescriptor dd = new DialogDescriptor(nid, NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "TitleNewInstance"), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(NewInstanceDialog.class), null); //NOI18N
-            nid.setDialogDescriptor(dd);
-            if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
-                String name = nid.getInstanceName();
-                props.createInstance(d.getDeploymentMethodName(), name);
-                Children.Array ca = createChildren(d);
-                setChildren(ca);
-                Node ch = ca.findChild(name);
-                if (ch != null) try {
-                    manager.setExploredContextAndSelection(this, new Node[]{ch});
-                } catch (PropertyVetoException ex) {}
-            }
-        }
-        
         public void refresh() {
             setChildren(createChildren(d));
+        }
+        
+        public DeploymentPlugin getPlugin() {
+            return d;
         }
     }
     

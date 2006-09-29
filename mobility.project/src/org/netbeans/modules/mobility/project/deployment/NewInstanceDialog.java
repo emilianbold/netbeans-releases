@@ -19,10 +19,21 @@
 
 package org.netbeans.modules.mobility.project.deployment;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Vector;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.openide.DialogDescriptor;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -30,19 +41,35 @@ import org.openide.util.Utilities;
  *
  * @author  Adam Sotona
  */
-public class NewInstanceDialog extends JPanel implements DocumentListener {
+public class NewInstanceDialog extends JPanel implements DocumentListener, ActionListener {
     
+    private final MobilityDeploymentProperties props;
     private DialogDescriptor dd;
+    private Collection<String> invalidNames = Collections.EMPTY_SET;
     
     /** Creates new form NewInstanceDialog */
-    public NewInstanceDialog() {
+    public NewInstanceDialog(MobilityDeploymentProperties props, DeploymentPlugin selected) {
+        this.props = props;
         initComponents();
-        jTextField1.getDocument().addDocumentListener(this);
+        final ListCellRenderer r = jComboBoxType.getRenderer();
+        jComboBoxType.setRenderer(new ListCellRenderer() {
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                return r.getListCellRendererComponent(list, value instanceof DeploymentPlugin ? ((DeploymentPlugin)value).getDeploymentMethodDisplayName() : value, index, isSelected, cellHasFocus);
+            }
+        });
+        Vector<DeploymentPlugin> v = new Vector();
+        for (DeploymentPlugin d : Lookup.getDefault().lookupAll(DeploymentPlugin.class)) {
+            if (d.getGlobalPropertyDefaultValues().size() > 0) v.add(d);
+        }
+        jComboBoxType.setModel(new DefaultComboBoxModel(v));
+        if (selected != null) jComboBoxType.setSelectedItem(selected);
+        jComboBoxType.addActionListener(this);
+        jTextFieldName.getDocument().addDocumentListener(this);
     }
     
     public void setDialogDescriptor(DialogDescriptor dd) {
         this.dd = dd;
-        changedUpdate(null);
+        actionPerformed(null);
     }
     
     /** This method is called from within the constructor to
@@ -52,14 +79,19 @@ public class NewInstanceDialog extends JPanel implements DocumentListener {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        jLabelType = new javax.swing.JLabel();
+        jComboBoxType = new javax.swing.JComboBox();
+        jLabelName = new javax.swing.JLabel();
+        jTextFieldName = new javax.swing.JTextField();
+        jLabelError = new javax.swing.JLabel();
 
-        jLabel1.setText(NbBundle.getMessage(NewInstanceDialog.class, "NewInstanceDialog.jLabel1.text")); // NOI18N
+        jLabelType.setLabelFor(jComboBoxType);
+        jLabelType.setText(NbBundle.getMessage(NewInstanceDialog.class, "NewInstanceDialog.jLabelType.text")); // NOI18N
 
-        jLabel2.setForeground(new java.awt.Color(89, 79, 191));
-        jLabel2.setText(NbBundle.getMessage(NewInstanceDialog.class, "NewInstanceDialog.jLabel2.text")); // NOI18N
+        jLabelName.setLabelFor(jTextFieldName);
+        jLabelName.setText(NbBundle.getMessage(NewInstanceDialog.class, "NewInstanceDialog.jLabelName.text")); // NOI18N
+
+        jLabelError.setForeground(new java.awt.Color(89, 79, 191));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -68,11 +100,15 @@ public class NewInstanceDialog extends JPanel implements DocumentListener {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabelError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(jLabelType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(jLabelName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jTextFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
+                            .add(jComboBoxType, 0, 256, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -80,13 +116,23 @@ public class NewInstanceDialog extends JPanel implements DocumentListener {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jComboBoxType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabelType))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel2)
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabelName)
+                    .add(jTextFieldName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabelError)
+                .addContainerGap(25, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    public void actionPerformed(ActionEvent e) {
+        DeploymentPlugin dp = getDeploymentPlugin();
+        invalidNames = dp == null ? Collections.EMPTY_SET : props.getInstanceList(dp.getDeploymentMethodName());
+        changedUpdate(null);
+    }
 
     public void insertUpdate(DocumentEvent e) {
         changedUpdate(e);
@@ -97,19 +143,35 @@ public class NewInstanceDialog extends JPanel implements DocumentListener {
     }
 
     public void changedUpdate(DocumentEvent e) {
-        boolean valid = Utilities.isJavaIdentifier(jTextField1.getText());
-        jLabel2.setVisible(!valid);
-        if (dd != null) dd.setValid(valid); 
+        String name = getInstanceName();
+        if (invalidNames.contains(name)) {
+            jLabelError.setText(NbBundle.getMessage(NewInstanceDialog.class, "ERR_InstanceExists")); // NOI18N
+            jLabelError.setVisible(true);
+            if (dd != null) dd.setValid(false);
+        } else if (!Utilities.isJavaIdentifier(name)) {
+            jLabelError.setText(NbBundle.getMessage(NewInstanceDialog.class, "ERR_InvalidName")); // NOI18N
+            jLabelError.setVisible(true);
+            if (dd != null) dd.setValid(false);
+        } else {
+            jLabelError.setVisible(false);
+            if (dd != null) dd.setValid(true);
+        }
     }
 
+    public DeploymentPlugin getDeploymentPlugin() {
+        return (DeploymentPlugin)jComboBoxType.getSelectedItem();
+    }
+    
     public String getInstanceName() {
-        return jTextField1.getText();
+        return jTextFieldName.getText();
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JComboBox jComboBoxType;
+    private javax.swing.JLabel jLabelError;
+    private javax.swing.JLabel jLabelName;
+    private javax.swing.JLabel jLabelType;
+    private javax.swing.JTextField jTextFieldName;
     // End of variables declaration//GEN-END:variables
     
 }
