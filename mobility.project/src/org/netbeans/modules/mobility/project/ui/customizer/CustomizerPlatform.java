@@ -70,6 +70,7 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
         for (int i=0; i<dob.length; i++) {
             typeElements.add(new TypeComboElement(dob[i].getPrimaryFile().getName(), dob[i].getNodeDelegate().getDisplayName(), (JComponent)dob[i].getPrimaryFile().getAttribute("customizerPanelClass"))); //NOI18N
         }
+        jComboBox1.setModel(new DefaultComboBoxModel(typeElements.toArray()));
         if (typeElements.size() <= 1) {
             remove(jLabel1);
             remove(jComboBox1);
@@ -80,7 +81,6 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
                     return lcr.getListCellRendererComponent(list, value instanceof TypeComboElement ? ((TypeComboElement)value).getDisplayName() : value, index, isSelected, cellHasFocus);
                 }
             });
-            jComboBox1.setModel(new DefaultComboBoxModel(typeElements.toArray()));
             jComboBox1.addActionListener(this);
         }
         jPanel1.add(new JPanel(), "none"); //NOI18N
