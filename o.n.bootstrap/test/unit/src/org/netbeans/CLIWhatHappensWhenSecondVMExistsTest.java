@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.fakepkg.FakeHandler;
 import org.netbeans.junit.NbTestCase;
 
@@ -44,6 +45,10 @@ implements Map {
     public CLIWhatHappensWhenSecondVMExistsTest(String testName) {
         super(testName);
     }
+    
+    protected Level logLevel() {
+        return Level.FINEST;
+    }
 
     protected void setUp() throws Exception {
         clearWorkDir();
@@ -53,7 +58,7 @@ implements Map {
         
         FakeHandler.chained = this;
     }
-    
+
     public static void main(String[] args) {
         // ok, ready to work
         CLIHandler.finishInitialization(false);

@@ -20,11 +20,9 @@
 package org.netbeans;
 
 import java.io.*;
-import junit.textui.TestRunner;
 import org.netbeans.junit.*;
 import java.util.*;
-import junit.framework.AssertionFailedError;
-import org.openide.util.RequestProcessor;
+import java.util.logging.Level;
 
 /**
  * Test the command-line-interface handler.
@@ -46,6 +44,10 @@ public class CLIHandlerRemembersSystemInOutErrTest extends NbTestCase {
     
     public CLIHandlerRemembersSystemInOutErrTest(String name) {
         super(name);
+    }
+    
+    protected Level logLevel() {
+        return Level.ALL;
     }
     
     public void testFileExistsButItCannotBeRead() throws Exception {
