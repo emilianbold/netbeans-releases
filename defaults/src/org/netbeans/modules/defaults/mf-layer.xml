@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
             </file>
-            <file name="S-A-Left.shadow">
+            <file name="OS-Left.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             </file>
             <file name="C-R.shadow">
@@ -163,7 +163,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
             </file>
-            <file name="S-A-Right.shadow">
+            <file name="OS-Right.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-NextViewCallbackAction.instance"/>
             </file>
             <file name="DS-2.shadow">
@@ -354,7 +354,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="S-F5.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
             </file>
-            <file name="S-A-Left.shadow">
+            <file name="OS-Left.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             </file>
             <file name="C-R.shadow">
@@ -523,7 +523,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="D-F2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance"/>
             </file>
-            <file name="S-A-Right.shadow">
+            <file name="OS-Right.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-NextViewCallbackAction.instance"/>
             </file>
             <file name="DS-2.shadow">
@@ -657,10 +657,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="A-LEFT.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
             </file>
-            <file name="S-A-Right.shadow">
+            <file name="OS-Right.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-NextViewCallbackAction.instance"/>
             </file>
-            <file name="S-A-Left.shadow">
+            <file name="OS-Left.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             </file>
             <file name="DS-3.shadow">
