@@ -12,51 +12,57 @@
  */
 package org.netbeans.api.visual.widget;
 
-import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.anchor.AnchorShape;
-import org.netbeans.api.visual.anchor.PointShape;
-import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.api.visual.router.Router;
-import org.netbeans.api.visual.router.RouterFactory;
-import org.netbeans.modules.visual.layout.ConnectionWidgetLayout;
-
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
+ * This class is an extension of the ConnectionWidget. Primarily it is used with FreeRouter and optionally Free*Anchor.
+ * It also to add and remove control points on specific locations.
+ * <p>
+ * WARNING: This class is meant to be redesigned later.
+
  * @author Alex
  */
 // TODO - control points can be modified by accessing: getControlPoints ().get (0).x or y
 public class FreeConnectionWidget extends ConnectionWidget {
 
     private double createSensitivity=1.00, deleteSensitivity=5.00;
-    
+
+    /**
+     * Creates a free connection widget.
+     * @param scene the scene
+     */
     public FreeConnectionWidget (Scene scene) {
         super (scene);
     }
-    public FreeConnectionWidget (Scene scene,double createSensitivity, double deleteSensitivity) {
+
+    /**
+     * Creates a free connection widget with a specified create/delete sensitivity.
+     * @param scene the scene
+     * @param createSensitivity the sensitivity for adding a control point
+     * @param deleteSensitivity the sensitivity for removing a control point
+     */
+    public FreeConnectionWidget (Scene scene, double createSensitivity, double deleteSensitivity) {
         super (scene);
         this.createSensitivity=createSensitivity; 
         this.deleteSensitivity=deleteSensitivity;
     }
 
-    public void addRemoveControlPoint (Point point) {
+    /**
+     * Adds or removes a control point on a specified location
+     * @param localLocation the local location
+     */
+    public void addRemoveControlPoint (Point localLocation) {
         ArrayList<Point> list = new ArrayList<Point> (getControlPoints());
-            if(!removeControlPoint(point,list,deleteSensitivity)){
+            if(!removeControlPoint(localLocation,list,deleteSensitivity)){
                 Point exPoint=null;int index=0;
                 for (Point elem : list) {
                     if(exPoint!=null){
                         Line2D l2d=new Line2D.Double(exPoint,elem);
-                        if(l2d.ptLineDist(point)<createSensitivity){
-                            list.add(index,point);
+                        if(l2d.ptLineDist(localLocation)<createSensitivity){
+                            list.add(index,localLocation);
                             break;
                         }
                     }
@@ -75,13 +81,24 @@ public class FreeConnectionWidget extends ConnectionWidget {
         }
         return false;
     }
-    
-    public Point getControlPoint (int count) {
+
+    /**
+     * Returns a control point at a specific index.
+     * @param index the index in the list of control points
+     * @return the control point at specified index; null, if the connection widget does not have control points
+     * @throws ArrayIndexOutOfBoundsException when index is out of bounds
+     */
+    public Point getControlPoint (int index) {
         List<Point> controlPoints=getControlPoints();
         if (controlPoints.size () <= 0) return null;
-        return new Point (controlPoints.get (count));
+        return new Point (controlPoints.get (index));
     }
-    
+
+    /**
+     * Sets a sensitivity.
+     * @param createSensitivity the sensitivity for adding a control point
+     * @param deleteSensitivity the sensitivity for removing a control point
+     */
     public void setSensitivity(double createSensitivity, double deleteSensitivity){
         this.createSensitivity=createSensitivity; 
         this.deleteSensitivity=deleteSensitivity;

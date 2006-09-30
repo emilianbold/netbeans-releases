@@ -21,6 +21,11 @@ import org.netbeans.api.visual.widget.*;
 import java.awt.*;
 
 /**
+ * This class represents a general list widget which is rendered as a rectangle with a header on top and list item widgets
+ * underneath.
+ * <p>
+ * Note: This class is meant to be redesigned later.
+ *
  * @author David Kaspar
  */
 public class ListWidget extends Widget {
@@ -29,6 +34,10 @@ public class ListWidget extends Widget {
     private ImageWidget imageWidget;
     private LabelWidget labelWidget;
 
+    /**
+     * Creates a list widget.
+     * @param scene the scene
+     */
     public ListWidget (Scene scene) {
         super (scene);
 
@@ -49,25 +58,54 @@ public class ListWidget extends Widget {
         setState (ObjectState.createNormal ());
     }
 
+    /**
+     * Implements the widget-state specific look of the widget.
+     * @param previousState the previous state
+     * @param state the new state
+     */
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {
         LookFeel lookFeel = getScene ().getLookFeel ();
         header.setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (2), lookFeel.getBorder (state)));
         labelWidget.setForeground (lookFeel.getForeground (state));
     }
 
-    public void setImage (Image image) {
+    /**
+     * Sets an image used in the list header.
+     * @param image the image
+     */
+    public final void setImage (Image image) {
         imageWidget.setImage (image);
     }
 
-    public void setLabel (String label) {
+    /**
+     * Sets a label used in the list header.
+     * @param label the label
+     */
+    public final void setLabel (String label) {
         labelWidget.setLabel (label);
     }
 
-    public ImageWidget getImageWidget () {
+    /**
+     * Returns a header widget.
+     * @return the header widget
+     */
+    public final Widget getHeader () {
+        return header;
+    }
+
+    /**
+     * Returns an image widget in the header.
+     * @return the image widget
+     */
+    public final ImageWidget getImageWidget () {
         return imageWidget;
     }
 
-    public LabelWidget getLabelWidget () {
+    /**
+     * Returns a label widget in the header.
+     * @return the label widget
+     */
+    public final LabelWidget getLabelWidget () {
         return labelWidget;
     }
 

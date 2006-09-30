@@ -23,10 +23,17 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.*;
 
 /**
+ * This class represents a general icon node widget which is rendered as a image and a label placed to the right or bottom from the image.
+ * <p>
+ * WARNING: This class is meant to be redesigned later.
+ *
  * @author David Kaspar
  */
 public class IconNodeWidget extends Widget {
 
+    /**
+     * The text orientation specified relatively to the image
+     */
     public static enum TextOrientation {
 
         BOTTOM_CENTER, RIGHT_CENTER
@@ -36,10 +43,19 @@ public class IconNodeWidget extends Widget {
     private ImageWidget imageWidget;
     private LabelWidget labelWidget;
 
+    /**
+     * Creates an icon node widget with bottom-center orientation.
+     * @param scene the scene
+     */
     public IconNodeWidget (Scene scene) {
         this (scene, TextOrientation.BOTTOM_CENTER);
     }
 
+    /**
+     * Creates an icon node widget with a specified orientation.
+     * @param scene the scene
+     * @param orientation the text orientation
+     */
     public IconNodeWidget (Scene scene, TextOrientation orientation) {
         super (scene);
         LookFeel lookFeel = getScene ().getLookFeel ();
@@ -63,25 +79,46 @@ public class IconNodeWidget extends Widget {
         setState (ObjectState.createNormal ());
     }
 
+    /**
+     * Implements the widget-state specific look of the widget.
+     * @param previousState the previous state
+     * @param state the new state
+     */
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {
         LookFeel lookFeel = getScene ().getLookFeel ();
         labelWidget.setBorder (lookFeel.getBorder (state));
         labelWidget.setForeground (lookFeel.getForeground (state));
     }
 
-    public void setImage (Image image) {
+    /**
+     * Sets an image.
+     * @param image the image
+     */
+    public final void setImage (Image image) {
         imageWidget.setImage (image);
     }
 
-    public void setLabel (String label) {
+    /**
+     * Sets a label.
+     * @param label the label
+     */
+    public final void setLabel (String label) {
         labelWidget.setLabel (label);
     }
 
-    public ImageWidget getImageWidget () {
+    /**
+     * Returns the image widget part of the icon node widget.
+     * @return the image widget
+     */
+    public final ImageWidget getImageWidget () {
         return imageWidget;
     }
 
-    public LabelWidget getLabelWidget () {
+    /**
+     * Returns the label widget part of the icon node widget.
+     * @return the label widget
+     */
+    public final LabelWidget getLabelWidget () {
         return labelWidget;
     }
 

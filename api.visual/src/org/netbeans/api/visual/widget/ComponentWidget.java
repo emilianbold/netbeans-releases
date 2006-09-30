@@ -18,6 +18,14 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
 /**
+ * This widget allows to use an AWT/Swing component in the scene. The widget itself just represents and reserve the place
+ * occupied by the component. When a component is resized, then reserved place is recalculated. The component placement
+ * is automatically update based on the placement of the widget.
+ * The widget also paints the component in the satelite views.
+ * <p>
+ * When a widget is added into the scene, it has to attach a scene listener for automatic recalculation. The attaching
+ * is done automatically for the first time.
+ *
  * @author David Kaspar
  */
 // TODO - addComponentResizeListener
@@ -30,6 +38,11 @@ public final class ComponentWidget extends Widget {
     private ComponentSceneListener validateListener;
     private ComponentComponentListener componentListener;
 
+    /**
+     * Creates a component widget.
+     * @param scene the scene
+     * @param component the AWT/Swing component
+     */
     public ComponentWidget (Scene scene, Component component) {
         super (scene);
         this.component = component;
@@ -38,6 +51,10 @@ public final class ComponentWidget extends Widget {
         attach ();
     }
 
+    /**
+     * Attaches the scene listener for automatic recalculation. The attaching is done automatically for the first time.
+     * You have to call the attach method when you are reusing the component widget after calling the detach method.
+     */
     public final void attach () {
         if (validateListener != null)
             return;
@@ -45,6 +62,11 @@ public final class ComponentWidget extends Widget {
         getScene ().addSceneListener (validateListener);
     }
 
+    /**
+     * Detaches the scene listener for automatic recaulculation. The detaching is required for preventing memory leaks
+     * after the component widget is remove from the scene. When you want to reuse the widget again, you have call
+     * the attach method.
+     */
     public final void detach () {
         if (validateListener == null)
             return;
@@ -52,10 +74,18 @@ public final class ComponentWidget extends Widget {
         validateListener = null;
     }
 
+    /**
+     * Returns a AWT/Swing component.
+     * @return the AWT/Swing component
+     */
     public final Component getComponent () {
         return component;
     }
 
+    /**
+     * Calculates a client area from the preferred size of the component.
+     * @return the calculated client area
+     */
     protected final Rectangle calculateClientArea () {
         Dimension preferredSize = component.getPreferredSize ();
         zoomFactor = getScene ().getZoomFactor ();
@@ -78,7 +108,7 @@ public final class ComponentWidget extends Widget {
     private void addComponent () {
         Scene scene = getScene ();
         if (! componentAdded) {
-            scene.getComponent ().add (component);
+            scene.getView ().add (component);
             component.addComponentListener (componentListener);
             componentAdded = true;
         }
@@ -91,11 +121,14 @@ public final class ComponentWidget extends Widget {
         Scene scene = getScene ();
         if (componentAdded) {
             component.removeComponentListener (componentListener);
-            scene.getComponent ().remove (component);
+            scene.getView ().remove (component);
             componentAdded = false;
         }
     }
 
+    /**
+     * Paints the component widget.
+     */
     protected void paintWidget () {
         if (getScene ().isPaintEverything ()) {
             Graphics2D graphics = getGraphics ();

@@ -15,6 +15,12 @@ package org.netbeans.api.visual.widget;
 import java.awt.*;
 
 /**
+ * This is a widget with a level-of-details feature. The visibility of children is based on the zoom factor of a scene.
+ * <p>
+ * For <code>&lt; hardMinimalZoom</code> and <code>&gt; hardMaximalZoom</code> the children are not painted.<br>
+ * For <code>&lt; softMinimalZoom</code> and <code>&gt; sortMaximalZoom</code> the children are partially painted using alpha-blending.<br>
+ * Between <code>softMinimalZoom</code> and <code>softMaximalZoom</code> the children are painted normally.
+ *
  * @author David Kaspar
  */
 public class LevelOfDetailsWidget extends Widget {
@@ -23,7 +29,15 @@ public class LevelOfDetailsWidget extends Widget {
     private double softMinimalZoom;
     private double softMaximalZoom;
     private double hardMaximalZoom;
-    
+
+    /**
+     * Creates a level-of-details widget.
+     * @param scene the scene
+     * @param hardMinimalZoom the hard minimal zoom factor
+     * @param softMinimalZoom the sort minimal zoom factor
+     * @param softMaximalZoom the sort maximal zoom factor
+     * @param hardMaximalZoom the hard maximal zoom factor
+     */
     public LevelOfDetailsWidget(Scene scene, double hardMinimalZoom, double softMinimalZoom, double softMaximalZoom, double hardMaximalZoom) {
         super (scene);
         this.hardMinimalZoom = hardMinimalZoom;
@@ -31,7 +45,10 @@ public class LevelOfDetailsWidget extends Widget {
         this.softMaximalZoom = softMaximalZoom;
         this.hardMaximalZoom = hardMaximalZoom;
     }
-    
+
+    /**
+     * Paints children based on the zoom factor.
+     */
     public void paintChildren () {
         double zoom = getScene ().getZoomFactor();
         if (zoom <= hardMinimalZoom  ||  zoom >= hardMaximalZoom)
@@ -61,6 +78,11 @@ public class LevelOfDetailsWidget extends Widget {
             gr.setComposite(previousComposite);
     }
 
+    /**
+     * Checks whether a specified local location is a part of a widget based on the zoom factor.
+     * @param localLocation the local location
+     * @return true, it it is
+     */
     public boolean isHitAt(Point localLocation) {
         double zoom = getScene().getZoomFactor();
         if (zoom < hardMinimalZoom  ||  zoom > hardMaximalZoom)

@@ -18,12 +18,15 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 /**
- * A widget representing a text.
+ * A widget representing a text. The widget is not opaque and is checking clipping for by default.
  *
  * @author David Kaspar
  */
 public class LabelWidget extends Widget {
 
+    /**
+     * The text alignment
+     */
     public enum Alignment {
         LEFT, RIGHT, CENTER
     }
@@ -31,22 +34,39 @@ public class LabelWidget extends Widget {
     private String label;
     private Alignment alignment = Alignment.LEFT;
 
+    /**
+     * Creates a label widget.
+     * @param scene the scene
+     */
     public LabelWidget (Scene scene) {
         this (scene, null);
     }
-    
-    public LabelWidget (Scene scene, String text) {
+
+    /**
+     * Creates a label widget with a label.
+     * @param scene the scene
+     * @param label the label
+     */
+    public LabelWidget (Scene scene, String label) {
         super (scene);
         setOpaque (false);
 //        setCursor (new Cursor (Cursor.TEXT_CURSOR));
-        setLabel (text);
+        setLabel (label);
         setCheckClipping (true);
     }
 
+    /**
+     * Returns a label.
+     * @return the label
+     */
     public String getLabel () {
         return label;
     }
 
+    /**
+     * Sets a label.
+     * @param label the label
+     */
     public void setLabel (String label) {
         if (GeomUtil.equals (this.label, label))
             return;
@@ -54,15 +74,27 @@ public class LabelWidget extends Widget {
         revalidate ();
     }
 
+    /**
+     * Returns a text alignment.
+     * @return the text alignment
+     */
     public Alignment getAlignment () {
         return alignment;
     }
 
+    /**
+     * Sets a text alignment
+     * @param alignment the text alignment
+     */
     public void setAlignment (Alignment alignment) {
         this.alignment = alignment;
         repaint ();
     }
 
+    /**
+     * Calculates a client area for the label.
+     * @return the client area
+     */
     protected Rectangle calculateClientArea () {
         if (label == null)
             return super.calculateClientArea ();
@@ -72,6 +104,9 @@ public class LabelWidget extends Widget {
         return GeomUtil.roundRectangle (stringBounds);
     }
 
+    /**
+     * Paints the label widget.
+     */
     protected void paintWidget () {
         if (label == null)
             return;

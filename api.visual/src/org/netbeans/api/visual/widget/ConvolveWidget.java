@@ -20,6 +20,13 @@ import java.awt.image.Kernel;
 import java.awt.*;
 
 /**
+ * The widget which applies a convolve filter to a graphics rendered by the children.
+ * <p>
+ * Children are painted to an offscreen buffer which is later painted with a convolve filter applied to it.
+ * <p>
+ * Because of the offscreen buffer, be careful about the size of the widget. The buffer stays allocated
+ * even after the painting and it is also expanding only (when required). You can clear the buffer using clearCache method.
+ *
  * @author David Kaspar
  */
 public class ConvolveWidget extends Widget {
@@ -30,6 +37,11 @@ public class ConvolveWidget extends Widget {
     private BufferedImage image;
     private Graphics2D imageGraphics;
 
+    /**
+     * Creates a convolve widget with a specified ColvolveOp.
+     * @param scene the scene
+     * @param convolveOp the convolve operation
+     */
     public ConvolveWidget (Scene scene, ConvolveOp convolveOp) {
         super (scene);
         this.convolveOp = convolveOp;
@@ -37,6 +49,26 @@ public class ConvolveWidget extends Widget {
         setBorder (BorderFactory.createEmptyBorder (kernel.getWidth (), kernel.getHeight ()));
     }
 
+    /**
+     * Returns a convolve operation.
+     * @return the convolve operation
+     */
+    public ConvolveOp getConvolveOp () {
+        return convolveOp;
+    }
+
+    /**
+     * Sets a convolve operation.
+     * @param convolveOp the convolve operation
+     */
+    public void setConvolveOp (ConvolveOp convolveOp) {
+        this.convolveOp = convolveOp;
+        repaint ();
+    }
+
+    /**
+     * Clears an offscreen buffer.
+     */
     public void clearCache () {
         if (imageGraphics != null)
             imageGraphics.dispose ();
@@ -44,6 +76,9 @@ public class ConvolveWidget extends Widget {
 
     }
 
+    /**
+     * Paints the children into the offscreen buffer and then the buffer is rendered regularly using the convolve operation.
+     */
     protected void paintChildren () {
         Rectangle bounds = getBounds ();
         if (image == null  ||  image.getWidth () < bounds.width  ||  image.getHeight () < bounds.height) {

@@ -21,7 +21,7 @@ import java.awt.*;
 /**
  * This class is defining a reusable LookAndFeel fragments e.g. colors.
  * <p>
- * WARNING: This class is not in final shape and be changed later.
+ * WARNING: This class is meant to be redesigned later.
  *
  * @author David Kaspar
  */

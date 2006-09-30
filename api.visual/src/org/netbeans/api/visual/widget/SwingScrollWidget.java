@@ -20,6 +20,8 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
 
 /**
+ * This is a scroll widget similar to JScrollPane. In comparison with the ScrollWidget class, this class is using JScrollBar
+ * for vertical and horizontal scroll bars.
  * @author David Kaspar
  */
 public class SwingScrollWidget extends Widget {
@@ -39,6 +41,10 @@ public class SwingScrollWidget extends Widget {
     private AdjustmentListener verticalListener = new MyAdjustmentListener (true);
     private AdjustmentListener horizontalListener = new MyAdjustmentListener (false);
 
+    /**
+     * Creates a scroll widget.
+     * @param scene
+     */
     public SwingScrollWidget (Scene scene) {
         super (scene);
 
@@ -60,10 +66,28 @@ public class SwingScrollWidget extends Widget {
         horizontalWidget = new ComponentWidget (scene, horizontalScroll);
     }
 
+    /**
+     * Creates a scroll widget.
+     * @param scene the scene
+     * @param view  the scrolled view
+     */
+    public SwingScrollWidget (Scene scene, Widget view) {
+        this (scene);
+        setView (view);
+    }
+
+    /**
+     * Returns an inner widget.
+     * @return the inner widget
+     */
     public final Widget getView () {
         return view;
     }
 
+    /**
+     * Sets an scrolled widget.
+     * @param view the scrolled widget
+     */
     public final void setView (Widget view) {
         if (this.view != null)
             viewport.removeChild (this.view);
@@ -72,6 +96,10 @@ public class SwingScrollWidget extends Widget {
             viewport.addChild (this.view);
     }
 
+    /**
+     * Calculates a client area as from the scroll widget preferred bounds.
+     * @return the calculated client area
+     */
     protected Rectangle calculateClientArea () {
         return new Rectangle (calculateSize ());
     }
@@ -188,7 +216,7 @@ public class SwingScrollWidget extends Widget {
 
         private boolean vertical;
 
-        public MyAdjustmentListener (boolean vertical) {
+        private MyAdjustmentListener (boolean vertical) {
             this.vertical = vertical;
         }
 

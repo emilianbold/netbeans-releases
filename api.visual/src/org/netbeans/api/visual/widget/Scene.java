@@ -30,6 +30,20 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
+ * The scene is a widget which also controls and represents whole rendered area.
+ * <p>
+ * After all changes in a scene is done, the validate method have to be called for validating changed
+ * and calculating new locations and boundaries of all modified widgets.
+ * <p>
+ * The scene allows to create a view JComponent which can be used anywhere in Swing based application. Only one view
+ * can be created using the createView method.
+ * The scene allows to create multiple satellite views using the createSatelliteView method. The satellite view is just
+ * showing the scene and allows quick navigator and panning using a mouse.
+ * <p>
+ * The scene contains additional scene-specific properties like lookFeel, activeTool, defaultFont, animator.
+ * <p>
+ * It is able to create a widget-specific hover action.
+ *
  * @author David Kaspar
  */
 // TODO - take SceneComponent dimension and correct Scene.resolveBounds
@@ -53,6 +67,9 @@ public class Scene extends Widget {
 
     private WidgetAction widgetHoverAction;
 
+    /**
+     * Creates a scene.
+     */
     public Scene () {
         super (null);
         defaultFont = Font.decode (null);
@@ -64,6 +81,10 @@ public class Scene extends Widget {
         sceneAnimator = new SceneAnimator (this);
     }
 
+    /**
+     * Creates a view. This method could be called once only. Call the getView method for getting created instance of a view.
+     * @return the created view
+     */
     public JComponent createView () {
         assert component == null;
         component = new SceneComponent (this);
@@ -81,19 +102,26 @@ public class Scene extends Widget {
         return component;
     }
 
-    public JComponent getComponent () {
+    /**
+     * Returns an instance of created view
+     * @return the instance of created view; null if no view is created yet
+     */
+    public JComponent getView () {
         return component;
     }
 
-    @Deprecated
-    public JComponent createSateliteView () {
-        return createSatelliteView ();
-    }
-
+    /**
+     * Creates a satellite view.
+     * @return the satellite view
+     */
     public JComponent createSatelliteView () {
         return new SatelliteComponent (this);
     }
 
+    /**
+     * Returns an instance of Graphics2D which is used for calculating boundaries and rendering all widgets in the scene.
+     * @return the instance of Graphics2D
+     */
     public final Graphics2D getGraphics () {
         return graphics;
     }
@@ -103,22 +131,38 @@ public class Scene extends Widget {
         this.graphics = graphics;
     }
 
-    public final void paint (Graphics2D gr) {
+    /**
+     * Paints the whole scene into the graphics instance. The method calls validate before rendering.
+     * @param graphics the Graphics2D instance where the scene is going to be painted
+     */
+    public final void paint (Graphics2D graphics) {
         validate ();
         Graphics2D prevoiusGraphics = getGraphics ();
-        setGraphics (gr);
+        setGraphics (graphics);
         paint ();
         setGraphics (prevoiusGraphics);
     }
 
+    /**
+     * Returns a default font of the scene.
+     * @return the default font
+     */
     public Font getDefaultFont () {
         return defaultFont;
     }
 
+    /**
+     * Returns whether the whole scene is validated and there is no widget or region that has to be revalidated.
+     * @return true, if the whole scene is validated
+     */
     public boolean isValidated () {
         return super.isValidated ()  &&  repaintRegion == null  &&  repaintWidgets.isEmpty ();
     }
 
+    /**
+     * Returns whether the layer widget requires to repainted after revalidation.
+     * @return always false
+     */
     protected boolean isRepaintRequiredForRevalidating () {
         return false;
     }
@@ -198,6 +242,10 @@ public class Scene extends Widget {
         }
     }
 
+    /**
+     * Validates all widget in the whole scene. The validation is done repeatively until there is no invalid widget
+     * in the scene after validating process. It also schedules invalid regions in the view for repainting.
+     */
     @SuppressWarnings("unchecked")
     public final void validate () {
         if (graphics == null)
@@ -260,35 +308,69 @@ public class Scene extends Widget {
         this.paintEverything = paintEverything;
     }
 
+    /**
+     * Returns a zoom factor.
+     * @return the zoom factor
+     */
     public final double getZoomFactor () {
         return zoomFactor;
     }
 
+    /**
+     * Sets a zoom factor for the scene.
+     * @param zoomFactor the zoom factor
+     */
     public final void setZoomFactor (double zoomFactor) {
         this.zoomFactor = zoomFactor;
         revalidate ();
     }
 
-    public SceneAnimator getSceneAnimator () {
+    /**
+     * Returns a scene animator of the scene.
+     * @return the scene animator
+     */
+    public final SceneAnimator getSceneAnimator () {
         return sceneAnimator;
     }
 
-    public LookFeel getLookFeel () {
+    /**
+     * Returns a look'n'feel of the scene.
+     * @return the look'n'feel
+     */
+    public final LookFeel getLookFeel () {
         return lookFeel;
     }
 
-    public void setLookFeel (LookFeel lookFeel) {
+    /**
+     * Sets a look'n'feel of the scene. This method does affect current state of the scene - already created components
+     * will not be refreshed.
+     * @param lookFeel the look'n'feel
+     */
+    public final void setLookFeel (LookFeel lookFeel) {
+        assert lookFeel != null;
         this.lookFeel = lookFeel;
     }
 
-    public String getActiveTool () {
+    /**
+     * Returns an active tool of the scene.
+     * @return the active tool; if null, then only default action chain of widgets will be used
+     */
+    public final String getActiveTool () {
         return activeTool;
     }
 
+    /**
+     * Sets an active tool.
+     * @param activeTool the active tool; if null, then the active tool is unset and only default action chain of widgets will be used
+     */
     public void setActiveTool (String activeTool) {
         this.activeTool = activeTool;
     }
 
+    /**
+     * Registers a scene listener.
+     * @param listener the scene listener
+     */
     public final void addSceneListener (SceneListener listener) {
         assert listener != null;
         synchronized (sceneListeners) {
@@ -296,17 +378,31 @@ public class Scene extends Widget {
         }
     }
 
+    /**
+     * Unregisters a scene listener.
+     * @param listener the scene listener
+     */
     public final void removeSceneListener (SceneListener listener) {
         synchronized (sceneListeners) {
             sceneListeners.remove (listener);
         }
     }
 
+    /**
+     * Converts a location in the scene coordination system to the view coordination system.
+     * @param sceneLocation the scene location
+     * @return the view location
+     */
     public final Point convertSceneToView (Point sceneLocation) {
         Point location = getLocation ();
         return new Point ((int) (zoomFactor * (location.x + sceneLocation.x)), (int) (zoomFactor * (location.y + sceneLocation.y)));
     }
 
+    /**
+     * Converts a rectangle in the scene coordination system to the view coordination system.
+     * @param sceneRectangle the scene rectangle
+     * @return the view rectangle
+     */
     public final Rectangle convertSceneToView (Rectangle sceneRectangle) {
         Point location = getLocation ();
         return GeomUtil.roundRectangle (new Rectangle2D.Double (
@@ -316,10 +412,19 @@ public class Scene extends Widget {
                 (double) sceneRectangle.height * zoomFactor));
     }
 
+    /**
+     * Converts a location in the view coordination system to the scene coordination system.
+     * @param viewLocation the view location
+     * @return the scene location
+     */
     public Point convertViewToScene (Point viewLocation) {
         return new Point ((int) ((double) viewLocation.x / zoomFactor) - getLocation ().x, (int) ((double) viewLocation.y / zoomFactor) - getLocation ().y);
     }
 
+    /**
+     * Creates a widget-specific hover action.
+     * @return the widget-specific hover action
+     */
     public WidgetAction createWidgetHoverAction () {
         if (widgetHoverAction == null) {
             widgetHoverAction = ActionFactory.createHoverAction (new WidgetHoverAction ());
@@ -340,12 +445,24 @@ public class Scene extends Widget {
 
     }
 
+    /**
+     * The scene listener which is notified about repainting, validating progress.
+     */
     public interface SceneListener {
 
+        /**
+         * Called to notify that the whole scene was repainted.
+         */
         void sceneRepaint ();
 
+        /**
+         * Called to notify that the scene is going to be validated.
+         */
         void sceneValidating ();
 
+        /**
+         * Called to notify that the scene has been validated.
+         */
         void sceneValidated ();
 
     }

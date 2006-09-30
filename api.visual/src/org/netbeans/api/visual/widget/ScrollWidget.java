@@ -25,6 +25,9 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 
 /**
+ * This a scroll widget similar to JScrollPane. A scrolled widget is could be manipulated with getView and setView methods.
+ * The scroll-bars are automatically visible when the scrolled widget is bigger than the widget.
+ *
  * @author David Kaspar
  */
 // TODO - does not cooperate with action-tools - actions from null-tool should be working all the time
@@ -55,6 +58,10 @@ public class ScrollWidget extends Widget {
     private Widget leftArrow;
     private Widget rightArrow;
 
+    /**
+     * Creates a scroll widget.
+     * @param scene
+     */
     public ScrollWidget (Scene scene) {
         super (scene);
 
@@ -84,6 +91,16 @@ public class ScrollWidget extends Widget {
         verticalSlider.getActions ().addAction (new SliderAction (verticalSlider));
     }
 
+    /**
+     * Creates a scroll widget.
+     * @param scene the scene
+     * @param view the scrolled view
+     */
+    public ScrollWidget (Scene scene, Widget view) {
+        this (scene);
+        setView (view);
+    }
+
     private SliderWidget createVerticalSlider () {
         return new SliderWidget (getScene (), true);
     }
@@ -108,10 +125,18 @@ public class ScrollWidget extends Widget {
         return new ButtonWidget (getScene (), IMAGE_RIGHT);
     }
 
+    /**
+     * Returns an inner widget.
+     * @return the inner widget
+     */
     public final Widget getView () {
         return view;
     }
 
+    /**
+     * Sets an scrolled widget.
+     * @param view the scrolled widget
+     */
     public final void setView (Widget view) {
         if (this.view != null)
             viewport.removeChild (this.view);
@@ -120,6 +145,10 @@ public class ScrollWidget extends Widget {
             viewport.addChild (this.view);
     }
 
+    /**
+     * Calculates a client area as from the scroll widget preferred bounds.
+     * @return the calculated client area
+     */
     protected Rectangle calculateClientArea () {
         return new Rectangle (calculateSize ());
     }
@@ -212,7 +241,7 @@ public class ScrollWidget extends Widget {
 
     private static class ButtonWidget extends ImageWidget {
 
-        public ButtonWidget (Scene scene, Image image) {
+        private ButtonWidget (Scene scene, Image image) {
             super (scene, image);
             setOpaque (true);
             updateAiming (false);
@@ -232,7 +261,7 @@ public class ScrollWidget extends Widget {
 
     private static class SliderWidget extends Widget {
 
-        public enum Part {
+        private enum Part {
             OUTSIDE, BEFORE, SLIDER, AFTER
         }
 
@@ -245,7 +274,7 @@ public class ScrollWidget extends Widget {
         private long startValue = 0;
         private long endValue = 100;
 
-        public SliderWidget (Scene scene, boolean vertical) {
+        private SliderWidget (Scene scene, boolean vertical) {
             super (scene);
             this.vertical = vertical;
             setOpaque (true);
@@ -396,7 +425,7 @@ public class ScrollWidget extends Widget {
         private int dx;
         private int dy;
 
-        public UnitScrollProvider (int dx, int dy) {
+        private UnitScrollProvider (int dx, int dy) {
             this.dx = dx;
             this.dy = dy;
         }
@@ -421,7 +450,7 @@ public class ScrollWidget extends Widget {
         private int dx;
         private int dy;
 
-        public BlockScrollAction (SliderWidget slider, int dx, int dy) {
+        private BlockScrollAction (SliderWidget slider, int dx, int dy) {
             this.slider = slider;
             this.dx = dx;
             this.dy = dy;
@@ -453,7 +482,7 @@ public class ScrollWidget extends Widget {
         private Point dragSceneLocation = null;
         private Point originalSceneLocation = null;
 
-        public SliderAction (SliderWidget slider) {
+        private SliderAction (SliderWidget slider) {
             this.slider = slider;
         }
 

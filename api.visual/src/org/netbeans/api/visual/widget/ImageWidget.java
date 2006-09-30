@@ -15,6 +15,7 @@ package org.netbeans.api.visual.widget;
 import java.awt.*;
 
 /**
+ * A widget representing image. The origin of the widget is at its top-left corner.
  * @author David Kaspar
  */
 // TODO - alignment
@@ -23,19 +24,36 @@ public class ImageWidget extends Widget {
     private Image image;
     private int width, height;
 
+    /**
+     * Creates an image widget.
+     * @param scene the scene
+     */
     public ImageWidget (Scene scene) {
         super (scene);
     }
-    
+
+    /**
+     * Creates an image widget.
+     * @param scene the scene
+     * @param image the image
+     */
     public ImageWidget (Scene scene, Image image) {
         super (scene);
         setImage (image);
     }
 
+    /**
+     * Returns an image.
+     * @return the image
+     */
     public Image getImage () {
         return image;
     }
 
+    /**
+     * Sets an image
+     * @param image the image
+     */
     public void setImage (Image image) {
         if (this.image == image)
             return;
@@ -52,12 +70,19 @@ public class ImageWidget extends Widget {
             revalidate ();
     }
 
+    /**
+     * Calculates a client area of the image
+     * @return the calculated client area
+     */
     protected Rectangle calculateClientArea () {
         if (image != null)
             return new Rectangle (0, 0, width, height);
         return super.calculateClientArea ();
     }
 
+    /**
+     * Paints the image widget.
+     */
     protected void paintWidget () {
         if (image == null)
             return;

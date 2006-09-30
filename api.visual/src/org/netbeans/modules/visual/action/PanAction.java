@@ -36,10 +36,10 @@ public final class PanAction extends WidgetAction.LockedAdapter {
     public State mousePressed (Widget widget, WidgetMouseEvent event) {
         if (event.getButton () == MouseEvent.BUTTON2) {
             scene = widget.getScene ();
-            scrollPane = findScrollPane (scene.getComponent ());
+            scrollPane = findScrollPane (scene.getView ());
             if (scrollPane != null) {
                 lastLocation = scene.convertSceneToView (widget.convertLocalToScene (event.getPoint ()));
-                SwingUtilities.convertPointToScreen (lastLocation, scene.getComponent ());
+                SwingUtilities.convertPointToScreen (lastLocation, scene.getView ());
                 return State.createLocked (widget, this);
             }
         }
@@ -74,7 +74,7 @@ public final class PanAction extends WidgetAction.LockedAdapter {
         if (scrollPane == null  ||  scene != widget.getScene ())
             return false;
         newLocation = scene.convertSceneToView (widget.convertLocalToScene (newLocation));
-        SwingUtilities.convertPointToScreen (newLocation, scene.getComponent ());
+        SwingUtilities.convertPointToScreen (newLocation, scene.getView ());
         Point viewPosition = scrollPane.getViewport ().getViewPosition ();
         viewPosition = new Point (viewPosition.x + lastLocation.x - newLocation.x, viewPosition.y + lastLocation.y - newLocation.y);
         scrollPane.getViewport ().setViewPosition (viewPosition);

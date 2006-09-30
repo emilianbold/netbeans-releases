@@ -84,7 +84,7 @@ public final class PopupMenuAction extends WidgetAction.Adapter {
             if (popupMenu != null) {
                 Scene scene = widget.getScene ();
                 Point point = scene.convertSceneToView (widget.convertLocalToScene (event.getPoint ()));
-                popupMenu.show (scene.getComponent (), point.x, point.y);
+                popupMenu.show (scene.getView (), point.x, point.y);
             }
             return State.CONSUMED;
         }

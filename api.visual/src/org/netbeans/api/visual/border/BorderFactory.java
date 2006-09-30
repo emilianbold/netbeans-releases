@@ -93,7 +93,7 @@ public final class BorderFactory {
      * @return the border
      */
     public static Border createSwingBorder (Scene scene, javax.swing.border.Border border) {
-        assert scene != null && scene.getComponent () != null && border != null;
+        assert scene != null && scene.getView () != null && border != null;
         return new SwingBorder (scene, border);
     }
 

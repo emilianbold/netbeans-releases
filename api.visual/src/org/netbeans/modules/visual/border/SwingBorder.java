@@ -20,7 +20,7 @@ import java.awt.*;
 /**
  * @author David Kaspar
  */
-// TODO - Scene.getComponent can return null before Scene.createView is called
+// TODO - Scene.getView can return null before Scene.createView is called
 public final class SwingBorder implements Border {
 
     private Scene scene;
@@ -33,11 +33,11 @@ public final class SwingBorder implements Border {
     }
 
     public Insets getInsets () {
-        return swingBorder.getBorderInsets (scene.getComponent ());
+        return swingBorder.getBorderInsets (scene.getView ());
     }
 
     public void paint (Graphics2D gr, Rectangle bounds) {
-        swingBorder.paintBorder (scene.getComponent (), gr, bounds.x, bounds.y, bounds.width, bounds.height);
+        swingBorder.paintBorder (scene.getView (), gr, bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     public boolean isOpaque () {

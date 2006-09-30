@@ -69,7 +69,7 @@ public final class SatelliteComponent extends JComponent implements MouseListene
         scene.paint (gr);
         gr.setTransform (previousTransform);
 
-        JComponent component = scene.getComponent ();
+        JComponent component = scene.getView ();
         double zoomFactor = scene.getZoomFactor ();
         Rectangle viewRectangle = component != null ? component.getVisibleRect () : null;
         if (viewRectangle != null) {
@@ -114,7 +114,7 @@ public final class SatelliteComponent extends JComponent implements MouseListene
     }
 
     private void moveVisibleRect (Point center) {
-        JComponent component = scene.getComponent ();
+        JComponent component = scene.getView ();
         if (component == null)
             return;
         double zoomFactor = scene.getZoomFactor ();

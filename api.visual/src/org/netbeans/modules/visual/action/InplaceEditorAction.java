@@ -69,7 +69,7 @@ public final class InplaceEditorAction <C extends JComponent> extends WidgetActi
             return false;
 
         Scene scene = widget.getScene ();
-        JComponent component = scene.getComponent ();
+        JComponent component = scene.getView ();
         if (component == null)
             return false;
 
