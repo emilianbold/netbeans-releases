@@ -28,8 +28,16 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
+ * This class represents a GraphPinScene for the VMD plug-in. Nodes, edges and pins are represented using String class.
+ * The visualization is done by: VMDNodeWidget for nodes, VMDPinWidget for pins, ConnectionWidget fro edges.
+ * <p>
+ * The scene has 4 layers: background, main, connection, upper.
+ * <p>
+ * The scene has following actions: zoom, panning, rectangular selection.
+ *
  * @author David Kaspar
  */
+// TODO - remove popup menu action
 public class VMDGraphScene extends GraphPinScene<String, String, String> {
 
     public static final String PIN_ID_DEFAULT_SUFFIX = "#default"; // NOI18N
@@ -45,6 +53,9 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
     private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction (new MyPopupMenuProvider ());
     private WidgetAction moveAction = ActionFactory.createMoveAction ();
 
+    /**
+     * Creates a VMD graph scene.
+     */
     public VMDGraphScene () {
         addChild (backgroundLayer);
         addChild (mainLayer);
@@ -58,6 +69,11 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         getActions ().addAction (ActionFactory.createRectangularSelectAction (this, backgroundLayer));
     }
 
+    /**
+     * Implements attaching a widget to a node. The widget is VMDNodeWidget and has object-hover, select, popup-menu and move actions.
+     * @param node the node
+     * @return the widget attached to the node
+     */
     protected Widget attachNodeWidget (String node) {
         VMDNodeWidget widget = new VMDNodeWidget (this);
         mainLayer.addChild (widget);
@@ -70,6 +86,13 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         return widget;
     }
 
+    /**
+     * Implements attaching a widget to a pin. The widget is VMDPinWidget and has object-hover and select action.
+     * The the node id ends with "#default" then the pin is the default pin of a node and therefore it is non-visual.
+     * @param node the node
+     * @param pin the pin
+     * @return the widget attached to the pin, null, if it is a default pin
+     */
     protected Widget attachPinWidget (String node, String pin) {
         if (pin.endsWith (PIN_ID_DEFAULT_SUFFIX))
             return null;
@@ -82,6 +105,11 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         return widget;
     }
 
+    /**
+     * Implements attaching a widget to an edge. the widget is ConnectionWidget and has object-hover, select and move-control-point actions.
+     * @param edge the edge
+     * @return the widget attached to the edge
+     */
     protected Widget attachEdgeWidget (String edge) {
         ConnectionWidget connectionWidget = new ConnectionWidget (this);
         connectionWidget.setRouter (router);
@@ -98,10 +126,26 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         return connectionWidget;
     }
 
+    /**
+     * Attaches an anchor of a source pin an edge.
+     * The anchor is a ProxyAnchor that switches between the anchor attached to the pin widget directly and
+     * the anchor attached to the pin node widget based on the minimize-state of the node.
+     * @param edge the edge
+     * @param oldSourcePin the old source pin
+     * @param sourcePin the new source pin
+     */
     protected void attachEdgeSourceAnchor (String edge, String oldSourcePin, String sourcePin) {
         ((ConnectionWidget) findWidget (edge)).setSourceAnchor (getPinAnchor (sourcePin));
     }
 
+    /**
+     * Attaches an anchor of a target pin an edge.
+     * The anchor is a ProxyAnchor that switches between the anchor attached to the pin widget directly and
+     * the anchor attached to the pin node widget based on the minimize-state of the node.
+     * @param edge the edge
+     * @param oldTargetPin the old target pin
+     * @param targetPin the new target pin
+     */
     protected void attachEdgeTargetAnchor (String edge, String oldTargetPin, String targetPin) {
         ((ConnectionWidget) findWidget (edge)).setTargetAnchor (getPinAnchor (targetPin));
     }

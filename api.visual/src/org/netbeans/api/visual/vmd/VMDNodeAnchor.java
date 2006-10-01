@@ -22,6 +22,10 @@ import java.util.HashMap;
 import java.util.Set;
 
 /**
+ * This class represents a node anchor. The anchor could be assign by multiple connection widgets.
+ * For each usage the anchor resolves a different possition.
+ * The position are resolved at the top and the bottom of the widget where the anchor is attached to.
+ *
  * @author David Kaspar
  */
 public class VMDNodeAnchor extends Anchor {
@@ -30,15 +34,27 @@ public class VMDNodeAnchor extends Anchor {
 
     private HashMap<Entry, Result> results = new HashMap<Entry, Result> ();
 
+    /**
+     * Creates a node anchor.
+     * @param widget the node widget where the anchor is attached to
+     */
     public VMDNodeAnchor (Widget widget) {
         super (widget);
         assert widget != null;
     }
 
+    /**
+     * Notifies when an entry is registered
+     * @param entry the registered entry
+     */
     protected void notifyEntryAdded (Entry entry) {
         requiresRecalculation = true;
     }
 
+    /**
+     * Notifies when an entry is unregistered
+     * @param entry the unregistered entry
+     */
     protected void notifyEntryRemoved (Entry entry) {
         results.remove (entry);
         requiresRecalculation = true;
@@ -108,6 +124,11 @@ public class VMDNodeAnchor extends Anchor {
         return entries;
     }
 
+    /**
+     * Computes a result (position and direction) for a specific entry.
+     * @param entry the entry
+     * @return the calculated result
+     */
     public Result compute (Entry entry) {
         recalculate ();
         return results.get (entry);

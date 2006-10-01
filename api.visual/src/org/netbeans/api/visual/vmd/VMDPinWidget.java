@@ -24,6 +24,8 @@ import java.awt.*;
 import java.util.List;
 
 /**
+ * This class represents a pin widget.
+ *
  * @author David Kaspar
  */
 public class VMDPinWidget extends Widget {
@@ -31,6 +33,10 @@ public class VMDPinWidget extends Widget {
     private LabelWidget nameWidget;
     private VMDGlyphSetWidget glyphsWidget;
 
+    /**
+     * Creates a pin widget.
+     * @param scene the scene
+     */
     public VMDPinWidget (Scene scene) {
         super (scene);
 
@@ -41,28 +47,54 @@ public class VMDPinWidget extends Widget {
         notifyStateChanged (ObjectState.createNormal (), ObjectState.createNormal ());
     }
 
+    /**
+     * Called to notify about the change of the widget state.
+     * @param previousState the previous state
+     * @param state the new state
+     */
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
         LookFeel lookFeel = getScene ().getLookFeel ();
         setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
         setForeground (lookFeel.getForeground (state));
     }
 
+    /**
+     * Returns a pin name widget.
+     * @return the pin name widget
+     */
     public Widget getPinNameWidget () {
         return nameWidget;
     }
 
+    /**
+     * Sets a pin name.
+     * @param name the pin name
+     */
     public void setPinName (String name) {
         nameWidget.setLabel (name);
     }
 
+    /**
+     * Returns a pin name.
+     * @return the pin name
+     */
     public String getPinName () {
         return nameWidget.getLabel();
     }
 
+    /**
+     * Sets pin glyphs.
+     * @param glyphs the list of images
+     */
     public void setGlyphs (List<Image> glyphs) {
         glyphsWidget.setGlyphs (glyphs);
     }
 
+    /**
+     * Sets all pin properties at once.
+     * @param name the pin name
+     * @param glyphs the pin glyphs
+     */
     public void setProperties (String name, List<Image> glyphs) {
         setPinName (name);
         glyphsWidget.setGlyphs (glyphs);

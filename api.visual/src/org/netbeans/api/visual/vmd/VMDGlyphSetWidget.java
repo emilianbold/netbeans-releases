@@ -22,15 +22,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * This widget represents a list of glyphs rendered horizontally one after another. A glyph is a small image - usually 16x16px.
+ *
  * @author David Kaspar
  */
 public class VMDGlyphSetWidget extends Widget {
 
+    /**
+     * Creates a glyph set widget.
+     * @param scene the scene
+     */
     public VMDGlyphSetWidget (Scene scene) {
         super (scene);
         setLayout (LayoutFactory.createHorizontalLayout ());
     }
 
+    /**
+     * Sets glyphs as a list of images.
+     * @param glyphs the list of images used as glyphs
+     */
     public void setGlyphs (List<Image> glyphs) {
         List<Widget> children = new ArrayList<Widget> (getChildren ());
         for (Widget widget : children)
