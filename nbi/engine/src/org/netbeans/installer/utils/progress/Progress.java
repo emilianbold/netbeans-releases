@@ -55,7 +55,7 @@ public class Progress {
         }
     }
     
-    private void notifyListeners() {
+    protected void notifyListeners() {
         for (ProgressListener listener: listeners.toArray(new ProgressListener[0])) {
             listener.progressUpdated(this);
         }
