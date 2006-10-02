@@ -139,6 +139,7 @@ Microsystems, Inc. All Rights Reserved.
         <module name="xtest/plugins_src/ide" testtypes="unit" attributes="stable"/>
         <module name="apisupport/refactoring" testtypes="qa-functional" attributes="validation"/>
         <module name="openide/loaders" testtypes="qa-functional" attributes="validation"/>
+        <module name="junit" testtypes="qa-functional" attributes="validation"/>
   </config>
 
   <!-- PERFORMANCE -->
