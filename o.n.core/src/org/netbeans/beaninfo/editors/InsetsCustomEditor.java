@@ -30,6 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import org.netbeans.core.UIExceptions;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -70,20 +71,16 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements PropertyCh
                                    " " + NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Insets") + " "),
                                new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
 
-        xLabel.setText (NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Top"));
-        yLabel.setText (NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Left"));
-        widthLabel.setText (NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Bottom"));
-        heightLabel.setText (NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Right"));
+        Mnemonics.setLocalizedText(xLabel, NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Top"));
+        Mnemonics.setLocalizedText(yLabel, NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Left"));
+        Mnemonics.setLocalizedText(widthLabel, NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Bottom"));
+        Mnemonics.setLocalizedText(heightLabel, NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Right"));
 
         xLabel.setLabelFor(xField);
         yLabel.setLabelFor(yField);
         widthLabel.setLabelFor(widthField);
         heightLabel.setLabelFor(heightField);
 
-        xLabel.setDisplayedMnemonic(NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Top_Mnemonic").charAt(0));
-        yLabel.setDisplayedMnemonic(NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Left_Mnemonic").charAt(0));
-        widthLabel.setDisplayedMnemonic(NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Bottom_Mnemonic").charAt(0));
-        heightLabel.setDisplayedMnemonic(NbBundle.getMessage (InsetsCustomEditor.class, "CTL_Right_Mnemonic").charAt(0));
 
         xField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (InsetsCustomEditor.class, "ACSD_CTL_Top"));
         yField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (InsetsCustomEditor.class, "ACSD_CTL_Left"));

@@ -31,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import org.netbeans.core.UIExceptions;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -63,20 +64,15 @@ implements KeyListener, PropertyChangeListener {
                                    " " + b.getString ("CTL_Rectangle") + " "),
                                new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
 
-        xLabel.setText (b.getString ("CTL_X"));
-        yLabel.setText (b.getString ("CTL_Y"));
-        widthLabel.setText (b.getString ("CTL_Width"));
-        heightLabel.setText (b.getString ("CTL_Height"));
+        Mnemonics.setLocalizedText(xLabel, b.getString ("CTL_X"));
+        Mnemonics.setLocalizedText(yLabel, b.getString ("CTL_Y"));
+        Mnemonics.setLocalizedText(widthLabel, b.getString ("CTL_Width"));
+        Mnemonics.setLocalizedText(heightLabel, b.getString ("CTL_Height"));
 
         xLabel.setLabelFor(xField);
         yLabel.setLabelFor(yField);
         widthLabel.setLabelFor(widthField);
         heightLabel.setLabelFor(heightField);
-
-        xLabel.setDisplayedMnemonic(b.getString ("CTL_X_Mnemonic").charAt(0));
-        yLabel.setDisplayedMnemonic(b.getString ("CTL_Y_Mnemonic").charAt(0));
-        widthLabel.setDisplayedMnemonic(b.getString ("CTL_Width_mnemonic").charAt(0));
-        heightLabel.setDisplayedMnemonic(b.getString ("CTL_Height_mnemonic").charAt(0));
 
         xField.getAccessibleContext().setAccessibleDescription(b.getString ("ACSD_CTL_X"));
         yField.getAccessibleContext().setAccessibleDescription(b.getString ("ACSD_CTL_Y"));

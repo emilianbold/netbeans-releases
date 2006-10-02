@@ -46,6 +46,7 @@ import org.netbeans.core.startup.CLIOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -99,10 +100,12 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         setPreferredSize(new Dimension(SIZE_PREFERRED_WIDTH,SIZE_PREFERRED_HEIGHT));
 
         java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(NotifyExcPanel.class);
-        next = new JButton (bundle.getString("CTL_NextException"));
+        next = new JButton ();
+        Mnemonics.setLocalizedText(next, bundle.getString("CTL_NextException"));
         // bugfix 25684, don't set Previous/Next as default capable
         next.setDefaultCapable (false);
-        previous = new JButton (bundle.getString("CTL_PreviousException"));
+        previous = new JButton ();
+        Mnemonics.setLocalizedText(previous, bundle.getString("CTL_PreviousException"));
         previous.setDefaultCapable (false);
         details = new JButton ();
         details.setDefaultCapable (false);
@@ -121,8 +124,6 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         add(new JScrollPane(output));
         setBorder( new javax.swing.border.BevelBorder(javax.swing.border.BevelBorder.LOWERED));
             
-        next.setMnemonic(bundle.getString("CTL_NextException_Mnemonic").charAt(0));
-        previous.setMnemonic(bundle.getString("CTL_PreviousException_Mnemonic").charAt(0));
         next.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_NextException"));
         previous.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PreviousException"));
         output.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ExceptionStackTrace"));
@@ -346,13 +347,11 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         previous.setVisible (exceptions.existsPreviousElement());
 
         if (showDetails) {
-            details.setText (org.openide.util.NbBundle.getBundle(NotifyExcPanel.class).getString("CTL_Exception_Hide_Details"));
-            details.setMnemonic(org.openide.util.NbBundle.getBundle(NotifyExcPanel.class).getString("CTL_Exception_Hide_Details_Mnemonic").charAt(0));
+            Mnemonics.setLocalizedText(details, org.openide.util.NbBundle.getBundle(NotifyExcPanel.class).getString("CTL_Exception_Hide_Details"));
             details.getAccessibleContext().setAccessibleDescription(
                 org.openide.util.NbBundle.getBundle(NotifyExcPanel.class).getString("ACSD_Exception_Hide_Details"));
         } else {
-            details.setText(org.openide.util.NbBundle.getBundle(NotifyExcPanel.class).getString("CTL_Exception_Show_Details"));
-            details.setMnemonic(org.openide.util.NbBundle.getBundle(NotifyExcPanel.class).getString("CTL_Exception_Show_Details_Mnemonic").charAt(0));
+            Mnemonics.setLocalizedText(details, org.openide.util.NbBundle.getBundle(NotifyExcPanel.class).getString("CTL_Exception_Show_Details"));
             details.getAccessibleContext().setAccessibleDescription(
                 org.openide.util.NbBundle.getBundle(NotifyExcPanel.class).getString("ACSD_Exception_Show_Details"));
         }

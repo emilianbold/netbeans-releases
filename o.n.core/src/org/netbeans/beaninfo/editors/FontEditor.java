@@ -29,6 +29,7 @@ import javax.swing.event.*;
 import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -241,23 +242,23 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.weightx = 1.0;
             c.insets = new Insets (0, 0, 0, 0);
             c.anchor = GridBagConstraints.WEST;
-            JLabel l = new JLabel (NbBundle.getMessage(FontEditor.class, "CTL_Font"));                    //NoI18N
-            l.setDisplayedMnemonic(NbBundle.getMessage(FontEditor.class, "CTL_Font_mnemonic").charAt(0)); //NoI18N
+            JLabel l = new JLabel ();
+            Mnemonics.setLocalizedText(l, NbBundle.getMessage(FontEditor.class, "CTL_Font"));                    //NoI18N
             l.setLabelFor(lFont);
             la.setConstraints (l, c);
             add (l);
 
             c.insets = new Insets (0, 5, 0, 0);
-            l = new JLabel (NbBundle.getMessage(FontEditor.class, "CTL_FontStyle"));                           //NoI18N
-            l.setDisplayedMnemonic(NbBundle.getMessage(FontEditor.class, "CTL_FontStyle_mnemonic").charAt(0)); //NoI18N
+            l = new JLabel ();                           //NoI18N
+            Mnemonics.setLocalizedText(l, NbBundle.getMessage(FontEditor.class, "CTL_FontStyle")); //NoI18N
             l.setLabelFor(lStyle);
             la.setConstraints (l, c);
             add (l);
 
             c.insets = new Insets (0, 5, 0, 0);
             c.gridwidth = GridBagConstraints.REMAINDER;
-            l = new JLabel (NbBundle.getMessage(FontEditor.class, "CTL_Size"));                           //NoI18N
-            l.setDisplayedMnemonic(NbBundle.getMessage(FontEditor.class, "CTL_Size_mnemonic").charAt(0)); //NoI18N
+            l = new JLabel ();
+            Mnemonics.setLocalizedText(l, NbBundle.getMessage(FontEditor.class, "CTL_Size"));                           //NoI18N
             l.setLabelFor(tfSize);
             la.setConstraints (l, c);
             add (l);

@@ -40,6 +40,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
@@ -132,9 +133,8 @@ final class FileSelector extends JPanel implements PropertyChangeListener, Explo
                 // Space between label and drop-down list
                 comboPanel.setLayout(new BorderLayout(5, 0));
 
-                // support for mnemonics (defaults to first char)
-                JLabel label = new JLabel(rootLabel.replace('&', ' '));
-                label.setDisplayedMnemonic(rootLabel.charAt(rootLabel.indexOf('&') + 1));
+                JLabel label = new JLabel();
+                Mnemonics.setLocalizedText(label, rootLabel);
                 label.setLabelFor(combo);
                 comboPanel.add(label, BorderLayout.WEST);
                 comboPanel.add(combo, BorderLayout.CENTER);

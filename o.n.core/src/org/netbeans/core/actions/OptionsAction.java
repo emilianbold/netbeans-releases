@@ -100,8 +100,8 @@ public class OptionsAction extends CallableSystemAction {
                 Dialog dialog = dialogWRef.get();
 
                 if(dialog == null || !dialog.isShowing()) {
-                    JButton closeButton = new JButton(NbBundle.getMessage(OptionsAction.class, "CTL_close_button"));
-                    closeButton.setMnemonic(NbBundle.getMessage(OptionsAction.class, "CTL_close_button_mnemonic").charAt(0));
+                    JButton closeButton = new JButton();
+                    Mnemonics.setLocalizedText(closeButton, NbBundle.getMessage(OptionsAction.class, "CTL_close_button"));
                     closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OptionsAction.class, "ACSD_close_button"));
                     String title = (String) OptionsAction.this.getValue 
                         ("optionsDialogTitle");

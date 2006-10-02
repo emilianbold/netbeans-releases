@@ -24,6 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ResourceBundle;
 import org.netbeans.core.UIExceptions;
+import org.openide.awt.Mnemonics;
 
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
@@ -47,11 +48,9 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Propert
         
         if (dimension == null) dimension = new Dimension (0, 0);
         jLabel1.setText(NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Dimension"));
-        widthLabel.setText (NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Width"));
-        widthLabel.setDisplayedMnemonic(NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Width_mnemonic").charAt(0));
+        Mnemonics.setLocalizedText(widthLabel, NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Width"));
         widthLabel.setLabelFor(widthField);
-        heightLabel.setText (NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Height"));
-        heightLabel.setDisplayedMnemonic(NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Height_mnemonic").charAt(0));
+        Mnemonics.setLocalizedText(heightLabel, NbBundle.getMessage(DimensionCustomEditor.class, "CTL_Height"));
         heightLabel.setLabelFor(heightField);
 
         widthField.setText (String.valueOf(dimension.width));
