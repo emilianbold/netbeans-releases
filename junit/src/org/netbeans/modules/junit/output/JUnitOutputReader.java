@@ -27,6 +27,7 @@ import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.UnsupportedCharsetException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -98,6 +99,10 @@ final class JUnitOutputReader {
      * @see  #progressHandle
      */
     private boolean isDeterminateProgress;
+    /** */
+    private MessageFormat progressStepFormatSuiteName;
+    /** */
+    private MessageFormat progressStepFormatAnonymous;
     /** whether XML report is expected */
     private boolean expectXmlReport;
     /** */
@@ -589,10 +594,55 @@ final class JUnitOutputReader {
     }
     
     /**
+     * Updates the progress message - displays name of the running suite.
+     * 
+     * @param  suiteName  name of the running suite, or {@code null}
+     */
+    private String getProgressStepMessage(String suiteName) {
+        String msg;
+        
+        if (isDeterminateProgress) {
+            MessageFormat messageFormat;
+            Object[] messageParams;
+            if (suiteName != null) {
+                if (progressStepFormatSuiteName == null) {
+                    progressStepFormatSuiteName = new MessageFormat(
+                            NbBundle.getMessage(
+                                  getClass(),
+                                  "MSG_ProgressStepMessage"));          //NOI18N
+                }
+                messageFormat = progressStepFormatSuiteName;
+                messageParams = new Object[] {suiteName,
+                                              executedSuitesCount + 1,
+                                              expectedSuitesCount};
+            } else {
+                if (progressStepFormatAnonymous == null) {
+                    progressStepFormatAnonymous = new MessageFormat(
+                            NbBundle.getMessage(
+                                  getClass(),
+                                  "MSG_ProgressStepMessageAnonymous")); //NOI18N
+                }
+                messageFormat = progressStepFormatAnonymous;
+                messageParams = new Object[] {executedSuitesCount + 1,
+                                              expectedSuitesCount};
+            }
+            msg = messageFormat.format(messageParams, new StringBuffer(), null)
+                  .toString();
+        } else {
+            msg = (suiteName != null) ? suiteName : "";                 //NOI18N
+        }
+        return msg;
+    }
+    
+    /**
      *
      */
     private int getProcessedWorkunits() {
+        try {
         return executedSuitesCount * PROGRESS_WORKUNITS / expectedSuitesCount;
+        } catch (Exception ex) {
+            return 0;
+        }
     }
     
     /**
@@ -611,11 +661,21 @@ final class JUnitOutputReader {
      * Notifies that a test suite was just started.
      *
      * @param  suiteName  name of the suite; or {@code null}
-     *                    in the case of anonymous suite
+     *                    if the suite name is unknown
      */
     private Report suiteStarted(final String suiteName) {
         closePreviousReport();
         report = createReport(suiteName);
+        
+        String stepMessage = getProgressStepMessage(suiteName);
+        if (expectedSuitesCount <= executedSuitesCount) {
+            expectedSuitesCount = executedSuitesCount + 1;
+        }
+        if (executedSuitesCount != 0) {
+            progressHandle.progress(stepMessage, getProcessedWorkunits());
+        } else {
+            progressHandle.progress(stepMessage);
+        }
                 
         Manager.getInstance().displaySuiteRunning(session,
                                                   sessionType,
@@ -627,12 +687,6 @@ final class JUnitOutputReader {
      */
     private void suiteFinished(final Report report) {
         executedSuitesCount++;
-        if (executedSuitesCount > expectedSuitesCount) {
-            expectedSuitesCount = executedSuitesCount;
-        }
-        if (isDeterminateProgress) {
-            updateProgress();
-        }
         
         Manager.getInstance().displayReport(session, sessionType, report);
     }
