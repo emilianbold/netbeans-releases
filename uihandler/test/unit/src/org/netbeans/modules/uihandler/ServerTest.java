@@ -108,7 +108,7 @@ public class ServerTest extends NbTestCase {
         
         List<LogRecord> recs = new ArrayList<LogRecord>();
         recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
-        URL redir = Installer.uploadLogs(u, Collections.<String,String>emptyMap(), recs);
+        URL redir = Installer.uploadLogs(u, null, Collections.<String,String>emptyMap(), recs);
 
         assertTrue("one query has been sent: " + query, query.isEmpty());
         assertEquals("One reply received", 1, reply.size());
@@ -126,7 +126,7 @@ public class ServerTest extends NbTestCase {
         
         List<LogRecord> recs = new ArrayList<LogRecord>();
         recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
-        URL redir = Installer.uploadLogs(u, Collections.<String,String>emptyMap(), recs);
+        URL redir = Installer.uploadLogs(u, null, Collections.<String,String>emptyMap(), recs);
 
         assertTrue("one query has been sent: " + query, query.isEmpty());
         assertEquals("One reply received", 1, reply.size());

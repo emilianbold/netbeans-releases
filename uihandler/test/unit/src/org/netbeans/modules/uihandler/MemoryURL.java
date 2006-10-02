@@ -20,14 +20,17 @@
 package org.netbeans.modules.uihandler;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.util.HashMap;
 import java.util.Map;
+import junit.framework.Assert;
 
 /**
  *
@@ -49,11 +52,18 @@ public class MemoryURL extends URLStreamHandler {
     }
     
     private static Map<String,InputStream> contents = new HashMap<String,InputStream>();
+    private static Map<String,ByteArrayOutputStream> outputs = new HashMap<String,ByteArrayOutputStream>();
     public static void registerURL(String u, String content) {
         contents.put(u, new ByteArrayInputStream(content.getBytes()));
     }
     public static void registerURL(String u, InputStream content) {
         contents.put(u, content);
+    }
+    
+    public static String getOutputForURL(String u) {
+        ByteArrayOutputStream out = outputs.get(u);
+        Assert.assertNotNull("No output for " + u, out);
+        return out.toString();
     }
 
     protected URLConnection openConnection(URL u) throws IOException {
@@ -81,7 +91,14 @@ public class MemoryURL extends URLStreamHandler {
             connect();
             return values;
         }
-        
-        
+
+        public OutputStream getOutputStream() throws IOException {
+            ByteArrayOutputStream out = outputs.get(url.toExternalForm());
+            if (out == null) {
+                out = new ByteArrayOutputStream();
+                outputs.put(url.toExternalForm(), out);
+            }
+            return out;
+        }
     }
 }

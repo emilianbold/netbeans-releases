@@ -18,10 +18,15 @@
  */
 package org.netbeans.modules.uihandler;
 
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -37,10 +42,12 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 import javax.swing.JButton;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.lib.uihandler.LogRecords;
 import org.netbeans.modules.uihandler.api.Activated;
 import org.netbeans.modules.uihandler.api.Deactivated;
 import org.openide.DialogDisplayer;
@@ -53,6 +60,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -191,7 +199,7 @@ public class Installer extends ModuleInstall {
                 }
                 URL nextURL = null;
                 try {
-                    nextURL = uploadLogs(postURL, Collections.<String,String>emptyMap(), recs);
+                    nextURL = uploadLogs(postURL, findIdentity(), Collections.<String,String>emptyMap(), recs);
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 }
@@ -261,7 +269,7 @@ public class Installer extends ModuleInstall {
         return buttons.toArray();
     }
 
-    static URL uploadLogs(URL postURL, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
+    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
         URLConnection conn = postURL.openConnection();
         
         conn.setDoOutput(true);
@@ -272,31 +280,35 @@ public class Installer extends ModuleInstall {
         os.println("POST " + postURL.getPath() + " HTTP/1.1");
         os.println("Pragma: no-cache");
         os.println("Cache-control: no-cache");
-        os.println("Content-Type: multipart/form-data; boundary=----------konecbloku");
+        os.println("Content-Type: multipart/form-data; boundary=--------konec<>bloku");
         os.println();
         
         for (Map.Entry<String, String> en : attrs.entrySet()) {
-            os.println("----------konecbloku");
+            os.println("----------konec<>bloku");
             os.println("Content-Disposition: form-data; name=\"" + en.getKey() + "\"");
             os.println();
             os.println(en.getValue().getBytes());
         }
         
-        os.println("----------konecbloku");
-        os.println("Content-Disposition: form-data; name=\"logs\"");
+        os.println("----------konec<>bloku");
+        
+        if (id == null) {
+            id = "uigestures"; // NOI18N
+        }
+        
+        os.println("Content-Disposition: form-data; name=\"logs\"; filename=\"" + id + "\"");
         os.println("Content-Type: x-application/gzip");
         os.println();
-/*        GZIPOutputStream gzip = new GZIPOutputStream(os);
+        GZIPOutputStream gzip = new GZIPOutputStream(os);
+        DataOutputStream data = new DataOutputStream(gzip);
+        data.writeChars("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); // NOI18N
+        data.writeChars("<uigestures version='1.0'>\n"); // NOI18N
         for (LogRecord r : recs) {
+            LogRecords.write(data, r);
         }
+        data.flush();
         gzip.finish();
- */
-        ObjectOutputStream oos = new ObjectOutputStream(os);
-        for (LogRecord r: recs) {
-            oos.writeObject(r);
-        }
-        oos.flush();
-        os.println("----------konecbloku--");
+        os.println("----------konec<>bloku--");
         os.close();
        
         
@@ -314,14 +326,44 @@ public class Installer extends ModuleInstall {
         LOG.fine("Reply from uploadLogs:");
         LOG.fine(redir.toString());
         
-        Pattern p = Pattern.compile("<meta *http-equiv=.Refresh. *content.*url=['\"]?([^'\" ]*) *['\"]", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        Pattern p = Pattern.compile("<meta\\s*http-equiv=.Refresh.\\s*content.*url=['\"]?([^'\" ]*)\\s*['\"]", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
         Matcher m = p.matcher(redir);
         
         if (m.find()) {
             return new URL(m.group(1));
         } else {
-            return null;
+            File f = File.createTempFile("uipage", "html");
+            FileWriter w = new FileWriter(f);
+            w.write(redir.toString());
+            w.close();
+            return f.toURI().toURL();
         }
+    }
+    
+    private static String findIdentity() {
+        try {
+            ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            if (l == null) {
+                l = Installer.class.getClassLoader();
+            }
+            
+            Class<?> settings0 = Class.forName("org.netbeans.modules.autoupdate.Settings", true, l);
+            Class<? extends SharedClassObject> settings = settings0.asSubclass(SharedClassObject.class);
+            Method m = settings.getMethod("getIdeIdentity"); // NOI18N
+            
+            SharedClassObject autoUpdateSettings = SharedClassObject.findObject(settings);
+            
+            return (String)m.invoke(autoUpdateSettings);
+        } catch (IllegalAccessException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        } catch (InvocationTargetException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        } catch (ClassNotFoundException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        } catch (NoSuchMethodException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        }
+        return null;
     }
     
     static final class Form extends Object {
