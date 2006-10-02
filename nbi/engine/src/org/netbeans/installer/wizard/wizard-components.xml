@@ -2,7 +2,7 @@
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
     <component class="org.netbeans.installer.wizard.components.panels.TextPanel">
         <properties>
-            <property name="text"><![CDATA[<html><h1>Welcome</h1>to the NetBeans Installer Milestone 1.</html>]]></property>
+            <property name="text"><![CDATA[<html><h1>Welcome</h1>to the NetBeans Installer Milestone 2.</html>]]></property>
             <property name="content.type">text/html</property>
         </properties>
     </component>
