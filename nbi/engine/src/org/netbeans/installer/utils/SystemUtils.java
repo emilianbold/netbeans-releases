@@ -55,9 +55,7 @@ public abstract class SystemUtils {
                 default:
                     instance = new GenericSystemUtils();
                     break;
-                    
             }
-            instance.loadNativeLibrary();
         }
         return instance;
     }
@@ -90,15 +88,13 @@ public abstract class SystemUtils {
     
     public abstract long getFreeSpace(File file);
     
-    protected abstract String getNativeLibraryPath();
-    
-    public abstract void loadNativeLibrary();
-    
     public abstract ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException;
     
     public abstract ExecutionResults executeCommand(String... command) throws IOException;
     
     public abstract boolean isPathValid(String path);
+    
+    public abstract boolean isPortAvailable(int port);
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
