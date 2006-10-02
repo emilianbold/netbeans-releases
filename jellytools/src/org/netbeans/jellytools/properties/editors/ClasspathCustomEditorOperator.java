@@ -65,7 +65,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btAddDirectory() {
         if (_btAddDirectory==null) {
-            _btAddDirectory = new JButtonOperator(this, Bundle.getString(
+            _btAddDirectory = new JButtonOperator(this, Bundle.getStringTrimmed(
                                             "org.netbeans.core.execution.beaninfo.editors.Bundle",
                                             "CTL_AddDirectory"));
         }
@@ -78,7 +78,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btMoveDown() {
         if (_btMoveDown==null) {
-            _btMoveDown = new JButtonOperator(this, Bundle.getString(
+            _btMoveDown = new JButtonOperator(this, Bundle.getStringTrimmed(
                                             "org.netbeans.core.execution.beaninfo.editors.Bundle",
                                             "CTL_MoveDown"));
         }
@@ -102,7 +102,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btAddJARZIP() {
         if (_btAddJARZIP==null) {
-            _btAddJARZIP = new JButtonOperator(this, Bundle.getString(
+            _btAddJARZIP = new JButtonOperator(this, Bundle.getStringTrimmed(
                                             "org.netbeans.core.execution.beaninfo.editors.Bundle", 
                                             "CTL_AddJAR"));
         }
@@ -115,7 +115,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btRemove() {
         if (_btRemove==null) {
-            _btRemove = new JButtonOperator(this, Bundle.getString(
+            _btRemove = new JButtonOperator(this, Bundle.getStringTrimmed(
                                             "org.netbeans.core.execution.beaninfo.editors.Bundle", 
                                             "CTL_Remove"));
         }
@@ -128,7 +128,7 @@ public class ClasspathCustomEditorOperator extends NbDialogOperator {
      */
     public JButtonOperator btMoveUp() {
         if (_btMoveUp==null) {
-            _btMoveUp = new JButtonOperator(this, Bundle.getString(
+            _btMoveUp = new JButtonOperator(this, Bundle.getStringTrimmed(
                                             "org.netbeans.core.execution.beaninfo.editors.Bundle", 
                                             "CTL_MoveUp"));
         }
