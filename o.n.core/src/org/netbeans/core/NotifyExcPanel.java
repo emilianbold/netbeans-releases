@@ -154,6 +154,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         if( null != lastBounds )
             dialog.setBounds( lastBounds );
+        
+        dialog.getAccessibleContext().setAccessibleName(bundle.getString("ACN_NotifyExcPanel_Dialog")); // NOI18N
+        dialog.getAccessibleContext().setAccessibleDescription(bundle.getString("ACD_NotifyExcPanel_Dialog")); // NOI18N
     }
 
     private static boolean isModalDialogPresent() {

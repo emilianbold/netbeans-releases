@@ -294,6 +294,8 @@ public class NotifyDescriptor extends Object {
             area.setLineWrap(true);
             area.setWrapStyleWord(true);
             area.setEditable(false);
+            area.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NotifyDescriptor.class, "ACN_NotifyDescriptor_MessageJTextArea")); // NOI18N
+            area.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NotifyDescriptor.class, "ACD_NotifyDescriptor_MessageJTextArea")); // NOI18N
             newMessage = area;
         }
 
