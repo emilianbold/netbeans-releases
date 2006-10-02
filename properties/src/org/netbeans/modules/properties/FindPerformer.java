@@ -425,6 +425,21 @@ public class FindPerformer extends javax.swing.AbstractAction
                                             }
                                         }
                                         // update selection & edit
+                                        if (table.isEditing()) {
+                                            /*
+                                             * If the cell at (result[1], result[0]) is currently being edited,
+                                             * method setSelectionInterval does not finish the current editing
+                                             * session and the selection is not changed. But the result
+                                             * of calling setSelectionInterval(...) is that method
+                                             * BundleEditPanel.updateSelection(...) is called which sets value
+                                             * and comment from the cell at (result[1], result[0]).
+                                             * The consequence of these steps is that values from
+                                             * cell (result[1], result[0]) are set to the cell currently being
+                                             * edited - see bug #81934
+                                             * (http://www.netbeans.org/issues/show_bug.cgi?id=81934).
+                                             */
+                                            table.getCellEditor().stopCellEditing();
+                                        }
                                         table.getColumnModel().getSelectionModel().setSelectionInterval(result[1], result[1]);
                                         table.getSelectionModel().setSelectionInterval(result[0], result[0]);
                                         // set editable cell
