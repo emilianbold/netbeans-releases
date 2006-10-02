@@ -259,8 +259,7 @@ public class FormEditor {
         formLoaded = true;
 	
         getCodeGenerator().initialize(formModel);
-        if (!"".equals(getI18nSupport().getDesignLocale()))
-            getI18nSupport().updateDesignLocale(); // translate...
+        getI18nSupport(); // creates and inits I18nSupport
 
         formModel.fireFormLoaded();
         if (formModel.wasCorrected()) // model repaired or upgraded
@@ -574,7 +573,7 @@ public class FormEditor {
     void closeForm() {
         if (formLoaded) {
             formModel.fireFormToBeClosed();
-            
+
             openForms.remove(formModel);
             formModelToAssistant.remove(formModel);
             formLoaded = false;

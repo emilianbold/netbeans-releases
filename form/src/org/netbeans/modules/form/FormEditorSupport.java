@@ -224,9 +224,6 @@ public class FormEditorSupport extends JavaEditor
         try {
             if (formEditor != null) {
                 formEditor.saveFormData();
-                I18nSupport i18nSupport = formEditor.getI18nSupport();
-                if (i18nSupport != null)
-                    i18nSupport.autoSave();
             }
             saving = true; // workaround for bug 75225
             super.saveDocument();
@@ -380,9 +377,6 @@ public class FormEditorSupport extends JavaEditor
 
         super.notifyClosed(); // close java editor
         if (formEditor != null) {
-            I18nSupport i18nSupport = formEditor.getI18nSupport();
-            if (i18nSupport != null)
-                i18nSupport.close();
             formEditor.closeForm();
             formEditor = null;
             multiviewTC = null;

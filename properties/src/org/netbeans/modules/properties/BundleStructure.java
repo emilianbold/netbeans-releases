@@ -363,6 +363,7 @@ public class BundleStructure {
     }
 
     public void setAllData(String key, String[] data) {
+        // create missing file entries
         boolean entryCreated = false;
         for (int i=0; i < data.length; i+=3) {
             String locale = data[i];
@@ -375,13 +376,14 @@ public class BundleStructure {
                 }
             }
             if (localeFile == null) {
-                Util.createLocaleFile(obj, locale.substring(1));
+                Util.createLocaleFile(obj, locale.substring(1), false);
                 entryCreated = true;
             }
         }
         if (entryCreated)
             updateEntries();
 
+        // add all provided data
         for (int i=0; i < data.length; i+=3) {
             String locale = data[i];
             for (int j=0; j < getEntryCount(); j++) {
@@ -389,9 +391,37 @@ public class BundleStructure {
                 if (pfe != null && Util.getLocaleSuffix(pfe).equals(locale)) {
                     PropertiesStructure ps = pfe.getHandler().getStructure();
                     if (ps != null) {
-                        ps.addItem(key, data[i+1], data[i+2]);
+                        Element.ItemElem item = ps.getItem(key);
+                        if (item != null) {
+                            item.setValue(data[i+1]);
+                            item.setComment(data[i+2]);
+                        }
+                        else {
+                            ps.addItem(key, data[i+1], data[i+2]);
+                        }
                     }
                     break;
+                }
+            }
+        }
+
+        // remove superfluous data
+        if (getEntryCount() > data.length/3) {
+            for (int j=0; j < getEntryCount(); j++) {
+                PropertiesFileEntry pfe = getNthEntry(j);
+                PropertiesStructure ps = pfe.getHandler().getStructure();
+                if (pfe == null || ps == null) continue;
+
+                boolean found = false;
+                for (int i=0; i < data.length; i+=3) {
+                    String locale = data[i];
+                    if (Util.getLocaleSuffix(pfe).equals(locale)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    ps.deleteItem(key);
                 }
             }
         }

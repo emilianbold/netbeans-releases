@@ -52,7 +52,14 @@ import org.netbeans.modules.form.I18nValue;
  */
 public class I18nServiceImpl implements I18nService {
 
-    private java.util.Map changedDOMap; // remembered changed DataObjects
+    // remembered original state for changes made for given source data objects
+    // mapping source DO to a map of properties DO to ChangeInfo
+    private Map/*<DataObject, Map<DataObject, ChangeInfo>>*/ changesMap = new HashMap();
+
+    private static class ChangeInfo {
+        Map/*<String, Object]>*/ changed = new HashMap(); // for each key holds all data across all locales
+        Set/*<String>*/ added = new HashSet(); // holds keys that were not originally present
+    }
 
     /**
      * Creates I18nValue object for given key and value. Should not be added
@@ -137,22 +144,27 @@ public class I18nServiceImpl implements I18nService {
                 }
             }
 
-            if (canRemove && oldI18nString.getKey() != null) {
+            String oldKey = oldI18nString.getKey();
+            if (canRemove && oldKey != null) {
+                JavaResourceHolder jrh = (JavaResourceHolder) oldRH;
+                Object allData = jrh.getAllData(oldKey);
+                registerChange(srcDataObject, oldRes, oldKey, allData);
+
                 if (newI18nString == null
                     || newI18nString.getKey() == null
-                    || !newI18nString.getKey().equals(oldI18nString.getKey())
+                    || !newI18nString.getKey().equals(oldKey)
                     || newRes != oldRes)
                 {   // removing i18n value, changing key, or moving to another properties file
-                    // -> need to remove the properties of the old value
-                    JavaResourceHolder jrh = (JavaResourceHolder) oldRH;
-                    oldI18nString.allData = jrh.getAllData(oldI18nString.getKey());
-                    jrh.removeProperty(oldI18nString.getKey());
-                    // [remove empty file - autocreated?]
+                    oldI18nString.allData = allData;
+                    jrh.removeProperty(oldKey);
                     if (newI18nString != null)
                         newI18nString.allData = oldI18nString.allData;
-
-                    registerChangedDataObject(srcDataObject, oldRes);
                 }
+                else if (localeSuffix != null && !localeSuffix.equals("")) { // NOI18N
+                    // remember all locale data (to be able to undo adding new specific value to a locale)
+                    oldI18nString.allData = allData;
+                }
+
                 if (newI18nString == null
                     && oldRes == getPropertiesDataObject(srcDataObject, bundleName))
                 {   // forget the resource bundle file - may want different next time
@@ -192,7 +204,7 @@ public class I18nServiceImpl implements I18nService {
                 else {
                     rh.addProperty(key, newI18nString.getValue(), newI18nString.getComment(), true);
                 }
-                registerChangedDataObject(srcDataObject, rh.getResource());
+                registerChange(srcDataObject, rh.getResource(), newI18nString.getKey(), null);
             }
         }
     }
@@ -335,7 +347,8 @@ public class I18nServiceImpl implements I18nService {
                 public void actionPerformed(ActionEvent evt) {
                     if (evt.getSource() == DialogDescriptor.OK_OPTION) {
                         String locale = localePanel.getLocale().toString();
-                        org.netbeans.modules.properties.Util.createLocaleFile(propertiesDO, locale);
+                        org.netbeans.modules.properties.Util.createLocaleFile(
+                                propertiesDO, locale, false);
                         prEd.setValue("_" + locale); // NOI18N
                     }
                     dialog[0].setVisible(false);
@@ -353,33 +366,61 @@ public class I18nServiceImpl implements I18nService {
      * saved as well.
      */
     public void autoSave(DataObject srcDataObject) {
-        Set relatedSet = changedDOMap != null ? (Set) changedDOMap.get(srcDataObject) : null;
-        if (relatedSet != null) {
-            for (Iterator it=relatedSet.iterator(); it.hasNext(); ) {
-                try {
-                    DataObject dobj = (DataObject) it.next();
-                    EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-                    if (ec == null || ec.getOpenedPanes() == null) { // no editor opened
-                        SaveCookie save = (SaveCookie) dobj.getCookie(SaveCookie.class);
-                        if (save != null)
-                            save.save();
+        Map/*<DataObject, ChangeInfo>*/ relatedMap = (Map) changesMap.remove(srcDataObject);
+        if (relatedMap != null) {
+            for (Iterator it=relatedMap.keySet().iterator(); it.hasNext(); ) {
+                DataObject propertiesDO = (DataObject) it.next();
+                // [not sure: should we auto-save only bundles not opened in the editor?
+                //  perhaps it's OK to save always...]
+                SaveCookie save = (SaveCookie) propertiesDO.getCookie(SaveCookie.class);
+                if (save != null) {
+                    try {
+                        save.save();
+                    }
+                    catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
                 }
-                catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
             }
-            changedDOMap.remove(srcDataObject);
         }
     }
 
     /**
      * Called when a form is closed without saving changes. The changes in
-     * corresponding properties file can be discarded as well.
+     * corresponding properties file need to be discarded (reverted) as well.
      */
     public void close(DataObject srcDataObject) {
-        if (changedDOMap != null)
-            changedDOMap.remove(srcDataObject);
+        Map/*<DataObject, ChangeInfo>*/ relatedMap = (Map) changesMap.remove(srcDataObject);
+        if (relatedMap != null) {
+            for (Iterator it=relatedMap.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry/*<DataObject, ChangeInfo>*/ e = (Map.Entry) it.next();
+                PropertiesDataObject propertiesDO = (PropertiesDataObject) e.getKey();
+                ChangeInfo changes = (ChangeInfo) e.getValue();
+                JavaResourceHolder rh = new JavaResourceHolder();
+                rh.setResource(propertiesDO);
+                for (Iterator/*<Map.Entry<String, Object>>*/ it2=changes.changed.entrySet().iterator(); it2.hasNext(); ) {
+                    Map.Entry/*<String, Object>*/ e2 = (Map.Entry) it2.next();
+                    String key = (String) e2.getKey();
+                    Object allData = e2.getValue();
+                    rh.setAllData(key, allData);
+                }
+                for (Iterator it2=changes.added.iterator(); it2.hasNext(); ) {
+                    String key = (String) it2.next();
+                    rh.removeProperty(key);
+                }
+                // [not sure: should we save the bundle for consistency?
+                //  perhaps not necessary...]
+//                SaveCookie save = (SaveCookie) propertiesDO.getCookie(SaveCookie.class);
+//                if (save != null) {
+//                    try {
+//                        save.save();
+//                    }
+//                    catch (IOException ex) {
+//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//                    }
+//                }
+            }
+        }
     }
 
     /**
@@ -443,14 +484,28 @@ public class I18nServiceImpl implements I18nService {
         return null; // [throw exception - can't create properties file?]
     }
 
-    private void registerChangedDataObject(DataObject srcDO, DataObject dobj) {
-        if (changedDOMap == null)
-            changedDOMap = new HashMap();
-        Set relatedSet = (Set) changedDOMap.get(srcDO);
-        if (relatedSet == null) {
-            relatedSet = new HashSet();
-            changedDOMap.put(srcDO, relatedSet);
+    /**
+     * Keeps original data from properties file when first change is done in
+     * given properties file for given source file (form). If the source file
+     * is discarded later, all relevant changes in the properties file are reverted.
+     */
+    private void registerChange(DataObject srcDO, DataObject propertiesDO, String key, Object allData) {
+        Map/*<DataObject, ChangeInfo>*/ relatedMap = (Map) changesMap.get(srcDO);
+        if (relatedMap == null) {
+            relatedMap = new HashMap();
+            changesMap.put(srcDO, relatedMap);
         }
-        relatedSet.add(dobj);
+        ChangeInfo changes = (ChangeInfo) relatedMap.get(propertiesDO);
+        if (changes == null) {
+            changes = new ChangeInfo();
+            relatedMap.put(propertiesDO, changes);
+        }
+        if (!changes.changed.containsKey(key) && !changes.added.contains(key)) {
+            // original state of this key not registered yet
+            if (allData != null) // something changed in existing data
+                changes.changed.put(key, allData); // allData contains original data
+            else // new key added
+                changes.added.add(key);
+        }
     }
 }

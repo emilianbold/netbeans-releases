@@ -244,7 +244,7 @@ public class PropertiesDataNode extends DataNode {
                     public void actionPerformed(ActionEvent evt) {
                         if (evt.getSource() == DialogDescriptor.OK_OPTION) {
                         // OK pressed
-                            Util.createLocaleFile(propertiesDataObject, panel.getLocale().toString());
+                            Util.createLocaleFile(propertiesDataObject, panel.getLocale().toString(), true);
                         }
                         dialog[0].setVisible(false);
                         dialog[0].dispose();

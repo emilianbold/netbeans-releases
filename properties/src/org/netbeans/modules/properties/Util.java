@@ -29,6 +29,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.FileEntry;
 
 import org.openide.loaders.MultiDataObject;
@@ -343,7 +344,10 @@ public final class Util extends Object {
             DialogDisplayer.getDefault().notify(msg);
     }
     
-    public static void createLocaleFile(PropertiesDataObject propertiesDataObject, String locale) {
+    public static void createLocaleFile(PropertiesDataObject propertiesDataObject,
+                                        String locale,
+                                        boolean copyInitialContent)
+    {
         try {
             if(locale.length() == 0) {
                 // It would mean default locale to create again.
@@ -365,11 +369,16 @@ public final class Util extends Object {
                 if (file.getName().equals(newName))
                     return; // do nothing if the file already exists
 
+                if (!copyInitialContent) { // we'll create an empty file
+                    FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+                    file = defaultFS.findResource("Templates/Other/properties.properties"); // NOI18N
+                }
+
+                final FileObject templateFile = file;
+
                 SaveCookie save = (SaveCookie) propertiesDataObject.getCookie(SaveCookie.class);
                 if (save != null)
                     save.save();
-
-                final FileObject templateFile = file;
 
                 // Actually create new file.
                 // First try to create new file and load it by document content from default(=primary) file.
