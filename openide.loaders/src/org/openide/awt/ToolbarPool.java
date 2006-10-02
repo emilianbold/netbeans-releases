@@ -125,7 +125,8 @@ public final class ToolbarPool extends JComponent implements Accessible {
                 setBorder( BorderFactory.createEtchedBorder() );
             }
         } else if ("GTK".equals(UIManager.getLookAndFeel().getID())) {
-            setBorder (BorderFactory.createEmptyBorder(5, 0, 3, 0));
+            //No border
+            setBorder (BorderFactory.createEmptyBorder(0, 0, 0, 0));
         }
     }
     
