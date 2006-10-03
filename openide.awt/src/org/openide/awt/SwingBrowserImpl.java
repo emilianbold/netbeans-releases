@@ -147,31 +147,33 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
     /**
     * Reloads current html page.
     */
-    public synchronized void reloadDocument() {
-        try {
-            if ((url == null) || (loadingURL != null)) {
-                return;
-            }
-
-            Document doc = swingBrowser.getDocument();
-            loadingURL = url;
-
-            if (doc instanceof AbstractDocument) {
-                String protocol = url.getProtocol();
-
-                if ("ftp".equalsIgnoreCase(protocol) // NOI18N
-                         ||"http".equalsIgnoreCase(protocol) // NOI18N
-                ) {
-                    ((AbstractDocument) doc).setAsynchronousLoadPriority(Thread.NORM_PRIORITY);
-                } else {
-                    ((AbstractDocument) doc).setAsynchronousLoadPriority(-1);
+    public void reloadDocument() {
+        synchronized (rp) {
+            try {
+                if ((url == null) || (loadingURL != null)) {
+                    return;
                 }
-            }
 
-            rp.post(this);
-        } catch (Exception e) {
-            LOG.log(Level.WARNING, null, e);
-            pcs.firePropertyChange(PROP_STATUS_MESSAGE, null, statusMessage = "" + e); // NOI18N
+                Document doc = swingBrowser.getDocument();
+                loadingURL = url;
+
+                if (doc instanceof AbstractDocument) {
+                    String protocol = url.getProtocol();
+
+                    if ("ftp".equalsIgnoreCase(protocol) // NOI18N
+                             ||"http".equalsIgnoreCase(protocol) // NOI18N
+                    ) {
+                        ((AbstractDocument) doc).setAsynchronousLoadPriority(Thread.NORM_PRIORITY);
+                    } else {
+                        ((AbstractDocument) doc).setAsynchronousLoadPriority(-1);
+                    }
+                }
+
+                rp.post(this);
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, null, e);
+                pcs.firePropertyChange(PROP_STATUS_MESSAGE, null, statusMessage = "" + e); // NOI18N
+            }
         }
     }
 
@@ -186,18 +188,20 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
     *
     * @param url URL to show in the browser.
     */
-    public synchronized void setURL(URL url) {
-        try {
-            if (url == null) {
-                return;
+    public void setURL(URL url) {
+        synchronized (rp) {
+            try {
+                if (url == null) {
+                    return;
+                }
+
+                loadingURL = url;
+
+                rp.post(this);
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, null, e);
+                pcs.firePropertyChange(PROP_STATUS_MESSAGE, null, statusMessage = "" + e); // NOI18N
             }
-
-            loadingURL = url;
-
-            rp.post(this);
-        } catch (Exception e) {
-            LOG.log(Level.WARNING, null, e);
-            pcs.firePropertyChange(PROP_STATUS_MESSAGE, null, statusMessage = "" + e); // NOI18N
         }
     }
 
@@ -293,36 +297,38 @@ final class SwingBrowserImpl extends HtmlBrowser.Impl implements Runnable {
             title = null;
             updateTitle();
         } else {
-            synchronized (this) {
-                try {
-                    if ((this.url != null) && this.url.sameFile(url)) {
-                        Document doc = swingBrowser.getDocument();
+            URL requestedURL;
+            synchronized (rp) {
+                if ((this.url != null) && this.url.sameFile(url)) {
+                    Document doc = swingBrowser.getDocument();
 
-                        if (doc != null) {
-                            //force reload
-                            doc.putProperty(Document.StreamDescriptionProperty, null);
-                        }
+                    if (doc != null) {
+                        //force reload
+                        doc.putProperty(Document.StreamDescriptionProperty, null);
                     }
-
-                    swingBrowser.setPage(loadingURL);
-                    setStatusText(null);
-                } catch (java.net.UnknownHostException uhe) {
-                    setStatusText(
-                        NbBundle.getMessage(SwingBrowserImpl.class, "FMT_UnknownHost", new Object[] { loadingURL })
-                    ); // NOI18N
-                } catch (java.net.NoRouteToHostException nrthe) {
-                    setStatusText(
-                        NbBundle.getMessage(SwingBrowserImpl.class, "FMT_NoRouteToHost", new Object[] { loadingURL })
-                    ); // NOI18N
-                } catch (IOException ioe) {
-                    setStatusText(
-                        NbBundle.getMessage(SwingBrowserImpl.class, "FMT_InvalidURL", new Object[] { loadingURL })
-                    ); // NOI18N
                 }
-
-                SwingUtilities.invokeLater(this);
+                requestedURL = loadingURL;
                 loadingURL = null;
             }
+            try {
+
+                swingBrowser.setPage(requestedURL);
+                setStatusText(null);
+            } catch (java.net.UnknownHostException uhe) {
+                setStatusText(
+                    NbBundle.getMessage(SwingBrowserImpl.class, "FMT_UnknownHost", new Object[] { requestedURL })
+                ); // NOI18N
+            } catch (java.net.NoRouteToHostException nrthe) {
+                setStatusText(
+                    NbBundle.getMessage(SwingBrowserImpl.class, "FMT_NoRouteToHost", new Object[] { requestedURL })
+                ); // NOI18N
+            } catch (IOException ioe) {
+                setStatusText(
+                    NbBundle.getMessage(SwingBrowserImpl.class, "FMT_InvalidURL", new Object[] { requestedURL })
+                ); // NOI18N
+            }
+
+            SwingUtilities.invokeLater(this);
         }
     }
 
