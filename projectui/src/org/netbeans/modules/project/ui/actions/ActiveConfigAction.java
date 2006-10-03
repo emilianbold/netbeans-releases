@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -38,6 +39,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -263,15 +265,20 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
     private static class ConfigCellRenderer extends DefaultListCellRenderer {
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JComponent result;
             if (value instanceof ProjectConfiguration) {
-                return super.getListCellRendererComponent(list, ((ProjectConfiguration) value).getDisplayName(), index, isSelected, cellHasFocus);
+                result = (JComponent) super.getListCellRendererComponent(list, ((ProjectConfiguration) value).getDisplayName(), index, isSelected, cellHasFocus);
+                result.setBorder (null);
             } else if (value == CUSTOMIZE_ENTRY) {
                 String label = org.openide.awt.Actions.cutAmpersand(NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.customize"));
-                return super.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
+                result = (JComponent) super.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
+                result.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("controlDkShadow")));
             } else {
                 assert value == null;
-                return super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
+                result = (JComponent) super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
+                result.setBorder (null);
             }
+            return result;
         }
     }
 
