@@ -638,7 +638,10 @@ public final class AntBridge {
     }
     
     private static boolean masked(String clazz) {
-        return clazz.startsWith("org.apache.tools.") || clazz.startsWith("org.netbeans."); // NOI18N
+        return clazz.startsWith("org.apache.tools.") ||
+                clazz.startsWith("org.netbeans.") ||
+                clazz.startsWith("org.openide.") ||
+                clazz.startsWith("org.openidex."); // NOI18N
     }
 
     /**
