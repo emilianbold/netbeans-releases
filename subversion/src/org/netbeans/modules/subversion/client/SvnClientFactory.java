@@ -181,6 +181,7 @@ public class SvnClientFactory {
                                                      String password)
     {        
         ISVNClientAdapter adapter = createSvnClientAdapter();
+        // XXX do we need this?
         if(pd != null && pd.getType() == ProxyDescriptor.TYPE_HTTP) {
             SvnConfigFiles.getInstance().setProxy(pd, SvnUtils.ripUserFromHost(repositoryUrl.getHost()));
         }        

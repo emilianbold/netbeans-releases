@@ -157,7 +157,7 @@ public class RepositoryStep
                 SvnClient client;
                 try {
                     String hostString = SvnUtils.ripUserFromHost(selectedRepository.getUrl().getHost());
-                    ProxyDescriptor pd = SvnConfigFiles.getInstance().getProxyDescriptor(hostString);
+                    ProxyDescriptor pd = repository.getProxyDescriptor();
                     client = Subversion.getInstance().getClient(selectedRepository.getUrl(),
                                                                 pd,
                                                                 repository.getUserName(),

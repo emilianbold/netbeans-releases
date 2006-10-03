@@ -134,7 +134,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 selector.setProxyDescriptor(proxyDescriptor);
                 ProxyDescriptor pd = selector.selectProxy();
                 if (pd != null) {
-                    proxyDescriptor = pd;
+                    proxyDescriptor = pd;                    
                     userVisitedProxySettings = true;
                 }
             }
@@ -158,7 +158,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                         return;
                     }                    
                     if (userVisitedProxySettings == false) {
-                        proxyDescriptor = SvnConfigFiles.getInstance().getProxyDescriptor(SvnUtils.ripUserFromHost(repository.getUrl().getHost()));
+                        proxyDescriptor = getProxyFromConfigFile(repository.getUrl());
                     }
                     PasswordFile passwordFile = PasswordFile.findFileForUrl(repository.getUrl());
                     if (passwordFile != null && passwordFile.getPassword() != null && passwordExpected) {
@@ -552,6 +552,22 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     public void focusLost(FocusEvent focusEvent) {
         // do nothing
+    }    
+
+    public ProxyDescriptor getProxyDescriptor() {
+        if(proxyDescriptor == null) {
+                SVNUrl url = null;
+                try {
+                    url = getSelectedRepository().getUrl();
+                } catch (InterruptedException ex) {
+                    return null; // should not happen
+                }
+                proxyDescriptor = getProxyFromConfigFile(url);
+        }
+        return proxyDescriptor;
     }
     
+    private ProxyDescriptor getProxyFromConfigFile(SVNUrl url) {
+        return SvnConfigFiles.getInstance().getProxyDescriptor(SvnUtils.ripUserFromHost(url.getHost()));
+    }
 }
