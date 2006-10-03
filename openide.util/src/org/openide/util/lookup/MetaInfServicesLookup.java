@@ -28,12 +28,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.WeakSet;
@@ -52,8 +53,9 @@ import org.openide.util.WeakSet;
  * @see "#14722"
  */
 final class MetaInfServicesLookup extends AbstractLookup {
-    // Better not to use ErrorManager here - EM.gD will use this class, might cause cycles etc.
-    private static final boolean DEBUG = Boolean.getBoolean("org.openide.util.lookup.MetaInfServicesLookup.DEBUG"); // NOI18N
+
+    private static final Logger LOGGER = Logger.getLogger(MetaInfServicesLookup.class.getName());
+
     private static final Map<Class,Object> knownInstances = new WeakHashMap<Class,Object>();
 
     /** A set of all requested classes.
@@ -79,9 +81,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
     public MetaInfServicesLookup(ClassLoader loader) {
         this.loader = loader;
 
-        if (DEBUG) {
-            System.err.println("Created: " + this); // NOI18N
-        }
+        LOGGER.log(Level.FINE, "Created: {0}", this);
     }
 
     public String toString() {
@@ -98,7 +98,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
         synchronized (this) {
             if (classes.add(c)) {
                 // Added new class, search for it.
-                LinkedHashSet<Pair<?>> arr = getPairsAsLHS();
+                LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
                 search(c, arr);
 
                 // listeners are notified under while holding lock on class c, 
@@ -118,13 +118,13 @@ final class MetaInfServicesLookup extends AbstractLookup {
      * @param clazz class to find
      * @param result collection to add Pair to
      */
-    private void search(Class<?> clazz, Collection<Pair<?>> result) {
-        if (DEBUG) {
-            System.err.println("Searching for " + clazz.getName() + " in " + clazz.getClassLoader() + " from " + this); // NOI18N
+    private void search(Class<?> clazz, Collection<AbstractLookup.Pair<?>> result) {
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "Searching for " + clazz.getName() + " in " + clazz.getClassLoader() + " from " + this);
         }
 
         String res = "META-INF/services/" + clazz.getName(); // NOI18N
-        Enumeration en;
+        Enumeration<URL> en;
 
         try {
             en = loader.getResources(res);
@@ -170,14 +170,14 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 if (realMcCoy != clazz) {
                     // Either the interface class is not available at all in our loader,
                     // or it is not the same version as we expected. Don't provide results.
-                    if (DEBUG) {
+                    if (LOGGER.isLoggable(Level.FINER)) {
                         if (realMcCoy != null) {
-                            System.err.println(
+                            LOGGER.log(Level.FINER,
                                 clazz.getName() + " is not the real McCoy! Actually found it in " +
                                 realMcCoy.getClassLoader()
                             ); // NOI18N
                         } else {
-                            System.err.println(clazz.getName() + " could not be found in " + loader); // NOI18N
+                            LOGGER.log(Level.FINER, clazz.getName() + " could not be found in " + loader); // NOI18N
                         }
                     }
 
@@ -185,7 +185,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 }
             }
 
-            URL url = (URL) en.nextElement();
+            URL url = en.nextElement();
             Item currentItem = null;
 
             try {
@@ -206,7 +206,8 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         // is it position attribute?
                         if (line.startsWith("#position=")) {
                             if (currentItem == null) {
-                                assert false : "Found line '" + line + "' but there is no item to associate it with!";
+                                LOGGER.log(Level.WARNING, "Found line '{0}' in {1} but there is no item to associate it with", new Object[] {line, url});
+                                continue;
                             }
 
                             try {
@@ -257,10 +258,6 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         }
 
                         if (!clazz.isAssignableFrom(inst)) {
-                            if (DEBUG) {
-                                System.err.println("Not a subclass"); // NOI18N
-                            }
-
                             throw new ClassNotFoundException(inst.getName() + " not a subclass of " + clazz.getName()); // NOI18N
                         }
 
@@ -283,30 +280,17 @@ final class MetaInfServicesLookup extends AbstractLookup {
                     is.close();
                 }
             } catch (ClassNotFoundException ex) {
-                // do not use ErrorManager because we are in the startup code
-                // and ErrorManager might not be ready
-                ex.printStackTrace();
+                LOGGER.log(Level.WARNING, null, ex);
             } catch (IOException ex) {
-                // do not use ErrorManager because we are in the startup code
-                // and ErrorManager might not be ready
-                ex.printStackTrace();
+                LOGGER.log(Level.WARNING, null, ex);
             }
         }
 
-        if (DEBUG) {
-            System.err.println(
-                "Found impls of " + clazz.getName() + ": " + foundClasses + " and removed: " + removeClasses +
-                " from: " + this
-            ); // NOI18N
-        }
+        LOGGER.log(Level.FINER, "Found impls of {0}: {1} and removed: {2} from: {3}", new Object[] {clazz.getName(), foundClasses, removeClasses, this});
 
         foundClasses.removeAll(removeClasses);
 
-        Iterator it = foundClasses.iterator();
-
-        while (it.hasNext()) {
-            Item item = (Item) it.next();
-
+        for (Item item : foundClasses) {
             if (removeClasses.contains(item.clazz)) {
                 continue;
             }
@@ -327,12 +311,8 @@ final class MetaInfServicesLookup extends AbstractLookup {
         }
 
         int index = -1;
-        Iterator it = list.iterator();
-
-        while (it.hasNext()) {
+        for (Item i : list) {
             index++;
-
-            Item i = (Item) it.next();
 
             if (i.position == -1) {
                 list.add(index, item);
@@ -353,6 +333,10 @@ final class MetaInfServicesLookup extends AbstractLookup {
     private static class Item {
         private Class clazz;
         private int position = -1;
+        @Override
+        public String toString() {
+            return "MetaInfServicesLookup.Item[" + clazz.getName() + "]"; // NOI18N
+        }
     }
 
     /** Pair that holds name of a class and maybe the instance.
@@ -400,7 +384,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
             return c.isAssignableFrom(clazz());
         }
 
-        public Class<? extends Object> getType() {
+        public Class<?> getType() {
             return clazz();
         }
 
@@ -437,9 +421,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         // could see and return immediately.
                         object = o;
                     } catch (Exception ex) {
-                        // do not use ErrorManager because we are in the startup code
-                        // and ErrorManager might not be ready
-                        ex.printStackTrace();
+                        LOGGER.log(Level.WARNING, null, ex);
                         object = null;
                     }
                 }
