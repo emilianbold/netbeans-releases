@@ -348,7 +348,7 @@ Use case 1: Runtime dependency on module.
  </test-dependency> 
 </testtype>
 
-Runtime classpath is D+A. 
+Runtime classpath is D + A. 
 Compile classpath is D.
 
 Use case 2: Runtime dependency on a module and its recursive runtime classpath.
@@ -361,7 +361,7 @@ Use case 2: Runtime dependency on a module and its recursive runtime classpath.
  </test-dependency> 
 </testtype>
 
-Runtime classpath is A+B+C+D.
+Runtime classpath is A + B + C + D.
 Compile classpath is D.
 
 Use case 3: Compile and runtime dependency on a module its recursive runtime classpath.
@@ -375,8 +375,8 @@ Use case 3: Compile and runtime dependency on a module its recursive runtime cla
  </test-dependency> 
 </testtype>
 
-Runtime classpath is A+B+C+D.
-Compile classpath is A+B+C+D.
+Runtime classpath is A + B + C + D.
+Compile classpath is A + B + C + D.
 
 Use case 4: Compile and runtime dependency on a module, its recursive runtime classpath 
 and tests.
@@ -391,8 +391,8 @@ and tests.
  </test-dependency> 
 </testtype>
 
-Runtime classpath is A+B+C+D + A/unit tests.
-Compile classpath is A+B+C+D + A/unit tests.
+Runtime classpath is A + B + C + D + A/test/unit.
+Compile classpath is A + B + C + D + A/test/unit.
 
 Declare any public API/SPI packages you export:
 
