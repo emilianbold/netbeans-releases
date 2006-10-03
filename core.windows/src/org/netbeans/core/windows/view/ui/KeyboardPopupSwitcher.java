@@ -401,7 +401,9 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     public void windowLostFocus(WindowEvent e) {
         //remove the switcher when the main window is deactivated, 
         //e.g. user pressed Ctrl+Esc on MS Windows which opens the Start menu
-        cancelSwitching();
+        if (e.getOppositeWindow() != popup) {
+            cancelSwitching();
+        }
     }
     
     /**
