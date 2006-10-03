@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.system.GenericSystemUtils;
 import org.netbeans.installer.utils.system.UnixSystemUtils;
@@ -216,6 +218,20 @@ public abstract class SystemUtils {
         }
     }
     
+    public static class Shortcut {
+        private Map<Locale, String> names;
+        private Map<Locale, String> comments;
+        
+        private File executable;
+        private String[] arguments;
+        private File workingDirectory;
+        
+        private String path;
+        
+        private File icon;
+        
+        private String[] categories;
+    }
     
     public static final long MAX_EXECUTION_TIME = 120000; // 2 minutes seconds
     public static final int  BUFFER_SIZE        = 4096;   // 4 kilobytes
