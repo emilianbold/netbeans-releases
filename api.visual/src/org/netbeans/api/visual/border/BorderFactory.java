@@ -26,7 +26,7 @@ import java.awt.*;
 // TODO - check insets values
 public final class BorderFactory {
 
-    private static final Border BORDER_EMPTY = new EmptyBorder (0, 0, 0, 0);
+    private static final Border BORDER_EMPTY = new EmptyBorder (0, 0, 0, 0, false);
     private static final Border BORDER_LINE = createLineBorder (1);
 
     private BorderFactory () {
@@ -72,7 +72,20 @@ public final class BorderFactory {
      * @return the empty border
      */
     public static Border createEmptyBorder (int top, int left, int bottom, int right) {
-        return new EmptyBorder (top, left, bottom, right);
+        return new EmptyBorder (top, left, bottom, right, false);
+    }
+
+    /**
+     * Creates an opaque border with specific thickness.
+     * The instance can be shared by multiple widgets.
+     * @param top the top inset
+     * @param left the left inset
+     * @param bottom the bottom inset
+     * @param right the right inset
+     * @return the empty border
+     */
+    public static Border createOpaqueBorder (int top, int left, int bottom, int right) {
+        return new EmptyBorder (top, left, bottom, right, true);
     }
 
     /**
