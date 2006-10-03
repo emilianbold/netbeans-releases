@@ -20,6 +20,7 @@
  */
 package org.netbeans.installer.utils.progress;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,6 +29,15 @@ import java.util.Map;
  */
 public class CompositeProgress extends Progress implements ProgressListener {
     Map<Progress, Integer> children;
+    
+    public CompositeProgress() {
+        children = new HashMap<Progress, Integer>();
+    }
+    
+    public CompositeProgress(ProgressListener initialListener) {
+        this();
+        addProgressListener(initialListener);
+    }
     
     public CompositeProgress(final Map<Progress, Integer> children) {
         this.children = children;
@@ -38,6 +48,21 @@ public class CompositeProgress extends Progress implements ProgressListener {
         
         for (Progress child: children.keySet()) {
             child.addProgressListener(this);
+        }
+    }
+    
+    public CompositeProgress(final Map<Progress, Integer> children, final ProgressListener initialListener) {
+        this(children);
+        addProgressListener(initialListener);
+    }
+    
+    public void addChild(Progress progress, int percentage) {
+        children.put(progress, percentage);
+        
+        progress.addProgressListener(this);
+        
+        if (!evaluateChildren()) {
+            throw new IllegalArgumentException("The sum of percentages for children cannot exceed" + COMPLETE);
         }
     }
     
