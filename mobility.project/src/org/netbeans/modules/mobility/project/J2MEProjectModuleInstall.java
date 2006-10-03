@@ -27,6 +27,7 @@ package org.netbeans.modules.mobility.project;
 import java.io.File;
 import java.util.Iterator;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.mobility.project.deployment.MobilityDeploymentProperties;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -57,6 +58,7 @@ public class J2MEProjectModuleInstall extends ModuleInstall implements LookupLis
             ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction<Object>() {
                 public Object run() throws Exception{
+                    MobilityDeploymentProperties mp = new MobilityDeploymentProperties();
                     final EditableProperties props = PropertyUtils.getGlobalProperties();
                     final Iterator it = ((Lookup.Result)e.getSource()).allInstances().iterator();
                     while (it.hasNext()) {
@@ -70,6 +72,7 @@ public class J2MEProjectModuleInstall extends ModuleInstall implements LookupLis
                                 props.setProperty("deployment." + name + ".scriptfile", f.getAbsolutePath()); //NOI18N
                             }
                         }
+                        if (!mp.getInstanceList(name).contains("default")) mp.createInstance(name, "default"); //NOI18N
                     }
                     PropertyUtils.putGlobalProperties(props);
                     return null;

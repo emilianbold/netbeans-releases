@@ -24,13 +24,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 
 /**
  *
@@ -69,7 +69,7 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
         for (String key : keySet().toArray(new String[0])) {
             if (key.startsWith(pref)) remove(key);
         }
-        run();
+        RequestProcessor.getDefault().post(this, 200);
     }
     
     public void createInstance(String deploymentTypeName, String instanceName) {
@@ -77,27 +77,34 @@ public class MobilityDeploymentProperties extends HashMap<String,Object> impleme
             if (deploymentTypeName.equalsIgnoreCase(dp.getDeploymentMethodName())) {
                 String pref = DEPLOYMENT_PREFIX + deploymentTypeName + '.' + instanceName + '.';
                 Map<String,Object> def = dp.getGlobalPropertyDefaultValues();
-                if (def != null) for (Map.Entry<String,Object> en : def.entrySet()) {
-                   if (en.getValue() != null) super.put(pref+en.getKey(), en.getValue().toString());
+                if (def != null) {
+                    for (Map.Entry<String,Object> en : def.entrySet()) {
+                       if (en.getValue() != null) super.put(pref+en.getKey(), en.getValue().toString());
+                    }
+                    RequestProcessor.getDefault().post(this, 200);
+                    return;
                 }
             }
         }
-        run();
     }
 
-    public synchronized void run() {
-        EditableProperties ep = PropertyUtils.getGlobalProperties();
-        for (String key : ep.keySet().toArray(new String[0])) {
-            if (key.startsWith(DEPLOYMENT_PREFIX)) ep.remove(key);
-        }
-        for (Map.Entry<String,Object> en : entrySet()) {
-            ep.put(en.getKey(), en.getValue().toString());
-        }
-        try {
-            PropertyUtils.putGlobalProperties(ep);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
+    public void run() {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                EditableProperties ep = PropertyUtils.getGlobalProperties();
+                for (String key : ep.keySet().toArray(new String[0])) {
+                    if (key.startsWith(DEPLOYMENT_PREFIX)) ep.remove(key);
+                }
+                for (Map.Entry<String,Object> en : entrySet()) {
+                    ep.put(en.getKey(), en.getValue().toString());
+                }
+                try {
+                    PropertyUtils.putGlobalProperties(ep);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
+                }
+            }
+        });
     }
 
     public Object put(String key, Object value) {
