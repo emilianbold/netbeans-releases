@@ -78,9 +78,9 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         VMDNodeWidget widget = new VMDNodeWidget (this);
         mainLayer.addChild (widget);
 
-        widget.getActions ().addAction (createObjectHoverAction ());
-        widget.getActions ().addAction (createSelectAction ());
-        widget.getActions ().addAction (popupMenuAction);
+        widget.getHeader ().getActions ().addAction (createObjectHoverAction ());
+        widget.getHeader ().getActions ().addAction (createSelectAction ());
+        widget.getHeader ().getActions ().addAction (popupMenuAction);
         widget.getActions ().addAction (moveAction);
 
         return widget;

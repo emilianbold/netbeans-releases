@@ -36,14 +36,12 @@ import java.util.List;
  */
 public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMinimizeAbility {
 
-    private static final Border BORDER_SHADOW_NORMAL = BorderFactory.createImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_normal.png")); // NOI18N
-    private static final Border BORDER_SHADOW_HOVERED = BorderFactory.createImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_hovered.png")); // NOI18N
-    private static final Border BORDER_SHADOW_SELECTED = BorderFactory.createImageBorder (new Insets (5, 5, 5, 5), Utilities.loadImage ("org/netbeans/modules/visual/resources/border/shadow_selected.png")); // NOI18N
-
-    private static final Color COLOR_CATEGORY_BACKGROUND = new Color (0xEEEEEE);
-    private static final Color COLOR_CATEGORY_FOREGROUND = Color.GRAY;
-
-    private Widget mainLayer;
+    private static final Border BORDER_NODE = new VMDNodeBorder ();
+    private static final Color BORDER_CATEGORY_BACKGROUND = new Color (0xCDDDF8);
+    public static final Color COLOR_SELECTED = new Color (0x748CC0);
+//    static final Border BORDER_LINE = BorderFactory.createLineBorder (4, VMDNodeBorder.COLOR_BORDER);
+    static final Border BORDER = BorderFactory.createOpaqueBorder (4, 4, 4, 4);
+    static final Border BORDER_HOVERED = BorderFactory.createLineBorder (4, Color.BLACK);
 
     private Widget header;
     private ImageWidget imageWidget;
@@ -58,7 +56,6 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
 
     private StateModel stateModel = new StateModel (2);
     private Anchor nodeAnchor = new VMDNodeAnchor (this);
-    private static final Border BORDER_4 = BorderFactory.createEmptyBorder (4);
 
     /**
      * Creates a node widget.
@@ -67,28 +64,24 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     public VMDNodeWidget (Scene scene) {
         super (scene);
 
-        setBackground (Color.WHITE);
-        setOpaque (true);
-        setBorder (BORDER_SHADOW_NORMAL);
-        setLayout (LayoutFactory.createFillLayout ());
-
-        mainLayer = new Widget (scene);
-        mainLayer.setLayout (LayoutFactory.createVerticalLayout ());
-        mainLayer.setCheckClipping (true);
-        addChild (mainLayer);
+        setOpaque (false);
+        setBorder (BORDER_NODE);
+        setLayout (LayoutFactory.createVerticalLayout ());
+//        setMinimumBounds (new Rectangle (0, 0, 128, 64));
 
         header = new Widget (scene);
-        header.setBorder (BORDER_4);
-        header.setOpaque (true);
-        header.setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, 0));
-        mainLayer.addChild (header);
+        header.setBorder (BORDER);
+        header.setBackground (COLOR_SELECTED);
+        header.setOpaque (false);
+        header.setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, 8));
+        addChild (header);
 
         imageWidget = new ImageWidget (scene);
-        header.setBorder (BORDER_4);
+//        header.setBorder (BORDER_4);
         header.addChild (imageWidget);
 
         Widget desc = new Widget (scene);
-        desc.setBorder (BORDER_4);
+//        desc.setBorder (BORDER_4);
         desc.setLayout (LayoutFactory.createVerticalLayout ());
         header.addChild (desc);
 
@@ -97,26 +90,26 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         desc.addChild (nameWidget);
 
         typeWidget = new LabelWidget (scene);
-        typeWidget.setForeground (Color.GRAY);
+        typeWidget.setForeground (Color.BLACK);
         desc.addChild (typeWidget);
 
         glyphSetWidget = new VMDGlyphSetWidget (scene);
         desc.addChild (glyphSetWidget);
 
+        Widget minimizeWidget = new ImageWidget (scene, Utilities.loadImage ("org/netbeans/modules/visual/resources/minimize.png"));
+        minimizeWidget.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
+        minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
+        header.addChild (minimizeWidget);
+
         pinsSeparator = new SeparatorWidget (scene, SeparatorWidget.Orientation.HORIZONTAL);
-        mainLayer.addChild (pinsSeparator);
+        pinsSeparator.setForeground (BORDER_CATEGORY_BACKGROUND);
+        addChild (pinsSeparator);
 
         Widget topLayer = new Widget (scene);
         addChild (topLayer);
 
         stateModel = new StateModel ();
         stateModel.addListener (this);
-
-        Widget minimizeWidget = new ImageWidget (scene, Utilities.loadImage ("org/netbeans/modules/visual/resources/minimize.png"));
-        minimizeWidget.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
-        minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
-
-        topLayer.addChild (minimizeWidget);
 
         notifyStateChanged (ObjectState.createNormal (), ObjectState.createNormal ());
     }
@@ -152,7 +145,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
      */
     public void stateChanged () {
         Rectangle rectangle = stateModel.getBooleanState () ? new Rectangle () : null;
-        for (Widget widget : mainLayer.getChildren ())
+        for (Widget widget : getChildren ())
             if (widget != header  &&  widget != pinsSeparator)
                 getScene ().getSceneAnimator ().animatePreferredBounds (widget, rectangle);
     }
@@ -168,13 +161,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         else if (! previousState.isHovered ()  &&  state.isHovered ())
             bringToFront ();
 
-        if (state.isHovered ())
-            setBorder (BORDER_SHADOW_HOVERED);
-        else if (state.isSelected ())
-            setBorder (BORDER_SHADOW_SELECTED);
-        else
-            setBorder (BORDER_SHADOW_NORMAL);
-        header.setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (4), getScene ().getLookFeel ().getBorder (state)));
+        header.setOpaque (state.isSelected ());
+        header.setBorder (state.isHovered () ? VMDNodeWidget.BORDER_HOVERED : VMDNodeWidget.BORDER);
     }
 
     /**
@@ -216,7 +204,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
      */
     public void attachPinWidget (Widget widget) {
         widget.setCheckClipping (true);
-        mainLayer.addChild (widget);
+        addChild (widget);
         if (stateModel.getBooleanState ())
             widget.setPreferredBounds (new Rectangle ());
     }
@@ -273,7 +261,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
      * @return the list of pin widgets
      */
     private List<Widget> getPinWidgets () {
-        ArrayList<Widget> pins = new ArrayList<Widget> (mainLayer.getChildren ());
+        ArrayList<Widget> pins = new ArrayList<Widget> (getChildren ());
         pins.remove (header);
         pins.remove (pinsSeparator);
         return pins;
@@ -316,8 +304,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         for (String category : unusedCategories)
             pinCategoryWidgets.remove (category);
 
-        mainLayer.removeChildren (previousPins);
-        mainLayer.addChildren (newWidgets);
+        removeChildren (previousPins);
+        addChildren (newWidgets);
     }
 
     private Widget createPinCategoryWidget (String categoryDisplayName) {
@@ -326,8 +314,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
             return w;
         LabelWidget label = new LabelWidget (getScene (), categoryDisplayName);
         label.setOpaque (true);
-        label.setBackground (COLOR_CATEGORY_BACKGROUND);
-        label.setForeground (COLOR_CATEGORY_FOREGROUND);
+        label.setBackground (BORDER_CATEGORY_BACKGROUND);
+        label.setForeground (Color.GRAY);
         label.setFont (fontPinCategory);
         label.setAlignment (LabelWidget.Alignment.CENTER);
         label.setCheckClipping (true);
@@ -349,6 +337,14 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
      */
     public void expandWidget () {
         stateModel.setBooleanState (false);
+    }
+
+    /**
+     * Returns a header widget.
+     * @return the header widget
+     */
+    public Widget getHeader () {
+        return header;
     }
 
     private final class ToggleMinimizedAction extends WidgetAction.Adapter {

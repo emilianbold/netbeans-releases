@@ -12,8 +12,6 @@
  */
 package org.netbeans.api.visual.vmd;
 
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -40,6 +38,9 @@ public class VMDPinWidget extends Widget {
     public VMDPinWidget (Scene scene) {
         super (scene);
 
+        setBorder (VMDNodeWidget.BORDER);
+        setBackground (VMDNodeWidget.COLOR_SELECTED);
+        setOpaque (false);
         setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         addChild (nameWidget = new LabelWidget (scene));
         addChild (glyphsWidget = new VMDGlyphSetWidget (scene));
@@ -53,9 +54,11 @@ public class VMDPinWidget extends Widget {
      * @param state the new state
      */
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        LookFeel lookFeel = getScene ().getLookFeel ();
-        setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
-        setForeground (lookFeel.getForeground (state));
+        setOpaque (state.isSelected ());
+        setBorder (state.isHovered () ? VMDNodeWidget.BORDER_HOVERED : VMDNodeWidget.BORDER);
+//        LookFeel lookFeel = getScene ().getLookFeel ();
+//        setBorder (BorderFactory.createCompositeBorder (BorderFactory.createEmptyBorder (8, 2), lookFeel.getMiniBorder (state)));
+//        setForeground (lookFeel.getForeground (state));
     }
 
     /**
