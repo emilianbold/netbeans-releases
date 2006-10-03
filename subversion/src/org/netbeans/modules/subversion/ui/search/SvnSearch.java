@@ -96,13 +96,16 @@ public class SvnSearch implements ActionListener, DocumentListener {
         }
     }
     
-    private void listLogEntries() {
-        final Date dateFrom = getDateFrom();
-        HistorySettings.getDefault().setSearchDateFrom(DATE_FORMAT.format(dateFrom));
+    private void listLogEntries() {        
                 
         noContentPanel.setLabel(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_NoResults_SearchInProgress")); // NOI18N
         panel.listPanel.setVisible(false);
         panel.noContentPanel.setVisible(true);       
+        
+        final SVNRevision revisionFrom = getRevisionFrom();
+        if(revisionFrom instanceof SVNRevision.DateSpec) {
+            HistorySettings.getDefault().setSearchDateFrom(panel.dateFromTextField.getText().trim());
+        }
         
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(this.repositoryRoot.getRepositoryUrl());
         try { 
@@ -114,7 +117,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                         client = Subversion.getInstance().getClient(SvnSearch.this.repositoryRoot.getRepositoryUrl(), this);
                         lm = client.getLogMessages(repositoryRoot.getRepositoryUrl(), 
                                                    SVNRevision.HEAD, 
-                                                   new SVNRevision.DateSpec(dateFrom));
+                                                   revisionFrom);
                     } catch (SVNClientException ex) {
                         AbstractNode errorNode = new AbstractNode(Children.LEAF);
                         errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(SvnSearch.class, "LBL_Error")); // NOI18N
@@ -165,9 +168,13 @@ public class SvnSearch implements ActionListener, DocumentListener {
         }        
     }
     
-    private Date getDateFrom() {
+    private SVNRevision getRevisionFrom() {
+        String value = panel.dateFromTextField.getText().trim();
+        if(value.equals("")) {
+            return new SVNRevision.Number(1);
+        }
         try {
-            return DATE_FORMAT.parse(panel.dateFromTextField.getText());
+            return new SVNRevision.DateSpec(DATE_FORMAT.parse(value));
         } catch (ParseException ex) {
             return null; // should not happen
         }
@@ -186,16 +193,17 @@ public class SvnSearch implements ActionListener, DocumentListener {
     }
 
     private void validateUserInput() {
+        boolean isValid = false;        
         String dateString = panel.dateFromTextField.getText();
         if(dateString.equals("")) { // NOI18N
-            return;
-        }
-        boolean isValid = false;
-        try {
-            DATE_FORMAT.parse(panel.dateFromTextField.getText());
             isValid = true;
-        } catch (ParseException ex) {
-            ex.printStackTrace();
+        } else {       
+            try {
+                DATE_FORMAT.parse(panel.dateFromTextField.getText());
+                isValid = true;
+            } catch (ParseException ex) {
+                // ignore
+            }
         }
         panel.listButton.setEnabled(isValid);
     }
