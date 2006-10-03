@@ -30,6 +30,8 @@ import java.util.Set;
  */
 public class VMDNodeAnchor extends Anchor {
 
+    private static final int PIN_GAP = 8;
+
     private boolean requiresRecalculation = true;
 
     private HashMap<Entry, Result> results = new HashMap<Entry, Result> ();
@@ -94,7 +96,7 @@ public class VMDNodeAnchor extends Anchor {
         for (int a = 0; a < len; a ++) {
             Entry entry = topList[a];
             int x = bounds.x + (a + 1)  * bounds.width / (len + 1);
-            results.put (entry, new Result (new Point (x, y), Direction.TOP));
+            results.put (entry, new Result (new Point (x, y - PIN_GAP), Direction.TOP));
         }
 
         y = bounds.y + bounds.height;
@@ -103,7 +105,7 @@ public class VMDNodeAnchor extends Anchor {
         for (int a = 0; a < len; a ++) {
             Entry entry = bottomList[a];
             int x = bounds.x + (a + 1) * bounds.width / (len + 1);
-            results.put (entry, new Result (new Point (x, y), Direction.BOTTOM));
+            results.put (entry, new Result (new Point (x, y + PIN_GAP), Direction.BOTTOM));
         }
     }
 

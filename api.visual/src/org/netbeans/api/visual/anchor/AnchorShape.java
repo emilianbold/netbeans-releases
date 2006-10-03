@@ -53,12 +53,12 @@ public interface AnchorShape {
     /**
      * The filled-triangle anchor shape.
      */
-    public static final AnchorShape TRIANGLE_FILLED = new Triangle (8, true, false);
+    public static final AnchorShape TRIANGLE_FILLED = new Triangle (12, true, false);
 
     /**
      * The output-triangle anchor shape.
      */
-    public static final AnchorShape TRIANGLE_OUT = new Triangle (8, true, true);
+    public static final AnchorShape TRIANGLE_OUT = new Triangle (12, true, true);
 
     /**
      * Represents triangular anchor shape.
@@ -91,7 +91,7 @@ public interface AnchorShape {
 
         public void paint (Graphics2D graphics, boolean source) {
             GeneralPath generalPath = new GeneralPath ();
-            float side = size * 0.6f;
+            float side = size * 0.3f;
             if (output) {
                 generalPath.moveTo (size, 0.0f);
                 generalPath.lineTo (0.0f, -side);

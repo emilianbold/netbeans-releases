@@ -25,11 +25,13 @@ import java.awt.*;
 public final class DirectionalAnchor extends Anchor {
 
     private AnchorFactory.DirectionalAnchorKind kind;
+    private int gap;
 
-    public DirectionalAnchor (Widget widget, AnchorFactory.DirectionalAnchorKind kind) {
+    public DirectionalAnchor (Widget widget, AnchorFactory.DirectionalAnchorKind kind, int gap) {
         super (widget);
 //        assert widget != null;
         this.kind = kind;
+        this.gap = gap;
     }
 
     public Result compute (Entry entry) {
@@ -43,14 +45,14 @@ public final class DirectionalAnchor extends Anchor {
         switch (kind) {
             case HORIZONTAL:
                 if (relatedLocation.x >= oppositeLocation.x)
-                    return new Anchor.Result (new Point (bounds.x, center.y), Direction.LEFT);
+                    return new Anchor.Result (new Point (bounds.x - gap, center.y), Direction.LEFT);
                 else
-                    return new Anchor.Result (new Point (bounds.x + bounds.width, center.y), Direction.RIGHT);
+                    return new Anchor.Result (new Point (bounds.x + bounds.width + gap, center.y), Direction.RIGHT);
             case VERTICAL:
                 if (relatedLocation.y >= oppositeLocation.y)
-                    return new Anchor.Result (new Point (center.x, bounds.y), Direction.TOP);
+                    return new Anchor.Result (new Point (center.x, bounds.y - gap), Direction.TOP);
                 else
-                    return new Anchor.Result (new Point (center.x, bounds.y + bounds.height), Direction.BOTTOM);
+                    return new Anchor.Result (new Point (center.x, bounds.y + bounds.height + gap), Direction.BOTTOM);
         }
         return null;
     }

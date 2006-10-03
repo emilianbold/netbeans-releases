@@ -22,7 +22,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * This class represents a pin widget.
+ * This class represents a pin widget in the VMD plug-in.
  *
  * @author David Kaspar
  */

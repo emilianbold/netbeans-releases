@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * This class represents a node widget. It implements the minimize ability. It allows to add pin widgets into the widget
+ * This class represents a node widget in the VMD plug-in. It implements the minimize ability. It allows to add pin widgets into the widget
  * using attachPinWidget method.
  *
  * @author David Kaspar

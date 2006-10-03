@@ -12,11 +12,11 @@
  */
 package org.netbeans.api.visual.vmd;
 
-import org.netbeans.api.visual.action.*;
+import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.PopupMenuProvider;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
-import org.netbeans.api.visual.anchor.AnchorShape;
-import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
@@ -111,12 +111,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
      * @return the widget attached to the edge
      */
     protected Widget attachEdgeWidget (String edge) {
-        ConnectionWidget connectionWidget = new ConnectionWidget (this);
-        connectionWidget.setRouter (router);
-        connectionWidget.setSourceAnchorShape (AnchorShape.TRIANGLE_OUT);
-        connectionWidget.setTargetAnchorShape (AnchorShape.TRIANGLE_FILLED);
-        connectionWidget.setControlPointShape (PointShape.SQUARE_FILLED_SMALL);
-        connectionWidget.setEndPointShape (PointShape.SQUARE_FILLED_BIG);
+        VMDConnectionWidget connectionWidget = new VMDConnectionWidget (this, router);
         connectionLayer.addChild (connectionWidget);
 
         connectionWidget.getActions ().addAction (createObjectHoverAction ());
@@ -155,7 +150,7 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         Widget pinMainWidget = findWidget (pin);
         Anchor anchor;
         if (pinMainWidget != null) {
-            anchor = AnchorFactory.createDirectionalAnchor (pinMainWidget, AnchorFactory.DirectionalAnchorKind.HORIZONTAL);
+            anchor = AnchorFactory.createDirectionalAnchor (pinMainWidget, AnchorFactory.DirectionalAnchorKind.HORIZONTAL, 8);
             anchor = nodeWidget.createAnchorPin (anchor);
         } else
             anchor = nodeWidget.getNodeAnchor ();

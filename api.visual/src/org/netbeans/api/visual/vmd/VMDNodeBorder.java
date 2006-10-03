@@ -22,7 +22,7 @@ import java.awt.geom.RoundRectangle2D;
  */
 class VMDNodeBorder implements Border {
 
-    private static final Color COLOR_BORDER = new Color (0xBACDF0);
+    static final Color COLOR_BORDER = new Color (0xBACDF0);
     private static final Insets INSETS = new Insets (1, 1, 1, 1);
 //    private static final Color COLOR0 = new Color (169, 197, 235);
     private static final Color COLOR1 = new Color (221, 235, 246);

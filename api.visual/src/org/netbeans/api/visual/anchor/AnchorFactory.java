@@ -103,7 +103,19 @@ public final class AnchorFactory {
      * @return the anchor
      */
     public static Anchor createDirectionalAnchor (Widget widget, DirectionalAnchorKind kind) {
-        return widget != null  &&  kind != null ? new DirectionalAnchor (widget, kind) : null;
+        return createDirectionalAnchor (widget, kind, 0);
+    }
+
+    /**
+     * Creates a directional anchor with computes a point as the one in the middle of the boundary side of specified widget.
+     * The side is the closest one to the opposite anchor.
+     * @param widget the widget
+     * @param kind the kind of directional anchor
+     * @param gap the gap between the widget and the anchor location
+     * @return the anchor
+     */
+    public static Anchor createDirectionalAnchor (Widget widget, DirectionalAnchorKind kind, int gap) {
+        return widget != null && kind != null ? new DirectionalAnchor (widget, kind, gap) : null;
     }
 
     /**
