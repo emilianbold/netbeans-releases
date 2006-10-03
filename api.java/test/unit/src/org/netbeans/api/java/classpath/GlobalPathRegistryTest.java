@@ -19,7 +19,6 @@
 
 package org.netbeans.api.java.classpath;
 
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,16 +31,14 @@ import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 // XXX need test for findResource
 
@@ -53,11 +50,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
     
     public GlobalPathRegistryTest(String name) {
         super(name);
-        TestUtil.setLookup(
-            new ProxyLookup (new Lookup[] {
-                Lookups.fixed (new Object[] {new SFBQImpl(),new DeadLockSFBQImpl()}),
-                Lookups.metaInfServices(Thread.currentThread().getContextClassLoader()),
-            }));
+        MockServices.setServices(SFBQImpl.class, DeadLockSFBQImpl.class);
     }
     
     private GlobalPathRegistry r;
@@ -223,7 +216,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
     }
     
     
-    private static class SFBQImpl implements SourceForBinaryQueryImplementation {
+    public static class SFBQImpl implements SourceForBinaryQueryImplementation {
         
         private Map<URL,SourceForBinaryQuery.Result> pairs = new HashMap<URL,SourceForBinaryQuery.Result> ();
         
@@ -287,7 +280,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
         
     }
     
-    private static class DeadLockSFBQImpl extends Thread implements SourceForBinaryQueryImplementation {
+    public static class DeadLockSFBQImpl extends Thread implements SourceForBinaryQueryImplementation {
         
         private Runnable r;
         
