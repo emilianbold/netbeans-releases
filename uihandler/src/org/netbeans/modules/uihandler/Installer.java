@@ -274,15 +274,18 @@ public class Installer extends ModuleInstall {
         
         conn.setDoOutput(true);
         conn.setDoInput(true);
+        conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");
+        conn.setRequestProperty("Pragma", "no-cache");
+        conn.setRequestProperty("Cache-control", "no-cache");
 
         PrintStream os = new PrintStream(conn.getOutputStream());
-        
+        /*
         os.println("POST " + postURL.getPath() + " HTTP/1.1");
         os.println("Pragma: no-cache");
         os.println("Cache-control: no-cache");
         os.println("Content-Type: multipart/form-data; boundary=--------konec<>bloku");
         os.println();
-        
+        */
         for (Map.Entry<String, String> en : attrs.entrySet()) {
             os.println("----------konec<>bloku");
             os.println("Content-Disposition: form-data; name=\"" + en.getKey() + "\"");
