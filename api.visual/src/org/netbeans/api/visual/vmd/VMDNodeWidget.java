@@ -40,8 +40,8 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
     private static final Color BORDER_CATEGORY_BACKGROUND = new Color (0xCDDDF8);
     public static final Color COLOR_SELECTED = new Color (0x748CC0);
 //    static final Border BORDER_LINE = BorderFactory.createLineBorder (4, VMDNodeBorder.COLOR_BORDER);
-    static final Border BORDER = BorderFactory.createOpaqueBorder (4, 4, 4, 4);
-    static final Border BORDER_HOVERED = BorderFactory.createLineBorder (4, Color.BLACK);
+    static final Border BORDER = BorderFactory.createOpaqueBorder (2, 2, 2, 2);
+    static final Border BORDER_HOVERED = BorderFactory.createLineBorder (2, Color.BLACK);
 
     private Widget header;
     private ImageWidget imageWidget;
@@ -67,7 +67,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         setOpaque (false);
         setBorder (BORDER_NODE);
         setLayout (LayoutFactory.createVerticalLayout ());
-//        setMinimumBounds (new Rectangle (0, 0, 128, 64));
+        setMinimumBounds (new Rectangle (0, 0, 128, 0));
 
         header = new Widget (scene);
         header.setBorder (BORDER);
@@ -77,29 +77,31 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         addChild (header);
 
         imageWidget = new ImageWidget (scene);
-//        header.setBorder (BORDER_4);
         header.addChild (imageWidget);
 
-        Widget desc = new Widget (scene);
-//        desc.setBorder (BORDER_4);
-        desc.setLayout (LayoutFactory.createVerticalLayout ());
-        header.addChild (desc);
+//        Widget desc = new Widget (scene);
+//        desc.setLayout (LayoutFactory.createVerticalLayout ());
+//        header.addChild (desc);
 
         nameWidget = new LabelWidget (scene);
         nameWidget.setFont (scene.getDefaultFont ().deriveFont (Font.BOLD));
-        desc.addChild (nameWidget);
+//        desc.addChild (nameWidget);
+        header.addChild (nameWidget);
 
         typeWidget = new LabelWidget (scene);
         typeWidget.setForeground (Color.BLACK);
-        desc.addChild (typeWidget);
+//        desc.addChild (typeWidget);
+        header.addChild (typeWidget);
 
         glyphSetWidget = new VMDGlyphSetWidget (scene);
-        desc.addChild (glyphSetWidget);
+//        desc.addChild (glyphSetWidget);
+        header.addChild (glyphSetWidget);
 
         Widget minimizeWidget = new ImageWidget (scene, Utilities.loadImage ("org/netbeans/modules/visual/resources/minimize.png"));
         minimizeWidget.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
         minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
-        header.addChild (minimizeWidget);
+//        header.addChild (minimizeWidget);
+        header.addChild (0, minimizeWidget);
 
         pinsSeparator = new SeparatorWidget (scene, SeparatorWidget.Orientation.HORIZONTAL);
         pinsSeparator.setForeground (BORDER_CATEGORY_BACKGROUND);

@@ -48,7 +48,7 @@ public final class SelectAction extends WidgetAction.LockedAdapter {
                     return State.createLocked (widget, this);
                 } else {
                     provider.select (widget, localLocation, invertSelection);
-                    return State.CHAIN_ONLY;
+                    return State.REJECTED;
                 }
             }
         }
