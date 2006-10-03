@@ -119,7 +119,17 @@ public class Installer extends ModuleInstall {
         }
     }
     
+    private static void clearLogs() {
+        synchronized (UIHandler.class) {
+            logs.clear();
+        }
+    }
+    
     public boolean closing() {
+        if (getLogs().isEmpty()) {
+            return true;
+        }
+        
         return displaySummary("WELCOME_URL"); // NOI18N
     }
     
@@ -204,6 +214,7 @@ public class Installer extends ModuleInstall {
                     LOG.log(Level.WARNING, null, ex);
                 }
                 if (nextURL != null) {
+                    clearLogs();
                     HtmlBrowser.URLDisplayer.getDefault().showURL(nextURL);
                     return false;
                 }
@@ -309,6 +320,7 @@ public class Installer extends ModuleInstall {
         for (LogRecord r : recs) {
             LogRecords.write(data, r);
         }
+        data.writeChars("</uigestures>\n"); // NOI18N
         data.flush();
         gzip.finish();
         os.println("----------konec<>bloku--");

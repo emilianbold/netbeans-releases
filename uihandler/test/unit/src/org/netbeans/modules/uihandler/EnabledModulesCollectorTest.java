@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import junit.framework.TestCase;
 import org.netbeans.junit.MockServices;
 import org.openide.modules.ModuleInfo;
@@ -50,9 +51,16 @@ public class EnabledModulesCollectorTest extends TestCase {
     }
     
     public void testSetOfEnabledModulesIsListed() {
+        // just log something
+        Logger.getLogger("org.netbeans.ui.empty").warning("say anything");
+        
         assertTrue("ok", installer.closing());
         
         List<LogRecord> rec = Installer.getLogs();
+        if (rec.get(0).getMessage().equals("say anything")) {
+            rec.remove(0);
+        }
+        
         assertEquals("One record for disabled and one for enabled: " + rec, 2, rec.size());
         
         assertEquals("UI_ENABLED_MODULES", rec.get(0).getMessage());
