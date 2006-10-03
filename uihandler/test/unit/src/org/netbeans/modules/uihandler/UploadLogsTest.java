@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.LogRecords;
@@ -51,7 +52,6 @@ public class UploadLogsTest extends NbTestCase {
     }
     
     public void testSendsCorrectlyEncoded() throws Exception {
-/*
         List<LogRecord> recs = new ArrayList<LogRecord>();
         recs.add(new LogRecord(Level.WARNING, "MSG_MISTAKE"));
         MemoryURL.registerURL("memory://upload", "Ok");
@@ -64,9 +64,7 @@ public class UploadLogsTest extends NbTestCase {
             fail("There should be an empty line:\n" + content);
         }
 
-        final String hea = content.substring(0, head);
-        final String buf = content.substring(head + 2);
-        
+        final String buf = content;
         class RFImpl implements MultiPartHandler.RequestFacade, MultiPartHandler.InputFacade {
             private ByteArrayInputStream is = new ByteArrayInputStream(buf.getBytes());
             
@@ -76,13 +74,7 @@ public class UploadLogsTest extends NbTestCase {
             }
 
             public String getContentType() {
-                final String what = "Content-Type:"; // NOI18N
-                int from = hea.indexOf(what);
-                int to = hea.indexOf('\n', from);
-                if (to == -1) {
-                    to = hea.length();
-                }
-                return hea.substring(from + what.length(), to).trim();
+                return MemoryURL.getRequestParameter("memory://upload", "Content-Type");
             }
 
             public MultiPartHandler.InputFacade getInput() throws IOException {
@@ -126,7 +118,12 @@ public class UploadLogsTest extends NbTestCase {
         LogRecord rec = LogRecords.read(is);
         
         assertEquals("Same msg", recs.get(0).getMessage(), rec.getMessage());
-  */  
+        
+        
+        DocumentBuilder b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document dom = b.parse(files[0]);
+        
+        assertNotNull("Parsed", dom);
     }
 
 

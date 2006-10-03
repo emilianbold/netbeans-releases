@@ -52,7 +52,7 @@ public class MemoryURL extends URLStreamHandler {
     }
     
     private static Map<String,InputStream> contents = new HashMap<String,InputStream>();
-    private static Map<String,ByteArrayOutputStream> outputs = new HashMap<String,ByteArrayOutputStream>();
+    private static Map<String,MC> outputs = new HashMap<String,MC>();
     public static void registerURL(String u, String content) {
         contents.put(u, new ByteArrayInputStream(content.getBytes()));
     }
@@ -61,9 +61,15 @@ public class MemoryURL extends URLStreamHandler {
     }
     
     public static String getOutputForURL(String u) {
-        ByteArrayOutputStream out = outputs.get(u);
+        MC out = outputs.get(u);
         Assert.assertNotNull("No output for " + u, out);
-        return out.toString();
+        return out.out.toString();
+    }
+    
+    public static String getRequestParameter(String u, String param) {
+        MC out = outputs.get(u);
+        Assert.assertNotNull("No output for " + u, out);
+        return out.params.get(param.toLowerCase());
     }
 
     protected URLConnection openConnection(URL u) throws IOException {
@@ -72,9 +78,13 @@ public class MemoryURL extends URLStreamHandler {
     
     private static final class MC extends URLConnection {
         private InputStream values;
+        private ByteArrayOutputStream out;
+        private Map<String,String> params;
         
         public MC(URL u) {
             super(u);
+            outputs.put(u.toExternalForm(), this);
+            params = new HashMap<String,String>();
         }
 
         public void connect() throws IOException {
@@ -93,12 +103,17 @@ public class MemoryURL extends URLStreamHandler {
         }
 
         public OutputStream getOutputStream() throws IOException {
-            ByteArrayOutputStream out = outputs.get(url.toExternalForm());
             if (out == null) {
                 out = new ByteArrayOutputStream();
-                outputs.put(url.toExternalForm(), out);
             }
             return out;
         }
+
+        public void setRequestProperty(String key, String value) {
+            super.setRequestProperty(key, value);
+            params.put(key.toLowerCase(), value);
+        }
+        
+        
     }
 }

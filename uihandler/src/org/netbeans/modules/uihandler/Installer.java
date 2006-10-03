@@ -315,12 +315,12 @@ public class Installer extends ModuleInstall {
         os.println();
         GZIPOutputStream gzip = new GZIPOutputStream(os);
         DataOutputStream data = new DataOutputStream(gzip);
-        data.writeChars("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); // NOI18N
-        data.writeChars("<uigestures version='1.0'>\n"); // NOI18N
+        data.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes("utf-8")); // NOI18N
+        data.write("<uigestures version='1.0'>\n".getBytes("utf-8")); // NOI18N
         for (LogRecord r : recs) {
             LogRecords.write(data, r);
         }
-        data.writeChars("</uigestures>\n"); // NOI18N
+        data.write("</uigestures>\n".getBytes("utf-8")); // NOI18N
         data.flush();
         gzip.finish();
         os.println("----------konec<>bloku--");
