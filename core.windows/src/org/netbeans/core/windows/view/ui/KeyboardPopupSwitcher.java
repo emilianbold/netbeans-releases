@@ -305,10 +305,10 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     /** Handles given <code>KeyEvent</code>. */
     private void processKeyEvent(KeyEvent kev) {
         switch (kev.getID()) {
-            case KeyEvent.KEY_RELEASED:
+            case KeyEvent.KEY_PRESSED:
                 int code = kev.getKeyCode();
                 if (code == reverseKey) {
-                    fwd = true;
+                    fwd = false;
                 } else if (code == triggerKey) {
                     int lastRowIdx = pTable.getRowCount() - 1;
                     int lastColIdx = pTable.getColumnCount() - 1;
@@ -345,21 +345,22 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
                     if (row >= 0 && col >= 0) {
                         changeTableSelection(row, col);
                     }
+                }
+                kev.consume();
+                break;
+            case KeyEvent.KEY_RELEASED:
+				code = kev.getKeyCode();
+                if (code == reverseKey) {
+                    fwd = true;
+                    kev.consume();
                 } else if (code == KeyEvent.VK_ESCAPE) { // XXX see above
                     cancelSwitching();
                 } else if (code == releaseKey) {
                     performSwitching();
                 }
-                kev.consume();
                 break;
-            case KeyEvent.KEY_PRESSED:
-                if (kev.getKeyCode() == reverseKey) {
-                    fwd = false;
-                    kev.consume();
                 }
-                break;
         }
-    }
     
     /** Changes table selection and sets status bar appropriately */
     private void changeTableSelection(int row, int col) {
