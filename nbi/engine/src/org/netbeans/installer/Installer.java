@@ -21,7 +21,9 @@
 package org.netbeans.installer;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Properties;
+import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.product.ProductRegistry;
@@ -248,6 +250,44 @@ public class Installer {
                 continue;
             }
             
+            if (arguments[i].equalsIgnoreCase("--locale")) {
+                logManager.log(MESSAGE, "parsing command line parameter \"--locale\"");
+                logManager.indent();
+                
+                if (i < arguments.length - 1) {
+                    String value = arguments[i + 1];
+                    String[] valueParts = value.split("_");
+                    
+                    Locale targetLocale = null;
+                    switch (valueParts.length) {
+                        case 1:
+                            targetLocale = new Locale(valueParts[0]);
+                            break;
+                        case 2:
+                            targetLocale = new Locale(valueParts[0], valueParts[1]);
+                            break;
+                        case 3:
+                            targetLocale = new Locale(valueParts[0], valueParts[1], valueParts[2]);
+                            break;
+                        default:
+                            ErrorManager.getInstance().notify(WARNING, "Invalid parameter command line argument \"--locale\". Should be \"<language>[_<country>[_<variant>]]\".");
+                    }
+                    
+                    if (targetLocale != null) {
+                        Locale.setDefault(targetLocale);
+                        logManager.log(MESSAGE, "... locale set to: " + targetLocale);
+                    } else {
+                        logManager.log(MESSAGE, "... locale is not set, using system default: " + Locale.getDefault());
+                    }
+                    
+                    i = i + 1;
+                } else {
+                    ErrorManager.getInstance().notify(WARNING, "Required parameter missing for command line argument \"--locale\". Should be \"--locale <locale-name>\".");
+                }
+                
+                logManager.unindent();
+                continue;
+            }
         }
         
         if (arguments.length == 0) {
@@ -271,6 +311,7 @@ public class Installer {
         logManager.log(MESSAGE, "... class name: " + className);
         
         try {
+            JFrame.setDefaultLookAndFeelDecorated(true);
             UIManager.setLookAndFeel(className);
         } catch (ClassNotFoundException e) {
             ErrorManager.getInstance().notify(WARNING, "Could not set the look and feel.", e);
