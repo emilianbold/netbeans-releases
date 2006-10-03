@@ -96,9 +96,9 @@ public class DestinationPanel extends DefaultWizardPanel {
         if (destination == null) {
             String defaultDestination = getWizard().getProductComponent().getProperty(DEFAULT_INSTALLATION_LOCATION_PROPERTY);
             if (defaultDestination != null) {
-                destination = SystemUtils.getInstance().parsePath(defaultDestination);
+                destination = SystemUtils.getInstance().parsePath(defaultDestination).getAbsolutePath();
             } else {
-                destination = SystemUtils.getInstance().parsePath(DEFAULT_DESTINATION);
+                destination = SystemUtils.getInstance().parsePath(DEFAULT_DESTINATION).getAbsolutePath();
             }
         }
         

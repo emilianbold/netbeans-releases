@@ -24,10 +24,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
+import org.netbeans.installer.utils.exceptions.UnsupportedActionException;
 import org.netbeans.installer.utils.system.GenericSystemUtils;
 import org.netbeans.installer.utils.system.UnixSystemUtils;
 import org.netbeans.installer.utils.system.WindowsSystemUtils;
@@ -64,21 +66,9 @@ public abstract class SystemUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     // Instance
-    public abstract String parseString(String string);
-    
     public abstract String parseString(String string, ClassLoader loader);
     
-    public abstract String parsePath(String path);
-    
-    public abstract File resolvePath(String path);
-    
-    public abstract File getDefaultApplicationsLocation();
-    
-    public abstract Platform getCurrentPlatform();
-    
-    public abstract void sleep(long millis);
-    
-    public abstract String getLineSeparator();
+    public abstract File parsePath(String path, ClassLoader loader);
     
     public abstract File getUserHomeDirectory();
     
@@ -86,21 +76,64 @@ public abstract class SystemUtils {
     
     public abstract File getTempDirectory();
     
-    public abstract File getSystemDrive();
+    public abstract File getDefaultApplicationsLocation();
     
-    public abstract long getFreeSpace(File file);
+    public abstract String getLineSeparator();
+    
+    public abstract String getFileSeparator();
+    
+    public abstract String getPathSeparator();
+    
+    public abstract long getFreeSpace(File file) throws UnsupportedActionException;
     
     public abstract ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException;
-    
-    public abstract ExecutionResults executeCommand(String... command) throws IOException;
     
     public abstract boolean isPathValid(String path);
     
     public abstract boolean isPortAvailable(int port);
     
+    public abstract File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException, UnsupportedActionException;
+    
+    public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException, UnsupportedActionException;
+    
+    public abstract String getEnvironmentVariable(String name, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
+    
+    public abstract String getRawEnvironmentVariable(String name, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
+    
+    public abstract String setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
+    
+    // some helper overloaded implementations //////////////////////////////////
+    public String parseString(String string) {
+        return parseString(string, getClass().getClassLoader());
+    }
+    
+    public File parsePath(String string) {
+        return parsePath(string, getClass().getClassLoader());
+    }
+    
+    public ExecutionResults executeCommand(String... command) throws IOException {
+        return executeCommand(null, command);
+    }
+    
+    public String getEnvironmentVariable(String name) throws IOException, UnsupportedActionException {
+        return getEnvironmentVariable(name, EnvironmentVariableScope.CURRENT_USER);
+    }
+    
+    public void setEnvironmentVariable(String name, String value) throws IOException, UnsupportedActionException {
+        setEnvironmentVariable(name, value, EnvironmentVariableScope.CURRENT_USER);
+    }
+    
+    public void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        }  catch (InterruptedException e) {
+            ErrorManager.getInstance().notify(ErrorLevel.DEBUG,
+                    "Interrupted while sleeping", e);
+        }
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
-    
     public static enum Platform {
         WINDOWS("windows", "Windows"),
         LINUX("linux", "Linux"),
@@ -188,6 +221,18 @@ public abstract class SystemUtils {
         }
     }
     
+    public static enum ShortcutLocationType {
+        CURRENT_USER_DESKTOP,
+        ALL_USERS_DESKTOP,
+        CURRENT_USER_START_MENU,
+        ALL_USERS_START_MENU
+    }
+    
+    public static enum EnvironmentVariableScope {
+        CURRENT_USER,
+        ALL_USERS
+    }
+    
     public static class ExecutionResults {
         public static final int TIMEOUT_ERRORCODE = Integer.MAX_VALUE;
         
@@ -219,8 +264,8 @@ public abstract class SystemUtils {
     }
     
     public static class Shortcut {
-        private Map<Locale, String> names;
-        private Map<Locale, String> comments;
+        private Map<Locale, String> names = new HashMap<Locale, String>();
+        private Map<Locale, String> descriptions = new HashMap<Locale, String>();
         
         private File executable;
         private String[] arguments;
@@ -231,6 +276,118 @@ public abstract class SystemUtils {
         private File icon;
         
         private String[] categories;
+        
+        private String fileName;
+        
+        public Shortcut(final String name, final File executable) {
+            this.names.put(Locale.getDefault(), name);
+            
+            this.executable = executable;
+        }
+        
+        public Map<Locale, String> getNames() {
+            return names;
+        }
+        
+        public void setNames(final Map<Locale, String> names) {
+            this.names = names;
+        }
+        
+        public String getName(final Locale locale) {
+            return names.get(locale);
+        }
+        
+        public String getName() {
+            return getName(Locale.getDefault());
+        }
+        
+        public void addName(final String name, final Locale locale) {
+            names.put(locale, name);
+        }
+        
+        public void setName(final String name) {
+            addName(name, Locale.getDefault());
+        }
+        
+        public void removeName(final Locale locale) {
+            names.remove(locale);
+        }
+        
+        public Map<Locale, String> getDescriptions() {
+            return descriptions;
+        }
+        
+        public void setDescriptions(final Map<Locale, String> comments) {
+            this.descriptions = comments;
+        }
+        
+        public String getDescription(final Locale locale) {
+            return descriptions.get(locale);
+        }
+        
+        public void addDescription(final String comment, final Locale locale) {
+            descriptions.put(locale, comment);
+        }
+        
+        public void removeComment(final Locale locale) {
+            descriptions.remove(locale);
+        }
+        
+        public File getExecutable() {
+            return executable;
+        }
+        
+        public void setExecutable(final File executable) {
+            this.executable = executable;
+        }
+        
+        public String[] getArguments() {
+            return arguments;
+        }
+        
+        public void setArguments(final String[] arguments) {
+            this.arguments = arguments;
+        }
+        
+        public File getWorkingDirectory() {
+            return workingDirectory;
+        }
+        
+        public void setWorkingDirectory(final File workingDirectory) {
+            this.workingDirectory = workingDirectory;
+        }
+        
+        public String getPath() {
+            return path;
+        }
+        
+        public void setPath(final String path) {
+            this.path = path;
+        }
+        
+        public File getIcon() {
+            return icon;
+        }
+        
+        public void setIcon(final File icon) {
+            this.icon = icon;
+        }
+        
+        public String[] getCategories() {
+            return categories;
+        }
+        
+        public void setCategories(final String[] categories) {
+            this.categories = categories;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public void setFileName(final String fileName) {
+            this.fileName = fileName;
+        }
     }
     
     public static final long MAX_EXECUTION_TIME = 120000; // 2 minutes seconds

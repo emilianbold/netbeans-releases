@@ -119,7 +119,7 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
             if (selectedLocation != null) {
                 locationField.setText(selectedLocation.getAbsolutePath());
             } else {
-                locationField.setText(SystemUtils.getInstance().parsePath(DEFAULT_LOCATION));
+                locationField.setText(SystemUtils.getInstance().parsePath(DEFAULT_LOCATION).getAbsolutePath());
             }
             
             setListVisibility(false);

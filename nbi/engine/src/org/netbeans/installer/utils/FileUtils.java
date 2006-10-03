@@ -63,11 +63,11 @@ public abstract class FileUtils {
     // Instance
     public abstract String readFile(File file) throws IOException;
     
-    public abstract void writeFile(File file, String string) throws IOException;
+    public abstract void writeFile(File file, CharSequence string) throws IOException;
     
-    public abstract void appendFile(File file, String string) throws IOException;
+    public abstract void appendFile(File file, CharSequence string) throws IOException;
     
-    public abstract void writeFile(File file, String string, boolean append) throws IOException;
+    public abstract void writeFile(File file, CharSequence string, boolean append) throws IOException;
     
     public abstract Date getLastModified(File f);
     
@@ -150,15 +150,15 @@ public abstract class FileUtils {
             return contents;
         }
         
-        public void writeFile(File file, String string) throws IOException {
+        public void writeFile(File file, CharSequence string) throws IOException {
             writeFile(file, string, false);
         }
         
-        public void appendFile(File file, String string) throws IOException {
+        public void appendFile(File file, CharSequence string) throws IOException {
             writeFile(file, string, true);
         }
         
-        public void writeFile(File file, String string, boolean append) throws IOException {
+        public void writeFile(File file, CharSequence string, boolean append) throws IOException {
             if (!file.exists()) {
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
