@@ -126,7 +126,7 @@ public final class ResultModel {
         int detailsCount;
         
         if ((detailsCount = observer.objectFound(object)) == -1) {
-            return false;
+            return true;
         } else {
             size++;
             totalDetailsCount += detailsCount;
