@@ -23,6 +23,7 @@ import com.sun.jdi.AbsentInformationException;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
 import javax.swing.Action;
+import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -43,6 +44,11 @@ import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+
 
 /**
  * @author   Jan Jancura
@@ -62,6 +68,27 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
+        
+//    private final Action COPY_TO_CLBD_ACTION = Models.createAction (
+//        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
+//        new Models.ActionPerformer () {
+//            public boolean isEnabled (Object node) {
+//                return true;
+//            }
+//            public void perform (Object[] nodes) {
+//                stackToCLBD (nodes[0]);
+//            }
+//        },
+//        Models.MULTISELECTION_TYPE_ANY
+//    );
+        
+    private final Action COPY_TO_CLBD_ACTION = new AbstractAction (
+        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label")) {
+        public void actionPerformed (ActionEvent e) {
+            stackToCLBD ();
+        }
+    };
+        
     private static final Action POP_TO_HERE_ACTION = Models.createAction (
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_PopToHere_Label"),
         new Models.ActionPerformer () {
@@ -93,16 +120,18 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {
-        if (node == TreeModel.ROOT)
-            return new Action [0];
+        if (node == TreeModel.ROOT) {
+            return new Action [] { COPY_TO_CLBD_ACTION };
+        }
+        
         if (!(node instanceof CallStackFrame))
             throw new UnknownTypeException (node);
         
         boolean popToHere = debugger.canPopFrames ();
         if (popToHere)
-            return new Action [] { MAKE_CURRENT_ACTION, POP_TO_HERE_ACTION };
+            return new Action [] { MAKE_CURRENT_ACTION, POP_TO_HERE_ACTION, COPY_TO_CLBD_ACTION };
         else
-            return new Action [] { MAKE_CURRENT_ACTION };
+            return new Action [] { MAKE_CURRENT_ACTION, COPY_TO_CLBD_ACTION };
     }
     
     public void performDefaultAction (Object node) throws UnknownTypeException {
@@ -135,6 +164,41 @@ public class CallStackActionsProvider implements NodeActionsProvider {
                     return;
                 }
         } catch (AbsentInformationException ex) {
+        }
+    }
+    
+    private void stackToCLBD() {
+        try {
+            JPDAThread t = debugger.getCurrentThread();;
+            
+//            if (frame instanceof CallStackFrame )
+//                t = ((CallStackFrame)frame).getThread ();
+//            else 
+//                t = debugger.getCurrentThread();
+            
+            CallStackFrame[] stack = t.getCallStack ();
+            int i, k = stack.length;
+            StringBuffer frameStr = new StringBuffer(50);
+            
+            for (i = 0; i < k; i++) {
+                int index = stack[i].getClassName().lastIndexOf('.');
+                frameStr.append(stack[i].getClassName().substring(index + 1));
+         
+                frameStr.append("." + stack[i].getMethodName() +
+                        " line: " + stack[i].getLineNumber("java"));
+                if (i != k - 1) frameStr.append('\n');
+                
+                Clipboard systemClipboard = 
+			Toolkit.getDefaultToolkit().getSystemClipboard();
+		Transferable transferableText =
+			new StringSelection(new String(frameStr));
+                systemClipboard.setContents(
+			transferableText,
+			null);
+            }
+            
+        } catch (AbsentInformationException ex) {
+            //System.out.println(ex);
         }
     }
     
