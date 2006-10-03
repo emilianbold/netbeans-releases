@@ -115,7 +115,13 @@ public abstract class AbstractTabCellRenderer extends JLabel
     }
 
     public String getCommandAtPoint(Point p, int tabState, Rectangle bounds, int mouseButton, int eventType, int modifiers) {
-        String result = getCommandAtPoint (p, tabState, bounds);
+		String result = null;
+		if (mouseButton == MouseEvent.BUTTON2 && eventType == MouseEvent.MOUSE_RELEASED) {
+			result = TabDisplayer.COMMAND_CLOSE;
+		}
+		else {
+			result = getCommandAtPoint (p, tabState, bounds);
+		}
         if (result != null) {
              if (TabDisplayer.COMMAND_SELECT == result) {
                  boolean clipped = isClipLeft() || isClipRight();
@@ -127,7 +133,7 @@ public abstract class AbstractTabCellRenderer extends JLabel
              } else if (TabDisplayer.COMMAND_CLOSE == result && eventType == MouseEvent.MOUSE_RELEASED && isShowCloseButton()) {
                  if ((modifiers & MouseEvent.SHIFT_DOWN_MASK) != 0) {
                      return TabDisplayer.COMMAND_CLOSE_ALL;
-                 } else if ((modifiers & MouseEvent.ALT_DOWN_MASK) != 0) {
+                 } else if ((modifiers & MouseEvent.ALT_DOWN_MASK) != 0 && mouseButton != MouseEvent.BUTTON2) {
                      return TabDisplayer.COMMAND_CLOSE_ALL_BUT_THIS;
                  }
                  return result;
