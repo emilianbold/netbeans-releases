@@ -16,8 +16,12 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.api.java.queries;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -29,6 +33,10 @@ import org.openide.util.Lookup;
  * @since org.netbeans.api.java/1 1.5
  */
 public class SourceLevelQuery {
+
+    private static final Logger LOGGER = Logger.getLogger(SourceLevelQuery.class.getName());
+
+    private static final Pattern SOURCE_LEVEL = Pattern.compile("\\d+\\.\\d+");
 
     private static final Lookup.Result<? extends SourceLevelQueryImplementation> implementations =
         Lookup.getDefault().lookupResult (SourceLevelQueryImplementation.class);
@@ -48,9 +56,15 @@ public class SourceLevelQuery {
         for  (SourceLevelQueryImplementation sqi : implementations.allInstances()) {
             String s = sqi.getSourceLevel(javaFile);
             if (s != null) {
+                if (!SOURCE_LEVEL.matcher(s).matches()) {
+                    LOGGER.log(Level.WARNING, "#83994: Ignoring bogus source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
+                    continue;
+                }
+                LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
                 return s;
             }
         }
+        LOGGER.log(Level.FINE, "No source level found for {0}", javaFile);
         return null;
     }
 
