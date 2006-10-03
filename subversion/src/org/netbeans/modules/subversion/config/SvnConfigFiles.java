@@ -64,11 +64,13 @@ public class SvnConfigFiles {
 
     private static final String UNIX_CONFIG_DIR = ".subversion/"; // NOI18N
     private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"}; // NOI18N
-    private static final String GROUPS = "groups"; // NOI18N
+    private static final String GROUPS_SECTION = "groups"; // NOI18N
+    private String GLOBAL_SECTION = "global"; // NOI18N
     private static final String WINDOWS_USER_APPDATA = getAPPDATA();
     private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Subversion"; // NOI18N
     private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion"; // NOI18N
     private static final List<String> DEFAULT_GLOBAL_IGNORES = parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");
+    
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -134,9 +136,16 @@ public class SvnConfigFiles {
         if(group==null) {
             // check if there is a [global] group
             group = servers.get("global");
-            if(group==null) {
+            if(group == null) {
                 // no proxy specified -> direct
                 return ProxyDescriptor.DIRECT;
+            } else {
+                // check first if the host is in the exceptions section
+                String exceptions = group.get("http-proxy-exceptions"); // NOI18N
+                if(match(exceptions, host)) {
+                    // it's between the exceptions -> direct
+                    return ProxyDescriptor.DIRECT;
+                } 
             }
         }
         String proxyHost = group.get("http-proxy-host"); // NOI18N
@@ -167,17 +176,49 @@ public class SvnConfigFiles {
     public void setProxy(ProxyDescriptor pd, String host) {
 
         if(pd != null && pd.getHost() != null) {
-
             Ini.Section group = getServerGroup(host);
             if(group==null) {
                 group = getServerGroup(pd);
-                if(group==null) {
-                    group = addServerGroup(host);
-                    setProxy(group, pd);
+                if(group==null) {                  
+                    // check the global section
+                    Ini.Section globalSection = servers.get(GLOBAL_SECTION);
+                    if(globalSection != null) {
+                        String globalProxy = globalSection.get("http-proxy-host");  // NOI18N
+                        String globalPort = globalSection.get("http-proxy-port");   // NOI18N
+                        if( globalProxy != null && globalProxy.trim().equals(pd.getHost()) && 
+                            globalPort != null && globalPort.trim().equals(Integer.toString(pd.getPort())) ) 
+                        {
+                            // do nothing if there is a global section with the same proxy
+                            return;                            
+                        } else {
+                            // if there is a global section with a different proxy
+                            // then check if the host isn't in its exceptions                            
+                            String[] hosts = globalSection.get("http-proxy-exceptions").split(",");    // NOI18N
+                            StringBuffer newHosts = new StringBuffer();
+                            for (int i = 0; i < hosts.length; i++) {
+                                if(!hosts[i].trim().equals(host)) {
+                                    if(i > 0) {
+                                        newHosts.append(",");                       // NOI18N
+                                    }                                    
+                                    newHosts.append(hosts[i]);
+                                }
+                            }
+                            globalSection.put("http-proxy-exceptions", newHosts.toString());                             // NOI18N
+                        }
+                    }
+                    
+                    // create a new group
+                    group = addServerGroup(host);                        
+                    setProxy(group, pd);                                                                                                  
+                    
                 } else {
                     String groupName = group.getName();
-                    String groupsHosts = getServerGroups().get(groupName);
-                    getServerGroups().put(groupName, groupsHosts + "," + host); // NOI18N
+                    Ini.Section serverGroups = getServerGroups(true);
+                    String groupsHosts = serverGroups.get(groupName);
+                    if(!match(groupsHosts, host)) {
+                        // host not in the group yet -> add it
+                        serverGroups.put(groupName, groupsHosts + "," + host); // NOI18N
+                    }        
                 }
             } else {
                 setProxy(group, pd);
@@ -186,11 +227,21 @@ public class SvnConfigFiles {
         } else {
             // no proxy host means no proxy at all
             removeFromServerGroup(host);
+            
+            // and if there is a global section then set this as an exception
+            Ini.Section group = servers.get(GLOBAL_SECTION);
+            if(group != null) {
+                String exceptions = group.get("http-proxy-exceptions"); // NOI18N
+                if(!match(exceptions, host)) {
+                    exceptions = exceptions.trim().length() > 0 ? exceptions + ", " + host : host;
+                    group.put("http-proxy-exceptions", exceptions);
+                }                
+            }
         }
 
         storeServers();
     }
-
+    
     private void storeServers() {
         try {
             File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/servers")); // NOI18N
@@ -281,7 +332,7 @@ public class SvnConfigFiles {
      * @return the Ini.Section newly created
      */
     private Ini.Section addServerGroup(String host) {
-        Ini.Section groups = getServerGroups();
+        Ini.Section groups = getServerGroups(true);
         int idx = 0;
         String name = "group0"; // NOI18N
         while(groups.get(name)!=null) {
@@ -305,34 +356,38 @@ public class SvnConfigFiles {
         Ini.Section group = getServerGroup(host);
         if(group != null) {
             String groupName = group.getName();
-            String[] hosts = getServerGroups().get(groupName).split(","); // NOI18N
+            Ini.Section serverGroups = getServerGroups(false);
+            if(serverGroups == null) {
+                return;
+            }
+            String[] hosts = serverGroups.get(groupName).split(",");    // NOI18N
             if(hosts.length == 1) {
-                getServerGroups().remove(groupName);
+                serverGroups.remove(groupName);
                 servers.remove(group);
             } else {
                 StringBuffer newHosts = new StringBuffer();
                 for (int i = 0; i < hosts.length; i++) {
                     if(!hosts[i].trim().equals(host)) {
-                        newHosts.append(hosts[i]);
-                        if(i < hosts.length - 1) {
-                            newHosts.append(","); // NOI18N
-                        }
+                        if(i > 0) {
+                            newHosts.append(",");                       // NOI18N
+                        }                        
+                        newHosts.append(hosts[i]);                        
                     }
                 }
-                getServerGroups().put(groupName, newHosts.toString());
+                serverGroups.put(groupName, newHosts.toString());
             }            
         }
     }
-
+    
     /**
      * Retruns the groups section from <b>servers</b> config file used by the Subversion module. </br>
      *
      * @return the groups section
      */ 
-    private Ini.Section getServerGroups() {
-        Ini.Section groups = servers.get(GROUPS);
+    private Ini.Section getServerGroups(boolean create) {
+        Ini.Section groups = servers.get(GROUPS_SECTION);
         if(groups==null) {
-            groups = servers.add("groups"); // NOI18N
+            groups = servers.add(GROUPS_SECTION);                             // NOI18N
         }
         return groups;
     }
@@ -345,21 +400,19 @@ public class SvnConfigFiles {
      * @return the section holding the proxy settings for the given host
      */ 
     private Ini.Section getServerGroup(String host) {
-        if(host == null || host.equals("")) { // NOI18N
+        if(host == null || host.equals("")) {                           // NOI18N
             return null;
         }
-        Ini.Section groups = getServerGroups();
-        for (Iterator<String> it = groups.keySet().iterator(); it.hasNext();) {
-            String key = it.next();
-            String value = groups.get(key).trim();
-            
-            if(match(value, host)) {
-                return servers.get(key);
-            }
+        Ini.Section groups = getServerGroups(false);
+        if(groups != null) {
+            for (Iterator<String> it = groups.keySet().iterator(); it.hasNext();) {
+                String key = it.next();
+                String value = groups.get(key).trim();
 
-            if (match(value, host)) {
-                return (Ini.Section) servers.get(key);
-            }            
+                if(match(value, host)) {
+                    return servers.get(key);
+                }      
+            }
         }
         return null;
     }
@@ -374,7 +427,8 @@ public class SvnConfigFiles {
     private Ini.Section getServerGroup(ProxyDescriptor pd) {
         for (Iterator<Ini.Section> it = servers.values().iterator(); it.hasNext();) {
             Ini.Section group = it.next();
-            if (group.getName().equals(GROUPS)) {
+            if (group.getName().equals(GROUPS_SECTION) || group.getName().equals(GLOBAL_SECTION)) {
+                
                 continue;
             }
             if( pd.getHost().equals(group.get("http-proxy-host")) && // NOI18N
@@ -599,7 +653,7 @@ public class SvnConfigFiles {
         for (Iterator<String> itSections = target.keySet().iterator(); itSections.hasNext();) {
             String sectionName = itSections.next();
 
-            if(sectionName.equals(GROUPS)) {
+            if(sectionName.equals(GROUPS_SECTION)) {
                 continue;
             }
 
@@ -673,27 +727,23 @@ public class SvnConfigFiles {
      * @param svnFile the last registry key folder
      * @param iniFile the target ini file in which the values from the registry folder are going to be merged
      */   
-    // XXX shouldn't be in this case also used the merge only the values witch aren't already present logic?
     private void mergeFromRegistry(String keyPrefix, String svnFile, Ini iniFile) {
-        String key = keyPrefix + "\\Software\\Tigris.org\\Subversion\\" + svnFile; // NOI18N
-        String tmpDirPath = System.getProperty("netbeans.user") + "/config/svn/tmp";  // XXX maybe an another location... XXX java.io.tmpdir create temp file // NOI18N
-        File tmpDir = FileUtil.normalizeFile(new File(tmpDirPath));
-        tmpDir.mkdirs();        
-        String tmpFilePath = System.getProperty("netbeans.user") + "/config/svn/tmp/out.reg"; // NOI18N
-        File tmpFile = FileUtil.normalizeFile(new File(tmpFilePath));
-        
-        String[] cmdLine = new String[] {
-            "regedit.exe", "/e" , tmpFile.getAbsolutePath(), key       // XXX don't have to use regedit.exe // NOI18N
-        };
-        
-        Process p = null;
+        String key = keyPrefix + "\\Software\\Tigris.org\\Subversion\\" + svnFile;        
+        File tmpFile;
         try {
-            p = Runtime.getRuntime().exec(cmdLine);
+            tmpFile = File.createTempFile("svn_registry", "");                                          // NOI18N               
+            tmpFile.deleteOnExit();
+            String[] cmdLine = new String[] { "reg.exe", "export" , key, tmpFile.getAbsolutePath() };   // NOI18N            
+            
+            Process p = Runtime.getRuntime().exec(cmdLine);
             StreamHandler shErr = new StreamHandler(p.getErrorStream());
             StreamHandler shIn = new StreamHandler(p.getInputStream());
             shErr.start();
             shIn.start();
-            p.waitFor(); // XXX check the exit value
+            p.waitFor(); 
+            shErr.join();
+            shIn.join();
+            
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);     
             return;
@@ -712,7 +762,7 @@ public class SvnConfigFiles {
         BufferedReader br = null;
         try {
             is = FileUtils.createInputStream(tmpFile);                                    
-            br = new BufferedReader(new InputStreamReader(is, "Unicode"));    // XXX hm, unicode...         // NOI18N
+            br = new BufferedReader(new InputStreamReader(is, "Unicode"));                                   // NOI18N
             String line = ""; // NOI18N
             Ini.Section section = null;
             while( (line = br.readLine()) != null ) {
@@ -725,10 +775,10 @@ public class SvnConfigFiles {
                             section = iniFile.add(sectionName);
                         }                            
                     }                    
+
                 } else {
-                    if( line.startsWith("\"#") && section != null ) // NOI18N
-                    {
-                        String[] elements = line.split("\"=\""); // NOI18N
+                    if( line.startsWith("\"#") && section != null ) {                                       // NOI18N
+                        String[] elements = line.split("\"=\"");                                            // NOI18N
                         String variable = elements[0].substring(2);
                         String value = elements[1].substring(0, elements[1].length()-1);
                         if(!section.containsKey(variable)) {
@@ -741,10 +791,7 @@ public class SvnConfigFiles {
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);     
         } finally {
-            try {
-                if(tmpFile != null) {
-                    tmpFile.delete();
-                }
+            try {                
                 if (br != null) {        
                     br.close();
                 }                                
@@ -835,15 +882,23 @@ public class SvnConfigFiles {
         StreamHandler(InputStream is) {
             this.is = is;
         }
+
         public void run() {
             try {
                 while(is.read(inputBuffer) != -1) {
                     // nothing to do
-                };
-                is.close();
+                };                
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
+            } finally {
+                if(is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
             }
         }
-    }
+    }  
 }
