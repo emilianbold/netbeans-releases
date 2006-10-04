@@ -92,6 +92,8 @@ public abstract class SystemUtils {
     
     public abstract boolean isPortAvailable(int port);
     
+    public abstract File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType);
+    
     public abstract File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException, UnsupportedActionException;
     
     public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException, UnsupportedActionException;
@@ -123,6 +125,7 @@ public abstract class SystemUtils {
         setEnvironmentVariable(name, value, EnvironmentVariableScope.CURRENT_USER);
     }
     
+    // helper cross-platform methods ///////////////////////////////////////////
     public void sleep(long millis) {
         try {
             Thread.sleep(millis);
@@ -267,17 +270,18 @@ public abstract class SystemUtils {
         private Map<Locale, String> names = new HashMap<Locale, String>();
         private Map<Locale, String> descriptions = new HashMap<Locale, String>();
         
-        private File executable;
-        private String[] arguments;
-        private File workingDirectory;
+        private String relativePath;
+        private String fileName;
         
-        private String path;
+        private File executable;
+        private File workingDirectory;
+        private List<String> arguments = new ArrayList<String>();
         
         private File icon;
         
         private String[] categories;
         
-        private String fileName;
+        private String path;
         
         public Shortcut(final String name, final File executable) {
             this.names.put(Locale.getDefault(), name);
@@ -310,7 +314,11 @@ public abstract class SystemUtils {
         }
         
         public void removeName(final Locale locale) {
-            names.remove(locale);
+            if (locale.equals(Locale.getDefault())) {
+                throw new IllegalArgumentException("Removing of name for default locale is not supported");
+            } else {
+                names.remove(locale);
+            }
         }
         
         public Map<Locale, String> getDescriptions() {
@@ -325,48 +333,110 @@ public abstract class SystemUtils {
             return descriptions.get(locale);
         }
         
-        public void addDescription(final String comment, final Locale locale) {
-            descriptions.put(locale, comment);
+        public String getDescription() {
+            return descriptions.get(Locale.getDefault());
         }
         
-        public void removeComment(final Locale locale) {
+        public void addDescription(final String description, final Locale locale) {
+            descriptions.put(locale, description);
+        }
+        
+        public void setDescription(final String description) {
+            addDescription(description, Locale.getDefault());
+        }
+        
+        public void removeDescription(final Locale locale) {
             descriptions.remove(locale);
+        }
+
+        public String getRelativePath() {
+            return relativePath;
+        }
+        
+        public void setRelativePath(final String relativePath) {
+            this.relativePath = relativePath;
+        }
+        
+        public String getFileName() {
+            return fileName;
+        }
+        
+        public void setFileName(final String fileName) {
+            this.fileName = fileName;
         }
         
         public File getExecutable() {
             return executable;
         }
         
+        public String getExecutablePath() {
+            return executable.getAbsolutePath();
+        }
+        
         public void setExecutable(final File executable) {
             this.executable = executable;
         }
         
-        public String[] getArguments() {
+        public List<String> getArguments() {
             return arguments;
         }
         
-        public void setArguments(final String[] arguments) {
+        public String getArgumentsString() {
+            if (arguments.size() == 0) {
+                StringBuilder builder = new StringBuilder();
+
+                for (int i = 0; i < arguments.size(); i++) {
+                    builder.append(arguments.get(i));
+
+                    if (i != arguments.size() - 1) {
+                        builder.append(" ");
+                    }
+                }
+
+                return builder.toString();
+            } else {
+                return null;
+            }
+        }
+        
+        public void setArguments(final List<String> arguments) {
             this.arguments = arguments;
+        }
+        
+        public void addArgument(final String argument) {
+            arguments.add(argument);
+        }
+        
+        public void removeArgument(final String argument) {
+            arguments.remove(argument);
         }
         
         public File getWorkingDirectory() {
             return workingDirectory;
         }
         
+        public String getWorkingDirectoryPath() {
+            if (workingDirectory != null) {
+                return workingDirectory.getAbsolutePath();
+            } else {
+                return null;
+            }
+        }
+        
         public void setWorkingDirectory(final File workingDirectory) {
             this.workingDirectory = workingDirectory;
         }
         
-        public String getPath() {
-            return path;
-        }
-        
-        public void setPath(final String path) {
-            this.path = path;
-        }
-        
         public File getIcon() {
             return icon;
+        }
+        
+        public String getIconPath() {
+            if (icon != null) {
+                return icon.getAbsolutePath();
+            } else {
+                return null;
+            }
         }
         
         public void setIcon(final File icon) {
@@ -380,13 +450,13 @@ public abstract class SystemUtils {
         public void setCategories(final String[] categories) {
             this.categories = categories;
         }
-
-        public String getFileName() {
-            return fileName;
+        
+        public String getPath() {
+            return path;
         }
-
-        public void setFileName(final String fileName) {
-            this.fileName = fileName;
+        
+        public void setPath(final String path) {
+            this.path = path;
         }
     }
     
