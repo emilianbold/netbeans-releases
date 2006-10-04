@@ -115,3 +115,4 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-junit@" value="${javadoc.docs.org-netbeans-modules-junit}"/>
 <replacefilter token="@org-netbeans-api-actions-support@" value="${javadoc.docs.org-netbeans-api-actions-support}"/>
 <replacefilter token="@org-netbeans-modules-uihandler@" value="${javadoc.docs.org-netbeans-modules-uihandler}"/>
+<replacefilter token="@org-netbeans-lib-uihandler@" value="${javadoc.docs.org-netbeans-lib-uihandler}"/>
