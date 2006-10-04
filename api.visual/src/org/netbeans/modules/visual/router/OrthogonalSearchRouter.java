@@ -28,7 +28,8 @@ import java.util.List;
  */
 public final class OrthogonalSearchRouter implements Router {
 
-    static final int SPACING = 8;
+    static final int SPACING_EDGE = 8;
+    static final int SPACING_NODE = 16;
 
     private CollisionsCollector collector;
 

@@ -235,9 +235,9 @@ final class OrthogonalSearchRouterCore {
                     final int y1 = region.y;
                     final int y2 = region.y + region.height;
                     if (y1 <= OrthogonalSearchRouterRegion.MIN_INT_REGION && y2 < OrthogonalSearchRouterRegion.MAX_INT_REGION)
-                        yy = y2 - OrthogonalSearchRouter.SPACING;
+                        yy = y2 - OrthogonalSearchRouter.SPACING_EDGE;
                     else if (y1 > OrthogonalSearchRouterRegion.MIN_INT_REGION && y2 >= OrthogonalSearchRouterRegion.MAX_INT_REGION)
-                        yy = y1 + OrthogonalSearchRouter.SPACING;
+                        yy = y1 + OrthogonalSearchRouter.SPACING_EDGE;
                     else
                         yy = region.y + region.height / 2;
                 } else
@@ -249,9 +249,9 @@ final class OrthogonalSearchRouterCore {
                     final int x1 = region.x;
                     final int x2 = region.x + region.width;
                     if (x1 <= OrthogonalSearchRouterRegion.MIN_INT_REGION && x2 < OrthogonalSearchRouterRegion.MAX_INT_REGION)
-                        xx = x2 - OrthogonalSearchRouter.SPACING;
+                        xx = x2 - OrthogonalSearchRouter.SPACING_EDGE;
                     else if (x1 > OrthogonalSearchRouterRegion.MIN_INT_REGION && x2 >= OrthogonalSearchRouterRegion.MAX_INT_REGION)
-                        xx = x1 + OrthogonalSearchRouter.SPACING;
+                        xx = x1 + OrthogonalSearchRouter.SPACING_EDGE;
                     else
                         xx = region.x + region.width / 2;
                 } else

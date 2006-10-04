@@ -47,18 +47,18 @@ public class WidgetsCollisionCollector implements CollisionsCollector {
                     Point point2 = controlPoints.get (i + 1);
                     if (point1.x == point2.x) {
                         Rectangle rectangle = new Rectangle (point1.x, Math.min (point1.y, point2.y), 0, Math.abs (point2.y - point1.y));
-                        rectangle.grow (OrthogonalSearchRouter.SPACING, OrthogonalSearchRouter.SPACING);
+                        rectangle.grow (OrthogonalSearchRouter.SPACING_EDGE, OrthogonalSearchRouter.SPACING_EDGE);
                         verticalCollisions.add (rectangle);
                     } else if (point1.y == point2.y) {
                         Rectangle rectangle = new Rectangle (Math.min (point1.x, point2.x), point1.y, Math.abs (point2.x - point1.x), 0);
-                        rectangle.grow (OrthogonalSearchRouter.SPACING, OrthogonalSearchRouter.SPACING);
+                        rectangle.grow (OrthogonalSearchRouter.SPACING_EDGE, OrthogonalSearchRouter.SPACING_EDGE);
                         horizontalCollisions.add (rectangle);
                     }
                 }
             } else {
                 Rectangle bounds = widget.getBounds ();
                 Rectangle rectangle = widget.convertLocalToScene (bounds);
-                rectangle.grow (OrthogonalSearchRouter.SPACING, OrthogonalSearchRouter.SPACING);
+                rectangle.grow (OrthogonalSearchRouter.SPACING_NODE, OrthogonalSearchRouter.SPACING_NODE);
                 verticalCollisions.add (rectangle);
                 horizontalCollisions.add (rectangle);
             }
