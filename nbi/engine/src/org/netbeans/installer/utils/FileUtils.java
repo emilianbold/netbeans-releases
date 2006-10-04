@@ -127,7 +127,22 @@ public abstract class FileUtils {
     
     public abstract boolean canWrite(File file);
     
-    public abstract boolean isWritable(File file);
+    public abstract void removeIrrelevantFiles(File parent) throws IOException;
+    
+    public abstract void correctFilesPermissions(File parent) throws IOException;
+    
+    // helper overloading implementations //////////////////////////////////////
+    public void removeIrrelevantFiles(File... parents) throws IOException {
+        for (File file: parents) {
+            removeIrrelevantFiles(file);
+        }
+    }
+    
+    public void correctFilesPermissions(File... parents) throws IOException {
+        for (File file: parents) {
+            correctFilesPermissions(file);
+        }
+    }
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
@@ -573,38 +588,13 @@ public abstract class FileUtils {
             }
         }
         
-        /**
-         * Checks whether the given file is writable.
-         *
-         * @param file the file to check
-         * @return true is the file is writable
-         */
-        public  boolean isWritable(File file) {
-            if (file == null) {
-                return false;
-            }
-            
-            if (!file.exists()) {
-                return isWritable(file.getParentFile());
-            } else {
-                if (!file.isDirectory()) {
-                    return file.canWrite();
-                } else {
-                    File temp = null;
-                    try {
-                        temp = File.createTempFile("111", "222", file);//NOI18N
-                        return true;
-                    } catch (IOException e) {
-                        return false;
-                    } finally {
-                        if (temp != null) {
-                            temp.delete();
-                        }
-                    }
-                }
-            }
+        public void removeIrrelevantFiles(File parent) throws IOException {
+            // does nothing
         }
         
+        public void correctFilesPermissions(File parent) throws IOException {
+            // does nothing
+        }
     }
     
     public static class UnixFileUtils extends GenericFileUtils {
@@ -729,18 +719,12 @@ public abstract class FileUtils {
             }
         }
         
-        public void correctFiles(File parent) throws IOException {
-            // all executables should be executable
-            chmod(findExecutableFiles(parent), "ugo+x");
-            
-            // irrelevant files should be deleted
+        public void removeIrrelevantFiles(File parent) throws IOException {
             deleteFiles(findNonUnixFiles(parent));
         }
         
-        public void correctFiles(File... parents) throws IOException {
-            for (File parent: parents) {
-                correctFiles(parent);
-            }
+        public void correctFilesPermissions(File parent) throws IOException {
+            chmod(findExecutableFiles(parent), "ugo+x");
         }
     }
     
