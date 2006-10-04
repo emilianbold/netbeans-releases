@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import javax.swing.JMenu;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.NbTestCase;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
@@ -39,7 +40,7 @@ import org.openide.util.actions.CallbackSystemAction;
  *
  * @author Jaroslav Tulach
  */
-public class MenuBarTest extends LoggingTestCaseHid implements ContainerListener {
+public class MenuBarTest extends NbTestCase implements ContainerListener {
     private DataFolder df;
     private MenuBar mb;
     
@@ -48,6 +49,10 @@ public class MenuBarTest extends LoggingTestCaseHid implements ContainerListener
     
     public MenuBarTest(String testName) {
         super(testName);
+    }
+    
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     protected void setUp() throws Exception {
