@@ -52,10 +52,10 @@ public abstract class SystemUtils {
                 case LINUX:
                 case SOLARIS_X86:
                 case SOLARIS_SPARC:
-                    instance = new UnixSystemUtils();
-                    break;
                 case MACOS_X_PPC:
                 case MACOS_X_X86:
+                    instance = new UnixSystemUtils();
+                    break;                
                 default:
                     instance = new GenericSystemUtils();
                     break;
