@@ -22,16 +22,16 @@ import java.awt.*;
  */
 public final class LineBorder implements Border {
 
-    private int thickness;
+    private Insets insets;
     private Color color;
 
-    public LineBorder (int thickness, Color color) {
-        this.thickness = thickness;
+    public LineBorder (int top, int left, int bottom, int right, Color color) {
+        insets = new Insets (top, left, bottom, right);
         this.color = color;
     }
 
     public Insets getInsets () {
-        return new Insets (thickness, thickness, thickness, thickness);
+        return insets;
     }
 
     public void paint (Graphics2D gr, Rectangle bounds) {

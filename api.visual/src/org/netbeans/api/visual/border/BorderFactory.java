@@ -133,11 +133,25 @@ public final class BorderFactory {
      * Creates a line border with specific thickness and color. The line is still one pixel but the border insets are calculated from thickness.
      * The instance can be shared by multiple widgets.
      * @param thickness the border thickness
-     * @param color the line color
+     * @param color     the line color
      * @return the line border
      */
     public static Border createLineBorder (int thickness, Color color) {
-        return new LineBorder (thickness, color != null ? color : Color.BLACK);
+        return new LineBorder (thickness, thickness, thickness, thickness, color != null ? color : Color.BLACK);
+    }
+
+    /**
+     * Creates a line border with specific insets and color. The line is still one pixel but the border insets are specified.
+     * The instance can be shared by multiple widgets.
+     * @param top the top inset
+     * @param left the left inset
+     * @param bottom the bottom inset
+     * @param right the right inset
+     * @param color the line color
+     * @return the line border
+     */
+    public static Border createLineBorder (int top, int left, int bottom, int right, Color color) {
+        return new LineBorder (top, left, bottom, right, color != null ? color : Color.BLACK);
     }
 
     /**

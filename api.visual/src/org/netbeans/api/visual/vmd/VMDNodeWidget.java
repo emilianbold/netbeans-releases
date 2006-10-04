@@ -36,14 +36,18 @@ import java.util.List;
  */
 public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMinimizeAbility {
 
+    private static final Image IMAGE_EXPAND = Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand.png"); // NOI18N
+    private static final Image IMAGE_COLLAPSE = Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse.png"); // NOI18N
+
     private static final Border BORDER_NODE = new VMDNodeBorder ();
     private static final Color BORDER_CATEGORY_BACKGROUND = new Color (0xCDDDF8);
-    public static final Color COLOR_SELECTED = new Color (0x748CC0);
-//    static final Border BORDER_LINE = BorderFactory.createLineBorder (4, VMDNodeBorder.COLOR_BORDER);
-    static final Border BORDER = BorderFactory.createOpaqueBorder (2, 2, 2, 2);
-    static final Border BORDER_HOVERED = BorderFactory.createLineBorder (2, Color.BLACK);
+    private static final Border BORDER_MINIMIZE = BorderFactory.createRoundedBorder (2, 2, null, VMDNodeBorder.COLOR_BORDER);
+    static final Color COLOR_SELECTED = new Color (0x748CC0);
+    static final Border BORDER = BorderFactory.createOpaqueBorder (2, 8, 2, 8);
+    static final Border BORDER_HOVERED = BorderFactory.createLineBorder (2, 8, 2, 8, Color.BLACK);
 
     private Widget header;
+    private ImageWidget minimizeWidget;
     private ImageWidget imageWidget;
     private LabelWidget nameWidget;
     private LabelWidget typeWidget;
@@ -76,32 +80,25 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
         header.setLayout (LayoutFactory.createHorizontalLayout (LayoutFactory.SerialAlignment.CENTER, 8));
         addChild (header);
 
+        minimizeWidget = new ImageWidget (scene, IMAGE_COLLAPSE);
+        minimizeWidget.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
+        minimizeWidget.setBorder (BORDER_MINIMIZE);
+        minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
+        header.addChild (minimizeWidget);
+
         imageWidget = new ImageWidget (scene);
         header.addChild (imageWidget);
 
-//        Widget desc = new Widget (scene);
-//        desc.setLayout (LayoutFactory.createVerticalLayout ());
-//        header.addChild (desc);
-
         nameWidget = new LabelWidget (scene);
         nameWidget.setFont (scene.getDefaultFont ().deriveFont (Font.BOLD));
-//        desc.addChild (nameWidget);
         header.addChild (nameWidget);
 
         typeWidget = new LabelWidget (scene);
         typeWidget.setForeground (Color.BLACK);
-//        desc.addChild (typeWidget);
         header.addChild (typeWidget);
 
         glyphSetWidget = new VMDGlyphSetWidget (scene);
-//        desc.addChild (glyphSetWidget);
         header.addChild (glyphSetWidget);
-
-        Widget minimizeWidget = new ImageWidget (scene, Utilities.loadImage ("org/netbeans/modules/visual/resources/minimize.png"));
-        minimizeWidget.setCursor (Cursor.getPredefinedCursor (Cursor.HAND_CURSOR));
-        minimizeWidget.getActions ().addAction (new ToggleMinimizedAction ());
-//        header.addChild (minimizeWidget);
-        header.addChild (0, minimizeWidget);
 
         pinsSeparator = new SeparatorWidget (scene, SeparatorWidget.Orientation.HORIZONTAL);
         pinsSeparator.setForeground (BORDER_CATEGORY_BACKGROUND);
@@ -146,10 +143,12 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
      * node and pin widgets.
      */
     public void stateChanged () {
-        Rectangle rectangle = stateModel.getBooleanState () ? new Rectangle () : null;
+        boolean minimized = stateModel.getBooleanState ();
+        Rectangle rectangle = minimized ? new Rectangle () : null;
         for (Widget widget : getChildren ())
             if (widget != header  &&  widget != pinsSeparator)
                 getScene ().getSceneAnimator ().animatePreferredBounds (widget, rectangle);
+        minimizeWidget.setImage (minimized ? IMAGE_EXPAND : IMAGE_COLLAPSE);
     }
 
     /**
