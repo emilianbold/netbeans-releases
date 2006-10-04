@@ -52,7 +52,10 @@
             </and>
         </condition>
         <condition property="is.macosx">
-            <contains string="${os.name}" substring="Darwin"/>
+            <or>
+                <contains string="${os.name}" substring="Darwin"/>
+                <contains string="${os.name}" substring="Mac OS X"/>
+            </or>
         </condition>
     </target>
     
