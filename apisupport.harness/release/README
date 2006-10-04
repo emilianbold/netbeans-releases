@@ -324,7 +324,7 @@ described below:
                 <recursive/>
                 <!-- Always available when running, but to include at compile time also: -->
                 <compile-dependency/>
-                <!-- To request the tests of that module, rather than itself: -->
+                <!-- To request the tests of that module as well: -->
                 <test/>
             </test-dependency>
         </test-type>
