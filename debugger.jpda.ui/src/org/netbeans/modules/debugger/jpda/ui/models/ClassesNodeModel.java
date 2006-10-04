@@ -23,6 +23,7 @@ import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.ReferenceType;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -45,6 +46,9 @@ public class ClassesNodeModel implements NodeModel {
     private static final String CLASS_LOADER =
         "org/netbeans/modules/debugger/jpda/resources/classLoader";
     
+    private Properties classesProperties = Properties.getDefault().
+            getProperties("debugger").getProperties("classesView"); // NOI18N
+    
     
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
@@ -52,9 +56,12 @@ public class ClassesNodeModel implements NodeModel {
                 ("CTL_ClassesModel_Column_Name_Name");
         if (o instanceof Object[]) {
             String name = (String) ((Object[]) o) [0];
-            int i = name.lastIndexOf ('.');
-            if (i >= 0)
-                name = name.substring (i + 1);
+            boolean flat = classesProperties.getBoolean("flat", true);
+            if (!flat) {
+                int i = name.lastIndexOf ('.');
+                if (i >= 0)
+                    name = name.substring (i + 1);
+            }
             return name;
         }
         if (o instanceof ReferenceType) {
