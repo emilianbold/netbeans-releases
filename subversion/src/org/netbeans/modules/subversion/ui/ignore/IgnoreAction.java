@@ -170,7 +170,7 @@ public class IgnoreAction extends ContextAction {
      */ 
     private void add(File file) throws SVNClientException {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
-        SvnClient client = Subversion.getInstance().getClient(repositoryUrl, true);               
+        SvnClient client = Subversion.getInstance().getClient(repositoryUrl);               
         client.addFile(file);
     }
 

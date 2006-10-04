@@ -198,7 +198,7 @@ public class Subversion {
     throws SVNClientException    
     {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password);            
-        attachListeners(client, false);            
+        attachListeners(client);            
         return client;
     }
     
@@ -208,7 +208,7 @@ public class Subversion {
                                String password,
                                int handledExceptions) throws SVNClientException {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, pd, username, password, handledExceptions);            
-        attachListeners(client, false);            
+        attachListeners(client);            
 
         return client;
     }
@@ -238,23 +238,14 @@ public class Subversion {
 
         return getClient(repositoryUrl, support);
     }
-
-    public SvnClient getClient(SVNUrl repositoryUrl, boolean quite) throws SVNClientException {
-        return getClient(repositoryUrl, null, quite);
-    }
     
     public SvnClient getClient(SVNUrl repositoryUrl) throws SVNClientException {
-        return getClient(repositoryUrl, null, false);
+        return getClient(repositoryUrl, null);
     }
 
     public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support) throws SVNClientException {
-        return getClient(repositoryUrl, support, false);
-    }
-
-    // XXX quite is a hot fix
-    private SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport support, boolean quite) throws SVNClientException {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support);
-        attachListeners(client, quite);
+        attachListeners(client);
         return client;
     }
     
@@ -271,14 +262,11 @@ public class Subversion {
      * <p>It hanldes cancellability
      */
     public SvnClient getClient(boolean attachListeners) {        
-//        SvnClient  client = SvnClientFactory.getInstance().createSvnClient();
-//        attachListeners(client, false);
-//        return client;        
         cleanupFilesystem();
         if(attachListeners) {            
             if(noUrlClientWithListeners == null) {
                 noUrlClientWithListeners = SvnClientFactory.getInstance().createSvnClient();
-                attachListeners(noUrlClientWithListeners, false);
+                attachListeners(noUrlClientWithListeners);
             }                               
             return noUrlClientWithListeners;
         } else {
@@ -320,11 +308,9 @@ public class Subversion {
         filesystemHandler.removeInvalidMetadata();
     }
 
-    private void attachListeners(SvnClient client, boolean quite) {
+    private void attachListeners(SvnClient client) {
         client.addNotifyListener(getLogger(client.getSvnUrl())); 
-        if(!quite) {
-            client.addNotifyListener(fileStatusCache);
-        }
+        client.addNotifyListener(fileStatusCache);
     }
 
     /**
