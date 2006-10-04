@@ -62,6 +62,7 @@ public class DbFeederTest extends NbTestCase {
         FileUtils.copyFileToDir(zipData, incomingDir);
         // Need to sleep 60 s because DbFeeder checks that incoming reports are older that 
         // 60 s. It should prevent processing of partially copied files.
+        System.out.println("#### Waiting 60 seconds... ####");
         Thread.sleep(60000);
         
         //PESLogger.setConsoleLoggingLevel("FINEST");
