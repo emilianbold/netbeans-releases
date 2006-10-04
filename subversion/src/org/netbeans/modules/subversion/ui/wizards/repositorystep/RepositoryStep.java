@@ -162,7 +162,7 @@ public class RepositoryStep
                                                                 pd,
                                                                 repository.getUserName(),
                                                                 repository.getPassword(),
-                                                                false);
+                                                                ExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS ^ ExceptionHandler.EX_NO_HOST_CONNECTION);
                 } catch (SVNClientException ex) {
                     ErrorManager.getDefault().notify(ex);
                     invalidMsg = ex.getLocalizedMessage();

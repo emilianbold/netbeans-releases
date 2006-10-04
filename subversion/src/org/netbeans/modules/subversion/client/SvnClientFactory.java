@@ -63,21 +63,21 @@ public class SvnClientFactory {
 
     /**
      * Returns a SvnClientInvocationHandler instance, which doesn't know anything about the remote repository,
-     * has no username, password and SvnProgressSupport. <br/>
+     * has no username, password and SvnProgressSupport<br/>
      * It's not supposed to work when calling svn commands which interact wiht the remote repository.
      *
      * @return the SvnClient
      */
     public SvnClient createSvnClient() {
         ISVNClientAdapter adapter = createSvnClientAdapter();
-        return createSvnClient(adapter, null, null, true);
+        return createSvnClient(adapter, null, null, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
     }
 
     /**
      *
      * Returns a SvnClientInvocationHandler instance which is configured with the given <tt>support</tt>
      * and a <tt>username</tt> and <tt>password</tt> if there is a file in the [SVN_CONFIG_DIR]/auth folder
-     * for the given <tt>repositoryUrl</tt>.
+     * for the given <tt>repositoryUrl</tt>. 
      *
      * @param repositoryUrl
      * @param support    
@@ -96,7 +96,7 @@ public class SvnClientFactory {
             password = passwordFile.getPassword();            
         }        
         ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, null, username, password);
-        return createSvnClient(adapter, support, repositoryUrl, true);
+        return createSvnClient(adapter, support, repositoryUrl, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
     }    
 
     /**
@@ -119,28 +119,48 @@ public class SvnClientFactory {
                                      String username, 
                                      String password) 
     {                                                                                   
-        return createSvnClient(repositoryUrl, pd, username, password, true) ;
+        return createSvnClient(repositoryUrl, pd, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS) ;
     }
 
-    // XXX hotfix. see also Subversion.createSvnClient(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password, boolean handleConnectErrors)
-    public SvnClient createSvnClient(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password, boolean handleConnectErrors) {
+    /**
+     *
+     * Returns a SvnClientInvocationHandler instance which is configured with the given <tt>username</tt>,
+     * <tt>password</tt> and a SvnClientDescriptor for <tt>repository</tt>. In case the proxy given via
+     * <tt>pd</tt> is http, an according entry for the <tt>repositoryUrl</tt> will be created in the svn config file.
+     * The mask <tt>handledExceptions</tt> specifies which exceptions are to be handled.
+     *
+     * @param repositoryUrl
+     * @param pd
+     * @param username
+     * @param password
+     * @param handledExceptions
+     *
+     * @return the configured SvnClient
+     *
+     */    
+    public SvnClient createSvnClient(SVNUrl repositoryUrl, ProxyDescriptor pd, String username, String password, int handledExceptions) {
         ISVNClientAdapter adapter = createSvnClientAdapter(repositoryUrl, pd, username, password);
-        return createSvnClient(adapter, null, repositoryUrl, handleConnectErrors);
+        return createSvnClient(adapter, null, repositoryUrl, handledExceptions);
     }
     
     /**
      *
      * Returns a SvnClientInvocationHandler instance which is configured with the given <tt>adapter</tt>,
-     * <tt>support</tt> and a SvnClientDescriptor for <tt>repository</tt>.
+     * <tt>support</tt> and a SvnClientDescriptor for <tt>repository</tt>. The mask <tt>handledExceptions</tt> 
+     * specifies which exceptions are to be handled.
      *
      * @param adapter
      * @param support
      * @param repository
+     * @param handledExceptions
      *
      * @return the created SvnClientInvocationHandler instance
      *
      */
-    private SvnClient createSvnClient(ISVNClientAdapter adapter, SvnProgressSupport support, final SVNUrl repository, boolean handleConnectErrors) {
+    private SvnClient createSvnClient(ISVNClientAdapter adapter, SvnProgressSupport support, final SVNUrl repository, int handledExceptions) {
+        
+        assert (handledExceptions & SvnClientExceptionHandler.EX_HANDLED_EXCEPTIONS) != 0 : "handledExceptions not in SvnClientExceptionHandler.EX_HANDLED_EXCEPTIONS";
+        
         Class proxyClass = Proxy.getProxyClass(SvnClient.class.getClassLoader(), new Class[]{ SvnClient.class } );
 
         SvnClientInvocationHandler handler;
@@ -151,9 +171,9 @@ public class SvnClientFactory {
         };
         Subversion.getInstance().cleanupFilesystem();
         if(support != null) {
-            handler = new SvnClientInvocationHandler(adapter, desc, support, handleConnectErrors);
+            handler = new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
         } else {
-            handler = new SvnClientInvocationHandler(adapter, desc, handleConnectErrors);
+            handler = new SvnClientInvocationHandler(adapter, desc, handledExceptions);
         } 
         try {
            return (SvnClient) proxyClass.getConstructor( new Class[] { InvocationHandler.class } ).newInstance( new Object[] { handler } );

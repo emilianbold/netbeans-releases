@@ -227,7 +227,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                         importDummyFolder.deleteOnExit();
                         client.doImport(importDummyFolder, repositoryFile.getFileUrl(), getImportMessage(), false);
                     } catch (SVNClientException ex) {
-                        if(ExceptionHandler.isFileAlreadyExists(ex) ) {
+                        if(ExceptionHandler.isFileAlreadyExists(ex.getMessage()) ) {
                             // ignore
                         } else {
                             throw ex;

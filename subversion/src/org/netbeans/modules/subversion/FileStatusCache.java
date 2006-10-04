@@ -287,7 +287,7 @@ public class FileStatusCache implements ISVNNotifyListener {
             // unversioned resource is expected getSingleStatus()
             // does not return SVNStatusKind.UNVERSIONED but throws exception instead            
             // instead of throwing exception
-            if (ExceptionHandler.isUnversionedResource(e) == false) {
+            if (ExceptionHandler.isUnversionedResource(e.getMessage()) == false) {
                 // missing or damaged entries
                 // or ignored file
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

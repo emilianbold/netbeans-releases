@@ -103,7 +103,7 @@ public class CreateCopyAction extends ContextAction {
                 try{
                     info = client.getInfo(folderToCreate);                                                                
                 } catch (SVNClientException ex) {                                
-                    if(!ExceptionHandler.isWrongUrl(ex)) { 
+                    if(!ExceptionHandler.isWrongUrl(ex.getMessage())) { 
                         throw ex;
                     }
                 }            

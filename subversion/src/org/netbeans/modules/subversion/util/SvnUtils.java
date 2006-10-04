@@ -371,7 +371,7 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {                
-                if (ExceptionHandler.isUnversionedResource(ex) == false) {
+                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -389,7 +389,7 @@ public class SvnUtils {
                         try {
                             repositoryURL = client.getInfo(fileURL).getRepository();
                         } catch (SVNClientException ex) {
-                            if (ExceptionHandler.isUnversionedResource(ex) == false) {
+                            if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                             }
                         }
@@ -441,7 +441,7 @@ public class SvnUtils {
             try {
                 status = client.getSingleStatus(file);
             } catch (SVNClientException ex) {                
-                if (ExceptionHandler.isUnversionedResource(ex) == false) {
+                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -491,7 +491,7 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex) == false) {
+                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -510,7 +510,7 @@ public class SvnUtils {
                         try {
                             repositoryURL = client.getInfo(fileURL).getRepository();
                         } catch (SVNClientException ex) {
-                            if (ExceptionHandler.isUnversionedResource(ex) == false) {
+                            if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                             }
                         }
@@ -555,7 +555,7 @@ public class SvnUtils {
                     }
                 }
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex) == false) {
+                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
@@ -566,7 +566,7 @@ public class SvnUtils {
             try {
                 info = client.getInfoFromWorkingCopy(file);
             } catch (SVNClientException ex) {
-                if (ExceptionHandler.isUnversionedResource(ex) == false) {
+                if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }

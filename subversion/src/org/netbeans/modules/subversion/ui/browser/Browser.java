@@ -207,7 +207,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 }                
             }        
         } catch (SVNClientException ex) {
-            if(ExceptionHandler.isURLNonExistent(ex)) {
+            if(ExceptionHandler.isWrongURLInRevision(ex.getMessage())) {
                 // is not a folder in the repository
                 return null;
             } else {

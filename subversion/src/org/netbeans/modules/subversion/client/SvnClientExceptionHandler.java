@@ -55,7 +55,6 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -67,47 +66,47 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 class SvnClientExceptionHandler extends ExceptionHandler {
-
+    
     private final ISVNClientAdapter adapter;
     private final SvnClient client;
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private final String CHARSET_NAME = "ASCII7"; // NOI18N
-    private final boolean handleConnectErrors;
+    private final int handledExceptions;
     
-    private class Failure {
+    private class CertificateFailure {
         int mask;
         String error;
         String message;
-        Failure(int mask, String error, String message) {
+        CertificateFailure(int mask, String error, String message) {
             this.mask = mask;
             this.error = error;
             this.message = message;
         }
     };
    
-    private Failure[] failures = new Failure[] {       
-        new Failure (1, "certificate is not yet valid" ,                 NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotYetValid")),       // NOI18N
-        new Failure (2, "certificate has expired" ,                      NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureHasExpired")),        // NOI18N
-        new Failure (4, "certificate issued for a different hostname" ,  NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureWrongHostname")),     // NOI18N
-        new Failure (8, "issuer is not trusted" ,                        NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotTrusted"))         // NOI18N
+    private CertificateFailure[] failures = new CertificateFailure[] {       
+        new CertificateFailure (1, "certificate is not yet valid" ,                 NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotYetValid")),       // NOI18N
+        new CertificateFailure (2, "certificate has expired" ,                      NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureHasExpired")),        // NOI18N
+        new CertificateFailure (4, "certificate issued for a different hostname" ,  NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureWrongHostname")),     // NOI18N
+        new CertificateFailure (8, "issuer is not trusted" ,                        NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_CertFailureNotTrusted"))         // NOI18N
     };
     
-    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, boolean handleConnectErrors) {
+    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, int handledExceptions) {
         super(exception);
         this.adapter = adapter;
         this.client = client;
-        this.handleConnectErrors = handleConnectErrors;
+        this.handledExceptions = handledExceptions;
     }  
     
     public boolean handleException() throws Exception {
-        if(handleConnectErrors && isAuthentication(getException())) {
+        int exceptionMask = getExceptionMask();
+        if( (handledExceptions & exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) {
             return handleRepositoryConnectError(false);
-        } if(isNoCertificate(getException())) {                        
+        } if( (handledExceptions & exceptionMask & EX_NO_CERTIFICATE) == exceptionMask) {                        
             return handleNoCertificateError();
-        } if(handleConnectErrors && isHostNotFound(getException())) {
+        } if( (handledExceptions &  exceptionMask & EX_AUTHENTICATION) == exceptionMask) {
             return handleRepositoryConnectError(false);
         }
-
         throw getException();
     }
     
@@ -140,7 +139,6 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         return ret;
     }
 
-    // XXX refactor, move, clean up ...    
     private boolean handleNoCertificateError() throws Exception {
 
         // copy the certificate if it already exists
@@ -324,7 +322,7 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     }
 
     private String getCertMessage(X509Certificate cert, String host) { 
-        Failure[] certFailures = getCertFailures();
+        CertificateFailure[] certFailures = getCertFailures();
         Object[] param = new Object[6];
         param[0] = host;
         param[1] = cert.getNotBefore();
@@ -340,19 +338,19 @@ class SvnClientExceptionHandler extends ExceptionHandler {
         return message;
     }
 
-    private Failure[] getCertFailures() {
-        List<Failure> ret = new ArrayList<Failure>();
+    private CertificateFailure[] getCertFailures() {
+        List<CertificateFailure> ret = new ArrayList<CertificateFailure>();
         String exceptionMessage = getException().getMessage();
         for (int i = 0; i < failures.length; i++) {
             if(exceptionMessage.indexOf(failures[i].error) > -1) {
                 ret.add(failures[i]);
             }
         }
-        return ret.toArray(new Failure[ret.size()]);
+        return ret.toArray(new CertificateFailure[ret.size()]);
     }
    
     private int getFailuresMask() {
-        Failure[] certFailures = getCertFailures();
+        CertificateFailure[] certFailures = getCertFailures();
         if(certFailures.length == 0) {
             return 15; // something went wrong, 15 should work for everything
         }
