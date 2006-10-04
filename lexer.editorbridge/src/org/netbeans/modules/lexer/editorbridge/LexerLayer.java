@@ -19,102 +19,84 @@
 
 package org.netbeans.modules.lexer.editorbridge;
 
-import java.util.Iterator;
+import java.awt.Color;
+import java.awt.Font;
 import java.util.List;
+import java.util.Stack;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.DrawContext;
 import org.netbeans.editor.MarkFactory;
 import org.netbeans.editor.Coloring;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.swing.TokenElement;
 import javax.swing.text.JTextComponent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 
-public class LexerLayer extends DrawLayer.AbstractLayer implements DocumentListener {
+public class LexerLayer extends DrawLayer.AbstractLayer {
+
+    private static final boolean debug = Boolean.getBoolean("netbeans.debug.lexer.layer");
     
     public static final String NAME = "lexer-layer";
     
     public static final int VISIBILITY = 1050;
-    
-    private final LanguageDescriptor languageDescriptor;
-    
+
+    private final JTextComponent component;
+
+    private FontColorSettings fontColorSettings;
+
+    private final Map<LanguagePath, Map<TokenId, Coloring>> token2Coloring= new WeakHashMap<LanguagePath, Map<TokenId, Coloring>>();
+
+    private Listener listener;
+
+    private TokenHierarchy listenerHierarchy;
+
+    private Stack<TokenSequence> pastSequences;
+    private TokenSequence tokenSequence;
+    private boolean moveNext = true;
+    private boolean goToEmbed = true;
+
     private int tokenEndOffset;
-    
-    private int tokenIndex;
     
     private Coloring coloring;
     
     private boolean active;
     
-    private boolean documentModified;
     
-    public static TokenRootElement getTokenRootElement(Document doc) {
-        return (TokenRootElement)doc.getProperty(TokenRootElement.class);
-    }
-    
-    public LexerLayer(LanguageDescriptor languageDescriptor, JTextComponent target) {
+    public LexerLayer(JTextComponent component) {
         super(NAME);
 
-        this.languageDescriptor = languageDescriptor;
-        
-        Document doc = target.getDocument();
-        target.addPropertyChangeListener(
+        assert (component != null);
+        this.component = component;
+
+        Document doc = component.getDocument();
+        component.addPropertyChangeListener(
             new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if ("document".equals(evt.getPropertyName())) {
-                        Document old = (Document)evt.getOldValue();
-                        if (old != null) {
-                            old.removeDocumentListener(LexerLayer.this);
-                        }
-                        Document cur = (Document)evt.getNewValue();
-                        if (cur != null) {
-                            checkDocument(cur);
+                        // Remove old listening
+                        if (listenerHierarchy != null) {
+                            listenerHierarchy.removeTokenHierarchyListener(listener);
                         }
                     }
                 }
             }
         );
-        
-        checkDocument(doc);
-    }
-    
-    private void checkDocument(Document doc) {
-        doc.addDocumentListener(this);
-        if (TokenRootElement.get(doc) == null) {
-            createTokenRootElement(doc);
-        }
-    }
-    
-    protected TokenRootElement createTokenRootElement(Document doc) {
-        return new TokenRootElement(doc, languageDescriptor.getLanguage());
-    }
-    
-    private TokenRootElement getTokenRootElement(DrawContext ctx) {
-        Document doc = ctx.getEditorUI().getDocument();
-        return TokenRootElement.get(doc);
-    }
-    
-    private Coloring findColoring(DrawContext ctx, Token token) {
-        TokenId id = token.getId();
-        String coloringName = languageDescriptor.getColoringPrefix()
-            + id.getName();
-        Coloring c = ctx.getEditorUI().getColoring(coloringName);
-
-        if (c == null) { // no direct name for the token -> try categories
-            List catNames = id.getCategoryNames();
-            for (Iterator it = catNames.iterator(); c == null && it.hasNext();) {
-                coloringName = languageDescriptor.getColoringPrefix()
-                    + (String)it.next();
-                c = ctx.getEditorUI().getColoring(coloringName);
-            }
-        }
-        
-        return c;
     }
     
     public boolean extendsEOL() {
@@ -122,68 +104,24 @@ public class LexerLayer extends DrawLayer.AbstractLayer implements DocumentListe
     }
     
     public void init(final DrawContext ctx) {
-        tokenIndex = 0;
+        coloring = null;
         tokenEndOffset = 0;
-
         int startOffset = ctx.getStartOffset();
-        int endOffset = ctx.getEndOffset();
+        String mimeType = component.getUI().getEditorKit(component).getContentType();
+        fontColorSettings = (FontColorSettings)MimeLookup.getMimeLookup(mimeType).lookup(FontColorSettings.class);
 
-        final TokenRootElement tre = getTokenRootElement(ctx);
-        active = (tre != null);
+        TokenHierarchy hi = tokenHierarchy();
+        active = (hi != null) && (fontColorSettings != null);
 
-        // Check whether larger repaint is necessary
-        if (active && documentModified) {
-            documentModified = false;
-//            System.out.println("startOffset=" + startOffset + ", endOffset=" + endOffset + ", tre.getLastUpdateStartOffset()=" + tre.getLastUpdateStartOffset() + ", tre.getLastUpdateEndOffset()=" + tre.getLastUpdateEndOffset());
-            if (startOffset > tre.getLastUpdateStartOffset()
-                || endOffset < tre.getLastUpdateEndOffset()
-            ) {
-                javax.swing.SwingUtilities.invokeLater(
-                    new Runnable() {
-                        public void run() {
-                            org.netbeans.editor.EditorUI editorUI = ctx.getEditorUI();
-                            javax.swing.text.JTextComponent c = editorUI.getComponent();
-                            if (c != null) {
-                                javax.swing.plaf.TextUI ui = (javax.swing.plaf.TextUI)c.getUI();
-                                ui.damageRange(c, tre.getLastUpdateStartOffset(), tre.getLastUpdateEndOffset());
-                            }
-                        }
-                    }
-                );
-            }
-        }
-                
         if (active) {
-            tokenIndex = tre.getElementIndex(startOffset);
-            if (tokenIndex >= 0) {
-                int tokenOffset = tre.getElementOffset(tokenIndex);
-                int tokenCount = tre.getElementCount();
-                TokenElement tokenElement;
-                if (tokenIndex + 1 == tokenCount) { // could be past the end
-                    tokenElement = (TokenElement)tre.getElement(tokenIndex);
-                    if (tokenOffset + (tokenElement.getEndOffset()
-                        - tokenElement.getStartOffset()) <= startOffset
-                    ) { // past the last token
-                        active = false;
-                    }
-
-                } else { // not the last token
-                    tokenElement = (TokenElement)tre.getElement(tokenIndex);
-                }
-
-                if (active) {
-                    tokenEndOffset = tokenOffset + getTokenElementLength(tokenElement);
-                    setNextActivityChangeOffset(tokenEndOffset);
-                    coloring = findColoring(ctx, tokenElement);
-                }
-
+            pastSequences = new Stack<TokenSequence>();
+            tokenSequence = hi.tokenSequence();
+            int relOffset = tokenSequence.move(startOffset);
+            if (relOffset != Integer.MAX_VALUE) {
+                updateTokenEndOffsetAndColoring(startOffset);
             } else { // no tokens
                 active = false;
             }
-        }
-        
-        if (coloring != null) {
-            coloring.apply(ctx);
         }
     }
     
@@ -198,40 +136,212 @@ public class LexerLayer extends DrawLayer.AbstractLayer implements DocumentListe
 
         int fragEndOffset = ctx.getFragmentOffset() + ctx.getFragmentLength();
         while (active && fragEndOffset >= tokenEndOffset) {
-            TokenRootElement tre = getTokenRootElement(ctx);
-            active = (tre != null);
-            if (active) {
-                int tokenCount = tre.getElementCount();
-                tokenIndex++;
-                if (tokenIndex >= tokenCount) {
+            if (!moveNext || tokenSequence.moveNext()) {
+                updateTokenEndOffsetAndColoring(-1);
+            } else {
+                if (pastSequences.isEmpty()) {
                     active = false;
-                }
-                if (active) {
-                    TokenElement tokenElement = (TokenElement)tre.getElement(tokenIndex);
-                    int len = getTokenElementLength(tokenElement);
-                    tokenEndOffset += len;
-                    
-                    coloring = findColoring(ctx, tokenElement);
-                    setNextActivityChangeOffset(tokenEndOffset);
+                } else {
+                    tokenSequence = pastSequences.pop();
+                    if ((tokenSequence.offset() + tokenSequence.token().length()) > tokenEndOffset) {
+                        //highlight the rest of the popped token:
+                        goToEmbed = false;
+                        moveNext = false;
+                    }
                 }
             }
         }
     }
-    
-    private static int getTokenElementLength(TokenElement tokenElement) {
-        return tokenElement.getEndOffset() - tokenElement.getStartOffset();
+
+    private TokenHierarchy tokenHierarchy() {
+        TokenHierarchy hi = TokenHierarchy.get(component.getDocument());
+        // Possibly start listening on the token changes in the hierarchy
+        if (hi != null && listenerHierarchy == null) {
+            if (listener == null) {
+                listener = new Listener();
+            }
+            listenerHierarchy = hi;
+            listenerHierarchy.addTokenHierarchyListener(listener);
+        }
+        return hi;
     }
     
-    public void changedUpdate(DocumentEvent e) {
+    private void updateTokenEndOffsetAndColoring(int offset) {
+        int origOffset = tokenSequence.offset();
+        boolean isInside = tokenSequence.offset() < offset;
+        Token origToken = tokenSequence.token();
+        LanguagePath origPath = tokenSequence.languagePath();
+        boolean wasEmbedd = false;
+        
+        while (origOffset == tokenSequence.offset() && goToEmbed) {
+            TokenSequence embed = tokenSequence.embedded();
+            
+            if (embed != null) {
+                wasEmbedd = true;
+                if (offset == (-1)) {
+                    if (embed.moveNext()) {
+                        pastSequences.push(tokenSequence);
+                        tokenSequence = embed;
+                    } else {
+                        break;
+                    }
+                } else {
+                    if (embed.move(offset) != Integer.MAX_VALUE) {
+                        pastSequences.push(tokenSequence);
+                        tokenSequence = embed;
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        
+        goToEmbed = true;
+        
+        Token token;
+        LanguagePath path;
+        
+        if (origOffset == tokenSequence.offset() || isInside) {
+            token = tokenSequence.token();
+            tokenEndOffset = tokenSequence.offset() + token.length();
+            path = tokenSequence.languagePath();
+            moveNext = true;
+        } else {
+            token = origToken;
+            tokenEndOffset = tokenSequence.offset();
+            path = origPath;
+            moveNext = !wasEmbedd;
+        }
+        
+        setNextActivityChangeOffset(tokenEndOffset);
+        coloring = findColoring(token, path, fontColorSettings);
+    }
+
+    private static final Coloring NULL_COLORING = new Coloring();
+    
+    private Coloring findColoring(Token token,
+    LanguagePath languagePath, FontColorSettings fcs) {
+        TokenId id = token.id();
+        Map<TokenId, Coloring> id2Coloring = token2Coloring.get(languagePath);
+        
+        if (id2Coloring == null) {
+            token2Coloring.put(languagePath, id2Coloring = new WeakHashMap<TokenId, Coloring>());
+        }
+        
+        Coloring c = id2Coloring.get(id);
+        
+        if (c == null) {
+            AttributeSet as = findColoringImpl(id, languagePath, fcs);
+            
+            if (as == null) {
+                c = NULL_COLORING;
+            } else {
+                c = toColoring(as);
+            }
+            
+            id2Coloring.put(id, c);
+        }
+        
+        return c;
     }
     
-    public void insertUpdate(DocumentEvent e) {
-        documentModified = true;
+    private AttributeSet findColoringImpl(TokenId id,
+    LanguagePath languagePath, FontColorSettings fcs) {
+        AttributeSet as = fcs.getTokenFontColors(updateColoringName(id.name()));
+
+        if (as == null) { // no direct name for the token -> try primary category
+            String primaryCategory = id.primaryCategory();
+            if (primaryCategory == null || ((as = fcs.getTokenFontColors(
+                    updateColoringName(primaryCategory))) == null)
+            ) {
+                @SuppressWarnings("unchecked") List<String> cats
+                        = languagePath.innerLanguage().nonPrimaryTokenCategories(id);
+                for (int i = 0; i < cats.size(); i++) {
+                    String cat = (String)cats.get(i);
+                    as = fcs.getTokenFontColors(updateColoringName(cat));
+                    if (as != null) {
+                        if (debug) {
+                            /*DEBUG*/System.err.println("Coloring found for category " + cat + ": " + as);
+                        }
+                        break;
+                    }
+                }
+            } else if (debug) { // valid coloring for primary category and in debugging mode
+                /*DEBUG*/System.err.println("Coloring found for primary category " + primaryCategory + ": " + as);
+            }
+        } else if (debug) { // valid coloring found and in debug mode
+            /*DEBUG*/System.err.println("Coloring found for id=" + id + ": " + as);
+        }
+        
+        return as;
+    }
+
+    private String updateColoringName(String coloringName) {
+        EditorKit kit = component.getUI().getEditorKit(component);
+        if (kit instanceof LexerEditorKit) {
+            coloringName = ((LexerEditorKit)kit).updateColoringName(coloringName);
+        }
+        return coloringName;
     }
     
-    public void removeUpdate(DocumentEvent e) {
-        documentModified = true;
+    private Coloring toColoring(AttributeSet as) {
+        int fontApplyMode = 0;
+        int fontStyle = 0;
+        int fontSize;
+        String fontFamily = (String)as.getAttribute(StyleConstants.FontFamily);
+        Integer sz = (Integer)as.getAttribute(StyleConstants.FontSize);
+        boolean bold = Boolean.TRUE.equals(as.getAttribute(StyleConstants.Bold));
+        boolean italic = Boolean.TRUE.equals(as.getAttribute(StyleConstants.Italic));
+        if (fontFamily != null) {
+            fontApplyMode |= Coloring.FONT_MODE_APPLY_NAME;
+        } else {
+            fontFamily = "Monospaced";
+        }
+        if (sz != null) {
+            fontSize = sz.intValue();
+            fontApplyMode |= Coloring.FONT_MODE_APPLY_SIZE;
+        } else {
+            fontSize = 10;
+        }
+        if (bold) {
+            fontStyle |= Font.BOLD;
+            fontApplyMode |= Coloring.FONT_MODE_APPLY_STYLE;
+        }
+        if (italic) {
+            fontStyle |= Font.ITALIC;
+            fontApplyMode |= Coloring.FONT_MODE_APPLY_STYLE;
+        }
+        
+        Font font = new Font(
+                fontFamily,
+                fontStyle,
+                fontSize
+                );
+        
+        return new Coloring(
+                font,
+                fontApplyMode,
+                (Color) as.getAttribute(StyleConstants.Foreground),
+                (Color) as.getAttribute(StyleConstants.Background),
+                (Color) as.getAttribute(StyleConstants.Underline),
+                (Color) as.getAttribute(StyleConstants.StrikeThrough),
+                (Color) as.getAttribute(EditorStyleConstants.WaveUnderlineColor)
+                );
+        
     }
-    
+
+    private final class Listener implements TokenHierarchyListener {
+
+        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+            javax.swing.plaf.TextUI ui = (javax.swing.plaf.TextUI)component.getUI();
+            int startRepaintOffset = evt.tokenChange().modifiedTokensStartOffset();
+            int endRepaintOffset = Math.max(evt.tokenChange().addedTokensEndOffset(), startRepaintOffset + 1);
+            ui.damageRange(component, startRepaintOffset, endRepaintOffset);
+        }
+
+    }
+
 }
 

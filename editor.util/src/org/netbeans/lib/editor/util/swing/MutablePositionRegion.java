@@ -54,6 +54,19 @@ public class MutablePositionRegion extends PositionRegion {
     public MutablePositionRegion(Document doc, int startOffset, int endOffset) throws BadLocationException {
         this(doc.createPosition(startOffset), doc.createPosition(endOffset));
     }
+
+    /**
+     * Set a new start and end positions of this region.
+     * <br/>
+     * They should satisfy
+     * {@link #getStartOffset()} &lt;= {@link #getEndOffset()}.
+     *
+     * @param startPosition non-null new start position of this region.
+     * @since 1.10
+     */
+    public final void reset(Position startPosition, Position endPosition) {
+        resetImpl(startPosition, endPosition);
+    }
     
     /**
      * Set a new start position of this region.
@@ -63,7 +76,7 @@ public class MutablePositionRegion extends PositionRegion {
      *
      * @param startPosition non-null new start position of this region.
      */
-    public void setStartPosition(Position startPosition) {
+    public final void setStartPosition(Position startPosition) {
         setStartPositionImpl(startPosition);
     }
 
@@ -75,7 +88,7 @@ public class MutablePositionRegion extends PositionRegion {
      *
      * @param endPosition non-null new start position of this region.
      */
-    public void setEndPosition(Position endPosition) {
+    public final void setEndPosition(Position endPosition) {
         setEndPositionImpl(endPosition);
     }
 

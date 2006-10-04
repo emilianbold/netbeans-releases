@@ -33,8 +33,8 @@ import org.netbeans.lib.editor.util.PriorityListenerList;
  * @version 1.00
  */
 
-class PriorityDocumentListenerList extends PriorityListenerList implements DocumentListener {
-
+class PriorityDocumentListenerList extends PriorityListenerList<DocumentListener> implements DocumentListener {
+    
     /**
      * Implementation of DocumentListener's method fires all the added
      * listeners according to their priority.

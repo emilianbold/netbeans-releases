@@ -59,8 +59,18 @@ public abstract class AbstractCharSequence implements CharSequence {
         return CharSequenceUtilities.toString(this, start, end);
     }
 
+    /**
+     * Return subsequence of this character sequence.
+     * The returned character sequence is only as stable as is this character
+     * sequence.
+     *
+     * @param start &gt;=0 starting index of the subsequence within this
+     *  character sequence.
+     * @param end &gt;=0 ending index of the subsequence within this
+     *  character sequence.
+     */
     public CharSequence subSequence(int start, int end) {
-        return toString(start, end);
+        return new CharSubSequence(this, start, end);
     }
 
     public String toString() {

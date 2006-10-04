@@ -19,13 +19,19 @@
 
 package org.netbeans.lib.editor.util.swing;
 
+import java.util.Map;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Segment;
+import javax.swing.text.StyledDocument;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.lib.editor.util.AbstractCharSequence;
+import org.netbeans.lib.editor.util.CompactMap;
 
 /**
  * Various utility methods related to swing text documents.
@@ -35,20 +41,10 @@ import org.netbeans.lib.editor.util.AbstractCharSequence;
  */
 
 public final class DocumentUtilities {
-
+    
     private static final Object TYPING_MODIFICATION_DOCUMENT_PROPERTY = new Object();
     
-    /**
-     * Instance of an element that can be used to obtain the text removed/inserted
-     * by a document modification.
-     * <br>
-     * The text is obtained by doing
-     * <code>DocumentEvent.getChange(MODIFICATION_TEXT_ELEMENT).toString()</code>.
-     * <br>
-     * The documents that want to support this need to insert the element change
-     * for the given element into the created document event.
-     */
-    public static final Element MODIFICATION_TEXT_ELEMENT = ModificationTextElement.INSTANCE;
+    private static final Object TYPING_MODIFICATION_KEY = new Object();
     
     
     private DocumentUtilities() {
@@ -56,7 +52,9 @@ public final class DocumentUtilities {
     }
 
     /**
-     * Add document listener to document with given priority.
+     * Add document listener to document with given priority
+     * or default to using regular {@link Document#addDocumentListener(DocumentListener)}
+     * if the given document is not listener priority aware.
      * 
      * @param doc document to which the listener should be added.
      * @param listener document listener to add.
@@ -68,19 +66,41 @@ public final class DocumentUtilities {
      */
     public static void addDocumentListener(Document doc, DocumentListener listener,
     DocumentListenerPriority priority) {
-        
+        if (!addPriorityDocumentListener(doc, listener, priority))
+            doc.addDocumentListener(listener);
+    }
+    
+    /**
+     * Suitable for document implementations - adds document listener
+     * to document with given priority and does not do anything
+     * if the given document is not listener priority aware.
+     * <br/>
+     * Using this method in the document impls and defaulting
+     * to super.addDocumentListener() in case it returns false
+     * will ensure that there won't be an infinite loop in case the super constructors
+     * would add some listeners prior initing of the priority listening.
+     * 
+     * @param doc document to which the listener should be added.
+     * @param listener document listener to add.
+     * @param priority priority with which the listener should be added.
+     * @return true if the priority listener was added or false if the document
+     *  does not support priority listening.
+     */
+    public static boolean addPriorityDocumentListener(Document doc, DocumentListener listener,
+    DocumentListenerPriority priority) {
         PriorityDocumentListenerList priorityDocumentListenerList
                 = (PriorityDocumentListenerList)doc.getProperty(PriorityDocumentListenerList.class);
         if (priorityDocumentListenerList != null) {
             priorityDocumentListenerList.add(listener, priority.getPriority());
-        } else { // default to regular adding
-            doc.addDocumentListener(listener);
-        }
+            return true;
+        } else
+            return false;
     }
 
     /**
      * Remove document listener that was previously added to the document
-     * with given priority.
+     * with given priority or use default {@link Document#removeDocumentListener(DocumentListener)}
+     * if the given document is not listener priority aware.
      * 
      * @param doc document from which the listener should be removed.
      * @param listener document listener to remove.
@@ -90,14 +110,35 @@ public final class DocumentUtilities {
      */
     public static void removeDocumentListener(Document doc, DocumentListener listener,
     DocumentListenerPriority priority) {
-        
+        if (!removePriorityDocumentListener(doc, listener, priority))
+            doc.removeDocumentListener(listener);
+    }
+
+    /**
+     * Suitable for document implementations - removes document listener
+     * from document with given priority and does not do anything
+     * if the given document is not listener priority aware.
+     * <br/>
+     * Using this method in the document impls and defaulting
+     * to super.removeDocumentListener() in case it returns false
+     * will ensure that there won't be an infinite loop in case the super constructors
+     * would remove some listeners prior initing of the priority listening.
+     * 
+     * @param doc document from which the listener should be removed.
+     * @param listener document listener to remove.
+     * @param priority priority with which the listener should be removed.
+     * @return true if the priority listener was removed or false if the document
+     *  does not support priority listening.
+     */
+    public static boolean removePriorityDocumentListener(Document doc, DocumentListener listener,
+    DocumentListenerPriority priority) {
         PriorityDocumentListenerList priorityDocumentListenerList
                 = (PriorityDocumentListenerList)doc.getProperty(PriorityDocumentListenerList.class);
         if (priorityDocumentListenerList != null) {
             priorityDocumentListenerList.remove(listener, priority.getPriority());
-        } else { // default to regular removing
-            doc.removeDocumentListener(listener);
-        }
+            return true;
+        } else
+            return false;
     }
 
     /**
@@ -113,11 +154,13 @@ public final class DocumentUtilities {
      *     }
      *
      *     public void addDocumentListener(DocumentListener listener) {
-     *         DocumentUtilities.addDocumentListener(this, listener, DocumentListenerPriority.DEFAULT);
+     *         if (!DocumentUtilities.addDocumentListener(this, listener, DocumentListenerPriority.DEFAULT))
+     *             super.addDocumentListener(listener);
      *     }
      *
      *     public void removeDocumentListener(DocumentListener listener) {
-     *         DocumentUtilities.removeDocumentListener(this, listener, DocumentListenerPriority.DEFAULT);
+     *         if (!DocumentUtilities.removeDocumentListener(this, listener, DocumentListenerPriority.DEFAULT))
+     *             super.removeDocumentListener(listener);
      *     }
      *
      * }</pre>
@@ -135,9 +178,9 @@ public final class DocumentUtilities {
             throw new IllegalStateException(
                     "PriorityDocumentListenerList already initialized for doc=" + doc); // NOI18N
         }
-        PriorityDocumentListenerList instance = new PriorityDocumentListenerList();
-        doc.putProperty(PriorityDocumentListenerList.class, instance);
-        return instance;
+        PriorityDocumentListenerList listener = new PriorityDocumentListenerList();
+        doc.putProperty(PriorityDocumentListenerList.class, listener);
+        return listener;
     }
 
     /**
@@ -165,17 +208,8 @@ public final class DocumentUtilities {
     }
     
     /**
-     * @deprecated
-     * @see #isTypingModification(Document)
-     */
-    public static boolean isTypingModification(DocumentEvent evt) {
-        Boolean b = (Boolean)evt.getDocument().getProperty(TYPING_MODIFICATION_DOCUMENT_PROPERTY);
-        return (b != null) ? b.booleanValue() : false;
-    }
-
-    /**
-     * This method should be used to check whether
-     * the lastly performed document modification was caused by user's typing.
+     * This method should be used by document listeners to check whether
+     * the just performed document modification was caused by user's typing.
      * <br/>
      * Certain functionality such as code completion or code templates
      * may benefit from that information. For example the java code completion
@@ -187,6 +221,14 @@ public final class DocumentUtilities {
     public static boolean isTypingModification(Document doc) {
         Boolean b = (Boolean)doc.getProperty(TYPING_MODIFICATION_DOCUMENT_PROPERTY);
         return (b != null) ? b.booleanValue() : false;
+    }
+
+    /**
+     * @deprecated
+     * @see #isTypingModification(Document)
+     */
+    public static boolean isTypingModification(DocumentEvent evt) {
+        return isTypingModification(evt.getDocument());
     }
 
     /**
@@ -241,7 +283,100 @@ public final class DocumentUtilities {
     }
     
     /**
+     * Document provider should call this method to allow for document event
+     * properties being stored in document events.
+     *
+     * @param evt document event to which the storage should be added.
+     *   It must be an undoable edit allowing to add an edit.
+     */
+    public static void addEventPropertyStorage(DocumentEvent evt) {
+        // Parameter is DocumentEvent because it's more logical
+        if (!(evt instanceof UndoableEdit)) {
+            throw new IllegalStateException("evt not instanceof UndoableEdit: " + evt); // NOI18N
+        }
+        ((UndoableEdit)evt).addEdit(new EventPropertiesElementChange());
+    }
+    
+    /**
+     * Get a property of a given document event.
+     *
+     * @param evt non-null document event from which the property should be retrieved.
+     * @param key non-null key of the property.
+     * @return value for the given property.
+     */
+    public static Object getEventProperty(DocumentEvent evt, Object key) {
+        EventPropertiesElementChange change = (EventPropertiesElementChange)
+                evt.getChange(EventPropertiesElement.INSTANCE);
+        return (change != null) ? change.getProperty(key) : null;
+    }
+    
+    /**
+     * Set a property of a given document event.
+     *
+     * @param evt non-null document event to which the property should be stored.
+     * @param key non-null key of the property.
+     * @param value for the given property.
+     */
+    public static void putEventProperty(DocumentEvent evt, Object key, Object value) {
+        EventPropertiesElementChange change = (EventPropertiesElementChange)
+                evt.getChange(EventPropertiesElement.INSTANCE);
+        if (change == null) {
+            throw new IllegalStateException("addEventPropertyStorage() not called for evt=" + evt); // NOI18N
+        }
+        change.putProperty(key, value);
+    }
+    
+    /**
+     * Set a property of a given document event by using the given map entry.
+     * <br/>
+     * The present implementation is able to directly store instances
+     * of <code>CompactMap.MapEntry</code>. Other map entry implementations
+     * will be delegated to {@link #putEventProperty(DocumentEvent, Object, Object)}.
+     *
+     * @param evt non-null document event to which the property should be stored.
+     * @param mapEntry non-null map entry which should be stored.
+     *  Generally after this method finishes the {@link #getEventProperty(DocumentEvent, Object)}
+     *  will return <code>mapEntry.getValue()</code> for <code>mapEntry.getKey()</code> key.
+     */
+    public static void putEventProperty(DocumentEvent evt, Map.Entry mapEntry) {
+        if (mapEntry instanceof CompactMap.MapEntry) {
+            EventPropertiesElementChange change = (EventPropertiesElementChange)
+                    evt.getChange(EventPropertiesElement.INSTANCE);
+            if (change == null) {
+                throw new IllegalStateException("addEventPropertyStorage() not called for evt=" + evt); // NOI18N
+            }
+            change.putEntry((CompactMap.MapEntry)mapEntry);
+
+        } else {
+            putEventProperty(evt, mapEntry.getKey(), mapEntry.getValue());
+        }
+    }
+    
+    /**
+     * Fix the given offset according to the performed modification.
+     * 
+     * @param offset >=0 offset in a document.
+     * @param evt document event describing change in the document.
+     * @return offset updated by applying the document change to the offset.
+     */
+    public static int fixOffset(int offset, DocumentEvent evt) {
+        int modOffset = evt.getOffset();
+        if (evt.getType() == DocumentEvent.EventType.INSERT) {
+            if (offset >= modOffset) {
+                offset += evt.getLength();
+            }
+        } else if (evt.getType() == DocumentEvent.EventType.REMOVE) {
+            if (offset > modOffset) {
+                offset = Math.min(offset - evt.getLength(), modOffset);
+            }
+        }
+        return offset;
+    }
+    
+    /**
      * Get text of the given document modification.
+     * <br/>
+     * It's implemented as retrieving of a <code>String.class</code>.
      *
      * @param evt document event describing either document insertion or removal
      *  (change event type events will produce null result).
@@ -250,8 +385,43 @@ public final class DocumentUtilities {
      *  by that document event.
      */
     public static String getModificationText(DocumentEvent evt) {
-        DocumentEvent.ElementChange change = evt.getChange(MODIFICATION_TEXT_ELEMENT);
-        return (change != null) ? change.toString() : null;
+        return (String)getEventProperty(evt, String.class);
+    }
+    
+    /**
+     * Get the paragraph element for the given document.
+     *
+     * @param doc non-null document instance.
+     * @param offset offset in the document >=0
+     * @return paragraph element containing the given offset.
+     */
+    public static Element getParagraphElement(Document doc, int offset) {
+        Element paragraph;
+        if (doc instanceof StyledDocument) {
+            paragraph = ((StyledDocument)doc).getParagraphElement(offset);
+        } else {
+            Element rootElem = doc.getDefaultRootElement();
+            int index = rootElem.getElementIndex(offset);
+            paragraph = rootElem.getElement(index);
+            if ((offset < paragraph.getStartOffset()) || (offset >= paragraph.getEndOffset())) {
+                paragraph = null;
+            }
+        }
+        return paragraph;
+    }
+    
+    /**
+     * Get the root of the paragraph elements for the given document.
+     *
+     * @param doc non-null document instance.
+     * @return root element of the paragraph elements.
+     */
+    public static Element getParagraphRootElement(Document doc) {
+        if (doc instanceof StyledDocument) {
+            return ((StyledDocument)doc).getParagraphElement(0).getParentElement();
+        } else {
+            return doc.getDefaultRootElement().getElement(0).getParentElement();
+        }
     }
 
     /**
@@ -285,12 +455,12 @@ public final class DocumentUtilities {
     }
     
     /**
-     * Helper element to used for notification about removed/inserted text
-     * into the document.
+     * Helper element used as a key in searching for an element change
+     * being a storage of the additional properties in a document event.
      */
-    private static final class ModificationTextElement implements Element {
+    private static final class EventPropertiesElement implements Element {
         
-        static final ModificationTextElement INSTANCE = new ModificationTextElement();
+        static final EventPropertiesElement INSTANCE = new EventPropertiesElement();
         
         public int getStartOffset() {
             return 0;
@@ -334,6 +504,87 @@ public final class DocumentUtilities {
         
         public String toString() {
             return getName();
+        }
+
+    }
+    
+    private static final class EventPropertiesElementChange
+    implements DocumentEvent.ElementChange, UndoableEdit  {
+        
+        private CompactMap eventProperties = new CompactMap();
+        
+        public synchronized Object getProperty(Object key) {
+            return (eventProperties != null) ? eventProperties.get(key) : null;
+        }
+
+        @SuppressWarnings("unchecked")
+        public synchronized Object putProperty(Object key, Object value) {
+            return eventProperties.put(key, value);
+        }
+
+        @SuppressWarnings("unchecked")
+        public synchronized CompactMap.MapEntry putEntry(CompactMap.MapEntry entry) {
+            return eventProperties.putEntry(entry);
+        }
+
+        public int getIndex() {
+            return -1;
+        }
+
+        public Element getElement() {
+            return EventPropertiesElement.INSTANCE;
+        }
+
+        public Element[] getChildrenRemoved() {
+            return null;
+        }
+
+        public Element[] getChildrenAdded() {
+            return null;
+        }
+
+        public boolean replaceEdit(UndoableEdit anEdit) {
+            return false;
+        }
+
+        public boolean addEdit(UndoableEdit anEdit) {
+            return false;
+        }
+
+        public void undo() throws CannotUndoException {
+            // do nothing
+        }
+
+        public void redo() throws CannotRedoException {
+            // do nothing
+        }
+
+        public boolean isSignificant() {
+            return false;
+        }
+
+        public String getUndoPresentationName() {
+            return "";
+        }
+
+        public String getRedoPresentationName() {
+            return "";
+        }
+
+        public String getPresentationName() {
+            return "";
+        }
+
+        public void die() {
+            // do nothing
+        }
+
+        public boolean canUndo() {
+            return true;
+        }
+
+        public boolean canRedo() {
+            return true;
         }
 
     }

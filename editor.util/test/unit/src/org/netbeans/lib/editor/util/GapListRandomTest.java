@@ -50,9 +50,9 @@ public class GapListRandomTest extends TestCase {
     private static final int CLEAR_RATIO_2 = 3;
     private static final int SET_RATIO_2 = 50;
     
-    private ArrayList al;
+    private ArrayList<Object> al;
     
-    private GapList gl;
+    private GapList<Object> gl;
     
     public GapListRandomTest(String testName) {
         super(testName);
@@ -69,8 +69,8 @@ public class GapListRandomTest extends TestCase {
             random.setSeed(seed);
         }
         
-        gl = new GapList();
-        al = new ArrayList();
+        gl = new GapList<Object>();
+        al = new ArrayList<Object>();
         
         
         testRound(random, OP_COUNT_1, ADD_RATIO_1, ADD_ALL_RATIO_1, ADD_ALL_MAX_COUNT_1,
@@ -100,7 +100,7 @@ public class GapListRandomTest extends TestCase {
 
             } else if ((r -= addAllRatio) < 0) {
                 int count = (int)(random.nextDouble() * addAllMaxCount);
-                ArrayList l = new ArrayList();
+                ArrayList<Object> l = new ArrayList<Object>();
                 for (int i = count; i > 0; i--) {
                     l.add(new Object());
                 }
@@ -161,7 +161,7 @@ public class GapListRandomTest extends TestCase {
     }
         
     private void debugOp(int op, String s) {
-        System.err.println("op: " + op + ", " + s + ", " + gl.toStringInternals());
+        System.err.println("op: " + op + ", " + s + ", " + gl.dumpInternals());
     }
     
     private void checkConsistency() {

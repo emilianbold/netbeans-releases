@@ -38,7 +38,7 @@ import javax.swing.text.Position;
 public class PositionRegion {
 
     /** Copmarator for position regions */
-    private static Comparator comparator;
+    private static Comparator<PositionRegion> comparator;
     
     /**
      * Get comparator for position regions comparing start offsets
@@ -47,16 +47,37 @@ public class PositionRegion {
      * @return non-null comparator comparing the start offsets of the two given
      *  regions.
      */
-    public static final Comparator getComparator() {
+    public static final Comparator<PositionRegion> getComparator() {
         if (comparator == null) {
-            comparator = new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((PositionRegion)o1).getStartOffset()
-                        - ((PositionRegion)o2).getStartOffset();
+            comparator = new Comparator<PositionRegion>() {
+                public int compare(PositionRegion pr1, PositionRegion pr2) {
+                    return pr1.getStartOffset() - pr2.getStartOffset();
                 }
             };
         }
         return comparator;
+    }
+
+    /**
+     * Create a fixed position instance that just wraps a given integer offset.
+     * <br/>
+     * This may be useful for situations where a position needs to be used
+     * but the document is not available yet. Once the document becomes
+     * available the regular position instance (over an existing document)
+     * may be used instead.
+     *
+     * @param offset &gt;=0 offset at which the position should be created.
+     * @since 1.10
+     */
+    public static Position createFixedPosition(final int offset) {
+        if (offset < 0) {
+            throw new IllegalArgumentException("offset < 0");
+        }
+        return new Position() {
+            public int getOffset() {
+                return offset;
+            }
+        };
     }
 
     /**
@@ -67,7 +88,7 @@ public class PositionRegion {
      * @return true if the regions are sorted according to the starting offset
      *  of the given regions or false otherwise.
      */
-    public static boolean isRegionsSorted(List/*<PositionRegion>*/ positionRegionList) {
+    public static boolean isRegionsSorted(List<PositionRegion> positionRegionList) {
         for (int i = positionRegionList.size() - 2; i >= 0; i--) {
             if (getComparator().compare(positionRegionList.get(i),
                     positionRegionList.get(i + 1)) > 0) {
@@ -88,9 +109,7 @@ public class PositionRegion {
      * @param endPosition non-null end position of the region &gt;= start position.
      */
     public PositionRegion(Position startPosition, Position endPosition) {
-        assert (startPosition.getOffset() <= endPosition.getOffset())
-            : "startPosition=" + startPosition.getOffset() + " > endPosition=" // NOI18N
-                + endPosition;
+        assertPositionsValid(startPosition, endPosition);
         this.startPosition = startPosition;
         this.endPosition = endPosition;
     }
@@ -153,10 +172,18 @@ public class PositionRegion {
      * {@link MutablePositionRegion} uses this package private method
      * to set a new start position of this region.
      */
+    void resetImpl(Position startPosition, Position endPosition) {
+        assertPositionsValid(startPosition, endPosition);
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+    }
+    
+    /**
+     * {@link MutablePositionRegion} uses this package private method
+     * to set a new start position of this region.
+     */
     void setStartPositionImpl(Position startPosition) {
-        assert (startPosition.getOffset() <= endPosition.getOffset())
-            : "startPosition=" + startPosition.getOffset() + " > endPosition=" // NOI18N
-                + endPosition;
+        assertPositionsValid(startPosition, endPosition);
         this.startPosition = startPosition;
     }
 
@@ -165,10 +192,14 @@ public class PositionRegion {
      * to set a new start position of this region.
      */
     void setEndPositionImpl(Position endPosition) {
-        assert (startPosition.getOffset() <= endPosition.getOffset())
-            : "startPosition=" + startPosition.getOffset() + " > endPosition=" // NOI18N
-                + endPosition;
+        assertPositionsValid(startPosition, endPosition);
         this.endPosition = endPosition;
     }
-    
+
+    private static void assertPositionsValid(Position startPos, Position endPos) {
+        assert (startPos.getOffset() <= endPos.getOffset())
+            : "startPosition=" + startPos.getOffset() + " > endPosition=" // NOI18N
+                + endPos;
+    }
+
 }

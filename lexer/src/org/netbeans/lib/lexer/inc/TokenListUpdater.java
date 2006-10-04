@@ -1,0 +1,440 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.lib.lexer.inc;
+
+import org.netbeans.lib.lexer.BranchTokenList;
+import org.netbeans.lib.lexer.LanguageOperation;
+import org.netbeans.lib.lexer.LexerInputOperation;
+import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.token.AbstractToken;
+import org.netbeans.spi.lexer.TokenValidator;
+
+
+/**
+ * Token updater fixes a list of tokens constructed for a document
+ * after text of the document gets modified.
+ * <br>
+ * Subclasses need to define all the abstract methods
+ * so that the updating method can work on real token sequences.
+ *
+ * <p>
+ * Updater looks similar to list iterator
+ * but there are differences in the semantics
+ * of iterator's modification operations.
+ * <p>
+ * The algorithm used in the {@link #update(int, int)}
+ * is based on "General Incremental Lexical Analysis" written
+ * by Tim A. Wagner and Susan L. Graham, University
+ * of California, Berkeley. It's available online
+ * at <a href="http://www.cs.berkeley.edu/Research/Projects/harmonia/papers/twagner-lexing.pdf">
+ * twagner-lexing.pdf</a>.
+ * <br>
+ * Ending <code>EOF</code> token is not used but the lookahead
+ * of the ending token(s) is increased by one (past the end of the input)
+ * if they have reached the EOF.
+ * <br>
+ * Non-startable tokens are not supported.
+ * <br>
+ * When updating a token with lookback one as a result
+ * of modification the lookahead of the preceding token is inspected
+ * to find out whether the modification has really affected it.
+ * This can often save the previous token from being relexed.
+ * <br>
+ * Currently the algorithm computes the lookback values on the fly
+ * and it does not store the lookback in the tokens. For typical languages
+ * the lookback is reasonably small (0, 1 or 2) so it's usually not worth
+ * to consume extra space in token instances for storing of the lookback.
+ * There would also be an additional overhead of updating the lookback
+ * values in the tokens after the modification and the algorithm code would
+ * be somewhat less readable.
+ *
+ * <p>
+ * The algorithm removes the affected tokens in the natural order as they
+ * follow in the token stream. That can be used when the removed tokens
+ * need to be collected (e.g. in an array).
+ * <br>
+ * If the offset and state after token recognition matches
+ * the end offset and state after recognition of the originally present
+ * token then the relexing is stopped because a match was found and the newly
+ * produced tokens would match the present ones.
+ * <br>
+ * Otherwise the token(s) in the list are removed and replaced
+ * by the relexed token and the relexing continues until a match is reached.
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ */
+
+public final class TokenListUpdater {
+
+    /**
+     * Use incremental algorithm to update the list of tokens
+     * after a modification done in the underlying storage.
+     */
+    public static void update(MutableTokenList tokenList, TokenListChange change) {
+        // Ensure the offsets in token list are up-to-date
+        if (tokenList.getClass() == BranchTokenList.class) {
+            ((BranchTokenList)tokenList).updateStartOffset();
+        }
+
+        // Fetch offset where the modification occurred
+        int modOffset = change.offset();
+        LanguageOperation languageOperation = LexerUtilsConstants.languageOperation(
+                tokenList.languagePath());
+
+        int tokenCount = tokenList.tokenCountCurrent(); // presently created token count
+        // Now determine which token is the first to be relexed.
+        // If it would be either modified token or previous-of-modified token
+        // (for modification right at the begining of modified token)
+        // then the token will be attempted to be validated (without running
+        // a lexer).
+        AbstractToken modToken;
+        // modTokenOffset holds begining of the token in which the modification occurred.
+        int modTokenOffset;
+        // index points to the modified token
+        int index;
+
+        if (tokenCount == 0) { // no tokens yet or all removed
+            if (!tokenList.isFullyLexed()) {
+                // No tokens created yet (they get created lazily).
+                return; // Do nothing in this case
+            }
+            // If fully lexed the tokens must mirror the input source -> offset == 0
+            assert (modOffset == 0);
+            modToken = null;
+            modTokenOffset = 0;
+            index = 0;
+
+        } else { // at least one token exists
+            // Check whether the modification at modOffset might affect existing tokens
+            // Get index of the token in which the modification occurred
+            // Get the offset of the last token into modTokenOffset variable
+            index = tokenCount - 1;
+            modTokenOffset = tokenList.tokenOffset(index);
+            if (modOffset >= modTokenOffset) { // inside or above the last token?
+                modToken = token(tokenList, index);
+                int modTokenEndOffset = modTokenOffset + modToken.length();
+                if (modOffset >= modTokenEndOffset) { // above last token
+                    // Modification was right at the end boundary of the last token
+                    // or above it (token list can be created lazily so that is valid case).
+                    // Check whether the last token could be affected at all
+                    // by checking the last token's lookahead.
+                    // For fully lexed inputs the characters added to the end
+                    // must be properly lexed and notified (even if the last present
+                    // token has zero lookahead).
+                    if (!tokenList.isFullyLexed()
+                        && modOffset >= modTokenEndOffset + tokenList.lookahead(index)
+                    )
+                        return; // not affected at all
+
+                    index++;
+                    modToken = null;
+                    modTokenOffset = modTokenEndOffset;
+                } // else -> modification inside the last token
+
+            } else { // modification in non-last token
+                // Find modified token by binary search
+                int low = 0; // use index as 'high'
+                while (low < index) {
+                    int mid = (low + index) / 2;
+                    int midStartOffset = tokenList.tokenOffset(mid);
+
+                    if (midStartOffset < modOffset) {
+                        low = mid + 1;
+                    } else if (midStartOffset > modOffset) {
+                        index = mid - 1 < 0 ? 0 : mid - 1;
+                    } else {
+                        // Token starting exactly at modOffset found
+                        index = mid;
+                        modTokenOffset = midStartOffset;
+                        break;
+                    }
+                }
+                if (index <= low) { // no token starting right at 'modOffset'
+                    modTokenOffset = tokenList.tokenOffset(index);
+                }
+                modToken = token(tokenList, index);
+            }
+        }
+
+        // Store the index that points to the modified token
+        // i.e. modification at its begining or inside.
+        // Index variable can later be modified but present value is important
+        // for moving of the offset gap later.
+        change.setOffsetGapIndex(index);
+
+        // Index and offset from which the relexing will start.
+        int relexIndex;
+        int relexOffset;
+        // Whether the token validation should be attempted or not.
+        boolean attemptValidation = false;
+
+        if (index == 0) { // modToken is first in the list
+            relexIndex = index;
+            relexOffset = modTokenOffset;
+            // Can validate modToken if removal does not span whole token
+            if (modToken != null && change.removedLength() < modToken.length()) {
+                attemptValidation = true;
+            }
+
+        } else { // Previous token exists
+            // Check for insert-only right at the end of the previous token
+            if (modOffset == modTokenOffset && change.removedLength() == 0) {
+                index--; // move to previous token
+                modToken = token(tokenList, index);
+                modTokenOffset -= modToken.length();
+            }
+
+            // Check whether modification affected previous token
+            if (index == 0 || modTokenOffset + tokenList.lookahead(index - 1) <= modOffset) {
+                // Modification did not affect previous token
+                relexIndex = index;
+                relexOffset = modTokenOffset;
+                // Check whether modification was localized to modToken only
+                if (modOffset + change.removedLength() < modTokenOffset + modToken.length()) {
+                    attemptValidation = true;
+                }
+
+            } else { // at least previous token affected
+                relexOffset = modTokenOffset - token(tokenList, index - 1).length();
+                relexIndex = index - 2; // Start with token below previous token
+                
+                // Go back and mark all affected tokens for removals
+                while (relexIndex >= 0) {
+                    AbstractToken token = token(tokenList, relexIndex);
+                    // Check if token was not affected by modification
+                    if (relexOffset + tokenList.lookahead(relexIndex) <= modOffset) {
+                        break;
+                    }
+                    relexIndex--;
+                    relexOffset -= token.length();
+                }
+                relexIndex++; // Next token will be relexed
+            }
+        }
+        
+        // The lowest offset at which the relexing can end
+        // (the relexing may end at higher offset if the relexed
+        // tokens will end at different boundaries than the original
+        // tokens or if the states after the tokens' recognition
+        // will differ from the original states in the original tokens.
+        int matchOffset;
+
+        // Perform token validation of modToken if possible.
+        // The index variable will hold the token index right before the matching point.
+        if (attemptValidation) {
+            matchOffset = modTokenOffset + modToken.length();
+            TokenValidator tokenValidator = languageOperation.tokenValidator(modToken.id());
+            if (tokenValidator != null
+                && (tokenList.getClass() != IncTokenList.class
+                    || change.tokenHierarchyOperation().canModifyToken(index, modToken))
+            ) {
+                    
+//                if (tokenValidator.validateToken(modToken, modOffset - modTokenOffset, modRelOffset,
+//                        removedLength, insertedLength)
+//                ) {
+//                    // Update positions
+//                                change.initRemovedAddedOffsets()
+
+//                    return; // validated successfully
+//                }
+            }
+
+        } else { // Validation cannot be attempted
+            // Need to compute matchOffset and matchIndex
+            // by iterating forward
+            if (index < tokenCount) {
+                matchOffset = modTokenOffset + modToken.length();
+                int removeEndOffset = modOffset + change.removedLength();
+                while (matchOffset < removeEndOffset && index + 1 < tokenCount) {
+                    index++;
+                    matchOffset += token(tokenList, index).length();
+                }
+
+            } else // After last token
+                matchOffset = modTokenOffset;
+        }
+
+        // State from which the lexer can be started
+        Object relexState = (relexIndex > 0) ? tokenList.state(relexIndex) : null;
+        // Update the matchOffset so that it corresponds to the state
+        // after the modification
+        matchOffset += change.insertedLength() - change.removedLength();
+        change.setModifiedTokensStartOffset(relexOffset);
+        
+        // Variables' values:
+        // 'index' - points to modified token. Or index == tokenCount for modification
+        //     past the last token.
+        // 'tokenCount' - token count in the original token list.
+        // 'relexIndex' - points to the token that will be relexed as first.
+        // 'relexOffset' - points to begining of the token that will be relexed as first.
+        // 'matchOffset' - points to end of token after which the fixed token list could
+        //     possibly match the original token list. Points to end of token at 'index'
+        //     variable if 'index < tokenCount' and to the end of the last token
+        //     if 'index == tokenCount'.
+
+        // Check whether relexing is necessary.
+        // Necessary condition for no-relexing is that the matchToken
+        // has zero lookahead (if lookahead would be >0 
+        // then the matchToken would be affected and relexOffset != matchOffset).
+        // In case of removal starting and ending at token boundaries
+        // the relexing might not be necessary.
+        boolean relex = (relexOffset != matchOffset)
+                || index >= tokenCount
+                || !LexerUtilsConstants.statesEqual(relexState, tokenList.state(index));
+
+        // There is an extra condition that the lookahead of the matchToken
+        // must not span the next (retained) token. This condition helps to ensure
+        // that the lookaheads will be the same like during regular batch lexing.
+        // As the empty tokens are not allowed the situation may only occur
+        // for lookahead > 1.
+        int lookahead;
+        if (!relex && (lookahead = tokenList.lookahead(index)) > 1 && index + 1 < tokenCount) {
+            relex = (lookahead > token(tokenList, index + 1).length()); // check next token
+        }
+
+        if (relex) { // Start relexing
+            LexerInputOperation lexerInputOperation
+                    = tokenList.createLexerInputOperation(relexIndex, relexOffset, relexState);
+
+            do { // Fetch new tokens from lexer as necessary
+                AbstractToken token = lexerInputOperation.nextToken();
+                if (token == null) {
+                    attemptValidation = false;
+                    break;
+                }
+
+                lookahead = lexerInputOperation.lookahead();
+                Object state = lexerInputOperation.lexerState();
+                change.addToken(token, lookahead, state);
+
+                relexOffset += token.length();
+                // Remove obsolete tokens that would cover the area of just lexed token
+                if (relexOffset > matchOffset && index < tokenCount) {
+                    attemptValidation = false;
+                    do {
+                        index++;
+                        if (index == tokenCount) {
+                            // Make sure the number of removed tokens will be computed properly later
+                            modToken = null;
+                            // Check whether it should lex till the end
+                            // or whether 'Match at anything' should be done
+                            if (tokenList.isFullyLexed()) {
+                                // Will lex till the end of input
+                                matchOffset = Integer.MAX_VALUE;
+                            } else {
+                                // Force stop lexing
+                                relex = false;
+                            }
+                            break;
+                        }
+                        matchOffset += token(tokenList, index).length();
+                    } while (relexOffset > matchOffset);
+                }
+
+                // Check whether the new token ends at matchOffset with the same state
+                // like the original which typically means end of relexing
+                if (relexOffset == matchOffset
+                    && (index < tokenCount)
+                    && LexerUtilsConstants.statesEqual(state, tokenList.state(index))
+                ) {
+                    // Check whether lookaheads stored in the subsequent tokens in the chain
+                    // reflect the lookahead of the just relexed token. Otherwise the algorithm
+                    // would not work properly.
+                    // See initial part of SimpleRandomTest.test() verifies this.
+                    //
+                    // The algorithm also attempts to have the same lookaheads in tokens
+                    // like the regular batch scanning would produce.
+                    // Although this is probably not strictly necessary requirement
+                    // it helps to simplify the debugging in case the lexer does not work
+                    // well in the incremental setup.
+                    // The following code checks that the lookahead of the original match token
+                    // (i.e. the token right before matchOffset) does "end" inside
+                    // the next token - if not then relexing the next token is done.
+                    // The second part of SimpleRandomTest.test() verifies this.
+                    int matchTokenLookahead = tokenList.lookahead(index);
+                    boolean lookaheadOK = true;
+                    // When assuming non-empty tokens the lookahead 1
+                    // just reaches the end of the next token
+                    // so lookhead < 1 is always fine from this point of view.
+                    if (matchTokenLookahead > 1 || lookahead > 1) {
+                        int laCheckIndex = index + 1;
+                        int laCheckTokenOffset = matchOffset;
+                        while (laCheckIndex < tokenCount) {
+                            int laCheckTokenLength = token(tokenList, laCheckIndex).length();
+                            lookahead -= laCheckTokenLength;
+                            matchTokenLookahead -= laCheckTokenLength;
+                            laCheckTokenOffset += laCheckTokenLength;
+                            if (lookahead <= 0 && matchTokenLookahead <=0) {
+                                break; // No more work
+                            }
+                            if (lookahead != tokenList.lookahead(laCheckIndex)
+                                    || matchTokenLookahead > 0
+                            ) {
+                                // This token must be relexed
+                                index = laCheckIndex;
+                                matchOffset = laCheckTokenOffset;
+                                lookaheadOK = false;
+                                // Continue - further tokens may be affected
+                            }
+                            laCheckIndex++;
+                        }
+                    }
+
+                    if (lookaheadOK) {
+                        if (attemptValidation) {
+//                            if (modToken.id() == token.id()
+//                                    && tokenList.lookahead(index) == lookahead
+//                                    && !modToken.isFlyweight()
+//                                    && !token.isFlyweight()
+//                                    && (tokenList.getClass() != IncTokenList.class
+//                                        || change.tokenHierarchyOperation().canModifyToken(index, modToken))
+//                                    && LexerSpiTokenPackageAccessor.get().restoreToken(
+//                                            languageOperation.tokenHandler(),
+//                                            modToken, token)
+//                            ) {
+//                                // Restored successfully
+//                                // TODO implement - fix token's length and return
+//                                // now default in fact to failed validation
+//                            }
+                            attemptValidation = false;
+                        }
+                        break;
+                    }
+                }
+            } while (relex);
+        }
+
+        // Now ensure that the original tokens will be replaced by the relexed ones.
+        change.setTokenIndex(relexIndex);
+        change.setCurrentTokenList(tokenList);
+        change.setAddedTokensEndOffset(relexOffset);
+        tokenList.replaceTokens(change,
+            (modToken != null) ? (index - relexIndex + 1) : (index - relexIndex));
+    }
+    
+    private static AbstractToken token(MutableTokenList tokenList, int index) {
+        Object tokenOrBranch = tokenList.tokenOrBranchUnsync(index); // Unsync impl suffices
+        return (tokenOrBranch.getClass() == BranchTokenList.class)
+            ? (AbstractToken)((BranchTokenList)tokenOrBranch).branchToken()
+            : (AbstractToken)tokenOrBranch;
+    }
+
+}

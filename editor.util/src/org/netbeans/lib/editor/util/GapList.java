@@ -21,6 +21,7 @@ package org.netbeans.lib.editor.util;
 
 import java.util.AbstractList;
 import java.util.Collection;
+import java.util.List;
 import java.util.RandomAccess;
 
 /**
@@ -31,10 +32,8 @@ import java.util.RandomAccess;
  * @version 1.00
  */
 
-public class GapList extends AbstractList
-implements RandomAccess, Cloneable, java.io.Serializable {
-
-    private static final Object[] EMPTY_ELEMENT_ARRAY = new Object[0];
+public class GapList<E> extends AbstractList<E>
+implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
 
     /**
      * The array buffer into which the elements are stored.
@@ -43,17 +42,17 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      * the indexes starting at <code>gapStart</code>
      * till <code>gapStart + gapLength - 1</code>.
      */
-    private transient Object elementData[];
+    private transient E[] elementData; // 16 bytes (12-super(modCount) + 4)
     
     /**
      * The start of the gap in the elementData array.
      */
-    private int gapStart;
+    private int gapStart; // 20 bytes
     
     /**
      * Length of the gap in the elementData array starting at gapStart.
      */
-    private int gapLength;
+    private int gapLength; // 24 bytes
     
     /**
      * Constructs an empty list with the specified initial capacity.
@@ -67,15 +66,15 @@ implements RandomAccess, Cloneable, java.io.Serializable {
             throw new IllegalArgumentException("Illegal Capacity: " // NOI18N
                 + initialCapacity);
         }
-        this.elementData = new Object[initialCapacity];
+        this.elementData = allocateElementsArray(initialCapacity);
         this.gapLength = initialCapacity;
     }
     
     /**
-     * Constructs an empty list.
+     * Constructs an empty list with an initial capacity of ten.
      */
     public GapList() {
-        elementData = EMPTY_ELEMENT_ARRAY;
+        this(10);
     }
     
     /**
@@ -87,12 +86,13 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      * @param c the collection whose elements are to be placed into this list.
      * @throws NullPointerException if the specified collection is null.
      */
-    public GapList(Collection c) {
+    public GapList(Collection<? extends E> c) {
         int size = c.size();
         // Allow 10% room for growth
-        elementData = new Object[
-        (int)Math.min((size*110L)/100,Integer.MAX_VALUE)];
-        c.toArray(elementData);
+        int capacity = (int)Math.min((size*110L)/100,Integer.MAX_VALUE);
+        @SuppressWarnings("unchecked")
+        E[] data = (E[])c.toArray(new Object[capacity]);
+        elementData = data;
         this.gapStart = size;
         this.gapLength = elementData.length - size;
     }
@@ -106,7 +106,7 @@ implements RandomAccess, Cloneable, java.io.Serializable {
         modCount++;
         if (gapLength > 0) {
             int newLength = elementData.length - gapLength;
-            Object[] newElementData = new Object[newLength];
+            E[] newElementData = allocateElementsArray(newLength);
             copyAllData(newElementData);
             elementData = newElementData;
             // Leave gapStart as is
@@ -122,7 +122,7 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      * @param   minCapacity   the desired minimum capacity.
      */
     public void ensureCapacity(int minCapacity) {
-        modCount++; // expected to always increment modCount - see add() operations
+        modCount++; // expected to always increment modCount (same in ArrayList)
         int oldCapacity = elementData.length;
         if (minCapacity > oldCapacity) {
             int newCapacity = (oldCapacity * 3)/2 + 1;
@@ -131,10 +131,8 @@ implements RandomAccess, Cloneable, java.io.Serializable {
             }
             int gapEnd = gapStart + gapLength;
             int afterGapLength = (oldCapacity - gapEnd);
-            // Must ensure the gap will not be logically moved
-            // (would have to call movedAbove/BeforeGapUpdate() methods)
             int newGapEnd = newCapacity - afterGapLength;
-            Object[] newElementData = new Object[newCapacity];
+            E[] newElementData = allocateElementsArray(newCapacity);
             System.arraycopy(elementData, 0, newElementData, 0, gapStart);
             System.arraycopy(elementData, gapEnd, newElementData, newGapEnd, afterGapLength);
             elementData = newElementData;
@@ -275,9 +273,10 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      */
     public Object clone() {
         try {
-            GapList clonedList = (GapList)super.clone();
+            @SuppressWarnings("unchecked")
+            GapList<E> clonedList = (GapList<E>)super.clone();
             int size = size();
-            Object[] clonedElementData = new Object[size];
+            E[] clonedElementData = allocateElementsArray(size);
             copyAllData(clonedElementData);
             clonedList.elementData = clonedElementData;
             // Will retain gapStart - would have to call moved*() otherwise
@@ -290,29 +289,85 @@ implements RandomAccess, Cloneable, java.io.Serializable {
             throw new InternalError();
         }
     }
-    
-    public void copyItems(int srcStartIndex, int srcEndIndex,
+
+    /**
+     * @deprecated use {@link #copyElements(int, int, Object[], int)} which performs the same operation
+     */
+    public void copyItems(int startIndex, int endIndex,
+    Object[] dest, int destIndex) {
+        copyElements(startIndex, endIndex, dest, destIndex);
+    }
+
+    /**
+     * Copy elements of this list between the given index range to the given object array.
+     *
+     * @param startIndex start index of the region of this list to be copied.
+     * @param endIndex end index of the region of this list to be copied.
+     * @param dest collection to the end of which the items should be copied.
+     */
+    public void copyElements(int startIndex, int endIndex,
     Object[] dest, int destIndex) {
         
-        if (srcStartIndex < 0 || srcEndIndex < srcStartIndex || srcEndIndex > size()) {
-            throw new IndexOutOfBoundsException("srcStartIndex=" + srcStartIndex // NOI18N
-            + ", srcEndIndex=" + srcEndIndex + ", size()=" + size()); // NOI18N
+        if (startIndex < 0 || endIndex < startIndex || endIndex > size()) {
+            throw new IndexOutOfBoundsException("startIndex=" + startIndex // NOI18N
+            + ", endIndex=" + endIndex + ", size()=" + size()); // NOI18N
         }
         
-        if (srcEndIndex < gapStart) { // fully below gap
-            System.arraycopy(elementData, srcStartIndex,
-            dest, destIndex, srcEndIndex - srcStartIndex);
+        if (endIndex < gapStart) { // fully below gap
+            System.arraycopy(elementData, startIndex,
+            dest, destIndex, endIndex - startIndex);
             
         } else { // above gap or spans the gap
-            if (srcStartIndex >= gapStart) { // fully above gap
-                System.arraycopy(elementData, srcStartIndex + gapLength, dest, destIndex,
-                srcEndIndex - srcStartIndex);
+            if (startIndex >= gapStart) { // fully above gap
+                System.arraycopy(elementData, startIndex + gapLength, dest, destIndex,
+                endIndex - startIndex);
                 
             } else { // spans gap
-                int beforeGap = gapStart - srcStartIndex;
-                System.arraycopy(elementData, srcStartIndex, dest, destIndex, beforeGap);
+                int beforeGap = gapStart - startIndex;
+                System.arraycopy(elementData, startIndex, dest, destIndex, beforeGap);
                 System.arraycopy(elementData, gapStart + gapLength, dest, destIndex + beforeGap,
-                srcEndIndex - srcStartIndex - beforeGap);
+                endIndex - startIndex - beforeGap);
+            }
+        }
+    }
+    
+    /**
+     * Copy elements of this list between the given index range
+     * to the end of the given collection.
+     *
+     * @param startIndex start index of the region of this list to be copied.
+     * @param endIndex end index of the region of this list to be copied.
+     * @param dest collection to the end of which the items should be copied.
+     */
+    public void copyElements(int startIndex, int endIndex, Collection<E> dest) {
+        
+        if (startIndex < 0 || endIndex < startIndex || endIndex > size()) {
+            throw new IndexOutOfBoundsException("startIndex=" + startIndex // NOI18N
+            + ", endIndex=" + endIndex + ", size()=" + size()); // NOI18N
+        }
+        
+        if (endIndex < gapStart) { // fully below gap
+            while (startIndex < endIndex) {
+                dest.add(elementData[startIndex++]);
+            }
+            
+        } else { // above gap or spans the gap
+            if (startIndex >= gapStart) { // fully above gap
+                startIndex += gapLength;
+                endIndex += gapLength;
+                while (startIndex < endIndex) {
+                    dest.add(elementData[startIndex++]);
+                }
+                
+            } else { // spans gap
+                while (startIndex < gapStart) {
+                    dest.add(elementData[startIndex++]);
+                }
+                startIndex += gapLength;
+                endIndex += gapLength;
+                while (startIndex < endIndex) {
+                    dest.add(elementData[startIndex++]);
+                }
             }
         }
     }
@@ -352,11 +407,13 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      * @throws ArrayStoreException if the runtime type of a is not a supertype
      *         of the runtime type of every element in this list.
      */
-    public Object[] toArray(Object a[]) {
+    public <T> T[] toArray(T[] a) {
         int size = size();
         if (a.length < size) {
-            a = (Object[])java.lang.reflect.Array.newInstance(
+            @SuppressWarnings("unchecked")
+            T[] tmp = (T[])java.lang.reflect.Array.newInstance(
                 a.getClass().getComponentType(), size);
+            a = tmp;
         }
         copyAllData(a);
         if (a.length > size)
@@ -375,7 +432,7 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index is out of range <tt>(index
      * 		  &lt; 0 || index &gt;= size())</tt>.
      */
-    public Object get(int index) {
+    public E get(int index) {
         // rangeCheck(index) not necessary - would fail with AIOOBE anyway
         return elementData[(index < gapStart) ? index : (index + gapLength)];
     }
@@ -390,24 +447,43 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index out of range
      *		  <tt>(index &lt; 0 || index &gt;= size())</tt>.
      */
-    public Object set(int index, Object element) {
+    public E set(int index, E element) {
         // rangeCheck(index) not necessary - would fail with AIOOBE anyway
         if (index >= gapStart) {
             index += gapLength;
         }
-        Object oldValue = elementData[index];
+        E oldValue = elementData[index];
         elementData[index] = element;
         return oldValue;
     }
     
     /**
+     * Swap elements at the given indexes.
+     */
+    public void swap(int index1, int index2) {
+        // rangeCheck(index) not necessary - would fail with AIOOBE anyway
+        // rangeCheck(byIndex) not necessary - would fail with AIOOBE anyway
+        if (index1 >= gapStart) {
+            index1 += gapLength;
+        }
+        if (index2 >= gapStart) {
+            index2 += gapLength;
+        }
+        E tmpValue = elementData[index1];
+        elementData[index1] = elementData[index2];
+        elementData[index2] = tmpValue;
+    }
+    
+    /**
      * Appends the specified element to the end of this list.
      *
-     * @param o element to be appended to this list.
+     * @param element non-null element to be appended to this list.
      * @return <tt>true</tt> (as per the general contract of Collection.add).
      */
-    public boolean add(Object o) {
-        add(size(), o);
+    public boolean add(E element) {
+        int size = size();
+        ensureCapacity(size + 1); // Increments modCount
+        addImpl(size, element);
         return true;
     }
     
@@ -421,16 +497,18 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index is out of range
      *		  <tt>(index &lt; 0 || index &gt; size())</tt>.
      */
-    public void add(int index, Object element) {
+    public void add(int index, E element) {
         int size = size();
         if (index > size || index < 0) {
             throw new IndexOutOfBoundsException(
                 "Index: " + index + ", Size: " + size); // NOI18N
         }
-
-        ensureCapacity(size + 1);  // Increments modCount!!
+        ensureCapacity(size + 1); // Increments modCount
+        addImpl(index, element);
+    }
+    
+    private void addImpl(int index, E element) {
         moveGap(index);
-
         elementData[gapStart++] = element;
         gapLength--;
     }
@@ -448,7 +526,7 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      * @return <tt>true</tt> if this list changed as a result of the call.
      * @throws    NullPointerException if the specified collection is null.
      */
-    public boolean addAll(Collection c) {
+    public boolean addAll(Collection<? extends E> c) {
         return addAll(size(), c);
     }
     
@@ -468,7 +546,7 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      *		  &lt; 0 || index &gt; size())</tt>.
      * @throws    NullPointerException if the specified Collection is null.
      */
-    public boolean addAll(int index, Collection c) {
+    public boolean addAll(int index, Collection<? extends E> c) {
         return addArray(index, c.toArray());
     }
 
@@ -501,15 +579,13 @@ implements RandomAccess, Cloneable, java.io.Serializable {
         
         ensureCapacity(size + len);  // Increments modCount
         
-        moveGap(index);
-        System.arraycopy(elements, off, elementData, gapStart, len);
+        moveGap(index); // after that (index == gapStart)
+        System.arraycopy(elements, off, elementData, index, len);
         gapStart += len;
         gapLength -= len;
 
         return (len != 0);
     }
-    
-    
     
     /**
      * Removes all of the elements from this list.  The list will
@@ -529,7 +605,7 @@ implements RandomAccess, Cloneable, java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index out of range <tt>(index
      * 		  &lt; 0 || index &gt;= size())</tt>.
      */
-    public Object remove(int index) {
+    public E remove(int index) {
         int size = size();
         if (index >= size || index < 0) {
             throw new IndexOutOfBoundsException(
@@ -538,8 +614,7 @@ implements RandomAccess, Cloneable, java.io.Serializable {
 
         modCount++;
         moveGap(index + 1); // if previous were adds() - this should be no-op
-        Object oldValue = elementData[index];
-        removeUpdate(index, elementData, index, index + 1);
+        E oldValue = elementData[index];
         elementData[index] = null;
         gapStart--;
         gapLength++;
@@ -587,7 +662,6 @@ implements RandomAccess, Cloneable, java.io.Serializable {
             // Allow GC of removed items
             fromIndex += gapLength; // begining of abandoned area
             toIndex += gapLength;
-            removeUpdate(fromIndex - gapLength, elementData, fromIndex, toIndex);
             while (fromIndex < toIndex) {
                 elementData[fromIndex] = null;
                 fromIndex++;
@@ -599,11 +673,8 @@ implements RandomAccess, Cloneable, java.io.Serializable {
                 // (this should be the minimum necessary count of elements moved)
                 moveGap(toIndex);
                 gapStart = fromIndex;
-                // Call removeUpdate() for items that will be physically removed soon
-                removeUpdate(fromIndex, elementData, fromIndex, toIndex);
                 
             } else { // spans gap: gapStart > fromIndex but gapStart - fromIndex < removeCount
-                removeUpdate(fromIndex, elementData, fromIndex, gapStart);
                 // Allow GC of removed items
                 for (int clearIndex = fromIndex; clearIndex < gapStart; clearIndex++) {
                     elementData[clearIndex] = null;
@@ -612,7 +683,6 @@ implements RandomAccess, Cloneable, java.io.Serializable {
                 fromIndex = gapStart + gapLength; // part above the gap
                 gapStart = toIndex - removeCount; // original value of fromIndex
                 toIndex += gapLength;
-                removeUpdate(gapStart, elementData, fromIndex, toIndex);
             }
             
             // Allow GC of removed items
@@ -625,62 +695,30 @@ implements RandomAccess, Cloneable, java.io.Serializable {
         gapLength += removeCount;
     }
     
-    /**
-     * Called prior physical removing of the data from the list.
-     * <br>
-     * The implementation can possibly update the elements in the removed area.
-     * <br>
-     * After this method finishes the whole removed area will be
-     * <code>null</code>-ed.
-     *
-     * @param index index in the list of the first item being removed.
-     * @param data array of objects from which the data are being removed.
-     *  The next two parameters define the indexes at which the elements
-     *  can be updated.
-     *  <br>
-     *  Absolutely no changes should be done outside of
-     *  <code>&lt;startOff, endOff)</code> area.
-     * @param startOff offset in the data array of the first element that
-     *  will be removed.
-     * @param endOff offset in the data array following the last item that will
-     *  be removed.
-     */
-    protected void removeUpdate(int index, Object[] data, int startOff, int endOff) {
-    }
-
-    /*
-    protected void movedAboveGapUpdate(Object[] array, int index, int count) {
-    }
-    
-    protected void movedBelowGapUpdate(Object[] array, int index, int count) {
-    }
-    */
-    
     private void moveGap(int index) {
         if (index == gapStart) {
             return; // do nothing
         }
 
-        if (index < gapStart) { // move gap down
-            int moveSize = gapStart - index;
-            System.arraycopy(elementData, index, elementData,
-            gapStart + gapLength - moveSize, moveSize);
-            clearEmpty(index, Math.min(moveSize, gapLength));
-            gapStart = index;
-            // movedAboveGapUpdate(elementData, gapStart + gapLength, moveSize);
-            
-        } else { // above gap
-            int gapEnd = gapStart + gapLength;
-            int moveSize = index - gapStart;
-            System.arraycopy(elementData, gapEnd, elementData, gapStart, moveSize);
-            if (index < gapEnd) {
-                clearEmpty(gapEnd, moveSize);
-            } else {
-                clearEmpty(index, gapLength);
+        if (gapLength > 0) {
+            if (index < gapStart) { // move gap down
+                int moveSize = gapStart - index;
+                System.arraycopy(elementData, index, elementData,
+                    gapStart + gapLength - moveSize, moveSize);
+                clearEmpty(index, Math.min(moveSize, gapLength));
+
+            } else { // above gap
+                int gapEnd = gapStart + gapLength;
+                int moveSize = index - gapStart;
+                System.arraycopy(elementData, gapEnd, elementData, gapStart, moveSize);
+                if (index < gapEnd) {
+                    clearEmpty(gapEnd, moveSize);
+                } else {
+                    clearEmpty(index, gapLength);
+                }
             }
-            // movedBelowGapUpdate(elementData, gapStart, moveSize);
-            gapStart += moveSize;
         }
+        gapStart = index;
     }
     
     private void copyAllData(Object[] toArray) {
@@ -745,18 +783,22 @@ implements RandomAccess, Cloneable, java.io.Serializable {
         
         // Read in array length and allocate array
         int arrayLength = s.readInt();
-        elementData = new Object[arrayLength];
+        elementData = allocateElementsArray(arrayLength);
         
         // Read in all elements in the proper order.
         int i = 0;
         while (i < gapStart) {
-            elementData[i] = s.readObject();
+            @SuppressWarnings("unchecked")
+            E e = (E)s.readObject();
+            elementData[i] = e;
             i++;
         }
         i += gapLength;
         int elementDataLength = elementData.length;
         while (i < elementDataLength) {
-            elementData[i] = s.readObject();
+            @SuppressWarnings("unchecked")
+            E e = (E)s.readObject();
+            elementData[i] = e;
             i++;
         }
     }
@@ -764,7 +806,7 @@ implements RandomAccess, Cloneable, java.io.Serializable {
     /**
      * Internal consistency check.
      */
-    void consistencyCheck() {
+    protected void consistencyCheck() {
         if (gapStart < 0 || gapLength < 0
             || gapStart + gapLength > elementData.length
         ) {
@@ -779,13 +821,53 @@ implements RandomAccess, Cloneable, java.io.Serializable {
         }
     }
     
-    private void consistencyError(String s) {
-        throw new IllegalStateException(s + ": " + toStringInternals()); // NOI18N
+    protected final void consistencyError(String s) {
+        throw new IllegalStateException(s + ": " + dumpDetails()); // NOI18N
     }
     
-    String toStringInternals() {
-        return "elementData.length=" + elementData.length // NOI18N
-            + ", gapStart=" + gapStart + ", gapLength=" + gapLength; // NOI18N
+    protected String dumpDetails() {
+        return dumpInternals() + "; DATA:\n" + toString(); // NOI18N
     }
     
+    protected String dumpInternals() {
+        return "elems: " + size() + '(' + elementData.length // NOI18N
+            + "), gap(s=" + gapStart + ", l=" + gapLength + ')';// NOI18N
+    }
+    
+    @SuppressWarnings("unchecked")
+    private E[] allocateElementsArray(int capacity) {
+        return (E[])new Object[capacity];
+    }
+    
+    public String toString() {
+        return dumpElements(this);
+    }
+
+    public static String dumpElements(java.util.List l) {
+        StringBuffer sb = new StringBuffer();
+        int size = l.size();
+        int sizeDigitCount = indexDigitCount(size);
+        for (int i = 0; i < size; i++) {
+            sb.append('[');
+            int extraSpacesCount = sizeDigitCount - indexDigitCount(i);
+            while (extraSpacesCount > 0) {
+                sb.append(' ');
+            }
+            sb.append(i);
+            sb.append("]: "); // NOI18N
+            sb.append(l.get(i));
+            sb.append("\n"); // NOI18N
+        }
+        return sb.toString();
+    }
+    
+    private static int indexDigitCount(int i) {
+        int digitCount = 1;
+        while (i >= 10) {
+            i /= 10;
+            digitCount++;
+        }
+        return digitCount;
+    }
+
 }

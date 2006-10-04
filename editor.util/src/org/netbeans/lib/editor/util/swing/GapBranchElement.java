@@ -52,7 +52,7 @@ public abstract class GapBranchElement implements Element {
     }
     
     public void copyElements(int srcBegin, int srcEnd, Element dst[], int dstBegin) {
-        children.copyItems(srcBegin, srcEnd, dst, dstBegin);
+        children.copyElements(srcBegin, srcEnd, dst, dstBegin);
     }
 
     /**

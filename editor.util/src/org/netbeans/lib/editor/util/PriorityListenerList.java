@@ -38,7 +38,7 @@ import java.util.List;
  * @since 1.4
  */
 
-public class PriorityListenerList implements Serializable {
+public class PriorityListenerList<T extends EventListener> implements Serializable {
     
     static final long serialVersionUID = 0L;
     
@@ -46,12 +46,16 @@ public class PriorityListenerList implements Serializable {
     
     private static final EventListener[][] EMPTY_LISTENER_ARRAY_ARRAY = new EventListener[0][];
 
-    private transient EventListener[][] listenersArray = EMPTY_LISTENER_ARRAY_ARRAY;
+    private transient T[][] listenersArray;
+    
+    public PriorityListenerList() {
+        listenersArray = emptyTArrayArray();
+    }
     
     /**
      * Add listener with the given priority.
      *
-     * @param listener listener to be added.
+     * @param listener listener to be added. If null is passed it is ignored (nothing gets added).
      * @param priority &gt;=0 index defining priority
      *  with which the listener should be fired.
      *  <br>
@@ -64,32 +68,37 @@ public class PriorityListenerList implements Serializable {
      *  low number.
      * @throws IndexOutOfBoundsException when priority &lt; 0
      */
-    public synchronized void add(EventListener listener, int priority) {
-        EventListener[][] newListenersArray;
+    public synchronized void add(T listener, int priority) {
+        if (listener == null)
+            return;
+
         if (priority >= listenersArray.length) {
-            newListenersArray = new EventListener[priority + 1][];
+            T[][] newListenersArray = allocateTArrayArray(priority + 1);
             System.arraycopy(listenersArray, 0, newListenersArray, 0, listenersArray.length);
             for (int i = listenersArray.length; i < priority; i++) {
-                newListenersArray[i] = EMPTY_LISTENER_ARRAY;
+                newListenersArray[i] = emptyTArray();
             }
-            newListenersArray[priority] = new EventListener[] { listener };
+            T[] arr = allocateTArray(1);
+            arr[0] = listener;
+            newListenersArray[priority] = arr;
+            listenersArray = newListenersArray;
 
         } else { // Add into existing listeners
-            newListenersArray = (EventListener[][])listenersArray.clone();
-            EventListener[] listeners = listenersArray[priority];
-            EventListener[] newListeners = new EventListener[listeners.length + 1];
+            @SuppressWarnings("unchecked")
+            T[][] newListenersArray = (T[][])listenersArray.clone();
+            T[] listeners = listenersArray[priority];
+            T[] newListeners = allocateTArray(listeners.length + 1);
             System.arraycopy(listeners, 0, newListeners, 1, listeners.length);
             newListeners[0] = listener;
             newListenersArray[priority] = newListeners;
+            listenersArray = newListenersArray;
         }
-
-        listenersArray = newListenersArray;
     }
     
     /**
      * Remove listener with the given priority index.
      *
-     * @param listener listener to be removed.
+     * @param listener listener to be removed. If null is passed it is ignored (nothing gets removed).
      * @param priority &gt;=0 index defining priority
      *  with which the listener was originally added.
      *  <br>
@@ -97,37 +106,42 @@ public class PriorityListenerList implements Serializable {
      *  priority then no action happens.
      * @throws IndexOutOfBoundsException when priority &lt; 0
      */
-    public synchronized void remove(EventListener listener, int priority) {
+    public synchronized void remove(T listener, int priority) {
+        if (listener == null)
+            return;
+
         if (priority < listenersArray.length) {
-            EventListener[] listeners = listenersArray[priority];
-            int index = listeners.length - 1;
-            while (index >= 0 && listeners[index] != listener) {
-                index--;
+            T[] listeners = listenersArray[priority];
+            // Search from 0 - suppose that later added will sooner be removed
+            int index = 0;
+            while (index < listeners.length && listeners[index] != listener) {
+                index++;
             }
-            if (index >= 0) {
-                EventListener[] newListeners;
+            if (index < listeners.length) {
+                T[] newListeners;
                 boolean removeHighestPriorityLevel;
                 if (listeners.length == 1) {
-                    newListeners = EMPTY_LISTENER_ARRAY;
+                    newListeners = emptyTArray();
                     removeHighestPriorityLevel = (priority == listenersArray.length - 1);
                 } else {
-                    newListeners = new EventListener[listeners.length - 1];
+                    newListeners = allocateTArray(listeners.length - 1);
                     System.arraycopy(listeners, 0, newListeners, 0, index);
                     System.arraycopy(listeners, index + 1, newListeners, index,
                             newListeners.length - index);
                     removeHighestPriorityLevel = false;
                 }
                 
-                EventListener[][] newListenersArray;
+                
                 if (removeHighestPriorityLevel) {
-                    newListenersArray = new EventListener[listenersArray.length - 1][];
+                    T[][] newListenersArray = allocateTArrayArray(listenersArray.length - 1);
                     System.arraycopy(listenersArray, 0, newListenersArray, 0, newListenersArray.length);
+                    listenersArray = newListenersArray;
                 } else { // levels count stays the same
-                    newListenersArray = (EventListener[][])listenersArray.clone();
+                    @SuppressWarnings("unchecked")
+                    T[][] newListenersArray = (T[][])listenersArray.clone();
                     newListenersArray[priority] = newListeners;
+                    listenersArray = newListenersArray;
                 }
-
-                listenersArray = newListenersArray;
             }
         }
     }
@@ -142,20 +156,21 @@ public class PriorityListenerList implements Serializable {
      * <p>
      * The higher index means sooner firing. Listeners with the same priority
      * are ordered so that the one added sooner has higher index than the one
-     * added later. So the following firing mechanism should be used:<pre>
-     *
+     * added later. So the following firing mechanism should be used:
+     * </p>
+     * <pre>
      *  private void fireMyEvent(MyEvent evt) {
-     *    EventListener[][] listenersArray = priorityListenerList.getListenersArray();
-     *    for (int priority = listenersArray.length - 1; priority >= 0; priority--) {
-     *      EventListener[] listeners = listenersArray[priority];
-     *      for (int i = listeners.length - 1; i >= 0; i--) {
-     *        ((MyListener)listeners[i]).notify(evt);
-     *      }
-     *    } 
+     *      MyListener[][] listenersArray = priorityListenerList.getListenersArray();
+     *      for (int priority = listenersArray.length - 1; priority >= 0; priority--) {
+     *          MyListener[] listeners = listenersArray[priority];
+     *          for (int i = listeners.length - 1; i >= 0; i--) {
+     *              listeners[i].notify(evt);
+     *          }
+     *      } 
      *  }
      * </pre>
      */
-    public EventListener[][] getListenersArray() {
+    public T[][] getListenersArray() {
         return listenersArray;
     }
 
@@ -167,10 +182,11 @@ public class PriorityListenerList implements Serializable {
         int priority = listenersArray.length - 1; // max priority
         s.writeInt(priority); // write max priority
         for (; priority >= 0; priority--) {
-            EventListener[] listeners = listenersArray[priority];
+            T[] listeners = listenersArray[priority];
             // Write in opposite order of adding 
             for (int i = 0; i < listeners.length; i++) {
-                EventListener listener = listeners[i];
+                T listener = listeners[i];
+                // Save only the serializable listeners
                 if (listener instanceof Serializable) {
                     s.writeObject(listener);
                 }
@@ -182,21 +198,43 @@ public class PriorityListenerList implements Serializable {
     private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException {
         s.defaultReadObject();
-
         int priority = s.readInt();
         listenersArray = (priority != -1)
-            ? new EventListener[priority + 1][]
-            : EMPTY_LISTENER_ARRAY_ARRAY;
+            ? allocateTArrayArray(priority + 1)
+            : emptyTArrayArray();
 
         for (; priority >= 0; priority--) {
-            List listeners = new ArrayList();
-            EventListener listenerOrNull;
-            while (null != (listenerOrNull = (EventListener)s.readObject())) {
-                listeners.add(listenerOrNull);
+            List<T> lList = new ArrayList<T>();
+            Object listenerOrNull;
+            while (null != (listenerOrNull = s.readObject())) {
+                @SuppressWarnings("unchecked")
+                T l = (T)listenerOrNull;
+                lList.add(l);
             }
-            listenersArray[priority] = (EventListener[])listeners.toArray(
-                    new EventListener[listeners.size()]);
+            @SuppressWarnings("unchecked")
+            T[] lArr = (T[])lList.toArray(new EventListener[lList.size()]);
+            listenersArray[priority] = lArr;
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private T[] emptyTArray() {
+        return (T[])EMPTY_LISTENER_ARRAY;
+    }
+
+    @SuppressWarnings("unchecked")
+    private T[][] emptyTArrayArray() {
+        return (T[][])EMPTY_LISTENER_ARRAY_ARRAY;
+    }
+
+    @SuppressWarnings("unchecked")
+    private T[] allocateTArray(int length) {
+        return (T[])new EventListener[length];
+    }
+
+    @SuppressWarnings("unchecked")
+    private T[][] allocateTArrayArray(int length) {
+        return (T[][])new EventListener[length][];
     }
 
 }

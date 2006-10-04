@@ -29,12 +29,12 @@ import javax.swing.text.Position;
  * @since 1.6
  */
 
-public final class PositionComparator implements Comparator {
-
+public final class PositionComparator implements Comparator<Position> {
+    
     public static final PositionComparator INSTANCE = new PositionComparator();
 
-    public int compare(Object o1, Object o2) {
-        return ((Position)o1).getOffset() - ((Position)o2).getOffset();
+    public int compare(Position p1, Position p2) {
+        return p1.getOffset() - p2.getOffset();
     }
 
 }

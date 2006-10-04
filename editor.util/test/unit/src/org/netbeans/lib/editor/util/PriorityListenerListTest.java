@@ -35,7 +35,7 @@ import org.openide.util.io.NbMarshalledObject;
 
 
 /**
- * Random test of GapList correctness.
+ * Test of PriorityListenerList correctness.
  *
  * @author mmetelka
  */
@@ -76,7 +76,7 @@ public class PriorityListenerListTest extends NbTestCase {
     
     public void testNegativePriorities() {
         try {
-            PriorityListenerList ll = new PriorityListenerList();
+            PriorityListenerList<EventListener> ll = new PriorityListenerList<EventListener>();
             ll.add(new L(), -1);
             fail("Should not get here");
         } catch (IndexOutOfBoundsException e) {
@@ -84,7 +84,7 @@ public class PriorityListenerListTest extends NbTestCase {
         }
 
         try {
-            PriorityListenerList ll = new PriorityListenerList();
+            PriorityListenerList<EventListener> ll = new PriorityListenerList<EventListener>();
             ll.remove(new L(), -1);
             fail("Should not get here");
         } catch (IndexOutOfBoundsException e) {
@@ -93,7 +93,7 @@ public class PriorityListenerListTest extends NbTestCase {
     }
     
     public void testSerialization() throws Exception {
-        PriorityListenerList ll = new PriorityListenerList();
+        PriorityListenerList<EventListener> ll = new PriorityListenerList<EventListener>();
         ll.add(new L(), 3);
         ll.add(new L(), 1);
         ll.add(new L(), 1);
@@ -124,7 +124,7 @@ public class PriorityListenerListTest extends NbTestCase {
         
     }
 
-    private static final class PriorityListenerListImitation extends HashMap {
+    private static final class PriorityListenerListImitation extends HashMap<Integer,List<EventListener>> {
 
         public synchronized void add(EventListener listener, int priority) {
             assertTrue(priority >= 0);
@@ -134,7 +134,7 @@ public class PriorityListenerListTest extends NbTestCase {
         
         public synchronized void remove(EventListener listener, int priority) {
             assertTrue(priority >= 0);
-            List l = getList(priority, false);
+            List<EventListener> l = getList(priority, false);
             for (int i = l.size() - 1; i >= 0; i--) {
                 if (l.get(i) == listener) {
                     l.remove(i);
@@ -143,11 +143,11 @@ public class PriorityListenerListTest extends NbTestCase {
             }
         }
         
-        public synchronized List getList(int priority) {
+        public synchronized List<EventListener> getList(int priority) {
             return getList(priority, false);
         }
         
-        public synchronized void checkEquals(PriorityListenerList priorityListenerList) {
+        public synchronized void checkEquals(PriorityListenerList<EventListener> priorityListenerList) {
             // Check the same listeners are stored in imitation
             EventListener[][] listenersArray = priorityListenerList.getListenersArray();
             for (int priority = listenersArray.length - 1; priority >= 0; priority--) {
@@ -158,24 +158,21 @@ public class PriorityListenerListTest extends NbTestCase {
             }
             
             // Check there are no extra priorities in the imitation
-            for (Iterator it = entrySet().iterator(); it.hasNext();) {
-                Map.Entry entry = (Map.Entry)it.next();
-                Integer priorityInteger = (Integer)entry.getKey();
-                if (((List)entry.getValue()).size() > 0) {
-                    assertTrue (priorityInteger.intValue() < listenersArray.length);
+            for (Map.Entry<Integer,List<EventListener>> entry : entrySet()) {
+                if (entry.getValue().size() > 0) {
+                    assertTrue (entry.getKey() < listenersArray.length);
                 }
             }
         }
         
-        private List getList(int priority, boolean forceCreation) {
-            Integer priorityInteger = new Integer(priority);
-            List l = (List)get(priorityInteger);
+        private List<EventListener> getList(int priority, boolean forceCreation) {
+            List<EventListener> l = get(priority);
             if (l == null) {
                 if (forceCreation) {
-                    l = new ArrayList();
-                    put(priorityInteger, l);
+                    l = new ArrayList<EventListener>();
+                    put(priority, l);
                 } else { // just getting the value
-                    l = Collections.EMPTY_LIST;
+                    l = Collections.emptyList();
                 }
             }
             return l;
@@ -185,12 +182,12 @@ public class PriorityListenerListTest extends NbTestCase {
 
     private static final class PriorityListenerListCouple {
         
-        PriorityListenerList priorityListenerList;
+        PriorityListenerList<EventListener> priorityListenerList;
         
         PriorityListenerListImitation imitation;
         
         public PriorityListenerListCouple() {
-            priorityListenerList = new PriorityListenerList();
+            priorityListenerList = new PriorityListenerList<EventListener>();
             imitation = new PriorityListenerListImitation();
         }
         

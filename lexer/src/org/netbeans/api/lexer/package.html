@@ -1,0 +1,46 @@
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+  <head>
+    <title>org.netbeans.api.lexer</TITLE>
+  </head>
+  <body>
+    The entrance point into Lexer API is
+    {@link org.netbeans.api.lexer.TokenHierarchy} class with
+    its static methods that provide its instance for the given input source.
+    <br/>
+    {@link org.netbeans.api.lexer.TokenHierarchy#tokenSequence()}
+    allows to walk through the tokens that were created for the given input.
+    <br/>
+    {@link org.netbeans.api.lexer.Token} models a single token recognized in the input.
+    It carries a token identification {@link org.netbeans.api.lexer.TokenId} returned by
+    {@link org.netbeans.api.lexer.Token#id()}
+    and token text represented as {@link java.lang.CharSequence}
+    returned by {@link org.netbeans.api.lexer.Token#text()}.
+    <br/>
+    {@link org.netbeans.api.lexer.LanguageDescription} represents
+    all the token ids for a single language.
+    <br/>
+    Each token id may belong to one or more token categories that allow to better operate
+    tokens of the same type (e.g. keywords or operators).
+  </body>
+</html>
