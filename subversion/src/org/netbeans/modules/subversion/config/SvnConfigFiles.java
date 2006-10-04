@@ -62,16 +62,16 @@ public class SvnConfigFiles {
      * file used by the Subversion module */
     private Ini config = null;
 
-    private static final String UNIX_CONFIG_DIR = ".subversion/"; // NOI18N
-    private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"}; // NOI18N
-    private static final String GROUPS_SECTION = "groups"; // NOI18N
-    private String GLOBAL_SECTION = "global"; // NOI18N
+    private static final String UNIX_CONFIG_DIR = ".subversion/";                                                               // NOI18N
+    private static final String[] AUTH_FOLDERS = new String [] {"auth/svn.simple", "auth/svn.username", "auth/svn.username"};   // NOI18N
+    private static final String GROUPS_SECTION = "groups";                                                                      // NOI18N
+    private String GLOBAL_SECTION = "global";                                                                                   // NOI18N
     private static final String WINDOWS_USER_APPDATA = getAPPDATA();
-    private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Subversion"; // NOI18N
-    private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion"; // NOI18N
-    private static final List<String> DEFAULT_GLOBAL_IGNORES = parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");
+    private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Subversion";                                     // NOI18N
+    private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion";                                // NOI18N
+    private static final List<String> DEFAULT_GLOBAL_IGNORES = 
+            parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
     
-
     private interface IniFilePatcher {
         void patch(Ini file);
     }
@@ -85,11 +85,11 @@ public class SvnConfigFiles {
     private class ConfigIniFilePatcher implements IniFilePatcher {
         public void patch(Ini file) {
             // patch store-auth-creds to "no"
-            Ini.Section auth = (Ini.Section) file.get("auth"); // NOI18N
+            Ini.Section auth = (Ini.Section) file.get("auth");                  // NOI18N
             if(auth == null) {
-                auth = file.add("auth"); // NOI18N
+                auth = file.add("auth");                                        // NOI18N
             }
-            auth.put("store-auth-creds", "no"); // NOI18N
+            auth.put("store-auth-creds", "no");                                 // NOI18N
         }
     }
 
@@ -98,9 +98,9 @@ public class SvnConfigFiles {
      */
     private SvnConfigFiles() {      
         // copy config file        
-        config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher()); // NOI18N
+        config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher());    // NOI18N
         // get the nb servers file merged with the systems servers files
-        servers = loadNetbeansIniFile("servers"); // NOI18N
+        servers = loadNetbeansIniFile("servers");                                       // NOI18N
         
         // and store it so any commnand against the repository may use it
         storeServers();
@@ -129,7 +129,7 @@ public class SvnConfigFiles {
      *
      */
     public ProxyDescriptor getProxyDescriptor(String host) {
-        if(host == null || host.equals("")) { // NOI18N
+        if(host == null || host.equals("")) {                                   // NOI18N
             return ProxyDescriptor.DIRECT;
         }
         Ini.Section group = getServerGroup(host);
@@ -141,27 +141,27 @@ public class SvnConfigFiles {
                 return ProxyDescriptor.DIRECT;
             } else {
                 // check first if the host is in the exceptions section
-                String exceptions = group.get("http-proxy-exceptions"); // NOI18N
+                String exceptions = group.get("http-proxy-exceptions");         // NOI18N
                 if(match(exceptions, host)) {
                     // it's between the exceptions -> direct
                     return ProxyDescriptor.DIRECT;
                 } 
             }
         }
-        String proxyHost = group.get("http-proxy-host"); // NOI18N
+        String proxyHost = group.get("http-proxy-host");                        // NOI18N
         if(proxyHost == null || proxyHost.length() == 0) {
             // no host specified -> direct
             return ProxyDescriptor.DIRECT;
         }
-        String proxyPortString = group.get("http-proxy-port"); // NOI18N
+        String proxyPortString = group.get("http-proxy-port");                  // NOI18N
         int proxyPort;
         if(proxyPortString == null || proxyPortString.length() == 0) {
-            proxyPort = 0; // XXX
+            proxyPort = -1; 
         } else {
-            proxyPort = Integer.parseInt(proxyPortString); // XXX what if null ?
+            proxyPort = Integer.parseInt(proxyPortString); 
         }
-        String username = group.get("http-proxy-username"); // NOI18N
-        String password = group.get("http-proxy-password"); // NOI18N
+        String username = group.get("http-proxy-username");                     // NOI18N
+        String password = group.get("http-proxy-password");                     // NOI18N
         return new ProxyDescriptor(ProxyDescriptor.TYPE_HTTP, proxyHost, proxyPort, username, password);    
     }
 
@@ -183,8 +183,8 @@ public class SvnConfigFiles {
                     // check the global section
                     Ini.Section globalSection = servers.get(GLOBAL_SECTION);
                     if(globalSection != null) {
-                        String globalProxy = globalSection.get("http-proxy-host");  // NOI18N
-                        String globalPort = globalSection.get("http-proxy-port");   // NOI18N
+                        String globalProxy = globalSection.get("http-proxy-host");                      // NOI18N
+                        String globalPort = globalSection.get("http-proxy-port");                       // NOI18N
                         if( globalProxy != null && globalProxy.trim().equals(pd.getHost()) && 
                             globalPort != null && globalPort.trim().equals(Integer.toString(pd.getPort())) ) 
                         {
@@ -193,17 +193,17 @@ public class SvnConfigFiles {
                         } else {
                             // if there is a global section with a different proxy
                             // then check if the host isn't in its exceptions                            
-                            String[] hosts = globalSection.get("http-proxy-exceptions").split(",");    // NOI18N
+                            String[] hosts = globalSection.get("http-proxy-exceptions").split(",");     // NOI18N
                             StringBuffer newHosts = new StringBuffer();
                             for (int i = 0; i < hosts.length; i++) {
                                 if(!hosts[i].trim().equals(host)) {
                                     if(i > 0) {
-                                        newHosts.append(",");                       // NOI18N
+                                        newHosts.append(",");                                           // NOI18N
                                     }                                    
                                     newHosts.append(hosts[i]);
                                 }
                             }
-                            globalSection.put("http-proxy-exceptions", newHosts.toString());                             // NOI18N
+                            globalSection.put("http-proxy-exceptions", newHosts.toString());            // NOI18N
                         }
                     }
                     
@@ -217,7 +217,7 @@ public class SvnConfigFiles {
                     String groupsHosts = serverGroups.get(groupName);
                     if(!match(groupsHosts, host)) {
                         // host not in the group yet -> add it
-                        serverGroups.put(groupName, groupsHosts + "," + host); // NOI18N
+                        serverGroups.put(groupName, groupsHosts + "," + host);              // NOI18N
                     }        
                 }
             } else {
@@ -231,7 +231,7 @@ public class SvnConfigFiles {
             // and if there is a global section then set this as an exception
             Ini.Section group = servers.get(GLOBAL_SECTION);
             if(group != null) {
-                String exceptions = group.get("http-proxy-exceptions"); // NOI18N
+                String exceptions = group.get("http-proxy-exceptions");                     // NOI18N
                 if(!match(exceptions, host)) {
                     exceptions = exceptions.trim().length() > 0 ? exceptions + ", " + host : host;
                     group.put("http-proxy-exceptions", exceptions);
@@ -244,7 +244,7 @@ public class SvnConfigFiles {
     
     private void storeServers() {
         try {
-            File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/servers")); // NOI18N
+            File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/servers"));   // NOI18N
             file.getParentFile().mkdirs();
             servers.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
@@ -254,13 +254,13 @@ public class SvnConfigFiles {
     
     private void setProxy(final Ini.Section group, final ProxyDescriptor pd) {
 
-        group.put("http-proxy-host", pd.getHost()); // NOI18N
-        group.put("http-proxy-port", String.valueOf(pd.getPort())); // NOI18N
+        group.put("http-proxy-host", pd.getHost());                                         // NOI18N
+        group.put("http-proxy-port", String.valueOf(pd.getPort()));                         // NOI18N
         if(pd.getUserName()!=null) {
-            group.put("http-proxy-username", pd.getUserName()); // NOI18N
+            group.put("http-proxy-username", pd.getUserName());                             // NOI18N
         }
         if(pd.getPassword()!=null) {
-            group.put("http-proxy-password", pd.getPassword()); // NOI18N
+            group.put("http-proxy-password", pd.getPassword());                             // NOI18N
         }
     }
 
@@ -271,9 +271,9 @@ public class SvnConfigFiles {
      *
      */
     public List<String> getGlobalIgnores() {
-        Ini.Section miscellany = config.get("miscellany"); // NOI18N
+        Ini.Section miscellany = config.get("miscellany");                      // NOI18N
         if (miscellany != null) {
-            String ignores = miscellany.get("global-ignores"); // NOI18N
+            String ignores = miscellany.get("global-ignores");                  // NOI18N
             if (ignores != null && ignores.trim().length() > 0) {
                 return parseGlobalIgnores(ignores);
             }
@@ -282,11 +282,11 @@ public class SvnConfigFiles {
     }
 
     private static List<String> parseGlobalIgnores(String ignores) {
-        StringTokenizer st = new StringTokenizer(ignores, " "); // XXX what if the space is a part of a pattern? // NOI18N
+        StringTokenizer st = new StringTokenizer(ignores, " ");                 // NOI18N
         List<String> ret = new ArrayList<String>(10);
         while (st.hasMoreTokens()) {
             String entry = st.nextToken();
-            if (!entry.equals("")) // NOI18N
+            if (!entry.equals(""))                                              // NOI18N
                 ret.add(entry);
         }
         return ret;
@@ -301,14 +301,12 @@ public class SvnConfigFiles {
      */ 
     public static String getUserConfigPath() {        
         if(Utilities.isUnix()) {
-            String path = System.getProperty("user.home") ; // NOI18N
-            return path + "/" + UNIX_CONFIG_DIR; // NOI18N
+            String path = System.getProperty("user.home") ;                     // NOI18N
+            return path + "/" + UNIX_CONFIG_DIR;                                // NOI18N
         } else if (Utilities.isWindows()){
             return WINDOWS_CONFIG_DIR;
-        } else {
-            // XXX Mac (e.g. mkleint)
-        }
-        return ""; // NOI18N
+        } 
+        return "";                                                              // NOI18N
     }
 
     /**
@@ -319,8 +317,8 @@ public class SvnConfigFiles {
      *
      */ 
     public static String getNBConfigPath() {
-        String nbHome = System.getProperty("netbeans.user"); // NOI18N
-        return nbHome + "/config/svn/config/"; // NOI18N
+        String nbHome = System.getProperty("netbeans.user");                    // NOI18N
+        return nbHome + "/config/svn/config/";                                  // NOI18N
     }
     
     /** 
@@ -334,10 +332,10 @@ public class SvnConfigFiles {
     private Ini.Section addServerGroup(String host) {
         Ini.Section groups = getServerGroups(true);
         int idx = 0;
-        String name = "group0"; // NOI18N
+        String name = "group0";                                                 // NOI18N
         while(groups.get(name)!=null) {
             idx++;
-            name = "group" + idx; // NOI18N
+            name = "group" + idx;                                               // NOI18N
         }
         
         Ini.Section group = servers.add(name);
@@ -360,7 +358,7 @@ public class SvnConfigFiles {
             if(serverGroups == null) {
                 return;
             }
-            String[] hosts = serverGroups.get(groupName).split(",");    // NOI18N
+            String[] hosts = serverGroups.get(groupName).split(",");            // NOI18N
             if(hosts.length == 1) {
                 serverGroups.remove(groupName);
                 servers.remove(group);
@@ -369,7 +367,7 @@ public class SvnConfigFiles {
                 for (int i = 0; i < hosts.length; i++) {
                     if(!hosts[i].trim().equals(host)) {
                         if(i > 0) {
-                            newHosts.append(",");                       // NOI18N
+                            newHosts.append(",");                               // NOI18N
                         }                        
                         newHosts.append(hosts[i]);                        
                     }
@@ -387,7 +385,7 @@ public class SvnConfigFiles {
     private Ini.Section getServerGroups(boolean create) {
         Ini.Section groups = servers.get(GROUPS_SECTION);
         if(groups==null) {
-            groups = servers.add(GROUPS_SECTION);                             // NOI18N
+            groups = servers.add(GROUPS_SECTION);                               // NOI18N
         }
         return groups;
     }
@@ -400,7 +398,7 @@ public class SvnConfigFiles {
      * @return the section holding the proxy settings for the given host
      */ 
     private Ini.Section getServerGroup(String host) {
-        if(host == null || host.equals("")) {                           // NOI18N
+        if(host == null || host.equals("")) {                                   // NOI18N
             return null;
         }
         Ini.Section groups = getServerGroups(false);
@@ -431,10 +429,10 @@ public class SvnConfigFiles {
                 
                 continue;
             }
-            if( pd.getHost().equals(group.get("http-proxy-host")) && // NOI18N
-                String.valueOf(pd.getPort()).equals(group.get("http-proxy-port")) && // NOI18N
-                (pd.getUserName()==null || pd.getUserName().equals(group.get("http-proxy-username")))  && // NOI18N
-                (pd.getPassword()==null || pd.getPassword().equals(group.get("http-proxy-password"))) ) // NOI18N
+            if( pd.getHost().equals(group.get("http-proxy-host")) &&                                        // NOI18N
+                String.valueOf(pd.getPort()).equals(group.get("http-proxy-port")) &&                        // NOI18N
+                (pd.getUserName()==null || pd.getUserName().equals(group.get("http-proxy-username")))  &&   // NOI18N
+                (pd.getPassword()==null || pd.getPassword().equals(group.get("http-proxy-password"))) )     // NOI18N
             {
                 return group;
             }
@@ -451,15 +449,15 @@ public class SvnConfigFiles {
      * @return true if the host name or IP address was found in the values String, otherwise false.
      */
     private boolean match(String value, String host) {
-        String[] values = value.split(","); // NOI18N
+        String[] values = value.split(",");                                     // NOI18N
         for (int i = 0; i < values.length; i++) {
             value = values[i].trim();
 
-            if(value.equals("*") || value.equals(host) ) { // NOI18N
+            if(value.equals("*") || value.equals(host) ) {                      // NOI18N
                 return true;
             }
 
-            int idx = value.indexOf("*"); // NOI18N
+            int idx = value.indexOf("*");                                       // NOI18N
             if(idx > -1 && matchSegments(value, host) ) {
                 return true;
             }
@@ -476,17 +474,17 @@ public class SvnConfigFiles {
      * @return true if the host name or IP address matches with the values String, otherwise false.
      */
     private boolean matchSegments(String value, String host) {
-        String[] valueSegments = value.split("."); // NOI18N
-        String[] hostSegments = host.split("."); // NOI18N
+        String[] valueSegments = value.split(".");                              // NOI18N
+        String[] hostSegments = host.split(".");                                // NOI18N
 
         int idx = 0;
         for (int i = 0; i < hostSegments.length; i++) {
-            if( !valueSegments[idx].equals("*") && // NOI18N
+            if( !valueSegments[idx].equals("*") &&                              // NOI18N
                 !valueSegments[idx].equals(hostSegments[i]) )
             {
                 return false;
             }
-            if( !valueSegments[idx].equals("*") ) { // NOI18N
+            if( !valueSegments[idx].equals("*") ) {                             // NOI18N
                 idx++;
             }
         }
@@ -556,7 +554,7 @@ public class SvnConfigFiles {
      */       
     private Ini loadSystemIniFile(String fileName) {
         // config files from userdir
-        String filePath = getUserConfigPath() + "/" + fileName; // NOI18N
+        String filePath = getUserConfigPath() + "/" + fileName;                         // NOI18N
         File file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
         try {            
@@ -570,12 +568,12 @@ public class SvnConfigFiles {
         String registryFileName = null;
         if(Utilities.isWindows()) {
             registryFileName = fileName.substring(0, 1).toUpperCase() + fileName.substring(1);
-            mergeFromRegistry("HKEY_LOCAL_MACHINE", registryFileName, system); // NOI18N
+            mergeFromRegistry("HKEY_LOCAL_MACHINE", registryFileName, system);          // NOI18N
         }
 
         Ini global = null;      
         try {
-            global = new Ini(new FileReader(getGlobalConfigPath() + "/" + fileName)); // NOI18N
+            global = new Ini(new FileReader(getGlobalConfigPath() + "/" + fileName));   // NOI18N
         } catch (FileNotFoundException ex) {
             // just doesn't exist - ignore
         } catch (IOException ex) {
@@ -587,7 +585,7 @@ public class SvnConfigFiles {
         }
         
         if(Utilities.isWindows()) {
-            mergeFromRegistry("HKEY_CURRENT_USER", registryFileName, system); // NOI18N
+            mergeFromRegistry("HKEY_CURRENT_USER", registryFileName, system);           // NOI18N
         }
 
         if(system.size() < 1) {
@@ -710,13 +708,11 @@ public class SvnConfigFiles {
      */
     private static String getGlobalConfigPath () {
         if(Utilities.isUnix()) {
-            return "/etc/subversion"; // NOI18N
+            return "/etc/subversion";               // NOI18N
         } else if (Utilities.isWindows()){
-            // XXX
-        } else {
-            // XXX
-        }
-        return ""; // NOI18N
+            return WINDOWS_GLOBAL_CONFIG_DIR;
+        } 
+        return "";                                  // NOI18N
     }
 
     /**
@@ -757,7 +753,7 @@ public class SvnConfigFiles {
             return;
         }
 
-        key = "[" + key + "\\";     // for parsing purposes // NOI18N
+        key = "[" + key + "\\";     // for parsing purposes                                                  // NOI18N
         BufferedInputStream is = null;        
         BufferedReader br = null;
         try {
@@ -826,30 +822,30 @@ public class SvnConfigFiles {
      */
     private static String getGlobalAPPDATA() {
         if(Utilities.isWindows()) {
-            String globalProfile = System.getProperty("Env-ALLUSERSPROFILE"); // should work on XP // NOI18N
-            if(globalProfile == null || globalProfile.trim().equals("")) { // NOI18N
-                globalProfile = getWindowsProperty("ALLUSERSPROFILE"); // NOI18N
+            String globalProfile = System.getProperty("Env-ALLUSERSPROFILE"); // should work on XP  // NOI18N
+            if(globalProfile == null || globalProfile.trim().equals("")) {                          // NOI18N
+                globalProfile = getWindowsProperty("ALLUSERSPROFILE");                              // NOI18N
             }
             String appdataPath = WINDOWS_USER_APPDATA;
-            if(appdataPath == null || appdataPath.equals("")) { // NOI18N
-                return ""; // NOI18N
+            if(appdataPath == null || appdataPath.equals("")) {                                     // NOI18N
+                return "";                                                                          // NOI18N
             }
-            String appdata = ""; // NOI18N
-            int idx = appdataPath.lastIndexOf("\\"); // NOI18N
+            String appdata = "";                                                                    // NOI18N
+            int idx = appdataPath.lastIndexOf("\\");                                                // NOI18N
             if(idx > -1) {
                 appdata = appdataPath.substring(idx + 1);
-                if(appdata.trim().equals("")) { // NOI18N
-                    int previdx = appdataPath.lastIndexOf("\\", idx); // NOI18N
+                if(appdata.trim().equals("")) {                                                     // NOI18N
+                    int previdx = appdataPath.lastIndexOf("\\", idx);                               // NOI18N
                     if(idx > -1) {
                         appdata = appdataPath.substring(previdx + 1, idx);
                     }
                 }
             } else {
-                return ""; // NOI18N
+                return "";                                                                          // NOI18N
             }
-            return globalProfile + "/" + appdata; // NOI18N
+            return globalProfile + "/" + appdata;                                                   // NOI18N
         }
-        return ""; // NOI18N
+        return "";                                                                                  // NOI18N
     }
     
     /**
@@ -860,7 +856,7 @@ public class SvnConfigFiles {
         Properties propVals = new Properties();
         Runtime r = Runtime.getRuntime();
         try {
-            p = r.exec("cmd /C set"); // NOI18N
+            p = r.exec("cmd /C set");                                                               // NOI18N
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String line;
             while((line = br.readLine()) != null) {
@@ -873,7 +869,7 @@ public class SvnConfigFiles {
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e); 
         } 
-        return ""; // NOI18N
+        return "";                                                                                  // NOI18N
     }
     
     private class StreamHandler extends Thread {
