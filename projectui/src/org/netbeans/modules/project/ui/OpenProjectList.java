@@ -408,7 +408,7 @@ public final class OpenProjectList {
     
     public void setMainProject( Project mainProject ) {
         synchronized ( this ) {
-            if (!openProjects.contains(mainProject)) {
+            if (mainProject != null && !openProjects.contains(mainProject)) {
                 throw new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
             }
         
