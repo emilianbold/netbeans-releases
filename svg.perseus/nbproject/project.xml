@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.svg.perseus</code-name-base>
+            <suite-component/>
+            <module-dependencies/>
+            <public-packages>
+                <package>com.sun.perseus.awt</package>
+                <package>com.sun.perseus.builder</package>
+                <package>com.sun.perseus.j2d</package>
+                <package>com.sun.perseus.model</package>
+                <package>com.sun.perseus.parser</package>
+                <package>com.sun.perseus.platform</package>
+                <package>com.sun.perseus.util</package>
+                <package>com.sun.pisces</package>
+                <package>javax.microedition.m2g</package>
+                <package>org.w3c.dom</package>
+                <package>org.w3c.dom.events</package>
+                <package>org.w3c.dom.svg</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/perseus-nb.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/perseus-nb.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

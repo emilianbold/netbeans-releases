@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<filesystem>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+	    <file name="nb_svg_midp.xml" url="nb_svg_midp.xml"/>
+        </folder>
+    </folder>
+    
+    <folder name="MVD">
+        <folder name="Components">
+            <file name="SvgImageDCI.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.vmd.components.svg.SvgImageDCI"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.vmd.components.svg.SvgImageDCI.getSvgImageDCI"/>
+            </file>
+            <file name="SvgAnimatorWrapperDCI.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.vmd.components.svg.SvgAnimatorWrapperDCI"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.vmd.components.svg.SvgAnimatorWrapperDCI.getSvgAnimatorWrapperDCI"/>
+            </file>
+            
+            <file name="SvgMenuSelectCommandActionDCI.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.vmd.components.svg.SvgMenuSelectCommandActionDCI"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.vmd.components.svg.SvgMenuSelectCommandActionDCI.getSvgMenuSelectCommandActionDCI"/>
+            </file>            
+            <file name="SvgMenuSelectCaseCommandActionDCI.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.vmd.components.svg.SvgMenuSelectCaseCommandActionDCI"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.vmd.components.svg.SvgMenuSelectCaseCommandActionDCI.getSvgMenuSelectCaseCommandActionDCI"/>
+            </file>             
+             <file name="SvgMenuDCI.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.vmd.components.svg.SvgMenuDCI"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.vmd.components.svg.SvgMenuDCI.getSvgMenuDCI"/>
+            </file>
+            <file name="SvgMenuElementDCI.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.vmd.components.svg.SvgMenuElementDCI"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.vmd.components.svg.SvgMenuElementDCI.getSvgMenuElementDCI"/>
+            </file> 
+            <file name="SvgWaitScreenDCI.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.vmd.components.svg.SvgWaitScreenDCI"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.vmd.components.svg.SvgWaitScreenDCI.getSvgWaitScreenDCI"/>
+            </file>             
+            <file name="SvgSplashScreenDCI.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.vmd.components.svg.SvgSplashScreenDCI"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.vmd.components.svg.SvgSplashScreenDCI.getSvgSplashScreenDCI"/>
+            </file>             
+            
+        </folder>
+
+        <folder name="Palette">
+            <attr name="Resources/SVG" boolvalue="true"/>
+            <folder name="SVG">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.components.svg.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/vmd/components/svg/resources/category_svg_16.png "/>
+                <file name="SvgImageDCI.shadow">
+                    <attr name="originalFile" stringvalue="MVD/Components/SvgImageDCI.instance"/>
+                    <attr name="isReadOnly" boolvalue="true"/>
+                </file>
+                <file name="SvgAnimatorWrapperDCI.shadow">
+                    <attr name="originalFile" stringvalue="MVD/Components/SvgAnimatorWrapperDCI.instance"/>
+                    <attr name="isReadOnly" boolvalue="true"/>
+                </file>	
+                <file name="SvgMenuDCI.shadow">
+                    <attr name="originalFile" stringvalue="MVD/Components/SvgMenuDCI.instance"/>
+                    <attr name="isReadOnly" boolvalue="true"/>
+                </file>	
+                <file name="SvgMenuElementDCI.shadow">
+                    <attr name="originalFile" stringvalue="MVD/Components/SvgMenuElementDCI.instance"/>
+                    <attr name="isReadOnly" boolvalue="true"/>
+                </file>		
+                <file name="SvgWaitScreenDCI.shadow">
+                    <attr name="originalFile" stringvalue="MVD/Components/SvgWaitScreenDCI.instance"/>
+                    <attr name="isReadOnly" boolvalue="true"/>
+                </file> 
+                <file name="SvgSplashScreenDCI.shadow">
+                    <attr name="originalFile" stringvalue="MVD/Components/SvgSplashScreenDCI.instance"/>
+                    <attr name="isReadOnly" boolvalue="true"/>
+                </file>                 
+            </folder>	
+        </folder>
+    </folder>
+    
+</filesystem>
+
