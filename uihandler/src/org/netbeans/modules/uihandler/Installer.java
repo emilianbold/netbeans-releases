@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -164,7 +163,9 @@ public class Installer extends ModuleInstall {
             String uri = NbBundle.getMessage(SubmitPanel.class, msg);
             if (uri != null && uri.length() > 0) {
                 url = new URL(uri); // NOI18N
-                InputStream is = url.openStream();
+                URLConnection conn = url.openConnection();
+                conn.setReadTimeout(2000);
+                InputStream is = conn.getInputStream();
                 Object[] newB = parseButtons(is, exitMsg);
                 if (newB != null) {
                     buttons = newB;
@@ -282,7 +283,8 @@ public class Installer extends ModuleInstall {
 
     static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs) throws IOException {
         URLConnection conn = postURL.openConnection();
-        
+    
+        conn.setReadTimeout(10000);
         conn.setDoOutput(true);
         conn.setDoInput(true);
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");
