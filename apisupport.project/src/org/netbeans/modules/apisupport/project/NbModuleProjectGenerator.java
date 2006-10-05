@@ -149,7 +149,7 @@ public class NbModuleProjectGenerator {
                     }
                     FileObject relDirFo = FileUtil.toFileObject(releaseDir);
                     for (int i = 0; i < jars.length; i++) {
-                        FileObject orig = FileUtil.toFileObject(jars[i]);
+                        FileObject orig = FileUtil.toFileObject(FileUtil.normalizeFile(jars[i]));
                         if (orig != null) {
                             JarFile jf = null;
                             try {
