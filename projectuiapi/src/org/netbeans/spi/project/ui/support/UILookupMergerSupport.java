@@ -59,23 +59,23 @@ public final class UILookupMergerSupport {
         return new PrivilegedMerger();
     }
     
-    private static class PrivilegedMerger implements LookupMerger {
-        public Class getMergeableClass() {
+    private static class PrivilegedMerger implements LookupMerger<PrivilegedTemplates> {
+        public Class<PrivilegedTemplates> getMergeableClass() {
             return PrivilegedTemplates.class;
         }
 
-        public Object merge(Lookup lookup) {
+        public PrivilegedTemplates merge(Lookup lookup) {
             return new PrivilegedTemplatesImpl(lookup);
         }
     }
     
-    private static class RecommendedMerger implements LookupMerger {
+    private static class RecommendedMerger implements LookupMerger<RecommendedTemplates> {
         
-        public Class getMergeableClass() {
+        public Class<RecommendedTemplates> getMergeableClass() {
             return RecommendedTemplates.class;
         }
 
-        public Object merge(Lookup lookup) {
+        public RecommendedTemplates merge(Lookup lookup) {
             return new RecommendedTemplatesImpl(lookup);
         }
     }

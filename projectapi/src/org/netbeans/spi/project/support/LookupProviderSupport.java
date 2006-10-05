@@ -152,7 +152,7 @@ public final class LookupProviderSupport {
                     newLookups.add(newone);
                 }
             }
-            old = (List<LookupProvider>) providers;
+            old = new ArrayList<LookupProvider>(providers);
             currentLookups = newLookups;
             newLookups.add(baseLookup);
             Lookup lkp = new ProxyLookup(newLookups.toArray(new Lookup[newLookups.size()]));
@@ -191,14 +191,14 @@ public final class LookupProviderSupport {
     }
     
     
-    private static class SourcesMerger implements LookupMerger {
+    private static class SourcesMerger implements LookupMerger<Sources> {
         private SourcesImpl merger;
         
-        public Class getMergeableClass() {
+        public Class<Sources> getMergeableClass() {
             return Sources.class;
         }
 
-        public Object merge(Lookup lookup) {
+        public Sources merge(Lookup lookup) {
             if (merger == null) {
                 merger = new SourcesImpl();
             } 
@@ -225,7 +225,7 @@ public final class LookupProviderSupport {
             if (delegates != null) {
                 delegates.removeLookupListener(this);
             }
-            Lookup.Result<Sources> srcs = lookup.lookup(new Lookup.Template(Sources.class));
+            Lookup.Result<Sources> srcs = lookup.lookupResult(Sources.class);
             for (Sources ns : srcs.allInstances()) {
                 ns.addChangeListener(this);
                 currentDelegates.add(ns);

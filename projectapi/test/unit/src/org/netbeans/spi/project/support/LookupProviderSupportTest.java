@@ -227,15 +227,15 @@ public class LookupProviderSupportTest extends NbTestCase {
         }
     }
     
-    private class LookupMergerImpl implements LookupMerger {
+    private class LookupMergerImpl implements LookupMerger<JButton> {
         
         int expectedCount;
         
-        public Class getMergeableClass() {
+        public Class<JButton> getMergeableClass() {
             return JButton.class;
         }
 
-        public Object merge(Lookup lookup) {
+        public JButton merge(Lookup lookup) {
             Lookup.Result res = lookup.lookup(new Lookup.Template(JButton.class));
             int size = res.allInstances().size();
             expectedCount = size;
