@@ -24,7 +24,8 @@ import java.util.*;
 import java.beans.*;
 import javax.swing.*;
 import java.awt.event.*;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -55,7 +56,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     
     private boolean                 doNotRefresh = false;
     /** List of cathegories. */
-    private HashSet                 cathegories = new HashSet ();
+    private Set                     cathegories = new TreeSet ();
     /** Types in currently selected cathegory. */
     private ArrayList               types = new ArrayList ();
     /** Currently selected type. */
@@ -80,17 +81,16 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
             (null, BreakpointType.class);
         int i, k = breakpointTypes.size ();
         String def = null;
-        cbCathegory = new javax.swing.JComboBox ();
         for (i = 0; i < k; i++) {
             BreakpointType bt = (BreakpointType) breakpointTypes.get (i);
             String dn = bt.getCategoryDisplayName ();
             if (!cathegories.contains (dn)) {
                 cathegories.add (dn);
-                cbCathegory.addItem (dn);
             }
             if (bt.isDefault ())
                 def = dn;
         }
+        cbCathegory = new javax.swing.JComboBox(cathegories.toArray());
         
         initComponents ();
         if (def != null) {
