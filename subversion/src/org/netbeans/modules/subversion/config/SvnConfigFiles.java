@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -142,10 +141,13 @@ public class SvnConfigFiles {
             } else {
                 // check first if the host is in the exceptions section
                 String exceptions = group.get("http-proxy-exceptions");         // NOI18N
-                if(match(exceptions, host)) {
-                    // it's between the exceptions -> direct
-                    return ProxyDescriptor.DIRECT;
-                } 
+                if(exceptions != null) {
+                    exceptions = exceptions.trim();
+                    if(!exceptions.equals("") && match(exceptions, host)) {
+                        // it's between the exceptions -> direct
+                        return ProxyDescriptor.DIRECT;
+                    } 
+                }
             }
         }
         String proxyHost = group.get("http-proxy-host");                        // NOI18N
@@ -175,6 +177,8 @@ public class SvnConfigFiles {
      */
     public void setProxy(ProxyDescriptor pd, String host) {
 
+        assert host != null : "can't do anything for a null host";
+        
         if(pd != null && pd.getHost() != null) {
             Ini.Section group = getServerGroup(host);
             if(group==null) {
@@ -448,7 +452,7 @@ public class SvnConfigFiles {
      * @param host the hostname or IP address
      * @return true if the host name or IP address was found in the values String, otherwise false.
      */
-    private boolean match(String value, String host) {
+    private boolean match(String value, String host) {                    
         String[] values = value.split(",");                                     // NOI18N
         for (int i = 0; i < values.length; i++) {
             value = values[i].trim();
