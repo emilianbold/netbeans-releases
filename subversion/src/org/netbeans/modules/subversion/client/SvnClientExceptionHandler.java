@@ -100,12 +100,14 @@ class SvnClientExceptionHandler extends ExceptionHandler {
     
     public boolean handleException() throws Exception {
         int exceptionMask = getExceptionMask();
-        if( (handledExceptions & exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) {
-            return handleRepositoryConnectError(false);
-        } if( (handledExceptions & exceptionMask & EX_NO_CERTIFICATE) == exceptionMask) {                        
-            return handleNoCertificateError();
-        } if( (handledExceptions &  exceptionMask & EX_AUTHENTICATION) == exceptionMask) {
-            return handleRepositoryConnectError(false);
+        if(exceptionMask != EX_UNKNOWN) {
+            if( (handledExceptions & exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) {
+                return handleRepositoryConnectError(false);
+            } if( (handledExceptions & exceptionMask & EX_NO_CERTIFICATE) == exceptionMask) {                        
+                return handleNoCertificateError();
+            } if( (handledExceptions &  exceptionMask & EX_AUTHENTICATION) == exceptionMask) {
+                return handleRepositoryConnectError(false);
+            }
         }
         throw getException();
     }
