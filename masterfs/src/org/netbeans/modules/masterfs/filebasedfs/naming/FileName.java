@@ -61,7 +61,10 @@ public class FileName implements FileNaming {
             }
             if (retVal) {
                 this.name = name;
-                id = NamingFactory.createID(newFile);
+                Integer iid = NamingFactory.createID(newFile);                               
+                if (!iid.equals(id)) {
+                    id = iid;                  
+                }
             }
         }
         FolderName.freeCaches();
