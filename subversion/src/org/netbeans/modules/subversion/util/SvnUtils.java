@@ -379,22 +379,6 @@ public class SvnUtils {
             if (info != null && info.getUrl() != null) {
                 SVNUrl fileURL = info.getUrl();
                 repositoryURL = info.getRepository();
-                if (repositoryURL == null) {
-                    int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();
-                    if ((status & FileInformation.STATUS_VERSIONED) != 0) {
-                        // checked out with 1.2 client
-                        // XXX - IMPORTANT! this hack won't work if you get the client by
-                        //       calling the getClient() method and you are connecting through a PROXY
-                        //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url
-                        try {
-                            repositoryURL = client.getInfo(fileURL).getRepository();
-                        } catch (SVNClientException ex) {
-                            if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                            }
-                        }
-                    }
-                }
 
                 if (fileURL != null && repositoryURL !=  null) {
                     String fileLink = fileURL.toString();
@@ -499,24 +483,6 @@ public class SvnUtils {
             if (info != null && info.getUrl() != null) {
                 SVNUrl fileURL = info.getUrl();
                 repositoryURL = info.getRepository();
-                if (repositoryURL == null) {
-                    int status = Subversion.getInstance().getStatusCache().getStatus(file).getStatus();
-                    if ((status & FileInformation.STATUS_VERSIONED) != 0) {
-                        // checked out with 1.2 client
-                        // XXX - IMPORTANT! this hack won't work if you get the client by
-                        //       calling the getClient() method and you are connecting through a PROXY
-                        //     - use getClient(SVNUrl, *) to obtain a client properly configured for the given url
-                        //       -
-                        try {
-                            repositoryURL = client.getInfo(fileURL).getRepository();
-                        } catch (SVNClientException ex) {
-                            if (ExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                            }
-                        }
-                    }
-                }
-
                 if (repositoryURL != null) {
                     break;
                 }
