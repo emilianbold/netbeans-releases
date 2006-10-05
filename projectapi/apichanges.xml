@@ -81,6 +81,26 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="lookup-provider">
+            <api name="general"/>
+            <summary>Added support for composing project's lookup from multiple sources.</summary>
+            <version major="1" minor="12"/>
+            <date day="5" month="10" year="2006"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible">
+            </compatibility>
+            <description>
+	        <p>
+                    Added interfaces and support classes that can be used to compose the project's lookup
+                    from multiple 3rd party sources. Framework for creating merged instances included. 
+                    <code>LookupMerger</code> implementation for<code>Sources</code> added.
+		</p>
+            </description>
+            <class package="org.netbeans.spi.project" name="LookupProvider"/>
+            <class package="org.netbeans.spi.project" name="LookupMerger"/>
+            <class package="org.netbeans.spi.project.support" name="LookupProviderSupport"/>
+            <issue number="83343"/>
+        </change>
         
         <change id="ProjectConfigurationProvider">
             <api name="general"/>
