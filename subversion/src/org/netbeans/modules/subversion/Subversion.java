@@ -343,8 +343,7 @@ public class Subversion {
             if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
                 try {
                     SvnClient client = getClient(false);
-
-                    // XXX property can contain shell patterns (almost identical to RegExp)
+                    
                     List<String> patterns = client.getIgnoredPatterns(parent);
                     List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
                     for (Iterator<String> it = gignores.iterator();
@@ -353,13 +352,14 @@ public class Subversion {
 
                     for (Iterator<String> i = patterns.iterator(); i.hasNext();) {
                         try {
+                            // property may contain shell patterns (almost identical to RegExp)
                             String patternString = regExpToFilePatterns(i.next());                            
                             Pattern pattern =  Pattern.compile(patternString);
                             if (pattern.matcher(name).matches()) {
                                 return true;
                             }
                         } catch (PatternSyntaxException e) {
-                            // XXX it's difference between shell and regexp
+                            // it's difference between shell and regexp
                             // or user error (set invalid property), rethrow?
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                         }

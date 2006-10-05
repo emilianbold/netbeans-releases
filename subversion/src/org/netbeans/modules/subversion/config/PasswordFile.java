@@ -72,7 +72,8 @@ public class PasswordFile extends SVNCredentialFile {
                 if(passwordFile.acceptSvnUrl(svnUrl) &&
                    passwordFile.getPasstype().equals(PASSTYPE_SIMPLE)) // windows likes to use wincryp, but we can accept only plain text
                 {
-                    // XXX overwrites the value given by svn with our own -> could potentialy cause a conflict
+                    // overwrites the value given by svn with our own, but there is no chance to get 
+                    // the realm string as svn does.
                     passwordFile.setRealmString(realmString); 
                     return passwordFile;
                 }

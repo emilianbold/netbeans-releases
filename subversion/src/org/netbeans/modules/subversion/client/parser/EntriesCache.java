@@ -155,7 +155,6 @@ public class EntriesCache {
                         attributes.put(entry.getKey(), entry.getValue());                        
                     }            
                 }           
-                // XXX there was an issue that a not existing directory returned false for isDeleted!
                 // it's realy a file
                 attributes.put(WorkingCopyDetails.IS_HANDLED, "" + (ea.containsKey(fileName) && ea.get("deleted") == null));        // NOI18N
             }                                    
