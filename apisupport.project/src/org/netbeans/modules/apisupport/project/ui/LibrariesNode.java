@@ -29,13 +29,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.AbstractAction;
@@ -62,6 +56,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.actions.DeleteAction;
 import org.openide.actions.FindAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -80,6 +75,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -161,9 +157,6 @@ final class LibrariesNode extends AbstractNode {
         
         private static final String LIBRARIES_ICON =
                 "org/netbeans/modules/apisupport/project/ui/resources/libraries.gif"; // NOI18N
-        
-        static final Action OPEN_PROJECT_ACTION = new OpenProjectAction();
-        static final Action REMOVE_DEPENDENCY_ACTION = new RemoveDependencyAction();
         
         private final NbModuleProject project;
         
@@ -287,7 +280,6 @@ final class LibrariesNode extends AbstractNode {
         
         private final ModuleDependency dep;
         private final NbModuleProject project;
-        private Action[] actions;
         
         ProjectDependencyNode(final ModuleDependency dep, final NbModuleProject project) {
             super(Children.LEAF, Lookups.fixed(new Object[] { dep, project }));
@@ -300,19 +292,24 @@ final class LibrariesNode extends AbstractNode {
         }
         
         public Action[] getActions(boolean context) {
-            if (actions == null) {
-                Set result = new LinkedHashSet();
-                result.add(LibrariesChildren.OPEN_PROJECT_ACTION);
-                result.add(new EditDependencyAction(dep, project));
-                result.add(new ShowJavadocAction(dep, project));
-                result.add(LibrariesChildren.REMOVE_DEPENDENCY_ACTION);
-                actions = (Action[]) result.toArray(new Action[result.size()]);
-            }
-            return actions;
+            return new Action[] {
+                SystemAction.get(OpenProjectAction.class),
+                new EditDependencyAction(dep, project),
+                new ShowJavadocAction(dep, project),
+                SystemAction.get(RemoveAction.class),
+            };
         }
         
         public Action getPreferredAction() {
             return getActions(false)[0]; // open
+        }
+
+        public boolean canDestroy() {
+            return true;
+        }
+
+        public void destroy() throws IOException {
+            removeDependency(project, dep);
         }
         
     }
@@ -321,7 +318,6 @@ final class LibrariesNode extends AbstractNode {
         
         private final ModuleDependency dep;
         private final NbModuleProject project;
-        private Action[] actions;
         
         LibraryDependencyNode(final ModuleDependency dep,
                 final NbModuleProject project, final Node original) {
@@ -335,26 +331,31 @@ final class LibrariesNode extends AbstractNode {
         }
         
         public Action[] getActions(boolean context) {
-            if (actions == null) {
-                Set result = new LinkedHashSet();
-                result.add(new EditDependencyAction(dep, project));
-                Action[] superActions = super.getActions(false);
-                for (int i = 0; i < superActions.length; i++) {
-                    if (superActions[i] instanceof FindAction) {
-                        result.add(superActions[i]);
-                    }
-                }
-                result.add(new ShowJavadocAction(dep, project));
-                result.add(LibrariesChildren.REMOVE_DEPENDENCY_ACTION);
-                actions = (Action[]) result.toArray(new Action[result.size()]);
-            }
-            return actions;
+            return new Action[] {
+                new EditDependencyAction(dep, project),
+                SystemAction.get(FindAction.class),
+                new ShowJavadocAction(dep, project),
+                SystemAction.get(RemoveAction.class),
+            };
         }
         
         public Action getPreferredAction() {
-            return getActions(false)[0]; // edit
+            return new EditDependencyAction(dep, project);
+        }
+
+        public boolean canDestroy() {
+            return true;
+        }
+
+        public void destroy() throws IOException {
+            removeDependency(project, dep);
         }
         
+    }
+    
+    private static void removeDependency(NbModuleProject project, ModuleDependency dep) throws IOException {
+        new ProjectXMLManager(project).removeDependencies(Collections.singleton(dep));
+        ProjectManager.getDefault().saveProject(project);
     }
     
     private static final class AddModuleDependencyAction extends AbstractAction {
@@ -400,60 +401,6 @@ final class LibrariesNode extends AbstractNode {
                 }
             }
             d.dispose();
-        }
-        
-    }
-    
-    private static final class RemoveDependencyAction extends CookieAction {
-        
-        protected void performAction(Node[] activatedNodes) {
-            // we have to count with multiple selection from multiple projects
-            Map/*<NbModuleProject, Set<ModuleDependency>>*/ map = new HashMap();
-            for (int i = 0; i < activatedNodes.length; i++) {
-                ModuleDependency dep = (ModuleDependency) activatedNodes[i].getLookup().lookup(ModuleDependency.class);
-                assert dep != null;
-                NbModuleProject project = (NbModuleProject) activatedNodes[i].getLookup().lookup(NbModuleProject.class);
-                assert project != null;
-                Set deps = (Set) map.get(project);
-                if (deps == null) {
-                    deps = new HashSet();
-                    map.put(project, deps);
-                }
-                deps.add(dep);
-            }
-            for (Iterator it = map.entrySet().iterator(); it.hasNext();) {
-                Map.Entry me = (Map.Entry) it.next();
-                NbModuleProject project = (NbModuleProject) me.getKey();
-                Set deps = (Set) me.getValue();
-                ProjectXMLManager pxm = new ProjectXMLManager(project);
-                pxm.removeDependencies(deps);
-                try {
-                    ProjectManager.getDefault().saveProject(project);
-                } catch (IOException e) {
-                    ErrorManager.getDefault().annotate(e, "Problem during dependencies removing"); // NOI18N
-                    ErrorManager.getDefault().notify(e);
-                }
-            }
-        }
-        
-        public String getName() {
-            return getMessage("CTL_RemoveDependency");
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-        
-        protected boolean asynchronous() {
-            return false;
-        }
-        
-        protected int mode() {
-            return CookieAction.MODE_ALL;
-        }
-        
-        protected Class[] cookieClasses() {
-            return new Class[] { ModuleDependency.class, NbModuleProject.class };
         }
         
     }
@@ -577,6 +524,19 @@ final class LibrariesNode extends AbstractNode {
         
         protected Class[] cookieClasses() {
             return new Class[] { ModuleDependency.class };
+        }
+        
+    }
+    
+    private static final class RemoveAction extends DeleteAction {
+        
+        public String getName() {
+            return getMessage("CTL_RemoveDependency");
+        }
+
+        protected void initialize() {
+            super.initialize();
+            putValue(Action.ACCELERATOR_KEY, SystemAction.get(DeleteAction.class).getValue(Action.ACCELERATOR_KEY));
         }
         
     }
