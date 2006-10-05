@@ -62,4 +62,134 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="Actions">
+        <folder name="Debug">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createToggleBreakpointAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createKillAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createContinueAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepIntoAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepOutAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createStepOverAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+            </file>
+        </folder>
+    </folder>
+
+    <!-- Main menu -->
+     <folder name="Menu">
+        <folder name="RunProject">
+            <attr name="SeparatorRun.instance/org-netbeans-modules-debugger-ui-actions-KillAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow/Separator11.instance" boolvalue="true" />
+            <file name="Separator11.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+
+            <attr name="Separator11.instance/org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow/Separator3.instance" boolvalue="true" />
+            <file name="Separator3.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="Separator3.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Shortcuts">
+        <file name="DS-F7.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+        </file>
+        <file name="D-F8.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+        </file>
+        <file name="D-F7.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+        </file>
+        <file name="F7.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+        </file>
+        <file name="F8.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+        </file>
+        <file name="D-F5.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+        </file>
+        <file name="S-F5.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+        </file>
+    </folder>
+
+    <folder name="Toolbars">
+        <folder name="Debug">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ant.debugger.Bundle" />
+            <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow/org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow/org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow/org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow/org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+
 </filesystem>
