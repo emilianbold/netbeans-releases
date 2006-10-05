@@ -108,6 +108,7 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                 </folder>
             </folder>
+            
             <folder name="Nodes">
                 <file name="org-netbeans-modules-java-j2seproject-ui-SourceNodeFactory.instance"/>
                 <attr name="org-netbeans-modules-java-j2seproject-ui-SourceNodeFactory.instance/org-netbeans-modules-java-j2seproject-ui-LibrariesNodeFactory.instance" boolvalue="true"/>
@@ -116,6 +117,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="org-netbeans-modules-java-j2seproject-wsclient-WebServicesNodeFactory.instance"/>
                 
             </folder>
+            
+            <folder name="Lookup"/>
+            
         </folder>
     </folder>
 </filesystem>
