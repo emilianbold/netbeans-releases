@@ -216,42 +216,41 @@ public final class Utilities {
     private Utilities() {
     }
 
-    /** Useful queue for all parts of system that use <code>java.lang.ref.Reference</code>s
+    /**
+     * Useful queue for all parts of system that use <code>java.lang.ref.Reference</code>s
      * together with some <code>ReferenceQueue</code> and need to do some clean up
-     * when the reference is enqued. Usually, in order to be notified about that, one
+     * when the reference is enqueued. Usually, in order to be notified about that, one
      * needs to either create a dedicated thread that blocks on the queue and is
      * <code>Object.notify</code>-ed, which is the right approach but consumes
-     * valuable system resources (threads) or one can peridically check the content
+     * valuable system resources (threads) or one can periodically check the content
      * of the queue by <code>RequestProcessor.Task.schedule</code> which is
-     * completelly wrong, because it wakes up the system every (say) 15 seconds.
+     * completely wrong, because it wakes up the system every (say) 15 seconds.
      * In order to provide useful support for this problem, this queue has been
      * provided.
      * <P>
-     * If you have a reference that needs clean up, make it implement <link>Runnable</link>
-     * inteface and register it with the <code>activeReferenceQueue</code>:
+     * If you have a reference that needs cleanup, make it implement <link>Runnable</link>
+     * and register it with the queue:
      * <PRE>
-     * class MyReference extends WeakReference implements Runnable {
-     *   private Object dataToCleanUp;
-     *
-     *   public MyReference (Object ref, Object data) {
-     *     super (ref, Utilities.activeReferenceQueue ()); // here you specify the queue
-     *     dataToCleanUp = data;
-     *   }
-     *
-     *   public void run () {
-     *     // clean up your data
-     *   }
+     * class MyReference extends WeakReference<Thing> implements Runnable {
+     *     private final OtherInfo dataToCleanUp;
+     *     public MyReference(Thing ref, OtherInfo data) {
+     *         super(ref, Utilities.activeReferenceQueue());
+     *         dataToCleanUp = data;
+     *     }
+     *     public void run() {
+     *         dataToCleanUp.releaseOrWhateverYouNeed();
+     *     }
      * }
      * </PRE>
      * When the <code>ref</code> object is garbage collected, your run method
      * will be invoked by calling
-     * <code>((Runnable)reference).run ()</code>
-     * and you can perform what ever cleanup is necessary. Be sure not to block
+     * <code>((Runnable) reference).run()</code>
+     * and you can perform whatever cleanup is necessary. Be sure not to block
      * in such cleanup for a long time as this prevents other waiting references
-     * to cleanup themselves.
+     * from cleaning themselves up.
      * <P>
-     * Please do not call any methods of the ReferenceQueue yourself. They
-     * will throw exceptions.
+     * Do not call any <code>ReferenceQueue</code> methods. They
+     * will throw exceptions. You may only enqueue a reference.
      *
      * @since 3.11
      */
