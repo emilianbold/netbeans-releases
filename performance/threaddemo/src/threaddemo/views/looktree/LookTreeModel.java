@@ -92,6 +92,7 @@ final class LookTreeModel implements TreeModel {
         listeners.remove(l);
     }
     
+    @SuppressWarnings("unchecked")
     public void valueForPathChanged(TreePath path, Object newValue) {
         LookTreeNode n = (LookTreeNode)path.getLastPathComponent();
         try {

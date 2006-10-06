@@ -64,7 +64,7 @@ public class PhadhailLookups {
     }
 
     // XXX #32203 would be really helpful here!
-    private static final class PhadhailLookup extends AbstractLookup implements InstanceContent.Convertor {
+    private static final class PhadhailLookup extends AbstractLookup implements InstanceContent.Convertor<Object,Object> {
         
         private static final Object KEY_EDITOR = "editor";
         private static final Object KEY_DOM_PROVIDER = "domProvider";
@@ -120,7 +120,7 @@ public class PhadhailLookups {
             }
         }
         
-        public Class type(Object obj) {
+        public Class<?> type(Object obj) {
             if (obj == KEY_EDITOR) {
                 return PhadhailEditorSupport.class; // a bunch of interfaces
             } else {

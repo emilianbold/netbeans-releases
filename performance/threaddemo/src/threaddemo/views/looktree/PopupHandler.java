@@ -65,6 +65,7 @@ class PopupHandler extends MouseAdapter {
             if (path != null) {
                 LookTreeNode n = (LookTreeNode)path.getLastPathComponent();
                 clicked = new WeakReference<LookTreeNode>(n);
+                @SuppressWarnings("unchecked")
                 Action[] actions = n.getLook().getActions(n.getData(), n.getLookup() );
                 // XXX handle multiselects...
                 Node selection = makeNode( n );
@@ -91,6 +92,7 @@ class PopupHandler extends MouseAdapter {
     
     private final class DeleteAction extends AbstractAction {
         
+        @SuppressWarnings("unchecked")
         public void actionPerformed(ActionEvent e) {
             // XXX should confirm deletion first
             LookTreeNode n = clicked.get();

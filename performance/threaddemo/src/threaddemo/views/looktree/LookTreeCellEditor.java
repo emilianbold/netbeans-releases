@@ -30,6 +30,7 @@ import javax.swing.tree.TreeCellEditor;
 /**
  * @author Jesse Glick
  */
+@SuppressWarnings("unchecked")
 class LookTreeCellEditor extends DefaultTreeCellEditor {
 
     public LookTreeCellEditor(JTree tree, LookTreeCellRenderer r) {

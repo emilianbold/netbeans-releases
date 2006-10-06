@@ -54,11 +54,11 @@ import threaddemo.model.PhadhailNameEvent;
  * A look which wraps phadhails.
  * @author Jesse Glick
  */
-final class PhadhailLook extends Look implements PhadhailListener, LookupListener, ChangeListener {
+final class PhadhailLook extends Look<Phadhail> implements PhadhailListener, LookupListener, ChangeListener {
     
     private static final Logger logger = Logger.getLogger(PhadhailLook.class.getName());
     
-    private static final Map<Phadhail,Lookup.Result> phadhails2Results = new IdentityHashMap<Phadhail,Lookup.Result>();
+    private static final Map<Phadhail,Lookup.Result<Object>> phadhails2Results = new IdentityHashMap<Phadhail,Lookup.Result<Object>>();
     private static final Map<Lookup.Result,Phadhail> results2Phadhails = new IdentityHashMap<Lookup.Result,Phadhail>();
     private static final Map<Phadhail,DomProvider> phadhails2DomProviders = new IdentityHashMap<Phadhail,DomProvider>();
     private static final Map<DomProvider,Phadhail> domProviders2Phadhails = new IdentityHashMap<DomProvider,Phadhail>();
@@ -71,16 +71,13 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         return "Phadhails";
     }
     
-    protected void attachTo(Object o) {
-        assert o instanceof Phadhail : o;
-        Phadhail ph = (Phadhail)o;
+    protected void attachTo(Phadhail ph) {
         ph.addPhadhailListener(this);
     }
     
-    protected void detachFrom(Object o) {
-        Phadhail ph = (Phadhail)o;
+    protected void detachFrom(Phadhail ph) {
         ph.removePhadhailListener(this);
-        Lookup.Result r = phadhails2Results.remove(ph);
+        Lookup.Result<Object> r = phadhails2Results.remove(ph);
         if (r != null) {
             r.removeLookupListener(this);
             assert results2Phadhails.containsKey(r);
@@ -94,19 +91,17 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         }
     }
     
-    public boolean isLeaf(Object o, Lookup e) {
+    public boolean isLeaf(Phadhail ph, Lookup e) {
         assert EventQueue.isDispatchThread();
-        Phadhail ph = (Phadhail)o;
         return !ph.hasChildren() && PhadhailLookups.getLookup(ph).lookup(DomProvider.class) == null;
     }
     
-    public List getChildObjects(final Object o, Lookup e) {
+    public List getChildObjects(final Phadhail ph, Lookup e) {
         assert EventQueue.isDispatchThread();
-        Phadhail ph = (Phadhail)o;
         if (ph.hasChildren()) {
             return ph.getChildren();
         } else {
-            DomProvider p = (DomProvider)PhadhailLookups.getLookup(ph).lookup(DomProvider.class);
+            DomProvider p = PhadhailLookups.getLookup(ph).lookup(DomProvider.class);
             if (p != null) {
                 if (!phadhails2DomProviders.containsKey(ph)) {
                     phadhails2DomProviders.put(ph, p);
@@ -134,39 +129,35 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         }
     }
     
-    public String getName(Object o, Lookup e) {
+    public String getName(Phadhail ph, Lookup e) {
         assert EventQueue.isDispatchThread();
-        Phadhail ph = (Phadhail)o;
         return ph.getName();
     }
 
-    public String getDisplayName(Object o, Lookup e) {
+    public String getDisplayName(Phadhail ph, Lookup e) {
         assert EventQueue.isDispatchThread();
-        Phadhail ph = (Phadhail)o;
         return ph.getPath();
     }
     
-    public boolean canRename(Object o, Lookup e) {
+    public boolean canRename(Phadhail ph, Lookup e) {
         return true;
     }
     
-    public void rename(Object o, String newName, Lookup e) throws IOException {
-        Phadhail ph = (Phadhail)o;
+    public void rename(Phadhail ph, String newName, Lookup e) throws IOException {
         ph.rename(newName);
     }
     
-    public boolean canDestroy(Object o, Lookup e) {
+    public boolean canDestroy(Phadhail ph, Lookup e) {
         return true;
     }
     
-    public void destroy(Object o, Lookup e) throws IOException {
-        Phadhail ph = (Phadhail)o;
+    public void destroy(Phadhail ph, Lookup e) throws IOException {
         ph.delete();
         // XXX since this fires no changes of its own...
         fireChange(ph, Look.DESTROY);
     }
     
-    public Action[] getActions(Object o, Lookup e) {
+    public Action[] getActions(Phadhail ph, Lookup e) {
         return new Action[] {
             SystemAction.get(OpenAction.class),
             SystemAction.get(SaveAction.class),
@@ -179,8 +170,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         };
     }
     
-    public NewType[] getNewTypes(Object o, Lookup e) {
-        Phadhail ph = (Phadhail)o;
+    public NewType[] getNewTypes(Phadhail ph, Lookup e) {
         if (ph.hasChildren()) {
             return new NewType[] {
                 new PhadhailNewType(ph, false),
@@ -191,13 +181,12 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         }
     }
     
-    public Collection getLookupItems(Object o, Lookup env) {
+    public Collection getLookupItems(Phadhail ph, Lookup env) {
         assert EventQueue.isDispatchThread();
-        Phadhail ph = (Phadhail)o;
-        Lookup.Result r = (Lookup.Result)phadhails2Results.get(ph);
+        Lookup.Result<Object> r = phadhails2Results.get(ph);
         if (r == null) {
             Lookup l = PhadhailLookups.getLookup(ph);
-            r = l.lookup(new Lookup.Template(Object.class));
+            r = l.lookupResult(Object.class);
             assert r != null : "Null lookup from " + l + " in " + ph;
             phadhails2Results.put(ph, r);
             assert !results2Phadhails.containsKey(r);
@@ -210,7 +199,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     public void resultChanged(LookupEvent ev) {
         // XXX #33372: should be able to do ev.getResult()
         Lookup.Result r = (Lookup.Result)ev.getSource();
-        final Phadhail ph = (Phadhail)results2Phadhails.get(r);
+        final Phadhail ph = results2Phadhails.get(r);
         assert ph != null;
         Locks.event().readLater(new Runnable() {
             public void run() {

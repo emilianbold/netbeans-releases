@@ -30,6 +30,7 @@ import org.netbeans.spi.looks.Look;
 /**
  * @author Jesse Glick
  */
+@SuppressWarnings("unchecked")
 class LookTreeCellRenderer extends DefaultTreeCellRenderer {
 
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {

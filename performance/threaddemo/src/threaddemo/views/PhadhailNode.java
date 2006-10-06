@@ -120,7 +120,7 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener {
         };
     }
     
-    private static final class PhadhailChildren extends Children.Keys {
+    private static final class PhadhailChildren extends Children.Keys<Phadhail> {
         
         private final Phadhail ph;
         
@@ -137,11 +137,11 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener {
         }
         
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<Phadhail>emptySet());
         }
         
-        protected Node[] createNodes(Object key) {
-            return new Node[] {new PhadhailNode((Phadhail)key)};
+        protected Node[] createNodes(Phadhail ph) {
+            return new Node[] {new PhadhailNode(ph)};
         }
         
     }

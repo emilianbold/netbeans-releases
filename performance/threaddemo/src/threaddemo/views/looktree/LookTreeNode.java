@@ -137,6 +137,7 @@ abstract class LookTreeNode implements LookListener {
         //FirerSupport.DEFAULT.unregisterSubstitute(n);
     }
     
+    @SuppressWarnings("unchecked")
     private List getChildrenList() {
         if ( childrenList == null ) {
             childrenList = getLook().getChildObjects( representedObject, getLookup() );
@@ -200,6 +201,7 @@ abstract class LookTreeNode implements LookListener {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public boolean isLeaf() {
         return getLook().isLeaf(representedObject, getLookup());
     }
