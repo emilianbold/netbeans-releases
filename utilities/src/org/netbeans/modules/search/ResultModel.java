@@ -23,8 +23,11 @@ package org.netbeans.modules.search;
 
 import java.beans.*;
 import java.util.*;
+import org.netbeans.modules.search.types.FullTextType;
 
 import org.openide.ErrorManager;
+import org.openide.nodes.Node;
+import org.openidex.search.DataObjectSearchGroup;
 import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
 
@@ -42,6 +45,11 @@ public final class ResultModel {
     /** maximum total number of detail entries for found objects */
     private static final int DETAILS_COUNT_LIMIT = 5000;
     /** */
+    private static final String DEF_SEARCH_TYPES_PACKAGE
+            = "org.netbeans.modules.search.types";                      //NOI18N
+    private static final String FULLTEXT_SEARCH_TYPE
+            = "FullTextType";                                           //NOI18N
+    /** */
     private int size = 0;
     /** */
     private int totalDetailsCount = 0;
@@ -57,18 +65,56 @@ public final class ResultModel {
     private boolean limitReached = false;
 
     /** Which search types creates were enabled for this model. */
-    private List searchTypeList;
+    private List<SearchType> searchTypeList;
 
     /** Search group this result shows search results for. */
     private SearchGroup searchGroup;
+    
+    /**
+     * is the {@code searchGroup} an instance of class
+     * {@code DataObjectSearchGroup}?
+     * 
+     * @see  #searchGroup
+     */
+    private final boolean isDataObjectSearchGroup;
+    /**
+     * are all search types defined in the {@code SearchGroup} those
+     * defined in the Utilities module?
+     */
+    final boolean defaultSearchTypesOnly;
+    /** */
+    final FullTextType fullTextSearchType;
+    /** list of matching objects (usually {@code DataObject}s) */
+    final Collection<MatchingObject> matchingObjects
+            = new HashSet<MatchingObject>();
 
     /** Contains optional finnish message often reason why finished. */
     private String finishMessage;
 
     /** Creates new <code>ResultModel</code>. */
-    public ResultModel(List searchTypeList, SearchGroup searchGroup) {
+    public ResultModel(List<SearchType> searchTypeList,
+                       SearchGroup searchGroup) {
         this.searchTypeList = searchTypeList;
         this.searchGroup = searchGroup;
+        
+        isDataObjectSearchGroup
+                = (searchGroup.getClass() == DataObjectSearchGroup.class);
+        boolean hasNonDefaultSearchType = false;
+        FullTextType fullTextType = null;
+        for (SearchType searchType : searchGroup.getSearchTypes()) {
+            Class searchTypeClass = searchType.getClass();
+            String searchTypeName = searchTypeClass.getName();
+            if (searchTypeClass == FullTextType.class) {
+                fullTextType = (FullTextType) searchType;
+            } else if (!searchTypeName.startsWith(DEF_SEARCH_TYPES_PACKAGE)) {
+                hasNonDefaultSearchType = true;
+            }
+            if (hasNonDefaultSearchType && (fullTextType != null)) {
+                break;
+            }
+        }
+        defaultSearchTypesOnly = !hasNonDefaultSearchType;
+        fullTextSearchType = fullTextType;
     }
     
     /**
@@ -86,9 +132,7 @@ public final class ResultModel {
      * */
     void close() {
         if (searchTypeList != null){
-            Iterator it = searchTypeList.iterator();
-            while (it.hasNext()) {
-                Object searchType = /*(SearchType)*/it.next();
+            for (SearchType searchType : searchTypeList) {
                 /*
                  * HACK:
                  * GC should eliminate FullTextType details map but it does not,
@@ -116,24 +160,49 @@ public final class ResultModel {
      * Notifies ths result model of a newly found matching object.
      *
      * @param  object  matching object
-     * @return  <code>true</code> if this result model can accept more objects,
-     *          <code>false</code> if number of found objects reached the limit
+     * @return  {@code true} if this result model can accept more objects,
+     *          {@code false} if number of found objects reached the limit
      */
     synchronized boolean objectFound(Object object) {
+        MatchingObject matchingObject = new MatchingObject(object);
+        if (matchingObjects.add(matchingObject) == false) {
+            return true;
+        }
+        
         assert limitReached == false;
         assert observer != null;
         
-        int detailsCount;
+        observer.objectFound(matchingObject);
         
-        if ((detailsCount = observer.objectFound(object)) == -1) {
-            return true;
-        } else {
-            size++;
-            totalDetailsCount += detailsCount;
-            limitReached = (size >= COUNT_LIMIT)
-                           || (totalDetailsCount >= DETAILS_COUNT_LIMIT);
-            return !limitReached;
+        size++;
+        totalDetailsCount += getDetailsCount(object);
+        return size < COUNT_LIMIT && totalDetailsCount < DETAILS_COUNT_LIMIT;
+    }
+    
+    /**
+     * Returns number of detail nodes available to the given found object.
+     *
+     * @param  foundObject  object matching the search criteria
+     * @return  number of detail items (represented by individual nodes)
+     *          available for the given object (usually {@code DataObject})
+     */
+    private int getDetailsCount(Object foundObject) {
+        if (defaultSearchTypesOnly) {
+            return (fullTextSearchType != null)
+                   ? fullTextSearchType.getDetailsCount(foundObject)
+                   : 0;
         }
+        
+        int count = 0;
+        for (SearchType searchType : searchGroup.getSearchTypes()) {
+            if (searchType == fullTextSearchType) {
+                count += fullTextSearchType.getDetailsCount(foundObject);
+            } else {
+                Node[] detailNodes = searchType.getDetails(foundObject);
+                count += (detailNodes != null) ? detailNodes.length : 0;
+            }
+        }
+        return count;
     }
     
     /**
@@ -185,6 +254,30 @@ public final class ResultModel {
      */
     String getExceptionMsg() {
         return finishMessage;
+    }
+    
+    /**
+     * Data structure holding a reference to the found object and information
+     * whether occurences in the found object should be found or not.
+     */
+    static final class MatchingObject {
+        final Object object;
+        MatchingObject(Object object) {
+            if (object == null) {
+                throw new IllegalArgumentException("null");             //NOI18N
+            }
+            this.object = object;
+        }
+        @Override
+        public boolean equals(Object anotherObject) {
+            return (anotherObject != null)
+                   && (anotherObject.getClass() == MatchingObject.class)
+                   && (((MatchingObject) anotherObject) == object);
+        }
+        @Override
+        public int hashCode() {
+            return object.hashCode() + 1;
+        }
     }
 
 }
