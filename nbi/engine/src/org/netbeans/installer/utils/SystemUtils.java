@@ -31,6 +31,7 @@ import java.util.Map;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.exceptions.UnsupportedActionException;
 import org.netbeans.installer.utils.system.GenericSystemUtils;
+import org.netbeans.installer.utils.system.MacosxSystemUtils;
 import org.netbeans.installer.utils.system.UnixSystemUtils;
 import org.netbeans.installer.utils.system.WindowsSystemUtils;
 
@@ -52,9 +53,11 @@ public abstract class SystemUtils {
                 case LINUX:
                 case SOLARIS_X86:
                 case SOLARIS_SPARC:
-                case MACOS_X_PPC:
-                case MACOS_X_X86:
                     instance = new UnixSystemUtils();
+                    break;                
+                case MACOS_X_PPC:
+                case MACOS_X_X86:                    
+                    instance = new MacosxSystemUtils();
                     break;                
                 default:
                     instance = new GenericSystemUtils();
