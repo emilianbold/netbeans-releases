@@ -21,6 +21,7 @@ package org.netbeans.modules.apisupport.refactoring;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -108,16 +109,16 @@ public class RenameTest extends NbTestCase {
             result.doRefactoring(true);
 
             // check modified files
-            try {
-                for (int x = 0; x < resultFiles.length; x++) {
-                    String fileName = PATH_PREFIX + resultFiles[x] ;
-
-                    assertFile(TestUtility.getFile(getDataDir(),"testRename", fileName), getGoldenFile(goldenFiles[x]), getWorkDir());
-                }
-            } catch (FileStateInvalidException e) {
-                fail(e.getMessage());
-            } catch (IOException e) {
-                fail(e.getMessage());
+            for (int x = 0; x < resultFiles.length; x++) {
+                String fileName = PATH_PREFIX + resultFiles[x] ;
+                log("assertFile " + fileName);
+                File resF = TestUtility.getFile(getDataDir(),"testRename", fileName);
+                File goldenF = getGoldenFile(goldenFiles[x]);  
+                File f1 = writeToWorkDir(resF,resF.getName() + ".result");
+                File f2 = writeToWorkDir(goldenF,goldenF.getName() + ".pass");
+                assertFile(f1,f2);
+                f1.delete();
+                f2.delete();
             }
     } 
     public void testWhereUsed() throws Exception {
@@ -254,4 +255,19 @@ public class RenameTest extends NbTestCase {
         }
         return elm.getDisplayText()+app;
      }   
+
+    private File writeToWorkDir(File resF, String name) throws IOException {
+       byte buff[] =  new byte[(int)resF.length()]; 
+       FileInputStream fis = new FileInputStream(resF);
+       File retF = new File(getWorkDir(),name);
+       FileOutputStream fos = new FileOutputStream(retF);
+       try {
+           fis.read(buff);
+           fos.write(buff);
+       } finally {
+           fis.close();
+           fos.close();
+       }
+       return retF; 
+    }  
 }
