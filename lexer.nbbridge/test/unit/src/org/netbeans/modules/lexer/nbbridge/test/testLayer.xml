@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-simple-char">
+                <file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimpleCharLanguage.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimpleCharLanguage.description"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.LanguageDescription"/>
+                </file>
+            </folder>
+            <folder name="x-simple-plain">
+                <file name="org-netbeans-modules-lexer-nbbridge-test-simple-SimplePlainLanguage.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lexer.nbbridge.test.simple.SimplePlainLanguage.description"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.LanguageDescription"/>
+                </file>
+                
+                <folder name="languagesEmbeddingMap">
+                    <file name="WORD"><![CDATA[text/x-simple-char]]></file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
