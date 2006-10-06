@@ -185,7 +185,7 @@ public class PrintDetailsTask implements Runnable {
             Runnable runnable = new Runnable() {
                 public void run() {
                     try {
-                        method.invoke(displayer, null);
+                        method.invoke(displayer, (Object[]) null);
                     } catch (Exception ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
