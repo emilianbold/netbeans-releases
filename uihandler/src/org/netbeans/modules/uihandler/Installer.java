@@ -171,6 +171,8 @@ public class Installer extends ModuleInstall {
                     buttons = newB;
                 }
                 is.close();
+            } else {
+                return true;
             }
         } catch (ParserConfigurationException ex) {
             LOG.log(Level.WARNING, null, ex);
