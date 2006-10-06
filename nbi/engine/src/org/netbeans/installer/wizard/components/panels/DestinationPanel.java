@@ -110,6 +110,7 @@ public class DestinationPanel extends DefaultWizardPanel {
         
         messagePane = new JTextPane();
         messagePane.setOpaque(false);
+        messagePane.setEditable(false);
         
         destinationField = new JTextField();
         destinationField.getDocument().addDocumentListener(new DocumentListener() {
