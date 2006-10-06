@@ -732,10 +732,22 @@ public class SvnConfigFiles {
         File tmpFile;
         try {
             tmpFile = File.createTempFile("svn_registry", "");                                          // NOI18N               
-            tmpFile.deleteOnExit();
+            tmpFile.deleteOnExit();            
             String[] cmdLine = new String[] { "reg.exe", "export" , key, tmpFile.getAbsolutePath() };   // NOI18N            
             
-            Process p = Runtime.getRuntime().exec(cmdLine);
+            Process p;
+            try {
+                p = Runtime.getRuntime().exec(cmdLine);
+            } catch (IOException ex) {
+                // reg.exe doesn't seem to work, fallback on regedit.exe
+                cmdLine = new String[] { "regedit.exe", "/e" , tmpFile.getAbsolutePath(), key }; // NOI18N                
+                try {
+                    p = Runtime.getRuntime().exec(cmdLine);
+                } catch (IOException ex2) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not read the registry values for: " + key + ". " + ex2.getMessage());
+                    return;
+                }                
+            }
             StreamHandler shErr = new StreamHandler(p.getErrorStream());
             StreamHandler shIn = new StreamHandler(p.getInputStream());
             shErr.start();
