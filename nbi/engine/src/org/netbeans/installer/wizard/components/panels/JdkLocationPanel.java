@@ -29,7 +29,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JDKUtils;
-import org.netbeans.installer.utils.applications.Version;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.wizard.components.actions.SearchForJdkAction;
 
 /**
