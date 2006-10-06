@@ -44,6 +44,11 @@ public abstract class WizardAction implements WizardComponent {
         this.active = true;
         
         if (getUI() != null) {
+            for (Object key: getProperties().keySet()) {
+                System.out.println(key);
+                getUI().getProperties().put(key, getProperties().get(key));
+            }
+            
             getUI().executeComponent(wizard);
         }
         
