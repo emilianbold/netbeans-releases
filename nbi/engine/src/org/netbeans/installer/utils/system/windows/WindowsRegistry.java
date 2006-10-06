@@ -216,8 +216,14 @@ public class WindowsRegistry {
      */
     
     public native byte  [] getBinaryValue(int registrySection, String key, String valueName);
-    
-    
+
+    public void setStringValue(int registrySection, String key, String valueName, String value) {
+        setStringValue(registrySection, key, valueName, value, false);
+    }
+
+    public String getStringValue(int registrySection, String key, String valueName) {
+        return getStringValue(registrySection, key, valueName, false);
+    }
     
     public static final int HKEY_CLASSES_ROOT        = 0;
     public static final int HKEY_CURRENT_USER        = 1;
