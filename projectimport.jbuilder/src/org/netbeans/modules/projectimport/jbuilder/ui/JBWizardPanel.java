@@ -21,7 +21,6 @@ package org.netbeans.modules.projectimport.jbuilder.ui;
 import java.awt.Color;
 import java.io.File;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
@@ -32,13 +31,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.projectimport.j2seimport.AbstractProject;
-import org.netbeans.modules.projectimport.j2seimport.ui.BasicPanel;
 import org.netbeans.modules.projectimport.j2seimport.ui.BasicWizardIterator;
 import org.netbeans.modules.projectimport.jbuilder.parsing.ProjectBuilder;
 import org.netbeans.modules.projectimport.jbuilder.parsing.UserLibrarySupport;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -166,7 +162,7 @@ public final class JBWizardPanel extends BasicWizardIterator.Panel {
         }
         File projectFile = (isEmpty(prjFileTextField)) ? null : getFile(prjFileTextField);
         boolean unresolvedReferences = Utils.checkNotFoundUserLibraries(allPrjDefs);
-        if (projectFile != null && ProjectBuilder.isProjectFile(projectFile)) {            
+        if (projectFile != null && ProjectBuilder.isProjectFile(projectFile)) {
             if (!projectFileValid) {
                 projectFileValid = true;
                 parseProjectFile(projectFile);

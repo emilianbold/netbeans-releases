@@ -41,24 +41,24 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author Radek Matous
  */
-final class JdkSupport {
+public final class JdkSupport {
     static final String INSTALLER_REGISTRY_FOLDER = "org-netbeans-api-java/platform/installers"; // NOI18N
     private static final Logger logger =
             LoggerFactory.getDefault().createLogger(JdkSupport.class);
     
     
     /** Creates a new instance of JDKSupport */
-    public static File getJKDDirectory(final String jdkLibraryName)  {
+    public static File getJKDDirectory(final String jdkLibraryName, File projectDir)  {
         AbstractProject.UserLibrary aulb = null;
         try {
-            File homeFile = UserLibrarySupport.getUserHomeLib();
+            projectDir = (projectDir == null) ? UserLibrarySupport.getUserHomeLib() : projectDir;
             Collection installers = getPlatformInstallers();
             if (installers.size() == 0) {
                 logger.finest("No registered PlatformInstall");//NOI18N
             }
 
-            if (installers.size() > 0 && homeFile != null) {
-                aulb = UserLibrarySupport.getInstance(jdkLibraryName, homeFile);
+            if (installers.size() > 0 && projectDir != null) {
+                aulb = UserLibrarySupport.getInstance(jdkLibraryName, projectDir);
             }
 
             if (aulb != null) {

@@ -215,7 +215,8 @@ final class JpxBuilder extends ProjectBuilder {
         }
         
         if (jdkId != null) {
-            File jdkFolder = JdkSupport.getJKDDirectory(jdkId);
+            project.setJdkId(jdkId);
+            File jdkFolder = JdkSupport.getJKDDirectory(jdkId, projectDir);
             if (jdkFolder != null) {
                 project.setJDKDirectory(jdkFolder);
             } else {

@@ -38,15 +38,18 @@ final class Utils {
     /** Creates a new instance of Utils */
     private  Utils() {}
     
-    static boolean checkUnresolvedReferences(Collection prjDefs) {
-        return getInvalidUserLibraries(prjDefs).size() > 0;
-    }
-
     static boolean checkNotFoundUserLibraries(Collection prjDefs) {
-        return notFoundUserLibraries(prjDefs).size() > 0;
+        boolean notfound = notFoundUserLibraries(prjDefs).size() > 0;
+        if (!notfound && prjDefs != null) {
+            for (Iterator it = prjDefs.iterator(); it.hasNext();) {
+                AbstractProject prj = (AbstractProject) it.next();
+                if (prj.getJdkId() != null && prj.getJDKDirectory() == null) return true;
+            }
+        }
+        return notfound;
     }
     
-    static Collection notFoundUserLibraries(Collection allPrjDefs) {
+    private static Collection notFoundUserLibraries(Collection allPrjDefs) {
         Collection notFoundUserLibraries = new HashSet();
         if (allPrjDefs != null) {
             Iterator prjsIt = allPrjDefs.iterator();
@@ -71,6 +74,9 @@ final class Utils {
             Iterator prjsIt = allPrjDefs.iterator();
             while (prjsIt.hasNext()) {
                 AbstractProject ap = (AbstractProject)prjsIt.next();
+                if (ap.getJDKDirectory() == null && ap.getJdkId() != null) {
+                    invalidUserLibraries.add(new AbstractProject.UserLibrary(ap.getJdkId(), false));
+                }                
                 Iterator it = ap.getUserLibraries().iterator();
                 while (it.hasNext()) {
                     AbstractProject.UserLibrary uLib = (AbstractProject.UserLibrary)it.next();

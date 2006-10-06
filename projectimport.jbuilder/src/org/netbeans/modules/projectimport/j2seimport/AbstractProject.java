@@ -41,6 +41,7 @@ public final class AbstractProject implements ProjectModel {
     private final Collection sourceRoots;
     private final Set dependencies;
     private File jdkDirectory;
+    private String jdkId;    
     private final FileObject projectDir;
     private final String name;
     private WarningContainer warnings;
@@ -419,6 +420,14 @@ public final class AbstractProject implements ProjectModel {
         sb.append((getJDKDirectory() != null) ? getJDKDirectory().getAbsolutePath() : "!");//NOI18N
         
         return sb.toString();
+    }
+
+    public String getJdkId() {
+        return jdkId;
+    }
+
+    public void setJdkId(String jdkId) {
+        this.jdkId = jdkId;
     }
     
 }
