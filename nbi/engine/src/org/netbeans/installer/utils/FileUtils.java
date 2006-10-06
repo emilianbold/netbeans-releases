@@ -105,15 +105,15 @@ public abstract class FileUtils {
     
     public abstract File createTempFile(File parent) throws IOException;
     
-    public abstract void modifyFile(File file, String token, String replacement) throws IOException;
+    public abstract void modifyFile(File file, String token, Object replacement) throws IOException;
     
-    public abstract void modifyFile(File file, String token, String replacement, boolean useRE) throws IOException;
+    public abstract void modifyFile(File file, String token, Object replacement, boolean useRE) throws IOException;
     
-    public abstract void modifyFile(File file, Map<String, String> replacementMap) throws IOException;
+    public abstract void modifyFile(File file, Map<String, Object> replacementMap) throws IOException;
     
-    public abstract void modifyFile(File file, Map<String, String> replacementMap, boolean useRE) throws IOException;
+    public abstract void modifyFile(File file, Map<String, Object> replacementMap, boolean useRE) throws IOException;
     
-    public abstract void modifyFiles(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException;
+    public abstract void modifyFiles(File[] files, Map<String, Object> replacementMap, boolean useRE) throws IOException;
     
     public abstract void moveFile(File source, File destination) throws IOException;
     
@@ -387,23 +387,23 @@ public abstract class FileUtils {
             return file;
         }
         
-        public void modifyFile(File file, String token, String replacement) throws IOException {
+        public void modifyFile(File file, String token, Object replacement) throws IOException {
             modifyFile(file, token, replacement, false);
         }
         
-        public void modifyFile(File file, String token, String replacement, boolean useRE) throws IOException {
-            Map<String, String> replacementMap = new HashMap<String, String>();
+        public void modifyFile(File file, String token, Object replacement, boolean useRE) throws IOException {
+            Map<String, Object> replacementMap = new HashMap<String, Object>();
             
             replacementMap.put(token, replacement);
             
             modifyFile(file, replacementMap, useRE);
         }
         
-        public void modifyFile(File file, Map<String, String> replacementMap) throws IOException {
+        public void modifyFile(File file, Map<String, Object> replacementMap) throws IOException {
             modifyFile(file, replacementMap, false);
         }
         
-        public void modifyFile(File file, Map<String, String> replacementMap, boolean useRE) throws IOException {
+        public void modifyFile(File file, Map<String, Object> replacementMap, boolean useRE) throws IOException {
             if (!file.exists()) {
                 return;
             }
@@ -423,7 +423,7 @@ public abstract class FileUtils {
                 String originalContents = "";
                 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-                char[] buffer = new char[1024];
+                char[] buffer = new char[10240];
                 while (reader.ready()) {
                     originalContents += new String(buffer, 0, reader.read(buffer));
                 }
@@ -431,7 +431,15 @@ public abstract class FileUtils {
                 
                 String modifiedContents = new String(originalContents);
                 for (String token: replacementMap.keySet()) {
-                    String replacement = replacementMap.get(token);
+                    String replacement;
+                    
+                    Object object = replacementMap.get(token);
+                    if (object instanceof File) {
+                        replacement = ((File) object).getAbsolutePath();
+                    } else {
+                        replacement = object.toString();
+                    }
+                    
                     if (useRE) {
                         modifiedContents = Pattern.compile(token, Pattern.MULTILINE).matcher(modifiedContents).replaceAll(replacement);
                     } else {
@@ -450,7 +458,7 @@ public abstract class FileUtils {
             }
         }
         
-        public void modifyFiles(File[] files, Map<String, String> replacementMap, boolean useRE) throws IOException {
+        public void modifyFiles(File[] files, Map<String, Object> replacementMap, boolean useRE) throws IOException {
             for (File file: files) {
                 modifyFile(file, replacementMap, useRE);
             }
