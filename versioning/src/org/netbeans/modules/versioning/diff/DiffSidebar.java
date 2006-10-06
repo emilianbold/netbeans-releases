@@ -71,7 +71,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     private DiffMarkProvider        markProvider;
 
     private Color colorAdded =      new Color(150, 255, 150);
-    private Color colorChanged =    new Color(150, 150, 255);
+    private Color colorChanged =    new Color(160, 200, 255);
     private Color colorRemoved =    new Color(255, 160, 180);
     private Color colorBorder =     new Color(102, 102, 102);
     
@@ -91,6 +91,14 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         setToolTipText("");
         refreshDiffTask = RequestProcessor.getDefault().create(new RefreshDiffTask());
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
+    }
+
+    JTextComponent getTextComponent() {
+        return textComponent;
+    }
+
+    Difference[] getCurrentDiff() {
+        return currentDiff;
     }
 
     public String getToolTipText(MouseEvent event) {
@@ -114,13 +122,24 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
     protected void processMouseEvent(MouseEvent event) {
         super.processMouseEvent(event);
+        Difference diff = getDifferenceAt(event);
+        if (diff == null) return;
         if (event.isPopupTrigger()) {
-            Difference diff = getDifferenceAt(event);
-            if (diff == null) return;
-            showPopup(event, diff);
+            onClick(event, diff);
+        } else if (event.getID() == MouseEvent.MOUSE_CLICKED) {
+            onClick(event, diff);
         }
     }
     
+    private void onClick(MouseEvent event, Difference diff) {
+        DiffActionTooltipWindow ttw = new DiffActionTooltipWindow(this, diff);
+        Point p = new Point(event.getPoint());
+        SwingUtilities.convertPointToScreen(p, this);
+        Point p2 = new Point(p);
+        SwingUtilities.convertPointFromScreen(p2, textComponent);
+        ttw.show(new Point(p.x - p2.x, p.y));
+    }
+
     private Difference getDifferenceAt(MouseEvent event) {
         if (currentDiff == null) return null;
         int line = getLineFromMouseEvent(event);
@@ -134,39 +153,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         return diff;
     }
 
-    private void showPopup(MouseEvent event, final Difference diff) {
-        JPopupMenu menu = new JPopupMenu();
-        JMenuItem item;
-
-        item = new JMenuItem("Open Diff");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                openDiff();
-            }
-        });
-        menu.add(item);
-
-        item = new JMenuItem("Rollback");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                rollback(diff);
-            }
-        });
-        menu.add(item);
-
-        menu.add(new JSeparator());
-        item = new JMenuItem("Rollback All");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                rollbackAll();
-            }
-        });
-        menu.add(item);
-
-        menu.show(event.getComponent(), event.getX(), event.getY());
-    }
-
-    private void openDiff() {
+    void onDiff(Difference diff) {
         try {
             DiffView view = Diff.getDefault().createDiff(new SidebarStreamSource(true), new SidebarStreamSource(false));
             JComponent c = (JComponent) view.getComponent();
@@ -177,6 +164,47 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
+    }
+
+    private void onRollbackAll() {
+        try {
+            document.replace(0, document.getLength(), originalContentBuffer, null);
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+
+    void onRollback(Difference diff) {
+        try {
+            if (diff.getType() == Difference.ADD) {
+                int start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
+                int end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
+                document.remove(start, end - start);
+            } else if (diff.getType() == Difference.CHANGE) {
+                int start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
+                int end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
+                document.replace(start, end - start, diff.getFirstText(), null);
+            } else {
+                int start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
+                document.insertString(start, diff.getFirstText(), null);
+            }
+            refreshDiff();
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+    
+    void onPrevious(Difference diff) {
+    }
+
+    void onNext(Difference diff) {
+    }
+
+    String getMimeType() {
+        if (textComponent instanceof JEditorPane) {
+            return ((JEditorPane) textComponent).getContentType();
+        }
+        return "text/plain";
     }
 
     private static class DiffTopComponent extends TopComponent {
@@ -231,34 +259,6 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
-        }
-    }
-
-    private void rollbackAll() {
-        try {
-            document.replace(0, document.getLength(), originalContentBuffer, null);
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-    }
-
-    private void rollback(Difference diff) {
-        try {
-            if (diff.getType() == Difference.ADD) {
-                int start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
-                int end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
-                document.remove(start, end - start);
-            } else if (diff.getType() == Difference.CHANGE) {
-                int start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
-                int end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
-                document.replace(start, end - start, diff.getFirstText(), null);
-            } else {
-                int start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
-                document.insertString(start, diff.getFirstText(), null);
-            }
-            refreshDiff();
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
         }
     }
 
