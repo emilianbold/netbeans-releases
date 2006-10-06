@@ -51,6 +51,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
     public static final String PROP_TYPE = "type";
     
+    private static Object lastSelectedCategory;
     
     // variables ...............................................................
     
@@ -97,7 +98,11 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
             cbCathegory.setSelectedItem(def);
             selectCathegory (def);
         } else if (breakpointTypes.size () > 0) {
-            cbCathegory.setSelectedIndex(0);
+            if (cathegories.contains(lastSelectedCategory)) {
+                cbCathegory.setSelectedItem(lastSelectedCategory);
+            } else {
+                cbCathegory.setSelectedIndex(0);
+            }
             selectCathegory ((String) cbCathegory.getSelectedItem ());
         }
     }
@@ -208,6 +213,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     }
     
     private void selectCathegory (String c) {
+        lastSelectedCategory = c;
         doNotRefresh = true;
         cbEvents.removeAllItems ();
         types = new ArrayList ();
