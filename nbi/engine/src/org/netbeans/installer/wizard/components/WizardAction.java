@@ -23,7 +23,7 @@ package org.netbeans.installer.wizard.components;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.netbeans.installer.wizard.*;
+import org.netbeans.installer.wizard.SubWizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
 /**
