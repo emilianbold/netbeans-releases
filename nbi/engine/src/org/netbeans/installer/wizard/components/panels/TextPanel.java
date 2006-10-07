@@ -24,6 +24,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.JTextPane;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 
 /**
  *
@@ -38,8 +41,11 @@ public class TextPanel extends DefaultWizardPanel {
     }
     
     public void initialize() {
-        textPane.setContentType(getProperty(CONTENT_TYPE_PROPERTY));
-        textPane.setText(getProperty(TEXT_PROPERTY));
+        final String contentType = systemUtils.parseString(getProperty(CONTENT_TYPE_PROPERTY), getClassLoader());
+        textPane.setContentType(contentType);
+        
+        final String text = systemUtils.parseString(getProperty(TEXT_PROPERTY), getClassLoader());
+        textPane.setText(text);
     }
     
     public void initComponents() {
@@ -51,9 +57,13 @@ public class TextPanel extends DefaultWizardPanel {
         add(textPane, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 11, 11), 0, 0));
     }
     
+    private static StringUtils   stringUtils   = StringUtils.getInstance();
+    private static SystemUtils   systemUtils   = SystemUtils.getInstance();
+    private static ResourceUtils resourceUtils = ResourceUtils.getInstance();
+    
     public static final String TEXT_PROPERTY = "text";
     public static final String CONTENT_TYPE_PROPERTY = "content.type";
     
-    public static final String DEFAULT_TEXT = "";
-    public static final String DEFAULT_CONTENT_TYPE = "text/plain";
+    public static final String DEFAULT_TEXT = resourceUtils.getString(TextPanel.class, "TextPanel.default.text");
+    public static final String DEFAULT_CONTENT_TYPE = resourceUtils.getString(TextPanel.class, "TextPanel.default.content.type");
 }
