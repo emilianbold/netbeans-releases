@@ -269,7 +269,17 @@ public final class SubSequenceTokenList implements TokenList {
     }
 
     public InputAttributes inputAttributes() {
-        throw new IllegalStateException("Unexpected call.");
+        return tokenList.inputAttributes();
+        // VIS: Why is it unexpected to call this method? It's perfectly legal,
+        // I think. Do this:
+        // 1. get TokenSequence
+        // 2. get its subsequence
+        // 3. call embedded on the subsequence
+        //
+        // How about the similar calls to the other methods in this class,
+        // should they be throwing ISE? Why can't they work?
+        //
+        // throw new IllegalStateException("Unexpected call.");
     }
 
     public int lookahead(int index) {
