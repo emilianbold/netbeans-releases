@@ -144,25 +144,25 @@ public class Version {
     
     public String toString() {
         if (string == null) {
-            return "" + major + "." + minor + "." + micro + (update != 0 ? "_" + (update < 10 ? "0" + update : update) : "");
+            return "" + major + "." + minor + "." + micro + "." + update + "." + build;
         } else {
             return string;
         }
     }
     
-    public String toMediumString() {
-        if (string == null) {
-            return "" + major + "." + minor + "." + micro;
-        } else {
-            return string;
-        }
+    public String toMajor() {
+        return "" + major;
     }
     
-    public String toShortString() {
-        if (string == null) {
-            return "" + major + "." + minor;
-        } else {
-            return string;
-        }
+    public String toMinor() {
+        return "" + major + "." + minor;
+    }
+    
+    public String toMicro() {
+        return "" + major + "." + minor + "." + micro;
+    }
+    
+    public String toJdkStyle() {
+        return "" + major + "." + minor + "." + micro + (update != 0 ? "_" + (update < 10 ? "0" + update : update) : "");
     }
 }
