@@ -253,7 +253,6 @@ public class TreeModelNode extends AbstractNode {
     
     void refresh () {
         // 1) empty cache
-        htmlDisplayName = null;
         synchronized (properties) {
             properties.clear();
         }
@@ -280,7 +279,6 @@ public class TreeModelNode extends AbstractNode {
             return ;
         }
         if ((ModelEvent.NodeChanged.DISPLAY_NAME_MASK & changeMask) != 0) {
-            htmlDisplayName = null;
             try {
                 String name = model.getDisplayName (object);
                 if (name == null) {
@@ -329,12 +327,27 @@ public class TreeModelNode extends AbstractNode {
 
     private void setName (String name, boolean italics) {
         // XXX HACK: HTMLDisplayName is missing in the models!
+        String oldHtmlDisplayName = htmlDisplayName;
+        String oldDisplayName = getDisplayName();
+        
+        String newDisplayName;
         if (name.startsWith ("<html>")) {
             htmlDisplayName = name;
-            setDisplayName (removeHTML(name));
+            newDisplayName = removeHTML(name);
         } else {
             htmlDisplayName = null;
-            setDisplayName (name);
+            newDisplayName = name;
+        }
+        if ((oldDisplayName == null) || !oldDisplayName.equals(newDisplayName)) {
+            setDisplayName(newDisplayName);
+        } else {
+            if (oldHtmlDisplayName != null && !oldHtmlDisplayName.equals(htmlDisplayName) ||
+                htmlDisplayName != null && !htmlDisplayName.equals(oldHtmlDisplayName)) {
+                
+                // Display names are equal, but HTML display names differ!
+                // We hope that this is sufficient to refresh the HTML display name:
+                fireDisplayNameChange(oldDisplayName + "_HACK", getDisplayName());
+            }
         }
     }
     

@@ -31,6 +31,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -131,11 +132,14 @@ public class CallStackNodeModel implements NodeModel {
         listeners.remove (l);
     }
     
-    private void fireTreeChanged () {
+    private void fireNodeChanged(Object node) {
         Vector v = (Vector) listeners.clone ();
-        int i, k = v.size ();
-        for (i = 0; i < k; i++)
-            ((ModelListener) v.get (i)).modelChanged (null);
+        int k = v.size ();
+        if (k == 0) return ;
+        ModelEvent.NodeChanged nodeChangedEvent = new ModelEvent.NodeChanged(this, node);
+        for (int i = 0; i < k; i++) {
+            ((ModelListener) v.get (i)).modelChanged (nodeChangedEvent);
+        }
     }
     
     public static String getCSFName (
@@ -199,7 +203,8 @@ public class CallStackNodeModel implements NodeModel {
         public void propertyChange (PropertyChangeEvent e) {
             CallStackNodeModel rm = getModel ();
             if (rm == null) return;
-            rm.fireTreeChanged ();
+            rm.fireNodeChanged(e.getOldValue());
+            rm.fireNodeChanged(e.getNewValue());
         }
     }
 }
