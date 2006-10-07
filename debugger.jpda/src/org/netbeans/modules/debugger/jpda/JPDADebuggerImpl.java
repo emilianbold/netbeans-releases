@@ -42,6 +42,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -900,6 +901,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return ;
         }
         setState (STATE_RUNNING);
+        Collection threads = threadsTranslation.getTranslated();
+        for (Iterator it = threads.iterator(); it.hasNext(); ) {
+            Object threadOrGroup = it.next();
+            if (threadOrGroup instanceof JPDAThreadImpl) {
+                ((JPDAThreadImpl) threadOrGroup).notifyToBeRunning();
+            }
+        }
         synchronized (LOCK) {
             if (virtualMachine != null) {
                 logger.fine("VM resume");

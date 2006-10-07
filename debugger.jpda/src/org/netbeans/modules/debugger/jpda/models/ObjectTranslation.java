@@ -29,6 +29,9 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 
 import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.WeakHashMap;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -132,6 +135,24 @@ public final class ObjectTranslation {
             }
         }
         return r;
+    }
+    
+    /**
+     * Get all live objects that were translated.
+     */
+    public Collection getTranslated() {
+        Collection translated = new HashSet();
+        synchronized (cache) {
+            Collection references = cache.values();
+            for (Iterator it = references.iterator(); it.hasNext(); ) {
+                WeakReference wr = (WeakReference) it.next();
+                Object r = wr.get();
+                if (r != null) {
+                    translated.add(r);
+                }
+            }
+        }
+        return translated;
     }
     
     /**
