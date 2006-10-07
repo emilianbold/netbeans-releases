@@ -56,6 +56,10 @@ public final class JPDAThreadImpl implements JPDAThread {
     private boolean             suspended;
     private ReturnVariableImpl  returnVariable;
     private PropertyChangeSupport pch = new PropertyChangeSupport(this);
+    private CallStackFrame[]    cachedFrames;
+    private int                 cachedFramesFrom = -1;
+    private int                 cachedFramesTo = -1;
+    private Object              cachedFramesLock = new Object();
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -252,11 +256,25 @@ public final class JPDAThreadImpl implements JPDAThread {
             int max = threadReference.frameCount();
             from = Math.min(from, max);
             to = Math.min(to, max);
+            if (to - from > 1) {
+                synchronized (cachedFramesLock) {
+                    if (from == cachedFramesFrom && to == cachedFramesTo) {
+                        return cachedFrames;
+                    }
+                }
+            }
             List l = threadReference.frames (from, to - from);
             int n = l.size();
             CallStackFrame[] frames = new CallStackFrame[n];
             for (int i = 0; i < n; i++) {
                 frames[i] = new CallStackFrameImpl((StackFrame) l.get(i), from + i, debugger);
+            }
+            if (to - from > 1) {
+                synchronized (cachedFramesLock) {
+                    cachedFrames = frames;
+                    cachedFramesFrom = from;
+                    cachedFramesTo = to;
+                }
             }
             return frames;
         } catch (IncompatibleThreadStateException ex) {
@@ -269,6 +287,14 @@ public final class JPDAThreadImpl implements JPDAThread {
             throw aiex;
         } catch (VMDisconnectedException ex) {
             return new CallStackFrame [0];
+        }
+    }
+    
+    private void cleanCachedFrames() {
+        synchronized (cachedFramesLock) {
+            cachedFrames = null;
+            cachedFramesFrom = -1;
+            cachedFramesTo = -1;
         }
     }
     
@@ -328,7 +354,8 @@ public final class JPDAThreadImpl implements JPDAThread {
             } catch (ObjectCollectedException ex) {
             } catch (VMDisconnectedException ex) {
             }
-        }        
+        }
+        cleanCachedFrames();
         if (suspendedToFire != null) {
             pch.firePropertyChange(PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
@@ -345,6 +372,7 @@ public final class JPDAThreadImpl implements JPDAThread {
                 suspendedToFire = Boolean.FALSE;
             }
         }
+        cleanCachedFrames();
         if (suspendedToFire != null) {
             pch.firePropertyChange(PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
