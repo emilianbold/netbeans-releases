@@ -63,8 +63,14 @@ class DiffTooltipActionsPanel extends JToolBar implements ActionListener {
         
         prevButton.setToolTipText("Go To Previous Difference");
         nextButton.setToolTipText("Go To Next Difference");
-        rollButton.setToolTipText("Replace With Original text");
         diffButton.setToolTipText("Open Diff Window");
+        if (diff.getType() == Difference.ADD) {
+            rollButton.setToolTipText("Delete Added Text");
+        } else if (diff.getType() == Difference.CHANGE) {
+            rollButton.setToolTipText("Replace With Original Text");
+        } else {
+            rollButton.setToolTipText("Restore Original Text");
+        }
         
         prevButton.addActionListener(this);
         nextButton.addActionListener(this);

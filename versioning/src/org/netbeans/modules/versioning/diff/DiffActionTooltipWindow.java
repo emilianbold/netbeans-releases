@@ -55,7 +55,6 @@ class DiffActionTooltipWindow implements AWTEventListener {
         actionsWindow.add(tp);
         actionsWindow.pack();
         actionsWindow.setLocation(location);
-        actionsWindow.setVisible(true);
 
         if (contentWindow != null) {
             DiffTooltipContentPanel cp = new DiffTooltipContentPanel(master.getTextComponent(), master.getMimeType(), diff);
@@ -76,6 +75,8 @@ class DiffActionTooltipWindow implements AWTEventListener {
             contentWindow.setVisible(true);
         }
 
+        actionsWindow.setVisible(true);
+        
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
     }
 

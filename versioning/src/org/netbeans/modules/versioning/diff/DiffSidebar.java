@@ -132,14 +132,18 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     }
     
     private void onClick(MouseEvent event, Difference diff) {
-        DiffActionTooltipWindow ttw = new DiffActionTooltipWindow(this, diff);
         Point p = new Point(event.getPoint());
         SwingUtilities.convertPointToScreen(p, this);
         Point p2 = new Point(p);
         SwingUtilities.convertPointFromScreen(p2, textComponent);
-        ttw.show(new Point(p.x - p2.x, p.y));
+        showTooltipWindow(new Point(p.x - p2.x, p.y), diff);
     }
 
+    private void showTooltipWindow(Point p, Difference diff) {
+        DiffActionTooltipWindow ttw = new DiffActionTooltipWindow(this, diff);
+        ttw.show(new Point(p.x, p.y));
+    }
+    
     private Difference getDifferenceAt(MouseEvent event) {
         if (currentDiff == null) return null;
         int line = getLineFromMouseEvent(event);
@@ -195,11 +199,55 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     }
     
     void onPrevious(Difference diff) {
+        for (int i = 0; i < currentDiff.length; i++) {
+            Difference difference = currentDiff[i];
+            if (difference == diff) {
+                diff = currentDiff[i - 1];
+                break;
+            }
+        }
+        Point location = scrollToDifference(diff);
+        showTooltipWindow(location, diff);
+        textComponent.repaint();
     }
 
     void onNext(Difference diff) {
+        for (int i = 0; i < currentDiff.length; i++) {
+            Difference difference = currentDiff[i];
+            if (difference == diff) {
+                diff = currentDiff[i + 1];
+                break;
+            }
+        }
+        Point location = scrollToDifference(diff);
+        showTooltipWindow(location, diff);
+        textComponent.repaint();
     }
 
+    private Point scrollToDifference(Difference diff) {
+        int lineStart = diff.getSecondStart() - 1;
+        int lineEnd = diff.getSecondEnd() - 1;
+        if (diff.getType() == Difference.DELETE) {
+            lineEnd = lineStart;
+        }
+        try {
+            int visibleBorder = editorUI.getLineHeight() * 5;
+            int startOffset = Utilities.getRowStartFromLineOffset((BaseDocument) textComponent.getDocument(), lineStart);
+            int endOffset = Utilities.getRowStartFromLineOffset((BaseDocument) textComponent.getDocument(), lineEnd);
+            Rectangle startRect = textComponent.getUI().modelToView(textComponent, startOffset);
+            Rectangle endRect = textComponent.getUI().modelToView(textComponent, endOffset);
+            Rectangle visibleRect = new Rectangle(startRect.x - visibleBorder, startRect.y - visibleBorder, 
+                                                  startRect.x, endRect.y - startRect.y + endRect.height + visibleBorder * 2);
+            textComponent.scrollRectToVisible(visibleRect);
+            
+            Point p = new Point(endRect.x, endRect.y + endRect.height + 1);
+            SwingUtilities.convertPointToScreen(p, textComponent);
+            return p;
+        } catch (BadLocationException e) {
+        }
+        return null;
+    }
+    
     String getMimeType() {
         if (textComponent instanceof JEditorPane) {
             return ((JEditorPane) textComponent).getContentType();
