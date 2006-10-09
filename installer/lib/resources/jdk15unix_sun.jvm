@@ -100,6 +100,42 @@ PATH_HINT:
   /usr/local/jdk1.5.0_12
   /usr/local/java/jdk1.5.0_12
   /opt/jdk1.5.0_12
+
+  /usr/java/jdk1.5.0_13
+  /usr/jdk1.5.0_13
+  /usr/local/jdk1.5.0_13
+  /usr/local/java/jdk1.5.0_13
+  /opt/jdk1.5.0_13
+
+  /usr/java/jdk1.5.0_14
+  /usr/jdk1.5.0_14
+  /usr/local/jdk1.5.0_14
+  /usr/local/java/jdk1.5.0_14
+  /opt/jdk1.5.0_14
+
+  /usr/java/jdk1.5.0_15
+  /usr/jdk1.5.0_15
+  /usr/local/jdk1.5.0_15
+  /usr/local/java/jdk1.5.0_15
+  /opt/jdk1.5.0_15
+
+  /usr/java/jdk1.5.0_16
+  /usr/jdk1.5.0_16
+  /usr/local/jdk1.5.0_16
+  /usr/local/java/jdk1.5.0_16
+  /opt/jdk1.5.0_16
+
+  /usr/java/jdk1.5.0_17
+  /usr/jdk1.5.0_17
+  /usr/local/jdk1.5.0_17
+  /usr/local/java/jdk1.5.0_17
+  /opt/jdk1.5.0_17
+
+  /usr/java/jdk1.5.0_18
+  /usr/jdk1.5.0_18
+  /usr/local/jdk1.5.0_18
+  /usr/local/java/jdk1.5.0_18
+  /opt/jdk1.5.0_18
 /:
 PLATFORM_HINT:
   JDK_HOME
