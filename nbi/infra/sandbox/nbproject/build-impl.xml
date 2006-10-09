@@ -271,6 +271,7 @@ is divided into following sections:
     ===================
     -->
     <target name="deps-jar" depends="init" unless="no.deps">
+        <ant target="jar" inheritall="false" antfile="${project.NBI_Component__NetBeans_IDE_5_5}/build.xml"/>
         <ant target="jar" inheritall="false" antfile="${project.NetBeans_Installer_Engine}/build.xml"/>
     </target>
     <target name="-pre-pre-compile" depends="init,deps-jar">
@@ -564,6 +565,7 @@ is divided into following sections:
     ===============
     -->
     <target name="deps-clean" depends="init" unless="no.deps">
+        <ant target="clean" inheritall="false" antfile="${project.NBI_Component__NetBeans_IDE_5_5}/build.xml"/>
         <ant target="clean" inheritall="false" antfile="${project.NetBeans_Installer_Engine}/build.xml"/>
     </target>
     <target name="-do-clean" depends="init">

@@ -90,6 +90,7 @@ public abstract class ResourceUtils {
         }
         
         public String getString(String baseName, String key, ClassLoader loader) {
+            System.out.println(baseName + "  ----  " + key + "  ----  " + loader);
             return loadBundle(baseName, Locale.getDefault(), loader).getString(key);
         }
         
