@@ -82,6 +82,10 @@
             <property array="True" length="0" name="JVMFileResources" type="string"/>
             <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
+                    <property name="fullSearch">False</property>
+                </arrayItem>
+                <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
@@ -91,10 +95,6 @@
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
             </property>
@@ -109,6 +109,10 @@
             <property array="True" length="0" name="JVMFileResources" type="string"/>
             <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
+                    <property name="fullSearch">False</property>
+                </arrayItem>
+                <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
@@ -118,10 +122,6 @@
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
                     <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                    <property name="fullSearch">False</property>
-                </arrayItem>
-                <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
             </property>
@@ -136,11 +136,11 @@
             <property array="True" length="0" name="JVMFileResources" type="string"/>
             <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
             </property>
@@ -155,11 +155,11 @@
             <property array="True" length="0" name="JVMFileResources" type="string"/>
             <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
             </property>
@@ -174,11 +174,11 @@
             <property array="True" length="0" name="JVMFileResources" type="string"/>
             <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
                 <arrayItem type="com.installshield.util.jvm.JVMFile">
-                    <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
+                    <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
                     <property name="fullSearch">False</property>
                 </arrayItem>
             </property>
@@ -740,11 +740,11 @@
                     <property name="fileName">setupwin32.exe</property>
                     <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk16win32_sun.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk15win32_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                     </property>
@@ -767,6 +767,10 @@
                     <property name="fileName">setuplinux.bin</property>
                     <property array="True" length="4" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
+                            <property name="fullSearch">False</property>
+                        </arrayItem>
+                        <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
@@ -776,10 +780,6 @@
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
                             <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_ibm.jvm</property>
-                            <property name="fullSearch">False</property>
-                        </arrayItem>
-                        <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                     </property>
@@ -800,11 +800,11 @@
                     <property name="fileName">setupSolarisSparc.bin</property>
                     <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                     </property>
@@ -825,11 +825,11 @@
                     <property name="fileName">setupSolarisx86.bin</property>
                     <property array="True" length="2" name="JVMFileSources" type="com.installshield.util.jvm.JVMFile">
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                         <arrayItem type="com.installshield.util.jvm.JVMFile">
-                            <property name="fileName">$A(basedir)/../lib/resources/jdk16unix_sun.jvm</property>
+                            <property name="fileName">$A(basedir)/../lib/resources/jdk15unix_sun.jvm</property>
                             <property name="fullSearch">False</property>
                         </arrayItem>
                     </property>
