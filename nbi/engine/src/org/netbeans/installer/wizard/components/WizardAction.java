@@ -31,8 +31,8 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public abstract class WizardAction implements WizardComponent {
-    private SubWizard  wizard;
-    private boolean active = true;
+    private SubWizard wizard;
+    private boolean   active = true;
     
     private List<WizardCondition> wizardConditions =
             new ArrayList<WizardCondition>();
