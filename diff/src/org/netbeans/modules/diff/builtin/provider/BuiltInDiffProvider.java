@@ -69,7 +69,7 @@ public class BuiltInDiffProvider extends DiffProvider implements java.io.Seriali
      *        or <code>null</code> when some error occured.
      */
     public Difference[] computeDiff(Reader r1, Reader r2) throws IOException {
-        return HuntDiff.diff(getLines(r1), getLines(r2));   
+        return HuntDiff.diff(getLines(r1), getLines(r2), trimLines);   
     }
     
     private String[] getLines(Reader r) throws IOException {
@@ -77,9 +77,6 @@ public class BuiltInDiffProvider extends DiffProvider implements java.io.Seriali
         String line;
         List lines = new ArrayList();
         while ((line = br.readLine()) != null) {
-            if (isTrimLines()) {
-                line = line.trim();
-            }
             lines.add(line);
         }
         return (String[]) lines.toArray(new String[0]);

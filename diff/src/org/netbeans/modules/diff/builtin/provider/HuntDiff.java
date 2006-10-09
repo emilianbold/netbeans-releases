@@ -31,9 +31,27 @@ public class HuntDiff {
     private HuntDiff() {
     }
 
-    public static Difference[] diff(String[] lines1, String[] lines2) {
+    /**
+     * @param lines1 array of lines from the first source
+     * @param lines2 array of lines from the second source
+     * @param ignoreWhitespace true to ignore leading and trailing whitespace when computing diff, false to also find differences in whitespace
+     * @return computed diff
+     */ 
+    public static Difference[] diff(String[] lines1, String[] lines2, boolean ignoreWhitespace) {
         int m = lines1.length;
         int n = lines2.length;
+        String [] lines1_original = lines1;
+        String [] lines2_original = lines2;
+        if (ignoreWhitespace) {
+            lines1 = new String[lines1_original.length];
+            lines2 = new String[lines2_original.length];
+            for (int i = 0 ; i < lines1_original.length; i++) {
+                lines1[i] = lines1_original[i].trim();
+            }
+            for (int i = 0 ; i < lines2_original.length; i++) {
+                lines2[i] = lines2_original[i].trim();
+            }
+        }
         Line[] l2s = new Line[n + 1];
         // In l2s we have sorted lines of the second file <1, n>
         for (int i = 1; i <= n; i++) {
@@ -83,7 +101,7 @@ public class HuntDiff {
             c = c.c;
         }
         
-        List differences = getDifferences(J, lines1, lines2);
+        List differences = getDifferences(J, lines1_original, lines2_original);
         cleanup(differences);
         return (Difference[]) differences.toArray(new Difference[0]);
     }
