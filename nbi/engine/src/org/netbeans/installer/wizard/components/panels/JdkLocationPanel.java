@@ -96,7 +96,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             Map<File, Version> filteredLocations = filterLocations();
             
             for (File file: filteredLocations.keySet()) {
-                locations.put(file.getAbsolutePath() + " (v. " + filteredLocations.get(file) + ")", file);
+                locations.put(file.getAbsolutePath() + " (v. " + filteredLocations.get(file).toJdkStyle() + ")", file);
             }
         } catch (ClassCastException e) {
             ErrorManager.getInstance().notify(ErrorLevel.ERROR, e);
