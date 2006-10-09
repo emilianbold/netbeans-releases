@@ -174,6 +174,7 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         "deployment.method",
         "deployment.override.jarurl",
         "deployment.jarurl",
+        "deployment.instance",
         "manifest.midlets",
         "manifest.apipermissions",
         "manifest.pushregistry",
