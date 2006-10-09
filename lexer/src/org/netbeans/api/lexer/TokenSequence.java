@@ -510,7 +510,7 @@ public final class TokenSequence<T extends TokenId> {
      *  will be present in the returned sequence.
      * @return non-null sub sequence of this token sequence.
      */
-    public TokenSequence subSequence(int startOffset) {
+    public TokenSequence<T> subSequence(int startOffset) {
         return subSequence(startOffset, Integer.MAX_VALUE);
     }
     
@@ -526,7 +526,7 @@ public final class TokenSequence<T extends TokenId> {
      *  will be present in the returned sequence.
      * @return non-null sub sequence of this token sequence.
      */
-    public TokenSequence subSequence(int startOffset, int endOffset) {
+    public TokenSequence<T> subSequence(int startOffset, int endOffset) {
         checkModCount(); // Ensure subsequences on valid token sequences only
         TokenList tl;
         if (tokenList.getClass() == SubSequenceTokenList.class) {
@@ -536,7 +536,7 @@ public final class TokenSequence<T extends TokenId> {
             endOffset = Math.min(endOffset, stl.limitEndOffset());
         } else // Regular token list
             tl = tokenList;
-        return new TokenSequence(new SubSequenceTokenList(tl, startOffset, endOffset));
+        return new TokenSequence<T>(new SubSequenceTokenList(tl, startOffset, endOffset));
     }
     
     public String toString() {
