@@ -30,6 +30,8 @@ import java.awt.event.MouseEvent;
  */
 class DiffActionTooltipWindow implements AWTEventListener {
 
+    private static final int SCREEN_BORDER = 20;
+    
     private JWindow actionsWindow;
     private JWindow contentWindow;
 
@@ -63,15 +65,15 @@ class DiffActionTooltipWindow implements AWTEventListener {
             Dimension dim = contentWindow.getSize();
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-            if (location.y + actionsWindow.getHeight() + dim.height + 20 > screenSize.height) {
-                dim.height = screenSize.height - (location.y + actionsWindow.getHeight() + 20);
+            if (location.y + actionsWindow.getHeight() + dim.height + SCREEN_BORDER > screenSize.height) {
+                dim.height = screenSize.height - (location.y + actionsWindow.getHeight() + SCREEN_BORDER);
             }
-            if (location.x + dim.width + 20 > screenSize.width) {
-                dim.width = screenSize.width - (location.x + 20);  
+            if (location.x + dim.width + SCREEN_BORDER > screenSize.width) {
+                dim.width = screenSize.width - (location.x + SCREEN_BORDER);  
             }
             contentWindow.setSize(dim);
 
-            contentWindow.setLocation(location.x, location.y + actionsWindow.getHeight() - 1);
+            contentWindow.setLocation(location.x, location.y + actionsWindow.getHeight() - 1);  // slight visual adjustment
             contentWindow.setVisible(true);
         }
 

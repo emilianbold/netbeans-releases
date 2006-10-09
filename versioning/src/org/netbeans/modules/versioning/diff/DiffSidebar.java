@@ -77,7 +77,6 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     
     private final DiffSidebarProvider.OriginalContent originalContent;
     private String                              originalContentBuffer;
-    private String                              originalContentMimeType;
 
     private RequestProcessor.Task   refreshDiffTask;
 
@@ -165,9 +164,17 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             tc.setName(originalContent.getWorkingCopy().getName() + " [Diff]");
             tc.open();
             tc.requestActive();
+            view.setCurrentDifference(getDiffIndex(diff));
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
+    }
+
+    private int getDiffIndex(Difference diff) {
+        for (int i = 0; i < currentDiff.length; i++) {
+            if (diff == currentDiff[i]) return i;
+        }
+        return -1;
     }
 
     private void onRollbackAll() {
@@ -199,26 +206,14 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     }
     
     void onPrevious(Difference diff) {
-        for (int i = 0; i < currentDiff.length; i++) {
-            Difference difference = currentDiff[i];
-            if (difference == diff) {
-                diff = currentDiff[i - 1];
-                break;
-            }
-        }
+        diff = currentDiff[getDiffIndex(diff) - 1];
         Point location = scrollToDifference(diff);
         showTooltipWindow(location, diff);
         textComponent.repaint();
     }
 
     void onNext(Difference diff) {
-        for (int i = 0; i < currentDiff.length; i++) {
-            Difference difference = currentDiff[i];
-            if (difference == diff) {
-                diff = currentDiff[i + 1];
-                break;
-            }
-        }
+        diff = currentDiff[getDiffIndex(diff) + 1];
         Point location = scrollToDifference(diff);
         showTooltipWindow(location, diff);
         textComponent.repaint();
@@ -278,35 +273,6 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
         public HelpCtx getHelpCtx() {
             return new HelpCtx(getClass());
-        }
-    }
-
-    private class SidebarStreamSource extends StreamSource {
-
-        private final boolean isFirst;
-
-        public SidebarStreamSource(boolean isFirst) {
-            this.isFirst = isFirst;
-        }
-
-        public String getName() {
-            return "name";
-        }
-
-        public String getTitle() {
-            return originalContent.getWorkingCopy().getName();
-        }
-
-        public String getMIMEType() {
-            return originalContentMimeType;
-        }
-
-        public Reader createReader() throws IOException {
-            return isFirst ? new StringReader(originalContentBuffer) : getDocumentReader();
-        }
-
-        public Writer createWriter(Difference[] conflicts) throws IOException {
-            return null;
         }
     }
 
@@ -619,18 +585,10 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
                 currentDiff = null;
                 return;
             }
-            boolean isTrim = false;
-            if (diff instanceof BuiltInDiffProvider) {
-                isTrim = ((BuiltInDiffProvider) diff).isTrimLines();
-                ((BuiltInDiffProvider) diff).setTrimLines(false);
-            }
             try {
                 currentDiff = diff.computeDiff(new StringReader(originalContentBuffer), working);
             } catch (IOException e) {
                 currentDiff = null;
-            }
-            if (diff instanceof BuiltInDiffProvider) {
-                ((BuiltInDiffProvider) diff).setTrimLines(isTrim);
             }
         }
 
@@ -644,13 +602,45 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             
             StringWriter w = new StringWriter(2048);
             try {
-                originalContentMimeType = fo.getMIMEType();
-                Reader original = EncodedReaderFactory.getDefault().getReader(file, originalContentMimeType);
+                Reader original = EncodedReaderFactory.getDefault().getReader(file, getMimeType());
                 copyStreamsCloseAll(w, original);
                 originalContentBuffer = w.toString();
             } catch (IOException e) {
                 // ignore, we will show no diff
             }
+        }
+    }
+    
+    private class SidebarStreamSource extends StreamSource {
+
+        private final boolean isFirst;
+
+        public SidebarStreamSource(boolean isFirst) {
+            this.isFirst = isFirst;
+        }
+
+        public String getName() {
+            return originalContent.getWorkingCopy().getName();
+        }
+
+        public String getTitle() {
+            if (isFirst) {
+                return "Original";
+            } else {
+                return "Working Copy (editable)";
+            }
+        }
+
+        public String getMIMEType() {
+            return getMimeType();
+        }
+
+        public Reader createReader() throws IOException {
+            return isFirst ? new StringReader(originalContentBuffer) : getDocumentReader();
+        }
+
+        public Writer createWriter(Difference[] conflicts) throws IOException {
+            return null;
         }
     }
 }

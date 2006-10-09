@@ -32,7 +32,7 @@ import java.awt.*;
 /**
  * @author Maros Sandor
  */
-public class DiffTooltipContentPanel extends JComponent {
+class DiffTooltipContentPanel extends JComponent {
 
     public DiffTooltipContentPanel(JTextComponent parentPane, String mimeType, Difference diff) {
         

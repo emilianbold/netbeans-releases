@@ -37,13 +37,13 @@ class DiffTooltipActionsPanel extends JToolBar implements ActionListener {
     private final Icon iconDiff = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/diff.png"));
     private final Icon iconRollback = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/diff/rollback.png"));
 
-    private DiffActionTooltipWindow master;
-    private Difference              diff;
+    private final DiffActionTooltipWindow master;
+    private final Difference              diff;
     
-    private JButton prevButton;
-    private JButton nextButton;
-    private JButton rollButton;
-    private JButton diffButton;
+    private final JButton prevButton;
+    private final JButton nextButton;
+    private final JButton rollButton;
+    private final JButton diffButton;
 
     public DiffTooltipActionsPanel(DiffActionTooltipWindow master, Difference diff) {
         this.master = master;
