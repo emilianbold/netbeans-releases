@@ -167,6 +167,7 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
         } else {
             //dragging an item to reorder or move to a different category
             //or dragging something from outside the palette to create a new item
+            dtde.acceptDrop( dtde.getDropAction() );
             boolean res = false;
             if( null != targetCategory ) {
                 Transferable t;
