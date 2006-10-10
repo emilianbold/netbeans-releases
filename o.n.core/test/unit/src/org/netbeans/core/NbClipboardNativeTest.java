@@ -50,6 +50,7 @@ import org.openide.util.datatransfer.TransferListener;
 public class NbClipboardNativeTest extends NbTestCase implements ClipboardListener {
     private NbClipboard ec;
     private int listenerCalls;
+    private Logger LOG;
     
     public NbClipboardNativeTest(String name) {
         super(name);
@@ -57,7 +58,7 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
     
     protected void setUp() throws Exception {
         MockServices.setServices();
-        
+        LOG = Logger.getLogger("TEST-" + getName());
         
         class EmptyTrans  implements Transferable, ClipboardOwner {
             public DataFlavor[] getTransferDataFlavors() {
@@ -78,14 +79,23 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
 
         
         super.setUp();
+        
+        LOG.info("Setting up");
+        
         //System.setProperty("org.netbeans.core.NbClipboard", "-5");
         System.setProperty("netbeans.slow.system.clipboard.hack", String.valueOf(slowClipboardHack()));
         this.ec = new NbClipboard();
+        
+        LOG.info("Clipboard created");
 
         EmptyTrans et = new EmptyTrans();
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(et, et);
 
+        LOG.info("system clipboard content changed");
+        
         this.ec.addClipboardListener(this);
+        
+        LOG.info("Listener added");
     }
     
     protected void tearDown () throws Exception {
@@ -244,6 +254,7 @@ public class NbClipboardNativeTest extends NbTestCase implements ClipboardListen
 
     public void clipboardChanged(ClipboardEvent ev) {
         listenerCalls++;
+        LOG.log(Level.INFO, "clipboardChanged: " + listenerCalls, new Exception());
     }
     
     private void waitFinished(NbClipboard ec) {
