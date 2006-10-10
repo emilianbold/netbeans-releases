@@ -43,6 +43,8 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="uncompilable"/>
             <arg value="-Dxtest.fail.on.failure"/>
             <arg value="false"/>
+            <arg value="-Dxtest.home"/>
+            <arg value="${xtest.home}"/>
         </java>        
         <buildTests srcDir="unit/src" compileExcludes="**/data/**,**/UncompilableTest*">
             <classpath>
