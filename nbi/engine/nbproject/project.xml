@@ -10,7 +10,7 @@
                 <root id="src.dir"/>
             </source-roots>
             <test-roots>
-                <root id="test.src.dir"/>
+                <root id="test.tests.dir" name="Project Tests"/>
             </test-roots>
         </data>
     </configuration>
