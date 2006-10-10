@@ -136,11 +136,11 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         for (int i = 0; i < paths.length; i++) {
             String path = paths[i].trim();
             String repositoryUrlString = getRepositoryUrl().toString();
-            if(path.startsWith("file://") || // NOI18N
-               path.startsWith("http://") || // NOI18N
-               path.startsWith("https://") || // NOI18N
-               path.startsWith("svn://") || // NOI18N
-               path.startsWith("svn+ssh://")) {  // NOI18N
+            if(path.startsWith("file://")  ||   // NOI18N
+               path.startsWith("http://")  ||   // NOI18N
+               path.startsWith("https://") ||   // NOI18N
+               path.startsWith("svn://")   ||   // NOI18N
+               path.startsWith("svn+ssh://")) { // NOI18N
                 // must be a complete URL 
                 // so check if it matches with the given repository URL
                 if(path.startsWith(repositoryUrlString)) {
@@ -252,7 +252,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }
     }
     
-    private SVNRevision getRevision() {
+    public SVNRevision getRevision() {
         if(revisionTextField == null) {
             return SVNRevision.HEAD;
         }
@@ -295,22 +295,27 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         boolean oldValue = this.valid;
         boolean valid = true;
 
+        RepositoryFile[] files = null;
         try {
-            getRepositoryFiles();
+            files = getRepositoryFiles();
         } catch (NumberFormatException ex) {
             valid = false;
         } catch (MalformedURLException ex) {            
             valid = false;
         }
-
+        
         if(browseButton!=null) {
             browseButton.setEnabled(valid);
         }        
         if(searchRevisionButton!=null) {
             searchRevisionButton.setEnabled(valid);
         }
+        
+        if(!acceptEmptyUrl() && repositoryPathTextField != null && repositoryPathTextField.getText().trim().equals("")) { // NOI18N
+            valid = false;
+        }
 
-        if(repositoryPathTextField != null && repositoryPathTextField.getText().trim().equals("")) { // NOI18N
+        if(!acceptEmptyRevision() && revisionTextField != null && revisionTextField.getText().trim().equals("")) { // NOI18N
             valid = false;
         }
         
@@ -318,7 +323,6 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             this.valid = valid;
             fireValidPropertyChanged(oldValue, valid);
         };
-
     }
 
     private void fireValidPropertyChanged(boolean oldValue, boolean valid) {
@@ -345,6 +349,12 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         listeners.remove(l);
     }
 
-
+    protected boolean acceptEmptyUrl() {
+        return false;
+    }
+        
+    protected boolean acceptEmptyRevision() {
+        return true;
+    }
 
 }

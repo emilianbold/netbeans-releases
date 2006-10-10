@@ -20,13 +20,16 @@ package org.netbeans.modules.subversion.ui.copy;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.ui.browser.BrowserAction;
-import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -35,14 +38,20 @@ import org.openide.util.NbBundle;
 public class SwitchTo extends CopyDialog {
 
     private RepositoryPaths repositoryPaths;
-    
+    private final File root;
+    private final RepositoryFile repositoryRoot;
+        
     public SwitchTo(RepositoryFile repositoryRoot, File root, boolean localChanges) {
         super(new SwitchToPanel(), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Title", root.getName()), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Action")); // NOI18N
+        
+        this.root = root;        
+        this.repositoryRoot = repositoryRoot;       
+        
         SwitchToPanel panel = getSwitchToPanel();
         panel.warningLabel.setVisible(localChanges);
 
         repositoryPaths = 
-            new RepositoryPaths(
+            new SwitchToRepositoryPaths(
                 repositoryRoot, 
                 (JTextField) panel.urlComboBox.getEditor().getEditorComponent(),
                 panel.browseRepositoryButton,
@@ -63,7 +72,18 @@ public class SwitchTo extends CopyDialog {
     
     RepositoryFile getRepositoryFile() {        
         try {
-            return repositoryPaths.getRepositoryFiles()[0];
+            RepositoryFile[] repositoryFiles = repositoryPaths.getRepositoryFiles();
+            if(repositoryFiles.length > 0) {
+                return repositoryFiles[0];
+            } else {
+                SVNRevision revision = repositoryPaths.getRevision();
+                if(revision == null) {
+                    return null;
+                }
+                SVNUrl url = SvnUtils.getRepositoryUrl(root);                
+                RepositoryFile rf = new RepositoryFile(repositoryRoot.getRepositoryUrl(), url, revision);
+                return rf;
+            }
         } catch (MalformedURLException ex) {
             // should be already checked and 
             // not happen at this place anymore
@@ -75,4 +95,20 @@ public class SwitchTo extends CopyDialog {
     private SwitchToPanel getSwitchToPanel() {
         return (SwitchToPanel) getPanel();
     }    
+    
+    private class SwitchToRepositoryPaths extends RepositoryPaths {
+        
+        public SwitchToRepositoryPaths (RepositoryFile repositoryFile, 
+                           JTextComponent repositoryPathTextField,  
+                           JButton browseButton, 
+                           JTextField revisionTextField, 
+                           JButton searchRevisionButton) 
+        {
+            super(repositoryFile, repositoryPathTextField, browseButton, revisionTextField, searchRevisionButton);
+        }                    
+        
+        protected boolean acceptEmptyUrl() {
+            return true;
+        }
+    }
 }
