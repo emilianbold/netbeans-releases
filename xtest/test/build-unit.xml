@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="false"/>
             <arg value="-Dxtest.home"/>
             <arg value="${xtest.home}"/>
-        </java>        
+        </java>
         <buildTests srcDir="unit/src" compileExcludes="**/data/**,**/UncompilableTest*">
             <classpath>
                 <pathelement location="${xtest.home}/lib/xtest.jar"/>
@@ -77,16 +77,20 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Run tests in JVM -->
     <target name="run-jvm">
-        <executeTests  pluginName="jvm">
+        <!-- Used in CheckUncompilableTest because on Test4U is special workdir
+        and we need to determine where are results from instance. -->
+        <property name="xtest.instance.results" location="instance/results"/>
+        <executeTests pluginName="jvm" >
             <classpath>
             </classpath>
+            <property name="xtest.jvm.args" value="-Dxtest.instance.results=${xtest.instance.results}"/>
         </executeTests>
     </target>
     
     <!-- Run tests in IDE -->
     <target name="run-ide">
         <property name="xtest.ide.commandline.suffix" value="--nogui"/>
-        <executeTests  pluginName="ide">
+        <executeTests pluginName="ide">
             <classpath>
             </classpath>
         </executeTests>

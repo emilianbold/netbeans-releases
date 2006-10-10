@@ -51,9 +51,9 @@ public class CheckUncompilableTest extends NbTestCase {
 
     /** Test results. */
     public void testCheckResults() throws IOException, ClassNotFoundException {
-        System.out.println("Checking UncompilableTest");
         System.out.println("xtest.workdir="+System.getProperty("xtest.workdir"));
-        File testFailuresFile = new File(System.getProperty("xtest.workdir"), "../instance/results/xmlresults/testreport-failures.xml");
+        System.out.println("xtest.instance.results="+System.getProperty("xtest.instance.results"));
+        File testFailuresFile = new File(System.getProperty("xtest.instance.results"), "xmlresults/testreport-failures.xml");
         assertTrue("Tests executed using instance should fail because of compilation error and file should exist: "+testFailuresFile, testFailuresFile.exists());
         XTestResultsReport report = XTestResultsReport.loadFromFile(testFailuresFile);
         TestRun testrun = report.xmlel_TestRun[0];
