@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.List;
+import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.SystemUtils.Platform;
 
 /**
@@ -81,7 +82,9 @@ public abstract class StringUtils {
     
     public abstract String getFilenameFromUrl(String urlString);
     
-    public abstract String asString(List<Platform> platforms);
+    public abstract String asString(List<? extends Object> objects);
+    
+    public abstract String asString(List<? extends Object> objects, String separator);
     
     public abstract String formatSize(long longBytes);
     
@@ -205,18 +208,22 @@ public abstract class StringUtils {
                 url.substring(index + 1,  length) : null;
         }
         
-        public String asString(List<Platform> platforms) {
-            String result = "";
+        public String asString(List<? extends Object> objects) {
+            return asString(objects, ", ");
+        }
+        
+        public String asString(List<? extends Object> objects, String separator) {
+            StringBuilder result = new StringBuilder();
             
-            for (int i = 0; i < platforms.size(); i++) {
-                result += platforms.get(i).getName();
+            for (int i = 0; i < objects.size(); i++) {
+                result.append(objects.get(i).toString());
                 
-                if (i != platforms.size() - 1) {
-                    result += " ";
+                if (i != objects.size() - 1) {
+                    result.append(separator);
                 }
             }
             
-            return result;
+            return result.toString();
         }
         
         public String formatSize(long longBytes) {
@@ -389,6 +396,5 @@ public abstract class StringUtils {
             
             return builder.toString();
         }
-    }
-    
+    }   
 }
