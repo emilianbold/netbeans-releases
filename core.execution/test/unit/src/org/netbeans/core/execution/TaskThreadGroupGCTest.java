@@ -19,7 +19,7 @@
 
 package org.netbeans.core.execution;
 
-import java.awt.Dialog;
+import java.awt.Frame;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
@@ -34,7 +34,7 @@ import org.openide.execution.ExecutorTask;
  * @author Jesse Glick
  */
 public class TaskThreadGroupGCTest extends NbTestCase {
-    private Dialog d;
+    private Frame f;
 
     public TaskThreadGroupGCTest(String name) {
         super(name);
@@ -45,8 +45,8 @@ public class TaskThreadGroupGCTest extends NbTestCase {
         
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-	        d = new Dialog(null, false);
-		d.setVisible(true);
+	        f = new Frame();
+		f.setVisible(true);
             }
         });
     }
@@ -55,9 +55,9 @@ public class TaskThreadGroupGCTest extends NbTestCase {
         
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-	        d.setVisible(false);
-		d.dispose();
-		d = null;
+	        f.setVisible(false);
+		f.dispose();
+		f = null;
             }
         });
         super.tearDown();
