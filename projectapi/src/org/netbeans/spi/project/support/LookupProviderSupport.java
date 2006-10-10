@@ -247,11 +247,11 @@ public final class LookupProviderSupport {
             return result.toArray(new SourceGroup[result.size()]);
         }
 
-        public void addChangeListener(ChangeListener listener) {
+        public synchronized void addChangeListener(ChangeListener listener) {
             listeners.add(listener);
         }
 
-        public void removeChangeListener(ChangeListener listener) {
+        public synchronized void removeChangeListener(ChangeListener listener) {
             listeners.remove(listener);
         }
 
@@ -260,7 +260,11 @@ public final class LookupProviderSupport {
         }
 
         private void fireChange() {
-            for (ChangeListener listener : listeners) {
+            ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
+            synchronized (this) {
+                list.addAll(listeners);
+            }
+            for (ChangeListener listener : list) {
                 listener.stateChanged(new ChangeEvent(this));
             }
         }
