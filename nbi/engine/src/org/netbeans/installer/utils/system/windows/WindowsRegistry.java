@@ -27,6 +27,13 @@ package org.netbeans.installer.utils.system.windows;
 public class WindowsRegistry {
     private static WindowsRegistry registry = new WindowsRegistry();
     
+    
+    /** Private constructor
+     *
+     */ 
+    private WindowsRegistry () {        
+    }
+    
     /**
      * Get instance of Win32Registry.
      * @return Win32Registry
@@ -60,10 +67,11 @@ public class WindowsRegistry {
     
     /** Delete the specified key exists in the registry.
      * @param registrySection The section of the registry
-     * @param key The specified key
+     * @param parentKey The specified parent key
+     * @param childKey The specified child key to delete
      * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise
      */
-    public native boolean deleteKey(int registrySection, String key);
+    public native boolean deleteKey(int registrySection, String parentKey, String childKey);
     
     /** Delete the specified value exists in the registry.
      * @param registrySection The section of the registry
@@ -217,8 +225,8 @@ public class WindowsRegistry {
     
     public native byte  [] getBinaryValue(int registrySection, String key, String valueName);
 
-    public void setStringValue(int registrySection, String key, String valueName, String value) {
-        setStringValue(registrySection, key, valueName, value, false);
+    public boolean setStringValue(int registrySection, String key, String valueName, String value) {
+        return setStringValue(registrySection, key, valueName, value, false);
     }
 
     public String getStringValue(int registrySection, String key, String valueName) {
