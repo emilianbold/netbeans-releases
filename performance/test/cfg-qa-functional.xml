@@ -322,6 +322,15 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
+    <testbag testattribs="editor_related" prio="105"
+             executor="ide_performance" name="UI responsiveness of actions, dialogs or menus related to editor" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureEditor.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
     <testbag testattribs="apisupport_related" prio="110"
              executor="ide_performance" name="UI responsiveness of actions, dialogs or menus related to apisupport" >
 	<testset dir="qa-functional/src">
@@ -332,7 +341,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
         
     <!-- Temp -->    
-    <testbag testattribs="temp" prio="100"
+    <testbag testattribs="temp" prio="1000"
              executor="ide_performance" name="Temp" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -340,7 +349,7 @@ Microsystems, Inc. All Rights Reserved.
 	    </patternset>
 	</testset>
     </testbag>
-    <testbag testattribs="memory_temp" prio="101"
+    <testbag testattribs="memory_temp" prio="1001"
              executor="ide_performance_memory_usage" name="Memory Usage Temp" >
 	<testset dir="qa-functional/src">
 	    <patternset>
