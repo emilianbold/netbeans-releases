@@ -25,10 +25,25 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Run instance to test reporting of compilation errors and then build tests. -->
     <target name="run-instance">
+        <!--
         <ant dir="instance" target="runtests" inheritall="false">
             <property name="xtest.config" value="uncompilable"/>
             <property name="xtest.fail.on.failure" value="false"/>
         </ant>
+        -->
+        <!-- The following is used instead of above because inheritAll="false"
+        doesn't work for all properties. Property xtest.config is set when run 
+        on Test4U.
+        -->
+        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
+            <arg value="-f"/>
+            <arg file="instance/build.xml"/>
+            <arg value="runtests"/>
+            <arg value="-Dxtest.config"/>
+            <arg value="uncompilable"/>
+            <arg value="-Dxtest.fail.on.failure"/>
+            <arg value="false"/>
+        </java>        
         <buildTests srcDir="unit/src" compileExcludes="**/data/**,**/UncompilableTest*">
             <classpath>
                 <pathelement location="${xtest.home}/lib/xtest.jar"/>
