@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.sql.Date;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -35,6 +36,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  * Creates a new folder in the browser
@@ -145,7 +147,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                 for (int i = 0; i < segments.length; i++) {                                                
                     
                     RepositoryFile newFile = parentFile.appendPath(segments[i]);
-                    RepositoryPathEntry entry = new RepositoryPathEntry(newFile, SVNNodeKind.DIR);
+                    RepositoryPathEntry entry = new RepositoryPathEntry(newFile, SVNNodeKind.DIR, new SVNRevision(0), new Date(System.currentTimeMillis()), ""); // XXX gget author
                     Node node = RepositoryPathNode.createBrowserPathNode(getBrowser(), entry);    
                     Node[] newChild = new Node[] {node};
                     segmentNode.getChildren().add(newChild);    

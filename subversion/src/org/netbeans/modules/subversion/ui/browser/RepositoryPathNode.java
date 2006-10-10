@@ -30,11 +30,27 @@ import javax.swing.*;
 import java.util.Collections;
 import java.awt.*;
 import java.beans.BeanInfo;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
+import java.lang.reflect.InvocationTargetException;
+import java.text.DateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.ui.search.SvnSearch;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Represents a path in the repository.
@@ -52,9 +68,15 @@ public class RepositoryPathNode extends AbstractNode {
     static class RepositoryPathEntry {
         private final SVNNodeKind svnNodeKind;
         private final RepositoryFile file;
-        RepositoryPathEntry (RepositoryFile file, SVNNodeKind svnNodeKind) {
+        private final SVNRevision revision;        
+        private Date date;
+        private final String author;
+        RepositoryPathEntry (RepositoryFile file, SVNNodeKind svnNodeKind, SVNRevision revision, Date date, String author) {
             this.svnNodeKind = svnNodeKind;
             this.file = file;
+            this.revision =revision;
+            this.date = date;
+            this.author = author;
         }
         public SVNNodeKind getSvnNodeKind() {
             return svnNodeKind;
@@ -62,10 +84,19 @@ public class RepositoryPathNode extends AbstractNode {
         RepositoryFile getRepositoryFile() {
             return file;
         }        
+        SVNRevision getLastChangedRevision() {
+            return revision;
+        }       
+        Date getLastChangedDate() {
+            return date;
+        }               
+        String getLastChangedAuthor() {
+            return author;
+        }                       
     }    
     
     static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryFile file) {
-        return createRepositoryPathNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR));
+        return createRepositoryPathNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""));
     }   
     
     static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {
@@ -90,8 +121,22 @@ public class RepositoryPathNode extends AbstractNode {
         } else {
             setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/defaultFile.gif");         // NOI18N    
         }
+        initProperties();
     }
 
+    private void initProperties() {
+        Sheet sheet = Sheet.createDefault();
+        Sheet.Set ps = Sheet.createPropertiesSet();
+                
+        ps.put(new RevisionProperty());
+        ps.put(new DateProperty());
+        ps.put(new AuthorProperty());
+        ps.put(new HistoryProperty());
+        
+        sheet.put(ps);
+        setSheet(sheet);        
+    }   
+    
     public Image getIcon(int type) {
         if(entry.getSvnNodeKind() != SVNNodeKind.DIR) {
             return null;
@@ -139,7 +184,10 @@ public class RepositoryPathNode extends AbstractNode {
     private void renameNode (RepositoryPathNode node, String newParentsName, int level) {        
         node.entry = new RepositoryPathEntry(
                         node.entry.getRepositoryFile().replaceLastSegment(newParentsName, level),
-                        node.entry.getSvnNodeKind()
+                        node.entry.getSvnNodeKind(),
+                        node.entry.getLastChangedRevision(),
+                        node.entry.getLastChangedDate(),
+                        node.entry.getLastChangedAuthor()
                     );
         Children childern = node.getChildren();
         Node[] childernNodes = childern.getNodes();
@@ -233,8 +281,6 @@ public class RepositoryPathNode extends AbstractNode {
                         return;
                     }
                 }
-
-                
             };
             support.start(rp, pathEntry.getRepositoryFile().getRepositoryUrl(), org.openide.util.NbBundle.getMessage(Browser.class, "BK2001")); // NOI18N
         }
@@ -286,4 +332,112 @@ public class RepositoryPathNode extends AbstractNode {
         }
 
     }    
+        
+    static final String PROPERTY_NAME_REVISION = "revision"; // NOI18N    
+    static final String PROPERTY_NAME_DATE     = "date"; // NOI18N    
+    static final String PROPERTY_NAME_AUTHOR   = "author"; // NOI18N    
+    static final String PROPERTY_NAME_HISTORY  = "history"; // NOI18N    
+
+    private class RevisionProperty extends NodeProperty {
+
+        public RevisionProperty() {
+            super(PROPERTY_NAME_REVISION, String.class, PROPERTY_NAME_REVISION, PROPERTY_NAME_REVISION);
+        }
+
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            return entry.getLastChangedRevision();
+        }
+    }
+
+    private class DateProperty extends NodeProperty {
+
+        public DateProperty() {
+            super(PROPERTY_NAME_DATE, String.class, PROPERTY_NAME_DATE, PROPERTY_NAME_DATE);
+        }
+
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            Date date = entry.getLastChangedDate();
+            return date != null ? DateFormat.getDateTimeInstance().format(date) : "";
+        }
+    }
+
+    private class AuthorProperty extends NodeProperty {
+
+        public AuthorProperty() {
+            super(PROPERTY_NAME_AUTHOR, String.class, PROPERTY_NAME_AUTHOR, PROPERTY_NAME_AUTHOR);
+        }
+
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            return entry.getLastChangedAuthor();
+        }
+    }
+
+    private class HistoryProperty extends PropertySupport.ReadOnly {
+
+        public HistoryProperty() {
+            super(PROPERTY_NAME_HISTORY, String.class, PROPERTY_NAME_HISTORY, PROPERTY_NAME_HISTORY);
+        }
+
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            return "";
+        }        
+        
+        public String toString() {            
+            try {
+                Object obj = getValue();               
+                return obj != null ? obj.toString() : "";
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return e.getLocalizedMessage();
+            }
+        }           
+        
+        public PropertyEditor getPropertyEditor() {
+            return new HistoryPropertyEditor();
+        }                   
+    }
+                            
+    private abstract class NodeProperty extends PropertySupport.ReadOnly {        
+        protected NodeProperty(String name, Class type, String displayName, String shortDescription) {
+            super(name, type, displayName, shortDescription);
+        }
+
+        public String toString() {            
+            try {
+                Object obj = getValue();               
+                return obj != null ? obj.toString() : "";
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                return e.getLocalizedMessage();
+            }
+        }
+
+        public boolean canWrite() {
+            return false;                    
+        }     
+
+        public PropertyEditor getPropertyEditor() {
+            return new PropertyEditorSupport() {                
+            };
+        }                     
+    }
+
+    private class HistoryPropertyEditor extends PropertyEditorSupport {
+       
+        public HistoryPropertyEditor() {      
+            setValue("");           
+        }
+
+        public boolean supportsCustomEditor () {
+            return true;
+        }
+    
+        public Component getCustomEditor() {
+            SVNRevision revision = entry.getLastChangedRevision();
+            SVNUrl url = entry.getRepositoryFile().getFileUrl();
+            final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(url, revision));        
+            return svnSearch.getSearchPanel();
+        }
+    }
+    
 }

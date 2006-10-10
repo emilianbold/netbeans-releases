@@ -18,21 +18,28 @@
  */
 package org.netbeans.modules.subversion.ui.browser;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.TreeTableView;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -40,7 +47,7 @@ import org.openide.explorer.view.BeanTreeView;
  */
 public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
 
-    private final BrowserBeanTreeView treeView;
+    private final BrowserTreeTableView treeView;
     private final JLabel label;
     private final ExplorerManager manager;
 
@@ -54,7 +61,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         
         setLayout(new GridBagLayout());
         
-        treeView = new BrowserBeanTreeView();
+        treeView = new BrowserTreeTableView();
         treeView.setDragSource(true);
         treeView.setDropTarget(true);
       
@@ -67,7 +74,8 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
             treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         }
         treeView.setPopupAllowed(true);        
-        treeView.getTree().setShowsRootHandles(true);
+        treeView.getTree().setShowsRootHandles(true);                
+        
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 1;
@@ -101,8 +109,10 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         add(buttonPanel, c);
         
         setBorder(BorderFactory.createEmptyBorder(12,12,0,12));
-    }
-
+        
+        setPreferredSize(new Dimension(800, 400));
+    }   
+    
     public void setActions(AbstractAction[] actions) {
         if(actions != null) {
             buttonPanel.removeAll();
@@ -121,13 +131,57 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         return manager;
     }
     
-    private class BrowserBeanTreeView extends BeanTreeView {
+    private class BrowserTreeTableView extends TreeTableView {        
+        BrowserTreeTableView() {
+            setupColumns();
+        }
+        
         public JTree getTree() {            
             return tree;
         } 
+        
         public void startEditingAtPath(TreePath path) {            
             tree.startEditingAtPath(path);
         }         
+        
+        public void addNotify() {
+            super.addNotify();
+            setDefaultColumnSizes();
+        }
+        
+        private void setupColumns() {
+            ResourceBundle loc = NbBundle.getBundle(BrowserPanel.class);            
+            Node.Property [] columns = new Node.Property[4];
+            columns[0] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_REVISION, String.class, loc.getString("LBL_BrowserTree_Column_Revision"), loc.getString("LBL_BrowserTree_Column_Revision_Desc"));
+            columns[1] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_DATE, String.class, loc.getString("LBL_BrowserTree_Column_Date"), loc.getString("LBL_BrowserTree_Column_Date_Desc"));
+            columns[2] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_AUTHOR, String.class, loc.getString("LBL_BrowserTree_Column_Author"), loc.getString("LBL_BrowserTree_Column_Author_Desc"));
+            columns[3] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_HISTORY, String.class, loc.getString("LBL_BrowserTree_Column_History"), loc.getString("LBL_BrowserTree_Column_History_Desc"));            
+            
+            setProperties(columns);
+        }    
+    
+        private void setDefaultColumnSizes() {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    int width = getWidth();                    
+                    treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 50 / 100);
+                    treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 10 / 100);
+                    treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 20 / 100);                                    
+                    treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 10 / 100);                                    
+                    treeTable.getColumnModel().getColumn(4).setPreferredWidth(width * 10 / 100);                    
+                }
+            });
+        }            
     }     
-          
+
+    private static class ColumnDescriptor extends PropertySupport.ReadOnly {
+        
+        public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
+            super(name, type, displayName, shortDescription);
+        }
+
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            return null;
+        }
+    }    
 }

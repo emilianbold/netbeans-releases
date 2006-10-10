@@ -25,7 +25,10 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -37,8 +40,11 @@ import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
+import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Handles the UI for repository browsing.
@@ -188,24 +194,28 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             if(dirEntries == null || dirEntries.length == 0) {
                 return Collections.EMPTY_LIST; // nothing to do...
             }
-            
+                        
             for (int i = 0; i < dirEntries.length; i++) {
                 if(support.isCanceled()) {
                     return null;
                 }
 
-                ISVNDirEntry dirEntry = dirEntries[i];
+                ISVNDirEntry dirEntry = dirEntries[i];                
                 if( dirEntry.getNodeKind()==SVNNodeKind.DIR || 
                     (dirEntry.getNodeKind()==SVNNodeKind.FILE && showFiles) ) 
                 {
                     RepositoryFile repositoryFile = entry.getRepositoryFile();
-                    ret.add(
-                        new RepositoryPathNode.RepositoryPathEntry(
+                    RepositoryPathNode.RepositoryPathEntry e = 
+                            new RepositoryPathNode.RepositoryPathEntry(
                             repositoryFile.appendPath(dirEntry.getPath()), 
-                            dirEntry.getNodeKind())
-                    );
+                            dirEntry.getNodeKind(),
+                            dirEntry.getLastChangedRevision(),
+                            dirEntry.getLastChangedDate(),
+                            dirEntry.getLastCommitAuthor());                    
+                    ret.add(e);   
                 }                
             }        
+            
         } catch (SVNClientException ex) {
             if(ExceptionHandler.isWrongURLInRevision(ex.getMessage())) {
                 // is not a folder in the repository
