@@ -129,9 +129,11 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Run unit tests from module - no binary distribution. -->
     <target name="run-unit-test-nodist" unless="xtest.distexec" depends="init-parse-project-xml">
         <property file="${test.dist.dir}/unit/${cluster.dir}/${code.name.base.dashes}/test.properties"/>
+        <!-- If property test.unit.run.cp not defined in test.properties, set it from test.unit.run.cp path id. -->
+        <property name="test.unit.run.cp" refid="test.unit.run.cp"/>
         <executeTests pluginname="jvm">
             <classpath>
-                <path refid="test.unit.run.cp"/>
+                <pathelement path="${test.unit.run.cp}"/>
             </classpath>
         </executeTests>
     </target>
