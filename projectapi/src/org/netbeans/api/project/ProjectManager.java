@@ -365,8 +365,14 @@ public final class ProjectManager {
         if (projectDirectory == null) {
             throw new IllegalArgumentException("Attempted to pass a null directory to isProject"); // NOI18N
         }
-        if (!projectDirectory.isFolder()) {
-            throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
+        if (!projectDirectory.isFolder() ) {
+            //#78215 it can happen that a no longer existing folder is queried. throw 
+            // exception only for real wrong usage..
+            if (projectDirectory.isValid()) {
+                throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
+            } else {
+                return false;
+            }
         }
         return mutex().readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
