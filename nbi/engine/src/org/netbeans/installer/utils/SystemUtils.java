@@ -75,6 +75,8 @@ public abstract class SystemUtils {
     
     public abstract File getUserHomeDirectory();
     
+    public abstract String getUserName();
+    
     public abstract File getCurrentDirectory();
     
     public abstract File getTempDirectory();
