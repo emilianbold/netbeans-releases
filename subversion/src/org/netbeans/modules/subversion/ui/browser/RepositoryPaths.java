@@ -70,7 +70,8 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     private boolean fileSelectionOnly = false;
     private boolean writeable;
     private BrowserAction[] browserActions;
-
+    private String browserPurpose;
+            
     private boolean valid = false;
     public static final String PROP_VALID = "valid"; // NOI18N
     private List<PropertyChangeListener> listeners;
@@ -102,15 +103,17 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }                
     }
 
-    public void setupBrowserBehavior(boolean singleSelection, boolean showFiles, boolean fileSelectionOnly) {
+    public void setupBrowserBehavior(String browserPurpose, boolean singleSelection, boolean showFiles, boolean fileSelectionOnly) {
         this.singleSelection = singleSelection;
         this.fileSelectionOnly = fileSelectionOnly;
         this.showFiles = showFiles;                
+        this.browserPurpose = browserPurpose;
     }            
     
-    public void setupBrowserBehavior(boolean singleSelection, boolean showFiles, boolean fileSelectionOnly, BrowserAction[] browserActions) {
-        setupBrowserBehavior(singleSelection, showFiles, fileSelectionOnly);
+    public void setupBrowserBehavior(String browserPurpose, boolean singleSelection, boolean showFiles, boolean fileSelectionOnly, BrowserAction[] browserActions) {
+        setupBrowserBehavior(browserPurpose, singleSelection, showFiles, fileSelectionOnly);
         this.browserActions = browserActions;
+        this.browserPurpose = browserPurpose;
     }            
     
     public RepositoryFile[] getRepositoryFiles() throws MalformedURLException, NumberFormatException {
@@ -168,10 +171,13 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         
         final Browser browser = 
             new Browser(
-                java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_RepositoryPath_BrowseFolders_Prompt"),
+                browserPurpose,
                 showFiles, 
                 singleSelection,
-                fileSelectionOnly);        
+                fileSelectionOnly,
+                new RepositoryFile(getRepositoryUrl(), revision), 
+                repositoryFilesToSelect, 
+                browserActions);        
         
         final DialogDescriptor dialogDescriptor = 
                 new DialogDescriptor(browser.getBrowserPanel(), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_RepositoryPath_BrowseFolders_Title")); 
@@ -185,13 +191,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                     dialogDescriptor.setValid(browser.getSelectedNodes().length > 0);
                 }
             }
-        });
-        
-        browser.setup(
-            new RepositoryFile(getRepositoryUrl(), revision), 
-            repositoryFilesToSelect, 
-            browserActions
-        );
+        });        
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RepositoryPaths.class, "CTL_RepositoryPath_BrowseFolders_Title"));

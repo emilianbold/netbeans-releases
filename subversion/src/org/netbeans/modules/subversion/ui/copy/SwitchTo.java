@@ -62,9 +62,11 @@ public class SwitchTo extends CopyDialog {
         getSwitchToPanel().getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_RepositoryFile"));
         if(root.isFile()) {
             getSwitchToPanel().urlLabel.setText(NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_RepositoryFile")); // NOI18N
-            repositoryPaths.setupBrowserBehavior(true, true, true, null);
+            String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageSwitchFile");
+            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, true, true, true, null);
         } else {
-            repositoryPaths.setupBrowserBehavior(true, false, false, null);
+            String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageSwitchFolder");
+            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, true, false, false, null);
         }
                 
         setupUrlComboBox(panel.urlComboBox, SwitchTo.class.getName());                

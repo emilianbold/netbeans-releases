@@ -54,7 +54,8 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
                 null,
                 null
             );
-        repositoryPaths.setupBrowserBehavior(true, false, false, new BrowserAction[] { new CreateFolderAction(context)} );                
+        String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopy");
+        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, true, false, false, new BrowserAction[] { new CreateFolderAction(context)} );                
         repositoryPaths.addPropertyChangeListener(this);
 
         setupUrlComboBox(panel.urlComboBox, CreateCopy.class.getName());

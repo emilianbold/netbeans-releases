@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EtchedBorder;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.ExplorerManager;
@@ -89,14 +90,19 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         label = new JLabel();        
         label.setLabelFor(treeView.getTree());
         label.setToolTipText(browserAcsd);
-        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BK2003"));
+        if(labelText != null && !labelText.trim().equals("")) {
+            org.openide.awt.Mnemonics.setLocalizedText(label, labelText);
+        } else {
+            org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BK2003"));            
+        }        
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 0;
         c.insets = new Insets(4,0,4,4);
         c.fill = GridBagConstraints.HORIZONTAL;
         c.anchor = GridBagConstraints.WEST;
-        //Mnemonics.setLocalizedText(label, labelText);
+        //Mnemonics.setLocalizedText(label, labelText);        
+        
         add(label, c);
         
         buttonPanel = new JPanel();

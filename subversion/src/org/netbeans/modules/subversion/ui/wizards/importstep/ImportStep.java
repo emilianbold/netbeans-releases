@@ -160,7 +160,8 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                         null,
                         null
                     );
-                repositoryPaths.setupBrowserBehavior(true, false, false, actions);
+                String browserPurposeMessage = org.openide.util.NbBundle.getMessage(ImportStep.class, "LBL_BrowserMessage");
+                repositoryPaths.setupBrowserBehavior(browserPurposeMessage, true, false, false, actions);
             } else {
                 repositoryPaths.setRepositoryFile(repositoryFile);
             }
@@ -222,7 +223,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                         // then this could be already a working copy ...    
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + ".svn")); // NOI18N
                         FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + "_svn")); // NOI18N
-                        File importDummyFolder = new File(System.getProperty("java.io.tmpdir") + "/" + importDirectory.getName()); // NOI18N
+                        File importDummyFolder = new File(System.getProperty("java.io.tmpdir") + "/svn_dummy/" + importDirectory.getName()); // NOI18N
                         importDummyFolder.mkdirs();                     
                         importDummyFolder.deleteOnExit();
                         client.doImport(importDummyFolder, repositoryFile.getFileUrl(), getImportMessage(), false);

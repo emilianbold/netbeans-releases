@@ -66,14 +66,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
 
     private SvnProgressSupport support;
 
-    private boolean fileSelectionOnly;
-
-    /**
-     * Creates a new instance, which shows only folders, and with multiple selection
-     */
-    public Browser(String title) {                                
-        this(title, false, false, false);
-    }   
+    private boolean fileSelectionOnly; 
 
     /**
      * Creates a new instance
@@ -82,8 +75,13 @@ public class Browser implements VetoableChangeListener, BrowserClient {
      * @param showFiles 
      * @param singleSelectionOnly
      * @param fileSelectionOnly
+     * @param repositoryRoot the RepositoryFile representing the repository root
+     * @param select an array of RepositoryFile-s representing the items which has to be selected
+     * @param nodeActions an array of actions from which the context menu on the tree items will be created
+     * 
      */    
-    public Browser(String title, boolean showFiles, boolean singleSelectionOnly, boolean fileSelectionOnly) {
+    public Browser(String title, boolean showFiles, boolean singleSelectionOnly, boolean fileSelectionOnly,
+                   RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions) {
         this.showFiles = showFiles;
         this.fileSelectionOnly = fileSelectionOnly;
 
@@ -93,17 +91,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                                  singleSelectionOnly);
         panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Browser_Prompt"));
         getExplorerManager().addVetoableChangeListener(this);                
-    }       
-
-    /**
-     * Configures the browser instance with the given parameters
-     *
-     * @param repositoryRoot the RepositoryFile representing the repository root
-     * @param select an array of RepositoryFile-s representing the items which has to be selected
-     * @param nodeActions an array of actions from which the context menu on the tree items will be created
-     */
-    public void setup(RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions) 
-    {        
+        
         if(nodeActions!=null) {
             this.nodeActions = nodeActions;
             panel.setActions(nodeActions);    
@@ -126,7 +114,41 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }    
         }
-    }
+        
+    }       
+
+    /**
+     * Configures the browser instance with the given parameters
+     *
+     * @param repositoryRoot the RepositoryFile representing the repository root
+     * @param select an array of RepositoryFile-s representing the items which has to be selected
+     * @param nodeActions an array of actions from which the context menu on the tree items will be created
+     */
+//    public void setup(RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions) 
+//    {        
+//        if(nodeActions!=null) {
+//            this.nodeActions = nodeActions;
+//            panel.setActions(nodeActions);    
+//            for (int i = 0; i < nodeActions.length; i++) {
+//                nodeActions[i].setBrowser(this);
+//            }
+//        } else {
+//            this.nodeActions = EMPTY_ACTIONS;
+//        }        
+//        this.repositoryRoot = repositoryRoot;
+//        
+//        RepositoryPathNode rootNode = RepositoryPathNode.createRepositoryPathNode(this, repositoryRoot);                        
+//        Node[] selectedNodes = getSelectedNodes(rootNode, repositoryRoot, select);   
+//        getExplorerManager().setRootContext(rootNode);
+//        
+//        if(selectedNodes!=null) {
+//            try {
+//                getExplorerManager().setSelectedNodes(selectedNodes);    
+//            } catch (PropertyVetoException ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            }    
+//        }
+//    }
 
     private Node[] getSelectedNodes(RepositoryPathNode rootNode, RepositoryFile repositoryRoot, RepositoryFile[] select) {        
         if(select==null || select.length <= 0) {

@@ -174,9 +174,11 @@ public class Merge extends CopyDialog implements ItemListener {
                 if(label!=null) {
                     label.setText(org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_RepositoryFile")); // NOI18N
                 }
-                paths.setupBrowserBehavior(true, true, true);
+                String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageMergeFile");
+                paths.setupBrowserBehavior(browserPurposeMessage, true, true, true);
             } else {
-                paths.setupBrowserBehavior(true, false, false);
+                String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageMergeFolder");
+                paths.setupBrowserBehavior(browserPurposeMessage, true, false, false);
             }
         }
 
