@@ -30,8 +30,8 @@ public class WindowsRegistry {
     
     /** Private constructor
      *
-     */ 
-    private WindowsRegistry () {        
+     */
+    private WindowsRegistry() {
     }
     
     /**
@@ -67,8 +67,27 @@ public class WindowsRegistry {
     
     /** Delete the specified key exists in the registry.
      * @param registrySection The section of the registry
+     * @param key The specified key
+     * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise
+     */
+    public boolean deleteKey(int registrySection, String key) {
+        String keyString = key;
+        int index = keyString.lastIndexOf("\\");
+        if(index==keyString.length()) {
+            keyString = keyString.substring(0,index - 1);
+        }
+        index = keyString.lastIndexOf("\\");
+        
+        String parent = key.substring(0,index);
+        String child = key.substring(index + 1);
+        
+        return deleteKey(registrySection,parent,child);
+    }
+    
+    /** Delete the specified key exists in the registry.
+     * @param registrySection The section of the registry
      * @param parentKey The specified parent key
-     * @param childKey The specified child key to delete
+     * @param childKey The specified child key
      * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise
      */
     public native boolean deleteKey(int registrySection, String parentKey, String childKey);
@@ -224,11 +243,11 @@ public class WindowsRegistry {
      */
     
     public native byte  [] getBinaryValue(int registrySection, String key, String valueName);
-
+    
     public boolean setStringValue(int registrySection, String key, String valueName, String value) {
         return setStringValue(registrySection, key, valueName, value, false);
     }
-
+    
     public String getStringValue(int registrySection, String key, String valueName) {
         return getStringValue(registrySection, key, valueName, false);
     }
