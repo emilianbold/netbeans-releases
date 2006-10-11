@@ -24,14 +24,15 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.openide.util.PreferencesProvider;
 
 /**
- *
+ * Provides an implementation of the Preferences API which may be backed by
+ * a NetBeans-specific implementation.
+ * @see "doc-files/preferences.html"
+ * @since org.openide.util 7.4
  * @author Radek Matous
  */
 public final class NbPreferences {
-     private static PreferencesProvider PREFS_IMPL;     
+    private static PreferencesProvider PREFS_IMPL;
     
-    
-    /** Creates a new instance of NbPreferences */
     private  NbPreferences() {}
     
     /**
@@ -74,8 +75,8 @@ public final class NbPreferences {
                        return Preferences.userRoot();
                   }                         
              };
-             Logger.getLogger("org.openide.util.ModulePreferencesFactory")//NOI18N
-             .warning("NetBeans implementation of Preferences isn't reachable");//NOI18N
+             Logger.getLogger(NbPreferences.class.getName())
+                     .warning("NetBeans implementation of Preferences not found");
         }
         return retval;
     }    
