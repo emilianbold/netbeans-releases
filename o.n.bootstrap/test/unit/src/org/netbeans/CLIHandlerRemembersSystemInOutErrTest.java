@@ -20,6 +20,7 @@
 package org.netbeans;
 
 import java.io.*;
+import java.util.logging.Logger;
 import org.netbeans.junit.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -35,6 +36,8 @@ public class CLIHandlerRemembersSystemInOutErrTest extends NbTestCase {
     private static PrintStream err = new PrintStream(new ByteArrayOutputStream());
     private static String[] args = { "AnArg" };
     private static String curDir = "curDir";
+    
+    private Logger LOG;
 
     static {
         System.setIn(in);
@@ -46,6 +49,10 @@ public class CLIHandlerRemembersSystemInOutErrTest extends NbTestCase {
         super(name);
     }
     
+    protected void setUp() throws Exception {
+        LOG = Logger.getLogger("TEST-" + getName());
+    }
+
     protected Level logLevel() {
         return Level.ALL;
     }
@@ -58,8 +65,6 @@ public class CLIHandlerRemembersSystemInOutErrTest extends NbTestCase {
         arr.add(new H(H.WHEN_BOOT));
         arr.add(new H(H.WHEN_INIT));
 
-
-
         // now change the System values
         ByteArrayInputStream in2 = new ByteArrayInputStream("NeverBeSeen".getBytes());
         PrintStream out2 = new PrintStream(new ByteArrayOutputStream());
@@ -69,10 +74,13 @@ public class CLIHandlerRemembersSystemInOutErrTest extends NbTestCase {
         System.setErr(err2);
         System.setOut(out2);
 
-
+        LOG.info("before initialized");
         CLIHandler.initialize(a, null, arr, false, true, null);
+        LOG.info("after initialize");
         assertEquals("One H called", 1, H.cnt);
+        LOG.info("before finishInitialization");
         CLIHandler.finishInitialization(false);
+        LOG.info("after finishInitialization");
         assertEquals("Both Hs called", 2, H.cnt);
     }
 
