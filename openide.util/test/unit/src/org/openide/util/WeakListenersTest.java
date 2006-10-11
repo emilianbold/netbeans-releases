@@ -71,7 +71,7 @@ public class WeakListenersTest extends NbTestCase {
                 obj = null;
                 assertGC ("Has to be cleared", wr);
                 // and has to execute run method
-                while (activeQueueThread != null) {
+                while (activeQueueThread == null) {
                     wr.wait ();
                 }
             }
