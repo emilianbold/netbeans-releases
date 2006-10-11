@@ -197,6 +197,8 @@ public final class DefaultProjectOperationsImplementation {
     public static void copyProject(final Project project) {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Handle"));
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, false);
+        //#76559
+        handle.start(MAX_WORK);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Caption"), "Copy_Button", null, false, new Executor() { // NOI18N
             public void execute() throws Exception {
@@ -216,7 +218,6 @@ public final class DefaultProjectOperationsImplementation {
         try {
             int totalWork = MAX_WORK;
             
-            handle.start(totalWork);
             
             double currentWorkDone = 0;
             
@@ -273,6 +274,8 @@ public final class DefaultProjectOperationsImplementation {
     public static void moveProject(final Project project) {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Handle"));
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, true);
+        //#76559
+        handle.start(MAX_WORK);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, new Executor() { // NOI18N
             public void execute() throws Exception {
@@ -297,12 +300,16 @@ public final class DefaultProjectOperationsImplementation {
     public static void renameProject(final Project project, final String nueName) {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Handle"));
         final DefaultProjectRenamePanel panel = new DefaultProjectRenamePanel(handle, project, nueName);
+
+        //#76559
+        handle.start(MAX_WORK);
         
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Caption"), "Rename_Button", null, false, new Executor() { // NOI18N
             public void execute() throws Exception {
                 String nueName = panel.getNewName();
                 
                 if (panel.getRenameProjectFolder()) {
+
                     doMoveProject(handle, project, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
                 } else {
                     boolean originalOK = true;
@@ -311,7 +318,8 @@ public final class DefaultProjectOperationsImplementation {
                     Project nue = null;
                     
                     try {
-                        handle.start(5);
+                        handle.switchToIndeterminate();
+                        handle.switchToDeterminate(5);
                         
                         int currentWorkDone = 0;
                         
@@ -381,10 +389,8 @@ public final class DefaultProjectOperationsImplementation {
 	FileObject target = null;
         
         try {
+            
             int totalWork = MAX_WORK;
-            
-            handle.start(totalWork);
-            
             double currentWorkDone = 0;
             
             handle.progress((int) currentWorkDone);
