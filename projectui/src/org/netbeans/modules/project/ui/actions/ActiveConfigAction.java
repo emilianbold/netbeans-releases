@@ -14,6 +14,7 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -120,6 +121,8 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         if (configs == null) {
             configListCombo.setModel(EMPTY_MODEL);
             configListCombo.setEnabled(false);
+            if( null != toolbarPanel )
+                toolbarPanel.setVisible( false );
         } else {
             DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
             if (pcp.hasCustomizer()) {
@@ -127,6 +130,13 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
             }
             configListCombo.setModel(model);
             configListCombo.setEnabled(true);
+            if( null != toolbarPanel )
+                toolbarPanel.setVisible( true );
+        }
+        if( null != toolbarPanel && null != toolbarPanel.getParent() ) {
+            Container parentComp = toolbarPanel.getParent();
+            parentComp.invalidate();
+            parentComp.repaint();
         }
         if (pcp != null) {
             activeConfigurationChanged(getActiveConfiguration(pcp));
@@ -175,16 +185,18 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         assert false;
     }
 
+    private JPanel toolbarPanel;
     public Component getToolbarPresenter() {
         // Do not return combo box directly; looks bad.
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setOpaque(false); // don't interrupt JToolBar background
-        panel.setMaximumSize(new Dimension(150, 80));
-        panel.setMinimumSize(new Dimension(150, 0));
-        panel.setPreferredSize(new Dimension(150, 23));
+        toolbarPanel = new JPanel(new GridBagLayout());
+        toolbarPanel.setOpaque(false); // don't interrupt JToolBar background
+        toolbarPanel.setMaximumSize(new Dimension(150, 80));
+        toolbarPanel.setMinimumSize(new Dimension(150, 0));
+        toolbarPanel.setPreferredSize(new Dimension(150, 23));
         // XXX top inset of 2 looks better w/ small toolbar, but 1 seems to look better for large toolbar (the default):
-        panel.add(configListCombo, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(1, 6, 1, 5), 0, 0));
-        return panel;
+        toolbarPanel.add(configListCombo, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(1, 6, 1, 5), 0, 0));
+        toolbarPanel.setVisible( configListCombo.getItemCount() > 0 );
+        return toolbarPanel;
     }
 
     class ConfigMenu extends JMenu implements DynamicMenuContent {
