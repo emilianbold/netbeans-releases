@@ -45,6 +45,37 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         super (name);
     }
     
+    public void testGeneratePreferencesArch() throws Exception {
+        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractResource("arch-preferences.xml");
+        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
+        output.delete();
+        
+        
+        
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+                "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+                "<target name=\"all\" >" +
+                "  <arch answers=\"" + answers + "\" output='" + output + "' />" +
+                "</target>" +
+                "</project>"
+                
+                );
+        PublicPackagesInProjectizedXMLTest.execute(f, new String[] { });
+        
+        assertTrue("File is generated", output.exists());
+        
+        String content = PublicPackagesInProjectizedXMLTest.readFile(output);
+        if (content.indexOf("resources-preferences") == -1) {
+            fail("resources-preferences shall be in output:\n" + content);
+        }
+        if (content.indexOf("answer-resources-preferences") == -1) {
+            fail("answer-resources-preferences shall be in output:\n" + content);
+        }
+    }
+
+    
     public void testGenerateArchFileWhenEmpty () throws Exception {
         java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString ("");
         answers.delete ();

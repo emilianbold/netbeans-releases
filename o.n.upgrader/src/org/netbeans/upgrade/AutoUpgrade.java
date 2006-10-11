@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.upgrade.systemoptions.Importer;
 
 import org.netbeans.util.Util;
 import org.openide.ErrorManager;
@@ -61,6 +61,8 @@ public final class AutoUpgrade {
             doUpgrade (sourceFolder, version[0]);
             //#75324 NBplatform settings are not imported
             upgradeBuildProperties(sourceFolder, version);
+            //migrates SystemOptions, converts them as a Preferences
+            Importer.doImport();
         }
     }
 

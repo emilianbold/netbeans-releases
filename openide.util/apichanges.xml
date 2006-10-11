@@ -26,6 +26,36 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="nbpreferences">
+        <api name="util"/>
+        <summary>Added <code>NbPreferences.forModule(Class cls)</code> and
+          <code>NbPreferences.root()</code> methods as static factory methods
+          for getting preference node from NetBeans preference tree.</summary>
+        <version major="7" minor="4"/>
+        <date day="10" month="11" year="2006"/>
+        <author login="rmatous"/>
+        <compatibility addition="yes" deprecation="no"/>
+        <description>
+            <p>
+              NetBeans preference tree is provided by NetBeans implementation of preferences
+              which uses userdir as a storage. Both newly added methods return
+              preferences  node from NetBeans preference tree.
+              Method <code>NbPreferences.root()</code> returns root preference
+              node.
+              Method <code>NbPreferences.forModule(Class cls)</code> returns
+              preference node which 
+              {@link Preferences#absolutePath} depends whether class provided as a parameter 
+              was loaded as a part of any module or not. If so, then absolute path corresponds to slashified 
+              code name base of module. If not, then absolute path corresponds to class's package.
+              See document
+              <a href="@TOP@/org/openide/util/doc-files/preferences.html">Preferences in NetBeans</a>
+              to learn more about preferences in NetBeans.              
+            </p>
+        </description>
+        <class package="org.openide.util" name="NbPreferences"/>
+        <issue number="73474"/>
+    </change>
+
     <change id="icon2image">
         <api name="util"/>
         <summary>Added <code>Utilities.icon2Image</code> method to perform conversion from <code>Icon</code> to Image</summary>
