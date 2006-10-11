@@ -24,10 +24,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +44,6 @@ import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.modules.Dependency;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -65,8 +65,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
 
     public void setUp() {
-        Mutex.EVENT.readAccess(new Mutex.Action() {
-            public Object run() {
+        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 contextClassLoader = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class));
                 return null;
@@ -75,8 +75,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     
     public void tearDown() {
-        Mutex.EVENT.readAccess(new Mutex.Action() {
-            public Object run() {
+        Mutex.EVENT.readAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 Thread.currentThread().setContextClassLoader(contextClassLoader);
                 return null;
             }
@@ -88,11 +88,11 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     
     public void testAreAttributesFine () {
-        List/*<String>*/ errors = new ArrayList();
+        List<String> errors = new ArrayList<String>();
         
-        Enumeration/*<FileObject>*/ files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
+        Enumeration<? extends FileObject> files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
         while (files.hasMoreElements()) {
-            FileObject fo = (FileObject)files.nextElement();
+            FileObject fo = files.nextElement();
             
             // XXX #16761 Removing attr in MFO causes storing special-null value even in unneeded cases.
             // When the issue is fixed remove this hack.
@@ -109,9 +109,9 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 continue;
             }
             
-            Enumeration/*<String>*/ attrs = fo.getAttributes();
+            Enumeration<String> attrs = fo.getAttributes();
             while (attrs.hasMoreElements()) {
-                String name = (String)attrs.nextElement();
+                String name = attrs.nextElement();
                 
                 if (fo.getAttribute(name) == null) {
                     errors.add ("\n    File " + fo + " attribute name " + name);
@@ -126,14 +126,14 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     
     public void testValidShadows () {
         // might be better to move into editor/options tests as it is valid only if there are options
-        List/*<String>*/ errors = new ArrayList();
+        List<String> errors = new ArrayList<String>();
         
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
         
-        Enumeration en = root.getChildren(true);
+        Enumeration<? extends FileObject> en = root.getChildren(true);
         int cnt = 0;
         while (en.hasMoreElements()) {
-            FileObject fo = (FileObject)en.nextElement();
+            FileObject fo = en.nextElement();
             cnt++;
             
             // XXX #16761 Removing attr in MFO causes storing special-null value even in unneeded cases.
@@ -153,7 +153,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             
             try {
                 DataObject obj = DataObject.find (fo);
-                DataShadow ds = (DataShadow)obj.getCookie (DataShadow.class);
+                DataShadow ds = obj.getCookie(DataShadow.class);
                 if (ds != null) {
                     Object o = ds.getOriginal();
                     if (o == null) {
@@ -180,12 +180,12 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     
     
     public void testContentCanBeRead () {
-        List/*<String>*/ errors = new ArrayList();
+        List<String> errors = new ArrayList<String>();
         byte[] buffer = new byte[4096];
         
-        Enumeration/*<FileObject>*/ files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
+        Enumeration<? extends FileObject> files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
         while (files.hasMoreElements()) {
-            FileObject fo = (FileObject)files.nextElement();
+            FileObject fo = files.nextElement();
             
             if (!fo.isData ()) {
                 continue;
@@ -220,11 +220,11 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     
     public void testInstantiateAllInstances () {
-        List/*<String>*/ errors = new ArrayList();
+        List<String> errors = new ArrayList<String>();
         
-        Enumeration/*<FileOject>*/ files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
+        Enumeration<? extends FileObject> files = Repository.getDefault().getDefaultFileSystem().getRoot().getChildren(true);
         while (files.hasMoreElements()) {
-            FileObject fo = (FileObject)files.nextElement();
+            FileObject fo = files.nextElement();
             
             if (skipFile(fo.getPath())) {
                 continue;
@@ -232,7 +232,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             
             try {
                 DataObject obj = DataObject.find (fo);
-                InstanceCookie ic = (InstanceCookie)obj.getCookie (InstanceCookie.class);
+                InstanceCookie ic = obj.getCookie(InstanceCookie.class);
                 if (ic != null) {
                     Object o = ic.instanceCreate ();
                 }
@@ -252,16 +252,24 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
         
         // String -> List<Modules>
-        Map/*<String,List<String>>*/ files = new HashMap();
+        Map<String,List<String>> files = new HashMap<String,List<String>>();
+        class ContentAndAttrs {
+            final byte[] contents;
+            final Map<String,Object> attrs;
+            ContentAndAttrs(byte[] contents, Map<String,Object> attrs) {
+                this.contents = contents;
+                this.attrs = attrs;
+            }
+        }
         /* < FO path , { content, attributes } > */
-        Map<String, Object[]> contents = new HashMap<String, Object[]>();
+        Map<String,ContentAndAttrs> contents = new HashMap<String,ContentAndAttrs>();
         /* < FO path , < module name, { content, attributes } > > */
-        Map<String, Map<String, Object[]>> differentContents = new HashMap<String, Map<String, Object[]>>();
+        Map<String,Map<String,ContentAndAttrs>> differentContents = new HashMap<String,Map<String,ContentAndAttrs>>();
         
         boolean atLeastOne = false;
-        Enumeration/*<URL>*/ en = l.getResources("META-INF/MANIFEST.MF");
+        Enumeration<URL> en = l.getResources("META-INF/MANIFEST.MF");
         while (en.hasMoreElements ()) {
-            URL u = (URL) en.nextElement();
+            URL u = en.nextElement();
             InputStream is = u.openStream();
             Manifest mf;
             try {
@@ -280,32 +288,30 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             connect.setDefaultUseCaches (false);
             FileSystem fs = new XMLFileSystem(layerURL);
             
-            Enumeration/*<FileObject>*/ all = fs.getRoot().getChildren(true);
+            Enumeration<? extends FileObject> all = fs.getRoot().getChildren(true);
             while (all.hasMoreElements ()) {
-                FileObject fo = (FileObject)all.nextElement ();
+                FileObject fo = all.nextElement ();
                 if (!fo.isData ()) continue;
                 
                 String path = fo.getPath();
-                List<String> list = (List) files.get(path);
+                List<String> list = files.get(path);
                 if (list == null) {
-                    list = new ArrayList();
+                    list = new ArrayList<String>();
                     files.put (path, list);
                     list.add (module);
-                    byte[] foc = getFileContent(fo);
-                    Map foa = getAttributes(fo);
-                    contents.put(path, new Object[] { foc, foa });
+                    contents.put(path, new ContentAndAttrs(getFileContent(fo), getAttributes(fo)));
                 } else {
-                    Object[] contentAttrs = contents.get(path);
+                    ContentAndAttrs contentAttrs = contents.get(path);
                     byte[] foc = getFileContent(fo);
-                    Map foa = getAttributes(fo);
-                    if (!equals(foc, (byte[]) contentAttrs[0]) || !foa.equals(contentAttrs[1])) {
-                        Map<String, Object[]> diffs = differentContents.get(path);
+                    Map<String,Object> foa = getAttributes(fo);
+                    if (!Arrays.equals(foc, contentAttrs.contents) || !foa.equals(contentAttrs.attrs)) {
+                        Map<String,ContentAndAttrs> diffs = differentContents.get(path);
                         if (diffs == null) {
-                            diffs = new HashMap<String, Object[]>();
+                            diffs = new HashMap<String,ContentAndAttrs>();
                             differentContents.put(path, diffs);
                             diffs.put(list.get(0), contentAttrs);
                         }
-                        diffs.put(module, new Object[] { foc, foa });
+                        diffs.put(module, new ContentAndAttrs(foc, foa));
                         list.add (module);
                     }
                 }
@@ -315,27 +321,19 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
         contents = null; // Not needed any more
         
-        Iterator<Map.Entry<String,List<String>>> it = files.entrySet().iterator();
         StringBuffer sb = new StringBuffer ();
-        while (it.hasNext ()) {
-            Map.Entry<String,List<String>> e = (Map.Entry) it.next();
-            List<String> list = (List) e.getValue();
+        for (Map.Entry<String,List<String>> e : files.entrySet()) {
+            List<String> list = e.getValue();
             if (list.size () == 1) continue;
             
-            Lookup.Result/*<ModuleInfo>*/ res = Lookup.getDefault().lookupResult(ModuleInfo.class);
-            assertFalse ("Some modules found", res.allInstances ().isEmpty ());
+            Collection<? extends ModuleInfo> res = Lookup.getDefault().lookupAll(ModuleInfo.class);
+            assertFalse("Some modules found", res.isEmpty());
             
-            Iterator/*<String>*/ names = new ArrayList(list).iterator();
-            while (names.hasNext ()) {
-                String name = (String)names.next ();
-                Iterator/*<ModuleInfo>*/ modules = res.allInstances().iterator();
-                while (modules.hasNext ()) {
-                    ModuleInfo info = (ModuleInfo)modules.next ();
+            for (String name : new ArrayList<String>(list)) {
+                for (ModuleInfo info : res) {
                     if (name.equals (info.getCodeName ())) {
                         // remove dependencies
-                        Iterator/*<Dependency>*/ deps = info.getDependencies().iterator();
-                        while (deps.hasNext ()) {
-                            Dependency d = (Dependency)deps.next ();
+                        for (Dependency d : info.getDependencies()) {
                             list.remove (d.getName ());
                         }
                     }
@@ -345,24 +343,23 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             if (list.size () <= 1) continue;
             
             sb.append (e.getKey () + " is provided by: " + list + "\n");
-            Map<String, Object[]> diffList = differentContents.get(e.getKey());
+            Map<String,ContentAndAttrs> diffList = differentContents.get(e.getKey());
             if (diffList != null) {
                 if (list.size() == 2) {
                     String module1 = list.get(0);
                     String module2 = list.get(1);
-                    Object[] contentAttrs1 = diffList.get(module1);
-                    Object[] contentAttrs2 = diffList.get(module2);
-                    if (!equals((byte[]) contentAttrs1[0], (byte[]) contentAttrs2[0])) {
-                        sb.append(" "+module1+": content = '"+new String((byte[]) contentAttrs1[0])+"\n");
-                        sb.append(" "+module2+": content = '"+new String((byte[]) contentAttrs2[0])+"\n");
+                    ContentAndAttrs contentAttrs1 = diffList.get(module1);
+                    ContentAndAttrs contentAttrs2 = diffList.get(module2);
+                    if (!Arrays.equals(contentAttrs1.contents, contentAttrs2.contents)) {
+                        sb.append(" " + module1 + ": content = '" + new String(contentAttrs1.contents) + "\n");
+                        sb.append(" " + module2 + ": content = '" + new String(contentAttrs2.contents) + "\n");
                     }
-                    if (!contentAttrs1[1].equals(contentAttrs2[1])) {
-                        Map attr1 = (Map) contentAttrs1[1];
-                        Map attr2 = (Map) contentAttrs2[1];
-                        Set keys = new HashSet(attr1.keySet());
+                    if (!contentAttrs1.attrs.equals(contentAttrs2.attrs)) {
+                        Map<String,Object> attr1 = contentAttrs1.attrs;
+                        Map<String,Object> attr2 = contentAttrs2.attrs;
+                        Set<String> keys = new HashSet<String>(attr1.keySet());
                         keys.retainAll(attr2.keySet());
-                        for (Iterator keysIt = keys.iterator(); keysIt.hasNext(); ) {
-                            Object attribute = keysIt.next();
+                        for (String attribute : keys) {
                             Object value1 = attr1.get(attribute);
                             Object value2 = attr2.get(attribute);
                             if (value1 == value2 || (value1 != null && value1.equals(value2))) {
@@ -371,14 +368,13 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                                 attr2.remove(attribute);
                             }
                         }
-                        sb.append(" "+module1+": different attributes = '"+contentAttrs1[1]+"\n");
-                        sb.append(" "+module2+": different attributes = '"+contentAttrs2[1]+"\n");
+                        sb.append(" " + module1 + ": different attributes = '" + contentAttrs1.attrs + "\n");
+                        sb.append(" " + module2 + ": different attributes = '" + contentAttrs2.attrs + "\n");
                     }
                 } else {
-                    for (int i = 0; i < list.size(); i++) {
-                        String module = list.get(i);
-                        Object[] contentAttrs = diffList.get(module);
-                        sb.append(" "+module+": content = '"+new String((byte[]) contentAttrs[0])+"', attributes = "+contentAttrs[1]+"\n");
+                    for (String module : list) {
+                        ContentAndAttrs contentAttrs = diffList.get(module);
+                        sb.append(" " + module + ": content = '" + new String(contentAttrs.contents) + "', attributes = " + contentAttrs.attrs + "\n");
                     }
                 }
             }
@@ -406,8 +402,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         return content;
     }
     
-    private static Map getAttributes(FileObject fo) {
-        Map attrs = new HashMap();
+    private static Map<String,Object> getAttributes(FileObject fo) {
+        Map<String,Object> attrs = new HashMap<String,Object>();
         Enumeration<String> en = fo.getAttributes();
         while (en.hasMoreElements()) {
             String attrName = en.nextElement();
@@ -415,14 +411,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             attrs.put(attrName, attr);
         }
         return attrs;
-    }
-    
-    private static boolean equals(byte[] b1, byte[] b2) {
-        if (b1.length != b2.length) return false;
-        for (int i = 0; i < b1.length; i++) {
-            if (b1[i] != b2[i]) return false;
-        }
-        return true;
     }
     
     private boolean skipFile (String s) {
