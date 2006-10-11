@@ -20,8 +20,8 @@ package org.netbeans.jellytools.modules.debugger.actions;
 
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.Action.Shortcut;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  * Used to call "Window | Debugging | Breakpoints" main menu item or Alt-Shift-F5
@@ -30,7 +30,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  * @see org.netbeans.jellytools.actions.ActionNoBlock
  * @author <a href="mailto:martin.schovanek@sun.com">Martin Schovanek</a>
  */
-public class BreakpointsWindowAction extends ActionNoBlock {
+public class BreakpointsWindowAction extends Action {
     private static final String menuPath =
             Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window") +
             "|" + Bundle.getStringTrimmed(
