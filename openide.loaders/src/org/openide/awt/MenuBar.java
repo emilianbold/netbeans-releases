@@ -240,7 +240,14 @@ public class MenuBar extends JMenuBar implements Externalizable {
             }
             
             if (newEx != null) {
-                newEx.initCause(ex);
+                Throwable t = newEx;
+                while (true) {
+                    if (t.getCause() == null) {
+                        t.initCause(ex);
+                        break;
+                    }
+                    t = t.getCause();
+                }
                 ex = newEx;
             }
         }
@@ -327,7 +334,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
          */
         protected Object createInstance(InstanceCookie[] cookies)
                 throws IOException, ClassNotFoundException {
-            final LinkedList ll = new LinkedList();
+            final LinkedList<Object> ll = new LinkedList<Object>();
             allInstances(cookies, ll);
 
             final MenuBar mb = MenuBar.this;
@@ -338,9 +345,8 @@ public class MenuBar extends JMenuBar implements Externalizable {
             
             cleanUp(); //remove the stuff we've added last time
             // fill with new content
-            Iterator it = ll.iterator();
-            while (it.hasNext()) {
-                Component component = convertToComponent(it.next());
+            for (Object o: ll) {
+                Component component = convertToComponent(o);
                 if (component != null) {
                     addComponent(component);
                 }
@@ -628,7 +634,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
         	LazyMenu m = LazyMenu.this;
 
         	//synchronized (this) { // see #15917 - attachment from 2001/09/27
-        	LinkedList cInstances = new LinkedList();
+        	LinkedList<Object> cInstances = new LinkedList<Object>();
         	allInstances (cookies, cInstances);
 
         	m.removeAll();

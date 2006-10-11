@@ -22,11 +22,13 @@ package org.openide.awt;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import javax.swing.JMenu;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.actions.OpenAction;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
@@ -66,6 +68,36 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
     }
 
     protected void tearDown() throws Exception {
+    }
+    
+    public void testAllInstances() throws Exception {
+        InstanceCookie[] ics = new InstanceCookie[] {
+            new IC(false),
+            new IC(true)
+        };
+        MenuBar.allInstances(ics, new ArrayList<Object>());
+    }
+    
+    private static class IC implements InstanceCookie {
+        private boolean throwing;
+        IC(boolean throwing) {
+            this.throwing = throwing;
+        }
+        public String instanceName() {
+            return "dummy";
+        }
+
+        public Class<?> instanceClass() throws IOException, ClassNotFoundException {
+            return Object.class;
+        }
+
+        public Object instanceCreate() throws IOException, ClassNotFoundException {
+            if (throwing) {
+                Exception e = new Exception("original");
+                throw new IOException("inited", e);
+            }
+            return new Object();
+        }
     }
 
     public void testHowManyRepaintsPerOneChangeAreThere() throws Exception {
