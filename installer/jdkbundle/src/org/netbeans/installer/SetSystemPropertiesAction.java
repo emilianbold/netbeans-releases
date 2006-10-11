@@ -123,10 +123,13 @@ public class SetSystemPropertiesAction extends WizardAction {
         String jdkHome = null;
         try {
             Win32RegistryService regService = (Win32RegistryService) getService(Win32RegistryService.NAME);
-            
             int HKLM = Win32RegistryService.HKEY_LOCAL_MACHINE;
-            
             String HKEY_JDK = "SOFTWARE\\JavaSoft\\Java Development Kit";
+            
+            if (!regService.keyExists(HKLM,HKEY_JDK)) {
+                return null;
+            }
+            
             String [] keys = regService.getSubkeyNames(HKLM,HKEY_JDK);
                         
             for (int i = 0; i < keys.length; i++) {
@@ -157,10 +160,13 @@ public class SetSystemPropertiesAction extends WizardAction {
         String jreHome = null;
         try {
             Win32RegistryService regService = (Win32RegistryService) getService(Win32RegistryService.NAME);
-            
             int HKLM = Win32RegistryService.HKEY_LOCAL_MACHINE;
-            
             String HKEY_JRE = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+            
+            if (!regService.keyExists(HKLM,HKEY_JRE)) {
+                return null;
+            }
+            
             String [] keys = regService.getSubkeyNames(HKLM,HKEY_JRE);
                         
             for (int i = 0; i < keys.length; i++) {
