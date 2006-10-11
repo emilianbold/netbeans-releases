@@ -19,15 +19,18 @@
 
 package org.netbeans.core.projects;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Manifest;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
@@ -250,6 +253,10 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         
         // String -> List<Modules>
         Map/*<String,List<String>>*/ files = new HashMap();
+        /* < FO path , { content, attributes } > */
+        Map<String, Object[]> contents = new HashMap<String, Object[]>();
+        /* < FO path , < module name, { content, attributes } > > */
+        Map<String, Map<String, Object[]>> differentContents = new HashMap<String, Map<String, Object[]>>();
         
         boolean atLeastOne = false;
         Enumeration/*<URL>*/ en = l.getResources("META-INF/MANIFEST.MF");
@@ -278,22 +285,41 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 FileObject fo = (FileObject)all.nextElement ();
                 if (!fo.isData ()) continue;
                 
-                List/*<String>*/ list = (List) files.get(fo.getPath());
+                String path = fo.getPath();
+                List<String> list = (List) files.get(path);
                 if (list == null) {
                     list = new ArrayList();
-                    files.put (fo.getPath (), list);
+                    files.put (path, list);
+                    list.add (module);
+                    byte[] foc = getFileContent(fo);
+                    Map foa = getAttributes(fo);
+                    contents.put(path, new Object[] { foc, foa });
+                } else {
+                    Object[] contentAttrs = contents.get(path);
+                    byte[] foc = getFileContent(fo);
+                    Map foa = getAttributes(fo);
+                    if (!equals(foc, (byte[]) contentAttrs[0]) || !foa.equals(contentAttrs[1])) {
+                        Map<String, Object[]> diffs = differentContents.get(path);
+                        if (diffs == null) {
+                            diffs = new HashMap<String, Object[]>();
+                            differentContents.put(path, diffs);
+                            diffs.put(list.get(0), contentAttrs);
+                        }
+                        diffs.put(module, new Object[] { foc, foa });
+                        list.add (module);
+                    }
                 }
-                list.add (module);
             }
             // make sure the filesystem closes the stream
             connect.getInputStream ().close ();
         }
+        contents = null; // Not needed any more
         
-        Iterator/*<Map.Entry<String,List<String>>>*/ it = files.entrySet().iterator();
+        Iterator<Map.Entry<String,List<String>>> it = files.entrySet().iterator();
         StringBuffer sb = new StringBuffer ();
         while (it.hasNext ()) {
-            Map.Entry/*<String,List<String>>*/ e = (Map.Entry) it.next();
-            List/*<String>*/ list = (List) e.getValue();
+            Map.Entry<String,List<String>> e = (Map.Entry) it.next();
+            List<String> list = (List) e.getValue();
             if (list.size () == 1) continue;
             
             Lookup.Result/*<ModuleInfo>*/ res = Lookup.getDefault().lookupResult(ModuleInfo.class);
@@ -319,6 +345,43 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             if (list.size () <= 1) continue;
             
             sb.append (e.getKey () + " is provided by: " + list + "\n");
+            Map<String, Object[]> diffList = differentContents.get(e.getKey());
+            if (diffList != null) {
+                if (list.size() == 2) {
+                    String module1 = list.get(0);
+                    String module2 = list.get(1);
+                    Object[] contentAttrs1 = diffList.get(module1);
+                    Object[] contentAttrs2 = diffList.get(module2);
+                    if (!equals((byte[]) contentAttrs1[0], (byte[]) contentAttrs2[0])) {
+                        sb.append(" "+module1+": content = '"+new String((byte[]) contentAttrs1[0])+"\n");
+                        sb.append(" "+module2+": content = '"+new String((byte[]) contentAttrs2[0])+"\n");
+                    }
+                    if (!contentAttrs1[1].equals(contentAttrs2[1])) {
+                        Map attr1 = (Map) contentAttrs1[1];
+                        Map attr2 = (Map) contentAttrs2[1];
+                        Set keys = new HashSet(attr1.keySet());
+                        keys.retainAll(attr2.keySet());
+                        for (Iterator keysIt = keys.iterator(); keysIt.hasNext(); ) {
+                            Object attribute = keysIt.next();
+                            Object value1 = attr1.get(attribute);
+                            Object value2 = attr2.get(attribute);
+                            if (value1 == value2 || (value1 != null && value1.equals(value2))) {
+                                // Remove the common attributes so that just the differences show up
+                                attr1.remove(attribute);
+                                attr2.remove(attribute);
+                            }
+                        }
+                        sb.append(" "+module1+": different attributes = '"+contentAttrs1[1]+"\n");
+                        sb.append(" "+module2+": different attributes = '"+contentAttrs2[1]+"\n");
+                    }
+                } else {
+                    for (int i = 0; i < list.size(); i++) {
+                        String module = list.get(i);
+                        Object[] contentAttrs = diffList.get(module);
+                        sb.append(" "+module+": content = '"+new String((byte[]) contentAttrs[0])+"', attributes = "+contentAttrs[1]+"\n");
+                    }
+                }
+            }
         }        
         
         assertTrue ("At least one layer file is usually used", atLeastOne);
@@ -326,6 +389,40 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         if (sb.length () > 0) {
             fail ("Some modules override their files and do not depend on each other\n" + sb);
         }
+    }
+    
+    private static byte[] getFileContent(FileObject fo) throws IOException {
+        BufferedInputStream in = new BufferedInputStream(fo.getInputStream());
+        int size = (int) fo.getSize();
+        byte[] content = new byte[size];
+        int length = 0;
+        while(length < size) {
+            int readLength = in.read(content, length, size - length);
+            if (readLength <= 0) {
+                throw new IOException("Bad size for "+fo+", size = "+size+", but actual length is "+length);
+            }
+            length +=readLength;
+        }
+        return content;
+    }
+    
+    private static Map getAttributes(FileObject fo) {
+        Map attrs = new HashMap();
+        Enumeration<String> en = fo.getAttributes();
+        while (en.hasMoreElements()) {
+            String attrName = en.nextElement();
+            Object attr = fo.getAttribute(attrName);
+            attrs.put(attrName, attr);
+        }
+        return attrs;
+    }
+    
+    private static boolean equals(byte[] b1, byte[] b2) {
+        if (b1.length != b2.length) return false;
+        for (int i = 0; i < b1.length; i++) {
+            if (b1[i] != b2[i]) return false;
+        }
+        return true;
     }
     
     private boolean skipFile (String s) {
