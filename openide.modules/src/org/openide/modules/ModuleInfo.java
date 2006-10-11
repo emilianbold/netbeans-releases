@@ -80,7 +80,7 @@ public abstract class ModuleInfo {
         return (String) getAttribute("OpenIDE-Module-Implementation-Version"); // NOI18N
     }
 
-    /** The indentification of the build version. Usually build number.
+    /** The identification of the build version. Usually build number.
      * If no specific build version is provided then this method delegates to {@link #getImplementationVersion}.
      *
      * @return textual identification of build version or the value for implementation version
@@ -131,7 +131,7 @@ public abstract class ModuleInfo {
     }
 
     /** Get a list of all dependencies this module has. */
-    public abstract Set getDependencies();
+    public abstract Set<Dependency> getDependencies();
 
     /** Determine if the provided class
      * was loaded as a part of this module, and thus will only be
@@ -139,7 +139,7 @@ public abstract class ModuleInfo {
      * If in doubt, return <code>false</code>.
      * @since 1.28
      */
-    public abstract boolean owns(Class clazz);
+    public abstract boolean owns(Class<?> clazz);
 
     /**
      * Get a class loader associated with this module that can load
