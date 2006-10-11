@@ -1254,22 +1254,21 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             }
             
             public void visitArrayReference(ObjectMap map, Object from, Object to, int index) {
-                visitRef(from, to);
+                visitRef(from, to, null);
             }
             
             public void visitObjectReference(ObjectMap map, Object from, Object to, java.lang.reflect.Field ref) {
-                visitRef(from, to);
+                visitRef(from, to, ref);
             }
             
-            private void visitRef(Object from, Object to) {
-                objects.get(from).addOut(to);
-                objects.get(to).addIn(from);
+            private void visitRef(Object from, Object to, Field field) {
+                objects.get(to).addIn(from, field);
                 if (to == target) throw new ObjectFoundException();
             }
             
             
             public void visitStaticReference(ObjectMap map, Object to, java.lang.reflect.Field ref) {
-                objects.get(to).addStatic(ref);
+                objects.get(to).addIn(null, ref);
                 if (to == target) throw new ObjectFoundException();
             }
         };
@@ -1295,19 +1294,23 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         class PathElement {
             private Entry item;
             private PathElement next;
-            public PathElement(Entry item, PathElement next) {
+            private Field field;
+            
+            public PathElement(Entry item, PathElement next, Field field) {
                 this.item = item;
                 this.next = next;
+                this.field = field;
             }
             
             public Entry getItem() {
                 return item;
             }
             public String toString() {
+                String fld = field == null ? "[]" : field.getName();
                 if (next == null) {
                     return item.toString();
                 } else {
-                    return item.toString() + "->\n" + next.toString();
+                    return item.toString() + "-" + fld + "->\n" + next.toString();
                 }
             }
         }
@@ -1318,30 +1321,29 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         
         visited.add(fin);
         List<PathElement> queue = new LinkedList<PathElement>();
-        queue.add(new PathElement(fin, null));
+        queue.add(new PathElement(fin, null, null));
         
         while (!queue.isEmpty()) {
             PathElement act = queue.remove(0);
-            // any static ref?
             Entry item = act.getItem();
+
             if (roots.contains(item.getObject())) {
                 return "||root||:" + act;
             }
             
-            Iterator<Object> it = item.staticRefs();
-            if (it.hasNext()) {
-                Field fld = (Field)it.next();
-                return fld + "->\n" + act;
-            }
-            
             // follow incomming
-            it = act.getItem().incomingRefs();
+            Iterator it = act.getItem().incomingRefs();
             while(it.hasNext()) {
-                Entry ref = objects.get(it.next());
+                Object o = it.next();
+                assert (it.hasNext());
+                Field f = (Field)it.next();
+                if (o == null) return f + "->\n" + act; // static (root)
+
+                Entry ref = objects.get(o);
                 assert ref != null;
                 
                 // add to the queue if not new
-                if (visited.add(ref)) queue.add(new PathElement(ref, act));
+                if (visited.add(ref)) queue.add(new PathElement(ref, act, f));
             }
         }
         return "Error";
@@ -1354,26 +1356,16 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     private static class Entry {
         private Object obj;
         private Object[] in;
-        private Object[] out;
-        private Object[] stat;
         
         public Entry(Object o) {
             obj = o;
             in = EMPTY;
-            out = EMPTY;
-            stat = EMPTY;
         }
         
-        void addOut(Object o) {
-            out = append(out, o);
-        }
         
-        void addStatic(Field ref) {
-            stat = append(stat, ref);
-        }
-        
-        void addIn(Object o) {
+        void addIn(Object o, Field f) {
             in = append(in, o);
+            in = append(in, f);
         }
         
         public Object getObject() {
@@ -1382,14 +1374,6 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         
         public Iterator<Object> incomingRefs() {
             return Arrays.asList(in).iterator();
-        }
-        
-        public Iterator<Object> staticRefs() {
-            return Arrays.asList(stat).iterator();
-        }
-        
-        public Iterator<Object> outgoingRefs() {
-            return Arrays.asList(stat).iterator();
         }
         
         private Object[] append(Object[] orig, Object add) {
