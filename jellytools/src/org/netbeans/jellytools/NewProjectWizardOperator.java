@@ -22,6 +22,7 @@ import javax.swing.JDialog;
 import org.netbeans.jellytools.actions.NewProjectAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
@@ -98,6 +99,8 @@ public class NewProjectWizardOperator extends WizardOperator {
             }).waitAction(null);
         } catch (InterruptedException e) {
             throw new JemmyException("Interrupted.", e);
+        } catch(TimeoutExpiredException tee) {
+            // ignore it because sometimes can happen that no category is selected by default
         }
         new Node(treeCategories(), category).select();
     }
