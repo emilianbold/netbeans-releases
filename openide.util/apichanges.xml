@@ -43,8 +43,8 @@ Microsystems, Inc. All Rights Reserved.
               Method <code>NbPreferences.root()</code> returns root preference
               node.
               Method <code>NbPreferences.forModule(Class cls)</code> returns
-              preference node which 
-              {@link Preferences#absolutePath} depends whether class provided as a parameter 
+              preference node whose
+              path depends whether class provided as a parameter
               was loaded as a part of any module or not. If so, then absolute path corresponds to slashified 
               code name base of module. If not, then absolute path corresponds to class's package.
               See document

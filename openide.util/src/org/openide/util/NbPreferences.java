@@ -26,7 +26,7 @@ import org.netbeans.modules.openide.util.PreferencesProvider;
 /**
  * Provides an implementation of the Preferences API which may be backed by
  * a NetBeans-specific implementation.
- * @see "doc-files/preferences.html"
+ * @see <a href="doc-files/preferences.html">Preferences API in NetBeans</a>
  * @since org.openide.util 7.4
  * @author Radek Matous
  */
