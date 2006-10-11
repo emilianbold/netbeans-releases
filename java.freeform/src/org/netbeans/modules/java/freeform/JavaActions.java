@@ -1222,6 +1222,7 @@ final class JavaActions implements ActionProvider {
         assert antFile != null;
         Element antElem = doc.createElement("ant"); // NOI18N
         antElem.setAttribute("antfile", antFile);
+        antElem.setAttribute("inheritall", "false"); // NOI18N
         StringTokenizer st = new StringTokenizer(deps, ","); // NOI18N
         if (st.countTokens() > 1) {
             while (st.hasMoreTokens()) {

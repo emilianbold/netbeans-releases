@@ -547,7 +547,7 @@ public class JavaActionsTest extends TestBase {
             "<project>\n" +
             "    <target name=\"run-single-test-target\">\n" +
             "        <fail unless=\"test.class\">Must set property 'test.class'</fail>\n" +
-            "        <ant antfile=\"build.xml\" target=\"jar\"/>\n" +
+            "        <ant antfile=\"build.xml\" inheritall=\"false\" target=\"jar\"/>\n" +
             "        <java classname=\"${test.class}\" failonerror=\"true\" fork=\"true\">\n" +
             "            <classpath>\n" +
             "                <pathelement path=\"${src.cp}\"/>\n" +
@@ -571,7 +571,7 @@ public class JavaActionsTest extends TestBase {
             "<project>\n" +
             "    <target name=\"debug-single-test-target\">\n" +
             "        <fail unless=\"test.class\">Must set property 'test.class'</fail>\n" +
-            "        <ant antfile=\"build.xml\" target=\"jar\"/>\n" +
+            "        <ant antfile=\"build.xml\" inheritall=\"false\" target=\"jar\"/>\n" +
             "        <path id=\"cp\">\n" +
             "            <pathelement path=\"${src.cp}\"/>\n" +
             "            <pathelement location=\"${classes.dir}\"/>\n" +
@@ -622,7 +622,7 @@ public class JavaActionsTest extends TestBase {
         Element antElem = ja.createAntElem(doc, "antscript.xml", "test.target");
         String expectedXml =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<ant antfile=\"antscript.xml\" target=\"test.target\"/>\n";
+            "<ant antfile=\"antscript.xml\" inheritall=\"false\" target=\"test.target\"/>\n";
         assertEquals(expectedXml, xmlToString(antElem));
     }
 
