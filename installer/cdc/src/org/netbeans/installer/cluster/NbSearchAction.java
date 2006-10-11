@@ -20,7 +20,6 @@
 package org.netbeans.installer.cluster;
 
 import com.installshield.product.SoftwareObject;
-import com.installshield.product.SoftwareVersion;
 import com.installshield.product.service.registry.RegistryService;
 import com.installshield.util.Log;
 import com.installshield.wizard.CancelableWizardAction;
@@ -106,7 +105,6 @@ public class NbSearchAction extends CancelableWizardAction {
     private void findNb () {
         try {
             // Get the instance of RegistryService
-            String jseUID = resolveString(BUNDLE + "JSE.productUID)");
             RegistryService regserv = (RegistryService)getService(RegistryService.NAME);  
             String [] arr = regserv.getAllSoftwareObjectUIDs();
             /*for (int i = 0; i < arr.length; i++) {
@@ -129,40 +127,12 @@ public class NbSearchAction extends CancelableWizardAction {
                         + " installLocation: " + soArr[j].getInstallLocation());
                         nbHomeList.add(soArr[j]);
                     }
-                } else if (arr[i].equals(jseUID)) {
-                    soArr = regserv.getSoftwareObjects(arr[i]);
-                    System.out.println("so.length:" + soArr.length);
-                    for (int j = 0; j < soArr.length; j++) {
-                        SoftwareVersion version = soArr[j].getKey().getVersion();
-                        logEvent(this, Log.DBG,"so[" + j + "]:"
-                        + " displayName: " + soArr[j].getDisplayName()
-                        + " name: " + soArr[j].getName()
-                        + " productNumber: " + soArr[j].getProductNumber()
-                        + " installLocation: " + soArr[j].getInstallLocation()
-                        + " version:" + version);
-                        if (acceptJSEVersion(version)) {
-                            nbHomeList.add(soArr[j]);
-                        }
-                    }
                 }
             }
             orderList(nbHomeList);
         } catch (ServiceException exc) {
             logEvent(this, Log.ERROR, exc);
         }
-    }
-    
-    private boolean acceptJSEVersion (SoftwareVersion version) {
-        if (version.getMajor().equals("8") && version.getMinor().equals("1")) {
-            return true;
-        }
-        if (version.getMajor().equals("9") && version.getMinor().equals("0") && version.getMaintenance().equals("1")) {
-            return true;
-        }
-        if (version.getMajor().equals("9") && version.getMinor().equals("0") && version.getMaintenance().equals("2")) {
-            return true;
-        }
-        return false;
     }
     
     private static void orderList (Vector nbHomeList) {

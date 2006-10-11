@@ -115,23 +115,7 @@ public class NbSelectionPanel extends DirectoryChooserPanel
     public boolean queryExit(WizardBeanEvent event) {
         nbHome = getDestination();
         logEvent(this, Log.DBG, "nbHome: " + nbHome);
-        if (!validateNbDirNoUI(nbHome)) {
-            //Try to check subdirs as JSE has NB one dir level lower
-            File dir = new File(nbHome);
-            //isDirectory() returns true only if given dir exists and is directory
-            if (dir.isDirectory()) {
-                File [] files = dir.listFiles();
-                for (int i = 0; i < files.length; i++) {
-                    logEvent(this,Log.DBG,"queryExit files[" + i + "]: " + files[i].getPath());
-                    if (files[i].isDirectory()) {
-                        if (validateNbDirNoUI(files[i].getPath())) {
-                            nbHome = files[i].getPath();
-                            return validateDestination();
-                        }
-                    }
-                }
-            }
-            validateNbDir(nbHome);
+        if (!validateNbDir(nbHome)) {
             return false;
         }
         return validateDestination();
@@ -263,45 +247,6 @@ public class NbSelectionPanel extends DirectoryChooserPanel
         if (!ideDir.isDirectory()) {
             showErrorMsg(resolveString(BUNDLE + "NetBeansDirChooser.dirChooserDialogTitle)"),
             resolveString(BUNDLE + "NetBeansDirChooser.invalidNbDir)"));
-            return false;
-        }
-        return true;
-    }
-    
-    /** Checks if there is NB cluster dir in selected NB installation directory without displaying
-     * any error dialog.
-     */
-    private boolean validateNbDirNoUI (String nbHomeDir) {
-        //Find nb cluster dir
-        if ("".equals(nbHomeDir)) {
-            //Empty string
-            return false;
-        }
-        File dir = new File(nbHomeDir);
-        //isDirectory() returns true only if given dir exists and is directory
-        if (!dir.isDirectory()) {
-            //Entered dir does not exist
-            return false;
-        }
-        File ideDir = null;
-        File platformDir = null;
-        boolean dirsFound = false;
-        for (int i = 0; i < ideClusterDirArray.length; i++) {
-            ideDir = new File(dir, ideClusterDirArray[i]);
-            platformDir = new File(dir, platformClusterDirArray[i]);
-            if (ideDir.exists() && platformDir.exists()) {
-                dirsFound = true;
-                break;
-            }
-        }
-        if (!dirsFound) {
-            //No platform and ide cluster dir was found.
-            return false;
-        }
-        if (!platformDir.isDirectory()) {
-            return false;
-        }
-        if (!ideDir.isDirectory()) {
             return false;
         }
         return true;
