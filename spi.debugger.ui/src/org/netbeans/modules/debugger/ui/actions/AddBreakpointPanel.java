@@ -80,11 +80,6 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     public AddBreakpointPanel () {
         breakpointTypes = DebuggerManager.getDebuggerManager ().lookup 
             (null, BreakpointType.class);
-        Collections.sort(breakpointTypes, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                return ((BreakpointType) o1).getTypeDisplayName().compareTo(((BreakpointType) o2).getTypeDisplayName());
-            }
-        });
         int i, k = breakpointTypes.size ();
         String def = null;
         for (i = 0; i < k; i++) {
