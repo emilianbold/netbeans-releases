@@ -30,10 +30,10 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -53,14 +53,14 @@ public class CreateCopyAction extends ContextAction {
     }
 
     protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_MANAGED
-            & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+        return    FileInformation.STATUS_MANAGED
+               & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
     protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED 
-             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
-             & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+        return    FileInformation.STATUS_MANAGED 
+               & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
+               & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     }
     
     protected void performContextAction(final Node[] nodes) {
@@ -68,37 +68,38 @@ public class CreateCopyAction extends ContextAction {
 
         final File root = ctx.getRootFiles()[0];
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
-        boolean hasChanges = files.length > 0;                
-        SVNUrl url = SvnUtils.getRepositoryRootUrl(root);
-        final RepositoryFile repositoryRoot = new RepositoryFile(url, url, SVNRevision.HEAD);
+        final boolean hasChanges = files.length > 0;                
+        final SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+        final RepositoryFile repositoryRoot = new RepositoryFile(repositoryUrl, repositoryUrl, SVNRevision.HEAD);        
 
-        final CreateCopy createCopy = new CreateCopy(repositoryRoot, root.getName(), hasChanges);
+        final CreateCopy createCopy = new CreateCopy(repositoryRoot, root, hasChanges);
         if(createCopy.showDialog()) {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this,  nodes) {
                 public void perform() {
-                    performCopy(createCopy, repositoryRoot, root, this);
-                }
+                    performCopy(createCopy, repositoryUrl, root, this, hasChanges);
+                } 
             };
             support.start(createRequestProcessor(nodes));
         }
     }
 
-    private void performCopy(CreateCopy createCopy, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
-        RepositoryFile repositoryFolder = createCopy.getRepositoryFile();
-        String message = createCopy.getMessage();            
+    private void performCopy(CreateCopy createCopy, SVNUrl repositoryUrl, File root, SvnProgressSupport support, boolean hasChanges) {
+        RepositoryFile toRepositoryFile = createCopy.getRepositoryFile();
+        String message = createCopy.getMessage();           
         boolean switchTo = createCopy.getSwitchTo();
+        
         
         try {                
             ISVNClientAdapter client;
             try {
-                client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+                client = Subversion.getInstance().getClient(repositoryUrl);
             } catch (SVNClientException ex) {
                 ErrorManager.getDefault().notify(ex);
                 return;
             }
 
-            if(!repositoryFolder.isRepositoryRoot()) {
-                SVNUrl folderToCreate = repositoryFolder.removeLastSegment().getFileUrl();
+            if(!toRepositoryFile.isRepositoryRoot()) {
+                SVNUrl folderToCreate = toRepositoryFile.getFileUrl();
                 ISVNInfo info = null;
                 try{
                     info = client.getInfo(folderToCreate);                                                                
@@ -123,14 +124,14 @@ public class CreateCopyAction extends ContextAction {
                 return;
             }
 
-            client.copy(root, repositoryFolder.getFileUrl(), message);
-
+            client.copy(root, toRepositoryFile.getFileUrl(), message);            
+            
             if(support.isCanceled()) {
                 return;
             }
 
             if(switchTo) {
-                SwitchToAction.performSwitch(repositoryFolder, repositoryRoot, root, support);
+                SwitchToAction.performSwitch(toRepositoryFile, root, support);
             }
 
         } catch (SVNClientException ex) {

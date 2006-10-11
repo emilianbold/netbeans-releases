@@ -125,14 +125,14 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return new RepositoryFile[] {rf};
         }
 
-        if(repositoryPathTextField.getText().trim().equals("")) { // NOI18N
+        if(getRepositoryTextField().equals("")) { // NOI18N
             return EMPTY_REPOSITORY_FILES;
         }
         if(revision == null) {
             // should not be possible to get here!
             return EMPTY_REPOSITORY_FILES;
         }        
-        String[] paths = repositoryPathTextField.getText().trim().split(","); // NOI18N
+        String[] paths = getRepositoryTextField().split(","); // NOI18N
         RepositoryFile[] ret = new RepositoryFile[paths.length];
         SVNUrl repositoryUrl = getRepositoryUrl();
        
@@ -208,13 +208,13 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                     if(i < selectedFiles.length - 1) {
                         paths.append(", "); // NOI18N
                     }
-                }                        
-                repositoryPathTextField.setText(paths.toString());
+                }  
+                setRepositoryTextField(paths.toString());
             } 
         } else {
             browser.cancel(); 
         }
-    }      
+    }          
     
     private void searchRepository() {
         SVNRevision revision = getRevision();        
@@ -242,9 +242,9 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             revision = svnSearch.getSelectedRevision();
             if(revision != null) {
                 if(revision.equals(SVNRevision.HEAD) ) {
-                    revisionTextField.setText(""); // NOI18N
+                    setRevisionTextField(""); // NOI18N
                 } else {
-                    revisionTextField.setText(revision.toString());                       
+                    setRevisionTextField(revision.toString());                       
                 }
             }
         } else {
@@ -256,7 +256,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         if(revisionTextField == null) {
             return SVNRevision.HEAD;
         }
-        String revisionString = revisionTextField.getText().trim();
+        String revisionString = getRevisionTextField();
         if(revisionString.equals("") || revisionString.equals(SVNRevision.HEAD.toString())) { // NOI18N
             return SVNRevision.HEAD;    
         }
@@ -269,14 +269,6 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         } else if (e.getSource() == searchRevisionButton) {
             searchRepository();
         }
-    }
-
-    public SVNUrl getRepositoryUrl() {
-        return repositoryFile.getRepositoryUrl();
-    }
-
-    public void setRepositoryFile(RepositoryFile repositoryFile) {
-        this.repositoryFile = repositoryFile;
     }
 
     public void insertUpdate(DocumentEvent e) {
@@ -311,11 +303,11 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             searchRevisionButton.setEnabled(valid);
         }
         
-        if(!acceptEmptyUrl() && repositoryPathTextField != null && repositoryPathTextField.getText().trim().equals("")) { // NOI18N
+        if(!acceptEmptyUrl() && repositoryPathTextField != null && getRepositoryTextField().equals("")) { // NOI18N
             valid = false;
         }
 
-        if(!acceptEmptyRevision() && revisionTextField != null && revisionTextField.getText().trim().equals("")) { // NOI18N
+        if(!acceptEmptyRevision() && revisionTextField != null && getRevisionTextField().equals("")) { // NOI18N
             valid = false;
         }
         
@@ -357,4 +349,27 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         return true;
     }
 
+    public SVNUrl getRepositoryUrl() {
+        return repositoryFile.getRepositoryUrl();
+    }
+
+    public void setRepositoryFile(RepositoryFile repositoryFile) {
+        this.repositoryFile = repositoryFile;
+    }        
+
+    protected void setRepositoryTextField(String url) {
+        repositoryPathTextField.setText(url);
+    }
+    
+    protected void setRevisionTextField(String revision) {
+        revisionTextField.setText(revision); 
+    }
+    
+    protected String getRepositoryTextField() {
+        return repositoryPathTextField.getText().trim();
+    }
+    
+    protected String getRevisionTextField() {
+        return revisionTextField.getText().trim();
+    }    
 }

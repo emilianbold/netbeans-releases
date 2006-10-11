@@ -20,8 +20,13 @@ package org.netbeans.modules.subversion.ui.copy;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.net.MalformedURLException;
+import javax.swing.JButton;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -38,29 +43,59 @@ import org.openide.util.NbBundle;
  */
 public class CreateCopy extends CopyDialog implements DocumentListener, FocusListener {
    
-    private RepositoryPaths repositoryPaths;
+    private CopyRepositoryPaths repositoryPaths;
+    private final File localeFile;
     
     /** Creates a new instance of CreateCopy */
-    public CreateCopy(RepositoryFile repositoryRoot, String context, boolean localChanges) {
-        super(new CreateCopyPanel(), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Prompt", context), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title")); // NOI18N
-        CreateCopyPanel panel = getCreateCopyPanel();
+    public CreateCopy(RepositoryFile repositoryRoot, File localeFile, boolean localChanges) {        
+        super(new CreateCopyPanel(), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Prompt", localeFile.getName()), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title")); // NOI18N
+        
+        this.localeFile = localeFile;        
+        final CreateCopyPanel panel = getCreateCopyPanel();        
+        
         panel.warningLabel.setVisible(localChanges);                              
+        panel.copyFromTextField.setText(localeFile.getAbsolutePath());                              
+        panel.switchToWarningLabel.setVisible(false);
+        if(localChanges) {
+            panel.switchToCheckBox.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent arg0) {
+                    panel.switchToWarningLabel.setVisible(panel.switchToCheckBox.isSelected());
+                }
+            });
+        }
+        if(localeFile.isFile()) {
+            panel.copyFromLabel.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromFile"));               // NOI18N
+            panel.copyToLabel.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_toFile"));                   // NOI18N
+        } else {
+            panel.copyFromLabel.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_fromFolder"));             // NOI18N
+            panel.copyToLabel.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_toFolder"));                 // NOI18N
+        }        
+        
         panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title"));        
+        
         repositoryPaths = 
-            new RepositoryPaths(
-                repositoryRoot, 
+            new CopyRepositoryPaths(
+                repositoryRoot, // initialize only with root
                 (JTextComponent) panel.urlComboBox.getEditor().getEditorComponent(),
                 panel.browseRepositoryButton,
                 null,
                 null
             );
-        String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopy");
-        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, true, false, false, new BrowserAction[] { new CreateFolderAction(context)} );                
+                
+        String browserPurposeMessage = "";
+        if(localeFile.isFile()) {
+            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFile");    
+        } else {
+            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFolder");
+        }
+
+        String defaultFolderName = localeFile.isFile() ? "" : localeFile.getName();
+        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, true, false, false, new BrowserAction[] { new CreateFolderAction(defaultFolderName)} );                
         repositoryPaths.addPropertyChangeListener(this);
 
         setupUrlComboBox(panel.urlComboBox, CreateCopy.class.getName());
         panel.messageTextArea.getDocument().addDocumentListener(this);
-    }    
+    }       
     
     protected void validateUserInput() {                        
         String text = getCreateCopyPanel().messageTextArea.getText();
@@ -134,5 +169,36 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
                 getOKButton().setEnabled(valid);
             }            
         }        
+    }
+    
+    private class CopyRepositoryPaths extends RepositoryPaths  {
+        public CopyRepositoryPaths(RepositoryFile repositoryFile, 
+                                   JTextComponent repositoryPathTextField,  
+                                   JButton browseButton, 
+                                   JTextField revisionTextField, 
+                                   JButton searchRevisionButton) 
+        {        
+            super(repositoryFile, repositoryPathTextField, browseButton, revisionTextField, searchRevisionButton);
+        }
+
+        protected void setRepositoryTextField(String url) {
+            super.setRepositoryTextField(url + "/" + localeFile.getName());                     // NOI18N
+        }
+
+        protected void setRevisionTextField(String revision) {
+            super.setRevisionTextField(revision);
+        }        
+
+        protected String getRepositoryTextField() {
+            String url = super.getRepositoryTextField();                     
+            int idx = url.lastIndexOf("/");                                                     // NOI18N
+            if(idx > 0) {
+                // skip the last segment - it's the destination folder/file
+                return url.substring(0, idx - 1);
+            } else {
+                return "";                                                                      // NOI18N    
+            }
+        }
+        
     }
 }

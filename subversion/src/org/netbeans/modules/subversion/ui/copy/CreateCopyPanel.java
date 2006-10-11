@@ -39,9 +39,9 @@ public class CreateCopyPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jLabel4 = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Name")); // NOI18N
         jLabel1.setLabelFor(messageTextArea);
@@ -54,8 +54,8 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         messageTextArea.getAccessibleContext().setAccessibleName("Copy Description");
         messageTextArea.getAccessibleContext().setAccessibleDescription("Copy Description");
 
-        jLabel4.setLabelFor(urlComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Folder")); // NOI18N
+        copyToLabel.setLabelFor(urlComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(copyToLabel, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_toFolder")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Browse")); // NOI18N
         browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Folders");
@@ -70,6 +70,13 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         switchToCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         switchToCheckBox.getAccessibleContext().setAccessibleDescription("Switch to new copy after creation");
 
+        org.openide.awt.Mnemonics.setLocalizedText(copyFromLabel, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_fromFolder")); // NOI18N
+
+        copyFromTextField.setEditable(false);
+
+        switchToWarningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/ui/resources/warning.png")));
+        org.openide.awt.Mnemonics.setLocalizedText(switchToWarningLabel, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_SwitchPanel_Warning")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -77,32 +84,53 @@ public class CreateCopyPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(switchToCheckBox)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel4)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(urlComboBox, 0, 396, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseRepositoryButton))
-                    .add(warningLabel)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE))
-                .addContainerGap())
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(copyFromLabel)
+                            .add(copyToLabel)
+                            .add(switchToCheckBox))
+                        .add(17, 17, 17)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(urlComboBox, 0, 407, Short.MAX_VALUE)
+                                    .add(copyFromTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseRepositoryButton)
+                                .add(12, 12, 12))
+                            .add(layout.createSequentialGroup()
+                                .add(switchToWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
+                                .addContainerGap())))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+                        .add(125, 125, 125))
+                    .add(layout.createSequentialGroup()
+                        .add(warningLabel)
+                        .addContainerGap(150, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
-                    .add(browseRepositoryButton)
-                    .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(copyFromLabel)
+                    .add(copyFromTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(switchToCheckBox)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(copyToLabel)
+                    .add(urlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseRepositoryButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(switchToCheckBox)
+                    .add(switchToWarningLabel))
+                .add(18, 18, 18)
                 .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(warningLabel)
                 .addContainerGap())
@@ -111,11 +139,15 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JButton browseRepositoryButton = new javax.swing.JButton();
+    private javax.swing.ButtonGroup buttonGroup1;
+    final javax.swing.JLabel copyFromLabel = new javax.swing.JLabel();
+    final javax.swing.JTextField copyFromTextField = new javax.swing.JTextField();
+    final javax.swing.JLabel copyToLabel = new javax.swing.JLabel();
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     final javax.swing.JTextArea messageTextArea = new javax.swing.JTextArea();
     final javax.swing.JCheckBox switchToCheckBox = new javax.swing.JCheckBox();
+    final javax.swing.JLabel switchToWarningLabel = new javax.swing.JLabel();
     final javax.swing.JComboBox urlComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel warningLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables

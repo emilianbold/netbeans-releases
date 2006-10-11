@@ -82,15 +82,15 @@ public class SwitchToAction extends ContextAction {
         if(switchTo.showDialog()) {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
                 public void perform() {
-                    RepositoryFile repository = switchTo.getRepositoryFile();
-                    performSwitch(repository, repositoryRoot, root, this);
+                    RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
+                    performSwitch(toRepositoryFile, root, this);
                 }
             };
             support.start(createRequestProcessor(nodes));
         }        
     }
 
-    static void performSwitch(RepositoryFile repository, RepositoryFile repositoryRoot, File root, SvnProgressSupport support) {
+    static void performSwitch(RepositoryFile toRepositoryFile, File root, SvnProgressSupport support) {
         File[][] split = SvnUtils.splitFlatOthers(new File[] {root} );
         boolean recursive;
         // there can be only 1 root file
@@ -103,13 +103,13 @@ public class SwitchToAction extends ContextAction {
         try {
             ISVNClientAdapter client;
             try {
-                client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+                client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
             } catch (SVNClientException ex) {
                 ErrorManager.getDefault().notify(ex);
                 return;
             }            
             // ... and switch
-            client.switchToUrl(root, repository.getFileUrl(), repository.getRevision(), recursive);
+            client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
             // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
             refreshRecursively(root); // XXX the same for another implementations like this in the code.... (see SvnUtils.refreshRecursively() )
             FileStatusProvider.getInstance().refreshAllAnnotations(false, true);

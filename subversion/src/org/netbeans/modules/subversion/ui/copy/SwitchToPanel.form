@@ -28,7 +28,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="urlComboBox" pref="374" max="32767" attributes="0"/>
+                          <Component id="urlComboBox" pref="450" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="revisionTextField" min="-2" pref="93" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>

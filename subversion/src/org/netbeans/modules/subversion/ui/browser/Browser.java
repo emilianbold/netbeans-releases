@@ -25,10 +25,7 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -40,11 +37,8 @@ import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Handles the UI for repository browsing.
@@ -116,39 +110,6 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         }
         
     }       
-
-    /**
-     * Configures the browser instance with the given parameters
-     *
-     * @param repositoryRoot the RepositoryFile representing the repository root
-     * @param select an array of RepositoryFile-s representing the items which has to be selected
-     * @param nodeActions an array of actions from which the context menu on the tree items will be created
-     */
-//    public void setup(RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions) 
-//    {        
-//        if(nodeActions!=null) {
-//            this.nodeActions = nodeActions;
-//            panel.setActions(nodeActions);    
-//            for (int i = 0; i < nodeActions.length; i++) {
-//                nodeActions[i].setBrowser(this);
-//            }
-//        } else {
-//            this.nodeActions = EMPTY_ACTIONS;
-//        }        
-//        this.repositoryRoot = repositoryRoot;
-//        
-//        RepositoryPathNode rootNode = RepositoryPathNode.createRepositoryPathNode(this, repositoryRoot);                        
-//        Node[] selectedNodes = getSelectedNodes(rootNode, repositoryRoot, select);   
-//        getExplorerManager().setRootContext(rootNode);
-//        
-//        if(selectedNodes!=null) {
-//            try {
-//                getExplorerManager().setSelectedNodes(selectedNodes);    
-//            } catch (PropertyVetoException ex) {
-//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//            }    
-//        }
-//    }
 
     private Node[] getSelectedNodes(RepositoryPathNode rootNode, RepositoryFile repositoryRoot, RepositoryFile[] select) {        
         if(select==null || select.length <= 0) {
@@ -295,7 +256,7 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 for (int i = 0; i < newSelection.length; i++) {
                     if(newSelection[i] instanceof RepositoryPathNode) {
                         RepositoryPathNode node = (RepositoryPathNode) newSelection[i];
-                        if(node.getEntry().getSvnNodeKind() == SVNNodeKind.DIR) {
+                        if(node.getEntry().getSvnNodeKind() == SVNNodeKind.DIR) {                            
                             throw new PropertyVetoException("", evt); // NOI18N
                         }
                     }

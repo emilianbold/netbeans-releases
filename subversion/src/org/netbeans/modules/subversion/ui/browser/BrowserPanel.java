@@ -30,10 +30,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EtchedBorder;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.ExplorerManager;
@@ -159,9 +157,9 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
             ResourceBundle loc = NbBundle.getBundle(BrowserPanel.class);            
             Node.Property [] columns = new Node.Property[4];
             columns[0] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_REVISION, String.class, loc.getString("LBL_BrowserTree_Column_Revision"), loc.getString("LBL_BrowserTree_Column_Revision_Desc"));
-            columns[1] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_DATE, String.class, loc.getString("LBL_BrowserTree_Column_Date"), loc.getString("LBL_BrowserTree_Column_Date_Desc"));
-            columns[2] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_AUTHOR, String.class, loc.getString("LBL_BrowserTree_Column_Author"), loc.getString("LBL_BrowserTree_Column_Author_Desc"));
-            columns[3] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_HISTORY, String.class, loc.getString("LBL_BrowserTree_Column_History"), loc.getString("LBL_BrowserTree_Column_History_Desc"));            
+            columns[1] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_DATE,     String.class, loc.getString("LBL_BrowserTree_Column_Date"),     loc.getString("LBL_BrowserTree_Column_Date_Desc"));
+            columns[2] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_AUTHOR,   String.class, loc.getString("LBL_BrowserTree_Column_Author"),   loc.getString("LBL_BrowserTree_Column_Author_Desc"));
+            columns[3] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_HISTORY,  String.class, loc.getString("LBL_BrowserTree_Column_History"),  loc.getString("LBL_BrowserTree_Column_History_Desc"));            
             
             setProperties(columns);
         }    
@@ -180,8 +178,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         }            
     }     
 
-    private static class ColumnDescriptor extends PropertySupport.ReadOnly {
-        
+    private static class ColumnDescriptor extends PropertySupport.ReadOnly {        
         public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
