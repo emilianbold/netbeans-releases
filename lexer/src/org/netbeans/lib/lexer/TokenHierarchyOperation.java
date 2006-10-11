@@ -98,7 +98,7 @@ public final class TokenHierarchyOperation<I> { // "I" stands for input
      * Constructor for reader as input.
      */
     public TokenHierarchyOperation(Reader inputReader,
-    LanguageDescription language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         this.tokenList = new CopyTextTokenList(inputReader,
                 language, skipTokenIds, inputAttributes);
         init();
@@ -108,7 +108,7 @@ public final class TokenHierarchyOperation<I> { // "I" stands for input
      * Constructor for character sequence as input.
      */
     public TokenHierarchyOperation(CharSequence inputText, boolean copyInputText,
-    LanguageDescription language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
 
         this.tokenList = copyInputText
                 ? (TokenList)new CopyTextTokenList(inputText,
@@ -122,7 +122,7 @@ public final class TokenHierarchyOperation<I> { // "I" stands for input
      * Constructor for mutable input.
      */
     public TokenHierarchyOperation(MutableTextInput<I> mutableTextInput,
-    LanguageDescription language) {
+    LanguageDescription<? extends TokenId> language) {
         this.mutableTextInput = mutableTextInput;
         this.tokenList = new IncTokenList(mutableTextInput);
         init();

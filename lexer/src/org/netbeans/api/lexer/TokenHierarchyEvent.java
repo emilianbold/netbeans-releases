@@ -31,11 +31,11 @@ import org.netbeans.lib.lexer.inc.TokenListChange;
 
 public final class TokenHierarchyEvent extends java.util.EventObject {
 
-    private final TokenChange tokenChange;
+    private final TokenChange<? extends TokenId> tokenChange;
 
     TokenHierarchyEvent(TokenListChange tokenListChange) {
         super(tokenListChange.tokenHierarchyOperation().tokenHierarchy());
-        this.tokenChange = new TokenChange(tokenListChange);
+        this.tokenChange = new TokenChange<TokenId>(tokenListChange);
     }
 
     /**
@@ -49,7 +49,7 @@ public final class TokenHierarchyEvent extends java.util.EventObject {
      * Get the token change that occurred in the tokens
      * at the top-level of the token hierarchy.
      */
-    public TokenChange tokenChange() {
+    public TokenChange<? extends TokenId> tokenChange() {
         return tokenChange;
     }
 
@@ -63,7 +63,8 @@ public final class TokenHierarchyEvent extends java.util.EventObject {
      *  Returns null otherwise.
      */
     public <T extends TokenId> TokenChange<T> tokenChange(LanguageDescription<T> language) {
-        @SuppressWarnings("unchecked") TokenChange<T> tc = tokenChange();
+        @SuppressWarnings("unchecked")
+        TokenChange<T> tc = (TokenChange<T>)tokenChange();
         return (tc != null && tc.language() == language) ? tc : null;
     }
 

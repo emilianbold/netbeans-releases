@@ -33,20 +33,21 @@ import java.util.Set;
  * the <code>Map.Entry</code>.
  * <br/>
  * The present implementation does not allow <code>null</code> to be used
- * as a key in the map. The client may use NULL_KEY masking on its side
- * if necessary (see <code>java.util.HashMap</code> impl).
+ * as a key in the map. The client may use NULL_KEY masking on its own side
+ * if it wants to use null keys (see <code>java.util.HashMap</code> impl).
  * <br/>
- * The load factor is fixed to <code>1.0</code>.
+ * The load factor is fixed to <code>1.0</code> but if the approximate map size
+ * is known there is a constructor that allows to pass the initial capacity.
  * <br/>
- * The hashing function of the client should be good - there is no additional
- * hashing improvements like e.g. in HashMap.
+ * There are no additional attempts to generally improve hashing for poor hashing functions
+ * like those in <code>HashMap.hash()</code>.
  * <br/>
  * The iterators produced by this map are not fail-fast - they will continue iteration
  * and their behavior is generally undefined after the modification.
  * The caller should ensure that there will be no pending iterators during modification
  * of this map.
  * <br/>
- * When iterating inside through entries in a bucket the <code>Object.equals()</code>
+ * When iterating through entries in a bucket the <code>Object.equals()</code>
  * is used for comparison.
  * <br/>
  *
@@ -79,6 +80,23 @@ public class CompactMap<K,V> implements Map<K,V> {
     public V get(Object key) {
         MapEntry<K,V> e = findEntry(key);
         return (e != null) ? e.getValue() : null;
+    }
+    
+    /**
+     * Get an entry from a bucket that corresponds to the given hash code.
+     * <br/>
+     * This may be useful if the hash code can be computed without creating
+     * an actual object being stored in the map. The target object should
+     * provide some method for comparing itself to the passed arguments that represent
+     * the contained data.
+     * 
+     * @param hashCode computed hash code.
+     * @return first entry in the particular bucket or null if there are no entries
+     *  for the given hash code. The caller may need to iterate through the linked
+     *  list of the entries to find the right entry.
+     */
+    public MapEntry<K,V> getFirstEntry(int hashCode) {
+        return table[hashCode & (table.length - 1)];
     }
 
     public boolean containsKey(Object key) {
@@ -114,18 +132,18 @@ public class CompactMap<K,V> implements Map<K,V> {
     public MapEntry<K,V> putEntry(MapEntry<K,V> entry) {
         Object key = entry.getKey();
         int hash = key.hashCode();
-        hash &= table.length - 1;
-        MapEntry<K,V> e = table[hash];
+        int tableIndex = hash & (table.length - 1);
+        entry.setKeyHashCode(hash);
+        MapEntry<K,V> e = table[tableIndex];
         MapEntry<K,V> prevEntry = null;
-        int entryCount = 0;
         while (e != null) {
             if (e == entry) { // Entry already added => do nothing
                 return entry;
             }
-            if (key.equals(e.getKey())) {
+            if (hash == e.keyHashCode() && (key == e.getKey() || key.equals(e.getKey()))) {
                 // Found the entry -> replace it
                 if (prevEntry == null) {
-                    table[hash] = entry;
+                    table[tableIndex] = entry;
                 } else {
                     prevEntry.setNextMapEntry(entry);
                 }
@@ -135,34 +153,32 @@ public class CompactMap<K,V> implements Map<K,V> {
             }
             prevEntry = e;
             e = e.nextMapEntry();
-            entryCount++;
         }
         
         // Not found in present table => add the entry
-        addEntry(entry, hash, entryCount);
+        addEntry(entry, tableIndex);
         return null; // nothing replaced
     }
 
     public V put(K key, V value) {
         int hash = key.hashCode();
-        hash &= table.length - 1;
-        MapEntry<K,V> e = table[hash];
-        int entryCount = 0;
+        int tableIndex = hash & (table.length - 1);
+        MapEntry<K,V> e = table[tableIndex];
         while (e != null) {
-            if (key.equals(e.getKey())) {
+            if (hash == e.keyHashCode() && (key == e.getKey() || key.equals(e.getKey()))) {
                 // Found the entry
                 V oldValue = e.getValue();
                 e.setValue(value);
                 return oldValue;
             }
             e = e.nextMapEntry();
-            entryCount++;
         }
         
         // Not found in present table => add the entry
         e = new DefaultMapEntry<K,V>(key);
         e.setValue(value);
-        addEntry(e, hash, entryCount);
+        e.setKeyHashCode(hash);
+        addEntry(e, tableIndex);
         return null;
     }
 
@@ -185,14 +201,14 @@ public class CompactMap<K,V> implements Map<K,V> {
      * otherwise this method will not do anything.
      */
     public MapEntry<K,V> removeEntry(MapEntry<K,V> entry) {
-        int hash = entry.getKey().hashCode();
-        hash &= table.length - 1;
-        MapEntry<K,V> e = table[hash];
+        int hash = entry.keyHashCode();
+        int tableIndex = hash & (table.length - 1);
+        MapEntry<K,V> e = table[tableIndex];
         MapEntry<K,V> prev = null;
         while (e != null) {
             if (e == entry) {
                 if (prev == null) {
-                    table[hash] = e.nextMapEntry();
+                    table[tableIndex] = e.nextMapEntry();
                 } else {
                     prev.setNextMapEntry(e.nextMapEntry());
                 }
@@ -217,8 +233,8 @@ public class CompactMap<K,V> implements Map<K,V> {
                 e.setNextMapEntry(null);
                 e = next;
             }
-
         }
+        size = 0;
     }
 
     public final int size() {
@@ -243,10 +259,10 @@ public class CompactMap<K,V> implements Map<K,V> {
 
     private MapEntry<K,V> findEntry(Object key) {
         int hash = key.hashCode();
-        hash &= table.length - 1;
-        MapEntry<K,V> e = table[hash];
+        int tableIndex = hash & (table.length - 1);
+        MapEntry<K,V> e = table[tableIndex];
         while (e != null) {
-            if (key.equals(e.getKey())) {
+            if (hash == e.keyHashCode() && (key == e.getKey() || key.equals(e.getKey()))) {
                 return e;
             }
             e = e.nextMapEntry();
@@ -254,7 +270,7 @@ public class CompactMap<K,V> implements Map<K,V> {
         return null;
     }
     
-    private void addEntry(MapEntry<K,V> entry, int tableIndex, int entryCount) {
+    private void addEntry(MapEntry<K,V> entry, int tableIndex) {
         entry.setNextMapEntry(table[tableIndex]);
         table[tableIndex] = entry;
         size++;
@@ -264,7 +280,7 @@ public class CompactMap<K,V> implements Map<K,V> {
                 entry = table[i];
                 while (entry != null) {
                     MapEntry<K,V> next = entry.nextMapEntry();
-                    int newIndex = entry.getKey().hashCode() & (newTable.length - 1);
+                    int newIndex = entry.keyHashCode() & (newTable.length - 1);
                     entry.setNextMapEntry(newTable[newIndex]);
                     newTable[newIndex] = entry;
                     entry = next;
@@ -276,13 +292,13 @@ public class CompactMap<K,V> implements Map<K,V> {
     
     private MapEntry<K,V> removeEntryForKey(Object key) {
         int hash = key.hashCode();
-        hash &= table.length - 1;
-        MapEntry<K,V> e = table[hash];
+        int tableIndex = hash & (table.length - 1);
+        MapEntry<K,V> e = table[tableIndex];
         MapEntry<K,V> prev = null;
         while (e != null) {
-            if (key.equals(e.getKey())) {
+            if (hash == e.keyHashCode() && (key == e.getKey() || key.equals(e.getKey()))) {
                 if (prev == null) {
-                    table[hash] = e.nextMapEntry();
+                    table[tableIndex] = e.nextMapEntry();
                 } else {
                     prev.setNextMapEntry(e.nextMapEntry());
                 }
@@ -329,90 +345,142 @@ public class CompactMap<K,V> implements Map<K,V> {
 	return buf.toString();
     }
 
-    /*
-     * Entry of the compact map.
+    /**
+     * Abstract implementation of the map entry.
+     * <br/>
+     * This is suitable for the cases when e.g. the value is a primitive
+     * data type.
      */
-    public interface MapEntry<K,V> extends Map.Entry<K,V> {
+    public static abstract class MapEntry<K,V> implements Map.Entry<K,V> {
+        
+        private MapEntry<K,V> nextMapEntry; // 12 bytes (8-Object + 4)
+        
+        private int keyHashCode; // 16 bytes
+        
+        public abstract K getKey();
+        
+        public abstract V getValue();
+        
+        public abstract V setValue(V value);
         
         /**
-         * Get next entry in the entry chain.
+         * Used by {@link #hashCode()} to return the real hashCode for the value
+         * held by this map entry.
+         * <br/>
+         * <code>getValue().hashCode</code> cannot be used in general because
+         * <code>getValue()</code> may return <code>this</code> e.g. in case
+         * the value is represented by primitive data type. The method should
+         * use that real value for the hash code computation.
          */
-        MapEntry<K,V> nextMapEntry();
+        protected abstract int valueHashCode();
         
         /**
-         * Set the next entry in the entry chain.
+         * Used by {@link #equals(Object)} to check whether the value
+         * held by this map entry equals to the the given value.
+         * <br/>
+         * <code>getValue().equals()</code> cannot be used in general because
+         * <code>getValue()</code> may return <code>this</code> e.g. in case
+         * the value is represented by primitive data type. The method should
+         * use that real value for the operation of this method.
+         * 
+         * @param value2 value to be compared with value stored in this entry.
+         *  The argument may be null.
          */
-        void setNextMapEntry(MapEntry<K,V> nextMapEntry);
-    
-    }
-    
-    public static abstract class AbstractMapEntry<K,V> implements MapEntry<K,V> {
+        protected abstract boolean valueEquals(Object value2);
         
-        private MapEntry<K,V> nextMapEntry; // 12 bytes
         
-        public MapEntry<K,V> nextMapEntry() {
+        /**
+         * Get next map entry linked to this one.
+         * <br/>
+         * This method may be useful after using {@link #getFirstEntry(int)}.
+         */
+        public final MapEntry<K,V> nextMapEntry() {
             return nextMapEntry;
         }
         
-        public void setNextMapEntry(MapEntry<K,V> next) {
+        final void setNextMapEntry(MapEntry<K,V> next) {
             this.nextMapEntry = next;
         }
         
-        public final boolean equals(Object o) {
-            return equals(this, o);
+        /**
+         * Get stored hash code of the key contained in this entry.
+         * <br/>
+         * This method may be useful after using {@link #getFirstEntry(int)}
+         * to quickly exclude entries which hash code differs from the requested one.
+         */
+        public final int keyHashCode() {
+            return keyHashCode;
         }
         
-        public final int hashCode() {
-            return hashCode(this);
+        final void setKeyHashCode(int keyHashCode) {
+            this.keyHashCode = keyHashCode;
         }
     
-        public static boolean equals(Map.Entry entry, Object o) {
-            if (!(o instanceof Map.Entry))
-                return false;
-            Map.Entry e = (Map.Entry)o;
-            Object k1 = entry.getKey();
-            Object k2 = e.getKey();
-            if (k1 == k2 || (k1 != null && k1.equals(k2))) {
-                Object v1 = entry.getValue();
-                Object v2 = e.getValue();
-                if (v1 == v2 || (v1 != null && v1.equals(v2))) 
-                    return true;
+        /**
+         * Implementation that adheres to {@link java.util.Map.Entry#hashCode()} contract.
+         */
+        public final int hashCode() {
+            // keyHashCode() cannot be used always as the entry is possibly not yet contained in a map
+            int keyHash = (keyHashCode != 0) ? keyHashCode : getKey().hashCode();
+            return keyHash ^ valueHashCode();
+        }
+        
+        /**
+         * Implementation that adheres to {@link java.util.Map.Entry#equals(Object)} contract.
+         */
+        public final boolean equals(Object o) {
+            if (o == this)
+                return true;
+            if (o instanceof Map.Entry) {
+                Map.Entry e = (Map.Entry)o;
+                K key = getKey();
+                Object key2 = e.getKey();
+                // Note: update needed if this map would allow for null keys
+                if (key == key2 || key.equals(key2)) {
+                    return valueEquals(e.getValue());
+                }
             }
             return false;
-        }
-    
-        public static final int hashCode(Map.Entry entry) {
-            Object key = entry.getKey();
-            Object value = entry.getValue();
-            // Prevent stack overflow by using identityHashCode()
-            return (key == null ? 0 : key.hashCode()) ^
-                   (value == null ? 0 : (value != entry) ? value.hashCode() : System.identityHashCode(value));
         }
         
     }
     
-    public static class DefaultMapEntry<K,V> extends AbstractMapEntry<K,V> {
+    /**
+     * Default implementation of the map entry similar to e.g. the <code>HashMap</code>.
+     * <br/>
+     * It may be extended as well if the should be an additional information stored
+     * in the map entry.
+     */
+    public static class DefaultMapEntry<K,V> extends MapEntry<K,V> {
         
-        private K key; // 16 bytes
+        private K key; // 20 bytes
         
-        private V value; // 20 bytes
+        private V value; // 24 bytes
         
         public DefaultMapEntry(K key) {
             this.key = key;
         }
         
-        public K getKey() {
+        public final K getKey() {
             return key;
         }
         
-        public V getValue() {
+        public final V getValue() {
             return value;
         }
         
-        public V setValue(V value) {
+        public final V setValue(V value) {
             Object oldValue = this.value;
             this.value = value;
             return value;
+        }
+        
+        protected final int valueHashCode() {
+            return (value != null) ? value.hashCode() : 0;
+        }
+        
+        protected final boolean valueEquals(Object value2) {
+            return (value == value2 || (value != null && value.equals(value2)));
         }
         
         public String toString() {
@@ -521,5 +589,5 @@ public class CompactMap<K,V> implements Map<K,V> {
         }
 
     }
-    
+
 }

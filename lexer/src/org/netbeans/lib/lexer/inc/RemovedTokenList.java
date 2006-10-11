@@ -67,7 +67,7 @@ public final class RemovedTokenList implements TokenList {
     }
 
     public int tokenOffset(int index) {
-        Token token = existingToken(index);
+        Token<? extends TokenId> token = existingToken(index);
         if (token.isFlyweight()) {
             int offset = 0;
             while (--index >= 0) {
@@ -86,7 +86,7 @@ public final class RemovedTokenList implements TokenList {
         }
     }
 
-    private Token existingToken(int index) {
+    private Token<? extends TokenId> existingToken(int index) {
         return LexerUtilsConstants.token(tokensOrBranches[index]);
     }
 

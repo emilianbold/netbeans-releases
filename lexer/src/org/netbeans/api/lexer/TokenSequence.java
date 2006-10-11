@@ -94,7 +94,7 @@ public final class TokenSequence<T extends TokenId> {
         // No need to check as the token sequence should already
         // be obtained originally for the inner language
         @SuppressWarnings("unchecked") LanguageDescription<T> l
-                = languagePath().innerLanguage();
+                = (LanguageDescription<T>)languagePath().innerLanguage();
         return l;
     }
 
@@ -195,7 +195,7 @@ public final class TokenSequence<T extends TokenId> {
      *
      * @return embedded sequence or null if no embedding exists for this token.
      */
-    public TokenSequence embedded() {
+    public TokenSequence<? extends TokenId> embedded() {
         checkToken();
         TokenList branchTokenList = BranchTokenList.getOrCreate(tokenList, tokenIndex);
         if (branchTokenList != null) {
@@ -212,7 +212,7 @@ public final class TokenSequence<T extends TokenId> {
                 branchTokenList = new FilterSnapshotTokenList(branchTokenList,
                         offset() - token().offset(null));
             }
-            return new TokenSequence(branchTokenList);
+            return new TokenSequence<TokenId>(branchTokenList);
 
         } else // Embedded token list does not exist
             return null;
@@ -223,7 +223,8 @@ public final class TokenSequence<T extends TokenId> {
      * if the embedded token sequence does not exist or it has a different type.
      */
     public <ET extends TokenId> TokenSequence<ET> embedded(LanguageDescription<ET> embeddedLanguage) {
-        @SuppressWarnings("unchecked") TokenSequence<ET> ets = embedded();
+        @SuppressWarnings("unchecked")
+        TokenSequence<ET> ets = (TokenSequence<ET>)embedded();
         return (ets != null && ets.language() == embeddedLanguage) ? ets : null;
     }
 
@@ -546,7 +547,7 @@ public final class TokenSequence<T extends TokenId> {
     @SuppressWarnings("unchecked")
     private void assignToken(Object tokenOrBranch) {
         if (tokenOrBranch.getClass() == BranchTokenList.class) {
-            token = ((BranchTokenList)tokenOrBranch).branchToken();
+            token = (AbstractToken<T>)((BranchTokenList)tokenOrBranch).branchToken();
         } else {
             token = (AbstractToken<T>)tokenOrBranch;
         }

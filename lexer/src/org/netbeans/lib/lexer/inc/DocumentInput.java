@@ -24,6 +24,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.lexer.LanguageManager;
 import org.netbeans.spi.lexer.*;
@@ -70,8 +71,9 @@ extends MutableTextInput<D> implements DocumentListener {
         
     }
     
-    public LanguageDescription language() {
-        LanguageDescription lang = (LanguageDescription)doc.getProperty(LanguageDescription.class);
+    public LanguageDescription<? extends TokenId> language() {
+        LanguageDescription<? extends TokenId> lang = (LanguageDescription<? extends TokenId>)
+                doc.getProperty(LanguageDescription.class);
         
         if (lang == null) {
             String mimeType = (String) doc.getProperty(PROP_MIME_TYPE);

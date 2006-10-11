@@ -20,6 +20,7 @@
 package org.netbeans.spi.lexer;
 
 import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.TokenId;
 
 /**
  * Description of a particular language embedding including
@@ -47,7 +48,7 @@ public abstract class LanguageEmbedding {
      *
      * @return non-null embedded language description.
      */
-    public abstract LanguageDescription language();
+    public abstract LanguageDescription<? extends TokenId> language();
 
     /**
      * Get length of the initial part of the branch token that should be skipped

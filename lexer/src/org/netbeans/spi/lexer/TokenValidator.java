@@ -70,7 +70,7 @@ public interface TokenValidator<T extends TokenId> {
      *  Null should be returned if the token must be relexed or if the validator
      *  is unsure whether it's able to resolve the situation properly.
      */
-    public abstract Token<T> validateToken(Token<T> token,
+    Token<T> validateToken(Token<T> token,
     TokenFactory<T> factory,
     CharSequence tokenText, int modRelOffset,
     int removedLength, CharSequence removedText,

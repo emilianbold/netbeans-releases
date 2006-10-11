@@ -34,9 +34,9 @@ public class LanguagePathTest extends NbTestCase {
     }
     
     public void testMimePath() {
-        LanguageDescription jspLang = new Lang("text/x-jsp").language();
-        LanguageDescription javaLang = new Lang("text/x-java").language();
-        LanguageDescription javadocLang = new Lang("text/x-javadoc").language();
+        LanguageDescription<TestTokenId> jspLang = new Lang("text/x-jsp").language();
+        LanguageDescription<TestTokenId> javaLang = new Lang("text/x-java").language();
+        LanguageDescription<TestTokenId> javadocLang = new Lang("text/x-javadoc").language();
         //LanguageDescription nullLang = new Lang(null).language();
         
         LanguagePath jspPath = LanguagePath.get(jspLang);
@@ -77,41 +77,41 @@ public class LanguagePathTest extends NbTestCase {
         assertTrue(jspJavaJavadocPath.subPath(1, 2) == javaPath);
     }
     
-    private static enum Tokens implements TokenId {
+    private static enum TestTokenId implements TokenId {
         
-        TOKEN1,
-        TOKEN2;
+        TOKEN_ID1,
+        TOKEN_ID2;
         
-        private Tokens() {
+        private TestTokenId() {
             
         }
 
         public String primaryCategory() {
             return null;
         }
-    } // End of TokensA
+    } // End of TestTokenId
     
-    private static final class Lang extends LanguageHierarchy<Tokens> {
+    private static final class Lang extends LanguageHierarchy<TestTokenId> {
         private String mimeType;
         
         public Lang(String mimeType) {
             this.mimeType = mimeType;
         }
         
-        protected Lexer<LanguagePathTest.Tokens> createLexer(
-        LexerInput input, TokenFactory<LanguagePathTest.Tokens> tokenFactory, Object state,
+        protected Lexer<TestTokenId> createLexer(
+        LexerInput input, TokenFactory<TestTokenId> tokenFactory, Object state,
         LanguagePath languagePath, InputAttributes inputAttributes) {
             return null;
         }
 
         protected LanguageEmbedding embedding(
-        Token<LanguagePathTest.Tokens> token, boolean tokenComplete,
+        Token<TestTokenId> token, boolean tokenComplete,
         LanguagePath languagePath, InputAttributes inputAttributes) {
             return null;
         }
 
-        protected Collection<LanguagePathTest.Tokens> createTokenIds() {
-            return EnumSet.allOf(Tokens.class);
+        protected Collection<TestTokenId> createTokenIds() {
+            return EnumSet.allOf(TestTokenId.class);
         }
         
         public String mimeType() {

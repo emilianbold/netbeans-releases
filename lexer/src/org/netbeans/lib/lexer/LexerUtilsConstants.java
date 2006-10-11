@@ -144,10 +144,10 @@ public final class LexerUtilsConstants {
         return LexerSpiPackageAccessor.get().operation(languageHierarchy(languagePath));
     }
 
-    public static AbstractToken token(Object tokenOrBranch) {
+    public static AbstractToken<? extends TokenId> token(Object tokenOrBranch) {
         return (tokenOrBranch.getClass() == BranchTokenList.class)
             ? ((BranchTokenList)tokenOrBranch).branchToken()
-            : (AbstractToken)tokenOrBranch;
+            : (AbstractToken<? extends TokenId>)tokenOrBranch;
     }
 
     public static AbstractToken token(TokenList tokenList, int index) {

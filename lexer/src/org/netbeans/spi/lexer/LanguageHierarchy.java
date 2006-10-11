@@ -382,7 +382,7 @@ public abstract class LanguageHierarchy<T extends TokenId> {
             preprocessor.preprocessChar();
         }
 
-        public LanguageDescription language(MutableTextInput mti) {
+        public LanguageDescription<? extends TokenId> language(MutableTextInput<?> mti) {
             return mti.language();
         }
 

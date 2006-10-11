@@ -42,13 +42,13 @@ public final class CopyTextTokenList extends BatchTokenList {
     private final Object input;
     
     public CopyTextTokenList(Reader inputReader,
-    LanguageDescription language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         super(language, skipTokenIds, inputAttributes);
         this.input = inputReader;
     }
     
     public CopyTextTokenList(CharSequence inputText,
-    LanguageDescription language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         super(language, skipTokenIds, inputAttributes);
         this.input = inputText;
     }

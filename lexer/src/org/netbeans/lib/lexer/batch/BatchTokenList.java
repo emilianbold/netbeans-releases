@@ -63,7 +63,7 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
     private boolean inited;
     
     
-    public BatchTokenList(LanguageDescription language,
+    public BatchTokenList(LanguageDescription<? extends TokenId> language,
     Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         this.languagePath = LanguagePath.get(language);
         this.skipTokenIds = skipTokenIds;
@@ -110,7 +110,7 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
     }
 
     public int tokenOffset(int index) {
-        Token token = existingToken(index);
+        Token<? extends TokenId> token = existingToken(index);
         int offset;
         if (token.isFlyweight()) {
             offset = 0;
@@ -153,7 +153,7 @@ public abstract class BatchTokenList extends ArrayList<Object> implements TokenL
         return (index < size()) ? get(index) : null;
     }
     
-    private Token existingToken(int index) {
+    private Token<? extends TokenId> existingToken(int index) {
         return LexerUtilsConstants.token(get(index));
     }
 

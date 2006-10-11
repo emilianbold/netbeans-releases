@@ -103,7 +103,7 @@ public final class InputAttributes {
      *
      * @see #setValue(LanguagePath, Object, Object, boolean)
      */
-    public void setValue(LanguageDescription language,
+    public void setValue(LanguageDescription<? extends TokenId> language,
     Object attributeKey, Object attributeValue, boolean global) {
         setValue(LanguagePath.get(language), attributeKey, attributeValue, global);
     }

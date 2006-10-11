@@ -25,6 +25,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguageDescription;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageProvider;
 import org.openide.util.Lookup;
 
@@ -38,12 +39,12 @@ public class MimeLookupLanguageProvider extends LanguageProvider {
         super();
     }
 
-    public LanguageDescription findLanguage(String mimePath) {
+    public LanguageDescription<? extends TokenId> findLanguage(String mimePath) {
         Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
-        return lookup.lookup(LanguageDescription.class);
+        return (LanguageDescription<? extends TokenId>)lookup.lookup(LanguageDescription.class);
     }
 
-    public LanguageDescription findEmbeddedLanguage(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
+    public LanguageDescription<? extends TokenId> findEmbeddedLanguage(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
         Lookup lookup = MimeLookup.getLookup(MimePath.parse(tokenLanguage.mimePath()));
         LanguagesEmbeddingMap map = lookup.lookup(LanguagesEmbeddingMap.class);
         String mimeType = map == null ? null : map.getLanguageMimeTypeForTokenName(token.id().name());

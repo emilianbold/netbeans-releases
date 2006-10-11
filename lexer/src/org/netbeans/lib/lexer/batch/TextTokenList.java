@@ -39,7 +39,7 @@ public final class TextTokenList extends BatchTokenList {
     private CharSequence inputText;
 
     public TextTokenList(CharSequence inputText,
-    LanguageDescription language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
+    LanguageDescription<? extends TokenId> language, Set<? extends TokenId> skipTokenIds, InputAttributes inputAttributes) {
         super(language, skipTokenIds, inputAttributes);
         this.inputText = inputText;
     }

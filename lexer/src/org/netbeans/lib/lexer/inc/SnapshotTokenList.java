@@ -471,11 +471,11 @@ public final class SnapshotTokenList implements TokenList {
         return liveTokenGapStartOffset + liveTokenOffsetDiff;
     }
 
-    private static final class Token2OffsetEntry extends CompactMap.AbstractMapEntry<AbstractToken, Token2OffsetEntry> {
+    private static final class Token2OffsetEntry extends CompactMap.MapEntry<AbstractToken,Token2OffsetEntry> {
         
-        private final AbstractToken token; // 16 bytes
+        private final AbstractToken token; // 20 bytes (16-super + 4)
         
-        private final int offset; // 20 bytes
+        private final int offset; // 24 bytes
         
         Token2OffsetEntry(AbstractToken token, int offset) {
             this.token = token;
@@ -490,6 +490,14 @@ public final class SnapshotTokenList implements TokenList {
             return this;
         }
         
+        protected int valueHashCode() {
+            return offset;
+        }
+
+        protected boolean valueEquals(Object value2) {
+            return (value2 instanceof Token2OffsetEntry && ((Token2OffsetEntry)value2).offset() == offset());
+        }
+        
         public int offset() {
             return offset;
         }
@@ -502,7 +510,7 @@ public final class SnapshotTokenList implements TokenList {
             // Debug the offset being held
             return String.valueOf(offset);
         }
-        
+
     }
     
 }

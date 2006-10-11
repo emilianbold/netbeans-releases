@@ -211,7 +211,7 @@ public final class TokenFactory<T extends TokenId> {
         }
     }
     
-    private boolean isSkipToken(TokenId id) {
+    private boolean isSkipToken(T id) {
         Set<? extends TokenId> skipTokenIds = operation.skipTokenIds();
         return (skipTokenIds != null) && skipTokenIds.contains(id);
     }

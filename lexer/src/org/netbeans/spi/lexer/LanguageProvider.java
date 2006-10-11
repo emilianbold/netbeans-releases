@@ -25,6 +25,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguageDescription;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 
 /**
  * The <code>LanguageDescription</code> provider. This class is a hook into the
@@ -72,7 +73,7 @@ public abstract class LanguageProvider {
      * @return The <code>LanguageDescription</code> registered for the given
      * mime path or <code>null</code> if no such <code>LanguageDescription</code> exists.
      */
-    public abstract LanguageDescription findLanguage(String mimePath);
+    public abstract LanguageDescription<? extends TokenId> findLanguage(String mimePath);
     
     /**
      * Finds <code>LanguageDescription</code> that will define language embedding
@@ -100,7 +101,8 @@ public abstract class LanguageProvider {
      *   or <code>null</code> if there is no <code>LanguageDescription</code> available
      *   for this token or the token is unknown to this <code>LanguageProvider</code>.
      */
-    public abstract LanguageDescription findEmbeddedLanguage(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes);
+    public abstract LanguageDescription<? extends TokenId> findEmbeddedLanguage(
+    LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes);
     
     /**
      * Add a listener for change notifications.

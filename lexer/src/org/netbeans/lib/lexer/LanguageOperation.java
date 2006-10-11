@@ -25,7 +25,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.lib.lexer.token.TextToken;
-import org.netbeans.spi.lexer.TokenHandler;
 import org.netbeans.spi.lexer.TokenValidator;
 
 /**
@@ -42,8 +41,6 @@ public final class LanguageOperation<T extends TokenId> {
     private LanguageHierarchy<T> languageHierarchy;
     
     private LanguageDescription<T> language;
-    
-    private TokenHandler tokenHandler;
     
     private Object[] tokenValidators;
     

@@ -25,6 +25,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguageDescription;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.*;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -57,7 +58,7 @@ public class SimpleLanguageProvider extends LanguageProvider {
         instance = this;
     }
 
-    public LanguageDescription findLanguage(String mimePath) {
+    public LanguageDescription<? extends TokenId> findLanguage(String mimePath) {
         if (LanguageManagerTest.MIME_TYPE_KNOWN.equals(mimePath)) {
             return new LH().language();
         } else {
@@ -65,7 +66,7 @@ public class SimpleLanguageProvider extends LanguageProvider {
         }
     }
 
-    public LanguageDescription findEmbeddedLanguage(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
+    public LanguageDescription<? extends TokenId> findEmbeddedLanguage(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
         if ("text/x-simple-plain".equals(tokenLanguage.mimePath()) && token.id().name().equals("WORD")) {
             return SimpleCharLanguage.description();
         } else {
@@ -73,12 +74,12 @@ public class SimpleLanguageProvider extends LanguageProvider {
         }
     }
     
-    private static final class LH extends LanguageHierarchy {
-        protected Collection createTokenIds() {
-            return Collections.EMPTY_LIST;
+    private static final class LH extends LanguageHierarchy<TokenId> {
+        protected Collection<TokenId> createTokenIds() {
+            return Collections.emptyList();
         }
 
-        protected Lexer createLexer(LexerInput input, TokenFactory tokenFactory, Object state, LanguagePath languagePath, InputAttributes inputAttributes) {
+        protected Lexer<TokenId> createLexer(LexerInput input, TokenFactory<TokenId> tokenFactory, Object state, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null;
         }
 
@@ -86,7 +87,7 @@ public class SimpleLanguageProvider extends LanguageProvider {
             return LanguageManagerTest.MIME_TYPE_KNOWN;
         }
 
-        protected LanguageEmbedding embedding(Token token, boolean tokenComplete, LanguagePath languagePath, InputAttributes inputAttributes) {
+        protected LanguageEmbedding embedding(Token<TokenId> token, boolean tokenComplete, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null;
         }
         

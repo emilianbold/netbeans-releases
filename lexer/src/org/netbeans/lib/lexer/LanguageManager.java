@@ -32,6 +32,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguageDescription;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LanguageProvider;
@@ -48,14 +49,14 @@ import org.openide.util.LookupListener;
  */
 public final class LanguageManager extends LanguageProvider implements LookupListener, PropertyChangeListener {
     
-    private static final LanguageDescription NO_LANG = new LanguageHierarchy() {
-        protected Lexer createLexer(LexerInput input, TokenFactory tokenFactory, Object state, LanguagePath languagePath, InputAttributes inputAttributes) {
+    private static final LanguageDescription<TokenId> NO_LANG = new LanguageHierarchy<TokenId>() {
+        protected Lexer<TokenId> createLexer(LexerInput input, TokenFactory<TokenId> tokenFactory, Object state, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null;
         }
-        protected Collection createTokenIds() {
-            return Collections.EMPTY_LIST;
+        protected Collection<TokenId> createTokenIds() {
+            return Collections.emptyList();
         }
-        protected LanguageEmbedding embedding(Token token, boolean tokenComplete, LanguagePath languagePath, InputAttributes inputAttributes) {
+        protected LanguageEmbedding embedding(Token<TokenId> token, boolean tokenComplete, LanguagePath languagePath, InputAttributes inputAttributes) {
             return null;
         }
         protected String mimeType() {
@@ -75,8 +76,10 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
     private Lookup.Result<LanguageProvider> lookupResult = null;
 
     private List<LanguageProvider> providers = Collections.<LanguageProvider>emptyList();
-    private HashMap<String, WeakReference<LanguageDescription>> langCache = new HashMap<String, WeakReference<LanguageDescription>>();
-    private WeakHashMap<Token, WeakReference<LanguageDescription>> tokenLangCache = new WeakHashMap<Token, WeakReference<LanguageDescription>>();
+    private HashMap<String, WeakReference<LanguageDescription<? extends TokenId>>> langCache
+            = new HashMap<String, WeakReference<LanguageDescription<? extends TokenId>>>();
+    private WeakHashMap<Token, WeakReference<LanguageDescription<? extends TokenId>>> tokenLangCache
+            = new WeakHashMap<Token, WeakReference<LanguageDescription<? extends TokenId>>>();
     
     private final String LOCK = new String("LanguageManager.LOCK");
     
@@ -91,10 +94,10 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
     //  LanguageProvider implementation
     // -------------------------------------------------------------------
     
-    public LanguageDescription findLanguage(String mimePath) {
+    public LanguageDescription<? extends TokenId> findLanguage(String mimePath) {
         synchronized(LOCK) {
-            WeakReference<LanguageDescription> ref = langCache.get(mimePath);
-            LanguageDescription lang = ref == null ? null : ref.get();
+            WeakReference<LanguageDescription<? extends TokenId>> ref = langCache.get(mimePath);
+            LanguageDescription<? extends TokenId> lang = ref == null ? null : ref.get();
             
             if (lang == null) {
                 for(LanguageProvider p : providers) {
@@ -107,17 +110,17 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
                     lang = NO_LANG;
                 }
                 
-                langCache.put(mimePath, new WeakReference<LanguageDescription>(lang));
+                langCache.put(mimePath, new WeakReference<LanguageDescription<? extends TokenId>>(lang));
             }
             
             return lang == NO_LANG ? null : lang;
         }
     }
 
-    public LanguageDescription findEmbeddedLanguage(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
+    public LanguageDescription<? extends TokenId> findEmbeddedLanguage(LanguagePath tokenLanguage, Token token, InputAttributes inputAttributes) {
         synchronized(LOCK) {
-            WeakReference<LanguageDescription> ref = tokenLangCache.get(token);
-            LanguageDescription lang = ref == null ? null : ref.get();
+            WeakReference<LanguageDescription<? extends TokenId>> ref = tokenLangCache.get(token);
+            LanguageDescription<? extends TokenId> lang = ref == null ? null : ref.get();
             
             if (lang == null) {
                 for(LanguageProvider p : providers) {
@@ -130,7 +133,7 @@ public final class LanguageManager extends LanguageProvider implements LookupLis
                     lang = NO_LANG;
                 }
                 
-                tokenLangCache.put(token, new WeakReference<LanguageDescription>(lang));
+                tokenLangCache.put(token, new WeakReference<LanguageDescription<? extends TokenId>>(lang));
             }
             
             return lang == NO_LANG ? null : lang;

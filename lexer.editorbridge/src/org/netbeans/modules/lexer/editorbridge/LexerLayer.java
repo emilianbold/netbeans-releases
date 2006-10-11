@@ -36,7 +36,6 @@ import org.netbeans.api.lexer.Token;
 import javax.swing.text.JTextComponent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.text.EditorKit;
@@ -44,6 +43,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.lexer.LanguageDescription;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -257,7 +257,7 @@ public class LexerLayer extends DrawLayer.AbstractLayer {
                     updateColoringName(primaryCategory))) == null)
             ) {
                 @SuppressWarnings("unchecked") List<String> cats
-                        = languagePath.innerLanguage().nonPrimaryTokenCategories(id);
+                        = ((LanguageDescription<TokenId>)languagePath.innerLanguage()).nonPrimaryTokenCategories(id);
                 for (int i = 0; i < cats.size(); i++) {
                     String cat = (String)cats.get(i);
                     as = fcs.getTokenFontColors(updateColoringName(cat));

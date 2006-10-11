@@ -58,7 +58,7 @@ public final class TokenChange<T extends TokenId> {
      * @return valid embedded token change or null if there
      *  is no embedded token change.
      */
-    public TokenChange embedded() {
+    public TokenChange<? extends TokenId> embedded() {
         return null; // TODO
     }
 
@@ -71,7 +71,8 @@ public final class TokenChange<T extends TokenId> {
      *  Null is returned otherwise.
      */
     public <T extends TokenId> TokenChange<T> embedded(LanguageDescription<T> language) {
-        @SuppressWarnings("unchecked") TokenChange<T> e = embedded();
+        @SuppressWarnings("unchecked")
+        TokenChange<T> e = (TokenChange<T>)embedded();
         return (e != null && e.language() == language) ? e : null;
     }
 
@@ -83,7 +84,7 @@ public final class TokenChange<T extends TokenId> {
         // No need to check as the token sequence should already
         // be obtained originally for the inner language
         @SuppressWarnings("unchecked") LanguageDescription<T> l
-                = languagePath().innerLanguage();
+                = (LanguageDescription<T>)languagePath().innerLanguage();
         return l;
     }
     
@@ -215,7 +216,7 @@ public final class TokenChange<T extends TokenId> {
     /**
      * Get token hierarchy where this change occurred.
      */
-    public TokenHierarchy tokenHierarchy() {
+    public TokenHierarchy<?> tokenHierarchy() {
         return tokenListChange.tokenHierarchyOperation().tokenHierarchy();
     }
 

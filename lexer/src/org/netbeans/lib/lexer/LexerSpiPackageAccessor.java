@@ -33,7 +33,6 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenFactory;
-import org.netbeans.spi.lexer.TokenHandler;
 import org.netbeans.spi.lexer.TokenValidator;
 
 /**
@@ -92,7 +91,7 @@ public abstract class LexerSpiPackageAccessor {
     
     public abstract void preprocessChar(CharPreprocessor preprocessor);
     
-    public abstract LanguageDescription language(MutableTextInput mti);
+    public abstract LanguageDescription<? extends TokenId> language(MutableTextInput<?> mti);
 
     public abstract CharSequence text(MutableTextInput mti);
     
