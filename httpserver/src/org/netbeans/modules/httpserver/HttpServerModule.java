@@ -247,7 +247,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         removeWebXmlReader (tc);
         
         ServletContext sctx;
-        sctx=tc.addContext("", wd.toURL());  // NOI18N
+        sctx=tc.addContext("", wd.toURI().toURL());  // NOI18N
         tc.initContext( sctx );
         //ctxt.getServletLoader().setParentLoader(TopManager.getDefault().systemClassLoader());
         
@@ -350,7 +350,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                     // PENDING why this is in loop?
                     tc.removeContext (ide_ctx);
                     try {
-                        ide_ctx=tc.addContext ("", wd.toURL ());  // NOI18N
+                        ide_ctx=tc.addContext ("", wd.toURI().toURL ());  // NOI18N
                     }
                     catch (MalformedURLException ex) {
                         // ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, ex);
