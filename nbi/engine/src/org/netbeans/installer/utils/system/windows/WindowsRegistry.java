@@ -66,6 +66,7 @@ public class WindowsRegistry {
     public native boolean isKeyEmpty(int registrySection, String key) ;
     
     /** Delete the specified key exists in the registry.
+     * Note that if the key contains subkeys then it would not be deleted.
      * @param registrySection The section of the registry
      * @param key The specified key
      * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise

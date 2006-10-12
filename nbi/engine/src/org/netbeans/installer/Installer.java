@@ -21,6 +21,8 @@
 package org.netbeans.installer;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Locale;
 import java.util.Properties;
 import javax.swing.JFrame;
@@ -28,6 +30,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
@@ -57,7 +60,7 @@ public class Installer {
      * @see #start(String[])
      */
     public static void main(String[] arguments) {
-        new Installer(arguments).start();        
+        new Installer(arguments).start();
     }
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -68,10 +71,10 @@ public class Installer {
     public static final String LOCAL_DIRECTORY_PATH_PROPERTY =
             "nbi.local.directory.path";
     
-    public static final String DEFAULT_NBI_LOOK_AND_FEEL_CLASS_NAME = 
+    public static final String DEFAULT_NBI_LOOK_AND_FEEL_CLASS_NAME =
             UIManager.getSystemLookAndFeelClassName();
     
-    public static final String NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY = 
+    public static final String NBI_LOOK_AND_FEEL_CLASS_NAME_PROPERTY =
             "nbi.look.and.feel";
     
     /** Errorcode to be used at normal exit */
@@ -87,6 +90,7 @@ public class Installer {
     // Static
     private static Installer instance;
     
+    private static File cachedEngineJarFile;
     /**
      * Returns an instance of <code>Installer</code>. If the instance does not
      * exist - it is created.
@@ -152,6 +156,7 @@ public class Installer {
         wizard.open();
         wizard.executeAction(new InitalizeRegistryAction());
         wizard.next();
+        cacheEngineLocally();
     }
     
     /**
@@ -362,5 +367,44 @@ public class Installer {
         
         logManager.unindent();
         logManager.log(MESSAGE, "... finished initializing local directory");
+    }
+    private void cacheEngineLocally() {
+        logManager.log(MESSAGE, "cache engine data locally to run uninstall in the future");
+        logManager.indent();
+        try {
+            String installerResource = "org/netbeans/installer/Installer.class";
+            URL url = this.getClass().getClassLoader().getResource(installerResource);
+            if(url == null) {
+                throw new IOException("No manifest in the engine");
+            }
+            if("jar".equals(url.getProtocol())) {
+                //we run engine from jar, not from .class
+                String path = url.getPath();
+                logManager.log(DEBUG, "NBI Engine URL for Installer.Class = " + url);
+                logManager.log(DEBUG, "URL Path = " + url.getPath());
+                if(path!=null) {
+                    String prefix = "file:";
+                    String jarResourceSep = "!/";
+                    File jarfile = new File(path.substring(prefix.length(),
+                            path.indexOf(jarResourceSep + installerResource)));
+                    
+                    logManager.log(MESSAGE, "NBI Engine jar file = [" +
+                            jarfile + "], exist = " + jarfile.exists());
+                    
+                    FileUtils.getInstance().copyFile(jarfile,
+                            new File(getLocalDirectory().getPath() +
+                            File.separator + jarfile.getName()));
+                    cachedEngineJarFile = jarfile;
+                }
+            }
+            
+        } catch (IOException ex) {
+            logManager.log(CRITICAL,"can`t cache installer engine");
+        }
+        logManager.unindent();
+        logManager.log(MESSAGE, "... finished caching engine data");
+    }
+    public File getCachedEngineJarFile() {
+        return cachedEngineJarFile;
     }
 }
