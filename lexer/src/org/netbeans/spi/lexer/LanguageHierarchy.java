@@ -72,11 +72,8 @@ import org.netbeans.lib.lexer.TokenIdImpl;
  *         return primaryCategory;
  *     }
  *
- * }
  *
- * public final class MyLanguage {
- *
- *     private static final LanguageDescription&lt;MyTokenId&gt; desc = new LanguageHierarchy&lt;MyTokenId&gt;() {
+ *     private static final LanguageDescription&lt;MyTokenId&gt; language = new LanguageHierarchy&lt;MyTokenId&gt;() {
  *         protected String mimeType() {
  *             return "text/x-my";
  *         }
@@ -91,8 +88,8 @@ import org.netbeans.lib.lexer.TokenIdImpl;
  *
  *     }.language();
  *
- *     public static LanguageDescription&lt;MyTokenId&gt; description() {
- *         return desc;
+ *     public static LanguageDescription&lt;MyTokenId&gt; language() {
+ *         return language;
  *     }
  *
  * }
