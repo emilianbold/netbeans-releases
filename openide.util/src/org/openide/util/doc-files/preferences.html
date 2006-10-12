@@ -6,7 +6,7 @@
   </head>
   <body>
     <h1 align="left">Preferences API in NetBeans</h1>
-    NetBeans adopts <a href="http://java.sun.com/j2se/1.4.2/docs/guide/lang/preferences.html">java Preferences API</a>
+    NetBeans adopts <a href="http://java.sun.com/j2se/1.5.0/docs/guide/preferences/">Java Preferences API</a>
     standard to be used in NetBeans to
     store preference and configuration data to be able to adapt to the needs 
     of different users. NetBeans keeps this standard and enhances it slightly
@@ -26,13 +26,13 @@
     <h3 align="left">Usage Notes</h3>
     <h4 align="left">How to obtain NetBeans Preferences?</h4>
     To get preference node there are two <A
-      HREF="http://www.netbeans.org/source/browse/openide/util/src/org/openide/util/NbPreferences.java?view=markup">factory
+      HREF="../NbPreferences.html">factory
     methods in Utilities API (org.openide.util)</A>:
     <ul>
       <li><code>NbPreferences.root()</code> returns root preference node. </li>
       <li><code>NbPreferences.forModule(class cls)</code> returns
       preference node which <a
-        href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/prefs/Preferences.html#absolutePath%28%29">absolute path</a> 
+        href="@JDK@/java/util/prefs/Preferences.html#absolutePath%28%29">absolute path</a> 
       depends whether class provided as a parameter was loaded as a
       part of any module or not. If so, then absolute path corresponds to
       slashified code name base of module. If not, then absolute path
