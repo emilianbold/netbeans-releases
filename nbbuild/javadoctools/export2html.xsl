@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
         whether they want to depend on a particular API or not.
         <p/>
         Some of these APIs are part of the 
-        <a href="http://platform.netbeans.org">NetBeans Platform</a>
+        <a href="http://platform.netbeans.org/">NetBeans Platform</a>
         (for example lookup,
         loaders, utilities, nodes, explorer, window systems, multiview, etc.), some of them
         are specific to 
