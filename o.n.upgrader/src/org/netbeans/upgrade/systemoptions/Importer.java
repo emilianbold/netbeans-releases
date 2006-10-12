@@ -61,7 +61,9 @@ public class Importer {
         for (int i = 0; i < propertyNames.length; i++) {
             props.put(propertyNames[i], result.getProperty(propertyNames[i]));
         }
-        ps.save(props);
+        if (props.size() > 0) {
+            ps.save(props);
+        }
     }
     
     private static Set parse(final Set files) {

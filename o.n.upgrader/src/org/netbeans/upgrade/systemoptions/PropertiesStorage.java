@@ -45,7 +45,6 @@ class PropertiesStorage  {
             Repository.getDefault().getDefaultFileSystem().getRoot();
     
     private String folderPath;
-    private boolean isModified;
     
     
     static PropertiesStorage instance(final String absolutePath) {
@@ -120,29 +119,23 @@ class PropertiesStorage  {
     }
     
     public void save(final Properties properties) throws IOException {
-        if (isModified) {
+        if (!properties.isEmpty()) {
+            OutputStream os = null;
             try {
-                isModified = false;
-                if (!properties.isEmpty()) {
-                    OutputStream os = null;
-                    try {
-                        os = outputStream();
-                        properties.store(os,new Date().toString());//NOI18N
-                    } finally {
-                        if (os != null) os.close();
-                    }
-                } else {
-                    FileObject file = toPropertiesFile();
-                    if (file != null) {
-                        file.delete();
-                    }
-                    FileObject folder = toFolder();
-                    while (folder != null && folder != preferencesRoot() && folder.getChildren().length == 0) {
-                        folder.delete();
-                        folder = folder.getParent();
-                    }
-                }
+                os = outputStream();
+                properties.store(os,new Date().toString());//NOI18N
             } finally {
+                if (os != null) os.close();
+            }
+        } else {
+            FileObject file = toPropertiesFile();
+            if (file != null) {
+                file.delete();
+            }
+            FileObject folder = toFolder();
+            while (folder != null && folder != preferencesRoot() && folder.getChildren().length == 0) {
+                folder.delete();
+                folder = folder.getParent();
             }
         }
     }
