@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.utils.exceptions.UnrecognizedObjectException;
 import org.netbeans.installer.utils.exceptions.UnsupportedActionException;
 import org.netbeans.installer.utils.system.GenericSystemUtils;
@@ -103,13 +104,17 @@ public abstract class SystemUtils {
     
     public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException, UnsupportedActionException;
     
+    public abstract void addComponentToSystemInstallManager(ProductComponent comp);
+    
+    public abstract void removeComponentFromSystemInstallManager(ProductComponent comp);
+    
     public abstract String getEnvironmentVariable(String name, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
     
     public abstract String getRawEnvironmentVariable(String name, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
     
     public abstract String setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
     
-    // some helper overloaded implementations //////////////////////////////////
+        // some helper overloaded implementations //////////////////////////////////
     public String parseString(String string) {
         return parseString(string, getClass().getClassLoader());
     }
@@ -225,7 +230,7 @@ public abstract class SystemUtils {
         }
         
         public String toString() {
-            return displayName;
+            return name;
         }
     }
     

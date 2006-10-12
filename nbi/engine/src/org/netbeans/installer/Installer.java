@@ -86,6 +86,7 @@ public class Installer {
     /** Errorcode to be used when the installer exits because of a critical error */
     public static final int CRITICAL_ERRORCODE = Integer.MAX_VALUE;
     
+    public static final String TARGET_ARG = "--target";
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Installer instance;
@@ -235,8 +236,8 @@ public class Installer {
                 continue;
             }
             
-            if (arguments[i].equalsIgnoreCase("--target")) {
-                logManager.log(MESSAGE, "parsing command line parameter \"--target\"");
+            if (arguments[i].equalsIgnoreCase(TARGET_ARG)) {
+                logManager.log(MESSAGE, "parsing command line parameter \"" + TARGET_ARG + "\"");
                 logManager.indent();
                 
                 if (i < arguments.length - 2) {
@@ -388,13 +389,15 @@ public class Installer {
                     File jarfile = new File(path.substring(prefix.length(),
                             path.indexOf(jarResourceSep + installerResource)));
                     
-                    logManager.log(MESSAGE, "NBI Engine jar file = [" +
-                            jarfile + "], exist = " + jarfile.exists());
+                    File dest = new File(getLocalDirectory().getPath() +
+                            File.separator + jarfile.getName());
                     
-                    FileUtils.getInstance().copyFile(jarfile,
-                            new File(getLocalDirectory().getPath() +
-                            File.separator + jarfile.getName()));
-                    cachedEngineJarFile = jarfile;
+                    if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath())) {
+                        FileUtils.getInstance().copyFile(jarfile,dest);
+                    }
+                    cachedEngineJarFile = dest;
+                    logManager.log(MESSAGE, "NBI Engine jar file = [" +
+                            cachedEngineJarFile + "], exist = " + cachedEngineJarFile.exists());
                 }
             }
             
