@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="31">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile_windows.mk</itemPath>
+    </logicalFolder>
+    <itemPath>Makefile</itemPath>
+    <itemPath>netbeans.cpp</itemPath>
+  </logicalFolder>
+  <projectmakefile>Makefile_windows.mk</projectmakefile>
+  <defaultConf>0</defaultConf>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>1</compilerSet>
+        <platform>3</platform>
+      </toolsSet>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>make -f Makefile testinst</buildCommand>
+          <cleanCommand>make -f Makefile clean</cleanCommand>
+          <executablePath>netbeans.exe</executablePath>
+          <cCompilerTool>
+          </cCompilerTool>
+          <ccCompilerTool>
+          </ccCompilerTool>
+          <fortranCompilerTool>
+          </fortranCompilerTool>
+        </makeTool>
+      </makefileType>
+      <item path="netbeans.cpp">
+        <itemTool>1</itemTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+      </item>
+      <item path="Makefile">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
