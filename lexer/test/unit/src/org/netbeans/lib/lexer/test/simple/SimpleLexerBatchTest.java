@@ -116,12 +116,12 @@ public class SimpleLexerBatchTest extends TestCase {
         tm = System.currentTimeMillis();
         TokenHierarchy hi = TokenHierarchy.create(text, SimpleLanguage.description());
         tm = System.currentTimeMillis() - tm;
-        assert (tm < 100); // Should be fast
+        assertTrue("Timeout tm = " + tm + "msec", tm < 100); // Should be fast
         
         tm = System.currentTimeMillis();
         TokenSequence ts = hi.tokenSequence();
         tm = System.currentTimeMillis() - tm;
-        assert (tm < 100); // Should be fast
+        assertTrue("Timeout tm = " + tm + "msec", tm < 100); // Should be fast
         
         // Fetch 2 initial tokens - should be lexed lazily
         tm = System.currentTimeMillis();
@@ -130,7 +130,7 @@ public class SimpleLexerBatchTest extends TestCase {
         ts.moveNext();
         ts.token();
         tm = System.currentTimeMillis() - tm;
-        assert (tm < 100); // Should be fast
+        assertTrue("Timeout tm = " + tm + "msec", tm < 100); // Should be fast
         
         tm = System.currentTimeMillis();
         ts.moveIndex(0);
@@ -140,7 +140,7 @@ public class SimpleLexerBatchTest extends TestCase {
             cntr++;
         }
         tm = System.currentTimeMillis() - tm;
-        assert (tm < 1000); // Should be fast
+        assertTrue("Timeout tm = " + tm + "msec", tm < 1000); // Should be fast
         System.out.println("Lexed input " + text.length()
                 + " chars long and created " + cntr + " tokens in " + tm + " ms.");
     }
