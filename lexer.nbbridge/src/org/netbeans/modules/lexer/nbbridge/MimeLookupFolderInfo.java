@@ -22,12 +22,17 @@ package org.netbeans.modules.lexer.nbbridge;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.LanguageManager;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,21 +60,30 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
     }
 
     public Object createInstance(List fileObjectList) {
-        HashMap<String, String> map = new HashMap<String, String>();
+        HashMap<String, LanguageEmbedding> map = new HashMap<String, LanguageEmbedding>();
         
         for(Object o : fileObjectList) {
             assert o instanceof FileObject : "fileObjectList should contain FileObjects and not " + o; //NOI18N
             
             FileObject f = (FileObject) o;
             try {
-                String mimeType = readMimeType(f);
+                Object [] info = parseFile(f);
+                String mimeType = (String) info[0];
+                int startSkipLength = (Integer) info[1];
+                int endSkipLength = (Integer) info[2];
+                
                 if (isMimeTypeValid(mimeType)) {
-                    map.put(f.getName(), mimeType);
+                    LanguageDescription<? extends TokenId> language = LanguageManager.getInstance().findLanguage(mimeType);
+                    if (language != null) {
+                        map.put(f.getName(), new EL(language, startSkipLength, endSkipLength));
+                    } else {
+                        LOG.warning("Can't find LanguageDescription for mime type '" + mimeType + "', ignoring."); //NOI18N
+                    }
                 } else {
-                    LOG.log(Level.WARNING, "Ignoring invalid mime type '" + mimeType + "' from: " + f.getPath());
+                    LOG.log(Level.WARNING, "Ignoring invalid mime type '" + mimeType + "' from: " + f.getPath()); //NOI18N
                 }
             } catch (IOException ioe) {
-                LOG.log(Level.WARNING, "Can't read language embedding definition from: " + f.getPath());
+                LOG.log(Level.WARNING, "Can't read language embedding definition from: " + f.getPath()); //NOI18N
             }
         }
         
@@ -90,7 +104,7 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
         return true;
     }
     
-    private String readMimeType(FileObject f) throws IOException {
+    private Object [] parseFile(FileObject f) throws IOException {
         BufferedReader r = new BufferedReader(new InputStreamReader(f.getInputStream()));
         try {
             String line;
@@ -98,7 +112,12 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
             while (null != (line = r.readLine())) {
                 line.trim();
                 if (line.length() != 0) {
-                    return line;
+                    String [] parts = line.split(","); //NOI18N
+                    return new Object [] { 
+                        parts[0], 
+                        parts.length > 1 ? toInt(parts[1], "Ignoring invalid start-skip-lenght '{0}' in " + f.getPath()) : 0, //NOI18N
+                        parts.length > 2 ? toInt(parts[2], "Ignoring invalid end-skip-lenght '{0}' in " + f.getPath()) : 0 //NOI18N
+                    };
                 }
             }
             
@@ -107,4 +126,38 @@ public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider
             r.close();
         }
     }
+    
+    private int toInt(String s, String errorMsg) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            LOG.log(Level.WARNING, MessageFormat.format(errorMsg, s), e);
+            return 0;
+        }
+    }
+    
+    private static final class EL extends LanguageEmbedding {
+        
+        private LanguageDescription<? extends TokenId> language;
+        private int startSkipLength;
+        private int endSkipLength;
+
+        public EL(LanguageDescription<? extends TokenId> language, int startSkipLength, int endSkipLength) {
+            this.language = language;
+            this.startSkipLength = startSkipLength;
+            this.endSkipLength = endSkipLength;
+        }
+        
+        public LanguageDescription<? extends TokenId> language() {
+            return language;
+        }
+
+        public int startSkipLength() {
+            return startSkipLength;
+        }
+
+        public int endSkipLength() {
+            return endSkipLength;
+        }
+    } // End of EL class
 }

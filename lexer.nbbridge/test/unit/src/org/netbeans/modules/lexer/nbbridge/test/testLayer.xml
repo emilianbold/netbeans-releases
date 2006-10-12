@@ -16,7 +16,7 @@
                 </file>
                 
                 <folder name="languagesEmbeddingMap">
-                    <file name="WORD"><![CDATA[text/x-simple-char]]></file>
+                    <file name="WORD"><![CDATA[text/x-simple-char,1,2]]></file>
                 </folder>
             </folder>
         </folder>

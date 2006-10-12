@@ -63,7 +63,8 @@ public class MimeLookupLanguageProviderTest extends NbTestCase{
     public void testLanguagesEmbeddingMapMT() throws Exception {
         Document doc = new PlainDocument();
         doc.putProperty("mimeType", "text/x-simple-plain");
-        doc.insertString(0, "Hello 1234 0xFF", SimpleAttributeSet.EMPTY);
+        // All words have to be longer than 3 characters
+        doc.insertString(0, "Hello 1234 0xFF00", SimpleAttributeSet.EMPTY);
         
         TokenHierarchy th = TokenHierarchy.get(doc);
         assertNotNull("Can't find token hierarchy for a text/x-simple-plain document", th);
@@ -84,6 +85,13 @@ public class MimeLookupLanguageProviderTest extends NbTestCase{
                 LanguageDescription embeddedLang = embeddedSeq.language();
                 assertNotNull("Can't find language of the embedded sequence", embeddedLang);
                 assertEquals("Wrong language of the embedded sequence", "text/x-simple-char", embeddedLang.mimeType());
+                
+                assertTrue("Embedded sequence has no tokens (moveFirst)", embeddedSeq.moveFirst());
+                assertEquals("Wrong startSkipLenght", 1, embeddedSeq.offset() - seq.offset());
+                
+                assertTrue("Embedded sequence has no tokens (moveLast)", embeddedSeq.moveLast());
+                assertEquals("Wrong endSkipLenght", 2, 
+                    (seq.offset() + seq.token().length()) - (embeddedSeq.offset() + embeddedSeq.token().length()));
             }
         }
     }
