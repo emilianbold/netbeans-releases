@@ -42,48 +42,48 @@ import java.util.Date;
 import java.lang.ref.WeakReference;
 
 /**
- * XmlMultiviewDataObject.java
+ * Base class for data objects that are used as a basis for
+ * the xml multiview. Provides support for caching data ({@link DataCache}), switching
+ * view, encoding and keeping track of currently active multiview element. Furthermore, it
+ * associates <code>XmlMultiViewEditorSupport</code> with this data object.
  *
  * Created on October 5, 2004, 10:49 AM
  * @author  mkuchtiak
  */
 public abstract class XmlMultiViewDataObject extends MultiDataObject implements CookieSet.Factory {
-
+    
     public static final String PROP_DOCUMENT_VALID = "document_valid"; //NOI18N
     public static final String PROP_SAX_ERROR = "sax_error"; //NOI18N
-    protected static final String PROPERTY_DATA_MODIFIED = "data modified";  //NOI18N
-    protected static final String PROPERTY_DATA_UPDATED = "data changed";  //NOI18N
-    private XmlMultiViewEditorSupport editorSupport;
+    public static final String PROPERTY_DATA_MODIFIED = "data modified";  //NOI18N
+    public static final String PROPERTY_DATA_UPDATED = "data changed";  //NOI18N
+    protected XmlMultiViewEditorSupport editorSupport;
     private org.xml.sax.SAXException saxError;
-
+    
     private final DataCache dataCache = new DataCache();
     private EncodingHelper encodingHelper = new EncodingHelper();
     private transient long timeStamp = 0;
     private transient WeakReference lockReference;
-
-
+    
+    
     private MultiViewElement activeMVElement;
-
+    
     private final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws java.io.IOException {
-            boolean save = acceptEncoding();
-            if (save) {
-                getEditorSupport().saveDocument();
-            }
+            getEditorSupport().saveDocument();
         }
     };
-
+    
     /** Creates a new instance of XmlMultiViewDataObject */
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         getCookieSet().add(XmlMultiViewEditorSupport.class, this);
     }
-
+    
     protected EditorCookie createEditorCookie() {
         return getEditorSupport();
     }
-
+    
     public org.openide.nodes.Node.Cookie createCookie(Class clazz) {
         if (clazz.isAssignableFrom(XmlMultiViewEditorSupport.class)) {
             return getEditorSupport();
@@ -91,7 +91,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             return null;
         }
     }
-
+    
     /** Gets editor support for this data object. */
     protected synchronized XmlMultiViewEditorSupport getEditorSupport() {
         if(editorSupport == null) {
@@ -100,13 +100,13 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
         return editorSupport;
     }
-
+    
     /** enables to switch quickly to XML perspective in multi view editor
      */
     public void goToXmlView() {
         getEditorSupport().goToXmlPerspective();
     }
-
+    
     protected void setSaxError(org.xml.sax.SAXException saxError) {
         org.xml.sax.SAXException oldError = this.saxError;
         this.saxError=saxError;
@@ -119,7 +119,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 firePropertyChange(PROP_DOCUMENT_VALID, Boolean.FALSE, Boolean.TRUE);
             }
         }
-
+        
         String oldErrorMessage = getErrorMessage(oldError);
         String newErrorMessage = getErrorMessage(saxError);
         if (oldErrorMessage==null) {
@@ -130,35 +130,35 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             firePropertyChange(PROP_SAX_ERROR, oldErrorMessage, newErrorMessage);
         }
     }
-
+    
     private static String getErrorMessage(Exception e) {
         return e == null ? null : e.getMessage();
     }
-
+    
     public org.xml.sax.SAXException getSaxError() {
         return saxError;
     }
-
+    
     /** Icon for XML View */
     protected java.awt.Image getXmlViewIcon() {
         return org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif"); //NOI18N
     }
-
+    
     /** MultiViewDesc for MultiView editor
      */
     protected abstract DesignMultiViewDesc[] getMultiViewDesc();
-
+    
     public void setLastOpenView(int index) {
         getEditorSupport().setLastOpenView(index);
     }
-
+    
     /** provides renaming of super top component */
     protected FileObject handleRename(String name) throws IOException {
         FileObject retValue = super.handleRename(name);
         getEditorSupport().updateDisplayName();
         return retValue;
     }
-
+    
     /**
      * Set whether the object is considered modified.
      * Also fires a change event.
@@ -179,17 +179,19 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             if(saveCookie.equals(getCookie(SaveCookie.class))) {
                 getCookieSet().remove(saveCookie);
             }
-
+            
         }
     }
-
+    
     public boolean canClose() {
         final CloneableTopComponent topComponent = ((CloneableTopComponent) getEditorSupport().getMVTC());
-        Enumeration enumeration = topComponent.getReference().getComponents();
-        if (enumeration.hasMoreElements()) {
-            enumeration.nextElement();
+        if (topComponent != null){
+            Enumeration enumeration = topComponent.getReference().getComponents();
             if (enumeration.hasMoreElements()) {
-                return true;
+                enumeration.nextElement();
+                if (enumeration.hasMoreElements()) {
+                    return true;
+                }
             }
         }
         FileLock lock;
@@ -205,40 +207,42 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             lock.releaseLock();
         }
     }
-
+    
     public FileLock waitForLock() throws IOException {
         return waitForLock(10000);
     }
-
+    
     public FileLock waitForLock(long timeout) throws IOException {
-        long t = new Date().getTime() + timeout;
+        long t = System.currentTimeMillis() + timeout;
+        long sleepTime = 50;
         for (;;) {
             try {
                 return dataCache.lock();
             } catch (IOException e) {
-                if (new Date().getTime() > t) {
-                    throw new IOException("Cannot take data lock for more than " + timeout + " ms");
+                if (System.currentTimeMillis() > t) {
+                    throw (IOException) new IOException("Cannot wait for data lock for more than " + timeout + " ms").initCause(e); //NO18N
                 }
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(sleepTime);
+                    sleepTime = 3 * sleepTime / 2; 
                 } catch (InterruptedException e1) {
                     //
                 }
             }
         }
     }
-
+    
     public org.netbeans.core.api.multiview.MultiViewPerspective getSelectedPerspective() {
         return getEditorSupport().getSelectedPerspective();
     }
-
+    
     /** Enable to focus specific object in Multiview Editor
      *  The default implementation opens the XML View.
      */
     public void showElement(Object element) {
         getEditorSupport().edit();
     }
-
+    
     /** Enable to get active MultiViewElement object
      */
     protected MultiViewElement getActiveMultiViewElement() {
@@ -253,9 +257,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     public void openView(int index) {
         getEditorSupport().openView(index);
     }
-
+    
     protected abstract String getPrefixMark();
-
+    
     boolean acceptEncoding() throws IOException {
         encodingHelper.resetEncoding();
         DataCache dataCache = getDataCache();
@@ -273,7 +277,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
         return true;
     }
-
+    
     private void showUsingDifferentEncodingMessage(String encoding) {
         String message = NbBundle.getMessage(XmlMultiViewDataObject.class, "TEXT_TREAT_USING_DIFFERENT_ENCODING", encoding,
                 encodingHelper.getEncoding());
@@ -281,7 +285,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         descriptor.setTitle(getPrimaryFile().getPath());
         DialogDisplayer.getDefault().notify(descriptor);
     }
-
+    
     private Object showChangeEncodingDialog(String encoding) {
         String message = NbBundle.getMessage(Utils.class, "TEXT_CHANGE_DECLARED_ENCODING", encoding,
                 encodingHelper.getEncoding());
@@ -289,24 +293,24 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 NotifyDescriptor.YES_NO_CANCEL_OPTION);
         return DialogDisplayer.getDefault().notify(descriptor);
     }
-
+    
     public EncodingHelper getEncodingHelper() {
         return encodingHelper;
     }
-
+    
     public DataCache getDataCache() {
         return dataCache;
     }
-
+    
     /** Is that necesary for this class to be public ?
      *  It can be changed to interface
      */
     public class DataCache {
-
+        
         // What about using the StringBuffer instead ?
         private transient String buffer = null;
         private long fileTime = 0;
-
+        
         public void loadData() {
             FileObject file = getPrimaryFile();
             if (fileTime == file.lastModified().getTime()) {
@@ -320,6 +324,24 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                     buffer = ""; //NOI18N
                 }
             }
+        }
+        
+        /**
+         * Updates the data cache with the contents of the associated file. 
+         * Unlike {@link #loadData()}, tries to use existing lock before attempting
+         * to acquire a new lock.
+         */
+        public void reloadData() throws IOException{
+            FileObject file = getPrimaryFile();
+            if (fileTime == file.lastModified().getTime()) {
+                return;
+            }
+            FileLock lock = getLock();
+            if (lock == null){
+                lock = lock();
+            }
+            loadData(file, lock);
+            
         }
         /** Does this method need to be public ?
          */
@@ -351,7 +373,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             }
         }
         /** Is the second argument necessary ?
-         */ 
+         */
         public void setData(FileLock lock, String s, boolean modify) throws IOException {
             testLock(lock);
             boolean modified = isModified() || modify;
@@ -363,9 +385,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 } else {
                     firePropertyChange(PROPERTY_DATA_MODIFIED, new Long(oldTimeStamp), new Long(timeStamp));
                 }
-            }
+            } 
         }
-
+        
         private boolean setData(String s) {
             // ??? when this can happen
             if (s.equals(buffer)) {
@@ -380,12 +402,12 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             fileTime = 0;
             return true;
         }
-
+        
         public synchronized void saveData(FileLock dataLock) {
             if (buffer == null || fileTime == getPrimaryFile().lastModified().getTime()) {
                 return;
             }
-
+            
             try {
                 XmlMultiViewEditorSupport editorSupport = getEditorSupport();
                 if (editorSupport.getDocument() == null) {
@@ -408,16 +430,17 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 ErrorManager.getDefault().notify(e);
             }
         }
-
+        
         public FileLock lock() throws IOException {
-            if (getLock() != null) {
-                throw new FileAlreadyLockedException();
+            FileLock current = getLock();
+            if (current != null) {
+                throw new FileAlreadyLockedException("File is already locked by [" + current + "]."); // NO18N
             }
             FileLock l = new FileLock();
             lockReference = new WeakReference(l);
             return l;
         }
-
+        
         private FileLock getLock() {
             // How this week reference can be useful ?
             FileLock l = lockReference == null ? null : (FileLock) lockReference.get();
@@ -426,45 +449,46 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             }
             return l;
         }
-
+        
         public String getStringData() {
             if (buffer == null) {
                 loadData();
             }
             return buffer;
         }
-
+        
         public byte[] getData() {
             try {
                 return getStringData().getBytes(encodingHelper.getEncoding());
             } catch (UnsupportedEncodingException e) {
+                ErrorManager.getDefault().notify(e);
                 return null;  // should not happen
             }
         }
-
+        
         public void setData(FileLock lock, byte[] data, boolean modify) throws IOException {
             encodingHelper.detectEncoding(data);
             setData(lock, new String(data, encodingHelper.getEncoding()), modify);
         }
-
+        
         public long getTimeStamp() {
             return timeStamp;
         }
-
+        
         public InputStream createInputStream() {
             try {
                 encodingHelper.detectEncoding(getStringData().getBytes());
                 return new ReaderInputStream(new StringReader(getStringData()), encodingHelper.getEncoding());
             } catch (IOException e) {
-                e.printStackTrace();
+                ErrorManager.getDefault().notify(e);
                 return null;
             }
         }
-
+        
         public Reader createReader() throws IOException {
             return new StringReader(getStringData());
         }
-
+        
         public OutputStream createOutputStream() throws IOException {
             final FileLock dataLock = lock();
             return new ByteArrayOutputStream() {
@@ -478,7 +502,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 }
             };
         }
-
+        
         public OutputStream createOutputStream(final FileLock dataLock, final boolean modify) throws IOException {
             testLock(dataLock);
             return new ByteArrayOutputStream() {
@@ -491,7 +515,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 }
             };
         }
-
+        
         public Writer createWriter() throws IOException {
             final FileLock dataLock = lock();
             return new StringWriter() {
@@ -505,7 +529,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 }
             };
         }
-
+        
         public Writer createWriter(final FileLock dataLock, final boolean modify) throws IOException {
             testLock(dataLock);
             return new StringWriter() {
@@ -518,13 +542,15 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 }
             };
         }
-
+        
         public void testLock(FileLock lock) throws IOException {
-            if (lock == null || lock != getLock()) {
-                throw new IOException();
+            if (lock == null) {
+                throw new IOException("Lock is null."); //NO18N
+            } else if (lock != getLock()){
+                throw new IOException("Invalid lock [" + lock + "]. Expected [" + getLock() + "]."); //NO18N
             }
         }
-
+        
         public void resetFileTime() {
             fileTime = getPrimaryFile().lastModified().getTime();
         }

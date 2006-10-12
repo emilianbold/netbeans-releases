@@ -93,6 +93,10 @@ class DefaultContext implements HintContext, Attr, Element {
         virtual = false;
 //        System.err.println("DUMP:" + dump());
     }
+    
+    public boolean isInitialized() {
+        return peer != null;
+    }
    
     String dump() {
         Node parent = getParentNode();

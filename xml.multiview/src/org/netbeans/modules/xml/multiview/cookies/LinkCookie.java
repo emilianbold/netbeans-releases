@@ -19,12 +19,21 @@
 
 package org.netbeans.modules.xml.multiview.cookies;
 
-/** LinkCookie.java
- *
+/** 
+ * This interface should be implemented by classes that need
+ * to respond to pressing of links. See related class 
+ * {@link org.netbeans.modules.xml.multiview.ui.LinkButton}.
+ * 
  * Created on November 19, 2004, 8:52 AM
  * @author mkuchtiak
  */
 public interface LinkCookie {
-
+    
+    /**
+     * Invoked when a button representing a link is pressed.
+     * @param ddBean the model that is affected by the link.
+     * @param ddProperty the property of the given <code>ddBean</code>
+     * that is affected by the link.
+     */
     public void linkButtonPressed(Object ddBean, String ddProperty);
 }

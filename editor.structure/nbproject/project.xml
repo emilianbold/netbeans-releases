@@ -86,10 +86,13 @@ Microsystems, Inc. All Rights Reserved.
               </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.html.editor</friend>
+                <friend>org.netbeans.modules.html.editor.lib</friend>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.xml.text</friend>
                 <package>org.netbeans.modules.editor.structure.api</package>
+                <package>org.netbeans.modules.editor.structure.formatting</package>
                 <package>org.netbeans.modules.editor.structure.spi</package>
-                
             </friend-packages>
         </data>
     </configuration>

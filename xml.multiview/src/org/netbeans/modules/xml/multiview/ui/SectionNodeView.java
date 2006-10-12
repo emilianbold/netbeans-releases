@@ -30,6 +30,8 @@ import org.openide.util.RequestProcessor;
 import java.util.HashMap;
 
 /**
+ * A section view for <code>SectionNode</code>. 
+ *
  * @author pfiala
  */
 public abstract class SectionNodeView extends SectionView {
@@ -46,11 +48,20 @@ public abstract class SectionNodeView extends SectionView {
 
     private static final int REFRESH_DELAY = 20;
 
+    /**
+     * Constructs new SecionNodeView.
+     * @param dataObject the associated data object.
+     */
     public SectionNodeView(XmlMultiViewDataObject dataObject) {
         super();
         this.dataObject = dataObject;
     }
 
+    /**
+     * Sets the given <code>rootNode</code> as the root
+     * of this view and adds its associated section node 
+     * panel as a section for this.
+     */
     public void setRootNode(SectionNode rootNode) {
         this.rootNode = rootNode;
         Children root = new Children.Array();
@@ -66,10 +77,18 @@ public abstract class SectionNodeView extends SectionView {
         return dataObject;
     }
 
+    /**
+     * Opens the panel associated with the given <code>node</code>.
+     */
     public void openSection(Node node) {
         openPanel(node);
     }
 
+    /**
+     * Opens the panel representing <code>SecctionNode</code>
+     * identified by the given <code>key</code>.
+     * @param key the key of <code>SectionNode</code>
+     */
     public void openPanel(Object key) {
         SectionNode sectionNode = retrieveSectionNode((SectionNode) key);
         SectionNodePanel sectionNodePanel = sectionNode.getSectionNodePanel();
@@ -93,10 +112,18 @@ public abstract class SectionNodeView extends SectionView {
         return sectionNode == null ? rootNode : sectionNode;
     }
 
+    /**
+     * Recursively refreshes the view starting from the root node.
+     */
     public void refreshView() {
         rootNode.refreshSubtree();
     }
 
+    /**
+     * Schedules refreshing of the view with default delay.
+     * @see #refreshView
+     * @see #REFRESH_DELAY
+     */
     public void scheduleRefreshView() {
         refreshTask.schedule(REFRESH_DELAY);
     }

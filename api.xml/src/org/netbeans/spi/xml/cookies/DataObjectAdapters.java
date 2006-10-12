@@ -20,6 +20,8 @@
 package org.netbeans.spi.xml.cookies;
 
 import java.io.Reader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import javax.swing.text.Document;
 import javax.xml.parsers.ParserConfigurationException;
@@ -156,7 +158,14 @@ public final class DataObjectAdapters {
         try {
             FileObject fileObject = dataObject.getPrimaryFile();
             URL url = fileObject.getURL();
-            systemId = url.toExternalForm();
+            try {
+                systemId = new URI(url.toString()).toASCIIString();
+            } catch (URISyntaxException ex) {
+                // if cannot be converted to URI, return at least external form
+                // instead of returning null
+                systemId = url.toExternalForm();
+                Util.THIS.debug(ex);
+            }
         } catch (FileStateInvalidException exc) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
 

@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.xml.multiview;
 
+import java.util.Arrays;
+import javax.swing.Action;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -25,6 +27,8 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.util.NbBundle;
 
 import java.io.Serializable;
+import org.openide.actions.FileSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  * @author pfiala
@@ -65,7 +69,15 @@ public abstract class AbstractMultiViewElement implements MultiViewElement, Seri
     }
 
     public javax.swing.Action[] getActions() {
-        return callback.createDefaultActions();
+        Action[] actions = callback.createDefaultActions();
+        SystemAction fsAction = SystemAction.get(FileSystemAction.class);
+        if (!Arrays.asList(actions).contains(fsAction)) {
+            Action[] newActions = new Action[actions.length+1];
+            System.arraycopy(actions, 0, newActions, 0, actions.length);
+            newActions[actions.length] = fsAction;
+            actions = newActions;
+        }
+        return actions;
     }
 
     public void componentOpened() {

@@ -42,7 +42,7 @@ import org.netbeans.modules.xml.api.model.GrammarQuery;
  * @author  asgeir@dimonsoftware.com
  */
 public class DTDParser {
-
+    
     static final String SAX_PROPERTY = "http://xml.org/sax/properties/";  //NOI18N
     static final String DECL_HANDLER = "declaration-handler"; //NOI18N
     
@@ -50,14 +50,14 @@ public class DTDParser {
      * DTD document, otherwise if is expected to be a XML document. */
     private boolean dtdOnly;
     
-    /** Creates new DTDParser 
+    /** Creates new DTDParser
      * The InputSource parameter of the parse method should be a XML document
      */
     public DTDParser() {
         this(false);
     }
-
-    /** Creates new DTDParser 
+    
+    /** Creates new DTDParser
      * @param dtdOnly If true the InputSource parameter into the parse method
      *                should be a DTD document, otherwise it should be an XML
      *                document.
@@ -67,9 +67,10 @@ public class DTDParser {
     }
     
     public GrammarQuery parse(InputSource in) {
-
+        
         Handler handler = new Handler();
         
+        EntityResolverWrapper res = null;
         try {
             XMLReader parser = XMLUtil.createXMLReader(dtdOnly == false);   // we do not want Crimson, it does not understand relative SYSTEM ids
             parser.setContentHandler(handler);
@@ -77,9 +78,13 @@ public class DTDParser {
             parser.setDTDHandler(handler);
             
             UserCatalog catalog = UserCatalog.getDefault();
-            EntityResolver res = (catalog == null ? null : catalog.getEntityResolver());
+            if(catalog != null) {
+                res = new EntityResolverWrapper(catalog.getEntityResolver());
+            };
             
-            if (res != null) parser.setEntityResolver(res);
+            if (res != null) {
+                parser.setEntityResolver(res);
+            }
             parser.setProperty(SAX_PROPERTY + DECL_HANDLER, handler);
             
             if (dtdOnly) {
@@ -89,28 +94,32 @@ public class DTDParser {
             }
             throw new IllegalStateException("How we can get here?");
         } catch (Stop stop) {
-            return handler.getDTDGrammar();  // expected
+            //OK
         } catch (SAXException ex) {
             if (Boolean.getBoolean("netbeans.debug.xml") ||  Boolean.getBoolean("netbeans.debug.exceptions")) {  //NOI18N
-                ex.printStackTrace();            
+                ex.printStackTrace();
                 if (ex.getException() instanceof RuntimeException) {
                     ex.getException().printStackTrace();  //???
-                }            
+                }
             }
-            return handler.getDTDGrammar();  // better partial result than nothing
+            //error, but return what was parsed
         } catch (IOException ex) {
             if (Boolean.getBoolean("netbeans.debug.xml")) {  // NOI18N
                 ex.printStackTrace();
             }
-            return handler.getDTDGrammar();  // better partial result than nothing
-        }                
-    }
+            //error, but return at least a partial result
+        }
 
+        DTDGrammar dtdGrammar = handler.getDTDGrammar();
+        dtdGrammar.setResolvedEntities(res.getResolvedSystemIds());
+        return dtdGrammar;
+    }
+        
     /**
      * Actually create a grammar from callback information.
      */
     private class Handler extends DefaultHandler implements DeclHandler {
-
+        
         private Map attrs, elements, models, enums, attrDefaults;
         private Set notations, entities, anys, emptyElements;
         private DTDGrammar dtd;
@@ -127,7 +136,7 @@ public class DTDParser {
             emptyElements = new HashSet();
             dtd = new DTDGrammar(elements, models, attrs, attrDefaults, enums, entities, notations, emptyElements);
         }
-
+        
         /**
          * Update value of ANY declared content models
          */
@@ -136,13 +145,13 @@ public class DTDParser {
             while (it.hasNext()) {
                 String name = (String) it.next();
                 elements.put(name, elements.keySet());
-            }            
+            }
             
             return dtd;
         }
         
         public void elementDecl(String name, String model) throws SAXException {
-
+            
             // special cases
             
             if ("ANY".equals(model)) {
@@ -157,7 +166,7 @@ public class DTDParser {
                 elements.put(name, Collections.EMPTY_SET);
                 return;
             }
-
+            
             // parse content model
             
             StringTokenizer tokenizer = new StringTokenizer(model, " \t\n|,()?+*");
@@ -176,13 +185,13 @@ public class DTDParser {
             if (name.startsWith("%")) return;  // NOI18N
             entities.add(name);
         }
-                
+        
         public void attributeDecl(String eName, String aName, String type, String valueDefault, String value) throws SAXException {
             Set set = (Set) attrs.get(eName);
             if (set == null) {
                 set = new TreeSet();
                 attrs.put(eName, set);
-            }             
+            }
             set.add(aName);
             
             // if enumeration type place into enumeration map new entry
@@ -194,10 +203,10 @@ public class DTDParser {
                 }
                 enums.put(eName + " " + aName, tokens);                         // NOI18N
             }
-
+            
             // store defaults
             String key = eName + " " + aName;                                   // NOI18N
-            attrDefaults.put(key, valueDefault);            
+            attrDefaults.put(key, valueDefault);
         }
         
         public void internalEntityDecl(String name, String value) throws SAXException {
@@ -205,16 +214,16 @@ public class DTDParser {
             entities.add(name);
         }
         
-        public void notationDecl (String name, String publicId, String systemId) throws SAXException {
+        public void notationDecl(String name, String publicId, String systemId) throws SAXException {
             notations.add(name);
-        }                
+        }
         
-        public void startElement (String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
+        public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
             throw new Stop();
         }
         
     }
-
+    
     
     private class Stop extends SAXException {
         
@@ -227,5 +236,25 @@ public class DTDParser {
         public Throwable fillInStackTrace() {
             return this;
         }
+    }
+    
+    private class EntityResolverWrapper implements EntityResolver {
+        
+        private EntityResolver resolver;
+        private ArrayList/*<String>*/ resolvedSystemIds = new ArrayList(3);
+        
+        public EntityResolverWrapper(EntityResolver resolver) {
+            this.resolver = resolver;
+        }
+        
+        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+            resolvedSystemIds.add(systemId);
+            return resolver.resolveEntity(publicId, systemId);
+        }
+        
+        public List/*<String>*/ getResolvedSystemIds() {
+            return resolvedSystemIds;
+        }
+        
     }
 }

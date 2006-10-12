@@ -127,7 +127,16 @@ abstract class ContentModel {
             tokens.pushback(next);
         }
 
-//        System.out.println("Model " + model);
+        if(model == null) {
+            //75881 fix - the XMLSchema.dtd file contains multiple nested sections e.g.
+            //<!ENTITY % attrDecls    '((%attribute;| %attributeGroup;)*,(%anyAttribute;)?)'>
+            if(models.size() == 1) {
+                //there is just one model inside (the mentioned case)
+                //so we can return it
+                return (ContentModel)models.get(0);
+            }
+        }
+
         return model;
     }
 

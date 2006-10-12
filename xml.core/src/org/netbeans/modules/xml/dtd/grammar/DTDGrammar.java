@@ -36,8 +36,8 @@ import org.netbeans.modules.xml.spi.dom.*;
  *
  * @author  Petr Kuzel
  */
-class DTDGrammar implements GrammarQuery {
-
+class DTDGrammar implements ExtendedGrammarQuery {
+    
     // element name keyed
     private Map elementDecls, attrDecls;
     
@@ -56,6 +56,8 @@ class DTDGrammar implements GrammarQuery {
     /** Set&lt;elementName:String> holding all emenets with <code>EMPTY</code> content model.*/
     private Set emptyElements;
 
+    private List/*<String>*/ resolvedEntities;
+    
     /** Creates new DTDGrammar */
     DTDGrammar(Map elementDecls, Map contentModels, Map attrDecls, Map attrDefs, Map enums, Set entities, Set notations, Set emptyElements) {
         this.elementDecls = elementDecls;
@@ -68,6 +70,14 @@ class DTDGrammar implements GrammarQuery {
         this.emptyElements = emptyElements;
     }
 
+    void setResolvedEntities(List/*<String>*/ resolvedEntities) {
+        this.resolvedEntities = resolvedEntities;
+    }
+    
+    public List/*<String>*/ getResolvedEntities() {
+        return resolvedEntities;
+    }
+    
     /**
      * Allow to get names of <b>parsed general entities</b>.
      * @return list of <code>CompletionResult</code>s (ENTITY_REFERENCE_NODEs)
@@ -116,8 +126,10 @@ class DTDGrammar implements GrammarQuery {
         if (attrDecls == null) return org.openide.util.Enumerations.empty();
         
         Element el = null;
+        String currentAttrName = null;
         // Support two versions of GrammarQuery contract
         if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
+            currentAttrName = ctx.getNodeName();
             el = ((Attr)ctx).getOwnerElement();
         } else if (ctx.getNodeType() == Node.ELEMENT_NODE) {
             el = (Element) ctx;
@@ -136,7 +148,8 @@ class DTDGrammar implements GrammarQuery {
         while ( it.hasNext()) {
             String next = (String) it.next();
             if (next.startsWith(prefix)) {
-                if (existingAttributes.getNamedItem(next) == null) {
+                if (existingAttributes.getNamedItem(next) == null ||
+                        next.equals(currentAttrName)) {
                     list.add (new MyAttr(next));
                 }
             }

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ 
+ $Id$
+-->
+
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:ns="http://xml.netbeans.org/examples/targetNS/Address"
+    targetNamespace="http://xml.netbeans.org/examples/targetNS/Address"
+    xmlns:addr="http://xml.netbeans.org/examples/targetNS/Address"
+    elementFormDefault="qualified">
+
+    <xsd:element name="address" type="addr:USAddress"/>
+        
+    <xsd:element name="simpleName" type="xsd:string"/>
+    <xsd:element name="fullName" type="xsd:string"/>
+    <xsd:attribute name="countryToken" type="xsd:NMTOKEN" fixed="US"/>
+    <xsd:attribute name="countryString" type="xsd:string" fixed="US"/>
+
+    <xsd:complexType name="USAddress">
+        <xsd:sequence>
+            <xsd:element name="x"   type="xsd:string"/>
+            <xsd:element name="y"  type="xsd:string"/>
+            <xsd:element name="z"    type="xsd:decimal"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="addr:attr-group"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="USAddress1">
+        <xsd:group ref="addr:group1"/>
+        <xsd:attributeGroup ref="addr:attr-group"/>
+    </xsd:complexType>
+    
+    <xsd:group name="group1">
+        <xsd:sequence>
+            <xsd:element ref="addr:simpleName"/>
+            <xsd:element name="street" type="xsd:string"/>
+            <xsd:element name="city"   type="xsd:string"/>
+            <xsd:element name="state"  type="xsd:string"/>
+            <xsd:element name="zip"    type="xsd:decimal"/>
+        </xsd:sequence>
+    </xsd:group>
+        
+    <xsd:group name="group2">
+        <xsd:choice>
+            <xsd:element name="A"   type="xsd:string"/>
+            <xsd:element name="B"  type="xsd:string"/>
+            <xsd:element name="C"    type="xsd:decimal"/>
+        </xsd:choice>
+    </xsd:group>
+    
+    <xsd:attributeGroup name="attr-group">
+        <xsd:attribute ref="addr:countryToken"/>
+        <xsd:attribute name="testAttr" type="xsd:string"/>
+        <xsd:attribute name="language" type="xsd:string" fixed="EN"/>
+    </xsd:attributeGroup>
+        
+</xsd:schema>
+

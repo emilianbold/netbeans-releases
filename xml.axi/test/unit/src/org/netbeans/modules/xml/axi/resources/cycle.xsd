@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ 
+ $Id$
+-->
+
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://xml.netbeans.org/examples/targetNS/cycle"
+    xmlns:addr="http://xml.netbeans.org/examples/targetNS/cycle"
+    elementFormDefault="qualified">
+    
+    <xsd:element name="address" type="addr:USAddress"/>
+
+    <xsd:element name="otherAddress" type="addr:USAddress"/>
+
+    <xsd:complexType name="USAddress">
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string"/>
+            <xsd:element name="street" type="xsd:string"/>
+            <xsd:element name="city"   type="xsd:string"/>
+            <xsd:element name="state"  type="xsd:string"/>
+            <xsd:element name="zip"    type="xsd:decimal"/>
+            <xsd:element ref="addr:otherAddress"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="addr:attr-group"/>
+    </xsd:complexType>
+        
+    <xsd:attributeGroup name="attr-group">
+        <xsd:attribute name="country" type="xsd:NMTOKEN" fixed="US"/>
+        <xsd:attribute name="language" type="xsd:string" fixed="EN"/>
+    </xsd:attributeGroup>
+
+</xsd:schema>
+

@@ -34,10 +34,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
 /**
+ * This class represents a panel of a section that can be expanded / collapsed.
+ * Wraps <code>SectionView</code> and controls opening and closing of
+ * the associated inner panels (<code>SectionInnerPanel</code>).
+ *
  * @author mkuchtiak
  */
 public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel, ErrorLocator {
-
+    
     private SectionView sectionView;
     private String title;
     private Node node;
@@ -45,35 +49,69 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private SectionInnerPanel innerPanel;
     private Object key;
     private int index;
-
+    
     private FocusListener sectionFocusListener = new FocusAdapter() {
         public void focusGained(FocusEvent e) {
             setActive(true);
         }
     };
     private ToolBarDesignEditor toolBarDesignEditor;
-
+    
     /**
-     * Creates new form SectionPanel
+     * Constructs a new section panel whose title will be set to display name
+     * of the given <code>explorerNode</code> and that will not be expanded
+     * by default.
+     * @param sectionView the section view for this panel
+     * @param explorerNode the node for this panel
+     * @param key the key that identifies the panel
      */
     public SectionPanel(SectionView sectionView, Node explorerNode, Object key) {
         this(sectionView, explorerNode, key, false);
     }
-
+    
+    /**
+     * Constructs a new section panel whose title will be set to display name
+     * of the given <code>explorerNode</code>.
+     * @param sectionView the section view for this panel
+     * @param explorerNode the node for this panel
+     * @param key the key that identifies the panel
+     * @param autoExpand defines whether the section should be expanded by default
+     */
     public SectionPanel(SectionView sectionView, Node explorerNode, Object key, boolean autoExpand) {
         this(sectionView, explorerNode, explorerNode.getDisplayName(), key, autoExpand);
     }
-
+    
+    /**
+     * Constructs a new section panel that is not expanded by default.
+     * @param sectionView the section view for this panel
+     * @param node the node for this panel
+     * @param title the title for this panel
+     * @param key the key that identifies the panel
+     */
     public SectionPanel(SectionView sectionView, Node node, String title, Object key) {
         this(sectionView, node, title, key, false);
     }
-
-    public SectionPanel(SectionView sectionView, Node node, String title, Object key, boolean autoExpand) {
+    
+    /**
+     * Constructs a new section panel.
+     * @param sectionView the section view for this panel
+     * @param node the node for this panel
+     * @param title the title for this panel
+     * @param key the key that identifies the panel
+     * @param autoExpand defines whether the section should be expanded by default
+     * @param addActionListener defines whether a focus listener that activates
+     * section when focus is gained should be attached to the title button of 
+     * this panel.
+     *
+     */
+    public SectionPanel(SectionView sectionView, Node node, String title, 
+            Object key, boolean autoExpand, boolean addFocusListenerToButton) {
+        
         this.sectionView = sectionView;
         this.title = title;
         this.node = node;
         this.key = key;
-
+        
         initComponents();
         headerSeparator.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
         fillerLine.setForeground(SectionVisualTheme.getFoldLineColor());
@@ -84,12 +122,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         titlePanel.setBackground(SectionVisualTheme.getSectionHeaderColor());
         actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         titleButton.setText(title);
-        /*
-        java.awt.Image image = node == null ? null : node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
-        if (image != null) {
-            titleButton.setIcon(new javax.swing.ImageIcon(image));
-        }
-        */
+        titleButton.setFont(new Font(getFont().getFontName(), Font.BOLD, getFont().getSize() + 2));
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
                 if (!SectionPanel.this.isActive()) {
@@ -102,13 +135,29 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         if(autoExpand) {
             open();
         }
-        titleButton.addFocusListener(sectionFocusListener);
+        if (addFocusListenerToButton){
+            titleButton.addFocusListener(sectionFocusListener);
+        }
+    }
+    
+    
+    /**
+     * Constructs a new section panel.
+     * @param sectionView the section view for this panel
+     * @param node the node for this panel
+     * @param title the title for this panel
+     * @param key the key that identifies the panel
+     * @param autoExpand defines whether the section should be expanded by default
+     *
+     */
+    public SectionPanel(SectionView sectionView, Node node, String title, Object key, boolean autoExpand) {
+        this(sectionView, node, title, key, autoExpand, true);
     }
     
     public SectionView getSectionView() {
         return sectionView;
     }
-
+    
     protected void openInnerPanel() {
         if (toolBarDesignEditor == null) {
             toolBarDesignEditor = sectionView.getToolBarDesignEditor();
@@ -142,13 +191,13 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         add(innerPanel, gridBagConstraints);
         Utils.scrollToVisible(this);
         innerPanel.setBackground(
-            active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
+                active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
     }
-
+    
     protected SectionInnerPanel createInnerpanel() {
         return sectionView.getInnerPanelFactory().createInnerPanel(key);
     }
-
+    
     protected void closeInnerPanel() {
         if (innerPanel != null) {
             innerPanel.removeFocusListener(sectionFocusListener);
@@ -158,23 +207,23 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         fillerLine.setVisible(false);
         fillerEnd.setVisible(false);
     }
-
+    
     public String getTitle() {
         return title;
     }
-
+    
     public void setTitle(String title) {
         titleButton.setText(title);
         this.title = title;
     }
-
+    
     /**
      * Method from NodeSectionPanel interface
      */
     public Node getNode() {
         return node;
     }
-
+    
     /**
      * Method from NodeSectionPanel interface
      */
@@ -182,24 +231,24 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         foldButton.setSelected(true);
         openInnerPanel();
     }
-
+    
     /**
      * Method from NodeSectionPanel interface
      */
     public void scroll() {
         Utils.scrollToVisible(this);
     }
-
+    
     /**
      * Method from NodeSectionPanel interface
      */
     public void setActive(boolean active) {
         //System.out.println("setActive = "+active +":"+node.getDisplayName());
         titlePanel.setBackground(
-            active ? SectionVisualTheme.getSectionHeaderActiveColor() : SectionVisualTheme.getSectionHeaderColor());
+                active ? SectionVisualTheme.getSectionHeaderActiveColor() : SectionVisualTheme.getSectionHeaderColor());
         //headerSeparator.setVisible(!active);
         if (innerPanel!=null) innerPanel.setBackground(
-            active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
+                active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
         if (headerButtons!=null) {
             for (int i=0;i<headerButtons.length;i++) headerButtons[i].setEnabled(active);
         }
@@ -210,20 +259,21 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         }
         this.active = active;
     }
-
+    
     /**
      * Method from NodeSectionPanel interface
      */
     public boolean isActive() {
         return active;
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         foldButton = new javax.swing.JToggleButton();
@@ -294,7 +344,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
 
         titlePanel.setLayout(new java.awt.BorderLayout());
 
-        titleButton.setFont(new java.awt.Font("Dialog", 1, 14));
         titleButton.setBorderPainted(false);
         titleButton.setContentAreaFilled(false);
         titleButton.setFocusPainted(false);
@@ -316,8 +365,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(titlePanel, gridBagConstraints);
 
-    }//GEN-END:initComponents
-
+    }// </editor-fold>//GEN-END:initComponents
+    
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
         if (!foldButton.isSelected()) {
             openInnerPanel();
@@ -331,7 +380,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         if (!isActive()) setActive(true);
         
     }//GEN-LAST:event_titleButtonActionPerformed
-
+    
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
         if (foldButton.isSelected()) {
             openInnerPanel();
@@ -339,8 +388,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
             closeInnerPanel();
         }
     }//GEN-LAST:event_foldButtonActionPerformed
-
-
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel actionPanel;
     private javax.swing.JSeparator fillerEnd;
@@ -350,30 +399,30 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private javax.swing.JButton titleButton;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
-
+    
     public void setKey(Object key) {
         this.key = key;
     }
-
+    
     public Object getKey() {
         return key;
     }
-
+    
     public JComponent getErrorComponent(String errorId) {
         if (innerPanel != null) {
             return innerPanel.getErrorComponent(errorId);
         }
         return null;
     }
-
+    
     public SectionInnerPanel getInnerPanel() {
         return innerPanel;
     }
-
+    
     public void setIndex(int index) {
         this.index = index;
     }
-
+    
     public int getIndex() {
         return index;
     }
@@ -384,6 +433,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         headerButtons = new HeaderButton[actions.length];
         for (int i=0;i<actions.length;i++) {
             headerButtons[i] = new HeaderButton(this,actions[i]);
+            headerButtons[i].setOpaque(false);
             actionPanel.add(headerButtons[i]);
         }
     }
@@ -403,15 +453,15 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     protected JToggleButton getFoldButton() {
         return foldButton;
     }
-
+    
     protected JSeparator getHeaderSeparator() {
         return headerSeparator;
     }
-
+    
     protected JButton getTitleButton() {
         return titleButton;
     }
-
+    
     public static class HeaderButton extends javax.swing.JButton {
         private SectionPanel panel;
         public HeaderButton(SectionPanel panel, Action action) {
@@ -419,7 +469,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
             this.panel=panel;
             setMargin(new java.awt.Insets(0,14,0,14));
             setEnabled(false);
-        }     
+        }
         public SectionPanel getSectionPanel() {
             return panel;
         }

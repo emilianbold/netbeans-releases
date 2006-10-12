@@ -19,13 +19,15 @@
 package org.netbeans.modules.xml.multiview.ui;
 
 /**
+ * This class represents a panel for a <code>SectionNodeView</code>.
+ * 
  * @author pfiala
  */
 public abstract class SectionNodeInnerPanel extends SectionInnerPanel {
     /**
-     * Constructor that takes the enclosing SectionView object as its argument
+     * Constructor that takes the enclosing SectionNodeView object as its argument
      *
-     * @param sectionNodeView enclosing SectionView object
+     * @param sectionNodeView enclosing SectionNodeView object
      */
     public SectionNodeInnerPanel(SectionNodeView sectionNodeView) {
         super(sectionNodeView);

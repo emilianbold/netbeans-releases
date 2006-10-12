@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
 
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-xml-schema-services-SchemaMIMEResolver.xml" url="nbres:/org/netbeans/modules/xml/schema/resources/schema-mime-resolver.xml">
+            <file name="org-netbeans-modules-xml-schema-services-SchemaMIMEResolver.xml" url="schema-mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/xmlSchemaObject.gif" />
             </file>

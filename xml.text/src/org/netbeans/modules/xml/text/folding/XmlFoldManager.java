@@ -141,27 +141,27 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
     
     public void documentElementAdded(DocumentElement de) {
         if(debug) System.out.println("[xmlfolding] ADDED " + de);
-        checkElement2FoldConsistency(de);
+        checkElement2FoldConsistency(de, false);
     }
     
     public void documentElementRemoved(DocumentElement de) {
         if(debug) System.out.println("[xmlfolding] REMOVED " + de);
         if(!de.equals(model.getRootElement()) && !de.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) changes.add(new DocumentModelChangeInfo(de, DocumentModelChangeInfo.ELEMENT_REMOVED));
-        checkElement2FoldConsistency(de);
+        checkElement2FoldConsistency(de, true);
         restartTimer();
     }
     
     public void documentElementChanged(DocumentElement de) {
         if(debug) System.out.println("[xmlfolding] CONTENT UPDATE " + de);
-        checkElement2FoldConsistency(de);
+        checkElement2FoldConsistency(de, true);
     }
     
-    public void checkElement2FoldConsistency(DocumentElement de) {
+    public void checkElement2FoldConsistency(DocumentElement de, boolean removed) {
         //get leaf element for the changed position (got from the changed element)
         //this is has to be done since I need to recursivelly check all element's
         //ancestor, which cannot be done if the element was removed (in such situation
         //I cannot get parent).
-        DocumentElement tested = model.getLeafElementForOffset(de.getStartOffset());
+        DocumentElement tested = removed ? model.getLeafElementForOffset(de.getStartOffset()) : de;
         boolean restartTimer = false;
         while(tested != null) {
             //do not check root element

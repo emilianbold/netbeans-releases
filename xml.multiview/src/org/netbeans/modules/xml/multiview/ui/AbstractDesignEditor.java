@@ -70,7 +70,9 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         map.put(ACTION_INVOKE_HELP, helpAction);
         
         SaveAction act = (SaveAction) org.openide.util.actions.SystemAction.get(SaveAction.class);
-        KeyStroke stroke = KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK);
+        KeyStroke stroke = KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S,
+                java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
         map.put("save", act); //NOI18N  
        

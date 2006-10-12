@@ -51,5 +51,7 @@ class ValueResultItem extends XMLResultItem {
     public String getReplacementText(int modifiers) {
         return replacementText;
     }
+    
+    Color getPaintColor() { return Color.blue; }
 
 }

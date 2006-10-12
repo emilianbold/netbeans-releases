@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<definitions name="GoogleFlow"
+    targetNamespace="urn:GoogleSearch"
+    xmlns:tns="urn:GoogleSearch"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:plnk="http://schemas.xmlsoap.org/ws/2004/03/partner-link/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns1="urn:GoogleSearch"
+    >
+    
+    <import namespace="urn:GoogleSearch" location="GoogleSearch.wsdl"/>
+    
+   
+    
+    <!-- portType implemented by the GoogleFlow BPEL process -->
+    <portType name="GoogleFlow">
+        <operation name="initiate">
+            <input message="tns1:doGoogleSearch"/>
+        </operation>
+    </portType>
+    
+    <!-- portType implemented by the requester of GoogleFlow BPEL process 
+    for asynchronous callback purposes
+    -->
+    <portType name="GoogleFlowCallback">
+        <operation name="onResult">
+            <input message="tns1:doGoogleSearchResponse"/>
+        </operation>
+    </portType>
+    
+    
+    <!--
+    PartnerLinkType definition
+    -->
+    
+    <!-- the GoogleFlow partnerLinkType binds the service and
+    requestor portType into an asynchronous conversation.
+    -->
+    <plnk:partnerLinkType name="GoogleFlow">
+        <plnk:role name="GoogleFlowService" portType="tns:GoogleFlow"/>
+        <plnk:role name="GoogleFlowRequester" portType="tns:GoogleFlowCallback"/>      		
+    </plnk:partnerLinkType>   
+</definitions>

@@ -25,7 +25,10 @@ import java.awt.*;
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.multiview.cookies.SectionFocusCookie;
 import org.netbeans.modules.xml.multiview.Utils;
+
 /**
+ * This class acts as a container for <code>NodeSectionPanel</code>s. Generally
+ * used with {@link org.netbeans.modules.xml.multiview.ui.SectionPanel}.
  *
  * @author mkuchtiak
  */
@@ -37,13 +40,20 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
     private NodeSectionPanel activePanel;
     private InnerPanelFactory factory = null;
     boolean sectionSelected;
-
-
+    
+    
+    /**
+     * Constructs a new SectionView.
+     * @param factory the factory for creating inner panels.
+     */ 
     public SectionView(InnerPanelFactory factory) {
         super();
         this.factory=factory;
     }
     
+    /**
+     * Constructs a new SectionView.
+     */
     public SectionView() {
         super();
     }
@@ -59,9 +69,12 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         scrollPane.getVerticalScrollBar().setUnitIncrement(15);
         filler = new JPanel();
         filler.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        add (scrollPane, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
     }
     
+    /**
+     * Opens and activates the given <code>panel</code>.
+     */
     public boolean focusSection(NodeSectionPanel panel) {
         panel.open();
         openParents((JPanel)panel);
@@ -70,7 +83,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         panel.setActive(true);
         return true;
     }
-
+    
     protected void openSection(Node node){
         NodeSectionPanel panel = (NodeSectionPanel) map.get(node);
         if (panel != null) {
@@ -102,10 +115,21 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         map.remove(key);
     }
     
+    /**
+     * Gets the corresponding <code>NodeSectionPanel</code> for the
+     * given <code>key</code>.
+     * @return the corresponding panel or null.
+     */
     public NodeSectionPanel getSection(Node key){
         return (NodeSectionPanel)map.get(key);
     }
     
+    /**
+     * Adds a section for this.
+     * @param section the section to be added.
+     * @param open indicates whether given <code>section</code>
+     * should be opened.
+     */
     public void addSection(NodeSectionPanel section, boolean open) {
         addSection(section);
         if (open) {
@@ -115,6 +139,10 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         }
     }
     
+    /**
+     * Adds a section for this.
+     * @param section the section to be added.
+     */
     public void addSection(NodeSectionPanel section) {
         scrollPanel.remove(filler);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -137,7 +165,9 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         mapSection(section.getNode(), section);
         sectionCount++;
     }
-    /** Removing section and its corresponding node
+    /**
+     * Removes given <code>node</code> and its corresponding
+     * section.
      */
     public void removeSection(Node node) {
         NodeSectionPanel section = getSection(node);
@@ -164,13 +194,16 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         }
     }
     
+    /**
+     * Removes given <code>panel</code> and moves up remaining panels.
+     */
     public void removeSection(NodeSectionPanel panel){
         int panelIndex = panel.getIndex();
         scrollPanel.remove((JPanel)panel);
         
         // the rest components have to be moved up
         java.awt.Component[] components = scrollPanel.getComponents();
-        java.util.AbstractList removedPanels = new java.util.ArrayList(); 
+        java.util.AbstractList removedPanels = new java.util.ArrayList();
         for (int i=0;i<components.length;i++) {
             if (components[i] instanceof NodeSectionPanel) {
                 NodeSectionPanel pan = (NodeSectionPanel)components[i];
@@ -196,7 +229,10 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         deleteSection(panel.getNode());
         sectionCount--;
     }
-
+    
+    /**
+     * Sets given <code>activePanel</code> as the currently active panel.
+     */
     public void setActivePanel(NodeSectionPanel activePanel) {
         if (this.activePanel!=null && this.activePanel!=activePanel) {
             this.activePanel.setActive(false);
@@ -215,6 +251,10 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         setManagerSelection(new Node[]{node});
     }
     
+    /**
+     * Opens the panels that are associated with the given
+     * <code>nodes</code>.
+     */
     public void showSelection(org.openide.nodes.Node[] nodes) {
         if (sectionSelected) {
             sectionSelected=false;
@@ -233,6 +273,10 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         return null;
     }
     
+    /**
+     * @return panel with the given <code>key</code> or null
+     * if no matching panel was found.
+     */
     public SectionPanel findSectionPanel(Object key) {
         java.util.Enumeration en = map.keys();
         while (en.hasMoreElements()) {
@@ -255,6 +299,9 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         this.factory=factory;
     }
     
+    /**
+     * Opens the panel identified by given <code>key</code>.
+     */
     public void openPanel(Object key) {
         if (key!=null) {
             SectionPanel panel = findSectionPanel(key);
@@ -271,14 +318,14 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         ToolBarDesignEditor toolBarDesignEditor = getToolBarDesignEditor();
         return toolBarDesignEditor == null ? null : toolBarDesignEditor.getLastActive();
     }
-
+    
     private void setLastActive(Object key) {
         ToolBarDesignEditor toolBarDesignEditor = getToolBarDesignEditor();
         if(toolBarDesignEditor != null) {
             toolBarDesignEditor.setLastActive(key);
         }
     }
-
+    
     protected ToolBarDesignEditor getToolBarDesignEditor() {
         Container parent = getParent();
         return parent == null ? null : (ToolBarDesignEditor) parent.getParent();

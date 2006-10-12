@@ -23,7 +23,8 @@ import javax.swing.UIManager;
 import org.netbeans.modules.xml.multiview.Error;
 //import org.netbeans.modules.xml.multiview.cookies.ErrorComponentContainer;
 
-/** ErrorPanel.java
+/** 
+ * A panel for error messages.
  *
  * Created on November 19, 2004, 10:44 AM
  * @author  mkuchtiak

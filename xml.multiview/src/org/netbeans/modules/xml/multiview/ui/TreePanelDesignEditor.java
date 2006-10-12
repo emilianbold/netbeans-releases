@@ -96,8 +96,6 @@ public class TreePanelDesignEditor extends AbstractDesignEditor {
             structureView = createStructureComponent();
             structureView.getAccessibleContext().setAccessibleName("ACS_StructureView");
             structureView.getAccessibleContext().setAccessibleDescription("ACSD_StructureView");
-            structureView.setMinimumSize(new Dimension(100,100));
-            //structureView.setPreferredSize(new Dimension(DEFAULT_STRUCTURE_WIDTH ,DEFAULT_STRUCTURE_HEIGHT ));
         }
         return structureView;
     }

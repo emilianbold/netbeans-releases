@@ -28,11 +28,7 @@ import javax.swing.text.Document;
 import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-
-import javax.swing.event.*;
 import javax.swing.*;
-
-import org.openide.*;
 import org.openide.awt.StatusDisplayer;
 
 // we depend on NetBeans editor stuff
@@ -42,6 +38,7 @@ import org.netbeans.modules.editor.*;
 
 import org.netbeans.modules.xml.core.XMLDataObject;
 import org.netbeans.modules.xml.text.completion.NodeSelector;
+import org.netbeans.modules.xml.text.completion.XMLCompletion;
 
 
 /**
@@ -96,7 +93,12 @@ public class XMLKit extends UniKit implements org.openide.util.HelpCtx.Provider 
     
 
     public Completion createCompletion(ExtEditorUI extEditorUI) {
-        return new org.netbeans.modules.xml.text.completion.XMLCompletion(extEditorUI);
+        //return new org.netbeans.modules.xml.text.completion.XMLCompletion(extEditorUI);
+        return null;
+    }
+    
+    public Completion createCompletionForProvider(ExtEditorUI extEditorUI) {
+        return new XMLCompletion(extEditorUI);
     }
     
     public void install(JEditorPane c) {

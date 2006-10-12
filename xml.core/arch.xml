@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   This modules provide core functionality for XML. It exposes API to facilitate access to this functionality.
+   This modules provide core functionality for XML. It exposes a friend API <api group="java" name="XMLCoreAPI" type="export" category="friend" url="@TOP@index.html"/> to facilitate access to this functionality.
   </p>
  </answer>
 

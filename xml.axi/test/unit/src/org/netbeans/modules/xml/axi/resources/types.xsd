@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ 
+ $Id$
+-->
+
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:ns="http://xml.netbeans.org/examples/targetNS"
+    targetNamespace="http://xml.netbeans.org/examples/targetNS"
+    xmlns="http://xml.netbeans.org/examples/targetNS"
+    elementFormDefault="qualified">
+
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+            Purchase order schema for Example.com.
+            Copyright 2000 Example.com. All rights reserved.
+        </xsd:documentation>
+    </xsd:annotation>
+    
+    <xsd:group name="address-group">
+        <xsd:sequence>
+            <xsd:element name="name"   type="xsd:string"/>
+            <xsd:element name="street" type="xsd:string"/>
+            <xsd:element name="city"   type="xsd:string"/>
+            <xsd:element name="state"  type="xsd:string"/>
+            <xsd:element name="zip"    type="xsd:decimal"/>
+        </xsd:sequence>
+    </xsd:group>
+    
+    <xsd:attributeGroup name="address-attr-group">
+        <xsd:attribute name="country" type="xsd:NMTOKEN" fixed="US"/>
+        <xsd:attribute name="language" type="xsd:string" fixed="EN"/>
+    </xsd:attributeGroup>
+
+    <xsd:element name="purchaseOrder" type="PurchaseOrderType">
+        <xsd:annotation>
+            <xsd:appinfo>shipTo</xsd:appinfo>
+            <xsd:appinfo>billTo</xsd:appinfo>
+            <xsd:appinfo>singleUSAddress</xsd:appinfo>
+            <xsd:appinfo>comment</xsd:appinfo>
+            <xsd:appinfo>items</xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+    
+    <xsd:element name="AnotherElement" type="xsd:date"/>    
+
+    <xsd:group name="shipAndBill">
+        <xsd:sequence>
+            <xsd:element name="shipTo" type="USAddress">
+            </xsd:element>    
+            <xsd:element name="billTo" type="USAddress"/>
+        </xsd:sequence>
+    </xsd:group>    
+    
+    <xsd:element name="comment" type="FlightNumberType"/>
+
+    <xsd:complexType name="PurchaseOrderType">
+        <xsd:annotation>
+            <xsd:documentation></xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:choice>
+                <xsd:group   ref="shipAndBill"/>
+                <xsd:element name="singleUSAddress" type="USAddress"/>
+            </xsd:choice>
+            <xsd:element ref="comment" minOccurs="0"/>
+            <xsd:element name="items"  type="Items"/>
+        </xsd:sequence>
+        <xsd:attribute name="orderDate" type="xsd:date"/>
+        <xsd:attribute name="shipDate" use="optional">
+            <xsd:simpleType>
+                <xsd:restriction base='myDate'>
+                    <xsd:enumeration value='1066'/>
+                </xsd:restriction>
+            </xsd:simpleType>        
+        </xsd:attribute>
+        <xsd:attribute name="backOrder" use="optional">
+            <xsd:simpleType>
+                <xsd:list itemType='ListOfMyDate'/>
+            </xsd:simpleType>            
+        </xsd:attribute>        
+        <xsd:attribute name="remarks" use="optional">
+          <xsd:simpleType>
+            <xsd:union memberTypes="xsd:string xsd:time"/>
+          </xsd:simpleType>
+        </xsd:attribute>   
+        <xsd:attribute name="remarks2" use="optional">
+          <xsd:simpleType>
+            <xsd:union>
+              <xsd:simpleType>
+                <xsd:restriction base='xsd:nonNegativeInteger'/>
+              </xsd:simpleType>
+              <xsd:simpleType>
+                <xsd:restriction base='xsd:string'>
+                  <xsd:enumeration value='unbounded'/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:union>
+          </xsd:simpleType>
+        </xsd:attribute>	
+    </xsd:complexType>
+
+    <xsd:complexType name="USAddress">
+        <xsd:group ref="address-group"/>
+        <xsd:attributeGroup ref="address-attr-group"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="Items">
+        <xsd:sequence>
+            <xsd:element name="item" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="productName" type="xsd:string"/>
+                        <xsd:element name="quantity">
+                            <xsd:simpleType>
+                                <xsd:restriction base="xsd:positiveInteger">
+                                    <xsd:maxExclusive value="100"/>
+                                </xsd:restriction>
+                            </xsd:simpleType>
+                        </xsd:element>
+                        <xsd:element name="USPrice"  type="xsd:decimal"/>
+                        <xsd:element ref="comment"   minOccurs="0"/>
+                        <xsd:element name="shipDate" type="xsd:date" minOccurs="0"/>
+                    </xsd:sequence>
+                    <xsd:attribute name="partNum" type="SKU" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Stock Keeping Unit, a code for identifying products -->
+    <xsd:simpleType name="myDate">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(0[1-9]|1[0-2])[0-9][0-9]"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <!-- Stock Keeping Unit, a code for identifying products -->
+    <xsd:simpleType name="myDate1">
+        <xsd:restriction base="xsd:date">
+            <xsd:pattern value="\d{3}-[A-Z]{2}"/>
+        </xsd:restriction>
+    </xsd:simpleType>    
+    
+    <!-- Stock Keeping Unit, a code for identifying products -->
+    <xsd:simpleType name="SKU">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\d{3}-[A-Z]{2}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="ListOfMyDate">
+        <xsd:restriction base='myDate'>
+            <xsd:enumeration value='1266'/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="Cost">
+        <xsd:restriction base='xsd:decimal'>
+            <xsd:enumeration value='100.00'/>
+        </xsd:restriction>
+    </xsd:simpleType>    
+    
+    <xsd:simpleType name="UpperCaseAlphaLength1to2">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">Used for an Alpha String, length 2 (for letter codes)</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[A-Z]{1,4}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:simpleType name="FlightNumberType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">Identifies a flight number (1 to 4 numbers followed by optional uppercase A - Z, which specifies an operational suffix) or OPEN or ARNK.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:union>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:pattern value="[0-9]{1,4}[A-Z]?"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+            <xsd:simpleType>
+                <xsd:restriction base="UpperCaseAlphaLength1to2">
+                    <xsd:enumeration value="OPEN">
+                        <xsd:annotation>
+                            <xsd:documentation xml:lang="en">Used in lieu of a flight number when a specific flight number is unknown but service is present.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:enumeration>
+                    <xsd:enumeration value="ARNK">
+                        <xsd:annotation>
+                            <xsd:documentation xml:lang="en">Used in lieu of a flight number when surface transportation is used when there is a break in the continuity of the flight itinerary.</xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:enumeration>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:union>
+    </xsd:simpleType>    
+</xsd:schema>
+

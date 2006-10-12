@@ -61,7 +61,6 @@ Microsystems, Inc. All Rights Reserved.
         <module name="projects/projectui" testtypes="unit" attributes="stable"/>
         <module name="projects/libraries" testtypes="unit" attributes="stable"/>
         <module name="refactoring" testtypes="unit" attributes="full"/>
-        <module name="web/freeform" testtypes="unit" attributes="stable"/>
         <module name="core/output2" testtypes="unit" attributes="stable"/>
         <module name="core/favorites" testtypes="unit" attributes="stable"/>
         <module name="core/settings" testtypes="unit" attributes="stable"/>
@@ -69,6 +68,8 @@ Microsystems, Inc. All Rights Reserved.
         <module name="core/javahelp" testtypes="unit" attributes="stable"/>
         <module name="autoupdate" testtypes="unit" attributes="stable"/>
         <module name="diff" testtypes="unit" attributes="stable"/>
+        
+        
         <!-- J2EE team -->
         <module name="j2eeserver" testtypes="unit" attributes="stable"/>
         <module name="web/webapi" testtypes="unit" attributes="stable"/>
@@ -77,12 +78,14 @@ Microsystems, Inc. All Rights Reserved.
         <module name="db" testtypes="unit" attributes="stable"/>
         <module name="extbrowser" testtypes="unit" attributes="stable"/>
         <module name="html" testtypes="unit" attributes="stable"/>
+        <module name="httpserver" testtypes="unit" attributes="stable"/>
         <module name="xml/multiview" testtypes="unit" attributes="stable"/>
         <module name="debuggerjpda" testtypes="unit" attributes="stable"/>
         <module name="j2ee/ddapi" testtypes="unit" attributes="stable"/>
         <!--web/core test for DDDataObject was moved to j2ee/ddloaders -->
         <module name="j2ee/ddloaders" testtypes="unit" attributes="stable"/>
         <module name="j2ee/ejbfreeform" testtypes="unit" attributes="stable"/>
+        <module name="web/freeform" testtypes="unit" attributes="stable"/>
         <module name="web/jspparser" testtypes="unit" attributes="stable"/>
         <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
         <!--<module name="schema2beans" testtypes="unit" attributes="stable"/>-->
@@ -90,19 +93,26 @@ Microsystems, Inc. All Rights Reserved.
         <module name="html/editor/lib" testtypes="unit" attributes="stable"/>
         <module name="html/editor" testtypes="unit" attributes="stable"/>
         <module name="xml/tageditorsupport" testtypes="unit" attributes="stable"/>
-	<module name="web/jspsyntax" testtypes="unit" attributes="stable"/>
-	<module name="web/project" testtypes="unit" attributes="stable"/>
-
+        <module name="web/jspsyntax" testtypes="unit" attributes="stable"/>
+        <module name="web/project" testtypes="unit" attributes="stable"/>
+        <module name="j2ee/persistence" testtypes="unit" attributes="stable"/>
+        <module name="j2ee/ejbjarproject" testtypes="unit" attributes="stable"/>
+        <module name="db/derby" testtypes="unit" attributes="stable"/>
+        <module name="db/core" testtypes="unit" attributes="stable"/>
+        <module name="j2ee/earproject" testtypes="unit" attributes="stable"/>
+        <module name="j2ee/clientproject" testtypes="unit" attributes="stable"/>
+        <module name="j2ee/metadata" testtypes="unit" attributes="stable"/>
+        
         <!-- these two need depend on each other -->
         <module name="openide/execution" testtypes="unit" attributes="stable"/>
         <module name="core/execution" testtypes="unit" attributes="stable"/>
+        <!-- other candidate modules - J2EE team: httpserver web/core xml/api xml/catalog xml/core xml/schema xml/tax/lib xml/xsl -->
         
         
         <module name="ide/launcher/upgrade" testtypes="unit" attributes="stable" />
         
         <!-- does not run: core/multiview -->
-        <!-- other candidate modules in current default moduleconfig: debuggercore debuggerjpda editor editor/fold editor/util httpserver mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks web/core web/jspparser xml/api xml/core xml/schema xml/text-edit xml/xsl -->
-        
+        <!-- other candidate modules in current default moduleconfig (except J2EE team): debuggercore debuggerjpda editor editor/fold editor/util mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks -->
     </config>
     
   <config name="unit-nb-nbm">
@@ -165,8 +175,8 @@ Microsystems, Inc. All Rights Reserved.
   
   <config name="qa-j2ee-functional">
  	<module name="j2ee"   testtypes="qa-functional"  attributes="validation"/>  
-        <module name="serverplugins/jboss4" testtypes="qa-functional" attributes="dev-api"/>
-        <module name="serverplugins/sun/appsrv81" testtypes="qa-functional" attributes="dev-api"/>
+        <!-- <module name="serverplugins/jboss4" testtypes="qa-functional" attributes="dev-api"/>
+        <module name="serverplugins/sun/appsrv81" testtypes="qa-functional" attributes="dev-api"/> -->
   </config>
   
   <!-- validation suites for Release Engineering -->

@@ -139,7 +139,18 @@ Microsystems, Inc. All Rights Reserved.
                   <name>qa-functional</name>
               </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.identity.profile.ui</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>com.sun.rave.project.navigationloader</friend>
+                <friend>org.netbeans.modules.e2e.end2end</friend>
+                <friend>org.netbeans.modules.e2e.jsr172</friend>
+                <friend>org.netbeans.modules.j2ee.persistence</friend>
+                <friend>org.netbeans.modules.j2ee.ddloaders</friend>
+                <package>org.netbeans.modules.xml.multiview</package>
+                <package>org.netbeans.modules.xml.multiview.cookies</package>
+                <package>org.netbeans.modules.xml.multiview.ui</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

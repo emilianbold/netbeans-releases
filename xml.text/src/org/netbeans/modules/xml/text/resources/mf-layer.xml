@@ -31,15 +31,8 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="x-ant+xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
-                <folder name="x-dd-servlet2.4">
-                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
-                </folder>
                 <folder name="x-dd-sjsas-servlet2.41">
                     <!-- sun-web.xml -->
-                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
-                </folder>
-                <folder name="x-dd-ejbjar2.1">
-                    <!-- ejb-jar.xml -->
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
             </folder>
@@ -78,10 +71,14 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Services -->
 
     <folder name="Editors">
-
         <folder name="text">
             <folder name="xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.resources.Bundle"/>
+                
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-xml-text-completion-XMLCompletionProvider.instance"/>
+                </folder>
+                
                 <folder name="NetBeans">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="XML-fontsColors.xml">
@@ -89,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                     </folder>
                 </folder>
-                
+                                
                 <folder name="DocumentModel">
                     <file name="org-netbeans-modules-xml-text-structure-XMLDocumentModelProvider.instance"/>
                 </folder>

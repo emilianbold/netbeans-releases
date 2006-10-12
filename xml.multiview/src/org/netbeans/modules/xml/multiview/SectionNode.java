@@ -33,7 +33,15 @@ import java.util.LinkedList;
 import java.awt.*;
 
 /**
+ * This class represents a section node. In other words, this class represents
+ * a node that in turn represents a section.
+ *
  * @author pfiala
+ *
+ * @see org.netbeans.modules.xml.multiview.ui.SectionNodePanel
+ * @see org.netbeans.modules.xml.multiview.ui.SectionNodeView
+ * @see org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel
+ *
  */
 public class SectionNode extends AbstractNode {
 
@@ -47,9 +55,10 @@ public class SectionNode extends AbstractNode {
     /**
      * Create a new section node with a given child set.
      *
-     * @param children
-     * @param key
-     * @param title
+     * @param children the children for this node.
+     * @param key the key by which this node is identified
+     * @param title the title for the node
+     * @param iconBase base resource for icons (without initial slash)
      */
     protected SectionNode(SectionNodeView sectionNodeView, Children children, Object key, String title,
                                                          String iconBase) {
@@ -74,6 +83,10 @@ public class SectionNode extends AbstractNode {
         getChildren().add(new Node[]{node});
     }
 
+    /**
+     * Creates an inner panel for this and populates
+     * it with the children of this node (if there are any).
+     */
     public SectionNodeInnerPanel createInnerPanel() {
         Children children = getChildren();
         if (children.getNodesCount() == 0) {
@@ -85,12 +98,22 @@ public class SectionNode extends AbstractNode {
         }
     }
 
+    /**
+     * Populates the associated inner panel with the children
+     * of this.
+     */
     public void populateBoxPanel() {
         SectionInnerPanel innerPanel = getSectionNodePanel().getInnerPanel();
         if (innerPanel instanceof BoxPanel) {
             populateBoxPanel((BoxPanel) innerPanel);
         }
     }
+    
+    /**
+     * Populates the given box panel with the children
+     * of this.
+     * @param boxPanel the panel to be populated
+     */
     public void populateBoxPanel(BoxPanel boxPanel) {
         List nodeList = new LinkedList();
         SectionInnerPanel nodeInnerPanel = createNodeInnerPanel();
@@ -121,6 +144,10 @@ public class SectionNode extends AbstractNode {
         return true;
     }
 
+    /**
+     * Creates appropriate SectionNodeInnerPanel. Override in 
+     * subclasses, default implementation just returns null.
+     */
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         return null;
     }
@@ -176,6 +203,11 @@ public class SectionNode extends AbstractNode {
         }
     }
 
+    
+    /**
+     * Recursively refreshes view of the associated inner panel of this node and 
+     * all its children nodes.
+     */
     public void refreshSubtree() {
         if (sectionPanel != null) {
             SectionInnerPanel innerPanel = sectionPanel.getInnerPanel();
@@ -195,6 +227,12 @@ public class SectionNode extends AbstractNode {
         }
     }
 
+    /**
+     * Gets the node associated with the given <code>element</code>. Searches
+     * recursively from the children nodes. 
+     * @param element the object representing the key of the node that we're looking
+     * for
+     */
     public SectionNode getNodeForElement(Object element) {
         if (key.equals(element)) {
             return this;

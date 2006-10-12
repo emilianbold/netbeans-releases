@@ -23,7 +23,10 @@ import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 
 import javax.swing.*;
 
-/** LinkButton.java
+/** 
+ * A button that represents a link.
+ *
+ *@see {@org.netbeans.modules.xml.multiview.cookies.LinkCookie}.
  *
  * Created on November 19, 2004, 8:06 AM
  * @author mkuchtiak

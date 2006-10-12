@@ -613,6 +613,17 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 case '\'':
                     retVal = COMPLETION_POPUP;
                     break;
+                case '>':
+                    dotPos = target.getCaret().getDot();
+                    try {
+                        SyntaxElement sel = getElementChain(dotPos);
+                        if(sel != null && sel instanceof StartTag) {
+                            retVal = COMPLETION_POPUP;
+                        }
+                    } catch (BadLocationException e) {
+                        //ignore
+                    }
+                    break;
             }
             if (retVal == COMPLETION_POPUP) requestedAutoCompletion = true;
             return retVal;
@@ -666,7 +677,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
         if (token != null &&
                 token.getTokenID() == XMLTokenIDs.TAG &&
                 token.getImage().endsWith(">")) token = token.getPrevious();
-
+        
         if(tokenOnOffset == null) return null;
         
         //declaration matching e.g. (<!DOCTYPE tutorial SYSTEM "newXMLWizard.dtd">)
@@ -820,7 +831,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                                 //get offset of previous token: < or </
                                 start = token.getOffset();
                                 end = token.getOffset()+token.getImage().length();
-                                //include the closing > token into the block if it follows the opentag token 
+                                //include the closing > token into the block if it follows the opentag token
                                 TokenItem next = token.getNext();
                                 if(next != null && next.getTokenID() == XMLTokenIDs.TAG && ">".equals(next.getImage()))
                                     end++;
@@ -861,7 +872,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                                 poss--;
                         } else{
                             if (token.getImage().substring(1).toLowerCase().equals(tag)
-                                && !isSingletonTag(token))
+                            && !isSingletonTag(token))
                                 poss++;
                         }
                     }
@@ -869,8 +880,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 }
             }
         }
-
-        return null;
+        
+        return super.findMatchingBlock(offset, simpleSearch);
     }
     
     /** Finds out whether the given tagTokenItem is a part of a singleton tag (e.g. <div style=""/>).
@@ -890,7 +901,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             //(just to prevent long loop in case the tag is not closed)
             if(ti.getTokenID() == XMLTokenIDs.TEXT) break;
             
-     
+            
             ti = ti.getNext();
         }
         return false;

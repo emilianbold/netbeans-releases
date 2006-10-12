@@ -178,6 +178,15 @@ Microsystems, Inc. All Rights Reserved.
                     	<release-version>1</release-version>
                     </run-dependency>
                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.completion</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6.1</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
           <test-dependencies>
               <test-type>
@@ -227,7 +236,9 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
+                <friend>org.netbeans.modules.xml.retriever</friend>
                 <package>org.netbeans.modules.xml.text.api</package>
+                <package>org.netbeans.modules.xml.text.syntax</package>
             </friend-packages>
         </data>
     </configuration>

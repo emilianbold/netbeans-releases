@@ -20,6 +20,7 @@
 package org.netbeans.modules.xml.multiview.ui;
 
 // Swing
+import java.awt.Font;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.JButton;
@@ -55,6 +56,7 @@ public class DefaultTablePanel extends javax.swing.JPanel {
         this.model=model;
         this.reordable=reordable;
         initComponents();
+        jTable1.setModel(model);
 
         /* accomodate row height so that characters can fit: */
         java.awt.Component cellSample
@@ -70,7 +72,6 @@ public class DefaultTablePanel extends javax.swing.JPanel {
         jTable1.setRowHeight(Math.max(16, rowHeight));
 
         jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        jTable1.setModel(model);
         javax.swing.table.JTableHeader header = jTable1.getTableHeader();
         add(header, java.awt.BorderLayout.NORTH);
         
@@ -205,7 +206,8 @@ public class DefaultTablePanel extends javax.swing.JPanel {
     
     public void setTitle(String title) {
         javax.swing.JLabel label = new javax.swing.JLabel(title);
-        label.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+        label.setFont(new Font(getFont().getFontName(), Font.PLAIN, getFont().getSize() + 2));
+//        label.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
         label.setBorder(new javax.swing.border.EmptyBorder(5,5,5,0));
         add(label, java.awt.BorderLayout.NORTH);
     }

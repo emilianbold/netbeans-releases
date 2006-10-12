@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.0//EN' 'http://www.netbeans.org/dtds/filesystem-1_0.dtd'>
+
+<filesystem>
+      <folder name="WSDLEditor">
+		 <file name="soap.xsd" url="soap/soap.xsd">
+	    	<attr name="prefix" stringvalue="soap" />
+        </file>
+        
+		 <folder name ="Binding">
+	      <file name="SoapBinding">
+	        <attr name="xsdFileName" stringvalue="soap" />
+	        <attr name="element" stringvalue="binding" />
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/binding.png" /> 
+	      </file>
+	      </folder>
+     
+	     <folder name ="BindingOperation">
+	      <file name="SoapBindingOperation" >
+            <attr name="xsdFileName" stringvalue="soap" />
+	        <attr name="element" stringvalue="operation" />
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/operation.png" /> 
+	      </file>
+	      </folder>
+			
+		  <folder name ="BindingOperationInput">
+	      <file name="SoapBindingOperationInput">
+            <attr name="xsdFileName" stringvalue="soap" />
+	        <attr name="element" stringvalue="body" />
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/body.png" /> 
+	      </file>
+	      
+	       <file name="SoapBindingOperationInputHeader">
+            <attr name="xsdFileName" stringvalue="soap" />
+	        <attr name="element" stringvalue="header" />
+	        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+	        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/header.png" /> 
+	      </file>
+	      
+	      </folder>	        
+	      
+	      <folder name ="BindingOperationOutput">
+		      <file name="SoapBindingOperationOutput">
+	            <attr name="xsdFileName" stringvalue="soap" />
+		        <attr name="element" stringvalue="body" />
+		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/body.png" /> 
+		      </file>
+		      
+		       <file name="BindingOperationOutputHeader">
+               <attr name="xsdFileName" stringvalue="soap" />
+		        <attr name="element" stringvalue="header" />
+		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/header.png" /> 
+		      </file>
+		      
+		      
+	       </folder>	        
+	       
+	      <folder name ="BindingOperationFault">
+		      <file name="SoapBindingOperationFault">
+	            <attr name="xsdFileName" stringvalue="soap" />
+		        <attr name="element" stringvalue="fault" />
+		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/fault.png" /> 
+		      </file>
+		      
+	      </folder>
+	      	       
+	       <folder name ="ServicePort">
+		      <file name="SoapServicePort">
+	            <attr name="xsdFileName" stringvalue="soap" />
+		        <attr name="element" stringvalue="address" />
+		        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdlextui.resources.Bundle" />
+		        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdlextui/resources/soap/address.png" /> 
+		      </file>
+	      </folder>	        
+    </folder>
+  
+
+    <folder name="SeeBeyondJbiComponents">
+        <!-- JBI Component -->
+        <folder name="com.sun.httpsoapbc">
+            <attr name="id" stringvalue="com.sun.httpsoapbc-1.0-2"/>
+            <attr name="description" stringvalue="HTTP Soap Binding to send SOAP messages e.g. to and from BPEL service engine."/>
+            <attr name="type" stringvalue="Binding"/>
+            <file name="soap.binding-1.0">
+                <attr name="namespace" stringvalue="http://schemas.xmlsoap.org/wsdl/soap/"/>
+            </file>
+        </folder>
+    </folder>  
+</filesystem>

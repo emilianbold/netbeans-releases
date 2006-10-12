@@ -32,31 +32,36 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
 /**
- * XmlMultiviewElement.java
+ * An implementation of <code>MultiViewElement</code> that is specific to 
+ * <code>XmlMultiViewDataObject</code>. 
+ *
+ * @see org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor
  *
  * Created on October 5, 2004, 1:35 PM
  * @author  mkuchtiak
  */
 public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     private ToolBarDesignEditor editor;
-
+    
     private PropertyChangeListener listener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
                 Utils.runInAwtDispatchThread(new Runnable() {
                     public void run() {
-                        callback.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
+                        if (null != callback){
+                            callback.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
+                        }
                     }
                 });
             }
         }
     };
-
+    
     public ToolBarMultiViewElement(final XmlMultiViewDataObject dObj) {
         super(dObj);
         dObj.addPropertyChangeListener(WeakListeners.propertyChange(listener, dObj));
     }
-
+    
     protected void setVisualEditor(ToolBarDesignEditor editor) {
         this.editor=editor;
     }
@@ -68,7 +73,7 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
             return super.canCloseElement();
         }
     }
-
+    
     private boolean editorValidate() {
         try {
             editor.fireVetoableChange(ToolBarDesignEditor.PROPERTY_FLUSH_DATA, this, null);
@@ -77,9 +82,9 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
             return false;
         }
     }
-
+    
     public void componentActivated() {
-       editor.componentActivated();
+        editor.componentActivated();
     }
     
     public void componentClosed() {
@@ -120,7 +125,7 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
         return editor;
     }
     /** Enable to get the SectionView included in this MultiView Element
-     */ 
+     */
     public abstract SectionView getSectionView();
-
+    
 }

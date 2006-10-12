@@ -88,39 +88,6 @@ public class XMLFormatterTest extends NbTestCase {
         testReformat("netbeans_build.xml");
     }
     
-    public void testSmartEnterSample1() throws Exception{
-        testSmartEnter("test1");
-    }
-    
-    public void testSmartEnterSample2() throws Exception{
-        testSmartEnter("test2");
-    }
-    
-    private void testSmartEnter(String testFileName) throws Exception {
-        System.out.println("testSmartEnter(" + testFileName + ")");
-        XMLFormatter formatter = new XMLFormatter(XMLKit.class);
-        BaseDocument doc = createEmptyBaseDocument();
-        XMLSyntaxSupport sup = new XMLSyntaxSupport(doc);
-        
-        File dirDataFiles = new File(getTestFilesDir(), "testSmartEnter");
-        File fileInputFile = new File(dirDataFiles, testFileName + ".in");
-        File fileTargetFile = new File(dirDataFiles, testFileName + ".out");
-        
-        String txtRawSample = readStringFromFile(fileInputFile);
-        
-        doc.insertString(0, extractCRMetatag(txtRawSample), null);
-        int originalCaretPos = txtRawSample.indexOf(LINE_BREAK_METATAG);
-        assertTrue(originalCaretPos > -1);
-        doc.insertString(originalCaretPos, "\n", null);
-        
-        int newCaretPos = formatter.smartEnter(doc, originalCaretPos + 1, sup);
-        
-        String txtRawReference = readStringFromFile(fileTargetFile);
-        assertEquals(extractCRMetatag(txtRawReference), doc.getText(0, doc.getLength()));
-        int refCaretPos = txtRawReference.indexOf(LINE_BREAK_METATAG);
-        assertEquals(newCaretPos, refCaretPos);
-    }
-    
     private String extractCRMetatag(String text){
         int indexOfMetatag = text.indexOf(LINE_BREAK_METATAG);
         

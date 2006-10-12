@@ -19,11 +19,20 @@
 
 package org.netbeans.modules.xml.multiview.cookies;
 
-/** ErrorLocator.java
+/** 
+ * This interface should be implemented by classes
+ * that need to be able to associate errors with individual
+ * components.
  *
  * Created on November 22, 2004, 8:03 PM
  * @author mkuchtiak
  */
 public interface ErrorLocator {
+    
+    /**
+     * Gets the component that is associated with the given 
+     * <code>errorId></code>.
+     * @param errorId the id of the error.
+     */ 
     public javax.swing.JComponent getErrorComponent(String errorId);
 }

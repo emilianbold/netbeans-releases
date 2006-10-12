@@ -21,7 +21,9 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import org.openide.util.NbBundle;
 
-/** RefreshSaveDialog.java
+/** 
+ * A dialog to be shown when the editor is being closed the model is not valid.
+ * Presents options for fixing, refreshing and saving. 
  *
  * Created on November 28, 2004, 7:18 PM
  * @author mkuchtiak

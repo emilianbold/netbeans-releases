@@ -70,8 +70,7 @@ final class SyntaxQueryHelper {
     
     private boolean tokenBoundary;
 
-    // shared context instance, - we are always called from AWT thread
-    private static DefaultContext ctx = new DefaultContext();
+    private DefaultContext ctx = new DefaultContext();
 
     /** Creates a new instance of SyntaxQueryHelper */
     public SyntaxQueryHelper(XMLSyntaxSupport sup, int offset) throws BadLocationException, IllegalStateException {
@@ -351,8 +350,19 @@ final class SyntaxQueryHelper {
                 
             case XMLDefaultTokenContext.ARGUMENT_ID:
                 if (StartTag.class.equals(syntaxNode.getClass()) 
-                || EmptyTag.class.equals(syntaxNode.getClass())) {                    
-                    ctx.init((Element)syntaxNode, preText); // GrammarQuery.v2 takes Element ctx 
+                || EmptyTag.class.equals(syntaxNode.getClass())) {
+                    //try to find the current attribute 
+                    Tag tag = (Tag)syntaxNode;
+                    NamedNodeMap nnm = tag.getAttributes();
+                    for(int i = 0; i < nnm.getLength(); i++) {
+                        AttrImpl attrNode = (AttrImpl)nnm.item(i);
+                        if(attrNode.getFirstToken().getOffset() == token.getOffset()) {
+                            ctx.init(attrNode, preText);
+                        }
+                    }
+                    if(!ctx.isInitialized()) {
+                        ctx.init((Element)syntaxNode, preText); // GrammarQuery.v2 takes Element ctx
+                    } 
                     return COMPLETION_TYPE_ATTRIBUTE;
                 }
                 break;

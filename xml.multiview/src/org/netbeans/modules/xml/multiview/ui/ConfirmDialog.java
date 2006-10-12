@@ -22,7 +22,8 @@ import org.openide.DialogDescriptor;
 
 import org.openide.util.NbBundle;
 
-/** ConfirmDialog.java
+/** 
+ * A confirmation dialog, i.e. a dialog with two options - yes and no.
  *
  * Created on November 28, 2004, 7:18 PM
  * @author mkuchtiak

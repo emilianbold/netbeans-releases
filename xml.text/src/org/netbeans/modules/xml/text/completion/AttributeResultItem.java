@@ -52,4 +52,5 @@ class AttributeResultItem extends XMLResultItem {
         return result;
     }
     
+    Color getPaintColor() { return Color.blue; }
 }

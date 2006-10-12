@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Services">
+        <file name="org-netbeans-modules-xml-schema-ui-basic-SchemaSettings.settings" url="resources/SchemaSettings.settings"/>
+    </folder>
+
+    <folder name="Templates">
+        <folder name="XML">
+	    <file name="XMLSchema.xsd_hidden"/> 
+            <file name="XmlSchema.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/XMLSchema.xml">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.basic.wizard.resources.Bundle"/>
+		<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/resources/Schema_File.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/XMLSchema.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.schema.ui.basic.wizard.SchemaWizardIterator"/>
+                <attr name="templateCategory" stringvalue="XML"/>
+            </file>
+            <file name="retrieveWSDLResource">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/xmlObject.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.retriever.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.ui.retriever.RetrieveXMLResourceWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+		<attr name="templateCategory" stringvalue="XML"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/retrieveWSDLResource.html"/>
+            </file>
+	    <file name="retrieveSchemaResource">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/xmlObject.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.retriever.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.ui.retriever.RetrieveXMLResourceWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+		<attr name="templateCategory" stringvalue="XML"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/retrieveSchemaResource.html"/>
+            </file>
+            <attr name="XMLSchema2.xsd/xml_entity.ent" boolvalue="true"/>
+            <folder name="SampleSchemas">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.basic.wizard.Bundle"/>
+                <file name="po.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/po.xsd">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.basic.wizard.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/core/resources/Schema_File.png"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/po.html"/>
+                    <attr name="templateCategory" stringvalue="XML"/>
+                </file>
+                <attr name="po.xsd/LoanApplication.xsd" boolvalue="true"/>
+                <file name="LoanApplication.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/LoanApplication.xsd">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.basic.wizard.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/core/resources/Schema_File.png"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/basic/wizard/templates/LoanApplication.html"/>
+                    <attr name="templateCategory" stringvalue="XML"/>
+                </file>
+            </folder> <!-- SampleSchemas -->
+        </folder> <!-- XML -->
+    </folder> <!-- Templates -->
+
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="application">
+                <folder name="x-schema+xml">
+                    <file name="org-netbeans-modules-xml-schema-ui-basic-navigator-SchemaNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Editors">
+	<folder name="text">
+	    <folder name="xml">
+		<folder name="Popup">
+                    <file name="org-netbeans-modules-xml-xam-ui-actions-GoToAction.instance"/>                 
+		</folder>
+	    </folder>
+	</folder>
+    </folder>
+</filesystem>

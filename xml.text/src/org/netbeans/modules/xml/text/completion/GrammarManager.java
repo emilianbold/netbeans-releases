@@ -32,18 +32,22 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.xml.parsers.DocumentInputSource;
-import org.netbeans.modules.xml.core.lib.Convertors;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.xml.api.model.ExtendedGrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
+import org.openide.util.WeakListeners;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.openide.awt.StatusDisplayer;
@@ -52,29 +56,33 @@ import org.openide.awt.StatusDisplayer;
  * Manages grammar to text editor association. It is able to
  * dynamically switch among providers.
  *
- * @author  Petr Kuzel
+ * @author  Petr Kuzel, mfukala@netbeans.org
  */
-class GrammarManager implements DocumentListener {
+class GrammarManager extends FileChangeAdapter implements DocumentListener {
 
+    private static final String FILE_PROTOCOL_URI_PREFIX = "file:/"; //NOI18N
+    
+    private ArrayList<FileObject> externalDTDs = new ArrayList();
+    
     // current cache state
     private int state = INVALID;
-
+    
     static final int VALID = 1;
     static final int INVALID = 3;
-
+    
     // cache entry
-    private GrammarQuery grammar;  
-
+    private GrammarQuery grammar;
+    
     // grammar is provided for this document
-    private final XMLSyntaxSupport syntax;        
+    private final XMLSyntaxSupport syntax;
     private final Document doc;
-
+    
     // guarded positions pairs
     private Position[] guarded;
-
+    
     // maximal gurded offset
     private Position maxGuarded;
-
+    
     private int environmentElementsCount = -1;
     
     /**
@@ -86,42 +94,58 @@ class GrammarManager implements DocumentListener {
     }
     
     /**
-     * Return any suitable grammar that you can get 
+     * Return any suitable grammar that you can get
      * till expires given timeout.
      */
     public synchronized GrammarQuery getGrammar() {
-
+        
         switch (state) {
             case VALID:
                 return grammar;
-
+                
             case INVALID:
                 loadGrammar();
                 return grammar;
-
+                
             default:
                 throw new IllegalStateException();
         }
     }
-
-
+    
+    
     /**
      * Notification from invalidator thread, the grammar need to be reloaded.
      */
     public synchronized void invalidateGrammar() {
-
+        
         // make current loader a zombie
         if (state == VALID) {
             String msg = Util.THIS.getString("MSG_loading_cancel");
             StatusDisplayer.getDefault().setStatusText(msg);
         }
-
+        
         doc.removeDocumentListener(this);
-
+        
+        //remove FileChangeListeners from the external DTD files
+        for(FileObject fo : externalDTDs) {
+//            System.out.println("[GrammarManager] removed FileObjectListener from " + fo.getPath());
+            fo.removeFileChangeListener(this);
+        }
+        externalDTDs.clear();
+        
         guarded = new Position[0];
         state = INVALID;
     }
-
+    
+    public void fileChanged(FileEvent fe) {
+        //one of the external DTD files has changed => invalidate grammar
+        invalidateGrammar();
+    }
+    
+    public void fileDeleted(FileEvent fe) {
+        invalidateGrammar();
+    }
+    
     public void insertUpdate(DocumentEvent e) {
         //test whether there is a change in the grammar environment - e.g. is a grammar
         //declaration was added and so.
@@ -131,7 +155,7 @@ class GrammarManager implements DocumentListener {
             invalidateGrammar();
         }
     }
-
+    
     public void removeUpdate(DocumentEvent e) {
         //test whether there is a change in the grammar environment - e.g. is a grammar
         //declaration was removed and so.
@@ -141,10 +165,10 @@ class GrammarManager implements DocumentListener {
             invalidateGrammar();
         }
     }
-
+    
     private void checkDocumentEnvironment(DocumentEvent e) {
         long current = System.currentTimeMillis();
-
+        
         try {
             LinkedList ll = getEnvironmentElements();
             if(ll.size() != environmentElementsCount) {
@@ -158,14 +182,14 @@ class GrammarManager implements DocumentListener {
     public void changedUpdate(DocumentEvent e) {
         // not interested
     }
-
+    
     private boolean isGuarded(int offset, int length) {
-
+        
         // optimalization for common case
         if ((maxGuarded != null) && (offset > maxGuarded.getOffset())) {
             return false;
         }
-
+        
         // slow loop matchibng range overlaps
         for (int i = 0; i<guarded.length; i+=2) {
             int start = guarded[i].getOffset();
@@ -178,43 +202,43 @@ class GrammarManager implements DocumentListener {
                 return true;
             }
         }
-
+        
         return false;
     }
-
-
+    
+    
     /**
      * Nofification from grammar loader thread, new valid grammar.
      * @param grammar grammar or <code>null</code> if cannot load.
      */
     private synchronized void grammarLoaded(GrammarQuery grammar) {
-
+        
         String status = (grammar != null) ? Util.THIS.getString("MSG_loading_done")
-            : Util.THIS.getString("MSG_loading_failed");
-
+        : Util.THIS.getString("MSG_loading_failed");
+        
         this.grammar = grammar == null ? EmptyQuery.INSTANCE : grammar;
         state = VALID;
-
+        
         StatusDisplayer.getDefault().setStatusText(status);
     }
-
-
+    
+    
     /**
      * Async grammar fetching
      */
     private void loadGrammar() {
-
-
+        
+        
         GrammarQuery loaded = null;
         try {
-
+            
             String status = Util.THIS.getString("MSG_loading");
             StatusDisplayer.getDefault().setStatusText(status);
-
+            
             // prepare grammar environment
-
+            
             try {
-
+                
                 LinkedList ctx = getEnvironmentElements();
                 InputSource inputSource = new DocumentInputSource(doc);
                 FileObject fileObject = null;
@@ -223,19 +247,19 @@ class GrammarManager implements DocumentListener {
                     DataObject dobj = (DataObject) obj;
                     fileObject = dobj.getPrimaryFile();
                 }
-                GrammarEnvironment env = new GrammarEnvironment(Collections.enumeration (ctx), inputSource, fileObject);
-
+                GrammarEnvironment env = new GrammarEnvironment(Collections.enumeration(ctx), inputSource, fileObject);
+                
                 // lookup for grammar
-
+                
                 GrammarQueryManager g = GrammarQueryManager.getDefault();
                 Enumeration en = g.enabled(env);
                 if (en == null) return;
-
+                
                 // set guarded regions
-
+                
                 List positions = new ArrayList(10);
                 int max = 0;
-
+                
                 while (en.hasMoreElements()) {
                     Node next = (Node) en.nextElement();
                     if (next instanceof SyntaxNode) {
@@ -244,27 +268,53 @@ class GrammarManager implements DocumentListener {
                         int end = start + node.getElementLength();
                         if (end > max) max = end;
                         Position startPosition =
-                            NbDocument.createPosition(doc, start, Position.Bias.Forward);
+                                NbDocument.createPosition(doc, start, Position.Bias.Forward);
                         positions.add(startPosition);
                         Position endPosition =
-                            NbDocument.createPosition(doc, end, Position.Bias.Backward);
+                                NbDocument.createPosition(doc, end, Position.Bias.Backward);
                         positions.add(endPosition);
                     }
                 }
-
+                
                 guarded = (Position[]) positions.toArray(new Position[positions.size()]);
                 maxGuarded = NbDocument.createPosition(doc, max, Position.Bias.Backward);
-
-
+                
+                
                 // retrieve the grammar and start invalidation listener
-
+                
                 loaded = g.getGrammar(env);
                 
-
+                if(loaded instanceof ExtendedGrammarQuery) {
+                    //attach listeners to external files and if any of them changes then reload this grammar
+                    for(String resolvedEntity : (List<String>)((ExtendedGrammarQuery)loaded).getResolvedEntities()) {
+                        //filter non-files resolved entities
+                        if(!resolvedEntity.startsWith(FILE_PROTOCOL_URI_PREFIX)) continue;
+                        
+                        DataObject docDo = NbEditorUtilities.getDataObject(doc);
+                        if(docDo != null) {
+                            FileObject docFo = docDo.getPrimaryFile();
+                            if(docFo != null) {
+                                try {
+                                    FileSystem fs = docFo.getFileSystem();
+                                    FileObject fo = fs.findResource(resolvedEntity.substring(FILE_PROTOCOL_URI_PREFIX.length())); //NOI18N
+                                    if(fo != null) {
+                                        externalDTDs.add(fo);
+                                        //add a week listener to the fileobject - detach when document is being disposed
+                                        fo.addFileChangeListener((FileChangeListener)WeakListeners.create(FileChangeListener.class, this, doc));
+//                                        System.out.println("[GrammarManager] added FileObjectListener to " + fo.getPath());
+                                    }
+                                }catch(IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }
+                
             } catch (BadLocationException ex) {
                 loaded = null;
             }
-
+            
         } finally {
             
             doc.addDocumentListener(GrammarManager.this);
@@ -274,13 +324,13 @@ class GrammarManager implements DocumentListener {
     }
     
     private LinkedList getEnvironmentElements() throws BadLocationException {
-        LinkedList ctx = new LinkedList ();
+        LinkedList ctx = new LinkedList();
         SyntaxElement first = syntax.getElementChain(1);
         while (true) {
             if (first == null) break;
             if (first instanceof SyntaxNode) {
                 SyntaxNode node = (SyntaxNode) first;
-                ctx.add (node);
+                ctx.add(node);
                 if (node.ELEMENT_NODE == node.getNodeType()) {
                     break;
                 }

@@ -20,23 +20,23 @@
 package org.netbeans.modules.xml.text.completion;
 
 import java.util.*;
-
+import java.util.Enumeration;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
 
 import org.w3c.dom.*;
-import org.xml.sax.*;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
-
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.xml.text.syntax.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.UOException;
+import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 
 /**
  * Consults grammar and presents list of possible choices
@@ -97,6 +97,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         try {
             SyntaxQueryHelper helper = new SyntaxQueryHelper(sup, offset);
             
+            //supposing that there wont be more cc items result sets in one moment hence
+            //using the static field, otherwise the substitute offset would have to be set to all CC items
+            XMLResultItem.substituteOffset = helper.getOffset() - helper.getEraseCount();
+            
             // completion request originates from area covered by DOM,
             if (helper.getCompletionType() != SyntaxQueryHelper.COMPLETION_TYPE_DTD) {
                 List all = new ArrayList();
@@ -120,18 +124,32 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         return null; //do not show the CC
                 }
                 
-                if (list == null) {
+                if(list == null) {
                     // broken document
                     return cannotSuggest(component, sup.requestedAutoCompletion());
                 }
                 
+                if (helper.getCompletionType() == SyntaxQueryHelper.COMPLETION_TYPE_VALUE) {
+                    //might be the end tag autocompletion
+                    if(helper.getToken().getTokenID() == XMLDefaultTokenContext.TAG) {
+                        SyntaxElement se = helper.getSyntaxElement();
+                        if(se instanceof StartTag) {
+                            String tagName = ((StartTag)se).getNodeName();
+                            list = new ArrayList();
+                            list.add(new EndTagAutocompletionResultItem(tagName));
+                        }
+                    }
+                }
                 
-                if (list.isEmpty() && helper.getPreText().endsWith("</") && helper.getToken().getTokenID() == TEXT) { // NOI18N
-                    List stlist = findStartTag((SyntaxNode)helper.getSyntaxElement());
+                if (list.isEmpty() && helper.getPreText().startsWith("</")) { // NOI18N
+                    List stlist = findStartTag((SyntaxNode)helper.getSyntaxElement(), !helper.getPreText().endsWith("/") ? "/" : "");
                     if (stlist != null && !stlist.isEmpty()) {
-                        String title = Util.THIS.getString("MSG_result", helper.getPreText());
-                        return new CompletionQuery.DefaultResult(component, title,
-                                stlist, helper.getOffset(), 0);
+                        ElementResultItem item = (ElementResultItem)stlist.get(0); //we always get just one item
+                        if(!item.getItemText().startsWith("/") || item.getItemText().startsWith(helper.getPreText().substring(1))) {
+                            String title = Util.THIS.getString("MSG_result", helper.getPreText());
+                            return new XMLCompletionResult(component, title,
+                                    stlist, helper.getOffset(), 0);
+                        }
                     }
                 }
                 
@@ -159,7 +177,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                     }
                     
                     if (addEndTag) {
-                        all.addAll(startTags);
+                        //prevent autocompletion of the only CC item.
+                        if(!list.isEmpty() || startTags.size() > 1) {
+                            all.addAll(startTags);
+                        }
                     }
                     
                 }
@@ -169,7 +190,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                 if(all.isEmpty()) {
                     return noSuggestion(component, sup.requestedAutoCompletion());
                 } else {
-                    return new CompletionQuery.DefaultResult(
+                    return new XMLCompletionResult(
                             component,
                             title,
                             all,
@@ -185,7 +206,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         List encodings = new ArrayList(2);
                         encodings.add(new XMLResultItem("\"UTF-8\""));          // NOI18N
                         encodings.add(new XMLResultItem("\"UTF-16\""));         // NOI18N
-                        return new CompletionQuery.DefaultResult(
+                        return new XMLCompletionResult(
                                 component,
                                 Util.THIS.getString("MSG_encoding_comp"),
                                 encodings,
@@ -212,7 +233,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
      */
     private static Result cannotSuggest(JTextComponent component, boolean auto) {
         if (auto) return null;
-        return new CompletionQuery.DefaultResult(
+        return new XMLCompletionResult(
                 component,
                 Util.THIS.getString("BK0002"),
                 Collections.EMPTY_LIST,
@@ -228,7 +249,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
      */
     private static Result noSuggestion(JTextComponent component, boolean auto) {
         if (auto) return null;
-        return new CompletionQuery.DefaultResult(
+        return new XMLCompletionResult(
                 component,
                 Util.THIS.getString("BK0003"),
                 Collections.EMPTY_LIST,
@@ -267,6 +288,10 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         try {
             GrammarQuery performer = getPerformer(doc, sup);
             HintContext ctx = helper.getContext();
+            //66607 hacky fix - see the issue comment
+            if(helper.getPreText().startsWith("</")) {
+                return Collections.EMPTY_LIST;
+            }
             String typedPrefix = ctx.getCurrentPrefix();
             Enumeration res = performer.queryElements(ctx);
             return translateElements(res, typedPrefix, performer);
@@ -379,4 +404,17 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     private static List findStartTag(SyntaxNode text) {
         return findStartTag(text, "");
     }
+    
+    public static class XMLCompletionResult extends CompletionQuery.DefaultResult {
+        private int substituteOffset;
+        public XMLCompletionResult(JTextComponent component, String title, List data, int offset, int len ) {
+            super(component, title, data, offset, len);
+            substituteOffset = offset;
+        }
+        
+        public int getSubstituteOffset() {
+            return substituteOffset;
+        }
+    }
+    
 }

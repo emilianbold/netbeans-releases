@@ -115,7 +115,7 @@ public abstract class XmlMultiViewDataSynchronizer {
      * @throws IOException
      */
     public FileLock takeLock() throws IOException {
-        final FileLock lock = dataObject.waitForLock(500);
+        final FileLock lock = dataObject.waitForLock(1000);
         if (lock != null) {
             if (mayUpdateData(true)) {
                 return lock;
@@ -140,7 +140,7 @@ public abstract class XmlMultiViewDataSynchronizer {
                     } catch (IOException e) {
                         ErrorManager.getDefault().notify(e);
                         return;
-                    }
+                    } 
                 }
                 updateTask.schedule(dataObject.isModified() ? updateDelay : 1);
             }
@@ -227,8 +227,9 @@ public abstract class XmlMultiViewDataSynchronizer {
     }
 
     /**
-     * Updates data from model and updates timeStamp field
-     * @param dataLock a lock of the data cache
+     * Updates data from model and updates timeStamp field.
+     * @param dataLock a lock of the data cache. Will be released after updating 
+     * has finished (in case it wasn't released already).
      * @param modify indicator whether property <i>modified</i> of the data object
      * should change after update or not
      */
@@ -239,6 +240,9 @@ public abstract class XmlMultiViewDataSynchronizer {
             timeStamp = dataCache.getTimeStamp();
         } finally {
             updating--;
+            if (dataLock != null && dataLock.isValid()){
+                dataLock.releaseLock();
+            }
         }
     }
 

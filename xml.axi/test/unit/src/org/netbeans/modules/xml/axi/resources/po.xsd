@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ 
+ $Id$
+-->
+
+
+<xsd:schema
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://xml.netbeans.org/schema/newXMLSchema"
+    xmlns="http://xml.netbeans.org/schema/newXMLSchema"
+    elementFormDefault="unqualified">
+
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+            Purchase order schema for Example.com.
+            Copyright 2000 Example.com. All rights reserved.
+        </xsd:documentation>
+    </xsd:annotation>
+    
+    <xsd:attribute name="partNum" type="SKU"/>
+    
+    <xsd:group name="address-group">
+        <xsd:sequence>
+            <xsd:element name="name"   type="xsd:string"/>
+            <xsd:element name="street" type="xsd:string"/>
+            <xsd:element name="city"   type="xsd:string"/>
+            <xsd:element name="state"  type="xsd:string"/>
+            <xsd:element name="zip"    type="xsd:decimal"/>
+        </xsd:sequence>
+    </xsd:group>
+    
+    <xsd:attributeGroup name="address-attr-group">
+        <xsd:attribute name="country" type="xsd:NMTOKEN" fixed="US"/>
+        <xsd:attribute name="language" type="xsd:string" fixed="EN"/>
+    </xsd:attributeGroup>
+
+    <xsd:attributeGroup name="dates-attr-group">
+        <xsd:attribute name="orderDate" type="xsd:date"/>
+        <xsd:attribute name="orderDate1" type="xsd:date"/>
+        <xsd:attribute name="orderDate2" type="xsd:date"/>
+    </xsd:attributeGroup>
+    
+    <xsd:element name="purchaseOrder" type="PurchaseOrderType"/>
+
+    <xsd:group name="shipAndBill">
+        <xsd:sequence>
+            <xsd:element name="shipTo" type="USAddress">
+            </xsd:element>    
+            <xsd:element name="billTo" type="USAddress"/>
+        </xsd:sequence>
+    </xsd:group>    
+    
+    <xsd:element name="comment" type="xsd:string"/>
+
+    <xsd:complexType name="PurchaseOrderTypeBase">
+        <xsd:annotation>
+            <xsd:documentation></xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:choice>
+                <xsd:group   ref="shipAndBill"/>
+                <xsd:element name="singleUSAddress" type="USAddress"/>
+            </xsd:choice>
+            <xsd:element ref="comment"/>
+            <xsd:element name="items"  type="Items"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="dates-attr-group"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="PurchaseOrderType">
+        <xsd:complexContent>
+            <xsd:extension base="PurchaseOrderTypeBase">
+                <xsd:choice>
+                    <xsd:element name="nameA" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="nameB" type="xsd:string" minOccurs="0"/>
+                </xsd:choice>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="USAddress">
+        <xsd:group ref="address-group"/>
+        <xsd:attributeGroup ref="address-attr-group"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="Items">
+        <xsd:sequence>
+            <xsd:element name="item" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="productName" type="xsd:string"/>
+                        <xsd:element name="quantity">
+                            <xsd:simpleType>
+                                <xsd:restriction base="xsd:positiveInteger">
+                                    <xsd:maxExclusive value="100"/>
+                                </xsd:restriction>
+                            </xsd:simpleType>
+                        </xsd:element>
+                        <xsd:element name="USPrice"  type="UnitPriceCommonData"/>
+                        <xsd:element ref="comment"/>
+                        <xsd:element name="shipDate" type="xsd:date"/>
+                        <xsd:any minOccurs="0"/>
+                    </xsd:sequence>
+                    <xsd:attribute ref="partNum"/>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Stock Keeping Unit, a code for identifying products -->
+    <xsd:simpleType name="SKU">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\d{3}-[A-Z]{2}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="DecimalCommonDat">
+        <xsd:restriction base="xsd:string"/>
+    </xsd:simpleType>
+    
+    <xsd:complexType name="AmountCommonData">
+        <xsd:simpleContent>
+            <xsd:extension base="DecimalCommonDat">
+                <xsd:attribute name="Currency" type="xsd:string"/>
+                <xsd:attribute name="ForeignAmount" type="xsd:string"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="MonetaryAmountCommonData">
+        <xsd:annotation>
+            <xsd:documentation>he</xsd:documentation>
+        </xsd:annotation>
+        <xsd:simpleContent>
+            <xsd:extension base="AmountCommonData"/>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="UnitPriceCommonData">
+        <xsd:simpleContent>
+            <xsd:extension base="MonetaryAmountCommonData"/>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
+</xsd:schema>
+

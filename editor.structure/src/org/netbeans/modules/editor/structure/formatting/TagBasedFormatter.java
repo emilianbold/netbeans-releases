@@ -1,0 +1,528 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.editor.structure.formatting;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.openide.ErrorManager;
+
+/**
+ *
+ * @author Tomasz.Slota@Sun.COM
+ */
+public abstract class TagBasedFormatter extends ExtFormatter  {
+    
+    /** Creates a new instance of TagBases */
+    public TagBasedFormatter(Class kitClass) {
+        super(kitClass);
+    }
+    
+    protected abstract ExtSyntaxSupport getSyntaxSupport(BaseDocument doc);
+    protected abstract boolean isClosingTag(TokenItem token);
+    protected abstract boolean isUnformattableToken(TokenItem token);
+    protected abstract boolean isUnformattableTag(String tag);
+    protected abstract boolean isOpeningTag(TokenItem token);
+    protected abstract String extractTagName(TokenItem tknTag);
+    protected abstract boolean areTagNamesEqual(String tagName1, String tagName2);
+    protected abstract boolean isClosingTagRequired(BaseDocument doc, String tagName);
+    protected abstract int getOpeningSymbolOffset(TokenItem tknTag);
+    protected abstract TokenItem getTagTokenEndingAtPosition(BaseDocument doc, int position) throws BadLocationException;
+    protected abstract int getTagEndOffset(TokenItem token);
+    
+    protected Writer extFormatterReformat(final BaseDocument doc, final int startOffset, final int endOffset,
+            final boolean indentOnly) throws BadLocationException, IOException {
+        return super.reformat(doc, startOffset, endOffset, indentOnly);
+    }
+    
+    protected boolean isWSTag(TokenItem tag){
+        char chars[] = tag.getImage().toCharArray();
+        
+        for (char c : chars){
+            if (!Character.isWhitespace(c)){
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    protected int getIndentForTagParameter(BaseDocument doc, TokenItem tag) throws BadLocationException{
+        int tagStartLine = Utilities.getLineOffset(doc, tag.getOffset());
+        TokenItem t = tag.getNext();
+        
+        while (t != null && isWSTag(t) && tagStartLine == Utilities.getLineOffset(doc, t.getOffset())){
+            t = t.getNext();
+        }
+        
+        if (tag != null && !isWSTag(t) && tagStartLine == Utilities.getLineOffset(doc, t.getOffset())){
+            return t.getOffset() - Utilities.getRowIndent(doc, t.getOffset()) - Utilities.getRowStart(doc, t.getOffset());
+        }
+        
+        return getShiftWidth(); // default;
+    }
+    
+    @Override public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
+            boolean indentOnly) throws BadLocationException, IOException {
+        
+        if (!hasValidSyntaxSupport(doc)){
+            return null;
+        }
+        
+        LinkedList<TagIndentationData>unprocessedOpeningTags = new LinkedList<TagIndentationData>();
+        List<TagIndentationData>matchedOpeningTags = new ArrayList<TagIndentationData>();
+        doc.atomicLock();
+        
+        try{
+            int lastLine = Utilities.getLineOffset(doc, doc.getLength());
+            int firstRefBlockLine = Utilities.getLineOffset(doc, startOffset);
+            int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
+            int firstUnformattableLine = -1;
+            
+            boolean unformattableLines[] = new boolean[lastLine + 1];
+            int indentsWithinTags[] = new int[lastLine + 1];
+            
+            ExtSyntaxSupport sup = getSyntaxSupport(doc);
+            TokenItem token = sup.getTokenChain(0, doc.getLength() - 1);
+            
+            if (token != null){
+                // calc line indents - pass 1
+                do{
+                    boolean isOpenTag = isOpeningTag(token);
+                    boolean isCloseTag = isClosingTag(token);
+                    
+                    if (isOpenTag || isCloseTag){
+                        
+                        String tagName = extractTagName(token);
+                        int tagEndOffset = getTagEndOffset(token);
+                        int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
+                        
+                        if (isOpenTag){
+                            
+                            TagIndentationData tagData = new TagIndentationData(tagName, lastTagLine);
+                            unprocessedOpeningTags.add(tagData);
+                            
+                            // format lines within tag
+                            int firstTagLine = Utilities.getLineOffset(doc, token.getOffset());
+                            
+                            if (firstTagLine < lastTagLine){ // performance!
+                                int indentWithinTag = getIndentForTagParameter(doc, token);
+                                
+                                for (int i = firstTagLine + 1; i <= lastTagLine; i ++){
+                                    indentsWithinTags[i] = indentWithinTag;
+                                }
+                                
+                                // if there is only the closing symbol on the last line of tag do not indent it
+                                TokenItem t = token.getNext();
+                                while (Utilities.getLineOffset(doc, t.getOffset()) < lastTagLine
+                                        || isWSTag(t)){
+                                    
+                                    t = t.getNext();
+                                }
+                                
+                                if (t.getOffset() == tagEndOffset){
+                                    indentsWithinTags[lastTagLine] = 0;
+                                }
+                            }
+                        } else {
+                            // isCloseTag - find matching opening tag record
+                            LinkedList<TagIndentationData>tagsToBeRemoved = new LinkedList<TagIndentationData>();
+                            
+                            while (!unprocessedOpeningTags.isEmpty()){
+                                TagIndentationData processedTD = unprocessedOpeningTags.removeLast();
+                                
+                                if (areTagNamesEqual(tagName, processedTD.getTagName())){
+                                    processedTD.setClosedOnLine(lastTagLine);
+                                    matchedOpeningTags.add(processedTD);
+                                    
+                                    // mark all the stuff between unformattable tag as unformattable
+                                    if (isUnformattableTag(tagName)){
+                                        for (int i = lastTagLine - 1; i > processedTD.getLine(); i --){
+                                            unformattableLines[i] = true;
+                                        }
+                                    }
+                                    
+                                    // forgetting preceding tags permanently
+                                    tagsToBeRemoved.clear();
+                                    break;
+                                } else{
+                                    tagsToBeRemoved.add(processedTD);
+                                }
+                            }
+                            
+                            // if matching opening tag was not found on the stack put all the tags back
+                            unprocessedOpeningTags.addAll(tagsToBeRemoved);
+                        }
+                    }
+                    
+                    boolean wasPreviousTokenUnformattable = isUnformattableToken(token);
+                    
+                    if (wasPreviousTokenUnformattable && firstUnformattableLine == -1){
+                        firstUnformattableLine = Utilities.getLineOffset(doc, token.getOffset());
+                    }
+                    
+                    token = token.getNext();
+                    
+                    // detect an end of unformattable block; mark it
+                    if (firstUnformattableLine > -1
+                            && (!wasPreviousTokenUnformattable || token == null)){
+                        
+                        int lastUnformattableLine = token == null ? lastLine :
+                            Utilities.getLineOffset(doc, token.getOffset() - 1);
+                        
+                        for (int i = firstUnformattableLine + 1; i < lastUnformattableLine; i ++){
+                            unformattableLines[i] = true;
+                        }
+                        
+                        firstUnformattableLine = -1;
+                    }
+                }
+                while (token != null);
+            }
+            
+            // calc line indents - pass 2
+            // TODO: optimize it
+            int indentLevels[] = new int[lastLine + 1];
+            Arrays.fill(indentLevels, 0);
+            
+            for (TagIndentationData td : matchedOpeningTags){
+                // increase indent from one line after the opening tag
+                // up to one line before the closing tag
+                
+                for (int i = td.getLine() + 1; i <= td.getClosedOnLine() - 1; i ++){
+                    indentLevels[i] ++;
+                }
+            }
+            
+            // when reformatting only a part of file
+            // we need to take into account the local bias
+            InitialIndentData initialIndentData = new InitialIndentData(doc, indentLevels,
+                    indentsWithinTags, firstRefBlockLine, lastRefBlockLine);
+            
+            // apply line indents
+            for (int line = firstRefBlockLine; line <= lastRefBlockLine; line ++){
+                int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
+                
+                if (!unformattableLines[line] && initialIndentData.isEligibleToIndent(line)){
+                    changeRowIndent(doc, lineStart, initialIndentData.getIndent(line));
+                }
+            }
+        } finally{
+            doc.atomicUnlock();
+        }
+        
+        return null;
+    }
+    
+    protected void enterPressed(JTextComponent txtComponent, int dotPos) throws BadLocationException {
+        BaseDocument doc = Utilities.getDocument(txtComponent);
+        int lineNumber = Utilities.getLineOffset(doc, dotPos);
+        int initialIndent = getInitialIndentFromPreviousLine(doc, lineNumber);
+        int endOfPreviousLine = Utilities.getFirstNonWhiteBwd(doc, dotPos);
+        endOfPreviousLine = endOfPreviousLine == -1 ? 0 : endOfPreviousLine;
+        
+        // workaround for \n passed from code completion to reformatter
+        if (lineNumber == Utilities.getLineOffset(doc, endOfPreviousLine)){
+            return;
+        }
+        
+        TokenItem tknOpeningTag = getTagTokenEndingAtPosition(doc, endOfPreviousLine);
+        
+        if (isOpeningTag(tknOpeningTag)){
+            TokenItem tknClosingTag = getNextClosingTag(doc, dotPos + 1);
+            
+            if (tknClosingTag != null){
+                TokenItem tknMatchingOpeningTag = getMatchingOpeningTag(tknClosingTag);
+                
+                if (tknMatchingOpeningTag != null
+                        && tknMatchingOpeningTag.getOffset() == tknOpeningTag.getOffset()){
+                    
+                    int openingTagLine = Utilities.getLineOffset(doc, tknOpeningTag.getOffset());
+                    int closingTagLine = Utilities.getLineOffset(doc, tknClosingTag.getOffset());
+                    
+                    if (closingTagLine == Utilities.getLineOffset(doc, dotPos)){
+                        
+                        if (openingTagLine == closingTagLine - 1){
+                            /* "smart enter"
+                             * <t>|optional text</t>
+                             */
+                            Position closingTagPos = doc.createPosition(getOpeningSymbolOffset(tknClosingTag));
+                            changeRowIndent(doc, dotPos, initialIndent + getShiftWidth());
+                            doc.insertString(closingTagPos.getOffset(), "\n", null); //NOI18N
+                            int newCaretPos = closingTagPos.getOffset() - 1;
+                            changeRowIndent(doc, closingTagPos.getOffset() + 1, initialIndent);
+                            newCaretPos = Utilities.getRowEnd(doc, newCaretPos);
+                            txtComponent.setCaretPosition(newCaretPos);
+                        } else{
+                            /*  <t>
+                             *
+                             *  |</t>
+                             */
+                            changeRowIndent(doc, dotPos, initialIndent);
+                        }
+                    }
+                }
+                
+                int indent = initialIndent;
+                
+                if (isClosingTagRequired(doc, extractTagName(tknOpeningTag))){
+                    indent += getShiftWidth();
+                }
+                
+                changeRowIndent(doc, dotPos, indent);
+            }
+        } else{
+            int indent = initialIndent;
+            
+            if (isJustBeforeClosingTag(doc, dotPos)){
+                indent -= getShiftWidth();
+                indent = indent < 0 ? 0 : indent;
+            }
+            
+            // preceeding token is not opening tag, keep same indentation
+            changeRowIndent(doc, dotPos, indent);
+        }
+    }
+    
+    @Override public int[] getReformatBlock(JTextComponent target, String typedText) {
+        BaseDocument doc = Utilities.getDocument(target);
+        
+        if (!hasValidSyntaxSupport(doc)){
+            return null;
+        }
+        
+        char lastChar = typedText.charAt(typedText.length() - 1);
+        
+        try{
+            int dotPos = target.getCaret().getDot();
+            
+            if (lastChar == '>') {
+                TokenItem tknPrecedingToken = getTagTokenEndingAtPosition(doc, dotPos - 1);
+                
+                if (isClosingTag(tknPrecedingToken)){
+                    // user entered a closing tag
+                    // - reformat code backwards to matching opening tag
+                    
+                    TokenItem tknOpeningTag = getMatchingOpeningTag(tknPrecedingToken);
+                    
+                    if (tknOpeningTag != null){
+                        int start = tknOpeningTag.getOffset();
+                        
+                        return new int[]{start, dotPos};
+                    }
+                }
+            }
+            
+            else if(lastChar == '\n') {
+                // just pressed enter
+                enterPressed(target, dotPos);
+            }
+            
+        } catch (Exception e){
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+        }
+        
+        return null;
+    }
+    
+    protected TokenItem getMatchingOpeningTag(TokenItem tknClosingTag){
+        String searchedTagName = extractTagName(tknClosingTag);
+        TokenItem token = tknClosingTag.getPrevious();
+        int balance = 0;
+        
+        while (token != null){
+            if (areTagNamesEqual(searchedTagName, extractTagName(token))){
+                if (isOpeningTag(token)){
+                    if (balance == 0){
+                        return token;
+                    }
+                    
+                    balance --;
+                } else if (isClosingTag(token)){
+                    balance ++;
+                }
+            }
+            
+            token = token.getPrevious();
+        }
+        
+        return null;
+    }
+    
+    protected int getInitialIndentFromPreviousLine(final BaseDocument doc, final int line) throws BadLocationException {
+        
+        // get initial indent from the previous line
+        int initialIndent = 0;
+        
+        if (line > 0){
+            int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
+            int previousNonWhiteLineEnd = Utilities.getFirstNonWhiteBwd(doc, lineStart);
+            
+            if (previousNonWhiteLineEnd > 0){
+                initialIndent = Utilities.getRowIndent(doc, previousNonWhiteLineEnd);
+            }
+        }
+        
+        return initialIndent;
+    }
+    
+    private int getInitialIndentFromNextLine(final BaseDocument doc, final int line) throws BadLocationException {
+        
+        // get initial indent from the next line
+        int initialIndent = 0;
+        
+        int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
+        int lineEnd = Utilities.getRowEnd(doc, lineStart);
+        int nextNonWhiteLineStart = Utilities.getFirstNonWhiteFwd(doc, lineEnd);
+        
+        if (nextNonWhiteLineStart > 0){
+            initialIndent = Utilities.getRowIndent(doc, nextNonWhiteLineStart, true);
+        }
+        
+        return initialIndent;
+    }
+    
+    private boolean hasValidSyntaxSupport(BaseDocument doc){
+        ExtSyntaxSupport sup = getSyntaxSupport(doc);
+        
+        if (sup == null){
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "TagBasedFormatter: failed to retrieve SyntaxSupport for document;" + //NOI18N
+                    " probably attempt to use incompatible indentation engine"); //NOI18N
+            
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private boolean isClosingTagsPairingEnabled() {
+        Boolean val = (Boolean)Settings.getValue(getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
+        return val == null ? true : val.booleanValue();
+    }
+    
+    protected static int getNumberOfLines(BaseDocument doc) throws BadLocationException{
+        return Utilities.getLineOffset(doc, doc.getLength() - 1) + 1;
+    }
+    
+    protected TokenItem getNextClosingTag(BaseDocument doc, int offset) throws BadLocationException{
+        ExtSyntaxSupport sup = getSyntaxSupport(doc);
+        TokenItem token = sup.getTokenChain(offset, offset + 1);
+        
+        while (token != null){
+            if (isClosingTag(token)){
+                return token;
+            }
+            
+            token = token.getNext();
+        }
+        
+        return null;
+    }
+
+    protected boolean isJustBeforeClosingTag(BaseDocument doc, int pos) throws BadLocationException {
+        ExtSyntaxSupport sup = getSyntaxSupport(doc);
+        TokenItem tknTag = sup.getTokenChain(pos, pos + 1);
+        
+        if (isClosingTag(tknTag)){
+            return true;
+        }
+        
+        return false;
+    }
+    
+    protected class InitialIndentData{
+        private int indentLevelBias = 0;
+        private int indentBias = 0;
+        private int indentLevels[];
+        private int indentsWithinTags[];
+        
+        public InitialIndentData(BaseDocument doc, int indentLevels[], int indentsWithinTags[],
+                int firstRefBlockLine, int lastRefBlockLine) throws BadLocationException{
+            
+            int initialIndent = getInitialIndentFromPreviousLine(doc, firstRefBlockLine);
+            indentLevelBias = initialIndent / getShiftWidth() - (firstRefBlockLine > 0 ? indentLevels[firstRefBlockLine - 1] : 0);
+            
+            int initialIndentFromTheBottom = getInitialIndentFromNextLine(doc, lastRefBlockLine);
+            int indentLevelBiasFromTheBottom = initialIndentFromTheBottom / getShiftWidth() - (lastRefBlockLine < getNumberOfLines(doc) - 1 ? indentLevels[lastRefBlockLine + 1] : 0);
+            
+            if (indentLevelBiasFromTheBottom > indentLevelBias){
+                indentLevelBias = indentLevelBiasFromTheBottom;
+                initialIndent = initialIndentFromTheBottom;
+            }
+            
+            indentBias = initialIndent % getShiftWidth();
+            this.indentLevels = indentLevels;
+            this.indentsWithinTags = indentsWithinTags;
+        }
+        
+        public boolean isEligibleToIndent(int line){
+            return getActualIndentLevel(line) >= 0;
+        }
+        
+        public int getIndent(int line){
+            return indentBias + indentsWithinTags[line] + getActualIndentLevel(line) * getShiftWidth();
+        }
+        
+        private int getActualIndentLevel(int line){
+            return indentLevels[line] + indentLevelBias;
+        }
+    }
+    
+    protected static class TagIndentationData{
+        private String tagName;
+        private int line;
+        private int closedOnLine;
+        
+        public TagIndentationData(String tagName, int line){
+            this.tagName = tagName;
+            this.line = line;
+        }
+        
+        public String getTagName() {
+            return tagName;
+        }
+        
+        public int getLine() {
+            return line;
+        }
+        
+        public int getClosedOnLine() {
+            return closedOnLine;
+        }
+        
+        public void setClosedOnLine(int closedOnLine) {
+            this.closedOnLine = closedOnLine;
+        }
+    }
+}

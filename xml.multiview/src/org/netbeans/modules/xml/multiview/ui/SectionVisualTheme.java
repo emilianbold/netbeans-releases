@@ -19,12 +19,6 @@
 
 package org.netbeans.modules.xml.multiview.ui;
 
-/**
- * SectionVisualTheme.java
- *
- * Created on September 24, 2003, 9:14 AM
- * @author  bashby, mkuchtiak
- */
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
@@ -33,6 +27,13 @@ import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.event.*;
 
+/**
+ * This class defines the visual theme (i.e. colors) of the 
+ * multiview editor.
+ *
+ * Created on September 24, 2003, 9:14 AM
+ * @author  bashby, mkuchtiak
+ */
 public class SectionVisualTheme {
 
     /** Creates a new instance of SectionColorTheme */

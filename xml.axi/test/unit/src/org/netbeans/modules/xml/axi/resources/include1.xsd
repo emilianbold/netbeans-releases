@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+ SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ 
+ $Id$
+-->
+
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:ns="http://xml.netbeans.org/examples/targetNS/PO"
+    xmlns:addr="http://xml.netbeans.org/examples/targetNS/PO"
+    targetNamespace="http://xml.netbeans.org/examples/targetNS/PO"
+    xmlns:po="http://xml.netbeans.org/examples/targetNS/PO"
+    elementFormDefault="qualified">
+    
+    <xsd:include schemaLocation="include2.xsd"/>
+
+    <xsd:annotation>
+        <xsd:documentation xml:lang="en">
+            Purchase order schema for Example.com.
+            Copyright 2000 Example.com. All rights reserved.
+        </xsd:documentation>
+    </xsd:annotation>
+        
+    <xsd:attributeGroup name="dates-attr-group">
+        <xsd:attribute name="orderDate" type="xsd:date"/>
+        <xsd:attribute name="orderDate1" type="xsd:date"/>
+        <xsd:attribute name="orderDate2" type="xsd:date"/>
+    </xsd:attributeGroup>
+    
+    <xsd:element name="purchaseOrder" type="po:PurchaseOrderType"/>
+
+    <xsd:group name="shipAndBill">
+        <xsd:sequence>
+            <xsd:element name="shipTo" type="po:USAddress">
+            </xsd:element>    
+            <xsd:element name="billTo" type="po:USAddress"/>
+        </xsd:sequence>
+    </xsd:group>    
+    
+    <xsd:element name="comment" type="xsd:string"/>
+
+    <xsd:complexType name="PurchaseOrderTypeBase">
+        <xsd:annotation>
+            <xsd:documentation></xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:choice>
+                <xsd:group   ref="po:shipAndBill"/>
+                <xsd:element name="singleUSAddress" type="po:USAddress"/>
+            </xsd:choice>
+            <xsd:element ref="po:comment" minOccurs="0"/>
+            <xsd:element name="items"  type="po:Items"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="po:dates-attr-group"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="PurchaseOrderType">
+        <xsd:complexContent>
+            <xsd:extension base="po:PurchaseOrderTypeBase">
+                <xsd:choice>
+                    <xsd:element name="nameA" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="nameB" type="xsd:string" minOccurs="0"/>
+                </xsd:choice>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="Items">
+        <xsd:sequence>
+            <xsd:element name="item" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="productName" type="xsd:string"/>
+                        <xsd:element name="quantity">
+                            <xsd:simpleType>
+                                <xsd:restriction base="xsd:positiveInteger">
+                                    <xsd:maxExclusive value="100"/>
+                                </xsd:restriction>
+                            </xsd:simpleType>
+                        </xsd:element>
+                        <xsd:element name="USPrice"  type="xsd:decimal"/>
+                        <xsd:element ref="po:comment"   minOccurs="0"/>
+                        <xsd:element name="shipDate" type="xsd:date" minOccurs="0"/>
+                    </xsd:sequence>
+                    <xsd:attribute name="partNum" type="po:SKU" use="required"/>                    
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Stock Keeping Unit, a code for identifying products -->
+    <xsd:simpleType name="SKU">
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="\d{3}-[A-Z]{2}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>

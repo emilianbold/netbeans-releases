@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+    <folder name="Services">
+        <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-WSDLSettings.settings" url="WSDLSettings.settings"/>
+        <!-- Recognize text/x-wsdl+xml: -->
+        <folder name="JavaHelp">
+            <file name="wsdlui-helpset.xml" url="wsdlui-helpset.xml"/>
+        </folder>
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-resources-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="xml-wsdl">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-0.instance" boolvalue="true"/>
+                    <file name="sep-0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-0.instance/org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance"/>
+                    <attr name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file> 
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PasteAction.instance"/>
+                    <attr name="org-openide-actions-PasteAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-netbeans-modules-xml-refactoring-actions-FindUsagesAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-refactoring-actions-FindUsagesAction.instance"/>
+                    <attr name="org-netbeans-modules-xml-refactoring-actions-FindUsagesAction.instance/org-netbeans-modules-xml-refactoring-actions-FileRefactorAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-refactoring-actions-FileRefactorAction.instance"/>
+		    <attr name="org-netbeans-modules-xml-refactoring-actions-FileRefactorAction.instance/sep-5.instance" boolvalue="true"/>
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-5.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>   
+    
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="wsdl-validation-annotation.xml" url="../../../validation/resources/validation-annotation.xml"/>
+        </folder>
+    </folder>
+    
+    <folder name="Templates">
+    	<folder name="WebServices">
+    		<file name="WSDL.wsdl" url="WSDL.template">
+    			<attr name="template" boolvalue="true" />
+    			<attr name="instantiatingIterator"
+    				newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator" />
+    			<attr name="templateWizardURL"
+    				urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html" />
+    			<attr name="SystemFileSystem.localizingBundle"
+    				stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle" />
+    			<attr name="SystemFileSystem.icon"
+    				urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl16.gif" />
+    			<attr name="templateCategory" stringvalue="wsdl" />
+    		</file>
+    		<file name="WSDL_import.wsdl" url="WSDL_import.template" />
+    	</folder>
+    	<folder name="XML">
+    		<file name="WSDL.wsdl" url="WSDL.template">
+    			<attr name="template" boolvalue="true" />
+    			<attr name="instantiatingIterator"
+    				newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator" />
+    			<attr name="templateWizardURL"
+    				urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html" />
+    			<attr name="SystemFileSystem.localizingBundle"
+    				stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle" />
+    			<attr name="SystemFileSystem.icon"
+    				urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif" />
+    		</file>
+    		<file name="WSDL_import.wsdl" url="WSDL_import.template" />
+    	</folder>
+    </folder>
+    <folder name="Windows2">
+        <folder name="Groups">
+            <file name="wsdl_ui.wsgrp" url="windowmanager/wsdl_ui.wsgrp"/>
+            <folder name="wsdl_ui">
+                <file name="properties.wstcgrp" url="windowmanager/properties.wstcgrp"/>
+            </folder>
+        </folder>
+    </folder>
+ 
+    <folder name="WSDLEditor">
+        <file name="wsbpel_plinkType-2005-12-22.xsd" url="wsbpel_plinkType-2005-12-22.xsd">
+        <attr name="prefix" stringvalue="plink"/>
+        </file>
+        <file name="wsbpel_msgprop-2005-12-22.xsd" url="wsbpel_msgprop-2005-12-22.xsd">
+        <attr name="prefix" stringvalue="bpws"/>
+        </file>
+        <folder name="Definitions">
+            <file name="partnerLinkType">
+            <attr name="xsdFileName" stringvalue="wsbpel_plinkType-2005-12-22"/>
+            <attr name="element" stringvalue="partnerLinkType"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/treeeditor/extension/bpel/resources/partnerlinktype.png"/> 
+            </file>
+            <folder name="MessageProperties">
+                <file name="property">
+                    <attr name="xsdFileName" stringvalue="wsbpel_msgprop-2005-12-22"/>
+                    <attr name="element" stringvalue="property"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/resources/property.png"/> 
+                </file>
+                <file name="propertyAlias">
+                    <attr name="xsdFileName" stringvalue="wsbpel_msgprop-2005-12-22"/>
+                    <attr name="element" stringvalue="propertyAlias"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/resources/propertyalias.png"/> 
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+
+</filesystem>

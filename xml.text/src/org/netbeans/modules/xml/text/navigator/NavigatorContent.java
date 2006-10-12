@@ -199,29 +199,37 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
                     else
                         model = null; //if the panel is cached it holds a refs to the model - not need to init it again
                     
-                    //I need to lock the model for update since during the model
-                    //update the UI is updated synchronously in AWT (current thread)
+                    
                     if(cachedPanel != null || model != null) {
-                        if(model != null) model.readLock();
+                        
                         try {
                             SwingUtilities.invokeAndWait(new Runnable() {
                                 public void run() {
                                     showWaitPanel();
                                     JPanel panel = null;
                                     if(cachedPanel == null) {
-                                        //cache the newly created panel
-                                        panel = new NavigatorContentPanel(model);
-                                        //use the document dataobject as a key since the document itself is very easily discarded and hence
-                                        //harly usable as a key of the WeakHashMap
-                                        uiCache.put(documentDO, new WeakReference(panel));
-                                        if(DEBUG) System.out.println("[xml navigator] panel created");
-                                        
-                                        //start to listen to the document property changes - we need to get know when the document is being closed
-                                        EditorCookie.Observable eco = (EditorCookie.Observable)documentDO.getCookie(EditorCookie.Observable.class);
-                                        if(eco != null) {
-                                            eco.addPropertyChangeListener(NavigatorContent.this);
-                                        } else {
-                                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The DataObject " + documentDO.getName() + "(class=" + documentDO.getClass().getName() + ") has no EditorCookie.Observable!");
+                                        try {
+                                            //lock the model for modifications during the
+                                            //navigator tree creation
+                                            model.readLock();
+                                            
+                                            //cache the newly created panel
+                                            panel = new NavigatorContentPanel(model);
+                                            //use the document dataobject as a key since the document itself is very easily discarded and hence
+                                            //harly usable as a key of the WeakHashMap
+                                            uiCache.put(documentDO, new WeakReference(panel));
+                                            if(DEBUG) System.out.println("[xml navigator] panel created");
+                                            
+                                            //start to listen to the document property changes - we need to get know when the document is being closed
+                                            EditorCookie.Observable eco = (EditorCookie.Observable)documentDO.getCookie(EditorCookie.Observable.class);
+                                            if(eco != null) {
+                                                eco.addPropertyChangeListener(NavigatorContent.this);
+                                            } else {
+                                                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The DataObject " + documentDO.getName() + "(class=" + documentDO.getClass().getName() + ") has no EditorCookie.Observable!");
+                                            }
+                                        }finally{
+                                            //unlock the model
+                                            model.readUnlock();
                                         }
                                     } else {
                                         panel = cachedPanel;
@@ -240,8 +248,6 @@ public class NavigatorContent extends JPanel implements PropertyChangeListener  
                             ErrorManager.getDefault().notify(ErrorManager.WARNING, ie);
                         }catch(InvocationTargetException ite) {
                             ErrorManager.getDefault().notify(ErrorManager.ERROR, ite);
-                        }finally {
-                            if(model != null) model.readUnlock();
                         }
                     } else {
                         //model is null => show message

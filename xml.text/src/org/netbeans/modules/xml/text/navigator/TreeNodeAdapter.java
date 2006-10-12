@@ -22,9 +22,9 @@ package org.netbeans.modules.xml.text.navigator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -37,6 +37,7 @@ import org.netbeans.modules.editor.structure.api.DocumentElementEvent;
 import org.netbeans.modules.editor.structure.api.DocumentElementListener;
 import org.netbeans.modules.xml.text.folding.XmlFoldTypes;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
+import org.openide.ErrorManager;
 
 /**
  * TreeNodeAdapter is an implementation of j.s.t.TreeNode encapsulating a DocumentElement
@@ -51,10 +52,10 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     private TreeNode parent;
     private JTree tree;
     
-    private ArrayList children; //a list of non-content nodes
-    private ArrayList textElements; //stores wrappers of DocumentElement-s which are children of the DocumentElement held by this TreeNode
-    
-    private String textContent;
+    private ArrayList children = null; //a list of non-content nodes
+    private ArrayList textElements = new ArrayList(); //stores wrappers of DocumentElement-s which are children of the DocumentElement held by this TreeNode
+    private Object childrenLock = new Object();
+    private String textContent = new String();
     
     //if the node itself contains an error
     private boolean containsError = false;
@@ -62,26 +63,10 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     private int childrenErrorCount = 0;
     
     public TreeNodeAdapter(DocumentElement de, DefaultTreeModel tm, JTree tree, TreeNode parent) {
-        this(de, tm, tree, parent, true);
-    }
-    
-    public TreeNodeAdapter(DocumentElement de, DefaultTreeModel tm, JTree tree, TreeNode parent, boolean createChildrenAdapters) {
         this.de = de;
         this.tm = tm;
         this.tree = tree;
         this.parent = parent;
-        
-        children = new ArrayList();
-        textElements = new ArrayList();
-        
-        //init children adapters
-        if(createChildrenAdapters) createChildrenAdapters();
-        
-        //attach myself to the document element as a listener
-        de.addDocumentElementListener(this);
-        
-        //init the text content buffer
-        childTextElementChanged();
     }
     
     /**Returns a text content of this node. The content is fetched from all text  document elements which
@@ -90,10 +75,13 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
      * @return the text content of this node.
      */
     public String getDocumentContent() {
+        checkChildrenAdapters();
+        checkDocumentContent();
         return textContent;
     }
     
     public java.util.Enumeration children() {
+        checkChildrenAdapters();
         return Collections.enumeration(children);
     }
     
@@ -102,14 +90,17 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     }
     
     public TreeNode getChildAt(int param) {
+        checkChildrenAdapters();
         return (TreeNode)children.get(param);
     }
     
     public int getChildCount() {
+        checkChildrenAdapters();
         return children.size();
     }
     
     public int getIndex(TreeNode treeNode) {
+        checkChildrenAdapters();
         return children.indexOf(treeNode);
     }
     
@@ -125,20 +116,24 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         return de;
     }
     
-    public TreeNodeAdapter getChildTreeNode(DocumentElement de) {
-        for(int i = 0; i < getChildCount(); i++) {
-            TreeNodeAdapter tna = (TreeNodeAdapter)getChildAt(i);
-            if(tna.getDocumentElement().equals(de)) return tna;
+    private TreeNodeAdapter getChildTreeNode(DocumentElement de) {
+        checkChildrenAdapters();
+        Iterator i = children.iterator();
+        while(i.hasNext()) {
+            TreeNodeAdapter tn = (TreeNodeAdapter)i.next();
+            if(tn.getDocumentElement().equals(de)) return tn;
         }
         return null;
     }
     
     public boolean containsError() {
+        checkChildrenAdapters();
         return containsError;
     }
     
     //returns a number of ancestors with error
     public int getChildrenErrorCount() {
+        checkChildrenAdapters();
         return childrenErrorCount;
     }
     
@@ -179,7 +174,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             text.append(html ? "</font>" : "");
             if(contentText.trim().length() > 0) {
                 text.append(" (");
-                text.append(contentText);
+                text.append(HTMLTextEncoder.encodeHTMLText(contentText));
                 text.append(")");
             }
             text.append(html ? "</html>" : "");
@@ -260,15 +255,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     
     public void childrenReordered(DocumentElementEvent ce) {
         //notify treemodel - do that in event dispath thread
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    tm.nodeStructureChanged(TreeNodeAdapter.this);
-                }
-            });
-        }catch(Exception ie) {
-            ie.printStackTrace(); //XXX handle somehow
-        }
+        tm.nodeStructureChanged(TreeNodeAdapter.this);
     }
     
     public String getAttribsText() {
@@ -292,7 +279,6 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         DocumentElement ade = e.getChangedChild();
         
         if(debug) System.out.println(">>> +EVENT called on " + hashCode() + " - " + de + ": element " + ade + " is going to be added");
-        
         if(ade.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
             //create a text node listener
             textElements.add(new TextElementWrapper(ade));
@@ -300,25 +286,25 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             childTextElementChanged();
         } else if(ade.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
             //handle error element
-            markNodeAsErrorInAWT(this);
+            markNodeAsError(this);
         } else if(ade.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
             //do nothing for comments
         } else {
-            TreeNode tn = new TreeNodeAdapter(ade, tm, tree, this, true); //do not create children adapters here!!!
+            TreeNode tn = new TreeNodeAdapter(ade, tm, tree, this);
             int insertIndex = getVisibleChildIndex(ade);
             //add the element only when there isn't such one
             if(getChildTreeNode(ade) == null) {
-                children.add(insertIndex, tn);
-                final int tnIndex = getIndex(tn);
-                //notify treemodel in event dispatch thread
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            tm.nodesWereInserted(TreeNodeAdapter.this, new int[]{tnIndex});
-                        }
-                    });
-                }catch(Exception ie) {
-                    ie.printStackTrace(); //XXX handle somehow better
+                //check whether the insert index doesn't go beyond the actual children length (which states an error)
+                if(children.size() < insertIndex /*||
+                        children.size() + 1 /* it doesn't contain the currently added element != getDocumentElement().getElementCount()*/) {
+                    //error => try to recover by refreshing the current node
+                    //debugError(e);
+                    //notify treemodel
+                    tm.nodeStructureChanged(TreeNodeAdapter.this);
+                } else {
+                    children.add(insertIndex, tn);
+                    final int tnIndex = getIndex(tn);
+                    tm.nodesWereInserted(TreeNodeAdapter.this, new int[]{tnIndex});
                 }
             }
             if(debug)System.out.println("<<<EVENT finished (node " + tn + " added)");
@@ -333,18 +319,27 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         
     }
     
-    private void markNodeAsErrorInAWT(final TreeNodeAdapter tna) {
-        if(!SwingUtilities.isEventDispatchThread()) {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        markNodeAsError(tna);
-                    }
-                });
-            }catch(Exception ie) {
-                ie.printStackTrace(); //XXX handle somehow better
-            }
-        } else markNodeAsError(tna);
+    private void debugError(DocumentElementEvent e) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("An inconsistency between XML navigator and XML DocumentModel occured when adding a new element in the XML DocumentModel! Please report the problem and add following debug messages to the issue along with the XML document you are editing.");
+        sb.append("Debug for Node " + this + ":\n"); //NOI18N
+        sb.append("Children of current node:\n"); //NOI18N
+        Iterator itr = children.iterator();
+        while(itr.hasNext()) {
+            TreeNodeAdapter tna = (TreeNodeAdapter)itr.next();
+            sb.append(tna.toString());
+            sb.append("\n"); //NOI18N
+        }
+        sb.append("\nChildren of DocumentElement (" + getDocumentElement() + ") wrapped by the current node:\n"); //NOI18N
+        Iterator currChildrenItr = getDocumentElement().getChildren().iterator();
+        while(itr.hasNext()) {
+            DocumentElement de = (DocumentElement)itr.next();
+            sb.append(de.toString());
+            sb.append("\n"); //NOI18N
+        }
+        sb.append("------------"); //NOI18N
+        
+        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, sb.toString());
     }
     
     private void markNodeAsError(final TreeNodeAdapter tna) {
@@ -391,142 +386,112 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             //update text text content of the node
             childTextElementChanged();
         } else if(rde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
-            unmarkNodeAsErrorInAWT(this);
+            unmarkNodeAsError(this);
         } else if(rde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
             //do nothing for comments
         } else {
             if(debug) System.out.println(">>> removing tag element");
-            final TreeNode tn = getChildTreeNodeForDE(rde);
+            final TreeNode tn = getChildTreeNode(rde);
             final int tnIndex = getIndex(tn);
             
             if(tn != null) {
                 children.remove(tn);
                 //notify treemodel - do that in event dispath thread
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        public void run() {
-                            tm.nodesWereRemoved(TreeNodeAdapter.this, new int[]{tnIndex}, new Object[]{tn});
-                        }
-                    });
-                }catch(Exception ie) {
-                    ie.printStackTrace(); //XXX handle somehow
-                }
-                
+                tm.nodesWereRemoved(TreeNodeAdapter.this, new int[]{tnIndex}, new Object[]{tn});
             } else if(debug) System.out.println("Warning: TreeNode for removed element doesn't exist!!!");
             
         }
         if(debug) System.out.println("<<<EVENT finished (node removed)");
     }
     
-    private void unmarkNodeAsErrorInAWT(final TreeNodeAdapter tna) {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    //handle error element
-                    tna.containsError = false;
-                    //unmark all its ancestors as "childrenContainsError"
-                    TreeNodeAdapter parent = tna;
-                    tm.nodeChanged(tna);
-                    while((parent = (TreeNodeAdapter)parent.getParent()) != null) {
-                        if(parent.getParent() != null) parent.childrenErrorCount--; //do not fire for root element
-                        tm.nodeChanged(parent);
-                    }
-                }
-            });
-        }catch(Exception ie) {
-            ie.printStackTrace(); //XXX handle somehow better
+    private void unmarkNodeAsError(final TreeNodeAdapter tna) {
+        //handle error element
+        tna.containsError = false;
+        //unmark all its ancestors as "childrenContainsError"
+        TreeNodeAdapter parent = tna;
+        tm.nodeChanged(tna);
+        while((parent = (TreeNodeAdapter)parent.getParent()) != null) {
+            if(parent.getParent() != null) parent.childrenErrorCount--; //do not fire for root element
+            tm.nodeChanged(parent);
         }
     }
     
     public void attributesChanged(DocumentElementEvent e) {
         if(debug)System.out.println("Attributes of treenode " + this + " has changed.");
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    tm.nodeChanged(TreeNodeAdapter.this);
-                }
-            });
-        }catch(Exception ie) {
-            ie.printStackTrace(); //XXX handle somehow better
-        }
+        tm.nodeChanged(TreeNodeAdapter.this);
     }
     
     public void contentChanged(DocumentElementEvent e) {
         if(debug) System.out.println("treenode " + this + " changed.");
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    tm.nodeChanged(TreeNodeAdapter.this);
-                }
-            });
-        }catch(Exception ie) {
-            ie.printStackTrace(); //XXX handle somehow better
-        }
+        tm.nodeChanged(TreeNodeAdapter.this);
     }
     
     //---- private -----
     
-    private TreeNode getChildTreeNodeForDE(DocumentElement de) {
-        Iterator i = children.iterator();
-        while(i.hasNext()) {
-            TreeNodeAdapter tn = (TreeNodeAdapter)i.next();
-            if(tn.getDocumentElement().equals(de)) return tn;
-        }
-        return null;
-    }
-    
-    private void createChildrenAdapters() {
-        Iterator i = de.getChildren().iterator();
-        while(i.hasNext()) {
-            DocumentElement chde = (DocumentElement)i.next();
-            if(chde.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
-                //create a text node listener
-                textElements.add(new TextElementWrapper(chde));
+    private void checkChildrenAdapters() {
+        synchronized (childrenLock) {
+            if(children == null) {
+                //attach myself to the document element as a listener
+                de.addDocumentElementListener(this);
+                
+                //lazyloading children for node
+                children = new ArrayList();
+                Iterator i = de.getChildren().iterator();
+                boolean textElementAdded = false;
+                while(i.hasNext()) {
+                    DocumentElement chde = (DocumentElement)i.next();
+                    if(chde.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
+                        //create a text node listener
+                        textElements.add(new TextElementWrapper(chde));
+                        textElementAdded = true;
+                    } else if(chde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
+                        markNodeAsError(this);
+                    } else if(chde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+                        //do nothing for comments
+                    } else {
+                        //add the adapter only when there isn't any
+                        if(getChildTreeNode(chde) == null) {
+                            TreeNodeAdapter tna = new TreeNodeAdapter(chde, tm, tree, this);
+                            children.add(tna);
+                        }
+                    }
+                }
                 //update text text content of the node
-                childTextElementChanged();
-            } else if(chde.getType().equals(XMLDocumentModelProvider.XML_ERROR)) {
-                markNodeAsErrorInAWT(this);
-            } else if(chde.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
-                //do nothing for comments
-            } else {
-                //add the adapter only when there isn't any
-                if(getChildTreeNode(chde) == null) children.add(new TreeNodeAdapter(chde, tm, tree, this));
+                if(textElementAdded) childTextElementChanged();
             }
         }
     }
     
-    public void childTextElementChanged() {
-        //get all text elements children of the document element held by this node
-        Iterator children = getDocumentElement().getChildren().iterator();
-        StringBuffer buf = new StringBuffer();
-        while(children.hasNext()) {
-            DocumentElement del = (DocumentElement)children.next();
-            if(del.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
-                try {
-                    //the endoffset if increased by +1 due to still not yet resolved issue with element boundaries
-                    //should be removed once it is properly fixed. On the other hand the issue has no user impact now.
-                    int endOfs = del.getEndOffset() - del.getStartOffset() + 1;
-                    //check document boundary - the condition should never be true
-                    endOfs = endOfs > del.getDocument().getLength() ? del.getDocument().getLength() : endOfs;
-                    
-                    buf.append((del.getDocument().getText(del.getStartOffset(), endOfs)).trim());
-                }catch(BadLocationException e) {
-                    buf.append("???");
+    private void childTextElementChanged() {
+        textContent = null;
+        tm.nodeChanged(this);
+    }
+
+    //generate this node text if one of its nodes has changed
+    private void checkDocumentContent() {
+        if(textContent == null) {
+            //get all text elements children of the document element held by this node
+            Iterator children = getDocumentElement().getChildren().iterator();
+            StringBuffer buf = new StringBuffer();
+            //System.out.println("childTextElementChanged(): " + getDocumentElement() + " has these children:");
+            while(children.hasNext()) {
+                DocumentElement del = (DocumentElement)children.next();
+                if(del.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
+                    try {
+                        //the endoffset if increased by +1 due to still not yet resolved issue with element boundaries
+                        //should be removed once it is properly fixed. On the other hand the issue has no user impact now.
+                        int endOfs = del.getEndOffset() - del.getStartOffset() + 1;
+                        //check document boundary - the condition should never be true
+                        endOfs = endOfs > del.getDocument().getLength() ? del.getDocument().getLength() : endOfs;
+                        buf.append((del.getDocument().getText(del.getStartOffset(), endOfs)).trim());
+                    }catch(BadLocationException e) {
+                        buf.append("???");
+                    }
                 }
             }
-        }
-        textContent = buf.toString();
-        //fire a change event for this node
-        try {
-            if(!SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        tm.nodeChanged(TreeNodeAdapter.this);
-                    }
-                });
-            } else tm.nodeChanged(TreeNodeAdapter.this);
-        }catch(Exception ie) {
-            ie.printStackTrace(); //XXX handle somehow better
+            textContent = buf.toString();
+            //fire a change event for this node
+            tm.nodeChanged(TreeNodeAdapter.this);
         }
     }
     

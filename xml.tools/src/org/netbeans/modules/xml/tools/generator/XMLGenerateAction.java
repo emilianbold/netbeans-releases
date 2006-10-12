@@ -48,7 +48,7 @@ public abstract class XMLGenerateAction extends CookieAction {
     public abstract String getName();
 
     protected Class[] cookieClasses () {
-        return new Class[] { XMLGenerateCookie.class };
+        return new Class[] { getOwnCookieClass() };
     }
 
     protected Class getOwnCookieClass () {

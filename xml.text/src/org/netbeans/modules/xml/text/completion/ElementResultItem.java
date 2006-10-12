@@ -32,13 +32,13 @@ import javax.swing.text.Caret;
  * @author  Petr Kuzel
  */
 class ElementResultItem extends XMLResultItem {
-
+    
     // does it represent start element name?
     // then there is more possibilities how to complete it
     private final boolean startElement;
-
+    
     private final boolean empty;
-
+    
     /**
      * Create a start element result item.
      */
@@ -48,7 +48,7 @@ class ElementResultItem extends XMLResultItem {
         startElement = true;
         empty = res.isEmptyElement();
     }
-
+    
     /**
      * Create an end element result item.
      */
@@ -70,7 +70,7 @@ class ElementResultItem extends XMLResultItem {
             if (empty) {
                 return displayText + "/>";
             } else {
-                return displayText + "></" + displayText + '>';
+                return displayText + ">";
             }
         } else if (startElement) {
             return displayText;
@@ -79,25 +79,23 @@ class ElementResultItem extends XMLResultItem {
         }
     }
     
-
+    
     /**
-     * If called with <code>SHIFT_MASK</code> modified it createa a start tag and 
+     * If called with <code>SHIFT_MASK</code> modified it createa a start tag and
      * end tag pair and place caret between them.
      */
     public boolean substituteText( JTextComponent c, int offset, int len, int modifiers ){
         String replacementText = getReplacementText(modifiers);
         replaceText(c, replacementText, offset, len);
-
-        boolean shift = (modifiers & java.awt.event.InputEvent.SHIFT_MASK) != 0;
         
+        boolean shift = (modifiers & java.awt.event.InputEvent.SHIFT_MASK) != 0;
+
         if (shift && startElement) {
-            Caret caret = c.getCaret();  // it is at the end of replacement            
+            Caret caret = c.getCaret();  // it is at the end of replacement
             int dot = caret.getDot();
             int rlen = replacementText.length();
             if (empty) {
                 caret.setDot((dot  - rlen) + replacementText.indexOf('/'));
-            } else {
-                caret.setDot((dot  - rlen) + replacementText.indexOf('<'));
             }
         }
         
@@ -107,7 +105,8 @@ class ElementResultItem extends XMLResultItem {
     /**
      * @deprecated we use startElement flag
      */
-//    static class EndTag extends ElementResultItem {        
+//    static class EndTag extends ElementResultItem {
 //    }
     
+    Color getPaintColor() { return Color.blue; }
 }

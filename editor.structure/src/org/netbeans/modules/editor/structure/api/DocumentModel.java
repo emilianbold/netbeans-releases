@@ -20,6 +20,7 @@
 package org.netbeans.modules.editor.structure.api;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,9 +30,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.Stack;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.event.DocumentListener;
@@ -303,10 +307,8 @@ public final class DocumentModel {
      */
     public DocumentElement getLeafElementForOffset(int offset) {
         readLock();
-        
-        if(getDocument().getLength() == 0)  return getRootElement();
-        
         try{
+            if(getDocument().getLength() == 0)  return getRootElement();
             Iterator itr = getElementsSet().iterator();
             DocumentElement leaf = null;
             while(itr.hasNext()) {
@@ -430,27 +432,17 @@ public final class DocumentModel {
         
         Runnable modelUpdate = new Runnable() {
             public void run() {
-                writeLock(); //lock the model for reading
-                try {
-                    updateModel();
-                }catch(Exception e) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
-                }finally{
-                    writeUnlock(); //unlock the model
-                }
+                updateModel();
             }
         };
         
         task = requestProcessor.post(modelUpdate, MODEL_UPDATE_TIMEOUT);
     }
     
-    private void updateModel() throws DocumentModelException {
+    private void updateModel() {
         //create a new transaction
         modelUpdateTransaction = createTransaction(false);
         DocumentChange[] changes = changesWatcher.getDocumentChanges();
-        
-        //clear all elements with an empty body
-//        checkForClearedElements();
         
         if(debug) debugElements();
         
@@ -458,19 +450,35 @@ public final class DocumentModel {
             //let the model provider to decide what has changed and what to regenerate
             provider.updateModel(modelUpdateTransaction, this, changes);
             //commit all changes => update the model and fire events
-            modelUpdateTransaction.commit();
             
-            //clear document changes cache -> if the transaction has been cancelled
-            //the cache is not cleared so next time the changes will be taken into account.
-            changesWatcher.clearChanges();
-            
+            //do that in EDT
+            try {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            writeLock(); //lock the model for reading
+                            DocumentModel.this.modelUpdateTransaction.commit();
+                            //clear document changes cache -> if the transaction has been cancelled
+                            //the cache is not cleared so next time the changes will be taken into account.
+                            changesWatcher.clearChanges();
+                            modelUpdateTransaction = null; //states that the model update has already finished
+                        }catch(DocumentModelTransactionCancelledException dmte) {
+                            //ignore
+                        }catch(Exception e) {
+                            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                        }finally{
+                            writeUnlock(); //unlock the model
+                        }
+                    }
+                });
+            }catch(Exception ie) {
+                ie.printStackTrace(); //XXX handle somehow
+            }
         }catch(DocumentModelException e) {
             if(debug) System.err.println("[DocumentModelUpdate] " + e.getMessage());
         }catch(DocumentModelTransactionCancelledException dmcte) {
             if(debug) System.out.println("[document model] update transaction cancelled.");
         }
-        
-        modelUpdateTransaction = null; //states that the model update has already finished
         
         if(debug) DocumentModelUtils.dumpElementStructure(getRootElement());
     }
@@ -613,7 +621,7 @@ public final class DocumentModel {
     }
     
     private void clearChildrenCache() {
-        childrenCache.clear();
+        childrenCache = new Hashtable();
     }
     
     DocumentElement getParent(DocumentElement de) {
@@ -664,7 +672,29 @@ public final class DocumentModel {
     }
     
     private void clearParentsCache() {
-        parentsCache.clear();
+        parentsCache = new Hashtable();
+    }
+    
+    private void generateParentsCache() {
+        Stack<DocumentElement> path = new Stack();
+        for(DocumentElement de : (Set<DocumentElement>)getElementsSet()) {
+            if(path.empty()) {
+                path.push(de); //ROOT element
+            } else {
+                //find nearest ancestor
+                DocumentElement ancestor = path.pop();
+                do {
+                    if(isDescendantOf(ancestor, de)) {
+                        cacheParent(de, ancestor);
+                        path.push(ancestor);
+                        path.push(de);
+                        break;
+                    } else {
+                        ancestor = path.pop();
+                    }
+                } while(true);
+            }
+        }
     }
     
     
@@ -688,30 +718,6 @@ public final class DocumentModel {
                 case ELEMENT_CHANGED: cl.documentElementChanged(de);break;
                 case ELEMENT_ATTRS_CHANGED: cl.documentElementAttributesChanged(de);break;
             }
-        }
-    }
-    
-    /** removes all elements with empty body. It is currently needed to call this before
-     * model update in an implementations of this class since otherwise the getChildren() method
-     * fails!!!!.
-     * XXX this should be solved somehow better!
-     *
-     * Note: runs only under model.writeLock()
-     */
-    private void checkForClearedElements() {
-        Iterator i = getElementsSet().iterator();
-        DocumentModel.DocumentModelModificationTransaction tran = createTransaction(false);
-        try {
-            while(i.hasNext()) {
-                DocumentElement de = (DocumentElement)i.next();
-                if(de.getStartOffset() == de.getEndOffset()) {
-                    if(debug) System.out.println("checkForClearedElements: removing " + de);
-                    tran.removeDocumentElement(de, false);
-                }
-            }
-            tran.commit();
-        }catch(DocumentModelTransactionCancelledException e) {
-            assert false : "We should never get here";
         }
     }
     
@@ -916,11 +922,15 @@ public final class DocumentModel {
                 long r = System.currentTimeMillis();
                 if(debug) System.out.println("\n# commiting REMOVEs");
                 Iterator mods = modifications.iterator();
+                int removes = 0;
                 while(mods.hasNext()) {
                     DocumentModelModification dmm = (DocumentModelModification)mods.next();
-                    if(dmm.type == DocumentModelModification.ELEMENT_REMOVED) removeDE(dmm.de);
+                    if(dmm.type == DocumentModelModification.ELEMENT_REMOVED) {
+                        removeDE(dmm.de);
+                        removes++;
+                    }
                 }
-                if(measure) System.out.println("[xmlmodel] removes commit done in " + (System.currentTimeMillis() - r));
+                if(measure) System.out.println("[xmlmodel] "+ removes + " removes commited in " + (System.currentTimeMillis() - r));
                 
                 //if the entire document content has been removed the root element is marked as empty
                 //to be able to add new elements inside we need to unmark it now
@@ -936,12 +946,32 @@ public final class DocumentModel {
                     DocumentModelModification dmm = (DocumentModelModification)mods.next();
                     if(dmm.type == DocumentModelModification.ELEMENT_ADD) sortedAdds.add(dmm.de);
                 }
+                
+                ArrayList reallyAdded = new ArrayList(sortedAdds.size());
+                
                 int addsNum = sortedAdds.size();
                 Iterator addsIterator = sortedAdds.iterator();
                 while(addsIterator.hasNext()) {
-                    addDE((DocumentElement)addsIterator.next());
+                    DocumentElement de = (DocumentElement)addsIterator.next();
+                    if(addDE(de)) {
+                        reallyAdded.add(de);
+                    }
                 }
-                if(measure) System.out.println("[xmlmodel] adds commit (" + addsNum + ") done in " + (System.currentTimeMillis() - adds));
+                //clear caches after the elements has been added
+                clearChildrenCache();
+                clearParentsCache();
+                
+                if(!init) { //do not fire events during model init
+                    generateParentsCache();
+                    //fire add events for really added elements
+                    Iterator rai = reallyAdded.iterator();
+                    while(rai.hasNext()) {
+                        DocumentElement de = (DocumentElement)rai.next();
+                        fireElementAddedEvent(de);
+                    }
+                }
+                
+                if(measure) System.out.println("[xmlmodel] " + addsNum + " adds commited in " + (System.currentTimeMillis() - adds));
                 
                 long upds = System.currentTimeMillis();
                 if(debug) System.out.println("\n# commiting text UPDATESs");
@@ -987,45 +1017,35 @@ public final class DocumentModel {
         }
         
         
-        private void addDE(DocumentElement de) {
-            //TODO: add a test for crossed elements??? - in such a case an exception should be thrown
+        private boolean addDE(DocumentElement de) {
+            return getElementsSet().add(de);
+        }
+        
+        private void fireElementAddedEvent(DocumentElement de) {
+            List children = de.getChildren();
+            DocumentElement parent = (DocumentElement)de.getParentElement();
             
-            //there cannot be two elements with the some boundaries ->
-            //this is ensured by using a set and proper DocumentElement.equals() implementation
-            
-            if(getElementsSet().add(de)) {
-                //clear caches
-                clearChildrenCache();
-                clearParentsCache();
-                
-                //no need to fire events when initializing model - there si noone to listen on them
-                if(init) return ;
-                
-                List children = de.getChildren();
-                DocumentElement parent = (DocumentElement)de.getParentElement();
-                
                 /* events firing:
                  * If the added element has a children, we have to fire remove event
                  * to their previous parents (it is the added element's parent)
                  * and fire add event to the added element for all its children
                  */
-                
-                if(parent != null) {//root element doesn't have any parent
-                    //fire add event for the new document element itself
-                    parent.childAdded(de);
-                    //fire events for all affected children
-                    Iterator/*<DocumentElement>*/ childrenIterator = children.iterator();
-                    while(childrenIterator.hasNext()) {
-                        DocumentElement child = (DocumentElement)childrenIterator.next();
-                        parent.childRemoved(child);
-                        de.childAdded(child);
-                    }
+            
+            if(parent != null) {//root element doesn't have any parent
+                //fire add event for the new document element itself
+                parent.childAdded(de);
+                //fire events for all affected children
+                Iterator/*<DocumentElement>*/ childrenIterator = children.iterator();
+                while(childrenIterator.hasNext()) {
+                    DocumentElement child = (DocumentElement)childrenIterator.next();
+                    parent.childRemoved(child);
+                    de.childAdded(child);
                 }
-                fireDocumentModelEvent(de, ELEMENT_ADDED);
-                
-                if(debug) System.out.println(de + " added into " + parent);
             }
+            fireDocumentModelEvent(de, ELEMENT_ADDED);
         }
+        
+        
         
         //note: document change events are fired from the leafs to root
         private void removeDE(DocumentElement de) {
