@@ -42,6 +42,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.modules.java.freeform.jdkselection.JdkConfiguration;
 import org.netbeans.modules.java.freeform.ui.ProjectModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -60,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -244,6 +246,7 @@ final class JavaActions implements ActionProvider {
         String targetName = "compile-selected-files-in-" + root.physical.getNameExt(); // NOI18N
         // XXX do a uniquification check
         Element target = doc.createElement("target"); // NOI18N
+        addJdkInitDeps(target);
         target.setAttribute("name", targetName); // NOI18N
         Element fail = doc.createElement("fail"); // NOI18N
         fail.setAttribute("unless", propertyName); // NOI18N
@@ -390,6 +393,7 @@ final class JavaActions implements ActionProvider {
         }
         assert taskIndex != -1;
         Element target = (Element) ownerDocument.importNode(origTarget, true);
+        addJdkInitDeps(target);
         Element task = (Element) target.getChildNodes().item(taskIndex);
         target.setAttribute("name", generatedTargetName); // NOI18N
         Element nbjpdastart = createNbjpdastart(ownerDocument);
@@ -412,6 +416,7 @@ final class JavaActions implements ActionProvider {
     
     Element createDebugTargetFromScratch(String generatedTargetName, Document ownerDocument) {
         Element target = ownerDocument.createElement("target");
+        addJdkInitDeps(target);
         target.setAttribute("name", generatedTargetName); // NOI18N
         Element path = ownerDocument.createElement("path"); // NOI18N
         // XXX would be better to determine runtime CP from project.xml and put it here instead (if that is possible)...
@@ -436,25 +441,30 @@ final class JavaActions implements ActionProvider {
     
     /**
      * Read a generated script if it exists, else create a skeleton.
+     * Imports jdk.xml if appropriate.
      * @param scriptPath e.g. {@link #FILE_SCRIPT_PATH} or {@link #GENERAL_SCRIPT_PATH}
      */
     Document readCustomScript(String scriptPath) throws IOException, SAXException {
         // XXX if there is TAX support for rewriting XML files, use that here...
         FileObject script = helper.getProjectDirectory().getFileObject(scriptPath);
+        Document doc;
         if (script != null) {
             InputStream is = script.getInputStream();
             try {
-                return XMLUtil.parse(new InputSource(is), false, true, null, null);
+                doc = XMLUtil.parse(new InputSource(is), false, true, null, null);
             } finally {
                 is.close();
             }
         } else {
-            Document doc = XMLUtil.createDocument("project", /*XXX:"antlib:org.apache.tools.ant"*/null, null, null); // NOI18N
+            doc = XMLUtil.createDocument("project", /*XXX:"antlib:org.apache.tools.ant"*/null, null, null); // NOI18N
             Element root = doc.getDocumentElement();
             String projname = ProjectUtils.getInformation(project).getDisplayName();
             root.setAttribute("name", NbBundle.getMessage(JavaActions.class, "LBL_generated_script_name", projname));
-            return doc;
         }
+        if (helper.getProjectDirectory().getFileObject(JdkConfiguration.JDK_XML) != null) {
+            JdkConfiguration.insertJdkXmlImport(doc);
+        }
+        return doc;
     }
     
     /**
@@ -783,7 +793,7 @@ final class JavaActions implements ActionProvider {
         Element ideActions = Util.findElement(data, "ide-actions", NS_GENERAL); // NOI18N
         if (ideActions == null) {
             //fix for #58442:
-            ideActions = data.getOwnerDocument().createElementNS(JavaProjectGenerator.NS_GENERAL, "ide-actions"); // NOI18N
+            ideActions = data.getOwnerDocument().createElementNS(JavaProjectGenerator.NS_FREEFORM, "ide-actions"); // NOI18N
             Util.appendChildElement(data, ideActions, rootElementsOrder);
         }
         Document doc = data.getOwnerDocument();
@@ -999,6 +1009,31 @@ final class JavaActions implements ActionProvider {
                         scriptPlusTargetNames.add(Util.findText(target));
                     }
                 }
+                if (scriptName.equals(JdkConfiguration.NBJDK_XML) && scriptPlusTargetNames.size() > 1) {
+                    // Try to find the original script instead.
+                    FileObject nbjdkFO = helper.getProjectDirectory().getFileObject(JdkConfiguration.NBJDK_XML);
+                    if (nbjdkFO != null) {
+                        try {
+                            Document nbjdk = XMLUtil.parse(new InputSource(nbjdkFO.getURL().toString()), false, false, null, null);
+                            NodeList nl = nbjdk.getElementsByTagName("target"); // NOI18N
+                            for (int i = 0; i < nl.getLength(); i++) {
+                                if (((Element) nl.item(i)).getAttribute("name").equals(scriptPlusTargetNames.get(1))) { // NOI18N
+                                    NodeList nl2 = ((Element) nl.item(i)).getElementsByTagName("ant"); // NOI18N
+                                    if (nl2.getLength() == 1) {
+                                        String antfile = ((Element) nl2.item(0)).getAttribute("antfile"); // NOI18N
+                                        if (antfile.length() == 0) {
+                                            antfile = "build.xml"; // NOI18N
+                                        }
+                                        scriptPlusTargetNames.set(0, antfile);
+                                        break;
+                                    }
+                                }
+                            }
+                        } catch (Exception x) {
+                            Exceptions.printStackTrace(x);
+                        }
+                    }
+                }
                 return scriptPlusTargetNames.toArray(new String[scriptPlusTargetNames.size()]);
             }
         }
@@ -1067,6 +1102,7 @@ final class JavaActions implements ActionProvider {
                 String propName, AntLocation root) throws IOException, SAXException {
 
         Element targetElem = doc.createElement("target"); // NOI18N
+        addJdkInitDeps(targetElem);
         targetElem.setAttribute("name", tgName); // NOI18N
         Element failElem = doc.createElement("fail"); // NOI18N
         failElem.setAttribute("unless", propName); // NOI18N
@@ -1099,6 +1135,7 @@ final class JavaActions implements ActionProvider {
                 String propName, AntLocation root) throws IOException, SAXException {
 
         Element targetElem = doc.createElement("target"); // NOI18N
+        addJdkInitDeps(targetElem);
         targetElem.setAttribute("name", tgName); // NOI18N
         Element failElem = doc.createElement("fail"); // NOI18N
         failElem.setAttribute("unless", propName); // NOI18N
@@ -1243,6 +1280,13 @@ final class JavaActions implements ActionProvider {
             return true;
         }
         return false;
+    }
+
+    private void addJdkInitDeps(Element target) {
+        if (helper.getProjectDirectory().getFileObject(JdkConfiguration.JDK_XML) != null) {
+            String deps = target.getAttribute("depends"); // NOI18N
+            target.setAttribute("depends", deps.length() == 0 ? "-jdk-init" : "-jdk-init," + deps); // NOI18N
+        }
     }
 
 }

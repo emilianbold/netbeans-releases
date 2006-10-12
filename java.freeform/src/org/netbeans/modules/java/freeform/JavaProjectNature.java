@@ -98,7 +98,7 @@ public class JavaProjectNature implements ProjectNature {
         ProjectModel pm = ProjectModel.createModel(Util.getProjectLocation(projectHelper, projectEvaluator), FileUtil.toFile(project.getProjectDirectory()), projectEvaluator, projectHelper);
         ProjectPropertiesPanel sfp = new SourceFoldersPanel.Panel(pm, projectHelper);
         l.add(sfp);
-        ProjectPropertiesPanel cpp = new ClasspathPanel.Panel(pm);
+        ProjectPropertiesPanel cpp = new ClasspathPanel.Panel(project, projectHelper, projectEvaluator, pm);
         l.add(cpp);
         ProjectPropertiesPanel op = new OutputPanel.Panel(pm);
         l.add(op);

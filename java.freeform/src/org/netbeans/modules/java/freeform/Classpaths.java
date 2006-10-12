@@ -45,6 +45,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.modules.java.freeform.jdkselection.JdkConfiguration;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -112,7 +113,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
      * Map from classpath types to sets of classpaths we last registered to GlobalPathRegistry.
      */
     private Map<String,Set<ClassPath>> registeredClasspaths = null;
-    
+
     public Classpaths(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
         this.helper = helper;
         this.evaluator = evaluator;
@@ -457,30 +458,35 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             }
         }
         // None specified; try to find a matching Java platform.
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-        JavaPlatform platform = jpm.getDefaultPlatform(); // fallback
-        for (Element e : Util.findSubElements(compilationUnitEl)) {
-            if (e.getLocalName().equals("source-level")) { // NOI18N
-                String level = Util.findText(e);
-                Specification spec = new Specification("j2se", new SpecificationVersion(level)); // NOI18N
-                JavaPlatform[] matchingPlatforms = jpm.getPlatforms(null, spec);
-                if (matchingPlatforms.length > 0) {
-                    // Pick one. Prefer one with sources if there is a choice, else with Javadoc.
-                    platform = matchingPlatforms[0];
-                    for (JavaPlatform matchingPlatform : matchingPlatforms) {
-                        if (!matchingPlatform.getJavadocFolders().isEmpty()) {
-                            platform = matchingPlatform;
-                            break;
+        // First check whether user has configured a specific JDK.
+        JavaPlatform platform = new JdkConfiguration(null, helper, evaluator).getSelectedPlatform();
+        if (platform == null) {
+            // Nope; so look for some platform of reasonable source level instead.
+            JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+            platform = jpm.getDefaultPlatform(); // fallback
+            for (Element e : Util.findSubElements(compilationUnitEl)) {
+                if (e.getLocalName().equals("source-level")) { // NOI18N
+                    String level = Util.findText(e);
+                    Specification spec = new Specification("j2se", new SpecificationVersion(level)); // NOI18N
+                    JavaPlatform[] matchingPlatforms = jpm.getPlatforms(null, spec);
+                    if (matchingPlatforms.length > 0) {
+                        // Pick one. Prefer one with sources if there is a choice, else with Javadoc.
+                        platform = matchingPlatforms[0];
+                        for (JavaPlatform matchingPlatform : matchingPlatforms) {
+                            if (!matchingPlatform.getJavadocFolders().isEmpty()) {
+                                platform = matchingPlatform;
+                                break;
+                            }
+                        }
+                        for (JavaPlatform matchingPlatform : matchingPlatforms) {
+                            if (matchingPlatform.getSourceFolders().getRoots().length > 0) {
+                                platform = matchingPlatform;
+                                break;
+                            }
                         }
                     }
-                    for (JavaPlatform matchingPlatform : matchingPlatforms) {
-                        if (matchingPlatform.getSourceFolders().getRoots().length > 0) {
-                            platform = matchingPlatform;
-                            break;
-                        }
-                    }
+                    break;
                 }
-                break;
             }
         }
         if (platform != null) {
@@ -503,7 +509,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     }
 
     public void propertiesChanged(AntProjectEvent ev) {
-        // ignore
+        pathsChanged(); // in case it is nbjdk.properties
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -521,7 +527,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             }
         }
     }
-    
+
     /**
      * Representation of one path.
      * Listens to changes in project.xml and/or evaluator and responds.

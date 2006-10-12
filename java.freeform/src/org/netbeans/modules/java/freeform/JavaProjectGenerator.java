@@ -55,7 +55,7 @@ public class JavaProjectGenerator {
     private static final String[] folderElementsOrder = new String[]{"source-folder", "build-folder"}; // NOI18N
     private static final String[] viewItemElementsOrder = new String[]{"source-folder", "source-file"}; // NOI18N
     
-    static final String NS_GENERAL = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
+    public static final String NS_FREEFORM = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
     
     /**
      * Structure describing source folder.
@@ -86,7 +86,7 @@ public class JavaProjectGenerator {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List<SourceFolder> list = new ArrayList<SourceFolder>();
         Element data = helper.getPrimaryConfigurationData(true);
-        Element foldersEl = Util.findElement(data, "folders", NS_GENERAL); // NOI18N
+        Element foldersEl = Util.findElement(data, "folders", NS_FREEFORM); // NOI18N
         if (foldersEl == null) {
             return list;
         }
@@ -95,15 +95,15 @@ public class JavaProjectGenerator {
                 continue;
             }
             SourceFolder sf = new SourceFolder();
-            Element el = Util.findElement(sourceFolderEl, "label", NS_GENERAL); // NOI18N
+            Element el = Util.findElement(sourceFolderEl, "label", NS_FREEFORM); // NOI18N
             if (el != null) {
                 sf.label = Util.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "type", NS_GENERAL); // NOI18N
+            el = Util.findElement(sourceFolderEl, "type", NS_FREEFORM); // NOI18N
             if (el != null) {
                 sf.type = Util.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "location", NS_GENERAL); // NOI18N
+            el = Util.findElement(sourceFolderEl, "location", NS_FREEFORM); // NOI18N
             if (el != null) {
                 sf.location = Util.findText(el);
             }
@@ -134,9 +134,9 @@ public class JavaProjectGenerator {
         //assert ProjectManager.mutex().isWriteAccess();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element foldersEl = Util.findElement(data, "folders", NS_GENERAL); // NOI18N
+        Element foldersEl = Util.findElement(data, "folders", NS_FREEFORM); // NOI18N
         if (foldersEl == null) {
-            foldersEl = doc.createElementNS(NS_GENERAL, "folders"); // NOI18N
+            foldersEl = doc.createElementNS(NS_FREEFORM, "folders"); // NOI18N
             Util.appendChildElement(data, foldersEl, rootElementsOrder);
         } else {
             for (Element sourceFolderEl : Util.findSubElements(foldersEl)) {
@@ -146,7 +146,7 @@ public class JavaProjectGenerator {
                 if (type == null) {
                     foldersEl.removeChild(sourceFolderEl);
                 } else {
-                    Element typeEl = Util.findElement(sourceFolderEl, "type", NS_GENERAL); // NOI18N
+                    Element typeEl = Util.findElement(sourceFolderEl, "type", NS_FREEFORM); // NOI18N
                     if (typeEl != null) {
                         String typeElValue = Util.findText(typeEl);
                         if (type.equals(typeElValue)) {
@@ -157,22 +157,22 @@ public class JavaProjectGenerator {
             }
         }
         for (SourceFolder sf : sources) {
-            Element sourceFolderEl = doc.createElementNS(NS_GENERAL, "source-folder"); // NOI18N
+            Element sourceFolderEl = doc.createElementNS(NS_FREEFORM, "source-folder"); // NOI18N
             Element el;
             if (sf.label != null && sf.label.length() > 0) {
-                el = doc.createElementNS(NS_GENERAL, "label"); // NOI18N
+                el = doc.createElementNS(NS_FREEFORM, "label"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.label)); // NOI18N
                 sourceFolderEl.appendChild(el);
             } else {
                 throw new IllegalArgumentException("label cannot be empty. "+helper.getProjectDirectory()); // NOI18N
             }
             if (sf.type != null) {
-                el = doc.createElementNS(NS_GENERAL, "type"); // NOI18N
+                el = doc.createElementNS(NS_FREEFORM, "type"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.type)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
             if (sf.location != null && sf.location.length() > 0) {
-                el = doc.createElementNS(NS_GENERAL, "location"); // NOI18N
+                el = doc.createElementNS(NS_FREEFORM, "location"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.location)); // NOI18N
                 sourceFolderEl.appendChild(el);
             } else {
@@ -195,11 +195,11 @@ public class JavaProjectGenerator {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List<SourceFolder> list = new ArrayList<SourceFolder>();
         Element data = helper.getPrimaryConfigurationData(true);
-        Element viewEl = Util.findElement(data, "view", NS_GENERAL); // NOI18N
+        Element viewEl = Util.findElement(data, "view", NS_FREEFORM); // NOI18N
         if (viewEl == null) {
             return list;
         }
-        Element itemsEl = Util.findElement(viewEl, "items", NS_GENERAL); // NOI18N
+        Element itemsEl = Util.findElement(viewEl, "items", NS_FREEFORM); // NOI18N
         if (itemsEl == null) {
             return list;
         }
@@ -210,11 +210,11 @@ public class JavaProjectGenerator {
             SourceFolder sf = new SourceFolder();
             sf.style = sourceFolderEl.getAttribute("style"); // NOI18N
             assert sf.style != null && sf.style.length() > 0 : "Bad style attr on <source-folder> in " + helper; // NOI18N
-            Element el = Util.findElement(sourceFolderEl, "label", NS_GENERAL); // NOI18N
+            Element el = Util.findElement(sourceFolderEl, "label", NS_FREEFORM); // NOI18N
             if (el != null) {
                 sf.label = Util.findText(el);
             }
-            el = Util.findElement(sourceFolderEl, "location", NS_GENERAL); // NOI18N
+            el = Util.findElement(sourceFolderEl, "location", NS_FREEFORM); // NOI18N
             if (el != null) {
                 sf.location = Util.findText(el);
             }
@@ -241,14 +241,14 @@ public class JavaProjectGenerator {
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element viewEl = Util.findElement(data, "view", NS_GENERAL); // NOI18N
+        Element viewEl = Util.findElement(data, "view", NS_FREEFORM); // NOI18N
         if (viewEl == null) {
-            viewEl = doc.createElementNS(NS_GENERAL, "view"); // NOI18N
+            viewEl = doc.createElementNS(NS_FREEFORM, "view"); // NOI18N
             Util.appendChildElement(data, viewEl, rootElementsOrder);
         }
-        Element itemsEl = Util.findElement(viewEl, "items", NS_GENERAL); // NOI18N
+        Element itemsEl = Util.findElement(viewEl, "items", NS_FREEFORM); // NOI18N
         if (itemsEl == null) {
-            itemsEl = doc.createElementNS(NS_GENERAL, "items"); // NOI18N
+            itemsEl = doc.createElementNS(NS_FREEFORM, "items"); // NOI18N
             Util.appendChildElement(viewEl, itemsEl, viewElementsOrder);
         }
         List<Element> sourceViews = Util.findSubElements(itemsEl);
@@ -270,16 +270,16 @@ public class JavaProjectGenerator {
                 // perhaps this is principal source folder?
                 continue;
             }
-            Element sourceFolderEl = doc.createElementNS(NS_GENERAL, "source-folder"); // NOI18N
+            Element sourceFolderEl = doc.createElementNS(NS_FREEFORM, "source-folder"); // NOI18N
             sourceFolderEl.setAttribute("style", sf.style); // NOI18N
             Element el;
             if (sf.label != null) {
-                el = doc.createElementNS(NS_GENERAL, "label"); // NOI18N
+                el = doc.createElementNS(NS_FREEFORM, "label"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.label)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
             if (sf.location != null) {
-                el = doc.createElementNS(NS_GENERAL, "location"); // NOI18N
+                el = doc.createElementNS(NS_FREEFORM, "location"); // NOI18N
                 el.appendChild(doc.createTextNode(sf.location)); // NOI18N
                 sourceFolderEl.appendChild(el);
             }
@@ -557,24 +557,24 @@ public class JavaProjectGenerator {
         Iterator it2 = exports.iterator();
         while (it2.hasNext()) {
             Export export = (Export)it2.next();
-            Element exportEl = doc.createElementNS(NS_GENERAL, "export"); // NOI18N
+            Element exportEl = doc.createElementNS(NS_FREEFORM, "export"); // NOI18N
             Element el;
-            el = doc.createElementNS(NS_GENERAL, "type"); // NOI18N
+            el = doc.createElementNS(NS_FREEFORM, "type"); // NOI18N
             el.appendChild(doc.createTextNode(export.type)); // NOI18N
             exportEl.appendChild(el);
-            el = doc.createElementNS(NS_GENERAL, "location"); // NOI18N
+            el = doc.createElementNS(NS_FREEFORM, "location"); // NOI18N
             el.appendChild(doc.createTextNode(export.location)); // NOI18N
             exportEl.appendChild(el);
             if (export.script != null) {
-                el = doc.createElementNS(NS_GENERAL, "script"); // NOI18N
+                el = doc.createElementNS(NS_FREEFORM, "script"); // NOI18N
                 el.appendChild(doc.createTextNode(export.script)); // NOI18N
                 exportEl.appendChild(el);
             }
-            el = doc.createElementNS(NS_GENERAL, "build-target"); // NOI18N
+            el = doc.createElementNS(NS_FREEFORM, "build-target"); // NOI18N
             el.appendChild(doc.createTextNode(export.buildTarget)); // NOI18N
             exportEl.appendChild(el);
             if (export.cleanTarget != null) {
-                el = doc.createElementNS(NS_GENERAL, "clean-target"); // NOI18N
+                el = doc.createElementNS(NS_FREEFORM, "clean-target"); // NOI18N
                 el.appendChild(doc.createTextNode(export.cleanTarget)); // NOI18N
                 exportEl.appendChild(el);
             }
@@ -626,17 +626,17 @@ public class JavaProjectGenerator {
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element subproject = Util.findElement(data, "subprojects", NS_GENERAL); // NOI18N
+        Element subproject = Util.findElement(data, "subprojects", NS_FREEFORM); // NOI18N
         if (subproject != null) {
             data.removeChild(subproject);
         }
-        subproject = doc.createElementNS(NS_GENERAL, "subprojects"); // NOI18N
+        subproject = doc.createElementNS(NS_FREEFORM, "subprojects"); // NOI18N
         Util.appendChildElement(data, subproject, rootElementsOrder);
         
         Iterator it = subprojects.iterator();
         while (it.hasNext()) {
             String proj = (String)it.next();
-            Element projEl = doc.createElementNS(NS_GENERAL, "project"); // NOI18N
+            Element projEl = doc.createElementNS(NS_FREEFORM, "project"); // NOI18N
             projEl.appendChild(doc.createTextNode(proj));
             subproject.appendChild(projEl);
         }
@@ -713,9 +713,9 @@ public class JavaProjectGenerator {
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
-        Element foldersEl = Util.findElement(data, "folders", NS_GENERAL); // NOI18N
+        Element foldersEl = Util.findElement(data, "folders", NS_FREEFORM); // NOI18N
         if (foldersEl == null) {
-            foldersEl = doc.createElementNS(NS_GENERAL, "folders"); // NOI18N
+            foldersEl = doc.createElementNS(NS_FREEFORM, "folders"); // NOI18N
             Util.appendChildElement(data, foldersEl, rootElementsOrder);
         } else {
             List<Element> folders = Util.findSubElements(foldersEl);
@@ -731,8 +731,8 @@ public class JavaProjectGenerator {
         Iterator it = buildFolders.iterator();
         while (it.hasNext()) {
             String location = (String)it.next();
-            Element buildFolderEl = doc.createElementNS(NS_GENERAL, "build-folder"); // NOI18N
-            Element locationEl = doc.createElementNS(NS_GENERAL, "location"); // NOI18N
+            Element buildFolderEl = doc.createElementNS(NS_FREEFORM, "build-folder"); // NOI18N
+            Element locationEl = doc.createElementNS(NS_FREEFORM, "location"); // NOI18N
             locationEl.appendChild(doc.createTextNode(location));
             buildFolderEl.appendChild(locationEl);
             Util.appendChildElement(foldersEl, buildFolderEl, folderElementsOrder);
@@ -750,7 +750,7 @@ public class JavaProjectGenerator {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         List<TargetMapping> list = new ArrayList<TargetMapping>();
         Element genldata = helper.getPrimaryConfigurationData(true);
-        Element actionsEl = Util.findElement(genldata, "ide-actions", NS_GENERAL); // NOI18N
+        Element actionsEl = Util.findElement(genldata, "ide-actions", NS_FREEFORM); // NOI18N
         if (actionsEl == null) {
             return list;
         }
@@ -788,7 +788,7 @@ public class JavaProjectGenerator {
                             continue;
                         }
                         if (contextSubEl.getLocalName().equals("arity")) { // NOI18N
-                            Element sepFilesEl = Util.findElement(contextSubEl, "separated-files", NS_GENERAL); // NOI18N
+                            Element sepFilesEl = Util.findElement(contextSubEl, "separated-files", NS_FREEFORM); // NOI18N
                             if (sepFilesEl != null) {
                                 ctx.separator = Util.findText(sepFilesEl);
                             }
