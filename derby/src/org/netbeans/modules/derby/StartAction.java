@@ -48,8 +48,8 @@ public class StartAction extends CallableSystemAction {
     }
     
     public void performAction()  {
-        if (!RegisterDerby.getDefault().hasInstallLocation()) {
-            RegisterDerby.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
+        if (!Util.hasInstallLocation()) {
+            Util.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
             return;
         }
         

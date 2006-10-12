@@ -171,9 +171,6 @@
     </Component>
     <Component class="javax.swing.JSpinner" name="jSpinner1">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Dialog" size="12" style="0"/>
-        </Property>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="new SpinnerNumberModel(select.getOptions(), 0, Integer.MAX_VALUE, 1)" type="code"/>
         </Property>
@@ -212,9 +209,6 @@
     </Component>
     <Component class="javax.swing.JSpinner" name="jSpinner2">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Dialog" size="12" style="0"/>
-        </Property>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="new SpinnerNumberModel(select.getOptionsVisible(), 1, Integer.MAX_VALUE, 1)" type="code"/>
         </Property>

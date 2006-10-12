@@ -104,6 +104,10 @@ public class DriverSpecification {
     public void setMetaData(DatabaseMetaData dmd) {
         this.dmd = dmd;
     }
+    
+    public DatabaseMetaData getMetaData() {
+        return dmd;
+    }
 
     public void getTables(String tableNamePattern, String[] types) throws SQLException {
         try {

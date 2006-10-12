@@ -20,10 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
 <MIME-resolver>
     <file>
-        <ext name="html"/>
-        <ext name="htm"/>
-        <ext name="shtml"/>
-        <ext name="xhtml"/>
         <ext name="xml"/>
         <resolver mime="application/xhtml+xml">
             <xml-rule>
@@ -35,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
         <ext name="html"/>
         <ext name="htm"/>
         <ext name="shtml"/>
+        <ext name="xhtml"/>
         <resolver mime="text/html"/>
     </file>
 </MIME-resolver>

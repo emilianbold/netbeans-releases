@@ -19,30 +19,50 @@
 
 package org.netbeans.modules.db.sql.execute;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import org.openide.ErrorManager;
 
 /**
- * Encapsulates the result of executing a list of SQL statements.
+ * Encapsulates the result of the execution of a list of SQL statements.
  *
  * @author Andrei Badea
  */
 public class SQLExecutionResults {
-
-    private final SQLExecutionResult[] results;
-
-    public SQLExecutionResults(SQLExecutionResult[] results) {
-        this.results = results;
+    
+    private final List/*<SQLExecutionResult>*/ results;
+    
+    public SQLExecutionResults(List/*<SQLExecutionResult>*/ results) {
+        this.results = Collections.unmodifiableList(results);
     }
-
-    public SQLExecutionResult[] getResults() {
+    
+    public List/*<SQLExecutionResult>*/ getResults() {
         return results;
     }
-
-    public void close() throws SQLException {
-        for (int i = 0; i < results.length; i++) {
-            results[i].close();
+    
+    public void close() {
+        for (Iterator i = results.iterator(); i.hasNext();) {
+            try {
+                ((SQLExecutionResult)i.next()).close();
+            } catch (SQLException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
         }
+    }
+    
+    public int size() {
+        return results.size();
+    }
+    
+    public boolean hasExceptions() {
+        for (Iterator i = results.iterator(); i.hasNext();) {
+            SQLExecutionResult result = (SQLExecutionResult)i.next();
+            if (result.getException() != null) {
+                return true;
+            }
+        }
+        return false;
     }
 }

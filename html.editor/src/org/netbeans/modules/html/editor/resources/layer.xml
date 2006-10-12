@@ -45,6 +45,16 @@ Microsystems, Inc. All Rights Reserved.
             <file name="loose.dtd" url="DTDs/4_01/loose.dtd"/>
             <file name="strict.dtd" url="DTDs/4_01/strict.dtd"/>
         </folder>
+        <folder name="xhtml">
+            <file name="catalog" url="DTDs/xhtml/catalog"/>
+            
+            <file name="HTMLlat1.ent" url="DTDs/4_01/HTMLlat1.ent"/>
+            <file name="HTMLspecial.ent" url="DTDs/4_01/HTMLspecial.ent"/>
+            <file name="HTMLsymbol.ent" url="DTDs/4_01/HTMLsymbol.ent"/>
+            <file name="frameset.dtd" url="DTDs/4_01/frameset.dtd"/>
+            <file name="loose.dtd" url="DTDs/4_01/loose.dtd"/>
+            <file name="strict.dtd" url="DTDs/4_01/strict.dtd"/>
+        </folder>
     </folder>
 
     <folder name="Services">

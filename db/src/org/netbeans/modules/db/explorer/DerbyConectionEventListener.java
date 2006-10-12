@@ -38,6 +38,8 @@ import org.openide.ErrorManager;
  */
 public class DerbyConectionEventListener {
     
+    // XXX this class should be called DerbyConnectionEventListener (double 'n' in connection)
+    
     private static final DerbyConectionEventListener DEFAULT = new DerbyConectionEventListener();
     
     private static final String DERBY_DATABASE_FORCE_LOCK = "derby.database.forceDatabaseLock"; // NOI18N

@@ -20,14 +20,15 @@ Microsystems, Inc. All Rights Reserved.
 <HTML>
 <HEAD>
     <TITLE>Connecting to a Pointbase Database</TITLE>
-    <link rel="StyleSheet" href="../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </HEAD>
 <BODY>
 <h2>Connecting to a Pointbase Database</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>When you install the Sun Java System Application Server 8.1, the Pointbase database JDBC
-drivers are installed and the Pointbase Database Server is installed into
+<p>The Pointbase database was the sample database bundled with Sun Java System Application Server 8.1.</p>
+<p>When you install the Sun Java System Application Server 8.1, the Pointbase database JDBC 
+drivers are installed and the Pointbase Database Server is installed into 
 the <tt>Sun/AppServer/pointbase</tt> directory. The following sample databases
 are installed with the Pointbase installation:</p>
     <ul>
@@ -47,7 +48,7 @@ the sample databases are registered in the Runtime window and the
         which port the server is listening on.</li>
         <li>In the Runtime window, expand the Databases node and the Drivers node.</li>
         <li>Right-click the Pointbase driver node and choose Connect Using.</li>
-        <li>In the New Database Connection dialog box, ensure that Pointbase is selected as the name in the drop-down list and that the Driver field contains the 
+        <li>In the New Database Connection dialog box, ensure that Pointbase is selected as the name in the drop-down menu and that the Driver field contains the 
         Pointbase driver:<br><tt>com.pointbase.jdbc.jdbcUniversalDriver</tt>.</li>
         <li>Enter the URL of the Pointbase database. The URL format is given in the textbox:<br>
         <tt>jdbc:pointbase://&lt;HOST&gt;[:&lt;PORT&gt;]/&lt;DB&gt;</tt>
@@ -68,7 +69,7 @@ the sample databases are registered in the Runtime window and the
     <li>If the Pointbase Server is not available, make sure that your Sun Java System Application 
     Server is listed in the Runtime window in the Servers node. For more, see 
     <a 
-    href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Registering a Java System Application Server Instance</a></li>
+    href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Registering a Java System Application Server Instance</a></li>
     <li>You cannot create a new database on the Pointbase Database server from within the IDE.</li> 
 </ul>
 

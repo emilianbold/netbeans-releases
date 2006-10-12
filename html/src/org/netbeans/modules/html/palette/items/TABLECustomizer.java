@@ -153,7 +153,6 @@ public class TABLECustomizer extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_Rows"));
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_Rows"));
 
-        jSpinner1.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner1.setModel(new SpinnerNumberModel(table.getRows(), 0, Integer.MAX_VALUE, 1));
         jSpinner1.setEditor(new JSpinner.NumberEditor(jSpinner1, "#"));
         jSpinner1.setValue(new Integer(table.getRows()));
@@ -163,7 +162,6 @@ public class TABLECustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 18);
         add(jSpinner1, gridBagConstraints);
 
-        jSpinner2.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner2.setModel(new SpinnerNumberModel(table.getCols(), 0, Integer.MAX_VALUE, 1));
         jSpinner2.setEditor(new JSpinner.NumberEditor(jSpinner2, "#"));
         jSpinner2.setValue(new Integer(table.getCols()));
@@ -243,7 +241,6 @@ public class TABLECustomizer extends javax.swing.JPanel {
         jLabel8.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSN_TABLE_PaddingHelp"));
         jLabel8.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TABLECustomizer.class, "ACSD_TABLE_PaddingHelp"));
 
-        jSpinner3.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner3.setModel(new SpinnerNumberModel(table.getBorder(), 0, Integer.MAX_VALUE, 1));
         jSpinner3.setEditor(new JSpinner.NumberEditor(jSpinner3, "#"));
         jSpinner3.setValue(new Integer(table.getBorder()));
@@ -264,7 +261,6 @@ public class TABLECustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 18);
         add(jTextField1, gridBagConstraints);
 
-        jSpinner4.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner4.setModel(new SpinnerNumberModel(table.getCspac(), 0, Integer.MAX_VALUE, 1));
         jSpinner4.setEditor(new JSpinner.NumberEditor(jSpinner4, "#"));
         jSpinner4.setValue(new Integer(table.getCspac()));
@@ -276,7 +272,6 @@ public class TABLECustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 18);
         add(jSpinner4, gridBagConstraints);
 
-        jSpinner5.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner5.setModel(new SpinnerNumberModel(table.getCpadd(), 0, Integer.MAX_VALUE, 1));
         jSpinner5.setEditor(new JSpinner.NumberEditor(jSpinner5, "#"));
         jSpinner5.setValue(new Integer(table.getCpadd()));
@@ -288,8 +283,7 @@ public class TABLECustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 18);
         add(jSpinner5, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

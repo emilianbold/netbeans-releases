@@ -61,6 +61,11 @@ public class RecaptureSchema {
             System.out.println("[dbschema] url='" + elem.getUrl() + "'");
         }
         final FileObject fo1 = dobj.getPrimaryFile();
+        try {
+            SchemaElement.removeFromCache(elem.getName().getFullName() + "#" + fo1.getURL().toString()); //NOI18N
+        } catch (FileStateInvalidException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } 
         
         TableElement tableAndViewElements[] = elem.getTables();
         // now break down to tables and views

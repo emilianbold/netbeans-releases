@@ -20,35 +20,15 @@
 package org.netbeans.modules.derby.spi.support;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.RegisterDerby;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Andrei Badea
  */
 public final class DerbySupport {
-    
-    /**
-     * The default derby.system.home location relative to the home directory.
-     */
-    private static final String DEFAULT_SYSTEM_HOME = ".netbeans-derby"; // NOI18N
     
     private DerbySupport() {
     }
@@ -81,7 +61,8 @@ public final class DerbySupport {
     }
     
     /** 
-     * Returns the Derby system home.
+     * Returns the Derby system home. Never returns null,
+     * instead it returns an empty string if the location is unknown.
      */
     public static String getSystemHome() {
         return DerbyOptions.getDefault().getSystemHome();
@@ -92,93 +73,23 @@ public final class DerbySupport {
      * the directory returned by this method exists.
      */
     public static String getDefaultSystemHome() {
+        // issue 76908
+        String propertySystemHome = System.getProperty(DerbyOptions.NETBEANS_DERBY_SYSTEM_HOME);
+        if (propertySystemHome != null) {
+            return propertySystemHome;
+        }
+
         String userHome = System.getProperty("user.home"); // NOI18N
-        return new File(userHome, DEFAULT_SYSTEM_HOME).getAbsolutePath();
+        return new File(userHome, NbBundle.getMessage(DerbySupport.class, "LBL_DerbyDatabaseDirectory")).getAbsolutePath();
     }
     
     /**
-     * Creates a sample directory in the Derby system home and registers it
-     * in the Database Explorer.
+     * Ensures the Derby database is started, that is, starts it if it is
+     * not running and does nothing otherwise.
      *
-     * <p>This method requires at least the Derby net drivers to be registered. 
-     * Otherwise it will throw an IllegalStateException.</p>
-     *
-     * <p>This method might take a long time to perform. It is advised that
-     * clients do not call this method from the event dispatching thread, 
-     * where it would block the UI.</p>
-     *
-     * @throws IllegalStateException if the Derby net driver is not registered.
-       @throws DatabaseException if an error occurs while registering
-     *         the new database in the Database Explorer.
+     * @since 1.5
      */
-    public static DatabaseConnection registerSampleDatabase() throws DatabaseException {
-        String targetDirectory = getSystemHome();
-        if ("".equals(targetDirectory)) { // NOI18N
-            throw new IllegalStateException("derby.system.home not set"); // NOI18N
-        }
-        File targetDirFile = new File(targetDirectory);
-        if (!targetDirFile.exists()){
-            targetDirFile.mkdirs();
-        }
-        File source = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", null, false);
-        FileObject target = FileUtil.toFileObject(targetDirFile);
-        FileObject sampleDir = target.getFileObject("sample");
-        if (sampleDir == null) {
-          extractZip(source, target);
-        }
-        JDBCDriver drivers[] = JDBCDriverManager.getDefault().getDrivers(RegisterDerby.NET_DRIVER_CLASS_NAME);
-        if (drivers.length == 0) {
-            throw new IllegalStateException("derby driver not found"); // NOI18N
-        }
-        DatabaseConnection con = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:1527/sample", "app", "APP", "app", true); // NOI18N
-        ConnectionManager.getDefault().addConnection(con);
-        return con;
-    }
-    
-    private static void extractZip(File source, FileObject target) {
-        FileInputStream is = null;
-        try {
-            is = new FileInputStream(source);
-            ZipInputStream zis = new ZipInputStream(is);
-            ZipEntry ze;
-
-
-            while ((ze = zis.getNextEntry()) != null) {
-                String name = ze.getName();
-
-                if (ze.isDirectory()) {
-                    FileUtil.createFolder(target, name);
-                    continue;
-                }
-
-                // copy the file
-                FileObject fd = FileUtil.createData(target, name);
-                FileLock lock = fd.lock();
-
-                try {
-                    OutputStream os = fd.getOutputStream(lock);
-
-                    try {
-                        FileUtil.copy(zis, os);
-                    } finally {
-                        os.close();
-                    }
-                } finally {
-                    lock.releaseLock();
-                }
-            }
-        } catch (FileNotFoundException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } finally {
-            if (is != null)
-                try {
-                    is.close();
-                }
-                catch (IOException e) {
-                    // can't do anything
-                }
-        }
+    public static void ensureStarted() {
+        RegisterDerby.getDefault().ensureStarted();
     }
 }

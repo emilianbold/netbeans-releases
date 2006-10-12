@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <exclude name="org/netbeans/modules/db/util/DatabaseExplorerInternalUIsTest.class"/>
             </patternset>
         </testset>
     </testbag>

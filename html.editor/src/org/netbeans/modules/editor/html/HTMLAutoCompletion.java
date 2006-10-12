@@ -95,7 +95,7 @@ class HTMLAutoCompletion {
             
         } else {
             //test whether the user typed an ending quotation in the attribute value
-            TokenItem token = ((HTMLSyntaxSupport)doc.getSyntaxSupport()).getTokenChain(dotPos-1, dotPos);
+            TokenItem token = ((HTMLSyntaxSupport)doc.getSyntaxSupport()).getTokenChain(dotPos > 0 ? dotPos-1 : 0, dotPos > 0 ? dotPos : 1);
             if(token != null &&
                     token.getTokenID() == HTMLTokenContext.VALUE) {
                 //test if the user inserted the qutation in an attribute value and before

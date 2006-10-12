@@ -19,11 +19,11 @@
 
 package org.netbeans.modules.j2ee.common;
 
-
+import org.openide.nodes.Node;
 
 /**
  * @author pfiala
  */
-public interface TransactionSupport {
+public interface TransactionSupport extends Node.Cookie {
     Transaction openTransaction();
 }

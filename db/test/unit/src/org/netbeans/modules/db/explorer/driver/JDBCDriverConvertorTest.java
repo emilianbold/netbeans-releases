@@ -28,6 +28,7 @@ import java.util.Collection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.test.DOMCompare;
 import org.netbeans.modules.db.test.TestBase;
+import org.netbeans.modules.db.test.Util;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -57,15 +58,12 @@ public class JDBCDriverConvertorTest extends TestBase {
     }
     
     protected void setUp() throws Exception {
-        FileObject[] fos = getDriversFolder().getChildren();
-        for (int i = 0; i < fos.length; i++) {
-            fos[i].delete();
-        }
+        Util.deleteDriverFiles();
     }
     
     public void testReadXml() throws Exception {
         // DTD version 1.0
-        FileObject fo = createDriverFile10("org_foo_FooDriver_10.xml", getDriversFolder());
+        FileObject fo = createDriverFile10("org_foo_FooDriver_10.xml", Util.getDriversFolder());
         DataObject dobj = DataObject.find(fo);
         InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
         assertNotNull(ic);
@@ -78,7 +76,7 @@ public class JDBCDriverConvertorTest extends TestBase {
         assertEquals(new URL("file:///foo2.jar"), driver.getURLs()[1]);
         
         // DTD version 1.1
-        fo = createDriverFile11("org_foo_FooDriver_11.xml", getDriversFolder());
+        fo = createDriverFile11("org_foo_FooDriver_11.xml", Util.getDriversFolder());
         dobj = DataObject.find(fo);
         ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
         assertNotNull(ic);
@@ -96,7 +94,7 @@ public class JDBCDriverConvertorTest extends TestBase {
         JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[] { new URL("file:///bar1.jar"), new URL("file:///bar2.jar") });
         JDBCDriverConvertor.create(driver);
         
-        FileObject fo = getDriversFolder().getFileObject("org_bar_BarDriver.xml");
+        FileObject fo = Util.getDriversFolder().getFileObject("org_bar_BarDriver.xml");
         
         ErrorHandlerImpl errHandler = new ErrorHandlerImpl();
         Document doc = null;
@@ -120,8 +118,23 @@ public class JDBCDriverConvertorTest extends TestBase {
         assertTrue(DOMCompare.compareDocuments(doc, goldenDoc));
     }
     
+    /**
+     * Tests that the instance retrieved from the DO created by JDBCDC.create(JDBCD driver) is the same object as driver.
+     * Note that this test does not ensure that the DataObject-s returned from 
+     * {@link JDBCDriverConvertor#create} cannot be GCd. They can be, which will
+     * cause new JDBCDriver instances to be created. See issue 75204.
+     */
+    public void testSameInstanceAfterCreate() throws Exception {
+        JDBCDriver driver1 = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[] { new URL("file:///bar1.jar"), new URL("file:///bar2.jar") });
+        DataObject dobj1 = JDBCDriverConvertor.create(driver1);
+        JDBCDriver driver2 = JDBCDriver.create("foo_driver", "Foo Driver", "org.foo.FooDriver", new URL[] { new URL("file:///foo1.jar"), new URL("file:///foo2.jar") });
+        DataObject dobj2 = JDBCDriverConvertor.create(driver2);
+        assertSame(driver1, ((InstanceCookie)dobj1.getCookie(InstanceCookie.class)).instanceCreate());
+        assertSame(driver2, ((InstanceCookie)dobj2.getCookie(InstanceCookie.class)).instanceCreate());
+    }
+    
     public void testLookup() throws Exception {
-        FileObject parent = getDriversFolder();
+        FileObject parent = Util.getDriversFolder();
         createDriverFile11("org_foo_FooDriver.xml", parent);
         FolderLookup lookup = new FolderLookup(DataFolder.findFolder(parent));
         Lookup.Result result = lookup.getLookup().lookup(new Lookup.Template(JDBCDriver.class));
@@ -149,7 +162,7 @@ public class JDBCDriverConvertorTest extends TestBase {
         
         assertEquals(0, oldRoot.getChildren().length);
         
-        FileObject newRoot = getDriversFolder();
+        FileObject newRoot = Util.getDriversFolder();
         assertEquals(1, newRoot.getChildren().length);
         
         FolderLookup lookup = new FolderLookup(DataFolder.findFolder(newRoot));
@@ -159,10 +172,6 @@ public class JDBCDriverConvertorTest extends TestBase {
         assertEquals(JDBCDriverConvertor.encodeURL(new URL(UNENCODED_URL)), drv.getURLs()[0]);
         // assert the imported driver has a display name set
         assertEquals(drv.getName(), drv.getDisplayName());
-    }
-    
-    private FileObject getDriversFolder() {
-        return Repository.getDefault().getDefaultFileSystem().findResource(JDBCDriverConvertor.DRIVERS_PATH);
     }
     
     private static FileObject createDriverFile10(String fileName, FileObject folder) throws Exception {

@@ -26,7 +26,7 @@ import java.io.OutputStreamWriter;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.api.sql.SQLExecuteCookie;
+import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.spi.sql.editor.SQLEditorProvider;
 import org.netbeans.modules.db.sql.editor.ui.actions.ConnectionAction;
 import org.openide.ErrorManager;
@@ -110,14 +110,9 @@ public class SQLEditorProviderImpl implements SQLEditorProvider {
         openCookie.open();
         
         SQLExecuteCookie sqlCookie = (SQLExecuteCookie)sqlDo.getCookie(SQLExecuteCookie.class);
-        ConnectionAction.setConnectionForCookie(sqlCookie, dbconn);
-        
+        sqlCookie.setDatabaseConnection(dbconn);
         if (execute) {
-            try {
-                sqlCookie.executeSQL(dbconn);
-            } catch (SQLException e) {
-                ErrorManager.getDefault().notify(e);
-            }
+            sqlCookie.execute();
         }
     }
 }

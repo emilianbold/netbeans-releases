@@ -26,7 +26,6 @@ import java.text.MessageFormat;
 
 
 import org.openide.*;
-import org.openide.cookies.InstanceCookie;
 import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.Node;
 import org.openide.util.datatransfer.PasteType;
@@ -34,9 +33,10 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.ExTransferable;
 
 // Node for Table/View/Procedure things.
 
@@ -102,6 +102,25 @@ public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
             //			ex.printStackTrace();
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
+    }
+    
+    public Transferable clipboardCopy() throws IOException {
+        Transferable result;
+        final DbMetaDataTransferProvider dbTansferProvider = (DbMetaDataTransferProvider)Lookup.getDefault().lookup(DbMetaDataTransferProvider.class);
+        if (dbTansferProvider != null) {
+            ExTransferable exTransferable = ExTransferable.create(super.clipboardCopy());
+            ConnectionNodeInfo cni = (ConnectionNodeInfo)getInfo().getParent(DatabaseNode.CONNECTION);
+            final DatabaseConnection dbconn = ConnectionList.getDefault().getConnection(cni.getDatabaseConnection());
+            exTransferable.put(new ExTransferable.Single(dbTansferProvider.getTableDataFlavor()) {
+                protected Object getData() {
+                    return dbTansferProvider.createTableData(dbconn.getDatabaseConnection(), dbconn.findJDBCDriver(), getInfo().getName());
+                }
+            });
+            result = exTransferable;
+        } else {
+            result = super.clipboardCopy();
+        }
+        return result;
     }
 
     protected void createPasteTypes(Transferable t, List s)

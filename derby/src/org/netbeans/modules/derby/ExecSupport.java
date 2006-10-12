@@ -63,7 +63,6 @@ public class ExecSupport {
         // executed before, the same tab will be returned.
         InputOutput io = org.openide.windows.IOProvider.getDefault().getIO(
             displayName, false);
-        OutputWriter ow = io.getOut();
         try {
             io.getOut().reset();
         }
@@ -89,6 +88,7 @@ public class ExecSupport {
                         copyMakers[2].interrupt();
                     }
                     catch (Exception e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }
                 }
             }

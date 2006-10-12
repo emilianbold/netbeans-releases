@@ -42,6 +42,15 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.classfile</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -142,6 +151,12 @@ Microsystems, Inc. All Rights Reserved.
                       <code-name-base>org.netbeans.core</code-name-base>
                   </test-dependency>
                   <test-dependency>
+                      <code-name-base>org.netbeans.modules.dbapi</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
+                      <code-name-base>org.openide.awt</code-name-base>
+                  </test-dependency>
+                  <test-dependency>
                       <code-name-base>org.openide.text</code-name-base>
                   </test-dependency>
               </test-type>
@@ -151,6 +166,7 @@ Microsystems, Inc. All Rights Reserved.
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.db.explorer</package>
+                <package>org.netbeans.api.db.explorer.support</package>
                 <package>org.netbeans.spi.db.explorer</package>
             </public-packages>
             <class-path-extension>

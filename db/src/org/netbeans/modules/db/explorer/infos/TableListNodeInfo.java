@@ -19,13 +19,20 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.openide.ErrorManager;
 
 public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOperations {
     static final long serialVersionUID =-6156362126513404875L;
@@ -33,8 +40,18 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
     protected void initChildren(Vector children) throws DatabaseException {
         try {
             String[] types = new String[] {"TABLE"}; // NOI18N
-
+            List recycleBinTables;
+            
             DriverSpecification drvSpec = getDriverSpecification();
+            
+            // issue 76953: do not display tables from the Recycle Bin on Oracle 10 and higher
+            DatabaseMetaData dmd = drvSpec.getMetaData();
+            if ("Oracle".equals(dmd.getDatabaseProductName()) && dmd.getDatabaseMajorVersion() >= 10) { // NOI18N
+                recycleBinTables = getOracleRecycleBinTables(dmd);
+            } else {
+                recycleBinTables = Collections.EMPTY_LIST;
+            }
+            
             drvSpec.getTables("%", types);
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
@@ -44,8 +61,10 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
                     rset = drvSpec.getRow();
                     info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rset);
                     if (info != null) {
-                        info.put(DatabaseNode.TABLE, info.getName());
-                        children.add(info);
+                        if (!recycleBinTables.contains(info.getName())) {
+                            info.put(DatabaseNode.TABLE, info.getName());
+                            children.add(info);
+                        }
                     } else
                         throw new Exception(bundle().getString("EXC_UnableToCreateNodeInformationForTable")); // NOI18N
                     rset.clear();
@@ -53,7 +72,9 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
                 rs.close();
             }
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 
@@ -85,7 +106,9 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
                 refreshChildren();
             }
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 
@@ -108,6 +131,30 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
         }
         
         return null;
+    }
+    
+    private List getOracleRecycleBinTables(DatabaseMetaData dmd) {
+        List result = new ArrayList();
+        try {
+            Statement stmt = dmd.getConnection().createStatement();
+            try {
+                ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME FROM RECYCLEBIN WHERE TYPE = 'TABLE'"); // NOI18N
+                try {
+                    while (rs.next()) {
+                        result.add(rs.getString("OBJECT_NAME")); // NOI18N
+                    }
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                stmt.close();
+            }
+        } catch (SQLException e) {
+            // not critical, logging is enough
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            result = Collections.EMPTY_LIST;
+        }
+        return result;
     }
     
 /*

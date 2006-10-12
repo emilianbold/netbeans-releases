@@ -28,6 +28,7 @@ import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -44,9 +45,16 @@ import java.util.Map;
 public class ResultSetTableModelSupport {
     
     /**
-     * Holds the ColumnTypeDef for all the types in java.sql.Types
+     * Holds the ColumnTypeDef for all the types in java.sql.Types.
+     * Not private because of unit tests.
      */
     static final Map/*<Integer,ColumnTypeDef>*/ TYPE_TO_DEF = new HashMap();
+    
+    /**
+     * The default implementation of ColumnTypeDef used for SQL types for which
+     * there is no value in {@link #TYPE_TO_DEF}.
+     */
+    private static ColumnTypeDef DEFAULT_COLUMN_DEF;
     
     static {
         // editable types
@@ -85,7 +93,22 @@ public class ResultSetTableModelSupport {
         ColumnTypeDef dateTypeDef = new GenericWritableColumnDef(Date.class);
         
         TYPE_TO_DEF.put(new Integer(Types.DATE), dateTypeDef);
-        TYPE_TO_DEF.put(new Integer(Types.TIME), dateTypeDef);
+        
+        // TIME type must displayed as time -- issue 72607
+        
+        ColumnTypeDef timeTypeDef = new ColumnTypeDef() {
+            public boolean isWritable() {
+                return true;
+            }
+            public Class getColumnClass() {
+                return Time.class;
+            }
+            public Object getColumnValue(ResultSet rs, int column) throws SQLException, IOException {
+                return rs.getTime(column);
+            }
+        };
+        
+        TYPE_TO_DEF.put(new Integer(Types.TIME), timeTypeDef);
         
         // TIMESTAMP type -- ensure that it is displayed as date and time
         // issue 64165, issue 70521
@@ -242,6 +265,25 @@ public class ResultSetTableModelSupport {
     }
     
     /**
+     * Default ColumnTypeDef implementation: not writable and using
+     * ResultSet.getObject() to read column values.
+     */
+    private static final class DefaultColumnDef implements ColumnTypeDef {
+        
+        public boolean isWritable() {
+            return false;
+        }
+        
+        public Class getColumnClass() {
+            return Object.class;
+        }
+        
+        public Object getColumnValue(ResultSet rs, int column) throws SQLException, IOException {
+            return rs.getObject(column);
+        }
+    }
+    
+    /**
      * Represents the value of a long varchar or clob column. Instances of this
      * class are placed in the table model for the result set.
      */
@@ -253,6 +295,9 @@ public class ResultSetTableModelSupport {
         
         public static LongVarCharColumnValue forCharColumn(ResultSet rs, int column) throws SQLException, IOException {
             Reader reader = rs.getCharacterStream(column);
+            if (reader == null) {
+                return null;
+            }
             try {
                 return new LongVarCharColumnValue(reader);
             } finally {
@@ -262,7 +307,13 @@ public class ResultSetTableModelSupport {
         
         public static LongVarCharColumnValue forClobColumn(ResultSet rs, int column) throws SQLException, IOException {
             Clob clob = rs.getClob(column);
+            if (clob == null) {
+                return null;
+            }
             Reader reader = clob.getCharacterStream();
+            if (reader == null) {
+                return null;
+            }
             try {
                 return new LongVarCharColumnValue(reader);
             } finally {
@@ -303,6 +354,9 @@ public class ResultSetTableModelSupport {
         
         public static BinaryColumnValue forBinaryColumn(ResultSet rs, int column) throws SQLException, IOException {
             InputStream input = rs.getBinaryStream(column);
+            if (input == null) {
+                return null;
+            }
             try {
                 return new BinaryColumnValue(input);
             } finally {
@@ -312,7 +366,13 @@ public class ResultSetTableModelSupport {
         
         public static BinaryColumnValue forBlobColumn(ResultSet rs, int column) throws SQLException, IOException {
             Blob blob = rs.getBlob(column);
+            if (blob == null) {
+                return null;
+            }
             InputStream input = blob.getBinaryStream();
+            if (input == null) {
+                return null;
+            }
             try {
                 return new BinaryColumnValue(input);
             } finally {
@@ -355,23 +415,52 @@ public class ResultSetTableModelSupport {
         }
     }
     
-    private static ColumnTypeDef getColumnTypeDef(int type) {
-        return (ColumnTypeDef)TYPE_TO_DEF.get(new Integer(type));
+    /**
+     * Not private because of unit tests.
+     */
+    static ColumnTypeDef getColumnTypeDef(int type) {
+        ColumnTypeDef result = (ColumnTypeDef)TYPE_TO_DEF.get(new Integer(type));
+        if (result != null) {
+            return result;
+        }
+        
+        synchronized (ResultSetTableModelSupport.class) {
+            if (DEFAULT_COLUMN_DEF == null) {
+                DEFAULT_COLUMN_DEF = new DefaultColumnDef();
+            }
+            return DEFAULT_COLUMN_DEF;
+        }
     }
     
+    /**
+     * Returns a List of ColumnDef objects or null if the calling thread was
+     * interrupted.
+     */
     public static List/*<ColumnDef>*/ createColumnDefs(ResultSetMetaData rsmd) throws SQLException {
         int count = rsmd.getColumnCount();
         List columns = new ArrayList(count);
 
         for (int i = 1; i <= count; i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                return null;
+            }
+            
             int type = rsmd.getColumnType(i);
             ColumnTypeDef ctd = getColumnTypeDef(type);
             
             // TODO: does writable depend on the result set type (updateable?)
-            
+
+            // issue 75700: the demo version of the Teradata DB throws SQLException on RSMD.isWritable()
+            boolean writable = false;
+            try {
+                writable = rsmd.isWritable(i) && ctd.isWritable();
+            } catch (SQLException e) {
+                // ignore
+            }
+
             ColumnDef column = new ColumnDef(
                     rsmd.getColumnName(i), 
-                    rsmd.isWritable(i) && ctd.isWritable(),
+                    writable,
                     ctd.getColumnClass());
             
             columns.add(column);
@@ -385,6 +474,10 @@ public class ResultSetTableModelSupport {
         int fetchLimit = handler.getFetchLimit();
 
         while (rs.next()) {
+            if (Thread.currentThread().isInterrupted()) {
+                return null;
+            }
+            
             int fetchCount = rows.size();
             if (fetchLimit > 0 && fetchCount >= fetchLimit) {
                 fetchLimit = handler.fetchLimitReached(fetchCount);
@@ -395,12 +488,13 @@ public class ResultSetTableModelSupport {
 
             List row = new ArrayList();
             for (int i = 1; i <= columnCount; i++) {
-                Object value = rs.getObject(i);
-                if (value != null) {
-                    int type = rsmd.getColumnType(i);
-                    ColumnTypeDef ctd = getColumnTypeDef(type);
-                    value = ctd.getColumnValue(rs, i);
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
                 }
+                
+                int type = rsmd.getColumnType(i);
+                ColumnTypeDef ctd = getColumnTypeDef(type);
+                Object value = ctd.getColumnValue(rs, i);
                 row.add(value != null ? value : NullValue.getDefault());
             }
             rows.add(row);

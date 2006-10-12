@@ -44,7 +44,7 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
     private transient DatabaseMetaData dmd;
     private transient String catalog;
     
-    private transient boolean stop;
+    private transient volatile boolean stop;
     
     public transient PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
     
@@ -200,11 +200,19 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                 LinkedList viewsTmp = new LinkedList();
 //                String user = dmd.getUserName().trim();
                 String user = cp.getSchema();
+                List recycleBinTables;
                 ResultSet rs;
                 
                 DDLBridge bridge = null;
                 if (IDEUtil.isIDERunning())
                     bridge = new DDLBridge(cp.getConnection(), cp.getSchema(), dmd);
+                
+                // issue 76953: do not display tables from the Recycle Bin on Oracle 10 and higher
+                if ("Oracle".equals(dmd.getDatabaseProductName()) && dmd.getDatabaseMajorVersion() >= 10) { // NOI18N
+                    recycleBinTables = getOracleRecycleBinTables();
+                } else {
+                    recycleBinTables = Collections.EMPTY_LIST;
+                }
 
 //get the list of all tables and views
                 if (bridge != null) {
@@ -220,10 +228,15 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                             return;
                         }
 
+                        String tableTmp;
                         if (bridge != null)
-                            tablesTmp.add((String) bridge.getDriverSpecification().getRow().get(new Integer(3)));
+                            tableTmp = (String) bridge.getDriverSpecification().getRow().get(new Integer(3));
                         else
-                            tablesTmp.add(rs.getString("TABLE_NAME").trim()); //NOI18N
+                            tableTmp = rs.getString("TABLE_NAME").trim(); //NOI18N
+                        
+                        if (!recycleBinTables.contains(tableTmp)) {
+                            tablesTmp.add(tableTmp);
+                        }
                     }
                     rs.close();
                 }
@@ -269,7 +282,9 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                     views = v;
                 }
                 
-                propertySupport.firePropertyChange("totalCount", null, new Integer(tables.size() + views.size())); //NOI18N
+                // the tables are included twice because for each table
+                // the progress is incremented twice (once for the table itself and once for the keys)
+                propertySupport.firePropertyChange("totalCount", null, new Integer(2 * tables.size() + views.size())); //NOI18N
                 
                 initTables(cp, tables);
                 initViews(cp, views, bridge);
@@ -403,6 +418,9 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                 propertySupport.firePropertyChange("FKt", null, tableName); //NOI18N
                 ((TableElementImpl) te.getElementImpl()).initKeys(cp, 0, tableName);
             }
+
+            progress++;
+            propertySupport.firePropertyChange("progress", null, new Integer(progress)); //NOI18N
         }
     }
     
@@ -673,6 +691,32 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
             progress++;
             propertySupport.firePropertyChange("progress", null, new Integer(progress)); //NOI18N
         }
+    }
+    
+    private List getOracleRecycleBinTables() {
+        List result = new ArrayList();
+        try {
+            Statement stmt = dmd.getConnection().createStatement();
+            try {
+                ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME FROM RECYCLEBIN WHERE TYPE = 'TABLE'"); // NOI18N
+                try {
+                    while (rs.next()) {
+                        result.add(rs.getString("OBJECT_NAME")); // NOI18N
+                    }
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                stmt.close();
+            }
+        } catch (SQLException exc) {
+            // not critical, logging is enough
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                exc.printStackTrace();
+            }
+            result = Collections.EMPTY_LIST;
+        }
+        return result;
     }
   
     /** Getter for property url.

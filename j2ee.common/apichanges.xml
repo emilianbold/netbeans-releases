@@ -127,6 +127,23 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.common.ui.nodes" name="FieldCustomizer"/>
             <class package="org.netbeans.modules.j2ee.common.ui.nodes" name="QueryCustomizer"/>
         </change>
+        
+
+        <change id="DatasourceCombobox">
+            <api name="j2ee-utilities"/>
+            <summary>Added two customizers: for .</summary>
+            <version major="1" minor="6"/>
+            <date day="17" month="3" year="2006"/>
+            <author login="lkotouc"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added the <code>DatasourceUIHelper</code> class for listing and managing data sources
+                    in the combobox given by a client.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.common" name="DatasourceUIHelper"/>
+        </change>
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->

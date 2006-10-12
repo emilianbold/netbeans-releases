@@ -64,11 +64,13 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
   <folder name="Templates">
-    <attr name="Classes/Databases" boolvalue="true"/>
-    <attr name="J2EE/Databases" boolvalue="true"/>
-    <attr name="JSP_Servlet/Databases" boolvalue="true"/>
-    <attr name="WebServices/Databases" boolvalue="true"/>
-    <folder name="Databases">
+<!--      
+    <attr name="Classes/Persistence" boolvalue="true"/>
+    <attr name="J2EE/Persistence" boolvalue="true"/>
+    <attr name="JSP_Servlet/Persistence" boolvalue="true"/>
+    <attr name="WebServices/Persistence" boolvalue="true"/>
+-->    
+    <folder name="Persistence">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"/>
       <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/Databases.html" />
 
@@ -77,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/DBSchema.html" />
          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.dbschema.jdbcimpl.wizard.DBSchemaWizardIterator.singleton" />
-         <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
+         <attr name="templateCategory" stringvalue="web-types,ejb-types,persistence,ejb-deployment-descriptor"/>
       </file>
       <attr name="Database Schema.dbschema/JDBC Form Wizard.java" boolvalue="true"/>
     </folder>

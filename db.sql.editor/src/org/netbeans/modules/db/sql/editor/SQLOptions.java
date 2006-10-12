@@ -30,9 +30,9 @@ import org.openide.util.NbBundle;
 * @author Jesse Beaumont based on code by Miloslav Metelka
 */
 public class SQLOptions extends BaseOptions {
-
-    public static String SQL = "sql"; // NOI18N
-
+    
+    public static final String SQL = "sql"; // NOI18N
+    
     private static final String HELP_ID = "editing.editor.sql"; // NOI18N
 
     //no sql specific options at this time

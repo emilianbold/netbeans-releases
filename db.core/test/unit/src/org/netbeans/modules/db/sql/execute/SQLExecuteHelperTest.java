@@ -26,30 +26,64 @@ import org.netbeans.junit.NbTestCase;
  * @author Andrei Badea
  */
 public class SQLExecuteHelperTest extends NbTestCase {
-
-    private static final String[] sqlCommentRemoverTests = {
-        "select --line\n from dual", "select  from dual",
-        "select ----line\n from dual", "select  from dual",
-        "select --line from dual", "select ",
-        "select /* block */ from dual", "select  from dual",
-        "select ///* block */ from dual", "select // from dual",
-        "select /* block * block ***/ from dual", "select  from dual",
-        "select /* block from dual", "select ",
-        "select a - b / c from dual", "select a - b / c from dual",
-    };
     
     public SQLExecuteHelperTest(String testName) {
         super(testName);
     }
 
-    public void testCommentRemover() {
-        for (int i = 0; i < sqlCommentRemoverTests.length;) {
-            String sql = sqlCommentRemoverTests[i];
-            i++;
-            String expected = sqlCommentRemoverTests[i];
-            i++;
-            String removed = SQLExecuteHelper.removeComments(sql);
-            assertEquals(expected, removed);
+    public void testSplit() {
+        // removing line comments
+        assertSplit("select --line\n from dual", "select  from dual");
+        assertSplit("select ----line\n from dual", "select  from dual");
+        assertSplit("select --line from dual", "select");
+        
+        // removing block comments
+        assertSplit("select /* block */ from dual", "select  from dual");
+        assertSplit("select ///* block */ from dual", "select // from dual");
+        assertSplit("select /* block * block ***/ from dual", "select  from dual");
+        assertSplit("select /* block from dual", "select");
+        assertSplit("select a - b / c from dual", "select a - b / c from dual");
+        assertSplit("select 'foo /* bar */ -- baz' from dual", "select 'foo /* bar */ -- baz' from dual");
+        
+        // ; in comments should not be considered a statement separator
+        assertSplit("select --comment; \n foo", "select  foo");
+        assertSplit("select /* ; */ foo", "select  foo");
+
+        // splitting
+        assertSplit(" ;; ; ", new String[0]);
+        assertSplit("/* comment */ select foo; /* comment */ select bar -- comment", new String[] { "select foo", "select bar" });
+
+        // splitting and start/end positions
+        String test = "  select foo  ;   select /* comment */bar;\n   select baz -- comment";
+        // System.out.println(test.substring(12));
+        assertSplit(test, new StatementInfo[] { 
+            new StatementInfo("select foo", 2, 0, 2, 12),
+            new StatementInfo("select bar", 18, 0, 18, 41),
+            new StatementInfo("select baz", 46, 1, 3, 56),
+        });
+    }
+    
+    private static void assertSplit(String script, String expected) {
+        assertSplit(script, new String[] { expected });
+    }
+    
+    private static void assertSplit(String script, String[] expected) {
+        StatementInfo[] stmts = (StatementInfo[])SQLExecuteHelper.split(script).toArray(new StatementInfo[0]);
+        assertEquals(expected.length, stmts.length);
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i], stmts[i].getSQL());
+        }
+    }
+    
+    private static void assertSplit(String script, StatementInfo[] expected) {
+        StatementInfo[] stmts = (StatementInfo[])SQLExecuteHelper.split(script).toArray(new StatementInfo[0]);
+        assertEquals(expected.length, stmts.length);
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i].getSQL(), stmts[i].getSQL());
+            assertEquals(expected[i].getStartOffset(), stmts[i].getStartOffset());
+            assertEquals(expected[i].getStartLine(), stmts[i].getStartLine());
+            assertEquals(expected[i].getStartColumn(), stmts[i].getStartColumn());
+            assertEquals(expected[i].getEndOffset(), stmts[i].getEndOffset());
         }
     }
 }

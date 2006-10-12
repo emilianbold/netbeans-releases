@@ -20,8 +20,8 @@
 package org.netbeans.modules.derby;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.derby.test.TestBase;
-import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -31,8 +31,8 @@ import org.openide.modules.InstalledFileLocator;
 public class DerbyOptionsTest extends TestBase {
 
     File userdir;
-    File derby;
-
+    File externalDerby;
+    
     public DerbyOptionsTest(String testName) {
         super(testName);
     }
@@ -44,15 +44,15 @@ public class DerbyOptionsTest extends TestBase {
         userdir.mkdirs();
         
         // create a fake installation of an external derby database
-        derby = new File(userdir, "derby");
-        derby.mkdir();
+        externalDerby = new File(userdir, "derby");
+        createFakeDerbyInstallation(externalDerby);
     }
 
     public void testDerbyLocationIsNullWhenBundledDerbyNotInstalled() {
         // assert the bundled derby is not installed
         assertNull(DerbyOptions.getDefaultInstallLocation());
         
-        DerbyOptions.getDefault().setLocation(derby.getAbsolutePath());
+        DerbyOptions.getDefault().setLocation(externalDerby.getAbsolutePath());
         assertFalse(DerbyOptions.getDefault().isLocationNull());
         
         DerbyOptions.getDefault().setLocation("");
@@ -62,10 +62,7 @@ public class DerbyOptionsTest extends TestBase {
     public void testDerbyLocationIsNotNullWhenBundledDerbyInstalled() throws Exception {
         // create a fake bundled derby database installation
         File bundledDerby = new File(userdir, DerbyOptions.INST_DIR);
-        bundledDerby.mkdirs();
-        File bundledDerbyLib = new File(bundledDerby, "lib");
-        bundledDerbyLib.mkdir();
-        new File(bundledDerbyLib, "derby.jar").createNewFile();
+        createFakeDerbyInstallation(bundledDerby);
         
         // create a IFL which will find the bundled derby
         setLookup(new Object[] { new InstalledFileLocatorImpl(userdir) });
@@ -74,12 +71,33 @@ public class DerbyOptionsTest extends TestBase {
         String derbyLocation = DerbyOptions.getDefaultInstallLocation();
         assertNotNull(derbyLocation);
         
-        DerbyOptions.getDefault().setLocation(derby.getAbsolutePath());
+        DerbyOptions.getDefault().setLocation(externalDerby.getAbsolutePath());
         assertFalse(DerbyOptions.getDefault().isLocationNull());
         
         DerbyOptions.getDefault().setLocation(""); // this should set the location to the one of the bundled derby
         assertFalse(DerbyOptions.getDefault().isLocationNull());
         assertEquals(DerbyOptions.getDefault().getLocation(), derbyLocation);
+    }
+    
+    public void testLocationWhenNDSHPropertySetIssue76908() throws IOException {
+        assertEquals("", DerbyOptions.getDefault().getSystemHome());
+        
+        File ndshSystemHome = new File(getWorkDir(), ".netbeans-derby-ndsh");
+        if (!ndshSystemHome.mkdirs()) {
+            throw new IOException("Could not create " + ndshSystemHome);
+        }
+        File systemHome = new File(getWorkDir(), ".netbeans-derby");
+        if (!systemHome.mkdirs()) {
+            throw new IOException("Could not create " + systemHome);
+        }
+        
+        // returning the value of the netbeans.derby.system.home property when systemHome is not set...
+        System.setProperty(DerbyOptions.NETBEANS_DERBY_SYSTEM_HOME, ndshSystemHome.getAbsolutePath());
+        assertEquals(ndshSystemHome.getAbsolutePath(), DerbyOptions.getDefault().getSystemHome());
+        
+        // ... but returning systemHome when it is set
+        DerbyOptions.getDefault().setSystemHome(systemHome.getAbsolutePath());
+        assertEquals(systemHome.getAbsolutePath(), DerbyOptions.getDefault().getSystemHome());
     }
     
     private static final class InstalledFileLocatorImpl extends InstalledFileLocator {

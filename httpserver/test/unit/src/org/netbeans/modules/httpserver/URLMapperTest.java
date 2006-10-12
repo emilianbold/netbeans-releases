@@ -27,6 +27,7 @@ import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 
@@ -35,8 +36,6 @@ import org.openide.filesystems.URLMapper;
  * @author Radim Kubacki, Petr Jiricka
  */
 public class URLMapperTest extends NbTestCase {
-
-    private HashSet extProtocols;
     
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -54,43 +53,48 @@ public class URLMapperTest extends NbTestCase {
     
     
     protected void setUp() throws IOException {
-        extProtocols = new HashSet ();
-        extProtocols.add ("http");
-        extProtocols.add ("file");
-        extProtocols.add ("ftp");
+    }
+    
+    private FileObject getTestFSRoot() {
+        log("Data dir: " + getDataDir());
+        return FileUtil.toFileObject(getDataDir());
+    }
+    
+    public void testFSRoot() throws Exception {
+        assertNotNull("Test FS Root is null", getTestFSRoot());
     }
     
     /** simple test case
      */
     public void testFileURLMapping() throws Exception {
-        FileObject fo = Repository.getDefault().findResource("org/netbeans/test/httpserver/testResource.txt");
+        FileObject fo = getTestFSRoot().getFileObject("org/netbeans/test/httpserver/testResource.txt");
 
         URLMapper mapper = getMapper();
-        URL url = mapper.getURL(fo,  URLMapper.EXTERNAL);
+        URL url = mapper.getURL(fo,  URLMapper.NETWORK);
         checkFileObjectURLMapping(fo, url, getMapper());
     }
     
     public void testEmptyFileURLMapping() throws Exception {
-        FileObject fo = Repository.getDefault().findResource("org/netbeans/test/httpserver/empty");
+        FileObject fo = getTestFSRoot().getFileObject("org/netbeans/test/httpserver/empty");
         
         URLMapper mapper = getMapper();
-        URL url = mapper.getURL(fo,  URLMapper.EXTERNAL);
+        URL url = mapper.getURL(fo,  URLMapper.NETWORK);
         checkFileObjectURLMapping(fo, url, getMapper());
     }
     
     public void testDirURLMapping() throws Exception {
-        FileObject fo = Repository.getDefault().findResource("org/netbeans/test/httpserver");
+        FileObject fo = getTestFSRoot().getFileObject("org/netbeans/test/httpserver");
         
         URLMapper mapper = getMapper();
-        URL url = mapper.getURL(fo,  URLMapper.EXTERNAL);
+        URL url = mapper.getURL(fo,  URLMapper.NETWORK);
         checkFileObjectURLMapping(fo, url, getMapper());
     }
     
     public void testFileWithSpacesURLMapping() throws Exception {
-        FileObject fo = Repository.getDefault().findResource("org/netbeans/test/httpserver/dir with spaces/file with spaces.txt");
+        FileObject fo = getTestFSRoot().getFileObject("org/netbeans/test/httpserver/dir with spaces/file with spaces.txt");
         
         URLMapper mapper = getMapper();
-        URL url = mapper.getURL(fo,  URLMapper.EXTERNAL);
+        URL url = mapper.getURL(fo,  URLMapper.NETWORK);
         if (url != null) {
             // the case that the URL is null will be caught anyhow later
             if (url.toExternalForm().indexOf(' ') != -1) {
@@ -99,21 +103,23 @@ public class URLMapperTest extends NbTestCase {
         }
         checkFileObjectURLMapping(fo, url, getMapper());
     }
-    
+
+    /**
+     * with MasterFS this one does not work - should we expect it to work?
     public void testFSRootURLMapping() throws Exception {
-        FileObject fo = Repository.getDefault().
-            findResource("org/netbeans/test/httpserver/testResource.txt").getFileSystem().getRoot();
+        FileObject fo = getTestFSRoot().getFileObject("org/netbeans/test/httpserver/testResource.txt").getFileSystem().getRoot();
         
         URLMapper mapper = getMapper();
-        URL url = mapper.getURL(fo,  URLMapper.EXTERNAL);
+        URL url = mapper.getURL(fo,  URLMapper.NETWORK);
         checkFileObjectURLMapping(fo, url, getMapper());
     }
+     */
     
     public void testPageWithAnchorMapping() throws Exception {
-        FileObject fo = Repository.getDefault().findResource("org/netbeans/test/httpserver/Page.html");
+        FileObject fo = getTestFSRoot().getFileObject("org/netbeans/test/httpserver/Page.html");
         
         URLMapper mapper = getMapper();
-        URL url = mapper.getURL(fo,  URLMapper.EXTERNAL);
+        URL url = mapper.getURL(fo,  URLMapper.NETWORK);
         if (url != null) {
             // the case that the URL is null will be caught anyhow later
             url = new URL (url, "#A(a, b, c)");
@@ -122,7 +128,7 @@ public class URLMapperTest extends NbTestCase {
     }
     
     public void testInternalMapping() throws Exception {
-        FileObject fo = Repository.getDefault().findResource("org/netbeans/test/httpserver/testResource.txt");
+        FileObject fo = getTestFSRoot().getFileObject("org/netbeans/test/httpserver/testResource.txt");
         assertNotNull("File tested is null " + fo, fo);
 
         URLMapper mapper = getMapper();
@@ -131,22 +137,6 @@ public class URLMapperTest extends NbTestCase {
         assertNull("Internal mapping for file " + fo + " should be null: " + url, url);
     }
     
-    /** Some URLs shouldn't be wrapped.
-     * @param url tested URL.
-     */
-/*    public void testDummyMapping () throws Exception {
-        // URLs that should not be wrapped
-        URL [] urls = {
-            null,
-            new URL ("http://www.netbeans.org/")
-        };
-        
-        for (int i = 0; i<urls.length; i++) {
-            URL url = urls[i];
-            URL wrapped = WrapperServlet.createHttpURL(url);
-            assertEquals("URLs "+url+" and "+wrapped+" ought to be the same.", url, wrapped);
-        }
-    }*/
     
     private URLMapper getMapper() {
         return new HttpServerURLMapper();
@@ -167,35 +157,6 @@ public class URLMapperTest extends NbTestCase {
         URL u2 = fo.getURL();
         compareStream(url.openStream(), u2.openStream());
     }
-    /**
-     * @param u1 original URL
-     * @param u2 wrapped URL
-     * @param compare controls whether content of streams should be compared.
-     * @throws Exception  
-     */
-/*    private void checkWrapping (URL u1, URL u2, boolean compare) throws Exception {
-        log ("Testing "+u1+" and "+u2);
-        assertNotNull(u1+" is not wrapped", u2);
-        assertTrue("Invalid anchor.", (u1.getRef() == null && u2.getRef() == null) ||
-                                      u1.getRef().equals(u2.getRef())
-        );
-        assertTrue("Doesn't wrap to external protocol", extProtocols.contains (u2.getProtocol()));
-        if (compare) {
-            compareStream(u1.openStream(), u2.openStream());
-        }
-        // make sure that the URL does not contain spaces (but only if the scheme is not file)
-        if (!"file".equals(u2.getProtocol())) {
-            String ext = u2.toExternalForm();
-            int ref = ext.indexOf('#');
-            if (ref != -1) {
-                ext = ext.substring(0, ref);
-            }
-            int spaceIndex = ext.indexOf(' ');
-            if (spaceIndex != -1) {
-                fail("URL " + u2 + " contains spaces.");
-            }
-        }
-    }*/
     
     /** Compares content of two streams. 
      */

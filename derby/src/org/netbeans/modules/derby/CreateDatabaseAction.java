@@ -45,8 +45,8 @@ public class CreateDatabaseAction extends CallableSystemAction {
     }    
     
     public void performAction() {
-        if (!RegisterDerby.getDefault().hasInstallLocation()) {
-            RegisterDerby.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
+        if (!Util.hasInstallLocation()) {
+            Util.showInformation(NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyLocationIncorrect"));
             return;
         }
         
@@ -85,9 +85,6 @@ public class CreateDatabaseAction extends CallableSystemAction {
         }
         
         try {
-            if (!RegisterDerby.getDefault().isRunning()) {
-                RegisterDerby.getDefault().start(5000);
-            }
             makeDatabase(databaseName, user, password);
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
@@ -95,7 +92,7 @@ public class CreateDatabaseAction extends CallableSystemAction {
     }
     
     void makeDatabase(String dbname, String user, String password) throws Exception {
-        RegisterDerby.getDefault().postCreateNewDatabase(new File(dbname), user, password);
+        RegisterDerby.getDefault().postCreateNewDatabase(dbname, user, password);
     }
 
     protected boolean asynchronous() {

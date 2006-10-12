@@ -57,7 +57,6 @@ public class DatabaseOption extends SystemOption {
     private static boolean autoConn = true;
 
     public static final String PROP_DEBUG_MODE = "debugMode"; //NOI18N
-    public static final String PROP_AUTO_CONNECTION = "autoConn"; //NOI18N
 
     static final long serialVersionUID =-13629330831657810L;
     
@@ -110,19 +109,6 @@ public class DatabaseOption extends SystemOption {
             connections = new Vector();
 
         return connections;
-    }
-
-    public boolean isAutoConn() {
-        return autoConn;
-    }
-    
-    public void setAutoConn(boolean newAutoConn) {
-        boolean old = autoConn;
-        if (old == newAutoConn)
-            return;
-        
-        autoConn = newAutoConn;
-        firePropertyChange(PROP_AUTO_CONNECTION, !autoConn ? Boolean.TRUE : Boolean.FALSE, autoConn ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public void save() {

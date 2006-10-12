@@ -175,7 +175,6 @@ public class FORMCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jTextField1, gridBagConstraints);
 
-        jButton1.setFont(new java.awt.Font("Dialog", 0, 12));
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "LBL_FORM_Browse"));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -240,7 +239,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, "&GET");
-        jRadioButton1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButton1.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -260,7 +259,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
 
         buttonGroup1.add(jRadioButton2);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, "&POST");
-        jRadioButton2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButton2.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -281,7 +280,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
         buttonGroup2.add(jRadioButton3);
         jRadioButton3.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, "application/x-www-form-&urlencoded");
-        jRadioButton3.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton3.setEnabled(false);
         jRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -296,7 +295,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
 
         buttonGroup2.add(jRadioButton4);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton4, "multipart/form-&data");
-        jRadioButton4.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton4.setEnabled(false);
         jRadioButton4.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -309,8 +308,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
         jRadioButton4.getAccessibleContext().setAccessibleName("multipart/form-data");
         jRadioButton4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "ACSD_FORM_multi"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jRadioButton2ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jRadioButton2ItemStateChanged
         setEncoding();

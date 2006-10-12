@@ -32,6 +32,7 @@ import java.util.Vector;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 
 import org.openide.DialogDescriptor;
@@ -93,35 +94,64 @@ public class ConnectUsingDriverAction extends DatabaseAction {
         boolean okPressed = false;
 
         public void showDialog(String driverName, String driverClass) {
-            showDialog(driverName, driverClass, null);
+            showDialog(driverName, driverClass, null, null, null);
         }
         
-        public void showDialog(String driverName, String driverClass, String databaseUrl) {
+        public DatabaseConnection showDialog(JDBCDriver driver, String databaseUrl, String user, String password) {
+            String driverName = (driver != null) ? driver.getName() : null;
+            String driverClass = (driver != null) ? driver.getClassName() : null;
+            return showDialog(driverName, driverClass, databaseUrl, user, password);
+        }
+        
+        public DatabaseConnection showDialog(String driverName, String driverClass, String databaseUrl, String user, String password) {
+            String finalDriverClass = null;
             
-            Vector drvs = new Vector();
-            JDBCDriver[] drivers = null;
-            if ((null != databaseUrl) && (null != driverClass))
+            JDBCDriver[] drivers;
+            if ((null != databaseUrl) && (null != driverClass)) {
                 drivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
-            else
+                finalDriverClass = driverClass;
+            } else {
                 drivers = JDBCDriverManager.getDefault().getDrivers();
-            for (int i = 0; i < drivers.length; i++)
-                if (JDBCDriverSupport.isAvailable(drivers[i])) {
-                    drvs.add(drivers[i]);
-                    if (driverName == null || driverClass == null) {
-                        driverName = drivers[i].getName();
-                        driverClass = drivers[i].getClassName();
+            }
+            
+            // issue 74723: select the Derby network driver by default
+            // otherwise just select the first driver
+            String selectedDriverName = null;
+            String selectedDriverClass = null;
+            if (driverName == null || driverClass == null) {
+                for (int i = 0; i < drivers.length; i++) {
+                    if (JDBCDriverSupport.isAvailable(drivers[i])) {
+                        if (selectedDriverName == null) {
+                            selectedDriverName = drivers[i].getName();
+                            selectedDriverClass = drivers[i].getClassName();
+                        }
+                        if ("org.apache.derby.jdbc.ClientDriver".equals(drivers[i].getClassName())) { // NOI18N
+                            selectedDriverName = drivers[i].getName();
+                            selectedDriverClass = drivers[i].getClassName();
+                            break;
+                        }
                     }
                 }
+            } else {
+                selectedDriverName = driverName;
+                selectedDriverClass = driverClass;
+            }
             
             final DatabaseConnection cinfo = new DatabaseConnection();
-            cinfo.setDriverName(driverName);
-            cinfo.setDriver(driverClass);
+            cinfo.setDriverName(selectedDriverName);
+            cinfo.setDriver(selectedDriverClass);
+            if (user != null) {
+                cinfo.setUser(user);
+            }
+            if (password != null) {
+                cinfo.setPassword(password);
+            }
 
             if (null != databaseUrl) {
                 cinfo.setDatabase(databaseUrl);
             }
-                
-            final NewConnectionPanel basePanel = new NewConnectionPanel(this, drvs, cinfo);
+            
+            final NewConnectionPanel basePanel = new NewConnectionPanel(this, finalDriverClass, cinfo);
             final SchemaPanel schemaPanel = new SchemaPanel(this, cinfo);
 
             PropertyChangeListener argumentListener = new PropertyChangeListener() {
@@ -267,6 +297,8 @@ public class ConnectUsingDriverAction extends DatabaseAction {
 
             dlg = new ConnectionDialog(this, basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener);
             dlg.setVisible(true);
+            
+            return ConnectionList.getDefault().getConnection(cinfo);
         }
 
 //    private void removeListeners() {

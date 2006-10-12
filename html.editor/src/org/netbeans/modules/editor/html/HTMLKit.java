@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  */
 
 public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements org.openide.util.HelpCtx.Provider {
-
+    
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(HTMLKit.class);
     }
@@ -103,6 +103,15 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
         doc.addDocumentListener(new HTMLDrawLayerFactory.TagParenWatcher());
     }
     
+    /** Create caret to navigate through document */
+    public Caret createCaret() {
+        return new ExtCaret(){
+            public void requestMatchBraceUpdateSync() {
+                matchBraceUpdateSync = false;
+            }
+        };
+    }
+    
     /** Create new instance of syntax coloring scanner
      * @param doc document to operate on. It can be null in the cases the syntax
      *   creation is not related to the particular document
@@ -121,7 +130,9 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
         return null;
     }
     
-    /** used to create completion instance from completion provider */
+    /** used to create completion instance from completion provider
+     * @deprecated
+     */
     public Completion createCompletionForProvider(ExtEditorUI extEditorUI) {
         return new HTMLCompletion(extEditorUI);
     }
@@ -140,15 +151,15 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
     protected Action[] createActions() {
         Action[] HTMLActions = new Action[] {
             new HTMLDefaultKeyTypedAction(),
-                    new HTMLDeleteCharAction(deletePrevCharAction, false),
-                    new HTMLDeleteCharAction(deleteNextCharAction, true),
-                    new HTMLShiftBreakAction(),
-                    // replace MatchBraceAction with HtmlEditor own
-                    new MatchBraceAction(ExtKit.matchBraceAction, false),
-                    new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
-                    new HTMLGenerateFoldPopupAction(),
-                    new CollapseAllCommentsFolds(),
-                    new ExpandAllCommentsFolds()
+            new HTMLDeleteCharAction(deletePrevCharAction, false),
+            new HTMLDeleteCharAction(deleteNextCharAction, true),
+            new HTMLShiftBreakAction(),
+            // replace MatchBraceAction with HtmlEditor own
+            new MatchBraceAction(ExtKit.matchBraceAction, false),
+            new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
+            new HTMLGenerateFoldPopupAction(),
+            new CollapseAllCommentsFolds(),
+            new ExpandAllCommentsFolds()
         };
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }
@@ -230,7 +241,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
                                     caret.moveDot(matchBlk[1]);
                                 } else {
                                     caret.setDot(matchBlk[1]);
-                                }                            
+                                }
                             }
                         }
                     } else{   // If this is not token from HTML Syntax -> call the original action from editor.
@@ -933,4 +944,4 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
     
     
 }
- 
+

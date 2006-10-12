@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
             </file>
-            <file name="xhtml.html" url="templates/xhtml.html">
+            <file name="xhtml.xhtml" url="templates/xhtml.xhtml">
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/XhtmlTemplateHelp.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>

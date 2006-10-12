@@ -32,6 +32,9 @@ import java.io.OutputStreamWriter;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
+import org.netbeans.editor.TokenID;
+import org.netbeans.editor.ext.html.HTMLSyntax;
+import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.modules.html.palette.HTMLPaletteFactory;
 import org.netbeans.spi.palette.PaletteController;
 
@@ -50,6 +53,8 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
@@ -213,32 +218,45 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
      * @return the encoding or null if no has been found
      */
     private static String findEncoding (String txt) {
-        int headLen = txt.indexOf ("</HEAD>"); // NOI18N
-        if (headLen == -1) headLen = txt.length ();
-        
-        int content = txt.indexOf ("CONTENT-TYPE"); // NOI18N
-        if (content == -1 || content > headLen) {
+        String CHARSET_DECL = "CHARSET="; //NOI18N
+        HTMLSyntax syntax = new HTMLSyntax();
+        int headEndOffset = txt.indexOf ("</HEAD>"); // NOI18N
+        if (headEndOffset == -1){
             return null;
         }
         
-        int charset = txt.indexOf ("CHARSET=", content); // NOI18N
-        if (charset == -1) {
-            return null;
-        }
+        char buffer[] = txt.toCharArray();
+        syntax.load(null, buffer, 0, headEndOffset, false, -1);
         
-        int charend = txt.indexOf ('"', charset);
-        int charend2 = txt.indexOf ('\'', charset);
-        if (charend == -1 && charend2 == -1) {
-            return null;
-        }
-
-        if (charend2 != -1) {
-            if (charend == -1 || charend > charend2) {
-                charend = charend2;
+        for (TokenID tokenId = syntax.nextToken(); tokenId != null; tokenId = syntax.nextToken()){
+            if (tokenId == HTMLTokenContext.VALUE){
+                String tokenImage = txt.substring(syntax.getTokenOffset(),
+                        syntax.getTokenLength() + syntax.getTokenOffset());
+                
+                int charsetOffset = tokenImage.indexOf(CHARSET_DECL);
+                int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
+                if (charsetOffset != -1){ 
+                    int endOffset = tokenImage.indexOf('"', charsetEndOffset);
+                    
+                    if (endOffset == -1){
+                        endOffset = tokenImage.indexOf('\'', charsetEndOffset);
+                    }
+                    
+                    if (endOffset == -1){
+                        endOffset = tokenImage.indexOf(';', charsetEndOffset);
+                    }
+                    
+                    if (endOffset == -1){
+                        return null;
+                    }
+                    
+                    String encoding = tokenImage.substring(charsetEndOffset, endOffset);
+                    return encoding;
+                }
             }
         }
         
-        return txt.substring (charset + "CHARSET=".length (), charend); // NOI18N
+        return null;
     }
     
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
@@ -286,17 +304,18 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         
         void associatePalette(HtmlEditorSupport s) {
             
+            Node nodes[] = { s.getDataObject().getNodeDelegate() };
+            InstanceContent instanceContent = new InstanceContent();
+            associateLookup(new ProxyLookup(new Lookup[] { new AbstractLookup(instanceContent), nodes[0].getLookup()}));
+            instanceContent.add(getActionMap());
+            
+            setActivatedNodes(nodes);
+
             DataObject dataObject = s.getDataObject();
             if (dataObject instanceof HtmlDataObject) {
                 try {
                     PaletteController pc = HTMLPaletteFactory.getPalette();
-//                    associateLookup(Lookups.fixed(new Object[] { pc }));
-                    Lookup pcl = Lookups.singleton(pc);
-                    Node nodes[] = {((DataEditorSupport)cloneableEditorSupport()).getDataObject().getNodeDelegate()};
-                    Lookup anl = nodes[0].getLookup();
-                    Lookup actionMap = Lookups.singleton(getActionMap());
-                    ProxyLookup l = new ProxyLookup(new Lookup[] { anl, actionMap, pcl });
-                    associateLookup(l);
+                    instanceContent.add(pc);
                 }
                 catch (IOException ioe) {
                     //TODO exception handling
@@ -312,9 +331,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
 
         private void initialize() {
-            Node nodes[] = {((DataEditorSupport)cloneableEditorSupport()).getDataObject().getNodeDelegate()};
             associatePalette((HtmlEditorSupport)cloneableEditorSupport());
-            setActivatedNodes(nodes);
         }
         
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

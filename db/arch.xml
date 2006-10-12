@@ -258,12 +258,12 @@ Microsystems, Inc. All Rights Reserved.
     class.
    </p>
   </usecase>
-  <usecase id="add-connection" name="Showing the Add Connection dialog">
+  <usecase id="new-connection" name="Showing the New Database Connection dialog">
    <p>
     Usually when displaying a list of connections (usually in a combo box),
-    the last item is "Add Connection", which displays the standard Add Connection
-    dialog of the Database Explorer. This can be achieved by calling
-    <a href="@TOP@org/netbeans/api/db/explorer/ConnectionManager.html#showAddConnectionDialog(org.netbeans.api.db.explorer.JDBCDriver)">ConnectionManager.showAddConnectionDialog()</a>.
+    the last item is "New Connection", which displays the standard New Database Connection 
+    dialog of the Database Explorer. This can be achieved by calling one of the
+    <a href="@TOP@org/netbeans/api/db/explorer/ConnectionManager.html#showAddConnectionDialog(org.netbeans.api.db.explorer.JDBCDriver)">ConnectionManager.showAddConnectionDialog()</a> methods.
    </p>
   </usecase>
   <usecase id="connect-database" name="Connecting to a database">
@@ -274,6 +274,18 @@ Microsystems, Inc. All Rights Reserved.
     method and the <code>java.sql.Connection</code> instance can be retrieved using the 
     <a href="@TOP@org/netbeans/api/db/explorer/DatabaseConnection.html#getJDBCConnection()">getJDBCConnection()</a>
     method.
+   </p>
+  </usecase>
+  <usecase id="connections-combo-box" name="Displaying the database connections in the UI">
+   <p>
+    A component which provides database functionality (such as the SQL Editor
+    or a module providing support for data sources) will need to let the user
+    select the a database connection, usually through a combo box.
+    This can be achieved using the
+    <a href="@TOP@org/netbeans/api/db/explorer/support/DatabaseExplorerUIs.html#connect(javax.swing.JComboBox,%20org.netbeans.api.db.explorer.ConnectionManager)">DatabaseExplorerUIs.connect()</a>
+    method. The <code>JComboBox</code> passed to the method will be filled with the list of connections as returned by 
+    <a href="@TOP@org/netbeans/api/db/explorer/ConnectionManager.html#getConnections()">ConnectionManager.getConnections()</a>, followed by a separator
+    and a <em>New Database Connection</em> item which will display the dialog for adding a new database connection when selected.
    </p>
   </usecase>
  </answer>
@@ -787,8 +799,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   The API is thread-safe. The methods are not required to run on the event queue (although
+   The API is thread-safe. Most methods are not required to run on the event queue (although
    the implementation of methods which display an UI switches to the event thread where necessary).
+   The methods which are required to run on the event queue say so in the
+   Javadoc and exceptions are thrown if this condition does not hold.
    Events are fired synchronously.
   </p>
  </answer>

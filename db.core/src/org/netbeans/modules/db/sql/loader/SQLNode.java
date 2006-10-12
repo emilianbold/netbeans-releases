@@ -23,8 +23,7 @@ import javax.swing.Action;
 import org.openide.actions.OpenAction;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.CookieSet;
-import org.openide.text.DataEditorSupport;
+import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 
 /**

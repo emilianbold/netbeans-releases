@@ -124,6 +124,10 @@ public class FirefoxBrowser extends ExtWebBrowser {
                 if (f.exists()) {
                     prg = f.getAbsolutePath();
                 }
+                f = new java.io.File ("/usr/bin/mozilla-firefox"); // NOI18N
+                if (f.exists()) {
+                    prg = f.getAbsolutePath();
+                }
                 f = new java.io.File ("/usr/local/firefox/firefox"); // NOI18N
                 if (f.exists()) {
                     prg = f.getAbsolutePath();

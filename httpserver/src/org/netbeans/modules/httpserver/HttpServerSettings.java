@@ -514,8 +514,11 @@ public class HttpServerSettings extends SystemOption {
      * @param hostProperty New value of property hostProperty.
      */
     public void setHostProperty (HttpServerSettings.HostProperty hostProperty) {
-        this.hostProperty = hostProperty; // XXX should update and fire less eagerly
-        firePropertyChange(PROP_HOST_PROPERTY, null, hostProperty);
+        if (ANYHOST.equals(hostProperty.getHost ()) || LOCALHOST.equals(hostProperty.getHost ())) {
+            this.hostProperty.setHost(hostProperty.getHost());
+            this.hostProperty.setGrantedAddresses(hostProperty.getGrantedAddresses());
+            firePropertyChange(PROP_HOST_PROPERTY, null, hostProperty);
+        }
     }
     
     public boolean isShowGrantAccessDialog () {

@@ -44,11 +44,11 @@ public class SQLDataObject extends MultiDataObject {
         return new SQLNode(this);
     }
     
-    void addSaveCookie(SaveCookie saveCookie) {
-        getCookieSet().add(saveCookie);
+    void addCookie(Node.Cookie cookie) {
+        getCookieSet().add(cookie);
     }
     
-    void removeSaveCookie(SaveCookie saveCookie) {
-        getCookieSet().remove(saveCookie);
+    void removeCookie(Node.Cookie cookie) {
+        getCookieSet().remove(cookie);
     }
 }

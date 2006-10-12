@@ -68,7 +68,7 @@ public class BUTTON implements ActiveEditorDrop {
         if (name.length() > 0)
             strName = " name=\"" + name + "\""; // NOI18N
 
-        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
+        String strDisabled = (disabled ? " disabled=\"disabled\"" : ""); // NOI18N
 
         String inputBody = "<input" + strType + strValue + strName + strDisabled + " />"; // NOI18N
         

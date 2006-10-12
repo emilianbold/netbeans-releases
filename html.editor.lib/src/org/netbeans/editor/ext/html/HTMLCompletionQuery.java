@@ -66,6 +66,12 @@ public class HTMLCompletionQuery implements CompletionQuery {
     
     private static boolean lowerCase;
     
+    private static final HTMLCompletionQuery DEFAULT = new HTMLCompletionQuery();
+    
+    public static HTMLCompletionQuery getDefault() {
+        return DEFAULT;
+    }
+    
     /** Perform the query on the given component. The query usually
      * gets the component's document, the caret position and searches back
      * to examine surrounding context. Then it returns the result.
@@ -123,9 +129,9 @@ public class HTMLCompletionQuery implements CompletionQuery {
                     // if not find first tag with a letter
                     do {
                         if(prevv.getTokenID() == HTMLTokenContext.TAG_OPEN
-                            || prevv.getTokenID() == HTMLTokenContext.TAG_CLOSE) {
+                                || prevv.getTokenID() == HTMLTokenContext.TAG_CLOSE) {
                             //found open or close tag text
-                            //scan the tag image for letters (I am not sure whether 
+                            //scan the tag image for letters (I am not sure whether
                             //the first character always has to be a letter)
                             prevvImage = prevv.getImage();
                             for(int i = 0;i < prevvImage.length(); i++) {
@@ -245,6 +251,9 @@ else System.err.println( "Inside token " + item.getTokenID() );
              * arg, these rules doesn't match start of such arg this case because
              * of need for matching starting quote
              */
+            } else if(id == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
+                l = sup.getAutocompletedEndTag(offset);
+                
             } else if( id == HTMLTokenContext.WS || id == HTMLTokenContext.ARGUMENT ) {
                 SyntaxElement elem = null;
                 try {
@@ -278,8 +287,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
                     List possible = tag.getAttributeList( prefix ); // All attribs of given tag
                     Collection existing = tagElem.getAttributes(); // Attribs already used
                     
-                    String wordAtCursor = item.getImage();
-                    
+                    String wordAtCursor = (item == null) ? null : item.getImage();
                     // #BUGFIX 25261 because of being at the end of document the
                     // wordAtCursor must be checked for null to prevent NPE
                     // below
@@ -355,7 +363,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
             
             //System.err.println("l = " + l );
             if( l == null ) return null;
-            else return new CompletionQuery.DefaultResult( component, "Results for DOCTYPE " + dtd.getIdentifier(), l, offset, len ); // NOI18N
+            else return new HTMLCompletionResult( component, "Results for DOCTYPE " + dtd.getIdentifier(), l, offset, len ); // NOI18N
             
         } catch (BadLocationException e) {
             e.printStackTrace();
@@ -546,20 +554,15 @@ else System.err.println( "Inside token " + item.getTokenID() );
                     doc.remove( offset, length );
                     doc.insertString( offset, text, null);
                 } else {
-                    component.setCaretPosition(component.getCaret().getDot() + text.length() - length);
-                }
-                
-                //format the inserted text
-                ExtFormatter f = (ExtFormatter)doc.getFormatter();
-                int[] fmtBlk = f.getReformatBlock(component, text);
-                if (fmtBlk != null) {
-                    fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
-                    fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
-                    f.reformat(doc, fmtBlk[0], fmtBlk[1], true);
+                    int newCaretPos = component.getCaret().getDot() + text.length() - length;
+                    //#82242 workaround - the problem is that in some situations
+                    //1) result item is created and it remembers the remove length
+                    //2) document is changed
+                    //3) RI is substituted.
+                    //this situation shouldn't happen imho and is a problem of CC infrastructure
+                    component.setCaretPosition(newCaretPos < doc.getLength() ? newCaretPos : doc.getLength());
                 }
             } catch( BadLocationException exc ) {
-                return false;    //not sucessfull
-            } catch (IOException e) {
                 return false;    //not sucessfull
             } finally {
                 doc.atomicUnlock();
@@ -567,12 +570,22 @@ else System.err.println( "Inside token " + item.getTokenID() );
             return true;
         }
         
+        protected void reformat(JTextComponent component, String text) {
+            //does nothing by default; is overriden in EndTag
+        }
+        
         public boolean substituteCommonText( JTextComponent c, int a, int b, int subLen ) {
-            return replaceText( c, getItemText().substring( 0, subLen ) );
+            String text = getItemText().substring( 0, subLen );
+            boolean replaced = replaceText( c,  text);
+            reformat(c, text);
+            return replaced;
         }
         
         public boolean substituteText( JTextComponent c, int a, int b, boolean shift ) {
-            return replaceText( c, getItemText() );
+            String text = getItemText();
+            boolean replaced = replaceText( c, text );
+            reformat(c, text);
+            return replaced;
         }
         
         /** @return Properly colored JLabel with text gotten from <CODE>getPaintText()</CODE>. */
@@ -608,7 +621,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
         public String toString() {
             StringBuffer sb = new StringBuffer();
             String className = this.getClass().getName();
-            className = className.substring(className.lastIndexOf('.') + 1); //cut off the package 
+            className = className.substring(className.lastIndexOf('.') + 1); //cut off the package
             sb.append(className);
             sb.append('(');
             sb.append(getItemText());
@@ -621,6 +634,42 @@ else System.err.println( "Inside token " + item.getTokenID() );
             return sb.toString();
         }
         
+    }
+    
+    public static class AutocompleteEndTagItem extends EndTagItem {
+        public AutocompleteEndTagItem(String baseText, int offset) {
+            super(baseText, offset, 0);
+        }
+        
+        @Override()
+        boolean replaceText(JTextComponent component, String text) {
+            boolean replaced = super.replaceText(component, text);
+            if(replaced) {
+                component.setCaretPosition(offset);
+            }
+            return replaced;
+        }
+        
+         @Override
+        protected void reformat(JTextComponent component, String text) {
+            try {
+                BaseDocument doc = (BaseDocument)component.getDocument();
+                ExtFormatter f = (ExtFormatter)doc.getFormatter();
+                int dotPos = component.getCaretPosition();
+                f.reformat(doc, Utilities.getRowStart(doc, dotPos), Utilities.getRowEnd(doc, dotPos), true);
+            }catch(BadLocationException e) {
+                //ignore
+            }catch(IOException ioe) {
+                //ignore
+            }
+        }
+        
+         @Override
+        public CharSequence getInsertPrefix() {
+             //disable instant substitution
+            return null;
+        }
+         
     }
     
     static class EndTagItem extends HTMLResultItem {
@@ -645,7 +694,7 @@ else System.err.println( "Inside token " + item.getTokenID() );
         }
         
         private String getSortText(int index) {
-            int zeros = index > 100 ? 0 : index > 10 ? 1 : 2; 
+            int zeros = index > 100 ? 0 : index > 10 ? 1 : 2;
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < zeros; i++) {
                 sb.append('0');
@@ -661,6 +710,25 @@ else System.err.println( "Inside token " + item.getTokenID() );
         public boolean substituteText( JTextComponent c, int a, int b, boolean shift ) {
             return super.substituteText( c, a, b, shift );
         }
+        
+        @Override
+        protected void reformat(JTextComponent component, String text) {
+            try {
+                BaseDocument doc = (BaseDocument)component.getDocument();
+                ExtFormatter f = (ExtFormatter)doc.getFormatter();
+                int[] fmtBlk = f.getReformatBlock(component, text);
+                if (fmtBlk != null) {
+                    fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
+                    fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
+                    f.reformat(doc, fmtBlk[0], fmtBlk[1], true);
+                }
+            }catch(BadLocationException e) {
+                //ignore
+            }catch(IOException ioe) {
+                //ignore
+            }
+        }
+        
     }
     
     private static class CharRefItem extends HTMLResultItem {
@@ -701,12 +769,15 @@ else System.err.println( "Inside token " + item.getTokenID() );
                 Caret caret = c.getCaret();
                 caret.setDot( caret.getDot() - 1 );
             }
+            Completion.get().showCompletion(); //show the completion to possibly offer an end tag (end tag autocompletion feature)
             return !shift; // flag == false;
         }
         
         Color getPaintColor() { return Color.blue; }
         
-        public String getItemText() { return "<" + baseText + ">"; } // NOI18N
+        public String getItemText() {
+            return "<" + baseText + ">";
+        } // NOI18N
     }
     
     private  static class SetAttribItem extends HTMLResultItem {
@@ -797,6 +868,14 @@ else System.err.println( "Inside token " + item.getTokenID() );
             super( name, offset, length );
         }
         
+        public CharSequence getInsertPrefix() {
+            if(quotationChar == null) {
+                return super.getInsertPrefix();
+            } else {
+                return quotationChar + super.getInsertPrefix();
+            }
+        }
+        
         Color getPaintColor() { return Color.magenta; }
         
         public boolean substituteText( JTextComponent c, int a, int b, boolean shift ) {
@@ -824,7 +903,9 @@ else System.err.println( "Inside token " + item.getTokenID() );
         }
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            if (item != null) {
+            if (item != null &&
+                    item.getHelpID() != null &&
+                    HelpManager.getDefault().findHelpItem(item.getHelpID()) != null) {
                 resultSet.setDocumentation(new DocItem(item));
             }
             resultSet.finish();
@@ -892,6 +973,18 @@ else System.err.println( "Inside token " + item.getTokenID() );
         
         public Action getGotoSourceAction() {
             return null;
+        }
+    }
+    
+    public static class HTMLCompletionResult extends CompletionQuery.DefaultResult {
+        private int substituteOffset;
+        public HTMLCompletionResult(JTextComponent component, String title, List data, int offset, int len ) {
+            super(component, title, data, offset, len);
+            substituteOffset = offset - len;
+        }
+        
+        public int getSubstituteOffset() {
+            return substituteOffset;
         }
     }
     

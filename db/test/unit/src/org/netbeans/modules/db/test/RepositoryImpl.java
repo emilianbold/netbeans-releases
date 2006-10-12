@@ -46,7 +46,8 @@ public class RepositoryImpl extends Repository {
         {
             FileSystem writeFs = FileUtil.createMemoryFileSystem();
             FileSystem layerFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/db/resources/mf-layer.xml"));
-            return new MultiFileSystem(new FileSystem[] { writeFs, layerFs });
+            FileSystem dbapiLayerFs = new XMLFileSystem(RepositoryImpl.class.getClassLoader().getResource("org/netbeans/modules/dbapi/resources/layer.xml"));
+            return new MultiFileSystem(new FileSystem[] { writeFs, layerFs, dbapiLayerFs });
         } catch (SAXException e) {
             return null;
         }

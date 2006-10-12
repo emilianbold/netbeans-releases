@@ -44,11 +44,32 @@ public class ResultSetTableModelSupportTest extends NbTestCase {
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
             if (field.getType() == int.class && Modifier.isStatic(field.getModifiers())) {
-                int type = field.getInt(Types.class);
+                int type = field.getInt(clazz);
                 if (ResultSetTableModelSupport.TYPE_TO_DEF.get(new Integer(type)) == null) {
                     fail("No ColumnTypeDef for java.Types." + field.getName());
                 }
             }
         }
+    }
+    
+    /**
+     * Tests that a ColumnTypeDef is defined even for types not in 
+     * java.sql.Types.
+     */
+    public void testUnknownTypesIssue71040() throws IllegalAccessException {
+        // for the test to be meaningful we have to ensure
+        // our type is not in java.sql.Types
+        int type = Integer.MAX_VALUE;
+        Class clazz = Types.class;
+        Field[] fields = clazz.getFields();
+        for (int i = 0; i < fields.length; i++) {
+            Field field = fields[i];
+            if (field.getType() == int.class && Modifier.isStatic(field.getModifiers())) {
+                if (type == field.getInt(clazz)) {
+                    fail("Type " + type + " already defined in java.sql.Types as " + field.getName());
+                }
+            }
+        }
+        assertNotNull(ResultSetTableModelSupport.getColumnTypeDef(type));
     }
 }

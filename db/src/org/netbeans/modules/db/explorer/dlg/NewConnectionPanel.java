@@ -19,11 +19,8 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 import java.awt.BorderLayout;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Vector;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
@@ -34,32 +31,31 @@ import org.netbeans.lib.ddl.DBConnection;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.util.DatabaseExplorerInternalUIs;
 import org.netbeans.modules.db.util.DriverListUtil;
 
 import org.openide.util.NbBundle;
 
-public class NewConnectionPanel extends javax.swing.JPanel implements DocumentListener, ListDataListener {
+public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implements DocumentListener, ListDataListener {
 
     private ConnectionDialogMediator mediator;
-    private Vector templates;
+    // private Vector templates;
     private DatabaseConnection connection;
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
 
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
 
-    public NewConnectionPanel(ConnectionDialogMediator mediator, Vector templates, DatabaseConnection connection) {
+    public NewConnectionPanel(ConnectionDialogMediator mediator, String driverClass, DatabaseConnection connection) {
         this.mediator = mediator;
-        Vector wrapperTemplates = new Vector();
-        for (int i = 0; i < templates.size(); i++) {
-            wrapperTemplates.add(new DriverWrapper((JDBCDriver)templates.elementAt(i)));
-        }
-        this.templates = wrapperTemplates;
         this.connection = connection;
         initComponents();
         initAccessibility();
+        
+        DatabaseExplorerInternalUIs.connect(templateComboBox, JDBCDriverManager.getDefault(), driverClass);
         
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
             public void connectionStarted() {
@@ -81,19 +77,21 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         mediator.addConnectionProgressListener(progressListener);
         
         driverTextField.setText(connection.getDriver());
-//        urlTextField.setText(connection.getDatabase());       
         urlComboBox.setSelectedItem(connection.getDatabase());
         userTextField.setText(connection.getUser());
+        passwordField.setText(connection.getPassword());
 
         String driver = connection.getDriver();
         String driverName = connection.getDriverName();
         if (driver != null && driverName != null) {
-            JDBCDriver dbDriver;
-            for (int i = 0; i < templates.size(); i++) {
-                dbDriver = (JDBCDriver) templates.elementAt(i);
-                if (dbDriver.getClassName().equals(driver) && dbDriver.getName().equals(driverName)) {
-                    templateComboBox.setSelectedIndex(i);
-                    break;
+            for (int i = 0; i < templateComboBox.getItemCount(); i++) {
+                Object item = templateComboBox.getItemAt(i);
+                if (item instanceof JDBCDriver) {
+                    JDBCDriver dbDriver = (JDBCDriver)item;
+                    if (dbDriver.getClassName().equals(driver) && dbDriver.getName().equals(driverName)) {
+                        templateComboBox.setSelectedIndex(i);
+                        break;
+                    }
                 }
             }
         }
@@ -103,6 +101,8 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         passwordField.getDocument().addDocumentListener(this);
         templateComboBox.getModel().addListDataListener(this);
         urlComboBox.getModel().addListDataListener(this);
+
+        checkValid();
     }
 
     private void initAccessibility() {
@@ -121,6 +121,27 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         connectProgressPanel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
     }
 
+    public void initializeFocus() {
+        getInitiallyFocusedComponent().requestFocusInWindow();
+    }
+
+    private JComponent getInitiallyFocusedComponent() {
+        if (templateComboBox.getItemCount() <= 1) { // the first item is "Add Driver...""
+            return templateComboBox;
+        }
+        if (connection.getDatabase().length() == 0) {
+            return urlComboBox;
+        }
+        if (userTextField.getText().length() == 0) {
+            return userTextField;
+        }
+        if (passwordField.getPassword().length == 0) {
+            return passwordField;
+        }
+        // fall back to the URL field
+        return urlComboBox;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -131,7 +152,7 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         java.awt.GridBagConstraints gridBagConstraints;
 
         templateLabel = new javax.swing.JLabel();
-        templateComboBox = new javax.swing.JComboBox(templates);
+        templateComboBox = new javax.swing.JComboBox();
         driverLabel = new javax.swing.JLabel();
         driverTextField = new javax.swing.JTextField();
         urlLabel = new javax.swing.JLabel();
@@ -158,6 +179,11 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         add(templateLabel, gridBagConstraints);
 
         templateComboBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverNameComboBoxA11yDesc"));
+        templateComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                templateComboBoxItemStateChanged(evt);
+            }
+        });
         templateComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 templateComboBoxActionPerformed(evt);
@@ -287,11 +313,18 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(connectProgressPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void templateComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_templateComboBoxItemStateChanged
+        checkValid();
+    }//GEN-LAST:event_templateComboBoxItemStateChanged
 
     private void templateComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_templateComboBoxActionPerformed
-        JDBCDriver drv = ((DriverWrapper) templateComboBox.getSelectedItem()).getDriver();
+        Object item = templateComboBox.getSelectedItem();
+        if (!(item instanceof JDBCDriver)) {
+            return;
+        }
+        JDBCDriver drv = (JDBCDriver)item;
         List urls = null;
         String driver = null;
         if (drv != null) {
@@ -329,35 +362,27 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     private javax.swing.JTextField userTextField;
     // End of variables declaration//GEN-END:variables
 
-    private String getSelectedDriver() {
-        return ((DriverWrapper) templateComboBox.getSelectedItem()).getDriver().getClassName();
+    private JDBCDriver getSelectedDriver() {
+        Object item = templateComboBox.getSelectedItem();
+        if (item instanceof JDBCDriver) {
+            return (JDBCDriver)item;
+        }
+        return null;
     }
-
+    
     public void setConnectionInfo() {
-        connection.setDriver(getSelectedDriver());
+        JDBCDriver driver = getSelectedDriver();
+        if (driver != null) {
+            connection.setDriverName(driver.getName());
+            connection.setDriver(driver.getClassName());
+        }
         connection.setDatabase((String) urlComboBox.getSelectedItem());
         connection.setUser(userTextField.getText());
         connection.setPassword(getPassword());
         connection.setRememberPassword(passwordCheckBox.isSelected());
     }
 
-    public DBConnection getConnection() {
-        return connection;
-    }
-
-    public String getDriver() {
-        return getSelectedDriver();
-    }
-
-    public String getDatabase() {
-        return (String) urlComboBox.getSelectedItem();
-    }
-
-    public String getUser() {
-        return userTextField.getText();
-    }
-
-    public String getPassword() {
+    private String getPassword() {
         String password;
         String tempPassword = new String(passwordField.getPassword());
         if (tempPassword.length() > 0)
@@ -366,10 +391,6 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
             password = null;
 
         return password;
-    }
-
-    public boolean rememberPassword() {
-        return passwordCheckBox.isSelected();
     }
 
     public String getTitle() {
@@ -445,20 +466,7 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         resetProgress();
     }
     
-    private static final class DriverWrapper {
-        
-        private JDBCDriver driver;
-        
-        public DriverWrapper(JDBCDriver driver) {
-            this.driver = driver;
-        }
-        
-        public JDBCDriver getDriver() {
-            return driver;
-        }
-        
-        public String toString() {
-            return driver.getDisplayName();
-        }
+    private void checkValid() {
+        mediator.setValid(getSelectedDriver() != null);
     }
 }

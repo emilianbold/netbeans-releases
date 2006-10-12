@@ -68,6 +68,7 @@ public class URLUtilTest extends NbTestCase {
         log("jar url " + newURL1);
         URL newURL2 = URLUtil.createExternalURL(pendingURL, false);
         log("http url " + newURL2);
+        assertEquals("HTTP URL is not local - does not contain 127.0.0.1", "127.0.0.1", newURL2.getHost());
     }
     
     public static Test suite () {

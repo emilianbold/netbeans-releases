@@ -109,7 +109,7 @@ public final class DatabaseConnection {
         conn.setPassword(password);
         conn.setRememberPassword(rememberPassword);
         
-        return new DatabaseConnection(conn);
+        return conn.getDatabaseConnection();
     }
     
     /**
@@ -177,7 +177,18 @@ public final class DatabaseConnection {
     
     /**
      * Returns the {@link java.sql.Connection} instance which encapsulates 
-     * the physical connection to the database. 
+     * the physical connection to the database if this database connection
+     * is connected. Note that "connected" here means "connected using the
+     * Database Explorer". There is no check if {@link java.sql.Connection#close}
+     * has been called on the returned connection. However,
+     * clients should not call <code>Connection.close()</code> on the returned
+     * connection, therefore this method should always return a non-closed 
+     * connection or <code>null</code>.
+     *
+     * <p><strong>Calling {@link java.sql.Connection#close} on the connection
+     * returned by this method is illegal. Use 
+     * {@link ConnectionManager#disconnect} 
+     * to close the connection.</strong></p>
      *
      * @return the physical connection or null if not connected.
      *

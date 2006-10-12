@@ -21,26 +21,30 @@ Microsystems, Inc. All Rights Reserved.
 
     <head>
 
-        <title>Adding a New JDBC Driver</title>
+        <title>Adding a JDBC Driver</title>
 
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
     <body>
 
-        <h2>Adding a New JDBC Driver</h2>
+        <h2>Adding a JDBC Driver</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
+        <p>To connect to a database from within the IDE, you need to register an appropriate JDBC driver for the database with the IDE.</p>
+        <p>If the JDBC driver for your database is not registered with the IDE, you can add the driver in the Runtime window. 
+        Registered drivers (&nbsp;<img src="images/driverPrefered.gif" alt="installed driver, preferred">&nbsp;) are listed under Drivers under the Databases node in the Runtime window.</p> 
+        
+        <p><b>To add a JDBC driver:</b></p>
         <ol>
             <li>In the Runtime window, expand the Databases node. </li>
-            <li>Right-click the Drivers node and choose Add Driver. </li>
+            <li>Right-click the Drivers node and choose New Driver. </li>
             <li>In the Add JDBC Driver dialog box, click the Add button to open a file
                 chooser. Then navigate to and select the archive files of the driver that you
                 want to add. 
 
                 <p>Once you choose a valid archive file, the Driver Class and
                 the Name fields should be filled in by the IDE.</p>
-
             </li>
 
             <li>If the Driver Class field is empty or incorrect, click Find.
@@ -48,34 +52,41 @@ Microsystems, Inc. All Rights Reserved.
                 previous step and find all classes that implement the JDBC
                 API Driver interface (<tt>java.sql.Driver</tt>). The Driver 
                 Class combo box lists the classes that the IDE finds. Use the 
-                combo box to select the driver class that you need.
-
-            </li>
-
+                combo box to select the driver class that you need.</li>
             <li>In the Name field, type a descriptive name for the new driver. 
-
-            <p> The IDE uses this name only for display purposes. </p></li>
-            <li>Click OK to add the new driver to the list. </li>
-
+            <p>The IDE uses this name for display purposes. </p></li>
+            <li>Click OK to add the new driver to the list of registered drivers. </li>
         </ol>
 
-        <p>You can remove a driver by right-clicking its node in the Runtime
-        window and choosing Delete.</p>
-        <p>You can modify a driver's configurations by right-clicking the <a href="dbdrivernodes.html">driver's node</a>
-        and choosing Customize.</p>
-
+        <p>After the JDBC driver for your database is registered, you can then create a database connection.
+        The IDE uses the database connection information when creating database resources and <a href="connectdb.html">connecting to a database</a>.</p>
   
-
         <ul class="note"><li>Adding a new driver just creates a template for 
             new connections. The IDE does not actually try to use that driver or check 
-            to make sure it is the correct one until a connection is made using the driver. 
-        </li></ul>
+            to make sure it is correct until a connection is made using the driver. 
+        </li>
+        </ul>
+        
+        <p>
+        An uninstalled driver node (&nbsp;<img src="images/driverPreferedNotInstalled.gif" alt="preferred driver which is not installed">&nbsp;)
+        is displayed in the Runtime window if a driver is registered with the IDE but the archive JAR file for the driver is not currently on the IDE's class path.
+        In this case, you should remove the driver or modify the driver's properties to specify the correct location of the JAR file for the driver.</p>
+        <p><b>To remove a driver:</b></p>
+        <ul>
+            <li>Right-click the driver node in the Runtime window and choose Delete.</li>
+        </ul>
+        
+        <p><b>To modify a driver's configurations:</b></p>
+        <ul>
+            <li>Right-click the driver's node and choose Customize.</li>
+        </ul>
+
+        
 
         <dl>
             <dt>
             <a name="seealso">See Also</a></dt>
             <dd>      <a href="connectdb.html">Connecting to a Database</a></dd>
-            <dd>      <a href="dbdrivernodes.html">Database Driver Nodes</a></dd>
         </dl>
         <hr>
 

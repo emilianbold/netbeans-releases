@@ -27,10 +27,10 @@ Microsystems, Inc. All Rights Reserved.
 <tocitem text="About the Database Explorer" target="org.netbeans.modules.db.HOMEID" />
 	
 <tocitem text="Setting Up a Database Connection">
-<tocitem text="Adding a New Driver" target="adddriver" />
+<tocitem text="Adding a JDBC Driver" target="adddriver" />
 <tocitem text="Connecting to a Database" target="connectdb" />
 <tocitem text="Connecting to a Pointbase Database" target="pointbasedb" />
-<tocitem text="Connecting to a Derby Database" target="derbydb" />
+<tocitem text="Connecting to a Java DB Database" target="derbydb" />
 <tocitem text="Defining Database Explorer Properties" target="dbconfig" />
 <tocitem text="Defining Database Explorer Debug Mode" target="manipsql" />
 <!--<tocitem text="Defining Database Explorer Fetch Limitations" target="db.explorer.misc" />-->

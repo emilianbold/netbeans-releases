@@ -62,9 +62,9 @@ public class CHECKBOX implements ActiveEditorDrop {
 
         String strValue = " value=\"" + value + "\""; // NOI18N
 
-        String strSelected = (selected ? " checked" : ""); // NOI18N
+        String strSelected = (selected ? " checked=\"checked\"" : ""); // NOI18N
 
-        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
+        String strDisabled = (disabled ? " disabled=\"disabled\"" : ""); // NOI18N
         
         String inputBody = "<input type=\"checkbox\"" + strName + strValue + strSelected + strDisabled + " />"; // NOI18N
         

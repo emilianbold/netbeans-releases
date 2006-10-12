@@ -69,7 +69,7 @@
 [HTMLCompletionQuery$TagItem(<html>;-1;HTML)]
 [HTMLCompletionQuery$TagItem(<html>;-1;HTML)]
 [HTMLCompletionQuery$TagItem(<html>;-1;HTML)]
-71 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</html>;-1;null)]
 72 => NO RESULT
 73 => NO RESULT
 74 => NO RESULT
@@ -80,7 +80,7 @@
 [HTMLCompletionQuery$TagItem(<head>;-1;HEAD)]
 [HTMLCompletionQuery$TagItem(<head>;-1;HEAD)]
 [HTMLCompletionQuery$TagItem(<head>;-1;HEAD)]
-82 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</head>;-1;null)]
 83 => NO RESULT
 84 => NO RESULT
 85 => NO RESULT
@@ -157,7 +157,7 @@
 156 => NO RESULT
 157 => NO RESULT
 [HTMLCompletionQuery$SetAttribItem(dir;-1;META#dir),HTMLCompletionQuery$PlainAttribItem(lang;-1;META#lang),HTMLCompletionQuery$PlainAttribItem(name;-1;META#name),HTMLCompletionQuery$PlainAttribItem(scheme;-1;META#scheme)]
-159 => NO RESULT
+[]
 160 => NO RESULT
 161 => NO RESULT
 162 => NO RESULT
@@ -173,7 +173,7 @@
 [HTMLCompletionQuery$TagItem(<title>;-1;TITLE)]
 [HTMLCompletionQuery$TagItem(<title>;-1;TITLE)]
 [HTMLCompletionQuery$TagItem(<title>;-1;TITLE)]
-175 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</title>;-1;null)]
 176 => NO RESULT
 177 => NO RESULT
 178 => NO RESULT
@@ -187,7 +187,7 @@
 [HTMLCompletionQuery$EndTagItem(</title>;-1;TITLE)]
 [HTMLCompletionQuery$EndTagItem(</title>;-1;TITLE)]
 []
-189 => NO RESULT
+[]
 190 => NO RESULT
 191 => NO RESULT
 192 => NO RESULT
@@ -224,7 +224,7 @@
 223 => NO RESULT
 224 => NO RESULT
 225 => NO RESULT
-226 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</style>;-1;null)]
 227 => NO RESULT
 228 => NO RESULT
 229 => NO RESULT
@@ -314,7 +314,7 @@
 [HTMLCompletionQuery$EndTagItem(</style>;-1;STYLE)]
 [HTMLCompletionQuery$EndTagItem(</style>;-1;STYLE)]
 []
-316 => NO RESULT
+[]
 317 => NO RESULT
 318 => NO RESULT
 319 => NO RESULT
@@ -376,7 +376,7 @@
 375 => NO RESULT
 376 => NO RESULT
 377 => NO RESULT
-378 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</script>;-1;null)]
 379 => NO RESULT
 380 => NO RESULT
 381 => NO RESULT
@@ -507,7 +507,7 @@
 [HTMLCompletionQuery$EndTagItem(</script>;-1;SCRIPT)]
 [HTMLCompletionQuery$EndTagItem(</script>;-1;SCRIPT)]
 []
-509 => NO RESULT
+[]
 510 => NO RESULT
 511 => NO RESULT
 512 => NO RESULT
@@ -524,7 +524,7 @@
 [HTMLCompletionQuery$EndTagItem(</head>;-1;HEAD)]
 [HTMLCompletionQuery$EndTagItem(</head>;-1;HEAD)]
 []
-526 => NO RESULT
+[]
 527 => NO RESULT
 528 => NO RESULT
 529 => NO RESULT
@@ -535,7 +535,7 @@
 [HTMLCompletionQuery$TagItem(<body>;-1;BODY)]
 [HTMLCompletionQuery$TagItem(<body>;-1;BODY)]
 [HTMLCompletionQuery$TagItem(<body>;-1;BODY)]
-537 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</body>;-1;null)]
 538 => NO RESULT
 539 => NO RESULT
 540 => NO RESULT
@@ -549,7 +549,7 @@
 [HTMLCompletionQuery$TagItem(<dd>;-1;DD),HTMLCompletionQuery$TagItem(<del>;-1;DEL),HTMLCompletionQuery$TagItem(<dfn>;-1;DFN),HTMLCompletionQuery$TagItem(<dir>;-1;DIR),HTMLCompletionQuery$TagItem(<div>;-1;DIV),HTMLCompletionQuery$TagItem(<dl>;-1;DL),HTMLCompletionQuery$TagItem(<dt>;-1;DT)]
 [HTMLCompletionQuery$TagItem(<dir>;-1;DIR),HTMLCompletionQuery$TagItem(<div>;-1;DIV)]
 [HTMLCompletionQuery$TagItem(<div>;-1;DIV)]
-551 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</div>;-1;null)]
 552 => NO RESULT
 [HTMLCompletionQuery$CharRefItem(&AElig;;-1;AElig),HTMLCompletionQuery$CharRefItem(&Aacute;;-1;Aacute),HTMLCompletionQuery$CharRefItem(&Acirc;;-1;Acirc),HTMLCompletionQuery$CharRefItem(&Agrave;;-1;Agrave),HTMLCompletionQuery$CharRefItem(&Alpha;;-1;Alpha),HTMLCompletionQuery$CharRefItem(&Aring;;-1;Aring),HTMLCompletionQuery$CharRefItem(&Atilde;;-1;Atilde),HTMLCompletionQuery$CharRefItem(&Auml;;-1;Auml),HTMLCompletionQuery$CharRefItem(&Beta;;-1;Beta),HTMLCompletionQuery$CharRefItem(&Ccedil;;-1;Ccedil),HTMLCompletionQuery$CharRefItem(&Chi;;-1;Chi),HTMLCompletionQuery$CharRefItem(&Dagger;;-1;Dagger),HTMLCompletionQuery$CharRefItem(&Delta;;-1;Delta),HTMLCompletionQuery$CharRefItem(&ETH;;-1;ETH),HTMLCompletionQuery$CharRefItem(&Eacute;;-1;Eacute),HTMLCompletionQuery$CharRefItem(&Ecirc;;-1;Ecirc),HTMLCompletionQuery$CharRefItem(&Egrave;;-1;Egrave),HTMLCompletionQuery$CharRefItem(&Epsilon;;-1;Epsilon),HTMLCompletionQuery$CharRefItem(&Eta;;-1;Eta),HTMLCompletionQuery$CharRefItem(&Euml;;-1;Euml),HTMLCompletionQuery$CharRefItem(&Gamma;;-1;Gamma),HTMLCompletionQuery$CharRefItem(&Iacute;;-1;Iacute),HTMLCompletionQuery$CharRefItem(&Icirc;;-1;Icirc),HTMLCompletionQuery$CharRefItem(&Igrave;;-1;Igrave),HTMLCompletionQuery$CharRefItem(&Iota;;-1;Iota),HTMLCompletionQuery$CharRefItem(&Iuml;;-1;Iuml),HTMLCompletionQuery$CharRefItem(&Kappa;;-1;Kappa),HTMLCompletionQuery$CharRefItem(&Lambda;;-1;Lambda),HTMLCompletionQuery$CharRefItem(&Mu;;-1;Mu),HTMLCompletionQuery$CharRefItem(&Ntilde;;-1;Ntilde),HTMLCompletionQuery$CharRefItem(&Nu;;-1;Nu),HTMLCompletionQuery$CharRefItem(&OElig;;-1;OElig),HTMLCompletionQuery$CharRefItem(&Oacute;;-1;Oacute),HTMLCompletionQuery$CharRefItem(&Ocirc;;-1;Ocirc),HTMLCompletionQuery$CharRefItem(&Ograve;;-1;Ograve),HTMLCompletionQuery$CharRefItem(&Omega;;-1;Omega),HTMLCompletionQuery$CharRefItem(&Omicron;;-1;Omicron),HTMLCompletionQuery$CharRefItem(&Oslash;;-1;Oslash),HTMLCompletionQuery$CharRefItem(&Otilde;;-1;Otilde),HTMLCompletionQuery$CharRefItem(&Ouml;;-1;Ouml),HTMLCompletionQuery$CharRefItem(&Phi;;-1;Phi),HTMLCompletionQuery$CharRefItem(&Pi;;-1;Pi),HTMLCompletionQuery$CharRefItem(&Prime;;-1;Prime),HTMLCompletionQuery$CharRefItem(&Psi;;-1;Psi),HTMLCompletionQuery$CharRefItem(&Rho;;-1;Rho),HTMLCompletionQuery$CharRefItem(&Scaron;;-1;Scaron),HTMLCompletionQuery$CharRefItem(&Sigma;;-1;Sigma),HTMLCompletionQuery$CharRefItem(&THORN;;-1;THORN),HTMLCompletionQuery$CharRefItem(&Tau;;-1;Tau),HTMLCompletionQuery$CharRefItem(&Theta;;-1;Theta),HTMLCompletionQuery$CharRefItem(&Uacute;;-1;Uacute),HTMLCompletionQuery$CharRefItem(&Ucirc;;-1;Ucirc),HTMLCompletionQuery$CharRefItem(&Ugrave;;-1;Ugrave),HTMLCompletionQuery$CharRefItem(&Upsilon;;-1;Upsilon),HTMLCompletionQuery$CharRefItem(&Uuml;;-1;Uuml),HTMLCompletionQuery$CharRefItem(&Xi;;-1;Xi),HTMLCompletionQuery$CharRefItem(&Yacute;;-1;Yacute),HTMLCompletionQuery$CharRefItem(&Yuml;;-1;Yuml),HTMLCompletionQuery$CharRefItem(&Zeta;;-1;Zeta),HTMLCompletionQuery$CharRefItem(&aacute;;-1;aacute),HTMLCompletionQuery$CharRefItem(&acirc;;-1;acirc),HTMLCompletionQuery$CharRefItem(&acute;;-1;acute),HTMLCompletionQuery$CharRefItem(&aelig;;-1;aelig),HTMLCompletionQuery$CharRefItem(&agrave;;-1;agrave),HTMLCompletionQuery$CharRefItem(&alefsym;;-1;alefsym),HTMLCompletionQuery$CharRefItem(&alpha;;-1;alpha),HTMLCompletionQuery$CharRefItem(&amp;;-1;amp),HTMLCompletionQuery$CharRefItem(&and;;-1;and),HTMLCompletionQuery$CharRefItem(&ang;;-1;ang),HTMLCompletionQuery$CharRefItem(&aring;;-1;aring),HTMLCompletionQuery$CharRefItem(&asymp;;-1;asymp),HTMLCompletionQuery$CharRefItem(&atilde;;-1;atilde),HTMLCompletionQuery$CharRefItem(&auml;;-1;auml),HTMLCompletionQuery$CharRefItem(&bdquo;;-1;bdquo),HTMLCompletionQuery$CharRefItem(&beta;;-1;beta),HTMLCompletionQuery$CharRefItem(&brvbar;;-1;brvbar),HTMLCompletionQuery$CharRefItem(&bull;;-1;bull),HTMLCompletionQuery$CharRefItem(&cap;;-1;cap),HTMLCompletionQuery$CharRefItem(&ccedil;;-1;ccedil),HTMLCompletionQuery$CharRefItem(&cedil;;-1;cedil),HTMLCompletionQuery$CharRefItem(&cent;;-1;cent),HTMLCompletionQuery$CharRefItem(&chi;;-1;chi),HTMLCompletionQuery$CharRefItem(&circ;;-1;circ),HTMLCompletionQuery$CharRefItem(&clubs;;-1;clubs),HTMLCompletionQuery$CharRefItem(&cong;;-1;cong),HTMLCompletionQuery$CharRefItem(&copy;;-1;copy),HTMLCompletionQuery$CharRefItem(&crarr;;-1;crarr),HTMLCompletionQuery$CharRefItem(&cup;;-1;cup),HTMLCompletionQuery$CharRefItem(&curren;;-1;curren),HTMLCompletionQuery$CharRefItem(&dArr;;-1;dArr),HTMLCompletionQuery$CharRefItem(&dagger;;-1;dagger),HTMLCompletionQuery$CharRefItem(&darr;;-1;darr),HTMLCompletionQuery$CharRefItem(&deg;;-1;deg),HTMLCompletionQuery$CharRefItem(&delta;;-1;delta),HTMLCompletionQuery$CharRefItem(&diams;;-1;diams),HTMLCompletionQuery$CharRefItem(&divide;;-1;divide),HTMLCompletionQuery$CharRefItem(&eacute;;-1;eacute),HTMLCompletionQuery$CharRefItem(&ecirc;;-1;ecirc),HTMLCompletionQuery$CharRefItem(&egrave;;-1;egrave),HTMLCompletionQuery$CharRefItem(&empty;;-1;empty),HTMLCompletionQuery$CharRefItem(&emsp;;-1;emsp),HTMLCompletionQuery$CharRefItem(&ensp;;-1;ensp),HTMLCompletionQuery$CharRefItem(&epsilon;;-1;epsilon),HTMLCompletionQuery$CharRefItem(&equiv;;-1;equiv),HTMLCompletionQuery$CharRefItem(&eta;;-1;eta),HTMLCompletionQuery$CharRefItem(&eth;;-1;eth),HTMLCompletionQuery$CharRefItem(&euml;;-1;euml),HTMLCompletionQuery$CharRefItem(&euro;;-1;euro),HTMLCompletionQuery$CharRefItem(&exist;;-1;exist),HTMLCompletionQuery$CharRefItem(&fnof;;-1;fnof),HTMLCompletionQuery$CharRefItem(&forall;;-1;forall),HTMLCompletionQuery$CharRefItem(&frac12;;-1;frac12),HTMLCompletionQuery$CharRefItem(&frac14;;-1;frac14),HTMLCompletionQuery$CharRefItem(&frac34;;-1;frac34),HTMLCompletionQuery$CharRefItem(&frasl;;-1;frasl),HTMLCompletionQuery$CharRefItem(&gamma;;-1;gamma),HTMLCompletionQuery$CharRefItem(&ge;;-1;ge),HTMLCompletionQuery$CharRefItem(&gt;;-1;gt),HTMLCompletionQuery$CharRefItem(&hArr;;-1;hArr),HTMLCompletionQuery$CharRefItem(&harr;;-1;harr),HTMLCompletionQuery$CharRefItem(&hearts;;-1;hearts),HTMLCompletionQuery$CharRefItem(&hellip;;-1;hellip),HTMLCompletionQuery$CharRefItem(&iacute;;-1;iacute),HTMLCompletionQuery$CharRefItem(&icirc;;-1;icirc),HTMLCompletionQuery$CharRefItem(&iexcl;;-1;iexcl),HTMLCompletionQuery$CharRefItem(&igrave;;-1;igrave),HTMLCompletionQuery$CharRefItem(&image;;-1;image),HTMLCompletionQuery$CharRefItem(&infin;;-1;infin),HTMLCompletionQuery$CharRefItem(&int;;-1;int),HTMLCompletionQuery$CharRefItem(&iota;;-1;iota),HTMLCompletionQuery$CharRefItem(&iquest;;-1;iquest),HTMLCompletionQuery$CharRefItem(&isin;;-1;isin),HTMLCompletionQuery$CharRefItem(&iuml;;-1;iuml),HTMLCompletionQuery$CharRefItem(&kappa;;-1;kappa),HTMLCompletionQuery$CharRefItem(&lArr;;-1;lArr),HTMLCompletionQuery$CharRefItem(&lambda;;-1;lambda),HTMLCompletionQuery$CharRefItem(&lang;;-1;lang),HTMLCompletionQuery$CharRefItem(&laquo;;-1;laquo),HTMLCompletionQuery$CharRefItem(&larr;;-1;larr),HTMLCompletionQuery$CharRefItem(&lceil;;-1;lceil),HTMLCompletionQuery$CharRefItem(&ldquo;;-1;ldquo),HTMLCompletionQuery$CharRefItem(&le;;-1;le),HTMLCompletionQuery$CharRefItem(&lfloor;;-1;lfloor),HTMLCompletionQuery$CharRefItem(&lowast;;-1;lowast),HTMLCompletionQuery$CharRefItem(&loz;;-1;loz),HTMLCompletionQuery$CharRefItem(&lrm;;-1;lrm),HTMLCompletionQuery$CharRefItem(&lsaquo;;-1;lsaquo),HTMLCompletionQuery$CharRefItem(&lsquo;;-1;lsquo),HTMLCompletionQuery$CharRefItem(&lt;;-1;lt),HTMLCompletionQuery$CharRefItem(&macr;;-1;macr),HTMLCompletionQuery$CharRefItem(&mdash;;-1;mdash),HTMLCompletionQuery$CharRefItem(&micro;;-1;micro),HTMLCompletionQuery$CharRefItem(&middot;;-1;middot),HTMLCompletionQuery$CharRefItem(&minus;;-1;minus),HTMLCompletionQuery$CharRefItem(&mu;;-1;mu),HTMLCompletionQuery$CharRefItem(&nabla;;-1;nabla),HTMLCompletionQuery$CharRefItem(&nbsp;;-1;nbsp),HTMLCompletionQuery$CharRefItem(&ndash;;-1;ndash),HTMLCompletionQuery$CharRefItem(&ne;;-1;ne),HTMLCompletionQuery$CharRefItem(&ni;;-1;ni),HTMLCompletionQuery$CharRefItem(&not;;-1;not),HTMLCompletionQuery$CharRefItem(&notin;;-1;notin),HTMLCompletionQuery$CharRefItem(&nsub;;-1;nsub),HTMLCompletionQuery$CharRefItem(&ntilde;;-1;ntilde),HTMLCompletionQuery$CharRefItem(&nu;;-1;nu),HTMLCompletionQuery$CharRefItem(&oacute;;-1;oacute),HTMLCompletionQuery$CharRefItem(&ocirc;;-1;ocirc),HTMLCompletionQuery$CharRefItem(&oelig;;-1;oelig),HTMLCompletionQuery$CharRefItem(&ograve;;-1;ograve),HTMLCompletionQuery$CharRefItem(&oline;;-1;oline),HTMLCompletionQuery$CharRefItem(&omega;;-1;omega),HTMLCompletionQuery$CharRefItem(&omicron;;-1;omicron),HTMLCompletionQuery$CharRefItem(&oplus;;-1;oplus),HTMLCompletionQuery$CharRefItem(&or;;-1;or),HTMLCompletionQuery$CharRefItem(&ordf;;-1;ordf),HTMLCompletionQuery$CharRefItem(&ordm;;-1;ordm),HTMLCompletionQuery$CharRefItem(&oslash;;-1;oslash),HTMLCompletionQuery$CharRefItem(&otilde;;-1;otilde),HTMLCompletionQuery$CharRefItem(&otimes;;-1;otimes),HTMLCompletionQuery$CharRefItem(&ouml;;-1;ouml),HTMLCompletionQuery$CharRefItem(&para;;-1;para),HTMLCompletionQuery$CharRefItem(&part;;-1;part),HTMLCompletionQuery$CharRefItem(&permil;;-1;permil),HTMLCompletionQuery$CharRefItem(&perp;;-1;perp),HTMLCompletionQuery$CharRefItem(&phi;;-1;phi),HTMLCompletionQuery$CharRefItem(&pi;;-1;pi),HTMLCompletionQuery$CharRefItem(&piv;;-1;piv),HTMLCompletionQuery$CharRefItem(&plusmn;;-1;plusmn),HTMLCompletionQuery$CharRefItem(&pound;;-1;pound),HTMLCompletionQuery$CharRefItem(&prime;;-1;prime),HTMLCompletionQuery$CharRefItem(&prod;;-1;prod),HTMLCompletionQuery$CharRefItem(&prop;;-1;prop),HTMLCompletionQuery$CharRefItem(&psi;;-1;psi),HTMLCompletionQuery$CharRefItem(&quot;;-1;quot),HTMLCompletionQuery$CharRefItem(&rArr;;-1;rArr),HTMLCompletionQuery$CharRefItem(&radic;;-1;radic),HTMLCompletionQuery$CharRefItem(&rang;;-1;rang),HTMLCompletionQuery$CharRefItem(&raquo;;-1;raquo),HTMLCompletionQuery$CharRefItem(&rarr;;-1;rarr),HTMLCompletionQuery$CharRefItem(&rceil;;-1;rceil),HTMLCompletionQuery$CharRefItem(&rdquo;;-1;rdquo),HTMLCompletionQuery$CharRefItem(&real;;-1;real),HTMLCompletionQuery$CharRefItem(&reg;;-1;reg),HTMLCompletionQuery$CharRefItem(&rfloor;;-1;rfloor),HTMLCompletionQuery$CharRefItem(&rho;;-1;rho),HTMLCompletionQuery$CharRefItem(&rlm;;-1;rlm),HTMLCompletionQuery$CharRefItem(&rsaquo;;-1;rsaquo),HTMLCompletionQuery$CharRefItem(&rsquo;;-1;rsquo),HTMLCompletionQuery$CharRefItem(&sbquo;;-1;sbquo),HTMLCompletionQuery$CharRefItem(&scaron;;-1;scaron),HTMLCompletionQuery$CharRefItem(&sdot;;-1;sdot),HTMLCompletionQuery$CharRefItem(&sect;;-1;sect),HTMLCompletionQuery$CharRefItem(&shy;;-1;shy),HTMLCompletionQuery$CharRefItem(&sigma;;-1;sigma),HTMLCompletionQuery$CharRefItem(&sigmaf;;-1;sigmaf),HTMLCompletionQuery$CharRefItem(&sim;;-1;sim),HTMLCompletionQuery$CharRefItem(&spades;;-1;spades),HTMLCompletionQuery$CharRefItem(&sub;;-1;sub),HTMLCompletionQuery$CharRefItem(&sube;;-1;sube),HTMLCompletionQuery$CharRefItem(&sum;;-1;sum),HTMLCompletionQuery$CharRefItem(&sup;;-1;sup),HTMLCompletionQuery$CharRefItem(&sup1;;-1;sup1),HTMLCompletionQuery$CharRefItem(&sup2;;-1;sup2),HTMLCompletionQuery$CharRefItem(&sup3;;-1;sup3),HTMLCompletionQuery$CharRefItem(&supe;;-1;supe),HTMLCompletionQuery$CharRefItem(&szlig;;-1;szlig),HTMLCompletionQuery$CharRefItem(&tau;;-1;tau),HTMLCompletionQuery$CharRefItem(&there4;;-1;there4),HTMLCompletionQuery$CharRefItem(&theta;;-1;theta),HTMLCompletionQuery$CharRefItem(&thetasym;;-1;thetasym),HTMLCompletionQuery$CharRefItem(&thinsp;;-1;thinsp),HTMLCompletionQuery$CharRefItem(&thorn;;-1;thorn),HTMLCompletionQuery$CharRefItem(&tilde;;-1;tilde),HTMLCompletionQuery$CharRefItem(&times;;-1;times),HTMLCompletionQuery$CharRefItem(&trade;;-1;trade),HTMLCompletionQuery$CharRefItem(&uArr;;-1;uArr),HTMLCompletionQuery$CharRefItem(&uacute;;-1;uacute),HTMLCompletionQuery$CharRefItem(&uarr;;-1;uarr),HTMLCompletionQuery$CharRefItem(&ucirc;;-1;ucirc),HTMLCompletionQuery$CharRefItem(&ugrave;;-1;ugrave),HTMLCompletionQuery$CharRefItem(&uml;;-1;uml),HTMLCompletionQuery$CharRefItem(&upsih;;-1;upsih),HTMLCompletionQuery$CharRefItem(&upsilon;;-1;upsilon),HTMLCompletionQuery$CharRefItem(&uuml;;-1;uuml),HTMLCompletionQuery$CharRefItem(&weierp;;-1;weierp),HTMLCompletionQuery$CharRefItem(&xi;;-1;xi),HTMLCompletionQuery$CharRefItem(&yacute;;-1;yacute),HTMLCompletionQuery$CharRefItem(&yen;;-1;yen),HTMLCompletionQuery$CharRefItem(&yuml;;-1;yuml),HTMLCompletionQuery$CharRefItem(&zeta;;-1;zeta),HTMLCompletionQuery$CharRefItem(&zwj;;-1;zwj),HTMLCompletionQuery$CharRefItem(&zwnj;;-1;zwnj)]
 [HTMLCompletionQuery$CharRefItem(&aacute;;-1;aacute),HTMLCompletionQuery$CharRefItem(&acirc;;-1;acirc),HTMLCompletionQuery$CharRefItem(&acute;;-1;acute),HTMLCompletionQuery$CharRefItem(&aelig;;-1;aelig),HTMLCompletionQuery$CharRefItem(&agrave;;-1;agrave),HTMLCompletionQuery$CharRefItem(&alefsym;;-1;alefsym),HTMLCompletionQuery$CharRefItem(&alpha;;-1;alpha),HTMLCompletionQuery$CharRefItem(&amp;;-1;amp),HTMLCompletionQuery$CharRefItem(&and;;-1;and),HTMLCompletionQuery$CharRefItem(&ang;;-1;ang),HTMLCompletionQuery$CharRefItem(&aring;;-1;aring),HTMLCompletionQuery$CharRefItem(&asymp;;-1;asymp),HTMLCompletionQuery$CharRefItem(&atilde;;-1;atilde),HTMLCompletionQuery$CharRefItem(&auml;;-1;auml)]
@@ -562,7 +562,7 @@
 [HTMLCompletionQuery$EndTagItem(</div>;-1;DIV)]
 [HTMLCompletionQuery$EndTagItem(</div>;-1;DIV)]
 []
-564 => NO RESULT
+[]
 565 => NO RESULT
 566 => NO RESULT
 567 => NO RESULT
@@ -589,7 +589,7 @@
 588 => NO RESULT
 589 => NO RESULT
 590 => NO RESULT
-591 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</table>;-1;null)]
 592 => NO RESULT
 593 => NO RESULT
 594 => NO RESULT
@@ -606,7 +606,7 @@
 [HTMLCompletionQuery$TagItem(<a>;-1;A),HTMLCompletionQuery$TagItem(<abbr>;-1;ABBR),HTMLCompletionQuery$TagItem(<acronym>;-1;ACRONYM),HTMLCompletionQuery$TagItem(<address>;-1;ADDRESS),HTMLCompletionQuery$TagItem(<applet>;-1;APPLET),HTMLCompletionQuery$TagItem(<area>;-1;AREA),HTMLCompletionQuery$TagItem(<b>;-1;B),HTMLCompletionQuery$TagItem(<base>;-1;BASE),HTMLCompletionQuery$TagItem(<basefont>;-1;BASEFONT),HTMLCompletionQuery$TagItem(<bdo>;-1;BDO),HTMLCompletionQuery$TagItem(<big>;-1;BIG),HTMLCompletionQuery$TagItem(<blockquote>;-1;BLOCKQUOTE),HTMLCompletionQuery$TagItem(<body>;-1;BODY),HTMLCompletionQuery$TagItem(<br>;-1;BR),HTMLCompletionQuery$TagItem(<button>;-1;BUTTON),HTMLCompletionQuery$TagItem(<caption>;-1;CAPTION),HTMLCompletionQuery$TagItem(<center>;-1;CENTER),HTMLCompletionQuery$TagItem(<cite>;-1;CITE),HTMLCompletionQuery$TagItem(<code>;-1;CODE),HTMLCompletionQuery$TagItem(<col>;-1;COL),HTMLCompletionQuery$TagItem(<colgroup>;-1;COLGROUP),HTMLCompletionQuery$TagItem(<dd>;-1;DD),HTMLCompletionQuery$TagItem(<del>;-1;DEL),HTMLCompletionQuery$TagItem(<dfn>;-1;DFN),HTMLCompletionQuery$TagItem(<dir>;-1;DIR),HTMLCompletionQuery$TagItem(<div>;-1;DIV),HTMLCompletionQuery$TagItem(<dl>;-1;DL),HTMLCompletionQuery$TagItem(<dt>;-1;DT),HTMLCompletionQuery$TagItem(<em>;-1;EM),HTMLCompletionQuery$TagItem(<fieldset>;-1;FIELDSET),HTMLCompletionQuery$TagItem(<font>;-1;FONT),HTMLCompletionQuery$TagItem(<form>;-1;FORM),HTMLCompletionQuery$TagItem(<h1>;-1;H1),HTMLCompletionQuery$TagItem(<h2>;-1;H2),HTMLCompletionQuery$TagItem(<h3>;-1;H3),HTMLCompletionQuery$TagItem(<h4>;-1;H4),HTMLCompletionQuery$TagItem(<h5>;-1;H5),HTMLCompletionQuery$TagItem(<h6>;-1;H6),HTMLCompletionQuery$TagItem(<head>;-1;HEAD),HTMLCompletionQuery$TagItem(<hr>;-1;HR),HTMLCompletionQuery$TagItem(<html>;-1;HTML),HTMLCompletionQuery$TagItem(<i>;-1;I),HTMLCompletionQuery$TagItem(<iframe>;-1;IFRAME),HTMLCompletionQuery$TagItem(<img>;-1;IMG),HTMLCompletionQuery$TagItem(<input>;-1;INPUT),HTMLCompletionQuery$TagItem(<ins>;-1;INS),HTMLCompletionQuery$TagItem(<isindex>;-1;ISINDEX),HTMLCompletionQuery$TagItem(<kbd>;-1;KBD),HTMLCompletionQuery$TagItem(<label>;-1;LABEL),HTMLCompletionQuery$TagItem(<legend>;-1;LEGEND),HTMLCompletionQuery$TagItem(<li>;-1;LI),HTMLCompletionQuery$TagItem(<link>;-1;LINK),HTMLCompletionQuery$TagItem(<map>;-1;MAP),HTMLCompletionQuery$TagItem(<menu>;-1;MENU),HTMLCompletionQuery$TagItem(<meta>;-1;META),HTMLCompletionQuery$TagItem(<noframes>;-1;NOFRAMES),HTMLCompletionQuery$TagItem(<noscript>;-1;NOSCRIPT),HTMLCompletionQuery$TagItem(<object>;-1;OBJECT),HTMLCompletionQuery$TagItem(<ol>;-1;OL),HTMLCompletionQuery$TagItem(<optgroup>;-1;OPTGROUP),HTMLCompletionQuery$TagItem(<option>;-1;OPTION),HTMLCompletionQuery$TagItem(<p>;-1;P),HTMLCompletionQuery$TagItem(<param>;-1;PARAM),HTMLCompletionQuery$TagItem(<pre>;-1;PRE),HTMLCompletionQuery$TagItem(<q>;-1;Q),HTMLCompletionQuery$TagItem(<s>;-1;S),HTMLCompletionQuery$TagItem(<samp>;-1;SAMP),HTMLCompletionQuery$TagItem(<script>;-1;SCRIPT),HTMLCompletionQuery$TagItem(<select>;-1;SELECT),HTMLCompletionQuery$TagItem(<small>;-1;SMALL),HTMLCompletionQuery$TagItem(<span>;-1;SPAN),HTMLCompletionQuery$TagItem(<strike>;-1;STRIKE),HTMLCompletionQuery$TagItem(<strong>;-1;STRONG),HTMLCompletionQuery$TagItem(<style>;-1;STYLE),HTMLCompletionQuery$TagItem(<sub>;-1;SUB),HTMLCompletionQuery$TagItem(<sup>;-1;SUP),HTMLCompletionQuery$TagItem(<table>;-1;TABLE),HTMLCompletionQuery$TagItem(<tbody>;-1;TBODY),HTMLCompletionQuery$TagItem(<td>;-1;TD),HTMLCompletionQuery$TagItem(<textarea>;-1;TEXTAREA),HTMLCompletionQuery$TagItem(<tfoot>;-1;TFOOT),HTMLCompletionQuery$TagItem(<th>;-1;TH),HTMLCompletionQuery$TagItem(<thead>;-1;THEAD),HTMLCompletionQuery$TagItem(<title>;-1;TITLE),HTMLCompletionQuery$TagItem(<tr>;-1;TR),HTMLCompletionQuery$TagItem(<tt>;-1;TT),HTMLCompletionQuery$TagItem(<u>;-1;U),HTMLCompletionQuery$TagItem(<ul>;-1;UL),HTMLCompletionQuery$TagItem(<var>;-1;VAR)]
 [HTMLCompletionQuery$TagItem(<table>;-1;TABLE),HTMLCompletionQuery$TagItem(<tbody>;-1;TBODY),HTMLCompletionQuery$TagItem(<td>;-1;TD),HTMLCompletionQuery$TagItem(<textarea>;-1;TEXTAREA),HTMLCompletionQuery$TagItem(<tfoot>;-1;TFOOT),HTMLCompletionQuery$TagItem(<th>;-1;TH),HTMLCompletionQuery$TagItem(<thead>;-1;THEAD),HTMLCompletionQuery$TagItem(<title>;-1;TITLE),HTMLCompletionQuery$TagItem(<tr>;-1;TR),HTMLCompletionQuery$TagItem(<tt>;-1;TT)]
 [HTMLCompletionQuery$TagItem(<tr>;-1;TR)]
-608 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</tr>;-1;null)]
 609 => NO RESULT
 610 => NO RESULT
 611 => NO RESULT
@@ -658,7 +658,7 @@
 657 => NO RESULT
 658 => NO RESULT
 659 => NO RESULT
-660 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</td>;-1;null)]
 661 => NO RESULT
 662 => NO RESULT
 663 => NO RESULT
@@ -710,7 +710,7 @@
 709 => NO RESULT
 710 => NO RESULT
 711 => NO RESULT
-712 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</div>;-1;null)]
 713 => NO RESULT
 714 => NO RESULT
 715 => NO RESULT
@@ -844,7 +844,7 @@
 843 => NO RESULT
 844 => NO RESULT
 [HTMLCompletionQuery$PlainAttribItem(accesskey;-1;A#accesskey),HTMLCompletionQuery$PlainAttribItem(charset;-1;A#charset),HTMLCompletionQuery$PlainAttribItem(class;-1;A#class),HTMLCompletionQuery$PlainAttribItem(coords;-1;A#coords),HTMLCompletionQuery$SetAttribItem(dir;-1;A#dir),HTMLCompletionQuery$PlainAttribItem(hreflang;-1;A#hreflang),HTMLCompletionQuery$PlainAttribItem(id;-1;A#id),HTMLCompletionQuery$PlainAttribItem(lang;-1;A#lang),HTMLCompletionQuery$PlainAttribItem(name;-1;A#name),HTMLCompletionQuery$PlainAttribItem(onblur;-1;A#onblur),HTMLCompletionQuery$PlainAttribItem(onclick;-1;A#onclick),HTMLCompletionQuery$PlainAttribItem(ondblclick;-1;A#ondblclick),HTMLCompletionQuery$PlainAttribItem(onfocus;-1;A#onfocus),HTMLCompletionQuery$PlainAttribItem(onkeydown;-1;A#onkeydown),HTMLCompletionQuery$PlainAttribItem(onkeypress;-1;A#onkeypress),HTMLCompletionQuery$PlainAttribItem(onkeyup;-1;A#onkeyup),HTMLCompletionQuery$PlainAttribItem(onmousedown;-1;A#onmousedown),HTMLCompletionQuery$PlainAttribItem(onmousemove;-1;A#onmousemove),HTMLCompletionQuery$PlainAttribItem(onmouseout;-1;A#onmouseout),HTMLCompletionQuery$PlainAttribItem(onmouseover;-1;A#onmouseover),HTMLCompletionQuery$PlainAttribItem(onmouseup;-1;A#onmouseup),HTMLCompletionQuery$PlainAttribItem(rel;-1;A#rel),HTMLCompletionQuery$PlainAttribItem(rev;-1;A#rev),HTMLCompletionQuery$SetAttribItem(shape;-1;A#shape),HTMLCompletionQuery$PlainAttribItem(style;-1;A#style),HTMLCompletionQuery$PlainAttribItem(tabindex;-1;A#tabindex),HTMLCompletionQuery$PlainAttribItem(target;-1;A#target),HTMLCompletionQuery$PlainAttribItem(type;-1;A#type)]
-846 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</a>;-1;null)]
 [HTMLCompletionQuery$TagItem(<a>;-1;A),HTMLCompletionQuery$TagItem(<abbr>;-1;ABBR),HTMLCompletionQuery$TagItem(<acronym>;-1;ACRONYM),HTMLCompletionQuery$TagItem(<address>;-1;ADDRESS),HTMLCompletionQuery$TagItem(<applet>;-1;APPLET),HTMLCompletionQuery$TagItem(<area>;-1;AREA),HTMLCompletionQuery$TagItem(<b>;-1;B),HTMLCompletionQuery$TagItem(<base>;-1;BASE),HTMLCompletionQuery$TagItem(<basefont>;-1;BASEFONT),HTMLCompletionQuery$TagItem(<bdo>;-1;BDO),HTMLCompletionQuery$TagItem(<big>;-1;BIG),HTMLCompletionQuery$TagItem(<blockquote>;-1;BLOCKQUOTE),HTMLCompletionQuery$TagItem(<body>;-1;BODY),HTMLCompletionQuery$TagItem(<br>;-1;BR),HTMLCompletionQuery$TagItem(<button>;-1;BUTTON),HTMLCompletionQuery$TagItem(<caption>;-1;CAPTION),HTMLCompletionQuery$TagItem(<center>;-1;CENTER),HTMLCompletionQuery$TagItem(<cite>;-1;CITE),HTMLCompletionQuery$TagItem(<code>;-1;CODE),HTMLCompletionQuery$TagItem(<col>;-1;COL),HTMLCompletionQuery$TagItem(<colgroup>;-1;COLGROUP),HTMLCompletionQuery$TagItem(<dd>;-1;DD),HTMLCompletionQuery$TagItem(<del>;-1;DEL),HTMLCompletionQuery$TagItem(<dfn>;-1;DFN),HTMLCompletionQuery$TagItem(<dir>;-1;DIR),HTMLCompletionQuery$TagItem(<div>;-1;DIV),HTMLCompletionQuery$TagItem(<dl>;-1;DL),HTMLCompletionQuery$TagItem(<dt>;-1;DT),HTMLCompletionQuery$TagItem(<em>;-1;EM),HTMLCompletionQuery$TagItem(<fieldset>;-1;FIELDSET),HTMLCompletionQuery$TagItem(<font>;-1;FONT),HTMLCompletionQuery$TagItem(<form>;-1;FORM),HTMLCompletionQuery$TagItem(<h1>;-1;H1),HTMLCompletionQuery$TagItem(<h2>;-1;H2),HTMLCompletionQuery$TagItem(<h3>;-1;H3),HTMLCompletionQuery$TagItem(<h4>;-1;H4),HTMLCompletionQuery$TagItem(<h5>;-1;H5),HTMLCompletionQuery$TagItem(<h6>;-1;H6),HTMLCompletionQuery$TagItem(<head>;-1;HEAD),HTMLCompletionQuery$TagItem(<hr>;-1;HR),HTMLCompletionQuery$TagItem(<html>;-1;HTML),HTMLCompletionQuery$TagItem(<i>;-1;I),HTMLCompletionQuery$TagItem(<iframe>;-1;IFRAME),HTMLCompletionQuery$TagItem(<img>;-1;IMG),HTMLCompletionQuery$TagItem(<input>;-1;INPUT),HTMLCompletionQuery$TagItem(<ins>;-1;INS),HTMLCompletionQuery$TagItem(<isindex>;-1;ISINDEX),HTMLCompletionQuery$TagItem(<kbd>;-1;KBD),HTMLCompletionQuery$TagItem(<label>;-1;LABEL),HTMLCompletionQuery$TagItem(<legend>;-1;LEGEND),HTMLCompletionQuery$TagItem(<li>;-1;LI),HTMLCompletionQuery$TagItem(<link>;-1;LINK),HTMLCompletionQuery$TagItem(<map>;-1;MAP),HTMLCompletionQuery$TagItem(<menu>;-1;MENU),HTMLCompletionQuery$TagItem(<meta>;-1;META),HTMLCompletionQuery$TagItem(<noframes>;-1;NOFRAMES),HTMLCompletionQuery$TagItem(<noscript>;-1;NOSCRIPT),HTMLCompletionQuery$TagItem(<object>;-1;OBJECT),HTMLCompletionQuery$TagItem(<ol>;-1;OL),HTMLCompletionQuery$TagItem(<optgroup>;-1;OPTGROUP),HTMLCompletionQuery$TagItem(<option>;-1;OPTION),HTMLCompletionQuery$TagItem(<p>;-1;P),HTMLCompletionQuery$TagItem(<param>;-1;PARAM),HTMLCompletionQuery$TagItem(<pre>;-1;PRE),HTMLCompletionQuery$TagItem(<q>;-1;Q),HTMLCompletionQuery$TagItem(<s>;-1;S),HTMLCompletionQuery$TagItem(<samp>;-1;SAMP),HTMLCompletionQuery$TagItem(<script>;-1;SCRIPT),HTMLCompletionQuery$TagItem(<select>;-1;SELECT),HTMLCompletionQuery$TagItem(<small>;-1;SMALL),HTMLCompletionQuery$TagItem(<span>;-1;SPAN),HTMLCompletionQuery$TagItem(<strike>;-1;STRIKE),HTMLCompletionQuery$TagItem(<strong>;-1;STRONG),HTMLCompletionQuery$TagItem(<style>;-1;STYLE),HTMLCompletionQuery$TagItem(<sub>;-1;SUB),HTMLCompletionQuery$TagItem(<sup>;-1;SUP),HTMLCompletionQuery$TagItem(<table>;-1;TABLE),HTMLCompletionQuery$TagItem(<tbody>;-1;TBODY),HTMLCompletionQuery$TagItem(<td>;-1;TD),HTMLCompletionQuery$TagItem(<textarea>;-1;TEXTAREA),HTMLCompletionQuery$TagItem(<tfoot>;-1;TFOOT),HTMLCompletionQuery$TagItem(<th>;-1;TH),HTMLCompletionQuery$TagItem(<thead>;-1;THEAD),HTMLCompletionQuery$TagItem(<title>;-1;TITLE),HTMLCompletionQuery$TagItem(<tr>;-1;TR),HTMLCompletionQuery$TagItem(<tt>;-1;TT),HTMLCompletionQuery$TagItem(<u>;-1;U),HTMLCompletionQuery$TagItem(<ul>;-1;UL),HTMLCompletionQuery$TagItem(<var>;-1;VAR)]
 [HTMLCompletionQuery$TagItem(<i>;-1;I),HTMLCompletionQuery$TagItem(<iframe>;-1;IFRAME),HTMLCompletionQuery$TagItem(<img>;-1;IMG),HTMLCompletionQuery$TagItem(<input>;-1;INPUT),HTMLCompletionQuery$TagItem(<ins>;-1;INS),HTMLCompletionQuery$TagItem(<isindex>;-1;ISINDEX)]
 [HTMLCompletionQuery$TagItem(<img>;-1;IMG)]
@@ -1043,11 +1043,11 @@
 1042 => NO RESULT
 1043 => NO RESULT
 1044 => NO RESULT
-1045 => NO RESULT
+[]
 [HTMLCompletionQuery$TagItem(<a>;-1;A),HTMLCompletionQuery$TagItem(<abbr>;-1;ABBR),HTMLCompletionQuery$TagItem(<acronym>;-1;ACRONYM),HTMLCompletionQuery$TagItem(<address>;-1;ADDRESS),HTMLCompletionQuery$TagItem(<applet>;-1;APPLET),HTMLCompletionQuery$TagItem(<area>;-1;AREA),HTMLCompletionQuery$TagItem(<b>;-1;B),HTMLCompletionQuery$TagItem(<base>;-1;BASE),HTMLCompletionQuery$TagItem(<basefont>;-1;BASEFONT),HTMLCompletionQuery$TagItem(<bdo>;-1;BDO),HTMLCompletionQuery$TagItem(<big>;-1;BIG),HTMLCompletionQuery$TagItem(<blockquote>;-1;BLOCKQUOTE),HTMLCompletionQuery$TagItem(<body>;-1;BODY),HTMLCompletionQuery$TagItem(<br>;-1;BR),HTMLCompletionQuery$TagItem(<button>;-1;BUTTON),HTMLCompletionQuery$TagItem(<caption>;-1;CAPTION),HTMLCompletionQuery$TagItem(<center>;-1;CENTER),HTMLCompletionQuery$TagItem(<cite>;-1;CITE),HTMLCompletionQuery$TagItem(<code>;-1;CODE),HTMLCompletionQuery$TagItem(<col>;-1;COL),HTMLCompletionQuery$TagItem(<colgroup>;-1;COLGROUP),HTMLCompletionQuery$TagItem(<dd>;-1;DD),HTMLCompletionQuery$TagItem(<del>;-1;DEL),HTMLCompletionQuery$TagItem(<dfn>;-1;DFN),HTMLCompletionQuery$TagItem(<dir>;-1;DIR),HTMLCompletionQuery$TagItem(<div>;-1;DIV),HTMLCompletionQuery$TagItem(<dl>;-1;DL),HTMLCompletionQuery$TagItem(<dt>;-1;DT),HTMLCompletionQuery$TagItem(<em>;-1;EM),HTMLCompletionQuery$TagItem(<fieldset>;-1;FIELDSET),HTMLCompletionQuery$TagItem(<font>;-1;FONT),HTMLCompletionQuery$TagItem(<form>;-1;FORM),HTMLCompletionQuery$TagItem(<h1>;-1;H1),HTMLCompletionQuery$TagItem(<h2>;-1;H2),HTMLCompletionQuery$TagItem(<h3>;-1;H3),HTMLCompletionQuery$TagItem(<h4>;-1;H4),HTMLCompletionQuery$TagItem(<h5>;-1;H5),HTMLCompletionQuery$TagItem(<h6>;-1;H6),HTMLCompletionQuery$TagItem(<head>;-1;HEAD),HTMLCompletionQuery$TagItem(<hr>;-1;HR),HTMLCompletionQuery$TagItem(<html>;-1;HTML),HTMLCompletionQuery$TagItem(<i>;-1;I),HTMLCompletionQuery$TagItem(<iframe>;-1;IFRAME),HTMLCompletionQuery$TagItem(<img>;-1;IMG),HTMLCompletionQuery$TagItem(<input>;-1;INPUT),HTMLCompletionQuery$TagItem(<ins>;-1;INS),HTMLCompletionQuery$TagItem(<isindex>;-1;ISINDEX),HTMLCompletionQuery$TagItem(<kbd>;-1;KBD),HTMLCompletionQuery$TagItem(<label>;-1;LABEL),HTMLCompletionQuery$TagItem(<legend>;-1;LEGEND),HTMLCompletionQuery$TagItem(<li>;-1;LI),HTMLCompletionQuery$TagItem(<link>;-1;LINK),HTMLCompletionQuery$TagItem(<map>;-1;MAP),HTMLCompletionQuery$TagItem(<menu>;-1;MENU),HTMLCompletionQuery$TagItem(<meta>;-1;META),HTMLCompletionQuery$TagItem(<noframes>;-1;NOFRAMES),HTMLCompletionQuery$TagItem(<noscript>;-1;NOSCRIPT),HTMLCompletionQuery$TagItem(<object>;-1;OBJECT),HTMLCompletionQuery$TagItem(<ol>;-1;OL),HTMLCompletionQuery$TagItem(<optgroup>;-1;OPTGROUP),HTMLCompletionQuery$TagItem(<option>;-1;OPTION),HTMLCompletionQuery$TagItem(<p>;-1;P),HTMLCompletionQuery$TagItem(<param>;-1;PARAM),HTMLCompletionQuery$TagItem(<pre>;-1;PRE),HTMLCompletionQuery$TagItem(<q>;-1;Q),HTMLCompletionQuery$TagItem(<s>;-1;S),HTMLCompletionQuery$TagItem(<samp>;-1;SAMP),HTMLCompletionQuery$TagItem(<script>;-1;SCRIPT),HTMLCompletionQuery$TagItem(<select>;-1;SELECT),HTMLCompletionQuery$TagItem(<small>;-1;SMALL),HTMLCompletionQuery$TagItem(<span>;-1;SPAN),HTMLCompletionQuery$TagItem(<strike>;-1;STRIKE),HTMLCompletionQuery$TagItem(<strong>;-1;STRONG),HTMLCompletionQuery$TagItem(<style>;-1;STYLE),HTMLCompletionQuery$TagItem(<sub>;-1;SUB),HTMLCompletionQuery$TagItem(<sup>;-1;SUP),HTMLCompletionQuery$TagItem(<table>;-1;TABLE),HTMLCompletionQuery$TagItem(<tbody>;-1;TBODY),HTMLCompletionQuery$TagItem(<td>;-1;TD),HTMLCompletionQuery$TagItem(<textarea>;-1;TEXTAREA),HTMLCompletionQuery$TagItem(<tfoot>;-1;TFOOT),HTMLCompletionQuery$TagItem(<th>;-1;TH),HTMLCompletionQuery$TagItem(<thead>;-1;THEAD),HTMLCompletionQuery$TagItem(<title>;-1;TITLE),HTMLCompletionQuery$TagItem(<tr>;-1;TR),HTMLCompletionQuery$TagItem(<tt>;-1;TT),HTMLCompletionQuery$TagItem(<u>;-1;U),HTMLCompletionQuery$TagItem(<ul>;-1;UL),HTMLCompletionQuery$TagItem(<var>;-1;VAR)]
 [HTMLCompletionQuery$EndTagItem(</a>;-1;A)]
 []
-1049 => NO RESULT
+[]
 1050 => NO RESULT
 1051 => NO RESULT
 1052 => NO RESULT
@@ -1139,7 +1139,7 @@
 1138 => NO RESULT
 1139 => NO RESULT
 1140 => NO RESULT
-1141 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</h2>;-1;null)]
 1142 => NO RESULT
 1143 => NO RESULT
 1144 => NO RESULT
@@ -1190,7 +1190,7 @@
 [HTMLCompletionQuery$EndTagItem(</h2>;-1;H2)]
 [HTMLCompletionQuery$EndTagItem(</h2>;-1;H2)]
 []
-1192 => NO RESULT
+[]
 1193 => NO RESULT
 1194 => NO RESULT
 1195 => NO RESULT
@@ -1796,7 +1796,7 @@
 1795 => NO RESULT
 1796 => NO RESULT
 1797 => NO RESULT
-1798 => NO RESULT
+[HTMLCompletionQuery$AutocompleteEndTagItem(</a>;-1;null)]
 1799 => NO RESULT
 1800 => NO RESULT
 1801 => NO RESULT
@@ -1889,11 +1889,11 @@
 1888 => NO RESULT
 1889 => NO RESULT
 1890 => NO RESULT
-1891 => NO RESULT
+[]
 [HTMLCompletionQuery$TagItem(<a>;-1;A),HTMLCompletionQuery$TagItem(<abbr>;-1;ABBR),HTMLCompletionQuery$TagItem(<acronym>;-1;ACRONYM),HTMLCompletionQuery$TagItem(<address>;-1;ADDRESS),HTMLCompletionQuery$TagItem(<applet>;-1;APPLET),HTMLCompletionQuery$TagItem(<area>;-1;AREA),HTMLCompletionQuery$TagItem(<b>;-1;B),HTMLCompletionQuery$TagItem(<base>;-1;BASE),HTMLCompletionQuery$TagItem(<basefont>;-1;BASEFONT),HTMLCompletionQuery$TagItem(<bdo>;-1;BDO),HTMLCompletionQuery$TagItem(<big>;-1;BIG),HTMLCompletionQuery$TagItem(<blockquote>;-1;BLOCKQUOTE),HTMLCompletionQuery$TagItem(<body>;-1;BODY),HTMLCompletionQuery$TagItem(<br>;-1;BR),HTMLCompletionQuery$TagItem(<button>;-1;BUTTON),HTMLCompletionQuery$TagItem(<caption>;-1;CAPTION),HTMLCompletionQuery$TagItem(<center>;-1;CENTER),HTMLCompletionQuery$TagItem(<cite>;-1;CITE),HTMLCompletionQuery$TagItem(<code>;-1;CODE),HTMLCompletionQuery$TagItem(<col>;-1;COL),HTMLCompletionQuery$TagItem(<colgroup>;-1;COLGROUP),HTMLCompletionQuery$TagItem(<dd>;-1;DD),HTMLCompletionQuery$TagItem(<del>;-1;DEL),HTMLCompletionQuery$TagItem(<dfn>;-1;DFN),HTMLCompletionQuery$TagItem(<dir>;-1;DIR),HTMLCompletionQuery$TagItem(<div>;-1;DIV),HTMLCompletionQuery$TagItem(<dl>;-1;DL),HTMLCompletionQuery$TagItem(<dt>;-1;DT),HTMLCompletionQuery$TagItem(<em>;-1;EM),HTMLCompletionQuery$TagItem(<fieldset>;-1;FIELDSET),HTMLCompletionQuery$TagItem(<font>;-1;FONT),HTMLCompletionQuery$TagItem(<form>;-1;FORM),HTMLCompletionQuery$TagItem(<h1>;-1;H1),HTMLCompletionQuery$TagItem(<h2>;-1;H2),HTMLCompletionQuery$TagItem(<h3>;-1;H3),HTMLCompletionQuery$TagItem(<h4>;-1;H4),HTMLCompletionQuery$TagItem(<h5>;-1;H5),HTMLCompletionQuery$TagItem(<h6>;-1;H6),HTMLCompletionQuery$TagItem(<head>;-1;HEAD),HTMLCompletionQuery$TagItem(<hr>;-1;HR),HTMLCompletionQuery$TagItem(<html>;-1;HTML),HTMLCompletionQuery$TagItem(<i>;-1;I),HTMLCompletionQuery$TagItem(<iframe>;-1;IFRAME),HTMLCompletionQuery$TagItem(<img>;-1;IMG),HTMLCompletionQuery$TagItem(<input>;-1;INPUT),HTMLCompletionQuery$TagItem(<ins>;-1;INS),HTMLCompletionQuery$TagItem(<isindex>;-1;ISINDEX),HTMLCompletionQuery$TagItem(<kbd>;-1;KBD),HTMLCompletionQuery$TagItem(<label>;-1;LABEL),HTMLCompletionQuery$TagItem(<legend>;-1;LEGEND),HTMLCompletionQuery$TagItem(<li>;-1;LI),HTMLCompletionQuery$TagItem(<link>;-1;LINK),HTMLCompletionQuery$TagItem(<map>;-1;MAP),HTMLCompletionQuery$TagItem(<menu>;-1;MENU),HTMLCompletionQuery$TagItem(<meta>;-1;META),HTMLCompletionQuery$TagItem(<noframes>;-1;NOFRAMES),HTMLCompletionQuery$TagItem(<noscript>;-1;NOSCRIPT),HTMLCompletionQuery$TagItem(<object>;-1;OBJECT),HTMLCompletionQuery$TagItem(<ol>;-1;OL),HTMLCompletionQuery$TagItem(<optgroup>;-1;OPTGROUP),HTMLCompletionQuery$TagItem(<option>;-1;OPTION),HTMLCompletionQuery$TagItem(<p>;-1;P),HTMLCompletionQuery$TagItem(<param>;-1;PARAM),HTMLCompletionQuery$TagItem(<pre>;-1;PRE),HTMLCompletionQuery$TagItem(<q>;-1;Q),HTMLCompletionQuery$TagItem(<s>;-1;S),HTMLCompletionQuery$TagItem(<samp>;-1;SAMP),HTMLCompletionQuery$TagItem(<script>;-1;SCRIPT),HTMLCompletionQuery$TagItem(<select>;-1;SELECT),HTMLCompletionQuery$TagItem(<small>;-1;SMALL),HTMLCompletionQuery$TagItem(<span>;-1;SPAN),HTMLCompletionQuery$TagItem(<strike>;-1;STRIKE),HTMLCompletionQuery$TagItem(<strong>;-1;STRONG),HTMLCompletionQuery$TagItem(<style>;-1;STYLE),HTMLCompletionQuery$TagItem(<sub>;-1;SUB),HTMLCompletionQuery$TagItem(<sup>;-1;SUP),HTMLCompletionQuery$TagItem(<table>;-1;TABLE),HTMLCompletionQuery$TagItem(<tbody>;-1;TBODY),HTMLCompletionQuery$TagItem(<td>;-1;TD),HTMLCompletionQuery$TagItem(<textarea>;-1;TEXTAREA),HTMLCompletionQuery$TagItem(<tfoot>;-1;TFOOT),HTMLCompletionQuery$TagItem(<th>;-1;TH),HTMLCompletionQuery$TagItem(<thead>;-1;THEAD),HTMLCompletionQuery$TagItem(<title>;-1;TITLE),HTMLCompletionQuery$TagItem(<tr>;-1;TR),HTMLCompletionQuery$TagItem(<tt>;-1;TT),HTMLCompletionQuery$TagItem(<u>;-1;U),HTMLCompletionQuery$TagItem(<ul>;-1;UL),HTMLCompletionQuery$TagItem(<var>;-1;VAR)]
 [HTMLCompletionQuery$EndTagItem(</a>;-1;A)]
 []
-1895 => NO RESULT
+[]
 1896 => NO RESULT
 1897 => NO RESULT
 1898 => NO RESULT
@@ -1920,7 +1920,7 @@
 [HTMLCompletionQuery$EndTagItem(</div>;-1;DIV)]
 [HTMLCompletionQuery$EndTagItem(</div>;-1;DIV)]
 []
-1922 => NO RESULT
+[]
 1923 => NO RESULT
 1924 => NO RESULT
 1925 => NO RESULT
@@ -1942,7 +1942,7 @@
 [HTMLCompletionQuery$EndTagItem(</td>;-1;TD),HTMLCompletionQuery$EndTagItem(</tr>;-1;TR),HTMLCompletionQuery$EndTagItem(</table>;-1;TABLE)]
 [HTMLCompletionQuery$EndTagItem(</td>;-1;TD),HTMLCompletionQuery$EndTagItem(</tr>;-1;TR),HTMLCompletionQuery$EndTagItem(</table>;-1;TABLE)]
 []
-1944 => NO RESULT
+[]
 1945 => NO RESULT
 1946 => NO RESULT
 1947 => NO RESULT
@@ -1960,7 +1960,7 @@
 [HTMLCompletionQuery$EndTagItem(</tr>;-1;TR),HTMLCompletionQuery$EndTagItem(</table>;-1;TABLE)]
 [HTMLCompletionQuery$EndTagItem(</tr>;-1;TR),HTMLCompletionQuery$EndTagItem(</table>;-1;TABLE)]
 []
-1962 => NO RESULT
+[]
 1963 => NO RESULT
 1964 => NO RESULT
 1965 => NO RESULT
@@ -1977,7 +1977,7 @@
 [HTMLCompletionQuery$EndTagItem(</table>;-1;TABLE)]
 [HTMLCompletionQuery$EndTagItem(</table>;-1;TABLE)]
 []
-1979 => NO RESULT
+[]
 1980 => NO RESULT
 1981 => NO RESULT
 1982 => NO RESULT
@@ -2029,7 +2029,7 @@
 []
 []
 []
-2031 => NO RESULT
+[]
 2032 => NO RESULT
 [HTMLCompletionQuery$TagItem(<a>;-1;A),HTMLCompletionQuery$TagItem(<abbr>;-1;ABBR),HTMLCompletionQuery$TagItem(<acronym>;-1;ACRONYM),HTMLCompletionQuery$TagItem(<address>;-1;ADDRESS),HTMLCompletionQuery$TagItem(<applet>;-1;APPLET),HTMLCompletionQuery$TagItem(<area>;-1;AREA),HTMLCompletionQuery$TagItem(<b>;-1;B),HTMLCompletionQuery$TagItem(<base>;-1;BASE),HTMLCompletionQuery$TagItem(<basefont>;-1;BASEFONT),HTMLCompletionQuery$TagItem(<bdo>;-1;BDO),HTMLCompletionQuery$TagItem(<big>;-1;BIG),HTMLCompletionQuery$TagItem(<blockquote>;-1;BLOCKQUOTE),HTMLCompletionQuery$TagItem(<body>;-1;BODY),HTMLCompletionQuery$TagItem(<br>;-1;BR),HTMLCompletionQuery$TagItem(<button>;-1;BUTTON),HTMLCompletionQuery$TagItem(<caption>;-1;CAPTION),HTMLCompletionQuery$TagItem(<center>;-1;CENTER),HTMLCompletionQuery$TagItem(<cite>;-1;CITE),HTMLCompletionQuery$TagItem(<code>;-1;CODE),HTMLCompletionQuery$TagItem(<col>;-1;COL),HTMLCompletionQuery$TagItem(<colgroup>;-1;COLGROUP),HTMLCompletionQuery$TagItem(<dd>;-1;DD),HTMLCompletionQuery$TagItem(<del>;-1;DEL),HTMLCompletionQuery$TagItem(<dfn>;-1;DFN),HTMLCompletionQuery$TagItem(<dir>;-1;DIR),HTMLCompletionQuery$TagItem(<div>;-1;DIV),HTMLCompletionQuery$TagItem(<dl>;-1;DL),HTMLCompletionQuery$TagItem(<dt>;-1;DT),HTMLCompletionQuery$TagItem(<em>;-1;EM),HTMLCompletionQuery$TagItem(<fieldset>;-1;FIELDSET),HTMLCompletionQuery$TagItem(<font>;-1;FONT),HTMLCompletionQuery$TagItem(<form>;-1;FORM),HTMLCompletionQuery$TagItem(<h1>;-1;H1),HTMLCompletionQuery$TagItem(<h2>;-1;H2),HTMLCompletionQuery$TagItem(<h3>;-1;H3),HTMLCompletionQuery$TagItem(<h4>;-1;H4),HTMLCompletionQuery$TagItem(<h5>;-1;H5),HTMLCompletionQuery$TagItem(<h6>;-1;H6),HTMLCompletionQuery$TagItem(<head>;-1;HEAD),HTMLCompletionQuery$TagItem(<hr>;-1;HR),HTMLCompletionQuery$TagItem(<html>;-1;HTML),HTMLCompletionQuery$TagItem(<i>;-1;I),HTMLCompletionQuery$TagItem(<iframe>;-1;IFRAME),HTMLCompletionQuery$TagItem(<img>;-1;IMG),HTMLCompletionQuery$TagItem(<input>;-1;INPUT),HTMLCompletionQuery$TagItem(<ins>;-1;INS),HTMLCompletionQuery$TagItem(<isindex>;-1;ISINDEX),HTMLCompletionQuery$TagItem(<kbd>;-1;KBD),HTMLCompletionQuery$TagItem(<label>;-1;LABEL),HTMLCompletionQuery$TagItem(<legend>;-1;LEGEND),HTMLCompletionQuery$TagItem(<li>;-1;LI),HTMLCompletionQuery$TagItem(<link>;-1;LINK),HTMLCompletionQuery$TagItem(<map>;-1;MAP),HTMLCompletionQuery$TagItem(<menu>;-1;MENU),HTMLCompletionQuery$TagItem(<meta>;-1;META),HTMLCompletionQuery$TagItem(<noframes>;-1;NOFRAMES),HTMLCompletionQuery$TagItem(<noscript>;-1;NOSCRIPT),HTMLCompletionQuery$TagItem(<object>;-1;OBJECT),HTMLCompletionQuery$TagItem(<ol>;-1;OL),HTMLCompletionQuery$TagItem(<optgroup>;-1;OPTGROUP),HTMLCompletionQuery$TagItem(<option>;-1;OPTION),HTMLCompletionQuery$TagItem(<p>;-1;P),HTMLCompletionQuery$TagItem(<param>;-1;PARAM),HTMLCompletionQuery$TagItem(<pre>;-1;PRE),HTMLCompletionQuery$TagItem(<q>;-1;Q),HTMLCompletionQuery$TagItem(<s>;-1;S),HTMLCompletionQuery$TagItem(<samp>;-1;SAMP),HTMLCompletionQuery$TagItem(<script>;-1;SCRIPT),HTMLCompletionQuery$TagItem(<select>;-1;SELECT),HTMLCompletionQuery$TagItem(<small>;-1;SMALL),HTMLCompletionQuery$TagItem(<span>;-1;SPAN),HTMLCompletionQuery$TagItem(<strike>;-1;STRIKE),HTMLCompletionQuery$TagItem(<strong>;-1;STRONG),HTMLCompletionQuery$TagItem(<style>;-1;STYLE),HTMLCompletionQuery$TagItem(<sub>;-1;SUB),HTMLCompletionQuery$TagItem(<sup>;-1;SUP),HTMLCompletionQuery$TagItem(<table>;-1;TABLE),HTMLCompletionQuery$TagItem(<tbody>;-1;TBODY),HTMLCompletionQuery$TagItem(<td>;-1;TD),HTMLCompletionQuery$TagItem(<textarea>;-1;TEXTAREA),HTMLCompletionQuery$TagItem(<tfoot>;-1;TFOOT),HTMLCompletionQuery$TagItem(<th>;-1;TH),HTMLCompletionQuery$TagItem(<thead>;-1;THEAD),HTMLCompletionQuery$TagItem(<title>;-1;TITLE),HTMLCompletionQuery$TagItem(<tr>;-1;TR),HTMLCompletionQuery$TagItem(<tt>;-1;TT),HTMLCompletionQuery$TagItem(<u>;-1;U),HTMLCompletionQuery$TagItem(<ul>;-1;UL),HTMLCompletionQuery$TagItem(<var>;-1;VAR)]
 []
@@ -2037,4 +2037,4 @@
 []
 []
 []
-2039 => NO RESULT
+[]

@@ -24,6 +24,8 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <include name="org/netbeans/editor/ext/html/HTMLFormatterTest.class/testIssue71598" 
+                    expectedFail="Fixed in relase55, fix will be merged into 6.0 later on"/>
             </patternset>
         </testset>
     </testbag>

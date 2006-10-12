@@ -19,16 +19,18 @@
 
 package org.netbeans.modules.db.sql.execute;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
-
 
 /**
  * Support class for executing SQL statements.
@@ -40,49 +42,100 @@ public final class SQLExecuteHelper {
     private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(SQLExecuteHelper.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
     
-    public static SQLExecutionResults execute(String statements[], Connection conn) throws SQLException {
-        List/*<SQLExecutionResults>*/ resultList = new ArrayList();
-                
-        for (int i = 0; i < statements.length; i++) {
-            String sql = removeComments(statements[i]).trim();
+    /**
+     * Executes a SQL string, possibly containing multiple statements. Returns the execution
+     * result, but only if the string contained a single statement.
+     *
+     * @param sqlScript the SQL script to execute. If it contains multiple lines
+     * they have to be delimited by '\n' characters.
+     */
+    public static SQLExecutionResults execute(String sqlScript, int startOffset, int endOffset, Connection conn, ProgressHandle progressHandle, SQLExecutionLogger executionLogger) {
+        
+        boolean cancelled = false;
+        
+        List/*<StatementInfo>*/ statements = getStatements(sqlScript, startOffset, endOffset);
+        boolean computeResults = statements.size() == 1;
+        
+        List/*<SQLExecutionResult>*/ resultList = new ArrayList();
+        long totalExecutionTime = 0;
+        
+        for (Iterator i = statements.iterator(); i.hasNext();) {
+            
+            cancelled = Thread.currentThread().isInterrupted();
+            if (cancelled) {
+                break;
+            }
+            
+            StatementInfo info = (StatementInfo)i.next();
+            String sql = info.getSQL();
+            
             if (LOG) {
                 LOGGER.log(ErrorManager.INFORMATIONAL, "Executing: " + sql); // NOI18N
             }
             
             SQLExecutionResult result = null;
-            String sqlType = sql.substring(0, Math.min(6, sql.length())).toUpperCase();
+            Statement stmt = null;
             
-            // XXX detect procedures call better
-            // will be fixed when we support the execution of multiple statements
-            if (sqlType.startsWith("{")) { // NOI18N
-                CallableStatement stmt = conn.prepareCall(sql);
-                if (stmt.execute()) {
-                    result = new SQLExecutionResult(stmt, stmt.getResultSet());
+            try {
+                if (sql.startsWith("{")) { // NOI18N
+                    stmt = conn.prepareCall(sql);
                 } else {
-                    result = new SQLExecutionResult(stmt, stmt.getUpdateCount());
+                    stmt = conn.createStatement();
                 }
-            } else {
-                Statement stmt = conn.createStatement();
-                if ("SELECT".equals(sqlType)) { // NOI18N
-                    result = new SQLExecutionResult(stmt, stmt.executeQuery(sql));
+                
+                boolean isResultSet = false;
+                long startTime = System.currentTimeMillis();
+                if (stmt instanceof PreparedStatement) {
+                    isResultSet = ((PreparedStatement)stmt).execute();
                 } else {
-                    result = new SQLExecutionResult(stmt, stmt.executeUpdate(sql));
+                    isResultSet = stmt.execute(sql);
                 }
+                long executionTime = System.currentTimeMillis() - startTime;
+                totalExecutionTime += executionTime;
+                
+                if (isResultSet) {
+                    result = new SQLExecutionResult(info, stmt, stmt.getResultSet(), executionTime);
+                } else {
+                    result = new SQLExecutionResult(info, stmt, stmt.getUpdateCount(), executionTime);
+                }
+            } catch (SQLException e) {
+                result = new SQLExecutionResult(info, stmt, e);
             }
-            
             assert result != null;
+            
+            executionLogger.log(result);
+            
             if (LOG) {
-                if (result.getResultSet() != null) {
-                    LOGGER.log(ErrorManager.INFORMATIONAL, "Result: " + result.getResultSet()); // NOI18N
-                } else {
-                    LOGGER.log(ErrorManager.INFORMATIONAL, "Result: " + result.getRowCount() + " rows affected"); // NOI18N
+                LOGGER.log(ErrorManager.INFORMATIONAL, "Result: " + result); // NOI18N
+            }
+            
+            if (computeResults || result.getException() != null) {
+                resultList.add(result);
+            } else {
+                try {
+                    result.close();
+                } catch (SQLException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
-            resultList.add(result);
         }
         
-        SQLExecutionResult[] resultArray = (SQLExecutionResult[])resultList.toArray(new SQLExecutionResult[resultList.size()]);
-        return new SQLExecutionResults(resultArray);
+        if (!cancelled) {
+            executionLogger.finish(totalExecutionTime);
+        } else {
+            if (LOG) {
+                LOGGER.log(ErrorManager.INFORMATIONAL, "Execution cancelled"); // NOI18N
+            }
+            executionLogger.cancel();
+        }
+        
+        SQLExecutionResults results = new SQLExecutionResults(resultList);
+        if (!cancelled) {
+            return results;
+        } else {
+            results.close();
+            return null;
+        }
     }
     
     private static int[] getSupportedResultSetTypeConcurrency(Connection conn) throws SQLException {
@@ -102,11 +155,34 @@ public final class SQLExecuteHelper {
         return new int[] { type, concurrency };
     }
     
-    static String removeComments(String sql) {
-        return new CommentRemover(sql).getResult();
+    private static List/*<StatementInfo>*/ getStatements(String script, int startOffset, int endOffset) {
+        List allStatements = split(script);
+        if (startOffset == 0 && endOffset == script.length()) {
+            return allStatements;
+        }
+        List statements = new ArrayList();
+        for (Iterator i = allStatements.iterator(); i.hasNext();) {
+            StatementInfo stmt = (StatementInfo)i.next();
+            if (startOffset == endOffset) {
+                // only find the statement at offset startOffset
+                if (stmt.getStartOffset() <= startOffset && stmt.getEndOffset() >= endOffset) {
+                    statements.add(stmt);
+                }
+            } else {
+                // find the statements between startOffset and endOffset
+                if (stmt.getStartOffset() >= startOffset && stmt.getEndOffset() <= endOffset) {
+                    statements.add(stmt);
+                }
+            }
+        }
+        return Collections.unmodifiableList(statements);
     }
     
-    private static final class CommentRemover {
+    static List/*<StatementInfo>*/ split(String script) {
+        return new SQLSplitter(script).getStatements();
+    }
+    
+    private static final class SQLSplitter {
         
         private static final int STATE_START = 0;
         private static final int STATE_MAYBE_LINE_COMMENT = 1;
@@ -114,23 +190,60 @@ public final class SQLExecuteHelper {
         private static final int STATE_MAYBE_BLOCK_COMMENT = 3;
         private static final int STATE_BLOCK_COMMENT = 4;
         private static final int STATE_MAYBE_END_BLOCK_COMMENT = 5;
+        private static final int STATE_STRING = 6;
         
         private String sql;
-        private StringBuffer result = new StringBuffer();
-        private int length;
+        private int sqlLength;
+        
+        private StringBuffer statement = new StringBuffer();
+        private List/*<String>*/ statements = new ArrayList();
+        
         private int pos = 0;
+        private int line = -1;
+        private int column;
+        private boolean wasEOL = true;
+        
+        private int startOffset;
+        private int startLine;
+        private int startColumn;
+        private int endOffset;
+        
         private int state = STATE_START;
         
-        public CommentRemover(String sql) {
+        /**
+         * @param sql the SQL string to parse. If it contains multiple lines
+         * they have to be delimited by '\n' characters.
+         */
+        public SQLSplitter(String sql) {
             assert sql != null;
             this.sql = sql;
-            length = sql.length();
+            sqlLength = sql.length();
             parse();
         }
         
         private void parse() {
-            while (pos < length) {
+            while (pos < sqlLength) {
                 char ch = sql.charAt(pos);
+                
+                if (ch == '\r') { // NOI18N
+                    // the string should not contain these
+                    if (LOG) {
+                        LOGGER.log(ErrorManager.INFORMATIONAL, "The SQL string contained non-supported \r characters."); // NOI18N
+                    }
+                    continue;
+                }
+                
+                if (wasEOL) {
+                    line++;
+                    column = 0;
+                    wasEOL = false;
+                } else {
+                    column++;
+                }
+                
+                if (ch == '\n') {
+                    wasEOL = true;
+                }
                 
                 switch (state) {
                     case STATE_START:
@@ -140,6 +253,9 @@ public final class SQLExecuteHelper {
                         if (ch == '/') {
                             state = STATE_MAYBE_BLOCK_COMMENT;
                         }
+                        if (ch == '\'') {
+                            state = STATE_STRING;
+                        }
                         break;
                         
                     case STATE_MAYBE_LINE_COMMENT:
@@ -147,7 +263,8 @@ public final class SQLExecuteHelper {
                             state = STATE_LINE_COMMENT;
                         } else {
                             state = STATE_START;
-                            result.append('-'); // previous char
+                            statement.append('-'); // previous char
+                            endOffset = pos;
                         }
                         break;
                         
@@ -164,7 +281,8 @@ public final class SQLExecuteHelper {
                         if (ch == '*') {
                             state = STATE_BLOCK_COMMENT;
                         } else {
-                            result.append('/'); // previous char
+                            statement.append('/'); // previous char
+                            endOffset = pos;
                             if (ch != '/') {
                                 state = STATE_START;
                             }
@@ -188,19 +306,60 @@ public final class SQLExecuteHelper {
                         }
                         break;
                         
+                    case STATE_STRING:
+                        if (ch == '\n' || ch == '\'') {
+                            state = STATE_START;
+                        }
+                        break;
+                        
                     default:
                         assert false;
                 }
                 
-                if (state == STATE_START) {
-                    result.append(ch);
+                if (state == STATE_START && ch == ';') {
+                    addStatement();
+                    statement.setLength(0);
+                } else {
+                    if (state == STATE_START || state == STATE_STRING) {
+                        // don't append leading whitespace
+                        if (statement.length() > 0 || !Character.isWhitespace(ch)) {
+                            // remember the position of the first appended char
+                            if (statement.length() == 0) {
+                                startOffset = pos;
+                                endOffset = pos;
+                                startLine = line;
+                                startColumn = column;
+                            }
+                            statement.append(ch);
+                            // the end offset is the character after the last non-whitespace character
+                            if (state == STATE_STRING || !Character.isWhitespace(ch)) {
+                                endOffset = pos + 1;
+                            }
+                        }
+                    }
                 }
+                
                 pos++;
             }
+            
+            addStatement();
         }
         
-        public String getResult() {
-            return result.toString();
+        private void addStatement() {
+            // PENDING since startOffset is the first non-whitespace char and
+            // endOffset is the offset after the last non-whitespace char,
+            // the trim() call could be replaced with statement.substring(startOffset, endOffset)
+            String sql = statement.toString().trim();
+            if (sql.length() <= 0) {
+                return;
+            }
+            
+            StatementInfo info = new StatementInfo(sql, startOffset, startLine, startColumn, endOffset);
+            statements.add(info);
+        }
+        
+        public List/*<StatementInfo>*/ getStatements() {
+            return Collections.unmodifiableList(statements);
         }
     }
 }

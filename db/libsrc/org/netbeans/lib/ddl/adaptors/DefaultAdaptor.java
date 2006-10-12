@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.RowIdLifetime;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,10 +35,6 @@ import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
 public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
-
-    // XXX apart from caching the DatabaseMetaData return values, this class doesn't do almost
-    // anything useful and prevents the db module from compiling on JDK 1.6 -- should be removed
-    // or implemented in a different way
     
     private transient Connection con;
     private transient DatabaseMetaData dmd;
@@ -4026,4 +4023,45 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
         return false;
     }
     
+    //JDK 1.6 / JDBC 4.0
+    
+    public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException {
+        return false;
+    }
+    
+    public boolean isWrapperFor (Class clazz) {
+        return false;
+    }
+
+    public Object unwrap(java.lang.Class iface) throws java.sql.SQLException {
+        return null;
+    }
+    
+    public java.sql.RowIdLifetime getRowIdLifetime() throws SQLException {
+        return null;
+    }
+
+    public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
+        return null;
+    }
+    
+    public ResultSet getClientInfoProperties() throws SQLException {
+        return null;
+    }
+    
+    public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern) throws SQLException {
+        return null;
+    }
+    
+    public ResultSet getFunctions(String catalog, String schemaPattern, String functionNamePattern) throws SQLException {
+        return null;
+    }
+    
+    public boolean providesQueryObjectGenerator() throws SQLException {
+        return false;
+    }
+    
+    public boolean autoCommitFailureClosesAllResultSets() throws SQLException {
+        return false;
+    }
 }

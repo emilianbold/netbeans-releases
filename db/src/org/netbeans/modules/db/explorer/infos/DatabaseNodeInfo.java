@@ -38,9 +38,11 @@ import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.util.PListReader;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
+import org.netbeans.modules.db.explorer.DbMetaDataListenerSupport;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
@@ -362,10 +364,38 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
                     children.add(subTreeNodes);
                 }
             });
+            
+            fireRefresh();
         } catch (ClassCastException ex) {
             //PENDING
         } catch (Exception ex) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+        }
+    }
+
+    protected void fireRefresh() {
+        boolean allTables = true;
+
+        if (!(this instanceof TableListNodeInfo)) {
+            allTables = false;
+            if (!(this instanceof TableNodeInfo)) {
+                return;
+            }
+        }
+
+        ConnectionNodeInfo cnnfo = (ConnectionNodeInfo)getParent(DatabaseNode.CONNECTION);
+        if (cnnfo == null) {
+            return;
+        }
+
+        DatabaseConnection dbconn = ConnectionList.getDefault().getConnection(cnnfo.getDatabaseConnection());
+        if (dbconn != null) {
+            if (allTables) {
+                DbMetaDataListenerSupport.fireTablesChanged(dbconn.getDatabaseConnection());
+            } else {
+                String tableName = (String)get(DatabaseNode.TABLE);
+                DbMetaDataListenerSupport.fireTableChanged(dbconn.getDatabaseConnection(), tableName);
+            }
         }
     }
 

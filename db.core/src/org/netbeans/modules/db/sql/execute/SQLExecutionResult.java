@@ -24,12 +24,17 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Returns the result of executing a list of SQL statements.
+ * Encapsulates the result of the execution of a single SQL statement.
  *
  * @author Andrei Badea
  */
 public class SQLExecutionResult {
 
+    /**
+     * The info about the executed statement.
+     */
+    private final StatementInfo statementInfo;
+    
     /**
      * The executed statement.
      */
@@ -41,38 +46,74 @@ public class SQLExecutionResult {
     private final ResultSet resultSet;
 
     /**
+     * The exception (if any) which occurred while executing the statement.
+     */
+    private final SQLException exception;
+    
+    /**
+     * The execution time in milliseconds.
+     */
+    private final long executionTime;
+    
+    /**
      * The number of the rows affected by the statement execution.
      */
     private final int rowCount;
     
-    public SQLExecutionResult(Statement statement, ResultSet resultSet) {
-        this.statement = statement;
-        this.resultSet = resultSet;
-        this.rowCount = 0;
+    public SQLExecutionResult(StatementInfo info, Statement statement, ResultSet resultSet, long executionTime) {
+        this(info, statement, resultSet, -1, null, executionTime);
     }
     
-    public SQLExecutionResult(Statement statement, int rowCount) {
+    public SQLExecutionResult(StatementInfo info, Statement statement, int rowCount, long executionTime) {
+        this(info, statement, null, rowCount, null, executionTime);
+    }
+    
+    public SQLExecutionResult(StatementInfo info, Statement statement, SQLException exception) {
+        this(info, statement, null, -1, exception, 0);
+    }
+    
+    private SQLExecutionResult(StatementInfo info, Statement statement, ResultSet resultSet, int rowCount, SQLException exception, long executionTime) {
+        this.statementInfo = info;
         this.statement = statement;
+        this.resultSet = resultSet;
         this.rowCount = rowCount;
-        this.resultSet = null;
+        this.exception = exception;
+        this.executionTime = executionTime;
+    }
+    
+    public StatementInfo getStatementInfo() {
+        return statementInfo;
     }
     
     public ResultSet getResultSet() {
         return resultSet;
     }
     
-    public Statement getStatement() {
-        return statement;
-    }
-    
     public int getRowCount() {
         return rowCount;
     }
     
+    public SQLException getException() {
+        return exception;
+    }
+    
+    public long getExecutionTime() {
+        return executionTime;
+    }
+    
     public void close() throws SQLException {
-        if (resultSet != null) {
-            resultSet.close();
+        try {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
         }
-        statement.close();
+    }
+    
+    public String toString() {
+        return "SQLExecutionResult[resultSet=" + resultSet + ",rowCount=" + rowCount + ",exception=" + exception + ",executionTime=" + executionTime + "]";
     }
 }

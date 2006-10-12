@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.common;
 import java.awt.Component;
 import javax.swing.JLabel;
 import java.awt.Container;
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import javax.swing.JComponent;
@@ -41,7 +42,12 @@ import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
@@ -194,4 +200,125 @@ public class Util {
         });
     }
 
+    /**
+     * Is J2EE version of a given project JavaEE 5 or higher?
+     *
+     * @param project J2EE project
+     * @return true if J2EE version is JavaEE 5 or higher; otherwise false
+     */
+    public static boolean isJavaEE5orHigher(Project project) {
+        if (project == null) {
+            return false;
+        }
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
+            if (j2eeModule != null) {
+                Object type = j2eeModule.getModuleType();
+                double version = Double.parseDouble(j2eeModule.getModuleVersion());
+                if (J2eeModule.EJB.equals(type) && (version > 2.1)) {
+                    return true;
+                };
+                if (J2eeModule.WAR.equals(type) && (version > 2.4)) {
+                    return true;
+                }
+                if (J2eeModule.CLIENT.equals(type) && (version > 1.4)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns source level of a given project
+     *
+     * @param project Project
+     * @return source level string representation, e.g. "1.6"
+     */
+    public static String getSourceLevel(Project project) {
+        SourceLevelQueryImplementation sl = (SourceLevelQueryImplementation) project.getLookup().lookup(SourceLevelQueryImplementation.class);
+        return sl.getSourceLevel(project.getProjectDirectory());
+    }
+    
+    /**
+     * Is source level of a given project 1.4 or lower?
+     *
+     * @param project Project
+     * @return true if source level is 1.4 or lower; otherwise false
+     */
+    public static boolean isSourceLevel14orLower(Project project) {
+        String srcLevel = getSourceLevel(project);
+        if (srcLevel != null) {
+            double sourceLevel = Double.parseDouble(srcLevel);
+            return (sourceLevel <= 1.4);
+        } else
+            return false;
+    }
+    
+    /**
+     * Is source level of a given project 1.6 or higher?
+     *
+     * @param project Project
+     * @return true if source level is 1.6 or higher; otherwise false
+     */
+    public static boolean isSourceLevel16orHigher(Project project) {
+        String srcLevel = getSourceLevel(project);
+        if (srcLevel != null) {
+            double sourceLevel = Double.parseDouble(srcLevel);
+            return (sourceLevel >= 1.6);
+        } else
+            return false;
+    }
+    
+    /**
+     * Checks whether the given <code>project</code>'s target server instance 
+     * is present.
+     *
+     * @param  project the project to check; can not be null.
+     * @return true if the target server instance of the given project
+     *          exists, false otherwise.
+     *
+     * @since 1.8
+     */
+    public static boolean isValidServerInstance(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider == null) {
+            return false;
+        }
+        return isValidServerInstance(j2eeModuleProvider);
+    }
+    
+    /**
+     * Checks whether the given <code>provider</code>'s target server instance 
+     * is present.
+     *
+     * @param  provider the provider to check; can not be null.
+     * @return true if the target server instance of the given provider
+     *          exists, false otherwise.
+     *
+     * @since 1.10
+     */
+    public static boolean isValidServerInstance(J2eeModuleProvider j2eeModuleProvider) {
+        String serverInstanceID = j2eeModuleProvider.getServerInstanceID();
+        if (serverInstanceID == null) {
+            return false;
+        }
+        return Deployment.getDefault().getServerID(serverInstanceID) != null;
+    }
+    
+    public static File[] getJ2eePlatformClasspathEntries(Project project) {
+        List<FileObject> j2eePlatformRoots = new ArrayList<FileObject>();
+        if (project != null) {
+            J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            if (j2eeModuleProvider != null) {
+                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+                if (j2eePlatform != null) {
+                    return j2eePlatform.getClasspathEntries();
+                }
+            }
+        }
+        return new File[0];
+    }
+    
 }

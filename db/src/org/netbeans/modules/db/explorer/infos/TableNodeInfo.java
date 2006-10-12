@@ -129,7 +129,9 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                 rs.close();
             }
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 
@@ -166,7 +168,9 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 
@@ -233,6 +237,8 @@ public class TableNodeInfo extends DatabaseNodeInfo {
 
             // add built sub-tree
             children.add(subTreeNodes);
+            
+            fireRefresh();
         } catch (Exception ex) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
@@ -244,6 +250,8 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             AbstractCommand cmd = spec.createCommandDropTable(getTable());
             cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
+            
+            fireRefresh();
         } catch (Exception e) {
             org.openide.DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
@@ -282,7 +290,9 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             // refresh list of columns
             refreshChildren();
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 }

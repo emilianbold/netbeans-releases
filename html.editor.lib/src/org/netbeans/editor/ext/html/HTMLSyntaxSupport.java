@@ -24,6 +24,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.dtd.*;
+import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.w3c.dom.html.HTMLBRElement;
 
 
@@ -34,8 +35,8 @@ import org.w3c.dom.html.HTMLBRElement;
  */
 public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateListener {
     private static final String FALLBACK_DOCTYPE =
-        "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
-
+            "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
+    
     private DTD dtd;
     private String docType;
     
@@ -51,14 +52,14 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             dtd = null;
         }
     }
-
-
+    
+    
     public DTD getDTD() {
         String type = getDocType();
         if( type == null ) type = FALLBACK_DOCTYPE;
-
+        
         if( dtd != null && type == docType ) return dtd;
-
+        
         docType = type;
         dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD( docType, null );
         return dtd;
@@ -67,27 +68,27 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     protected String getDocType() {
         try {
             SyntaxElement elem = getElementChain( 0 );
-        
+            
             if( elem == null ) return null; // empty document
-
+            
             int type = elem.getType();
-
+            
             while( type != SyntaxElement.TYPE_DECLARATION
-                        && type != SyntaxElement.TYPE_TAG ) {
+                    && type != SyntaxElement.TYPE_TAG ) {
                 elem = elem.getNext();
                 if( elem == null ) break;
-                type = elem.getType();        
+                type = elem.getType();
             }
-
+            
             if( type == SyntaxElement.TYPE_DECLARATION )
                 return ((SyntaxElement.Declaration)elem).getPublicIdentifier();
-
+            
             return null;
         } catch( BadLocationException e ) {
             return null;
         }
-    }     
-
+    }
+    
     
     
     /** Find matching tags with the current position.
@@ -98,162 +99,157 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
      * @return array of integers containing starting and ending position
      *  of the block in the document. Null is returned if there's
      *  no matching block.
-     */ 
+     */
     public int[] findMatchingBlock(int offset, boolean simpleSearch)
-	throws BadLocationException {	   
-	    // TODO - replanning to the other thread. Now it's in awt thread
-	    TokenItem token = getTokenChain(offset, offset+1);
-            TokenItem tokenOnOffset = token;
-            // if the carret is after HTML tag ( after char '>' ), ship inside the tag
-            if (token != null && token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_SYMBOL_ID)
-                token = token.getPrevious();
-            boolean isInside = false;  // flag, whether the carret is somewhere in a HTML tag
-            if( token != null ) {
-                if (isTagButNotSymbol(token)) {
-                    isInside = true; // the carret is somewhere in '<htmltag' or '</htmltag' 
+    throws BadLocationException {
+        // TODO - replanning to the other thread. Now it's in awt thread
+        TokenItem token = getTokenChain(offset, offset+1);
+        TokenItem tokenOnOffset = token;
+        // if the carret is after HTML tag ( after char '>' ), ship inside the tag
+        if (token != null && token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_SYMBOL_ID)
+            token = token.getPrevious();
+        boolean isInside = false;  // flag, whether the carret is somewhere in a HTML tag
+        if( token != null ) {
+            if (isTagButNotSymbol(token)) {
+                isInside = true; // the carret is somewhere in '<htmltag' or '</htmltag'
+            } else {
+                if(token.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL) {
+                    //we are on opening symbol < or </
+                    //so go to the next token which should be a TAG
+                    token = token.getNext();
+                    //if the token is null or nor TAG there is nothing to match
+                    if(token != null
+                            && ((token.getTokenID() == HTMLTokenContext.TAG_CLOSE)
+                            || (token.getTokenID() == HTMLTokenContext.TAG_OPEN))) isInside = true; // we found a tag
+                    else return null;
+                    
                 } else {
-                    if(token.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL) {
-                        //we are on opening symbol < or </
-                        //so go to the next token which should be a TAG
-                        token = token.getNext();
-                        //if the token is null or nor TAG there is nothing to match
-                        if(token != null 
-                                && ((token.getTokenID() == HTMLTokenContext.TAG_CLOSE) 
-                                    || (token.getTokenID() == HTMLTokenContext.TAG_OPEN))) isInside = true; // we found a tag
-                        else return null; 
-                        
-                    } else {
-                        //we are on closing symbol > or />
-                        // find out whether the carret is inside an HTML tag
+                    //we are on closing symbol > or />
+                    // find out whether the carret is inside an HTML tag
+                    token = token.getPrevious();
+                    //try to find the beginning of the tag.
+                    while (token!=null && !isTagButNotSymbol(token) && token.getTokenID().getNumericID() != HTMLTokenContext.TAG_CLOSE_SYMBOL_ID)
                         token = token.getPrevious();
-                        //try to find the beginning of the tag. 
-                        while (token!=null && !isTagButNotSymbol(token) && token.getTokenID().getNumericID() != HTMLTokenContext.TAG_CLOSE_SYMBOL_ID)
-                            token = token.getPrevious();
-                        if (token!=null && isTagButNotSymbol(token))
-                            isInside = true;
-                    }
+                    if (token!=null && isTagButNotSymbol(token))
+                        isInside = true;
                 }
             }
+        }
+        
+        if (token != null && isTagButNotSymbol(token) && isInside){
+            int start; // possition where the matched tag starts
+            int end;   // possition where the matched tag ends
+            int poss = -1; // how many the same tags is inside the mathed tag
             
-	    if (token != null && isTagButNotSymbol(token) && isInside){
-		int start; // possition where the matched tag starts
-		int end;   // possition where the matched tag ends
-		int poss = -1; // how many the same tags is inside the mathed tag
+            //test whether we are in a close tag
+            if (token.getTokenID() == HTMLTokenContext.TAG_CLOSE) {
+                //we are in a close tag
+                String tag = token.getImage().trim().toLowerCase();
+                while ( token != null){
+                    if (isTagButNotSymbol(token)) {
+                        if (token.getImage().trim().toLowerCase().equals(tag)
+                        && (token.getTokenID() == HTMLTokenContext.TAG_OPEN)
+                        && !isSingletonTag(token)) {
+                            //it's an open tag
+                            if (poss == 0){
+                                //get offset of previous token: < or </
+                                start = token.getPrevious().getOffset();
+                                token = token.getNext();
+                                end = token.getOffset()+ (token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL ? token.getImage().length() : 0);
+                                //
+                                //				    while (token != null && token.getTokenID().getNumericID() != HTMLTokenContext.TAG_CLOSE_SYMBOL_ID){
+                                //					token = token.getNext();
+                                //				    }
+                                //				    if (token != null)
+                                //					end = token.getOffset()+token.getImage().length();
+                                return new int[] {start, end};
+                            } else{
+                                poss--;
+                            }
+                        } else {
+                            //test whether the tag is a close tag for the 'tag' tagname
+                            if ((token.getImage().toLowerCase().indexOf(tag) > -1)
+                            && !isSingletonTag(token)) {
+                                poss++;
+                            }
+                        }
+                    }
+                    token = token.getPrevious();
+                }
                 
-                //test whether we are in a close tag
-		if (token.getTokenID() == HTMLTokenContext.TAG_CLOSE) {
-                    //we are in a close tag
-		    String tag = token.getImage().trim().toLowerCase();
-		    while ( token != null){
-			if (isTagButNotSymbol(token)) {
-			    if (token.getImage().trim().toLowerCase().equals(tag)
-                                    && (token.getTokenID() == HTMLTokenContext.TAG_OPEN)
-                                    && !isSingletonTag(token)) {
-                                //it's an open tag
-				if (poss == 0){  
-                                    //get offset of previous token: < or </
-				    start = token.getPrevious().getOffset();
+            } else{
+                //we are in an open tag
+                if (token.getImage().charAt(0) == '>')
+                    return null;
+                
+                //We need to find out whether the open tag is a singleton tag or not.
+                //In the first case no matching is needed
+                if(isSingletonTag(token)) return null;
+                
+                String tag = token.getImage().toLowerCase();
+                while ( token != null){
+                    if (isTagButNotSymbol(token)) {
+                        if (token.getImage().trim().toLowerCase().equals(tag)
+                        && token.getTokenID() == HTMLTokenContext.TAG_CLOSE){
+                            if (poss == 0) {
+                                //get offset of previous token: < or </
+                                start = token.getPrevious().getOffset();
+                                end = token.getOffset()+token.getImage().length()+1;
+                                token = token.getNext();
+                                while (token != null && token.getTokenID().getNumericID() != HTMLTokenContext.TAG_CLOSE_SYMBOL_ID){
                                     token = token.getNext();
-				    end = token.getOffset()+ (token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL ? token.getImage().length() : 0);
-//
-//				    while (token != null && token.getTokenID().getNumericID() != HTMLTokenContext.TAG_CLOSE_SYMBOL_ID){
-//					token = token.getNext();
-//				    }
-//				    if (token != null)
-//					end = token.getOffset()+token.getImage().length();
-				    return new int[] {start, end};
-				}
-				else{
-				    poss--;
-				}
-			    }
-			    else {
-                                //test whether the tag is a close tag for the 'tag' tagname
-				if ((token.getImage().toLowerCase().indexOf(tag) > -1)
-                                    && !isSingletonTag(token)) {
-				    poss++;
-				}
-			    }
-			}
-			token = token.getPrevious();			
-		    }
-       
-		}
-		else{
-                    //we are in an open tag
-		    if (token.getImage().charAt(0) == '>')
-			return null;
-                    
-                    //We need to find out whether the open tag is a singleton tag or not.
-                    //In the first case no matching is needed
-                    if(isSingletonTag(token)) return null;
-                    
-		    String tag = token.getImage().toLowerCase();
-		    while ( token != null){
-			if (isTagButNotSymbol(token)) {
-                            if (token.getImage().trim().toLowerCase().equals(tag) 
-                                && token.getTokenID() == HTMLTokenContext.TAG_CLOSE){
-				if (poss == 0) {
-                                    //get offset of previous token: < or </
-				    start = token.getPrevious().getOffset();
-				    end = token.getOffset()+token.getImage().length()+1;
-				    token = token.getNext();
-				    while (token != null && token.getTokenID().getNumericID() != HTMLTokenContext.TAG_CLOSE_SYMBOL_ID){
-					token = token.getNext();
-				    }
-				    if (token != null)
-					end = token.getOffset()+token.getImage().length();
-				    return new int[] {start, end};
-				}
-				else
-				    poss--;
-			    }
-			    else{
-				if (token.getImage().toLowerCase().equals(tag)
-                                    && !isSingletonTag(token))
-				    poss++;
-			    }
-			}
-			token = token.getNext();
-		    }
-		}
-	    }
-            
-            //match html comments
-            if(tokenOnOffset != null && tokenOnOffset.getTokenID() == HTMLTokenContext.BLOCK_COMMENT) {
-                String tokenImage = tokenOnOffset.getImage();
-                TokenItem toki = tokenOnOffset;
-                if(tokenImage.startsWith("<!--") && (offset < (tokenOnOffset.getOffset()) + "<!--".length())) { //NOI18N
-                    //start html token - we need to find the end token of the html comment
-                    while(toki != null) {
-                        if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
-                            if(toki.getImage().endsWith("-->")) {//NOI18N
-                                //found end token
-                                int start = toki.getOffset() + toki.getImage().length() - "-->".length(); //NOI18N
-				int end = toki.getOffset() + toki.getImage().length();
+                                }
+                                if (token != null)
+                                    end = token.getOffset()+token.getImage().length();
                                 return new int[] {start, end};
-                            }
-                        } else break;
-                        toki = toki.getNext();
+                            } else
+                                poss--;
+                        } else{
+                            if (token.getImage().toLowerCase().equals(tag)
+                            && !isSingletonTag(token))
+                                poss++;
+                        }
                     }
+                    token = token.getNext();
                 }
-                if(tokenImage.endsWith("-->") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - "-->".length())) { //NOI18N
-                    //end html token - we need to find the start token of the html comment
-                    while(toki != null) {
-                        if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
-                            if(toki.getImage().startsWith("<!--")) { //NOI18N
-                                //found end token
-                                int start = toki.getOffset();
-				int end = toki.getOffset() + "<!--".length(); //NOI18N
-                                return new int[] {start, end};
-                            }
-                        } else break;
-                        toki = toki.getPrevious();
-                    }
+            }
+        }
+        
+        //match html comments
+        if(tokenOnOffset != null && tokenOnOffset.getTokenID() == HTMLTokenContext.BLOCK_COMMENT) {
+            String tokenImage = tokenOnOffset.getImage();
+            TokenItem toki = tokenOnOffset;
+            if(tokenImage.startsWith("<!--") && (offset < (tokenOnOffset.getOffset()) + "<!--".length())) { //NOI18N
+                //start html token - we need to find the end token of the html comment
+                while(toki != null) {
+                    if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
+                        if(toki.getImage().endsWith("-->")) {//NOI18N
+                            //found end token
+                            int start = toki.getOffset() + toki.getImage().length() - "-->".length(); //NOI18N
+                            int end = toki.getOffset() + toki.getImage().length();
+                            return new int[] {start, end};
+                        }
+                    } else break;
+                    toki = toki.getNext();
                 }
-            } //eof match html comments
-
-            return null;
+            }
+            if(tokenImage.endsWith("-->") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - "-->".length())) { //NOI18N
+                //end html token - we need to find the start token of the html comment
+                while(toki != null) {
+                    if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
+                        if(toki.getImage().startsWith("<!--")) { //NOI18N
+                            //found end token
+                            int start = toki.getOffset();
+                            int end = toki.getOffset() + "<!--".length(); //NOI18N
+                            return new int[] {start, end};
+                        }
+                    } else break;
+                    toki = toki.getPrevious();
+                }
+            }
+        } //eof match html comments
+        
+        return null;
     }
     
     /** Finds out whether the given tagTokenItem is a part of a singleton tag (e.g. <div style=""/>).
@@ -283,7 +279,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     private final int getTokenEnd( TokenItem item ) {
         return item.getOffset() + item.getImage().length();
     }
-
+    
     /** Returns SyntaxElement instance for block of tokens, which is either
      * surrounding given offset, or is just after the offset.
      * @param offset offset in document where to search for SyntaxElement
@@ -291,55 +287,55 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
      * or <CODE>null</CODE> if there is no element there (end of document)
      */
     public SyntaxElement getElementChain( int offset ) throws BadLocationException {
-        TokenItem first = getTokenChain( offset, Math.min( offset + 10, getDocument().getLength() ) ); 
+        TokenItem first = getTokenChain( offset, Math.min( offset + 10, getDocument().getLength() ) );
         TokenItem item = first;
-
+        
         while (item != null && !item.getTokenContextPath().contains(HTMLTokenContext.contextPath) ){
             item = item.getPrevious();
         }
         
         if( item == null ) return null; // on End of document
         TokenID id = item.getTokenID();
-
+        
         int beginning = item.getOffset();
-
+        
         if( id == HTMLTokenContext.CHARACTER ) {
             while( id != null && id == HTMLTokenContext.CHARACTER ) {
                 beginning = item.getOffset();
                 item = item.getPrevious();
                 id = item == null ? null : item.getTokenID();
             }
-
+            
             // now item is either HTMLSyntax.VALUE or we're in text, or at BOF
             if( id != HTMLTokenContext.VALUE && id != HTMLTokenContext.TEXT ) {
                 return getNextElement( beginning );
             } // else ( for VALUE or TEXT ) fall through
         }
-
+        
         if( id == HTMLTokenContext.WS || id == HTMLTokenContext.ARGUMENT ||     // these are possible only in Tags
-            id == HTMLTokenContext.OPERATOR || id == HTMLTokenContext.VALUE ) { // so find boundary
-                do { 
-                    item = item.getPrevious();      // Can't get null here, there IS TAG before WS|ARGUMENT|OPERATOR|VALUE
-                    id = item.getTokenID();
-                } while( !isTag(item) );            
-                return getNextElement( item.getOffset() );       // TAGC
+                id == HTMLTokenContext.OPERATOR || id == HTMLTokenContext.VALUE ) { // so find boundary
+            do {
+                item = item.getPrevious();      // Can't get null here, there IS TAG before WS|ARGUMENT|OPERATOR|VALUE
+                id = item.getTokenID();
+            } while( !isTag(item) );
+            return getNextElement( item.getOffset() );       // TAGC
         }
-
+        
         if( id == HTMLTokenContext.TEXT ) {
-            while( id != null && (id == HTMLTokenContext.TEXT || id == HTMLTokenContext.CHARACTER) ) { 
+            while( id != null && (id == HTMLTokenContext.TEXT || id == HTMLTokenContext.CHARACTER) ) {
                 beginning = item.getOffset();
                 item = item.getPrevious();
                 id = item == null ? null : item.getTokenID();
             }
             return getNextElement( beginning ); // from start of Commment
         }
-
+        
         if( isTag(item)) {
-            if( item.getTokenID() == HTMLTokenContext.TAG_OPEN || 
+            if( item.getTokenID() == HTMLTokenContext.TAG_OPEN ||
                     item.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL)  return getNextElement( item.getOffset() );  // TAGO/ETAGO // NOI18N
             else {
                 TokenItem prev = null;
-                do { 
+                do {
                     prev = item.getPrevious();
                     if(prev == null) return getNextElement(item.getOffset());
                     item = prev;
@@ -348,10 +344,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 return getNextElement( item.getOffset() );       // TAGC
             }
         }
-
+        
         if( id == HTMLTokenContext.ERROR )
             return new SyntaxElement( this, item.getOffset(), getTokenEnd( item ), SyntaxElement.TYPE_ERROR );
-
+        
         if( id == HTMLTokenContext.BLOCK_COMMENT ) {
             TokenItem prev = null;
             while( (id == HTMLTokenContext.BLOCK_COMMENT && !item.getImage().startsWith( "<!--" ))) { // NOI18N
@@ -362,8 +358,8 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             if(item.getTokenID() != HTMLTokenContext.BLOCK_COMMENT) item = prev; // the case of JSP tokens inside HTML
             return getNextElement( item.getOffset() ); // from start of Commment
         }
-
-
+        
+        
         if( id == HTMLTokenContext.DECLARATION || id == HTMLTokenContext.SGML_COMMENT ) {
             while( id != HTMLTokenContext.DECLARATION || !item.getImage().startsWith( "<!" ) ) { // NOI18N
                 item = item.getPrevious();
@@ -373,7 +369,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
         return null;
     }
-
+    
     /** The way how to get previous SyntaxElement in document. It is not intended
      * for direct usage, and thus is not public. Usually, it is called from
      * SyntaxElement's method getPrevious()
@@ -381,7 +377,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     SyntaxElement getPreviousElement( int offset ) throws BadLocationException {
         return offset == 0 ? null : getElementChain( offset - 1 );
     }
-
+    
     /**
      * Beware, changes data
      */
@@ -389,29 +385,29 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         int startIndex = 0;
         if (data == null || data.length() == 0) return null;
         while( data.charAt( startIndex ) == ' ' ) startIndex++;
-
+        
         char stopMark = data.charAt( startIndex++ );
         if( stopMark == '"' || stopMark == '\'' ) {
             for( int index = startIndex; index < data.length(); index++ )
                 if( data.charAt( index ) == stopMark ) {
-                    String quoted = data.substring( startIndex, index );
-                    data.delete( 0, index + 1 );
-                    return quoted;
+                String quoted = data.substring( startIndex, index );
+                data.delete( 0, index + 1 );
+                return quoted;
                 }
         }
         
         return null;
     }
     
-   /** Get the next element from given offset. Should only be called from
-    * SyntaxElements obtained by getElementChain, or by getElementChain itself.
-    * @return SyntaxElement startting at offset, or null, if EoD
-    */
+    /** Get the next element from given offset. Should only be called from
+     * SyntaxElements obtained by getElementChain, or by getElementChain itself.
+     * @return SyntaxElement startting at offset, or null, if EoD
+     */
     public SyntaxElement getNextElement( int offset ) throws BadLocationException {
         TokenItem item = getTokenChain( offset, Math.min( offset + 10, getDocument().getLength() ) );
         if( item == null ) return null; // on End of Document
         TokenID id = item.getTokenID();
-
+        
         int lastOffset = getTokenEnd( item );
         if( id == HTMLTokenContext.BLOCK_COMMENT ) {
             while( id == HTMLTokenContext.BLOCK_COMMENT ) {
@@ -422,11 +418,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             }
             return new SyntaxElement( this, offset, lastOffset, SyntaxElement.TYPE_COMMENT );
         }
-
+        
         if( id == HTMLTokenContext.DECLARATION ) {
             // Compose whole declaration, leaving out included comments
             StringBuffer sb = new StringBuffer( item.getImage() );
-
+            
             while( id == HTMLTokenContext.DECLARATION || id == HTMLTokenContext.SGML_COMMENT ) {
                 lastOffset = getTokenEnd( item );
                 item = item.getNext();
@@ -437,21 +433,21 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             }
             
             String image = sb.toString();
-
+            
             // not a DOCTYPE declaration
             if( ! image.startsWith( "<!DOCTYPE" ) )     // NOI18N
                 return new SyntaxElement.Declaration( this, offset, lastOffset,
-                                null, null, null );
+                        null, null, null );
             
             // Cut off the <!DOCTYPE substring and possible ws
             image = image.substring( 9 ).trim();
             
             int index = image.indexOf( ' ' );
             if( index < 0 ) return new SyntaxElement.Declaration(
-                        this, offset, lastOffset, null, null, null );
-
+                    this, offset, lastOffset, null, null, null );
+            
             String rootElem = image.substring( 0, index );
-
+            
             image = image.substring( index ).trim();
             
             if( image.startsWith( "PUBLIC" ) ) {    // NOI18N   Public ID
@@ -468,17 +464,17 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 sb = new StringBuffer( image );
                 String si = getQuotedString( sb );
                 if( si != null ) {
-                        return new SyntaxElement.Declaration(
-                                this, offset, lastOffset, rootElem, null, si );
+                    return new SyntaxElement.Declaration(
+                            this, offset, lastOffset, rootElem, null, si );
                 }
             }
             return new SyntaxElement.Declaration(
                     this, offset, lastOffset, null, null, null );
         }
-
+        
         if( id == HTMLTokenContext.ERROR )
             return new SyntaxElement( this, item.getOffset(), lastOffset, SyntaxElement.TYPE_ERROR );
-
+        
         if( id == HTMLTokenContext.TEXT || id == HTMLTokenContext.CHARACTER ) {
             while( id == HTMLTokenContext.TEXT || id == HTMLTokenContext.CHARACTER ) {
                 lastOffset = getTokenEnd( item );
@@ -488,56 +484,56 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             }
             return new SyntaxElement( this, offset, lastOffset, SyntaxElement.TYPE_TEXT );
         }
-
+        
         String text = item.getImage();
         if( id == HTMLTokenContext.TAG_CLOSE || id == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
-                // endtag // NOI18N
-                String name = text;
+            // endtag // NOI18N
+            String name = text;
+            item = item.getNext();
+            id = item == null ? null : item.getTokenID();
+            
+            while( id == HTMLTokenContext.WS ) {
+                lastOffset = getTokenEnd( item );
                 item = item.getNext();
                 id = item == null ? null : item.getTokenID();
-
-                while( id == HTMLTokenContext.WS ) {
-                    lastOffset = getTokenEnd( item );
-                    item = item.getNext();
-                    id = item == null ? null : item.getTokenID();
-                }
-
-                if( id == HTMLTokenContext.TAG_CLOSE_SYMBOL) {   // with this tag // NOI18N
-                    return new SyntaxElement.Named( this, offset, getTokenEnd( item ), SyntaxElement.TYPE_ENDTAG, name );
-                } else {                                                            // without this tag
-                    return new SyntaxElement.Named( this, offset, lastOffset, SyntaxElement.TYPE_ENDTAG, name );
-                }
             }
+            
+            if( id == HTMLTokenContext.TAG_CLOSE_SYMBOL) {   // with this tag // NOI18N
+                return new SyntaxElement.Named( this, offset, getTokenEnd( item ), SyntaxElement.TYPE_ENDTAG, name );
+            } else {                                                            // without this tag
+                return new SyntaxElement.Named( this, offset, lastOffset, SyntaxElement.TYPE_ENDTAG, name );
+            }
+        }
         
         if( id == HTMLTokenContext.TAG_OPEN || id == HTMLTokenContext.TAG_OPEN_SYMBOL) {
-                // starttag
-                String name = text;
-                ArrayList attrs = new ArrayList();
-
+            // starttag
+            String name = text;
+            ArrayList attrs = new ArrayList();
+            
+            item = item.getNext();
+            id = item == null ? null : item.getTokenID();
+            
+            while( id != null && (id == HTMLTokenContext.WS ||
+                    id == HTMLTokenContext.ARGUMENT || id == HTMLTokenContext.OPERATOR ||
+                    id == HTMLTokenContext.VALUE || id == HTMLTokenContext.CHARACTER ||
+                    !item.getTokenContextPath().contains(HTMLTokenContext.contextPath)) //be able to create SyntaxElement for tags containing JSP scriptlet or EL
+                    ) {
+                if( id == HTMLTokenContext.ARGUMENT ) attrs.add( item.getImage() );  // log all attributes
+                lastOffset = getTokenEnd( item );
                 item = item.getNext();
                 id = item == null ? null : item.getTokenID();
-
-                while( id != null && (id == HTMLTokenContext.WS || 
-                       id == HTMLTokenContext.ARGUMENT || id == HTMLTokenContext.OPERATOR ||
-                       id == HTMLTokenContext.VALUE || id == HTMLTokenContext.CHARACTER ||
-                        !item.getTokenContextPath().contains(HTMLTokenContext.contextPath)) //be able to create SyntaxElement for tags containing JSP scriptlet or EL
-                ) {
-                    if( id == HTMLTokenContext.ARGUMENT ) attrs.add( item.getImage() );  // log all attributes
-                    lastOffset = getTokenEnd( item );
-                    item = item.getNext();
-                    id = item == null ? null : item.getTokenID();
-                }
-                if( id == HTMLTokenContext.TAG_CLOSE_SYMBOL) {   // with this tag // NOI18N
-                    return new SyntaxElement.Tag( this, offset, getTokenEnd( item ), name, attrs, item.getImage().equals("/>"));
-                } else {                                                            // without this tag
-                    return new SyntaxElement.Tag( this, offset, lastOffset, name, attrs );
-                }             
-
             }
+            if( id == HTMLTokenContext.TAG_CLOSE_SYMBOL) {   // with this tag // NOI18N
+                return new SyntaxElement.Tag( this, offset, getTokenEnd( item ), name, attrs, item.getImage().equals("/>"));
+            } else {                                                            // without this tag
+                return new SyntaxElement.Tag( this, offset, lastOffset, name, attrs );
+            }
+            
+        }
         
         return null;
     }
-        
+    
     public List getPossibleEndTags( int offset, String prefix ) throws BadLocationException {
         prefix = prefix.toUpperCase();
         int prefixLen = prefix.length();
@@ -561,12 +557,12 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 if(tag != null && !tag.isEmpty()) stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
             } else if( (elem.getType() == SyntaxElement.TYPE_TAG) && (!elem.getText().startsWith("<"))) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Tag)elem).getName().toUpperCase() );
-
+                
                 if( tag == null ) continue; // Unknown tag - ignore
                 if( tag.isEmpty() ) continue; // ignore empty Tags - they are like start and imediate end
-
+                
                 String name = tag.getName();
-
+                
                 if( stack.empty() ) {           // empty stack - we are on the same tree deepnes - can close this tag
                     if( name.startsWith( prefix ) && !found.contains( name ) ) {    // add only new items
                         found.add( name );
@@ -583,47 +579,75 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         
         return result;
     }
-   
-    public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
-        if( !visible ) {
-            int retVal = COMPLETION_CANCEL;
-            int dotPos = target.getCaret().getDot();
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            switch( typedText.charAt( typedText.length()-1 ) ) {
-                case '/':
-                    if (dotPos >= 2) { // last char before inserted slash
-                        try {
-                            String txtBeforeSpace = doc.getText(dotPos-2, 2);
-                            if( txtBeforeSpace.equals("</") )  // NOI18N
-                                retVal = COMPLETION_POPUP;
-                        } catch (BadLocationException e) {}
-                    }
-                    break;
-                case ' ':
-                    HTMLSyntaxSupport sup = (HTMLSyntaxSupport)doc.getSyntaxSupport().get(HTMLSyntaxSupport.class);
-                    try {
-                        TokenItem ti = sup.getTokenChain(dotPos-1, dotPos);
-                        if(ti != null && ti.getTokenID() == HTMLTokenContext.WS) return COMPLETION_POPUP;
-                    }catch(BadLocationException e) {
-                        //do nothing
-                    }
-                    break;
-                case '<':
-                case '&':
-                    retVal = COMPLETION_POPUP;
-                    break;
+    
+    public List getAutocompletedEndTag(int offset) {
+        List l = new ArrayList();
+        try {
+            SyntaxElement elem = getElementChain( offset - 1);
+            if(elem != null && elem.getType() == SyntaxElement.TYPE_TAG) {
+                String tagName = ((SyntaxElement.Named)elem).getName();
+                //check if the tag has required endtag
+                Element dtdElem = getDTD().getElement(tagName.toUpperCase());
+                if( dtdElem == null || !dtdElem.isEmpty()) {
+                    HTMLCompletionQuery.ResultItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset);
+                    l.add(eti);
+                }
             }
-            return retVal;
-        } else { // the pane is already visible
-            switch (typedText.charAt(0)) {
-                case '>':
-                case ';':
-                    return COMPLETION_HIDE;
-            }
-            return COMPLETION_POST_REFRESH;
+        }catch(BadLocationException e) {
+            //just ignore
         }
+        return l;
     }
+    
+    public int checkCompletion(JTextComponent target, String typedText, boolean visible ) {
+        int retVal = COMPLETION_CANCEL;
+        int dotPos = target.getCaret().getDot();
+        BaseDocument doc = (BaseDocument)target.getDocument();
+        switch( typedText.charAt( typedText.length()-1 ) ) {
+            case '/':
+                if (dotPos >= 2) { // last char before inserted slash
+                    try {
+                        String txtBeforeSpace = doc.getText(dotPos-2, 2);
+                        if( txtBeforeSpace.equals("</") )  // NOI18N
+                            return COMPLETION_POPUP;
+                    } catch (BadLocationException e) {}
+                }
+                break;
+            case ' ':
+                HTMLSyntaxSupport sup = (HTMLSyntaxSupport)doc.getSyntaxSupport().get(HTMLSyntaxSupport.class);
+                try {
+                    TokenItem ti = sup.getTokenChain(dotPos-1, dotPos);
+                    if(ti != null && ti.getTokenID() == HTMLTokenContext.WS) {
+                        return COMPLETION_POPUP;
+                    }
+                }catch(BadLocationException e) {
+                    //do nothing
+                }
+                break;
+            case '<':
+            case '&':
+                return COMPLETION_POPUP;
+            case ';':
+                return COMPLETION_HIDE;
+            case '>':
+                sup = (HTMLSyntaxSupport)doc.getSyntaxSupport().get(HTMLSyntaxSupport.class);
+                try {
+                    //check if the cursor is behind an open tag
+                    SyntaxElement se = getElementChain(dotPos-1);
+                    if(se != null && se.getType() == SyntaxElement.TYPE_TAG) {
+                        return COMPLETION_POPUP;
+                    }
+                }catch(BadLocationException e) {
+                    //do nothing
+                }
+                return COMPLETION_HIDE;
+               
+        }
+        return COMPLETION_POST_REFRESH;
         
+    }
+    
+    
     public static boolean isTag(TokenItem ti) {
         return (( ti.getTokenID() == HTMLTokenContext.TAG_OPEN ) ||
                 ( ti.getTokenID() == HTMLTokenContext.TAG_CLOSE ) ||
@@ -635,5 +659,6 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         return (( ti.getTokenID() == HTMLTokenContext.TAG_OPEN ) ||
                 ( ti.getTokenID() == HTMLTokenContext.TAG_CLOSE ));
     }
+    
     
 }

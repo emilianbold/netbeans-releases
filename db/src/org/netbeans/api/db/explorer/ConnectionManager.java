@@ -26,6 +26,7 @@ import org.netbeans.modules.db.explorer.actions.ConnectUsingDriverAction;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.ErrorManager;
+import org.openide.util.Mutex;
 
 /**
  * Provides access to the list of connections in the Database Explorer.
@@ -37,7 +38,7 @@ import org.openide.ErrorManager;
  * <p>New connections can be added to the Connection Manager using the
  * {@link #addConnection} method (new connections can be created using the
  * {@link DatabaseConnection#create} method. 
- * It is also possible to display the "Add Connection" dialog to let the
+ * It is also possible to display the New Database Connection dialog to let the
  * user create a new database connection using the {@link #showAddConnectionDialog}.
  * Connections can be realized using the {@link #showConnectionDialog} method.</p>
  * 
@@ -118,37 +119,120 @@ public final class ConnectionManager {
     
     /**
      * Shows the dialog for adding a new connection. The specified driver will be
-     * selected by default in the Add Connection dialog.
+     * selected by default in the New Database Connection dialog.
      *
      * @param driver the JDBC driver; can be null.
      */
     public void showAddConnectionDialog(JDBCDriver driver) {
-        showAddConnectionDialog(driver, null);
+        showAddConnectionDialog(driver, null, null, null);
     }
     
     /**
-     * Shows the dialog for adding a new connection with specified database URL. 
-     * The database URL will be filled in the Database URL field in the Add Connection dialog box.
+     * Shows the dialog for adding a new connection with the specified database URL. 
      * The specified driver be filled as the single element of the 
-     * Driver combo box of the Add Connection dialog box.
+     * Driver combo box of the New Database Connection dialog box.
+     * The database URL will be filled in the Database URL field in the 
+     * New Database Connection dialog box.
      *
      * @param driver the JDBC driver; can be null.
      * @param databaseUrl the database URL; can be null.
      */
     public void showAddConnectionDialog(JDBCDriver driver, final String databaseUrl) {
-        final String driverClass = (driver != null) ? driver.getClassName() : null;
-        final String driverName = (driver != null) ? driver.getName() : null;
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(driverName, driverClass, databaseUrl);
-                }
-            });
-        } else {
-            new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(driverName, driverClass, databaseUrl);
-        }
+        showAddConnectionDialog(driver, databaseUrl, null, null);
     }
-
+    
+    /**
+     * Shows the dialog for adding a new connection with the specified database URL, user and password
+     * The specified driver be filled as the single element of the 
+     * Driver combo box of the New Database Connection dialog box.
+     * The database URL will be filled in the Database URL field in the 
+     * New Database Connection dialog box.
+     * The user and password will be filled in the User Name and Password
+     * fields in the New Database Connection dialog box.
+     *
+     * @param driver the JDBC driver; can be null.
+     * @param databaseUrl the database URL; can be null.
+     * @param user the database user; can be null.
+     * @param password user's password; can be null.
+     *
+     * @since 1.19
+     */
+    public void showAddConnectionDialog(final JDBCDriver driver, final String databaseUrl, final String user, final String password) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(driver, databaseUrl, user, password);
+            }
+        });
+    }
+    
+    /**
+     * The counterpart of {@link #showAddConnectionDialog(JDBCDriver) } which returns
+     * the newly created database connection, but must be called from the event dispatching
+     * thread.
+     *
+     * @param driver the JDBC driver; can be null.
+     *
+     * @return the new database connection or null if no database connection
+     *         was created (e.g. the user pressed Cancel).
+     *
+     * @throws IllegalStateException if the calling thread is not the event
+     *         dispatching thread.
+     *
+     * @since 1.19
+     */
+    public DatabaseConnection showAddConnectionDialogFromEventThread(JDBCDriver driver) {
+        return showAddConnectionDialogFromEventThread(driver, null, null, null);
+    }
+    
+    /**
+     * The counterpart of {@link #showAddConnectionDialog(JDBCDriver, String) } which returns
+     * the newly created database connection, but must be called from the event dispatching
+     * thread.
+     *
+     * @param driver the JDBC driver; can be null.
+     * @param databaseUrl the database URL; can be null.
+     *
+     * @return the new database connection or null if no database connection
+     *         was created (e.g. the user pressed Cancel).
+     *
+     * @throws IllegalStateException if the calling thread is not the event
+     *         dispatching thread.
+     *
+     * @since 1.19
+     */
+    public DatabaseConnection showAddConnectionDialogFromEventThread(JDBCDriver driver, String databaseUrl) {
+        return showAddConnectionDialogFromEventThread(driver, databaseUrl, null, null);
+    }
+    
+    /**
+     * The counterpart of {@link #showAddConnectionDialog(JDBCDriver, String, String, String) } 
+     * which returns the newly created database connection, but must be called 
+     * from the event dispatching thread.
+     *
+     * @param driver the JDBC driver; can be null.
+     * @param databaseUrl the database URL; can be null.
+     * @param user the database user; can be null.
+     * @param password user's password; can be null.
+     *
+     * @return the new database connection or null if no database connection
+     *         was created (e.g. the user pressed Cancel).
+     *
+     * @throws IllegalStateException if the calling thread is not the event
+     *         dispatching thread.
+     *
+     * @since 1.19
+     */
+    public DatabaseConnection showAddConnectionDialogFromEventThread(JDBCDriver driver, String databaseUrl, String user, String password) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("The current thread is not the event dispatching thread."); // NOI18N
+        }
+        org.netbeans.modules.db.explorer.DatabaseConnection internalDBConn = new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(driver, databaseUrl, user, password);
+        if (internalDBConn != null) {
+            return internalDBConn.getDatabaseConnection();
+        }
+        return null;
+    }
+    
     /**
      * Shows the Connect dialog for the specified connection if not all data 
      * needed to connect, such as the user name or password, 

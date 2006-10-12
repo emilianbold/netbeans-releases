@@ -71,12 +71,12 @@ public class INPUT implements ActiveEditorDrop {
 
         String strValue = " value=\"" + value + "\""; // NOI18N
 
-        String strReadOnly = (readonly ? " readonly" : ""); // NOI18N
-        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
+        String strReadOnly = (readonly ? " readonly=\"readonly\"" : ""); // NOI18N
+        String strDisabled = (disabled ? " disabled=\"disabled\"" : ""); // NOI18N
 
         String strWidth = "";
         if (width.length() > 0)
-            strWidth = " width=\"" + width + "\""; // NOI18N
+            strWidth = " size=\"" + width + "\""; // NOI18N
         
         String inputBody = "<input" + strType + strName + strValue + strWidth + strReadOnly + strDisabled + " />"; // NOI18N
         

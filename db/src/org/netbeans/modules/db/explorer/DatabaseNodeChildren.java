@@ -29,6 +29,7 @@ import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.Vector;
 import javax.swing.SwingUtilities;
+import org.openide.ErrorManager;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -38,6 +39,7 @@ import org.openide.util.RequestProcessor;
 
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.ProcedureNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 import org.netbeans.modules.db.explorer.infos.ViewNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
@@ -83,7 +85,7 @@ public class DatabaseNodeChildren extends Children.Array {
             public void run () {
                 DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
                 java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
-                boolean sort = (nodeinfo.getName().equals("Drivers") || (nodeinfo instanceof TableNodeInfo) || (nodeinfo instanceof ViewNodeInfo)) ? false : true; //NOI18N
+                boolean sort = (nodeinfo.getName().equals("Drivers") || (nodeinfo instanceof TableNodeInfo) || (nodeinfo instanceof ViewNodeInfo) || (nodeinfo instanceof ProcedureNodeInfo)) ? false : true; //NOI18N
                 TreeSet children = new TreeSet(new NodeComparator(nodeord, sort));
 
                 try {
@@ -125,8 +127,9 @@ public class DatabaseNodeChildren extends Children.Array {
 //                            });
 //                    }
                 } catch (Exception e) {
-                        showException(e);
-                        children.clear();
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    showException(e);
+                    children.clear();
                 }
 
                 setCh(children);

@@ -19,19 +19,20 @@
 
 package org.netbeans.modules.db.sql.execute.ui;
 
-import java.awt.CardLayout;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 import org.netbeans.modules.db.sql.execute.NullValue;
 import org.openide.util.Lookup;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
-import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExClipboard;
 
 /**
@@ -40,49 +41,26 @@ import org.openide.util.datatransfer.ExClipboard;
  */
 public class SQLResultPanel extends javax.swing.JPanel {
     
-    private static final String CARD_RESULT_SET = "resultSet"; // NOI18N
-    private static final String CARD_ROW_COUNT = "rowCount"; // NOI18N
-    
     private SQLExecutionResults executionResults;
-    private String currentCardName;
     
     public SQLResultPanel() {
         initComponents();
     }
     
     public void setModel(SQLResultPanelModel model) {
-        ResultSetTableModel resultSetModel = null;
-        String cardName = null;
+        TableModel resultSetModel = null;
         
         if (model != null) {
             if (model.getResultSetModel() != null) {
                 resultSetModel = model.getResultSetModel();
-                cardName = CARD_RESULT_SET; // NOI18N
-            } else if (model.getAffectedRows() != null) {
-                resultSetModel = new ResultSetTableModel.Empty();
-                rowCountLabel.setText(NbBundle.getMessage(SQLResultPanel.class, "LBL_AffectedRows", model.getAffectedRows()));
-                cardName = CARD_ROW_COUNT; // NOI18N
             } else {
-                resultSetModel = new ResultSetTableModel.Empty();
-                cardName = CARD_RESULT_SET; // NOI18N
+                resultSetModel = new DefaultTableModel(0, 0);
             }
         } else {
-            resultSetModel = new ResultSetTableModel.Empty();
-            cardName = CARD_RESULT_SET; // NOI18N
+            resultSetModel = new DefaultTableModel(0, 0);
         }
-        
-        assert resultSetModel != null;
-        assert cardName != null;
         
         resultTable.setModel(resultSetModel);
-        showCard(cardName);
-    }
-    
-    private void showCard(String cardName) {
-        if (!cardName.equals(currentCardName)) {
-            ((CardLayout)getLayout()).show(this, cardName); // NOI18N
-        }
-        currentCardName = cardName;
     }
     
     private void setClipboard(String contents) {
@@ -101,11 +79,8 @@ public class SQLResultPanel extends javax.swing.JPanel {
         tablePopupMenu = new javax.swing.JPopupMenu();
         copyCellValueMenuItem = new javax.swing.JMenuItem();
         copyRowValuesMenuItem = new javax.swing.JMenuItem();
-        resultSetPanel = new javax.swing.JPanel();
         resultScrollPane = new javax.swing.JScrollPane();
         resultTable = new SQLResultTable();
-        rowCountPanel = new javax.swing.JPanel();
-        rowCountLabel = new javax.swing.JLabel();
 
         copyCellValueMenuItem.setText(org.openide.util.NbBundle.getMessage(SQLResultPanel.class, "LBL_CopyCellValue"));
         copyCellValueMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -127,9 +102,7 @@ public class SQLResultPanel extends javax.swing.JPanel {
         tablePopupMenu.add(copyRowValuesMenuItem);
         copyRowValuesMenuItem.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLResultPanel.class, "ACSD_CopyRowValues"));
 
-        setLayout(new java.awt.CardLayout());
-
-        resultSetPanel.setLayout(new java.awt.BorderLayout());
+        setLayout(new java.awt.BorderLayout());
 
         resultScrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         resultScrollPane.getViewport().setBackground(UIManager.getDefaults().getColor("Table.background"));
@@ -151,20 +124,9 @@ public class SQLResultPanel extends javax.swing.JPanel {
 
         resultScrollPane.setViewportView(resultTable);
 
-        resultSetPanel.add(resultScrollPane, java.awt.BorderLayout.CENTER);
+        add(resultScrollPane, java.awt.BorderLayout.CENTER);
 
-        add(resultSetPanel, "resultSet");
-
-        rowCountPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 2, 2));
-
-        rowCountPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Table.background"));
-        rowCountLabel.setText("jLabel1");
-        rowCountPanel.add(rowCountLabel);
-
-        add(rowCountPanel, "rowCount");
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void copyRowValuesMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyRowValuesMenuItemActionPerformed
         int[] rows = resultTable.getSelectedRows();
@@ -211,18 +173,17 @@ public class SQLResultPanel extends javax.swing.JPanel {
     private javax.swing.JMenuItem copyCellValueMenuItem;
     private javax.swing.JMenuItem copyRowValuesMenuItem;
     private javax.swing.JScrollPane resultScrollPane;
-    private javax.swing.JPanel resultSetPanel;
     private javax.swing.JTable resultTable;
-    private javax.swing.JLabel rowCountLabel;
-    private javax.swing.JPanel rowCountPanel;
     private javax.swing.JPopupMenu tablePopupMenu;
     // End of variables declaration//GEN-END:variables
 
-    private static final class SQLResultTable extends JTable {
+    static final class SQLResultTable extends JTable {
         
         public SQLResultTable() {
             // issue 70521: rendering java.sql.Timestamp as date and time
             setDefaultRenderer(Timestamp.class, new DateTimeRenderer());
+            // issue 72607: rendering java.sql.Time as time
+            setDefaultRenderer(Time.class, new TimeRenderer());
         }
         
         /**
@@ -253,6 +214,22 @@ public class SQLResultPanel extends javax.swing.JPanel {
             public void setValue(Object value) {
                 if (formatter == null) {
                     formatter = DateFormat.getDateTimeInstance();
+                }
+                setText((value == null) ? "" : formatter.format(value)); // NOI18N
+            }
+        }
+        
+        private static final class TimeRenderer extends DefaultTableCellRenderer.UIResource {
+            
+            DateFormat formatter;
+            
+            public TimeRenderer() {
+                super();
+            }
+            
+            public void setValue(Object value) {
+                if (formatter == null) {
+                    formatter = DateFormat.getTimeInstance();
                 }
                 setText((value == null) ? "" : formatter.format(value)); // NOI18N
             }

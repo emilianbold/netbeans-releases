@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         <title>Adding Columns</title>
 
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
     <body>
@@ -38,16 +38,16 @@ Microsystems, Inc. All Rights Reserved.
             <li>Right-click the table you want to modify and choose Add Column.</li>
             <li>Enter the values for the column in the dialog box.
                 <ul>
-                    <li>Enter the name of the column. This is the name used by SQL.</li>
-                    <li>Provide the Type of the column by selecting a Type from the Type drop-down list.</li>
+                    <li>Enter the name of the column.</li>
+                    <li>Provide the Type of the column by selecting a Type from the Type drop-down menu.</li>
                     <li>Provide the size of the column in the Size text field.</li>
                     <li>Provide a scale value for numeric or decimal data type.</li>
                     <li>Provide a default value for the column in the Default text field.</li>
                     <li>Select constraints you want for column values (Primary key, and Unique or Null). 
                         <p>If you select the Primary key checkbox, the column is included in the 
-                        primary key, and you need to select an index. </p>
+                        primary key and in most cases the database server will generate an index for it. </p>
                     </li>
-                    <li>If you want to use an index, select the Index checkbox and select an index from the drop-down list. </li>
+                    <li>If you want to add the new column to an existing index, select the Index checkbox and select an index from the drop-down menu. </li>
                     <li>(Optional) Select the Check checkbox to enter constraints to be checked while inserting or updating data in that column.</li>
                 </ul>
             </li>
@@ -61,15 +61,15 @@ Microsystems, Inc. All Rights Reserved.
         <p>When you add a column to a table, the new column appears under the table node 
         (&nbsp;<img src="images/table.gif" width="16" height="16">&nbsp;) in the Runtime window. 
         After creating a column, you may need to 
-        <a href="nbdocs:/org/netbeans/modules/dbschema/docs/dbschema_recapture.html">recapture the database schema</a>
+        <a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema_recapture.html">recapture the database schema</a>
         to use the new column in your project.</p>
          
 <dl>
 <dt>
 <a name="seealso">See Also</a></dt>
     <dd>      <a href="createtables.html">Creating Tables</a></dd>
-    <dd>      <a href="nbdocs:/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining a Database Schema</a></dd>
-    <dd>      <a href="nbdocs:/org/netbeans/modules/dbschema/docs/dbschema_recapture.html">Recapturing Schema From a Database</a></dd>
+    <dd>      <a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining a Database Schema</a></dd>
+    <dd>      <a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema_recapture.html">Recapturing Schema From a Database</a></dd>
 </dl>
         
         

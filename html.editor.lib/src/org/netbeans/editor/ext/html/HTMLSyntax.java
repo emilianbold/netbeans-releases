@@ -558,6 +558,7 @@ public class HTMLSyntax extends Syntax {
             case ISA_SLASH:
             case ISA_SGML_ESCAPE:
             case ISA_SGML_DASH:
+            case ISI_TAG_SLASH:
                 return HTMLTokenContext.TEXT;
 
             case ISA_REF:

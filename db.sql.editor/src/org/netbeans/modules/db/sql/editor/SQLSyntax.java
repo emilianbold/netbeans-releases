@@ -21,14 +21,12 @@ package org.netbeans.modules.db.sql.editor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
-import org.netbeans.editor.BaseTokenID;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
-import org.netbeans.editor.Utilities;
+import org.netbeans.modules.db.api.sql.SQLKeywords;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,58 +57,11 @@ public class SQLSyntax extends Syntax {
     private static final int ISA_LPAREN = 36; //after (
     private static final int ISA_RPAREN = 37; //after )
 
-    /**
-     * A hashset of keywords
-     */
-    private static HashSet keywords = new HashSet();
-    
-    static {
-        populateKeywords();
-    }
-    
     /** 
      * Creates a new instance of SQLSyntax 
      */
     public SQLSyntax() {
         tokenContextPath = SQLTokenContext.contextPath;
-    }
-    
-    /**
-     * populates the hashset of keywords from the property in the
-     * resource bundle
-     */
-    private static void populateKeywords() {
-        String fullList = NbBundle.getBundle(SQLSyntax.class).getString("LIST_SQLKeywords");
-        StringTokenizer st = new StringTokenizer(fullList, ","); // NOI18N
-        while(st.hasMoreTokens()) {
-            String token = st.nextToken();
-            token = token.toUpperCase().trim();
-            
-            if(!keywords.contains(token)) {
-                keywords.add(token);
-            }
-        }
-    }
-    
-    /**
-     * Returns an alphabetically sorted list of strings for the SQL keywords
-     */
-    public static String[] getKeywordList() {
-        String[] keywordArray = new String[keywords.size()];
-        ArrayList result = new ArrayList();
-        
-        Iterator iter = keywords.iterator();
-        int index = 0;
-        while(iter.hasNext()) {
-            String keyword = (String) iter.next();
-            
-            keywordArray[index] = keyword;
-            index++;
-        }
-        
-        Arrays.sort(keywordArray);
-        
-        return keywordArray;
     }
     
     /**
@@ -437,9 +388,8 @@ public class SQLSyntax extends Syntax {
      */
     public TokenID matchKeyword(char[] buffer, int offset, int len) {
         String keywordCandidate = new String(buffer, offset, len);
-        keywordCandidate = keywordCandidate.toUpperCase();
         
-        if(keywords.contains(keywordCandidate)) {
+        if (SQLKeywords.isSQL99Keyword(keywordCandidate)) {
             return SQLTokenContext.KEYWORD;
         }
         

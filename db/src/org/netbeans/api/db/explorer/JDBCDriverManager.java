@@ -71,6 +71,11 @@ public final class JDBCDriverManager {
      * Private constructor.
      */
     private JDBCDriverManager() {
+        // issue 75204: forces the DataObject's corresponding to the JDBCDriver's
+        // to be initialized and held strongly so the same JDBCDriver is
+        // returns as long as it is held strongly
+        result.allInstances(); 
+
         result.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent e) {
                 fireListeners();
@@ -118,7 +123,7 @@ public final class JDBCDriverManager {
      * must not be null.
      *
      * @throws NullPointerException if the specified driver is null.
-     *         DatabaseException if an error occured while adding the driver.
+     *         DatabaseException if an error occurred while adding the driver.
      */
     public void addDriver(JDBCDriver driver) throws DatabaseException {
         if (driver == null) {
@@ -136,7 +141,7 @@ public final class JDBCDriverManager {
      * 
      * @param driver the JDBCDriver instance to be removed.
      *
-     * @throws DatabaseException if an error occured while adding the driver.
+     * @throws DatabaseException if an error occurred while adding the driver.
      */
     public void removeDriver(JDBCDriver driver) throws DatabaseException {
         try {

@@ -101,9 +101,9 @@ public class RADIO implements ActiveEditorDrop {
 
         String strValue = " value=\"" + value + "\""; // NOI18N
 
-        String strSelected = (selected ? " checked" : ""); // NOI18N
+        String strSelected = (selected ? " checked=\"checked\"" : ""); // NOI18N
 
-        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
+        String strDisabled = (disabled ? " disabled=\"disabled\"" : ""); // NOI18N
 
         String radioBody = "<input type=\"radio\"" + strName + strValue + strSelected + strDisabled + " />"; // NOI18N
         

@@ -34,7 +34,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 
-public class ConnectPanel extends javax.swing.JPanel implements DocumentListener, ListDataListener {
+public class ConnectPanel extends ConnectionDialog.FocusablePanel implements DocumentListener, ListDataListener {
 
     private ConnectionDialogMediator mediator;
     private DatabaseConnection connection;
@@ -84,6 +84,21 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
         passwordField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectDialogPasswordTextFieldA11yName")); //NOI18N
         connectProgressPanel.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
         connectProgressPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
+    }
+
+    public void initializeFocus() {
+        getInitiallyFocusedComponent().requestFocusInWindow();
+    }
+
+    private JComponent getInitiallyFocusedComponent() {
+        if (userTextField.getText().length() == 0) {
+            return userTextField;
+        }
+        if (passwordField.getPassword().length == 0) {
+            return passwordField;
+        }
+        // fall back to the user field
+        return userTextField;
     }
 
     /** This method is called from within the constructor to

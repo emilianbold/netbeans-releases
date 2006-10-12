@@ -21,6 +21,8 @@ package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ResourceBundle;
 
 import javax.swing.JPanel;
@@ -43,7 +45,7 @@ public class ConnectionDialog {
     final DialogDescriptor descriptor;
     final Dialog dialog;
     
-    public ConnectionDialog(ConnectionDialogMediator mediator, JPanel basePane, JPanel extendPane,  String dlgTitle, ActionListener actionListener, ChangeListener tabListener) {
+    public ConnectionDialog(ConnectionDialogMediator mediator, FocusablePanel basePane, JPanel extendPane,  String dlgTitle, ActionListener actionListener, ChangeListener tabListener) {
         if(basePane.equals(extendPane)) {
             throw new IllegalArgumentException("The basePane and extendPane must not equal!"); // NOI18N
         }
@@ -66,6 +68,16 @@ public class ConnectionDialog {
             }
         };
         mediator.addConnectionProgressListener(progressListener);
+        
+        PropertyChangeListener propChangeListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if (propertyName == null || propertyName.equals(ConnectionDialogMediator.PROP_VALID)) {
+                    updateValid();
+                }
+            }
+        };
+        mediator.addPropertyChangeListener(propChangeListener);
 
         tabs = new JTabbedPane(JTabbedPane.TOP);
         
@@ -90,7 +102,11 @@ public class ConnectionDialog {
         // after OK button is dialog closed by hand
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
         descriptor.setClosingOptions(closingOptions);
+        updateValid();
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        // needed for issue 82787, allows the panel to request the focus
+        // to the password text field
+        basePane.initializeFocus();
         dialog.setVisible(false);
     }
     
@@ -114,5 +130,24 @@ public class ConnectionDialog {
     
     public boolean isException() {
         return (storedExp != null);
+    }
+    
+    private void updateValid() {
+        boolean valid = ConnectionDialog.this.mediator.getValid();
+        descriptor.setValid(valid);
+        tabs.setEnabledAt(1, valid);
+    }
+    
+    /**
+     * A {@link JPanel} with an {@link #initializeFocus} method whose implementation
+     * can call {@link JComponent#requestFocusInWindow} on a children component.
+     * Needed because <code>requestFocusInWindow</code> must be called 
+     * after a component was <code>pack()</code>-ed, but before it is displayed, and
+     * the <code>JPanel</code>, which is displayed using <code>DialogDescriptor</code>
+     * does not know when this happens.
+     */
+    public static abstract class FocusablePanel extends JPanel {
+        
+        public abstract void initializeFocus();
     }
 }

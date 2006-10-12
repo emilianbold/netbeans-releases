@@ -70,8 +70,8 @@ public class TEXTAREA implements ActiveEditorDrop {
         if (value.length() > 0)
             strValue += "\n";
 
-        String strReadOnly = (readonly ? " readonly" : ""); // NOI18N
-        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
+        String strReadOnly = (readonly ? " readonly=\"readonly\"" : ""); // NOI18N
+        String strDisabled = (disabled ? " disabled=\"disabled\"" : ""); // NOI18N
 
         String strRows = " rows=\"" + rows + "\""; // NOI18N
         String strCols = " cols=\"" + cols + "\""; // NOI18N

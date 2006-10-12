@@ -85,6 +85,9 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
      */
     private static final int DELAY = 2000;
     
+    private static FileObject newlyCreated = null;
+    private static JDBCDriver newlyCreatedInstance = null;
+    
     private XMLDataObject holder = null;
 
     /**
@@ -119,10 +122,19 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         lookup = new AbstractLookup(cookies);
     }
     
+    private JDBCDriverConvertor(XMLDataObject object, JDBCDriver existingInstance) {
+        this(object);
+        refDriver = new WeakReference(existingInstance);
+    }
+    
     // Environment.Provider methods
     
     public Lookup getEnvironment(DataObject obj) {
-        return new JDBCDriverConvertor((XMLDataObject)obj).getLookup();
+        if (obj.getPrimaryFile() == newlyCreated) {
+            return new JDBCDriverConvertor((XMLDataObject)obj, newlyCreatedInstance).getLookup();
+        } else {
+            return new JDBCDriverConvertor((XMLDataObject)obj).getLookup();
+        }
     }
     
     // InstanceCookie.Of methods
@@ -340,8 +352,15 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 lck.releaseLock();
             }
 
-            if (holder == null)
+            if (holder == null) {
+                newlyCreated = data;
+                newlyCreatedInstance = instance;
                 holder = (MultiDataObject)DataObject.find(data);
+                // ensure the Environment.Provider.getEnvironment() is called for the new DataObject
+                holder.getCookie(InstanceCookie.class); 
+                newlyCreated = null;
+                newlyCreatedInstance = null;
+            }
         }
 
         void write(PrintWriter pw) throws IOException {

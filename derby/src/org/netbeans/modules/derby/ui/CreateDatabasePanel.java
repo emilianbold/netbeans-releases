@@ -21,9 +21,9 @@ package org.netbeans.modules.derby.ui;
 
 import java.awt.Color;
 import java.io.File;
-import java.text.MessageFormat;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 /**
@@ -101,21 +101,18 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         String warning = null;
         
         String databaseName = getDatabaseName();
-        int illegalChar = getFirstIllegalChar(databaseName);
+        int illegalChar = DerbyDatabases.getFirstIllegalCharacter(databaseName);
+        // workaround for issue 69265
+        int unsupportedChar = getFirstUnsupportedCharacter(databaseName);
         
         if (databaseName.length() <= 0) { // NOI18N
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameEmpty");
-        } else if (databaseName.indexOf(File.separatorChar) >= 0) {
-            String format = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameContainsSeparators");
-            error = MessageFormat.format(format, new Object[] { File.separator });
-        } else if (databaseName.indexOf('/') >= 0) {
-            String format = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameContainsSeparators");
-            error = MessageFormat.format(format, new Object[] { "/" }); // NOI18N
-        } else if (databaseName.length() > 0 && new File(derbySystemHome, databaseName).exists()) { // NOI18N
-            String format = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists");
-            error = MessageFormat.format(format, new Object[] { databaseName });
         } else if (illegalChar >= 0) {
-            warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameIllegalChar", new Character(databaseName.charAt(illegalChar)));
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameIllegalChar", new Character((char)illegalChar));
+        } else if (databaseName.length() > 0 && new File(derbySystemHome, databaseName).exists()) { // NOI18N
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists", databaseName);
+        } else if (unsupportedChar >= 0) {
+            warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameUnsupportedChar", new Character((char)unsupportedChar));
         } else if (getUser() == null || getPassword() == null) {
             warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
         }
@@ -140,12 +137,11 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         databaseLocationTextField.setText(derbySystemHome.getAbsolutePath());
     }
     
-    private int getFirstIllegalChar(String databaseName) {
-        // workaround for issue 69265
+    private int getFirstUnsupportedCharacter(String databaseName) {
         for (int i = 0; i < databaseName.length(); i++) {
             char ch = databaseName.charAt(i);
             if (ch < '\u0020' || ch > '\u00ff') {
-                return i;
+                return (int)ch;
             }
         }
         return -1;

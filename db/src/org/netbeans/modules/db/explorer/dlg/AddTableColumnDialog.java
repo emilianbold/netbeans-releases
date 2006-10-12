@@ -27,15 +27,14 @@ import java.beans.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.table.*;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.db.explorer.DatabaseException;
 
 import org.openide.*;
 import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.lib.ddl.util.*;
-import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.util.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
@@ -55,7 +54,7 @@ public class AddTableColumnDialog {
     DataModel dmodel = new DataModel();
     private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-    public AddTableColumnDialog(final Specification spe, final DatabaseNodeInfo nfo) {
+    public AddTableColumnDialog(final Specification spe, final DatabaseNodeInfo nfo) throws DatabaseException {
         spec = spe;
         try {
             JLabel label;
@@ -383,8 +382,10 @@ public class AddTableColumnDialog {
                     rset.clear();
                 }
                 rs.close();
-            } catch (Exception e) {
-                //
+            } catch (SQLException sqle) {
+                DatabaseException dbe = new DatabaseException(sqle.getMessage());
+                dbe.initCause(sqle);
+                throw dbe;
             }
 
             con = new GridBagConstraints ();

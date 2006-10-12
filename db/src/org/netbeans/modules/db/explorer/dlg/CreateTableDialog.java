@@ -134,10 +134,10 @@ public class CreateTableDialog {
 
             Vector users = new Vector();
             String schema = nfo.getDriverSpecification().getSchema();
-            if (schema != null)
+            if (schema != null && schema.length() > 0)
                 users.add(schema);
             else
-                users.add(""); //NOI18N
+                users.add(" "); //NOI18N
 
             constr.fill = GridBagConstraints.HORIZONTAL;
             constr.weightx = 0.0;
@@ -264,7 +264,7 @@ public class CreateTableDialog {
                                       Vector data = dataModel.getData();
                                       CreateTable cmd = spec.createCommandCreateTable(tablename);
 
-                                      cmd.setObjectOwner((String)ownercombo.getSelectedItem());
+                                      cmd.setObjectOwner(((String)ownercombo.getSelectedItem()).trim());
 
                                       /* this variables and operation provide support for
                                        * creating indexes for primary or unique keys,
@@ -440,14 +440,6 @@ public class CreateTableDialog {
         public DataCellEditor(final JTextField x) {
             super(x);
             setClickCountToStart(1);
-            x.addFocusListener(new FocusListener() {
-                public void focusGained(FocusEvent e) {
-                    SwingUtilities.invokeLater(new FocusInvoker(x));
-                }
-                
-                public void focusLost(FocusEvent e) {
-                }
-            });
         }
     }
     

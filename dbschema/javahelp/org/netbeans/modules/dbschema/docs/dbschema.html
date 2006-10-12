@@ -1,14 +1,14 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 
 <!--       
-*     Copyright 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
 <html>
     <head>
         <title>Obtaining a Database Schema</title>
-        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
         <h2>Obtaining a Database Schema</h2>
@@ -17,7 +17,7 @@
         used in other projects.</p>
         <p>To connect to a database to retrieve a schema, the database 
         driver first needs to be added to the IDE. Database drivers can be added in the Runtime window. For more,
-        see <a href="nbdocs:/org/netbeans/modules/db/docs/adddriver.html">Adding a New Driver</a>.</p>
+        see <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/adddriver.html">Adding a New Driver</a>.</p>
     
         <p><b>To capture a database schema:</b> </p>
     
@@ -26,13 +26,13 @@
             <li>Choose File&nbsp;> New File to open the New File 
             wizard.</li>
             <li>Select the Project where the schema should be saved.</li>        
-            <li>Select Database in the Categories pane.</li>
-            <li>Select Schema in the File Types pane and click Next.</li>
+            <li>Select Persistence in the Categories pane.</li>
+            <li>Select Database Schema in the File Types pane and click Next.</li>
             <li>For File Name, provide a name for the schema.</li>
             <li>Click Browse to specify where to save the schema.</li>
             <li>Click Next.</li>        
             <li>Select an existing database connection from the list or select Add Connection
-            to create a new connection. For more, see <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a>.</li>
+            to create a new connection. For more, see <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a>.</li>
             <li>Click Next.       
                 <p>You may be prompted by a Connect dialog box to supply a username and password to connect to the database, if required.
                 Enter the user name and password in the Basic setting tab and click OK.</p>
@@ -60,14 +60,15 @@
         capturing of the database schema, including the table and view information 
         it is capturing.</p>
         <p>When schema capturing is complete, the progress window closes.</p>           
-        <p>The IDE saves the captured schema in XML format and displays the schema node 
-        (&nbsp;<img src="images/dbschemanode.gif" width="15" height="14">&nbsp;) in the Files window.</p>
+        <p>The IDE saves the captured schema in XML format. 
+        The schema node (&nbsp;<img src="images/dbschemanode.gif" width="15" height="14">&nbsp;) 
+        is visible in the Projects window.</p>
     
     
         <dl>
                 <dt><a name="seealso">See Also</a></dt>
                 <dd> <a href="dbschema_recapture.html">Recapturing Schema From a Database</a></dd>
-                <dd> <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
+                <dd> <a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
         </dl>
 
         <hr>

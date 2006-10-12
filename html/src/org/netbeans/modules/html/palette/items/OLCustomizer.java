@@ -155,7 +155,7 @@ public class OLCustomizer extends javax.swing.JPanel {
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(OLCustomizer.class, "LBL_OL_default"));
-        jRadioButton1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -169,7 +169,7 @@ public class OLCustomizer extends javax.swing.JPanel {
 
         buttonGroup1.add(jRadioButton2);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, "1, 2, 3, ...");
-        jRadioButton2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -183,7 +183,7 @@ public class OLCustomizer extends javax.swing.JPanel {
 
         buttonGroup1.add(jRadioButton3);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, "a, b, c, ...");
-        jRadioButton3.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -197,7 +197,7 @@ public class OLCustomizer extends javax.swing.JPanel {
 
         buttonGroup1.add(jRadioButton4);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton4, "A, B, C, ...");
-        jRadioButton4.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton4.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -211,7 +211,7 @@ public class OLCustomizer extends javax.swing.JPanel {
 
         buttonGroup1.add(jRadioButton5);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton5, "i, ii, iii, ...");
-        jRadioButton5.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton5.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton5.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -225,7 +225,7 @@ public class OLCustomizer extends javax.swing.JPanel {
 
         buttonGroup1.add(jRadioButton6);
         org.openide.awt.Mnemonics.setLocalizedText(jRadioButton6, "I, II, III, ...");
-        jRadioButton6.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jRadioButton6.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton6.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -248,7 +248,6 @@ public class OLCustomizer extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OLCustomizer.class, "ACSN_OL_Items"));
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OLCustomizer.class, "ACSD_OL_Items"));
 
-        jSpinner1.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner1.setModel(new SpinnerNumberModel(ol.getCount(), 0, Integer.MAX_VALUE, 1));
         jSpinner1.setEditor(new JSpinner.NumberEditor(jSpinner1, "#"));
         jSpinner1.setValue(new Integer(ol.getCount()));
@@ -257,8 +256,7 @@ public class OLCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 18);
         add(jSpinner1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

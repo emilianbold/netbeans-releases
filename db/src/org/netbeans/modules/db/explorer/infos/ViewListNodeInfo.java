@@ -55,7 +55,9 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
                 }
             }
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 
@@ -88,7 +90,9 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
 
             }
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            DatabaseException dbe = new DatabaseException(e.getMessage());
+            dbe.initCause(e);
+            throw dbe;
         }
     }
 

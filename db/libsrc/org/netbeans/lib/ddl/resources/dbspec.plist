@@ -79,22 +79,22 @@
 
     UniqueColumn = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] unique";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ default {default.value}][ {column.notnull}not null][ check ({check.condition})] unique";
     };
 
     PrimaryKeyColumn = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] primary key";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ default {default.value}][ {column.notnull}not null][ check ({check.condition})] primary key";
     };
 
     ForeignKeyColumn = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] references {fkobject.name}[({fkcolumn.name})]";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ default {default.value}][ {column.notnull}not null][ check ({check.condition})] references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckColumn = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ default {default.value}][ {column.notnull}not null] check ({check.condition})";
     };
 
     UniqueConstraint = {
@@ -862,22 +862,22 @@
 
     UniqueColumn = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] unique";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ default {default.value}][ {column.notnull}not null][ check ({check.condition})] unique";
     };
 
     PrimaryKeyColumn = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] primary key";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ default {default.value}][ {column.notnull}not null][ check ({check.condition})] primary key";
     };
 
     ForeignKeyColumn = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] references {fkobject.name}[({fkcolumn.name})]";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ default {default.value}][ {column.notnull}not null][ check ({check.condition})] references {fkobject.name}[({fkcolumn.name})]";
     };
 
     CheckColumn = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ default {default.value}][ {column.notnull}not null] check ({check.condition})";
     };
 
     RemoveColumnCommand = {
@@ -1031,7 +1031,7 @@
 
     PrimaryKeyColumn = {
       Class = org.netbeans.lib.ddl.impl.TableColumn;
-      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] primary key";
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ default {default.value}][ {column.notnull}not null][ check ({check.condition})] primary key";
     };
   };
 
@@ -1741,7 +1741,7 @@
 
     CreateTableCommand = {
       Class = org.netbeans.lib.ddl.impl.CreateTable;
-      Format = "create table {object.name}\n(\n\t{columns}\n)";
+      Format = "create table [{object.owner}.]{object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = Column;
         UNIQUE = UniqueColumn;

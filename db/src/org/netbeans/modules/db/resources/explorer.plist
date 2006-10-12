@@ -39,6 +39,11 @@
 		options = {};
 		actions = (
 			{
+				name = "AddConnection";
+				class = org.netbeans.modules.db.explorer.actions.AddConnectionAction;
+			},
+                        delimiter,
+			{
 				name = "EnableDebug";
 				class = org.netbeans.modules.db.explorer.actions.EnableDebugAction;
 			},
@@ -170,6 +175,11 @@
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
 			},
+                        delimiter,
+                        {
+                                name = "Refresh";
+                                class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
+                        },
 			delimiter,
 			{
 				name = "RemoveConnection";
@@ -1027,7 +1037,7 @@
 		resultset = (catalog,schema,name,type);
 		options = {
 			cut = NO;
-			copy = NO;
+			copy = YES;
 			delete = YES;
 		};
 		children_ordering = {

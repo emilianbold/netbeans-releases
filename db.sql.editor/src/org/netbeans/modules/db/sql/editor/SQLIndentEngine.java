@@ -31,9 +31,11 @@ import org.openide.util.NbBundle;
  * @author Andrei Badea
  */
 public class SQLIndentEngine extends FormatterIndentEngine {
-
-    /**
-     * Creates a new instance of SQLIndentEngine
+    
+    static final long serialVersionUID = -2095935054411935707L;
+    
+    /** 
+     * Creates a new instance of SQLIndentEngine 
      */
     public SQLIndentEngine() {
         setAcceptedMimeTypes(new String[] { SQLEditorKit.MIME_TYPE });

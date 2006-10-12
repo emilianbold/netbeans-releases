@@ -24,32 +24,31 @@ Microsystems, Inc. All Rights Reserved.
         <title>Creating Tables</title>
 
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
     <body>
 
         <h2>Creating Tables</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>When connected to a database, you can use the IDE to create tables in a database.
-        You create a table in a connected database by right-clicking the Tables node in the Runtime window and choosing Create Table.</p>
-
-        <p>You can also grab and save a table definition which you can then use to recreate the table.</p>
-  <!--      <ul>
-            <li>Recreate a table and its structure using the table definition contained in a database snapshot</li>
-            <li>Recreate a table in a different database</li>
+        <p>When connected to a database, you can use the IDE to create tables in a database in the following ways:</p>
+        <ul>
+            <li><a href="#create_table">Use the Create Tables dialog</a> by right-clicking the Tables node in the Runtime window and choosing Create Table</li>
+            <li><a href="#table_structure">Use a table definition</a> to re-create a table</li>
+            <li><a href="dbmod.html">Run a SQL script</a> in the SQL Editor.</li>
         </ul>
--->
-        <p><b><a name="create_table">To create a new table:</a></b></p>
+
+        <p><b><a name="create_table">To create a new table using the Create Tables dialog:</a></b></p>
         <ol>
             <li>In the Runtime window, expand the node for a connected database.</li>
             <li>Right-click the Tables node and choose Create Table.</li>
             <li>Enter the table name.
-                <p>This name must follow conventions for table names in your database. Case 
-                is usually insignificant and you must not use spaces. </p>
+                <p>This name must follow conventions for quoted table names in your database. 
+                Case is usually significant and you can use spaces. 
+                However, it is recommended that table names be entered in upper case and without spaces.</p>
             </li>
-            <li>Select the owner of the table from the Owner drop-down list.  
-                <p>The dialog box defaults to the name by which you are connected.</p>
+            <li>Select the owner of the table from the Owner drop-down menu.  
+                <p>The dialog box defaults to the schema to which you are connected.</p>
             </li>
             <li>Modify the table with the Add Column and Remove buttons.
             <p>Specify the column type (required) and column size. 
@@ -64,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
             <li>In the Runtime window, expand the node for a connected database.</li>
             <li>Expand the Tables node, right-click the table you want to re-create and choose Grab Structure.</li>
             <li>In the Grab Table dialog box, type a name and navigate to where you want to save the file and click Save.
-            <p>When you click Save, a database snapshot of the selected table is saved in the selected location.
+            <p>When you click Save, a snapshot of the definition of the selected table is saved in the selected location.
             You can use the snapshot to re-create the table in the current database or in a different database.</p></li>
         </ol>
         
@@ -88,8 +87,10 @@ Microsystems, Inc. All Rights Reserved.
     
         <dl>
             <dt><a name="seealso">See Also</a></dt>
+            <dd>    <a href="dbmod.html">Executing SQL Statements and Scripts</a> </dd>
             <dd>    <a href="browstruct.html">Browsing Structures</a></dd>
             <dd>    <a href="addcopycols.html">Adding Columns</a> </dd>
+            
         </dl>
 
         <hr>

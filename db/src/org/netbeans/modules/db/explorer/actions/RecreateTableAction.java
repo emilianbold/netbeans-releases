@@ -93,9 +93,9 @@ public class RecreateTableAction extends DatabaseAction {
                     } else
                         return;
 
+                    cmd.setObjectOwner((String) info.get(DatabaseNodeInfo.SCHEMA));
                     String newtab = cmd.getObjectName();
-                    String msg = MessageFormat.format(bundle().getString("RecreateTableRenameNotes"), new String[] {cmd.getCommand()}); //NOI18N
-                    msg = cmd.getCommand();
+                    String msg = cmd.getCommand();
                     LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle().getString("RecreateTableRenameTable"), bundle().getString("RecreateTableNewName"), msg); //NOI18N
                     dlg.setStringValue(newtab);
                     boolean noResult = true;
@@ -105,7 +105,6 @@ public class RecreateTableAction extends DatabaseAction {
                                 if(!dlg.isEditable()) { // from file
                                     newtab = dlg.getStringValue();
                                     cmd.setObjectName(newtab);
-                                    cmd.setObjectOwner((String) info.get(DatabaseNodeInfo.SCHEMA));
                                     try {
                                         cmd.execute();
                                         nfo.addTable(newtab);

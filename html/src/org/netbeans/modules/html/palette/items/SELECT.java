@@ -69,8 +69,8 @@ public class SELECT implements ActiveEditorDrop {
         if (optionsVisible != OPTIONS_VISIBLE_DEFAULT)
             strVisibleOptions = " size=\"" + optionsVisible + "\""; // NOI18N
         
-        String strMulti = (multiple ? " multiple" : ""); // NOI18N
-        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
+        String strMulti = (multiple ? " multiple=\"multiple\"" : ""); // NOI18N
+        String strDisabled = (disabled ? " disabled=\"disabled\"" : ""); // NOI18N
 
         String selBody = "<select" + strName + strVisibleOptions + strMulti + strDisabled + ">\n" + // NOI18N
                         sBody +

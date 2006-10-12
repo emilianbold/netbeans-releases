@@ -38,14 +38,11 @@ public class DatabaseOptionBeanInfo extends SimpleBeanInfo {
         try {
             desc = new PropertyDescriptor[] {
                 new PropertyDescriptor("debugMode", DatabaseOption.class), //NOI18N
-                new PropertyDescriptor("autoConn", DatabaseOption.class) //NOI18N
             };
 
             ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
             desc[0].setDisplayName(bundle.getString("PROP_DEBUG_MODE")); //NOI18N
             desc[0].setShortDescription(bundle.getString ("HINT_DEBUG_MODE")); //NOI18N
-            desc[1].setDisplayName(bundle.getString("PROP_SAMPLE_AUTO_CONN")); //NOI18N
-            desc[1].setShortDescription(bundle.getString ("HINT_SAMPLE_AUTO_CONN")); //NOI18N
         } catch (Exception e) {
             e.printStackTrace();
         }

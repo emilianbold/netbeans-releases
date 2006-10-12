@@ -46,22 +46,32 @@ public class ResultSetTableModel extends AbstractTableModel {
     // TODO: be conservative for editing: no editing for sensitive result sets
     // TODO: maybe the fetch handler should be received as a param
     
-    private List/*<ColumnDef>*/ columnDefs;
-    private List/*<List>*/ rows;
-
+    private final List/*<ColumnDef>*/ columnDefs;
+    private final List/*<List>*/ rows;
+    
     /**
-     * @throws SQLException if a database error has occured
-     * @throws IOException if an error occured while reading data from a column
+     * @throws SQLException if a database error occurred
+     * @throws IOException if an error occurred while reading data from a column
+     *
+     * @return a TableModel for the ResultSet or null if the calling thread was
+     *         interrupted
      */
-    public ResultSetTableModel(ResultSet rs) throws SQLException, IOException {
+    public static ResultSetTableModel create(ResultSet rs) throws SQLException, IOException {
         ResultSetMetaData rsmd = rs.getMetaData();
-        columnDefs = ResultSetTableModelSupport.createColumnDefs(rsmd);
-        rows = ResultSetTableModelSupport.retrieveRows(rs, rsmd, new FetchLimitHandlerImpl());
+        List columnDefs = ResultSetTableModelSupport.createColumnDefs(rsmd);
+        if (columnDefs == null) { // thread interrupted
+            return null;
+        }
+        List rows = ResultSetTableModelSupport.retrieveRows(rs, rsmd, new FetchLimitHandlerImpl());
+        if (rows == null) { // thread interrupted
+            return null;
+        }
+        return new ResultSetTableModel(columnDefs, rows);
     }
     
-    private ResultSetTableModel() {
-        columnDefs = Collections.EMPTY_LIST;
-        rows = Collections.EMPTY_LIST;
+    private ResultSetTableModel(List/*<ColumnDef>*/ columnDefs, List/*<List>*/ rows) {
+        this.columnDefs = columnDefs;
+        this.rows = rows;
     }
 
     public int getRowCount() {
@@ -132,8 +142,5 @@ public class ResultSetTableModel extends AbstractTableModel {
         public int getFetchLimit() {
             return SQLOptions.getDefault().getFetchStep();
         }
-    }
-    
-    public static class Empty extends ResultSetTableModel {
     }
 }

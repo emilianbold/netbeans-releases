@@ -30,25 +30,37 @@ import org.openide.util.NbBundle;
  * @author Andrei Badea
  */
 public class SQLResultPanelModel {
-
-    private ResultSetTableModel resultSetModel;
-    private String affectedRows;
-
-    public SQLResultPanelModel(SQLExecutionResults executionResults) throws IOException, SQLException {
-        if (executionResults != null && executionResults.getResults().length > 0) {
-            SQLExecutionResult result = executionResults.getResults()[0];
+    
+    private final ResultSetTableModel resultSetModel;
+    private final String affectedRows;
+    
+    public static SQLResultPanelModel create(SQLExecutionResults executionResults) throws IOException, SQLException {
+        ResultSetTableModel resultSetModel = null;
+        String affectedRows = null;
+        
+        if (executionResults != null && executionResults.size() > 0) {
+            SQLExecutionResult result = (SQLExecutionResult)executionResults.getResults().iterator().next();
             
             if (result.getResultSet() != null) {
-                resultSetModel = new ResultSetTableModel(result.getResultSet());
-            } else {
-                int rowCount = result.getRowCount();
-                if (rowCount >= 0) {
-                    affectedRows = String.valueOf(rowCount);
-                } else {
-                    affectedRows = NbBundle.getMessage(SQLResultPanel.class, "LBL_AffectedRowsUnknown");
+                resultSetModel = ResultSetTableModel.create(result.getResultSet());
+                if (resultSetModel == null) { // thread interrupted
+                    return null;
                 }
+            } else {
+                return new SQLResultPanelModel();
             }
         }
+        
+        return new SQLResultPanelModel(resultSetModel, affectedRows);
+    }
+
+    private SQLResultPanelModel() {
+        this(null, null);
+    }
+    
+    private SQLResultPanelModel(ResultSetTableModel resultSetModel, String affectedRows) {
+        this.resultSetModel = resultSetModel;
+        this.affectedRows = affectedRows;
     }
     
     public ResultSetTableModel getResultSetModel() {
@@ -57,5 +69,9 @@ public class SQLResultPanelModel {
     
     public String getAffectedRows() {
         return affectedRows;
+    }
+    
+    public boolean isEmpty() {
+        return resultSetModel == null && affectedRows == null;
     }
 }

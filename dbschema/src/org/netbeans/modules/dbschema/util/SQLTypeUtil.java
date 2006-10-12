@@ -143,6 +143,7 @@ public class SQLTypeUtil extends Object {
 	}
         
     /** Return if a given data type is blob type or not.
+     * Note: CLOB should really not be in this list, use isLob method for that.
      * @param type the type from java.sql.Types
      * return true if the give type is blob type; false otherwise
      */
@@ -160,7 +161,21 @@ public class SQLTypeUtil extends Object {
            return false;
        }
 
-    /** Returs if two data types are compatible or not.
+    /** Return if a given data type is LOB (large object) type or not.
+     * Note: Implementation of this method uses isBlob method but also 
+     * duplicates the check of CLOB because CLOB should really not return 
+     * true from isBlob.  However, there might be other non-IDE callers of 
+     * the isBlob method (like appserver) so the CLOB check is left in both
+     * places for now.
+     * @param type the type from java.sql.Types
+     * return true if the give type is lob type; false otherwise
+     */
+       static public boolean isLob (int type) {
+           return (isBlob(type) || (Types.CLOB == type) || 
+                   (Types.LONGVARCHAR == type));
+       }
+
+    /** Returns if two data types are compatible or not.
      * @param type1 first type to compare
      * @param type2 second type to compare
      * @return true if the types are compatible; false otherwise

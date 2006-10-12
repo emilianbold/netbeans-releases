@@ -182,8 +182,9 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                             colDec = rs.getString("DECIMAL_DIGITS"); //NOI18N
                         }
 
+                        String dbProductName = dmd.getDatabaseProductName().trim();
                         //Oracle driver hacks
-                        if (dmd.getDatabaseProductName().trim().indexOf("Oracle") != -1) { //NOI18N
+                        if (dbProductName.indexOf("Oracle") != -1) { //NOI18N
                             if (sqlType == 11 || ((sqlType == 1111) && sqlTypeName.startsWith("TIMESTAMP")))
                                 sqlType = Types.TIMESTAMP;
                             if ((sqlType == 1111) && sqlTypeName.equals("FLOAT")) //NOI18N
@@ -192,8 +193,15 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                                 sqlType = Types.BLOB;
                             if ((sqlType == 1111) && sqlTypeName.equals("CLOB")) //NOI18N
                                 sqlType = Types.CLOB;
+                            if ((sqlType == 1111) && sqlTypeName.equals("NVARCHAR2")) //NOI18N
+                                sqlType = Types.CHAR;
                         }
-                        
+                       //MySQL driver hacks
+                        if (dbProductName.indexOf("MySQL") != -1) { //NOI18N
+                            if ((sqlType == 1111) && sqlTypeName.equalsIgnoreCase("BIT")) //NOI18N
+                                sqlType = Types.BIT;
+                        }
+
                         //workaround for i-net Oranxo driver
                         //value in int range is expected by JDBC API but 4294967296 is returned
                         try {
@@ -261,11 +269,11 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                 
                 ResultSet rs;
                 if (bridge != null) {
-                    bridge.getDriverSpecification().getIndexInfo(shortTableName, false, false);
+                    bridge.getDriverSpecification().getIndexInfo(shortTableName, false, true);
                     rs = bridge.getDriverSpecification().getResultSet();
                 } else
-//                    rs = dmd.getIndexInfo(cp.getConnection().getCatalog(), dmd.getUserName().trim(), shortTableName, false, false);
-                    rs = dmd.getIndexInfo(cp.getConnection().getCatalog(), cp.getSchema(), shortTableName, false, false);
+//                    rs = dmd.getIndexInfo(cp.getConnection().getCatalog(), dmd.getUserName().trim(), shortTableName, false, true);
+                    rs = dmd.getIndexInfo(cp.getConnection().getCatalog(), cp.getSchema(), shortTableName, false, true);
                 
                 String name, columnName;
                 boolean unq;
@@ -485,63 +493,89 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                }
 
             UniqueKeyElement[] ukes = ((TableElement) element).getUniqueKeys();
-            if (ukes != null && ukes.length > 0) {
-                if (bridge != null) {
-                    bridge.getDriverSpecification().getPrimaryKeys(shortTableName);
-                    rs = bridge.getDriverSpecification().getResultSet();
-                } else
-                    rs = cp.getDatabaseMetaData().getPrimaryKeys(cp.getConnection().getCatalog(), cp.getSchema(), shortTableName);
 
-                TreeMap cols = new TreeMap();
-                Object keySeq;
-                String colName;
-                if (rs != null) {
-                    HashMap rset = new HashMap();
-                    while (rs.next()) {
-                        if (bridge != null) {
-                            rset = bridge.getDriverSpecification().getRow();
-                            keySeq = (Object) rset.get(new Integer(5));
-                            colName = (String) rset.get(new Integer(4));
-                            rset.clear();
-                        } else {
-                            keySeq = rs.getObject("KEY_SEQ"); //NOI18N
-                            colName = rs.getString("COLUMN_NAME").trim(); //NOI18N
-                        }
+            if (bridge != null) {
+                bridge.getDriverSpecification().getPrimaryKeys(shortTableName);
+                rs = bridge.getDriverSpecification().getResultSet();
+            } else
+                rs = cp.getDatabaseMetaData().getPrimaryKeys(cp.getConnection().getCatalog(), cp.getSchema(), shortTableName);
 
-                        cols.put(keySeq, colName); //NOI18N
+            TreeMap cols = new TreeMap();
+            Object keySeq;
+            String colName;
+            if (rs != null) {
+                HashMap rset = new HashMap();
+                while (rs.next()) {
+                    if (bridge != null) {
+                        rset = bridge.getDriverSpecification().getRow();
+                        keySeq = (Object) rset.get(new Integer(5));
+                        colName = (String) rset.get(new Integer(4));
+                        rset.clear();
+                    } else {
+                        keySeq = rs.getObject("KEY_SEQ"); //NOI18N
+                        colName = rs.getString("COLUMN_NAME").trim(); //NOI18N
                     }
-                    rs.close();
+
+                    cols.put(keySeq, colName); //NOI18N
                 }
+                rs.close();
+            }
 
-                boolean primary = false;
-                if (cols != null && cols.size() > 0)
-                    primary = true;
+            boolean primary = false;
+            if (cols != null && cols.size() > 0)
+                primary = true;
 
-                if (primary)
-                    if (ukes.length == 1)
-                        ukes[0].setPrimaryKey(primary);
-                    else {
-                        ColumnElement[] ces;
-                        Object[] o = cols.values().toArray();
-                        boolean equals;
-                        for (int i = 0; i < ukes.length; i++) {
-                            ces = ukes[i].getColumns();
-                            if (ces.length != o.length)
-                                continue;
-                            else {
-                                equals = true;
-                                for (int j = 0; j < ces.length; j++)
-                                    if (! o[j].toString().equals(ces[j].getName().getName())) {
-                                        equals = false;
-                                        break;
-                                    }
-                                if (equals) {
-                                    ukes[i].setPrimaryKey(primary);
+            if (primary) {
+                if (ukes == null || ukes.length == 0) {
+                    // issue 56492: no index defined for the primary key
+                    // generate a UniqueKeyElement and an IndexElement for it
+
+                    String indexName = "primary_key_index"; // NOI18N
+                    int i = 1;
+                    while (((TableElement)element).getIndex(DBIdentifier.create(indexName)) != null) {
+                        indexName = indexName + i;
+                        i++;
+                    }
+
+                    LinkedList idxs = new LinkedList();
+                    for (Iterator it = cols.values().iterator(); it.hasNext();) {
+                        // non-unique = false, thus the index is unique -- see initIndexes()
+                        idxs.add(indexName + "." + it.next() + ".false"); // NOI18N
+                    }
+
+                    IndexElementImpl iei = new IndexElementImpl(this, indexName, true);
+                    IndexElement ie = new IndexElement(iei, (TableElement) element);
+                    iei.initColumns(idxs);
+                    changeIndexes(new IndexElement[] { ie }, DBElement.Impl.ADD);
+
+                    UniqueKeyElementImpl ukei = new UniqueKeyElementImpl(ie.getName().getName(), true);
+                    UniqueKeyElement uke = new UniqueKeyElement(ukei, (TableElement)element, ie);
+                    uke.setColumns(ie.getColumns());
+                    changeKeys(new UniqueKeyElement[] { uke }, DBElement.Impl.ADD);
+                } else if (ukes.length == 1)
+                    ukes[0].setPrimaryKey(primary);
+                else {
+                    ColumnElement[] ces;
+                    Object[] o = cols.values().toArray();
+                    boolean equals;
+                    for (int i = 0; i < ukes.length; i++) {
+                        ces = ukes[i].getColumns();
+                        if (ces.length != o.length)
+                            continue;
+                        else {
+                            equals = true;
+                            for (int j = 0; j < ces.length; j++)
+                                if (! o[j].toString().equals(ces[j].getName().getName())) {
+                                    equals = false;
                                     break;
                                 }
+                            if (equals) {
+                                ukes[i].setPrimaryKey(primary);
+                                break;
                             }
                         }
                     }
+                }
             }
         }
     }

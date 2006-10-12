@@ -98,6 +98,14 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
+     <usecase id="DatasourceCombobox" name="Combobox for retrieving and managing data sources">
+         <p>
+            <a href="@TOP@org/netbeans/modules/j2ee/common/DatasourceUIHelper.html">DatasourceUIHelper</a> 
+            populates and manages the content of the combobox given by a client.
+            The combobox content consists of data sources in the alphabetical order 
+            and items allowing data sources management.
+         </p>
+     </usecase>
  </answer>
 
 

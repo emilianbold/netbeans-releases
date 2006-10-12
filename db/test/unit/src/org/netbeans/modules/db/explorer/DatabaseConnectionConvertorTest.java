@@ -25,10 +25,10 @@ import java.util.Collection;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.netbeans.modules.db.test.DOMCompare;
 import org.netbeans.modules.db.test.TestBase;
+import org.netbeans.modules.db.test.Util;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.FolderLookup;
@@ -52,14 +52,11 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     }
     
     protected void setUp() throws Exception {
-        FileObject[] fos = getConnectionsFolder().getChildren();
-        for (int i = 0; i < fos.length; i++) {
-            fos[i].delete();
-        }
+        Util.deleteConnectionFiles();
     }
     
     public void testReadXml() throws Exception {
-        FileObject fo = createConnectionFile("connection.xml", getConnectionsFolder());
+        FileObject fo = createConnectionFile("connection.xml", Util.getConnectionsFolder());
         DataObject dobj = DataObject.find(fo);
         InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
         assertNotNull(ic);
@@ -76,7 +73,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         DatabaseConnection conn = new DatabaseConnection("org.bar.BarDriver", "bar_driver", "jdbc:bar:localhost", "schema", "user", null);
         DatabaseConnectionConvertor.create(conn);
         
-        FileObject fo = getConnectionsFolder().getChildren()[0];
+        FileObject fo = Util.getConnectionsFolder().getChildren()[0];
         
         ErrorHandlerImpl errHandler = new ErrorHandlerImpl();
         Document doc = null;
@@ -123,7 +120,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
             Thread.sleep(2500);
         } catch (InterruptedException e) { }
         
-        FileObject fo = getConnectionsFolder().getChildren()[0];
+        FileObject fo = Util.getConnectionsFolder().getChildren()[0];
         
         ErrorHandlerImpl errHandler = new ErrorHandlerImpl();
         Document doc = null;
@@ -146,7 +143,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
     }
     
     public void testLookup() throws Exception {
-        FileObject parent = getConnectionsFolder();
+        FileObject parent = Util.getConnectionsFolder();
         createConnectionFile("connection.xml", parent);
         FolderLookup lookup = new FolderLookup(DataFolder.findFolder(parent));
         Lookup.Result result = lookup.getLookup().lookup(new Lookup.Template(DatabaseConnection.class));
@@ -160,7 +157,7 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         
         DatabaseConnectionConvertor.importOldConnections();
         
-        FileObject root = getConnectionsFolder();
+        FileObject root = Util.getConnectionsFolder();
         Collection instances = new FolderLookup(DataFolder.findFolder(root)).getLookup().lookup(new Lookup.Template(DatabaseConnection.class)).allInstances();
         assertEquals(1, instances.size());
         
@@ -170,10 +167,6 @@ public class DatabaseConnectionConvertorTest extends TestBase {
         assertEquals(conn.getDatabase(), importedConn.getDatabase());
         assertEquals(conn.getSchema(), importedConn.getSchema());
         assertEquals(conn.getUser(), importedConn.getUser());
-    }
-    
-    private FileObject getConnectionsFolder() {
-        return Repository.getDefault().getDefaultFileSystem().findResource(DatabaseConnectionConvertor.CONNECTIONS_PATH);
     }
     
     private static FileObject createConnectionFile(String name, FileObject folder) throws Exception {

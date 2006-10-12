@@ -215,6 +215,9 @@ public class ConnectAction extends DatabaseAction {
                             if (realDbcon != null) {
                                 realDbcon.setPassword(dbcon.getPassword());
                             }
+                            if (basePanel.rememberPassword()) {
+                                nfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
+                            }
 
                             if(dlg != null) {
                                 dlg.close();
@@ -235,8 +238,6 @@ public class ConnectAction extends DatabaseAction {
                             nfo.setPassword(basePanel.getPassword());
                             dbcon.setUser(basePanel.getUser());
                             dbcon.setPassword(basePanel.getPassword());
-                            if (basePanel.rememberPassword())
-                                nfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
 
                             try {
                                 if (dbcon.getConnection() == null || dbcon.getConnection().isClosed())
@@ -257,6 +258,9 @@ public class ConnectAction extends DatabaseAction {
                                     DatabaseConnection realDbcon = ConnectionList.getDefault().getConnection(dbcon);
                                     if (realDbcon != null) {
                                         realDbcon.setPassword(dbcon.getPassword());
+                                    }
+                                    if (basePanel.rememberPassword()) {
+                                        nfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
                                     }
 
                                     if(dlg != null)

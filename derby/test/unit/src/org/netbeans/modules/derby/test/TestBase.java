@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.derby.test;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
@@ -48,6 +50,17 @@ public class TestBase extends NbTestCase {
     
     public TestBase(String name) {
         super(name);
+    }
+    
+    public static void createFakeDerbyInstallation(File location) throws IOException {
+        if (!location.mkdirs()) {
+            throw new IOException("Could not create " + location.getAbsolutePath());
+        }
+        File lib = new File(location, "lib");
+        if (!lib.mkdir()) {
+            throw new IOException("Could not create " + lib.getAbsolutePath());
+        }
+        new File(lib, "derby.jar").createNewFile();
     }
     
     public static final class Lkp extends ProxyLookup {

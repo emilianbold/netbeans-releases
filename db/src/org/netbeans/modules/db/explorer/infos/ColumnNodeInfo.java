@@ -74,8 +74,10 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             cmd.removeColumn((String) get(code));
             cmd.setObjectOwner((String) get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
+
             // refresh list of columns after column drop
             //getParent().refreshChildren();
+            fireRefresh();
         //} catch(DatabaseException exc) {
             //String message = MessageFormat.format(bundle.getString("ERR_UnableToDeleteColumn"), new String[] {exc.getMessage()}); // NOI18N
             //Topmanager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));

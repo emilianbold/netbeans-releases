@@ -26,7 +26,6 @@ import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.Arrays;
-import org.openide.ErrorManager;
 
 /**
  * This class loader is used to load JDBC drivers from their locations.
@@ -35,15 +34,9 @@ import org.openide.ErrorManager;
  */
 public class DbURLClassLoader extends URLClassLoader {
     
-    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance("org.netbeans.modules.db.explorer"); // NOI18N
-    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
-    
     /** Creates a new instance of DbURLClassLoader */
     public DbURLClassLoader(URL[] urls) {
         super(urls);
-        if (LOG) {
-            LOGGER.log(ErrorManager.INFORMATIONAL, "Creating DbURLClassLoader for " + Arrays.asList(urls)); // NOI18N
-        }
     }
     
     protected PermissionCollection getPermissions(CodeSource codesource) {
@@ -52,5 +45,9 @@ public class DbURLClassLoader extends URLClassLoader {
         permissions.setReadOnly();
         
         return permissions;
+    }
+    
+    public String toString() {
+        return "DbURLClassLoader[urls=" + Arrays.asList(getURLs()) + "]"; // NOI18N
     }
 }

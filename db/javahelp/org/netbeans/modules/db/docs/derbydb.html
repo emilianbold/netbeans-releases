@@ -19,60 +19,59 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <HTML>
 <HEAD>
-    <TITLE>Connecting to a Derby Database</TITLE>
-    <link rel="StyleSheet" href="../../usersguide/ide.css" type="text/css">
+    <TITLE>Connecting to a Java DB Database</TITLE>
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </HEAD>
 <BODY>
-<h2>Connecting to a Derby Database</h2>
+<h2>Connecting to a Java DB Database</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The Apache Derby Project provides an open source database server that is written
-  fully in the Java programming language. Starting with version 8.2, the Sun Java
-  System Application Server bundles the Derby database server instead of the PointBase
-  database server.</p>
-<p><b>To enable the Derby database server in the IDE, do one of the following:</b></p>
+<p>The Java DB database is Sun's supported distribution of the open source Apache Derby database.
+Java DB is a fully transactional, secure, standards-based database server, written 
+  fully in the Java programming language, and fully supports SQL, JDBC API, and Java EE technology. 
+  The Java DB database server is bundled with the Sun Java System Application Server 9.0, Platform Edition.
+  The Java DB database server replaces the PointBase database server bundled with previous versions of the Sun Java System Application Server.</p>
+<p><b>To enable the Java DB database server in the IDE, do one of the following:</b></p>
 <ul>
-  <li><a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Register 
-    an instance of the Sun Java System Application Server 8.2</a>. This registers 
-    the installation of the Derby database server that is packaged with the application 
-    server. The connection to the sample Derby database is automatically displayed 
+  <li><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">Register 
+    an instance of the Sun Java System Application Server 9.0, Platform Edition</a>. This registers 
+    the installation of the Java DB database server that is packaged with the application 
+    server. The connection to the sample Java DB database is automatically displayed 
     in the Runtime window. The default user name and password for the sample database
     is <tt>app</tt>.</li>
-  <li>Register an existing Derby installation. If you already have the Derby database 
-    server installed on your computer, you can register the database with the 
-    IDE by doing the following: 
+  <li>Register an existing Java DB or Apache Derby installation. 
+  If you already have one of these database servers installed on your computer, 
+  you can register the database with the IDE by doing the following: 
     <ol>
       <li>Choose Tools &gt; Options from the main window.</li>
       <li>Click Advanced Options in the Options window.</li>
       <li>In the left pane of the Options window, expand IDE Configuration &gt; 
-        Server and External Tool Settings &gt; Derby Options.</li>
-      <li>Set the location of the Derby JAR files in the Derby Location property.</li>
-      <li>Set the folder where your Derby databases are stored in the Database 
-        Location property.</li>
+        Server and External Tool Settings &gt; Java DB Database.</li>
+      <li>Set the location of the Java DB installation directory in the Java DB Location property.</li>
+      <li>Set the folder where your Java DB databases are stored in the Database Location property.</li>
       <li>Click Close.</li>
     </ol>
   </li>
 </ul>
-<p>Once you have installed the Derby module or registered an instance of version 
-  8.2 of the application server, the Derby Database menu item appears under Tools in the main window.</p>
-<p><b>To create a new Derby database:</b></p>
+<p>Once your Java DB database is registered with the IDE,
+  the Java DB Database menu item appears under Tools in the main window.
+This menu item enables you to easily start and stop the Java DB database server, and to create a new database.</p>
+<p><b>To create a new Java DB database:</b></p>
 <ol>
-  <li>Choose Tools &gt; Derby Database &gt; Create Derby Database from the main 
-    window.</li>
+  <li>Choose Tools &gt; Java DB Database &gt; Create Java DB Database from the main window.</li>
     <li>Enter a name for the database, a user name, and a password.
-    <p>The IDE creates the database in the <tt>.netbeans-derby</tt> folder of your 
-    home directory.</li>
+    <p>By default, the IDE creates the database in the <tt>.netbeans-derby</tt> folder of your home directory. 
+        You can change the default location by choosing Tools &gt; Options &gt; Advanced Options &gt; IDE Configuration &gt; 
+        Server and External Tool Settings &gt; Java DB Database &gt; Database Location property.</p></li>
 </ol>
-<p><b>To connect to a Derby database:</b> </p>
+<p><b>To connect to an existing Java DB database:</b> </p>
 <ol>
-  <li>In the Runtime window, expand Databases &gt; Drivers.</li>
-  <li>Right-click the appropriate Apache Derby driver node and choose Connect 
-    Using. Choose one of the following drivers: 
+  <li>In the Runtime window, right-click the Databases node and choose New Connection.</li>
+  <li>In the New Database Connection dialog box, choose one of the following Java DB drivers from the drop-down menu: 
     <ul>
       <li><b>Embedded Driver.</b> Use this driver when you are sure your application will access 
       the database from a single JVM. A typical example of this scenario is a single-user 
-      Swing JDBC application using a Derby database as a data store. 
-      </li>
+      Swing JDBC application using a Java DB database as a data store.</li>
       <li><b>Net Driver.</b> Use this driver when you need to connect to the database 
         from multiple JVMs. An example of this scenario is when you need to connect 
         from the IDE and from a J2EE application on the application server. Using 
@@ -82,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
   <li>Enter the URL of the database. The URL format is given in the textbox:
   <pre>jdbc:derby://&lt;HOST&gt;[:&lt;PORT&gt;]/&lt;DB&gt;</pre> 
     <ul class="note">
-      <li>If the database you are connecting to is in the default Derby database 
+      <li>If the database you are connecting to is in the default Java DB database 
         folder, you only have to specify the database name. If the database is 
         not in the default database folder, you have to enter the full path to 
         the database and not just the database name. </li>
@@ -98,11 +97,11 @@ Microsystems, Inc. All Rights Reserved.
     session. If left unselected, a dialog box appears prompting you for the password 
     every time you connect to the database.</li>
     <li>The URL for the sample database is <tt>jdbc:derby://localhost:1527/sample</tt>.
-    The sample database is located in the <tt>.derby-netbeans</tt> directory</li>
+    The sample database is located in the <tt>.netbeans-derby</tt> directory in your home directory.</li>
   <li>If you download and install a bundle of the IDE and Sun Java Application 
-  Server 8.2, the Derby database server is automatically registered in the IDE.</li>
-  <li>You can change the default Derby database folder in the Derby Database settings 
-  node of the Options window's Advanced Options mode.</li>
+  Server 9.0, Platform Edition, the Java DB database server is automatically registered in the IDE.</li>
+  <li>You can change the default Java DB database folder in the Java DB Database settings 
+  node located under IDE Configuration in the Advanced Options view of the Options window.</li>
 </ul>
 <dl> 
   <dt><a name="seealso">See Also</a></dt>

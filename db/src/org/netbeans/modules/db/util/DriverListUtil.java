@@ -79,11 +79,11 @@ public class DriverListUtil {
         drivers.add("RmiJdbc.RJDriver");
         urls.add("jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>");
         
-        names.add("Apache Derby (Embedded)");
+        names.add("Java DB (Embedded)");
         drivers.add("org.apache.derby.jdbc.EmbeddedDriver");
         urls.add("jdbc:derby:<DB>");
         
-        names.add("Apache Derby (Net)");
+        names.add("Java DB (Network)");
         drivers.add("org.apache.derby.jdbc.ClientDriver");
         urls.add("jdbc:derby://<HOST>[:<PORT>]/databaseName[;attr1=value1[;...]]");
         

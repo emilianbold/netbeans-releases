@@ -29,12 +29,14 @@ import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.editor.ext.ExtEditorUI;
@@ -82,29 +84,39 @@ public class HTMLCompletionProvider implements CompletionProvider {
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == COMPLETION_QUERY_TYPE)
-            return new AsyncCompletionTask(new Query(), component);
+            return new AsyncCompletionTask(new Query(component.getCaret().getDot()), component);
         else if (queryType == DOCUMENTATION_QUERY_TYPE)
             return new AsyncCompletionTask(new DocQuery(null), component);
-        return null; 
+        return null;
     }
-
-    static class Query extends AsyncCompletionQuery {
+    
+    static class Query extends AbstractQuery {
         
         private JTextComponent component;
+        
+        private int creationCaretOffset;
+        
+        Query(int caretOffset) {
+            this.creationCaretOffset = caretOffset;
+        }
         
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
         
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            List/*<CompletionItem>*/ results = queryImpl(component, caretOffset);
+        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            HTMLCompletionQuery.HTMLCompletionResult res = (HTMLCompletionQuery.HTMLCompletionResult)queryImpl(component, caretOffset);
+            if(res == null) return ;
+            
+            List/*<CompletionItem>*/ results = res.getData();
             assert (results != null);
             resultSet.addAllItems(results);
-            resultSet.finish();
+            resultSet.setTitle(res.getTitle());
+            resultSet.setAnchorOffset(res.getSubstituteOffset());
         }
     }
     
-    static class DocQuery extends AsyncCompletionQuery {
+    static class DocQuery extends AbstractQuery {
         
         private JTextComponent component;
         private ResultItem item;
@@ -117,36 +129,77 @@ public class HTMLCompletionProvider implements CompletionProvider {
             this.component = component;
         }
         
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            CompletionQuery.Result res = null;
             if(item == null) {
-                List result = queryImpl(component, caretOffset);
-                if(result != null && result.size() > 0) {
-                    Object resultObj = result.get(0);
-                    if(resultObj instanceof ResultItem)
-                        item = (ResultItem)resultObj;
+                res = queryImpl(component, caretOffset);
+                if(res != null) {
+                    List result = res.getData();
+                    if(result != null && result.size() > 0) {
+                        Object resultObj = result.get(0);
+                        if(resultObj instanceof ResultItem)
+                            item = (ResultItem)resultObj;
+                    }
                 }
             }
-            if(item != null) resultSet.setDocumentation(new HTMLCompletionQuery.DocItem((HTMLResultItem)item));
-            resultSet.finish();
+            HTMLResultItem htmlItem = (HTMLResultItem)item;
+            if(htmlItem != null && htmlItem.getHelpID() != null) {
+                resultSet.setDocumentation(new HTMLCompletionQuery.DocItem(htmlItem));
+                if(res != null) {
+                    resultSet.setTitle(res.getTitle());
+                    resultSet.setAnchorOffset(((HTMLCompletionQuery.HTMLCompletionResult)res).getSubstituteOffset());
+                }
+            }
         }
-        
     }
     
-    private static List/*<CompletionItem>*/ queryImpl(JTextComponent component, int offset) {
-        if (!ENABLED) return Collections.EMPTY_LIST;
+    private static CompletionQuery.Result queryImpl(JTextComponent component, int offset) {
+        if (!ENABLED) return null;
         
         Class kitClass = Utilities.getKitClass(component);
         if (kitClass != null) {
-            ExtEditorUI eeui = (ExtEditorUI)Utilities.getEditorUI(component);
-            Completion compl = ((HTMLKit)Utilities.getKit(component)).createCompletionForProvider(eeui);
             HTMLSyntaxSupport support = (HTMLSyntaxSupport)Utilities.getSyntaxSupport(component);
-            
-            CompletionQuery.Result res = compl.getQuery().query(component, offset, support);
-            if(res  == null) return Collections.EMPTY_LIST;
-            else return res.getData();
+            return HTMLCompletionQuery.getDefault().query(component, offset, support);
+        } else {
+            return null;
         }
-        
-        return Collections.EMPTY_LIST;
     }
     
+    private static abstract class AbstractQuery extends AsyncCompletionQuery {
+        
+        protected void preQueryUpdate(JTextComponent component) {
+            int caretOffset = component.getCaretPosition();
+            Document doc = component.getDocument();
+            checkHideCompletion((BaseDocument)doc, caretOffset);
+        }
+        
+        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+            checkHideCompletion((BaseDocument)doc, caretOffset);
+            doQuery(resultSet, doc, caretOffset);
+            resultSet.finish();
+        }
+        
+        abstract void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset);
+        
+    }
+    
+    private static void checkHideCompletion(BaseDocument doc, int caretOffset) {
+        //test whether we are just in text and eventually close the opened completion
+        //this is handy after end tag autocompletion when user doesn't complete the
+        //end tag and just types a text
+        HTMLSyntaxSupport sup = (HTMLSyntaxSupport)doc.getSyntaxSupport().get(HTMLSyntaxSupport.class);
+        try {
+            TokenItem ti = sup.getTokenChain(caretOffset <= 0 ? 0 : caretOffset - 1, caretOffset);
+            if(ti != null && ti.getTokenID() == HTMLTokenContext.TEXT && !ti.getImage().startsWith("<") && !ti.getImage().startsWith("&")) {
+                hideCompletion();
+            }
+        }catch(BadLocationException e) {
+            //do nothing
+        }
+    }
+    
+    private static void hideCompletion() {
+        Completion.get().hideCompletion();
+        Completion.get().hideDocumentation();
+    }
 }

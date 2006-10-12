@@ -176,13 +176,6 @@ public abstract class DBElementNode extends AbstractNode implements	IconStrings,
         return writeable;
     }
 
-	/** Set all actions for this node.
-	 * @param actions new list of actions
-	 */
-	public void setActions(SystemAction[] actions) {
-        systemActions = actions;
-    }
-
 	/** Calls super.fireCookieChange. The reason why is redefined
 	 * is only to allow the access from this package.
 	 */

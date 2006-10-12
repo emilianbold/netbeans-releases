@@ -34,12 +34,12 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.explorer.actions.ConnectAction;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -170,6 +170,22 @@ public class DatabaseConnection implements DBConnection {
         pwd = password;
         name = null;
         name = getName();
+    }
+    
+    public JDBCDriver findJDBCDriver() {
+        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
+        if (drvs.length <= 0) {
+            return null;
+        }
+
+        JDBCDriver useDriver = drvs[0];
+        for (int i = 0; i < drvs.length; i++) {
+            if (drvs[i].getName().equals(getDriverName())) {
+                useDriver = drvs[i];
+                break;
+            }
+        }
+        return useDriver;
     }
 
      private Collection getOpenConnections() {
@@ -395,18 +411,8 @@ public class DatabaseConnection implements DBConnection {
             // hack for Derby
             DerbyConectionEventListener.getDefault().beforeConnect(this);
             
-            JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
-            JDBCDriver useDriver = null;
-
-            if (drvs.length != 0) {
-                useDriver = drvs[0];
-                for (int i = 0; i < drvs.length; i++) {
-                    if (drvs[i].getName().equals(getDriverName())) {
-                        useDriver = drvs[i];
-                        break;
-                    }
-                }
-            } else {
+            JDBCDriver useDriver = findJDBCDriver();
+            if (useDriver == null) {
                 // will be loaded through DriverManager, make sure it is loaded
                 Class.forName(drv);
             }
@@ -485,18 +491,8 @@ public class DatabaseConnection implements DBConnection {
                     // hack for Derby
                     DerbyConectionEventListener.getDefault().beforeConnect(DatabaseConnection.this);
                     
-                    JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
-                    JDBCDriver useDriver = null;
-                    
-                    if (drvs.length != 0) {
-                        useDriver = drvs[0];
-                        for (int i = 0; i < drvs.length; i++) {
-                            if (drvs[i].getName().equals(getDriverName())) {
-                                useDriver = drvs[i];
-                                break;
-                            }
-                        }
-                    } else {
+                    JDBCDriver useDriver = findJDBCDriver();
+                    if (useDriver == null) {
                         // will be loaded through DriverManager, make sure it is loaded
                         Class.forName(drv);
                     }
@@ -668,7 +664,7 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public String toString() {
-        return "Driver:" + drv + "Database:" + db.toLowerCase() + "User:" + usr.toLowerCase() + "Schema:" + schema.toLowerCase();
+        return "Driver:" + getDriver() + "Database:" + getDatabase().toLowerCase() + "User:" + getUser().toLowerCase() + "Schema:" + getSchema().toLowerCase(); // NOI18N
     }
     
     /**
@@ -733,15 +729,11 @@ public class DatabaseConnection implements DBConnection {
         try {
             final ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
             if (cni != null && cni.getConnection() == null) {
-                if (!SwingUtilities.isEventDispatchThread()) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            new ConnectAction.ConnectionDialogDisplayer().showDialog(cni, true);
-                        }
-                    });
-                } else {
-                    new ConnectAction.ConnectionDialogDisplayer().showDialog(cni, true);
-                }
+                Mutex.EVENT.readAccess(new Runnable() {
+                    public void run() {
+                        new ConnectAction.ConnectionDialogDisplayer().showDialog(cni, true);
+                    }
+                });
             }
         } catch (DatabaseException e) {
             ErrorManager.getDefault().notify(e);
@@ -751,12 +743,10 @@ public class DatabaseConnection implements DBConnection {
     public Connection getJDBCConnection() {
         try {
             ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
-            if (cni != null && cni.getConnection() != null && !cni.getConnection().isClosed()) {
+            if (cni != null && cni.getConnection() != null) {
                 return cni.getConnection();
             }
         } catch (DatabaseException e) {
-            ErrorManager.getDefault().notify(e);
-        } catch (SQLException e) {
             ErrorManager.getDefault().notify(e);
         }
         return null;

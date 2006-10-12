@@ -21,6 +21,8 @@ package org.netbeans.modules.db.test;
 
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -37,8 +39,8 @@ public class TestBase extends NbTestCase {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         assertEquals("Unable to set the default lookup!", Lkp.class, Lookup.getDefault().getClass());
         
-        ((Lkp)Lookup.getDefault()).setLookups(new Object[] { new RepositoryImpl() });
-        assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Lookup.getDefault().lookup(Repository.class).getClass());
+        ((Lkp)Lookup.getDefault()).setRepository(new RepositoryImpl());
+        assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Repository.getDefault().getClass());
     }
     
     public TestBase(String name) {
@@ -47,15 +49,29 @@ public class TestBase extends NbTestCase {
     
     public static final class Lkp extends ProxyLookup {
         public Lkp() {
-            setLookups(new Object[0]);
+            setProxyLookups(new Lookup[0]);
         }
         
-        void setLookups(Object[] instances) {
+        private void setProxyLookups(Lookup[] lookups) {
+            Lookup[] allLookups = new Lookup[lookups.length + 2];
             ClassLoader l = TestBase.class.getClassLoader();
-            setLookups(new Lookup[] {
-                Lookups.metaInfServices(l),
-                Lookups.singleton(l),
-                Lookups.fixed(instances),
+            allLookups[0] = Lookups.metaInfServices(l);
+            allLookups[1] = Lookups.singleton(l);
+            System.arraycopy(lookups, 0, allLookups, 2, lookups.length);
+            setLookups(allLookups);
+        }
+        
+        private void setRepository(Repository repository) {
+            // must set out repository first
+            setProxyLookups(new Lookup[] {
+                Lookups.singleton(repository),
+            });
+            
+            DataFolder services = DataFolder.findFolder(repository.getDefaultFileSystem().getRoot().getFileObject("Services"));
+            FolderLookup lookup = new FolderLookup(services);
+            setProxyLookups(new Lookup[] {
+                Lookups.singleton(repository),
+                new FolderLookup(services).getLookup()
             });
         }
     }

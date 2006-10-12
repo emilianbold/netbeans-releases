@@ -30,6 +30,7 @@ import javax.swing.event.*;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -43,7 +44,6 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
 
     static final long serialVersionUID = 5364628520334696421L;
 
-    private ArrayList dbconns;
     private ArrayList list;
     private DBSchemaWizardData data;
     private Node dbNode;
@@ -52,14 +52,12 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
     /** Creates new form DBSchemaConnectionpanel */
     public DBSchemaConnectionPanel(DBSchemaWizardData data, ArrayList list) {
         this.list = list;
-        dbconns = new ArrayList();
         this.data = data;
 
         putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); //NOI18N
         setName(bundle.getString("ConnectionChooser")); //NOI18N
 
         initComponents ();
-        resize();
         initAccessibility();
 
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
@@ -70,30 +68,8 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
             return;
         }
         dbNode = df.getNodeDelegate().getChildren().findChild("Databases"); //NOI18N
-        fillConnectionCombo();
-        existingConnComboBox.setSelectedIndex(0);
+        DatabaseExplorerUIs.connect(existingConnComboBox, ConnectionManager.getDefault());
         existingConnComboBox.getModel().addListDataListener(this);
-    }
-
-    
-    public   javax.swing.JComboBox getComboBox(){
-        return existingConnComboBox;
-    }
-
-    private void fillConnectionCombo() {
-        dbconns.clear();
-        existingConnComboBox.removeAllItems();
-        DatabaseConnection[] newdbconns = ConnectionManager.getDefault().getConnections();
-        for (int i = 0; i < newdbconns.length; i++) {
-            existingConnComboBox.addItem(newdbconns[i].getName());
-            dbconns.add(newdbconns[i]);
-        }
-        if (existingConnComboBox.getItemCount() == 0)
-            existingConnComboBox.insertItemAt(bundle.getString("NoConnection"), 0); //NOI18N
-        else
-            existingConnComboBox.insertItemAt(bundle.getString("SelectFromTheList"), 0); //NOI18N
-        
-        existingConnComboBox.addItem(bundle.getString("NewConnectionButton"));
     }
     
     private void initAccessibility() {
@@ -103,20 +79,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         existingConnComboBox.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ExistingConnectionA11yName"));  // NOI18N
         existingConnComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ExistingConnectionA11yDesc"));  // NOI18N
     }
-    
-    private void resize() {
-        int width = (new Double(descriptionTextArea.getFontMetrics(descriptionTextArea.getFont()).getStringBounds(bundle.getString("Description"), getGraphics()).getWidth() / 2)).intValue() + 160;
-        //        int height = (driverLabel.getFont().getSize() * 16) + 200;
-        int height = 300;
-        if (width < 675)
-            width = 675;
-        if (height < 390)
-            height = 390;
-        java.awt.Dimension dim = new java.awt.Dimension(width, height);
-        setMinimumSize(dim);
-        setPreferredSize(dim);
-    }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -133,7 +96,9 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
 
         descriptionTextArea.setEditable(false);
         descriptionTextArea.setFont(javax.swing.UIManager.getFont("Label.font"));
+        descriptionTextArea.setLineWrap(true);
         descriptionTextArea.setText(bundle.getString("Description"));
+        descriptionTextArea.setWrapStyleWord(true);
         descriptionTextArea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
         descriptionTextArea.setEnabled(false);
         descriptionTextArea.setOpaque(false);
@@ -164,36 +129,14 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 5);
         add(existingConnComboBox, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
-    private void newConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {
-      
-        final Set existing = new HashSet(Arrays.asList(ConnectionManager.getDefault().getConnections()));
-        ConnectionListener listener = new ConnectionListener() {
-            public void connectionsChanged() {
-                DatabaseConnection dbconns[] = ConnectionManager.getDefault().getConnections();
-                for (int i = 0; i < dbconns.length; i++) {
-                    if (!existing.contains(dbconns[i])) {
-                        existingConnComboBox.setSelectedItem(dbconns[i]);
-                    }
-                }
-            }
-        };
-         
-        ConnectionManager.getDefault().addConnectionListener(listener);
-        ConnectionManager.getDefault().showAddConnectionDialog(null);
-        ConnectionManager.getDefault().removeConnectionListener(listener);
-    }
-     
     private void existingConnComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_existingConnComboBoxActionPerformed
-        if(existingConnComboBox.getSelectedIndex() > 0){
-            if (existingConnComboBox.getItemCount() == existingConnComboBox.getSelectedIndex()+1 ){
-                newConnectionButtonActionPerformed( evt);
-            }else{
-            data.setDatabaseConnection((DatabaseConnection)dbconns.get(existingConnComboBox.getSelectedIndex() - 1));
-            }
+        Object selectedItem = existingConnComboBox.getSelectedItem();
+        if (selectedItem instanceof DatabaseConnection) {
+            data.setDatabaseConnection((DatabaseConnection)selectedItem);
         }
+        fireChange(this);
     }//GEN-LAST:event_existingConnComboBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -204,7 +147,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
     private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
 
     public boolean isValid() {
-        return (existingConnComboBox.getSelectedIndex() > 0);
+        return existingConnComboBox.getSelectedItem() instanceof DatabaseConnection;
     }
 
     public void intervalAdded(final javax.swing.event.ListDataEvent p1) {
@@ -221,8 +164,10 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
 
     public void initData() {
         data.setExistingConn(true);
-        if(existingConnComboBox.getSelectedIndex() > 0)
-            data.setDatabaseConnection((DatabaseConnection) dbconns.get(existingConnComboBox.getSelectedIndex() - 1));
+        Object selectedItem = existingConnComboBox.getSelectedItem();
+        if (selectedItem instanceof DatabaseConnection) {
+            data.setDatabaseConnection((DatabaseConnection)selectedItem);
+        }
     }
 
     public void fireChange (Object source) {

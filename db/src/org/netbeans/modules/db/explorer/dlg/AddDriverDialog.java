@@ -22,16 +22,18 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 
 import javax.swing.DefaultListModel;
@@ -47,11 +49,11 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
-
-import org.netbeans.modules.db.explorer.DbURLClassLoader;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.db.util.DriverListUtil;
 
 public class AddDriverDialog extends javax.swing.JPanel {
@@ -317,44 +319,43 @@ public class AddDriverDialog extends javax.swing.JPanel {
             public void run() {
                 startProgress();
                 
-                JarFile jf;
-                Enumeration e;
-                String className;
-                Class c;
-                Class[] cls;
-                DbURLClassLoader loader = new DbURLClassLoader((URL[]) drvs.toArray(new URL[drvs.size()]));
-                
                 for (int i = 0; i < drvs.size(); i++) {
                     try {
                         URL url = (URL)drvs.get(i);
                         File file = new File(new URI(url.toExternalForm()));
-                        jf = new JarFile(file);
-                        e = jf.entries();
-                        while (e.hasMoreElements()) {
-                            className = e.nextElement().toString();
-                            if (className.endsWith(".class")) {
-                                className = className.replace('/', '.');
-                                className = className.substring(0, className.length() - 6);
-                                try {
-                                    c = Class.forName(className, true, loader);
-                                    cls = c.getInterfaces();
-                                    for (int j = 0; j < cls.length; j++)
-                                        if (cls[j].equals(java.sql.Driver.class))
-                                            addDriverClass(className);
-                                } catch (Exception exc) {
-                                    //PENDING
-                                } catch (Error err) {
-                                    //PENDING
+                        JarFile jf = new JarFile(file);
+                        try {
+                            Enumeration entries = jf.entries();
+                            while (entries.hasMoreElements()) {
+                                JarEntry entry = (JarEntry)entries.nextElement();
+                                String className = entry.getName();
+                                if (className.endsWith(".class")) { // NOI18N
+                                    className = className.replace('/', '.');
+                                    className = className.substring(0, className.length() - 6);
+                                    InputStream stream = jf.getInputStream(entry);
+                                    try {
+                                        ClassFile classFile = new ClassFile(stream, false);
+                                        for (Iterator iter = classFile.getInterfaces().iterator(); iter.hasNext();) {
+                                            ClassName interfaceName = (ClassName)iter.next();
+                                            if ("java.sql.Driver".equals(interfaceName.getExternalName())) { // NOI18N
+                                                addDriverClass(className);
+                                            }
+                                        }
+                                    } finally {
+                                        stream.close();
+                                    }
                                 }
                             }
+                        } finally {
+                            jf.close();
                         }
-                        jf.close();
                     } catch (IOException exc) {
                         //PENDING
                     } catch (URISyntaxException use) {
                         //PENDING
                     }
                 }
+                
                 stopProgress();
             }
         }, 0);

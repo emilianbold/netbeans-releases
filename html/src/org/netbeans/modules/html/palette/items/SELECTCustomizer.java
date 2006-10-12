@@ -1,7 +1,20 @@
 /*
- * TABLECustomizerPanel.java
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * Created on July 20, 2005, 10:32 AM
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.html.palette.items;
@@ -169,7 +182,7 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_Multi"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_allowed"));
-        jCheckBox1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -182,7 +195,7 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_allowed"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_disabled"));
-        jCheckBox2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jCheckBox2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -195,7 +208,6 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         jCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_disabled"));
         jCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_disabled"));
 
-        jSpinner1.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner1.setModel(new SpinnerNumberModel(select.getOptions(), 0, Integer.MAX_VALUE, 1));
         jSpinner1.setEditor(new JSpinner.NumberEditor(jSpinner1, "#"));
         jSpinner1.setValue(new Integer(select.getOptions()));
@@ -217,7 +229,6 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_State"));
         jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_State"));
 
-        jSpinner2.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner2.setModel(new SpinnerNumberModel(select.getOptionsVisible(), 1, Integer.MAX_VALUE, 1));
         jSpinner2.setEditor(new JSpinner.NumberEditor(jSpinner2, "#"));
         jSpinner2.setValue(new Integer(select.getOptionsVisible()));
@@ -228,8 +239,7 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jSpinner2, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

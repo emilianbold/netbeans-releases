@@ -17,35 +17,19 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<mconfig name="unit Test Type Config">
 
-    <!-- testbag with all tests running in code mode (i.e. in standard JVM)
-         use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->
-	<testbag compiler="default-compiler" executor="ide" name="HTTPServer Unit Tests" testattribs="all and code and ide">
- 		<testset dir="unit/src">
-			<patternset>
-				<include name="**/*.class"/>
-				<exclude name="**/servlettest/**"/>
-				<exclude name="**/data"/>
- 			</patternset>
- 		</testset>
-	</testbag>
-
-    <!-- code excecutor - use this one if you plan to run your tests in standard 
-                          JVM. You can also write your own executor, which will 
-                          then call this one. It is handy when some servers (e.g. rmi registry)
-                          have to be started before tests are run and stopped after
-                          the run. -->
-	<executor name="code" antfile="build-unit.xml" target="runcodetest"/> 
+<mconfig name="httpserver">
     
-    <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
-                        Similarly as with code executor, you can create your own to 
-                        prepare some neccessary stuff before running tests. -->
-	<executor name="ide" antfile="build-unit.xml" target="runidetest"/> 
+    <testbag testattribs="stable" executor="ide-executor" name="httpserver">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
 
-	<compiler name="default-compiler" antfile="build-unit.xml" default="true" target="default-compiler"/>
-
-    <!-- standard results processor - currently there is only one results processor in XTest -->    
-	<resultsprocessor name="default-results-processor" antfile="build.xml" default="true" target="test_report"/> 
-
+    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
+    <executor name="ide-executor" antfile="build-unit.xml" target="runidetest"/>
+    
 </mconfig>

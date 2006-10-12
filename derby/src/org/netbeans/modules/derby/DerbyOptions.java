@@ -47,21 +47,28 @@ public class DerbyOptions extends SystemOption {
     
     private static final long serialVersionUID = 1101894610105398924L;
     
+    /**
+     * This system property allows setting a default value for the Derby system home directory.
+     * Its value will be returned by the {@link getSystemHome} method if the
+     * systemHome property is null. See issue 76908.
+     */
+    public static final String NETBEANS_DERBY_SYSTEM_HOME = "netbeans.derby.system.home"; // NOI18N
+    
     static final String PROP_DERBY_LOCATION = "location"; // NOI18N
     static final String PROP_DERBY_SYSTEM_HOME = "systemHome"; // NOI18N
     
     static final String INST_DIR = "db-derby-10.1.1.0"; // NOI18N
     
-    private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
-    private static final String DRIVER_CLASS_EMBEDDED = "org.apache.derby.jdbc.EmbeddedDriver"; // NOI18N
+    public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
+    public static final String DRIVER_CLASS_EMBEDDED = "org.apache.derby.jdbc.EmbeddedDriver"; // NOI18N
     
     private static final String DRIVER_PATH_NET = "lib/derbyclient.jar"; // NOI18N
     private static final String DRIVER_PATH_EMBEDDED = "lib/derby.jar"; // NOI18N
     
     // XXX these should actually be localized, but we'd have to localize 
     // DriverListUtil in the db module first
-    private static final String DRIVER_DISP_NAME_NET = "Apache Derby (Net)"; // NOI18N
-    private static final String DRIVER_DISP_NAME_EMBEDDED = "Apache Derby (Embedded)"; // NOI18N
+    public static final String DRIVER_DISP_NAME_NET = "Java DB (Network)"; // NOI18N
+    public static final String DRIVER_DISP_NAME_EMBEDDED = "Java DB (Embedded)"; // NOI18N
     
     private static final String DRIVER_NAME_NET = "apache_derby_net"; // NOI18N
     private static final String DRIVER_NAME_EMBEDDED = "apache_derby_embedded"; // NOI18N
@@ -103,6 +110,22 @@ public class DerbyOptions extends SystemOption {
      *        and has the meaning "set to the default location".
      */
     public void setLocation(String location) {
+        if (location !=  null && location.length() > 0) {
+            File locationFile = new File(location).getAbsoluteFile();
+            if (!locationFile.exists()) {
+                String message = NbBundle.getMessage(DerbyOptions.class, "ERR_DirectoryDoesNotExist", locationFile);
+                IllegalArgumentException e = new IllegalArgumentException(message);
+                ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
+                throw e;
+            }
+            if (!isDerbyInstallLocation(locationFile)) {
+                String message = NbBundle.getMessage(DerbyOptions.class, "ERR_InvalidDerbyLocation", locationFile);
+                IllegalArgumentException e = new IllegalArgumentException(message);
+                ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
+                throw e;
+            }
+        }
+        
         synchronized (getLock()) {
             if (!isReadExternal()) {
                 stopDerbyServer();
@@ -124,12 +147,31 @@ public class DerbyOptions extends SystemOption {
     public String getSystemHome() {
         String systemHome = (String)getProperty(PROP_DERBY_SYSTEM_HOME);
         if (systemHome == null) {
+            systemHome = System.getProperty(NETBEANS_DERBY_SYSTEM_HOME);
+        }
+        if (systemHome == null) {
             systemHome = ""; // NOI18N
         }
         return systemHome;
     }
     
     public void setSystemHome(String derbySystemHome) {
+        if (derbySystemHome != null && derbySystemHome.length() > 0) {
+            File derbySystemHomeFile = new File(derbySystemHome).getAbsoluteFile();
+            if (!derbySystemHomeFile.exists() || !derbySystemHomeFile.isDirectory()) {
+                String message = NbBundle.getMessage(DerbyOptions.class, "ERR_DirectoryDoesNotExist", derbySystemHomeFile);
+                IllegalArgumentException e = new IllegalArgumentException(message);
+                ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
+                throw e;
+            }
+            if (!derbySystemHomeFile.canWrite()) {
+                String message = NbBundle.getMessage(DerbyOptions.class, "ERR_DirectoryIsNotWritable", derbySystemHomeFile);
+                IllegalArgumentException e = new IllegalArgumentException(message);
+                ErrorManager.getDefault().annotate(e, ErrorManager.USER, message, message, null, null);
+                throw e;
+            }
+        }
+        
         synchronized (getLock()) {
             if (!isReadExternal()) {
                 stopDerbyServer();
@@ -143,15 +185,22 @@ public class DerbyOptions extends SystemOption {
         if (location == null) {
             return null;
         }
-        File libDir = new File(location, "lib"); // NOI18N
-        if (!libDir.exists()) {
-            return null;
-        }
-        File[] libs = libDir.listFiles();
-        if (libs == null || libs.length <= 0) {
+        if (!isDerbyInstallLocation(location)) {
             return null;
         }
         return location.getAbsolutePath();
+    }
+    
+    private static boolean isDerbyInstallLocation(File location) {
+        File libDir = new File(location, "lib"); // NOI18N
+        if (!libDir.exists()) {
+            return false;
+        }
+        File[] libs = libDir.listFiles();
+        if (libs == null || libs.length <= 0) {
+            return false;
+        }
+        return true;
     }
     
     private static void stopDerbyServer() {

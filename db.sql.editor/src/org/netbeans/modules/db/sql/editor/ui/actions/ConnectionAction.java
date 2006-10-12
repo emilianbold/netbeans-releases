@@ -18,273 +18,225 @@
  */
 
 package org.netbeans.modules.db.sql.editor.ui.actions;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.Action;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.api.sql.SQLExecuteCookie;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.CookieAction;
-import org.openide.util.actions.Presenter;
 
 /**
- * Toolbar action to allow users to select a connection against which
- * to execute the SQL in the current editor window
  *
- * @author Jesse Beaumont, Andrei Badea
+ * @author Andrei Badea
  */
-public class ConnectionAction extends CookieAction {
-    
-    private static final Map/*<SQLExecuteCookie, ConnectionModel>*/ MODEL_REGISTRY = new HashMap();
-    
-    public ConnectionAction() {
-    }
-    
-    /**
-     * Get help context
-     */
-    public HelpCtx getHelpCtx() {
+public class ConnectionAction extends SQLExecutionBaseAction {
+
+    protected String getDisplayName(SQLExecution sqlExecution) {
         return null;
     }
-    
-    /**
-     * Return the display name for the action.
-     */
-    public String getName() {
-        return NbBundle.getMessage(ConnectionAction.class, "LBL_ConnectionAction");
+
+    protected void actionPerformed(SQLExecution sqlExecution) {
     }
 
-    /**
-     * The action accepts only one node with an SQL and editor cookie on it.
-     */
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] { EditorCookie.class, SQLExecuteCookie.class };
-    }
-    
-    protected void performAction(Node[] activatedNodes) {
-    }
-    
     public Action createContextAwareInstance(Lookup actionContext) {
-        return new DelegateAction(this, actionContext);
+        return new ConnectionContextAwareDelegate(this, actionContext);
     }
-    
-    private static final class DelegateAction implements Action, Presenter.Toolbar {
-        
-        private Lookup actionContext;
-        private Action delegate;
-        
-        public DelegateAction(Action delegate, Lookup actionContext) {
-            this.actionContext = actionContext;
-            this.delegate = delegate;
-        }
 
-        public Object getValue(String key) {
-            return delegate.getValue(key);
-        }
+    private static final class ConnectionContextAwareDelegate extends ContextAwareDelegate {
 
-        public void putValue(String key, Object value) {
-            delegate.putValue(key, value);
-        }
+        private ToolbarPresenter toolbarPresenter;
 
-        public void actionPerformed(ActionEvent e) {
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-        }
-
-        public void setEnabled(boolean b) {
-        }
-
-        public boolean isEnabled() {
-            return true;
+        public ConnectionContextAwareDelegate(ConnectionAction parent, Lookup actionContext) {
+            super(parent, actionContext);
         }
 
         public Component getToolbarPresenter() {
-            Node node = (Node)actionContext.lookup(Node.class);
-            SQLExecuteCookie sqlCookie = (SQLExecuteCookie)node.getCookie(SQLExecuteCookie.class);
-            return new ToolbarPresenter(sqlCookie);
+            toolbarPresenter = new ToolbarPresenter();
+            toolbarPresenter.setSQLExecution(getSQLExecution());
+            return toolbarPresenter;
         }
-    }
-    
-    private static ConnectionModel getConnectionModelForCookie(SQLExecuteCookie cookie) {
-        assert cookie != null;
-        synchronized (MODEL_REGISTRY) {
-            ConnectionModel model = (ConnectionModel)MODEL_REGISTRY.get(cookie);
-            if (model == null) {
-                model = new ConnectionModel();
-                MODEL_REGISTRY.put(cookie, model);
+
+        public void setEnabled(boolean enabled) {
+            if (toolbarPresenter != null) {
+                toolbarPresenter.setEnabled(enabled);
             }
-            return model;
+            super.setEnabled(enabled);
         }
-    }
-    
-    public static DatabaseConnection getConnectionForCookie(SQLExecuteCookie cookie) {
-        assert cookie != null;
-        synchronized (MODEL_REGISTRY) {
-            ConnectionModel model = (ConnectionModel)MODEL_REGISTRY.get(cookie);
-            if (model != null) {
-                return model.getSelectedConnection();
-            } else {
-                return null;
-            }
-        }
-    }
-    
-    public static void setConnectionForCookie(SQLExecuteCookie cookie, DatabaseConnection dbconn) {
-        assert cookie != null;
-        synchronized (MODEL_REGISTRY) {
-            ConnectionModel model = getConnectionModelForCookie(cookie);
-            for (int i = 0; i < model.getSize(); i++) {
-                if (((ConnectionWrapper)model.getElementAt(i)).getConnection() == dbconn) {
-                    model.setSelectedItem(model.getElementAt(i));
+
+        protected void setSQLExecution(final SQLExecution sqlExecution) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    if (toolbarPresenter != null) {
+                        // test for null necessary since the sqlExecution property
+                        // can change just before the toolbar presenter is created
+                        toolbarPresenter.setSQLExecution(sqlExecution);
+                    }
                 }
-            }
+            });
+            super.setSQLExecution(sqlExecution);
         }
     }
-   
-    /**
-     * The toolbar presenter for this action.
-     */
+
     private static final class ToolbarPresenter extends JPanel {
-        
-        private SQLExecuteCookie sqlCookie;
-        
-        public ToolbarPresenter(SQLExecuteCookie sqlCookie) {
-            this.sqlCookie = sqlCookie;
+
+        private JComboBox combo;
+        private JLabel comboLabel;
+        private DatabaseConnectionModel model;
+
+        public ToolbarPresenter() {
             initComponents();
         }
-        
+
         public Dimension getMinimumSize() {
             Dimension dim = super.getMinimumSize();
             return new Dimension(0, dim.height);
         }
-        
+
+        public void setSQLExecution(SQLExecution sqlExecution) {
+            model.setSQLExecution(sqlExecution);
+        }
+
         private void initComponents() {
-            JLabel comboLabel;
-            final JComboBox combo;
-            
             setLayout(new BorderLayout(4, 0));
             setBorder(new EmptyBorder(0, 2, 0, 8));
             setOpaque(false);
-            
+
             combo = new JComboBox();
-            ConnectionModel model = ConnectionAction.getConnectionModelForCookie(sqlCookie);
-            combo.setModel(model);
             combo.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
-                    Object selectedItem = combo.getSelectedItem();
-                    combo.setToolTipText(selectedItem != null ? selectedItem.toString() : null);
+                    DatabaseConnection dbconn = (DatabaseConnection)combo.getSelectedItem();
+                    combo.setToolTipText(dbconn != null ? dbconn.getDisplayName() : null);
                 }
             });
             combo.setOpaque(false);
+            model = new DatabaseConnectionModel();
+            combo.setModel(model);
+            combo.setRenderer(new DatabaseConnectionRenderer());
+
             add(combo, BorderLayout.CENTER);
-            
+
             comboLabel = new JLabel();
-            comboLabel.setText(NbBundle.getMessage(ConnectionAction.class, "LBL_ConnectionAction"));
-            comboLabel.setDisplayedMnemonic(NbBundle.getMessage(ConnectionAction.class, "MNE_ConnectionAction").charAt(0));
+            Mnemonics.setLocalizedText(comboLabel, NbBundle.getMessage(ConnectionAction.class, "LBL_ConnectionAction"));
             comboLabel.setOpaque(false);
             comboLabel.setLabelFor(combo);
             add(comboLabel, BorderLayout.WEST);
         }
-    }
-    
-    private static final class ConnectionModel extends AbstractListModel implements ComboBoxModel, ConnectionListener {
 
-        private Object selectedItem;
+        public void setEnabled(boolean enabled) {
+            combo.setEnabled(enabled);
+            super.setEnabled(enabled);
+        }
+    }
+
+    private static final class DatabaseConnectionModel extends AbstractListModel implements ComboBoxModel, ConnectionListener, PropertyChangeListener {
+
         private ConnectionListener listener;
-        private Map map = new HashMap();
-        private int size;
-        
-        public ConnectionModel() {
+        private List connectionList; // must be ArrayList
+        private SQLExecution sqlExecution;
+
+        public DatabaseConnectionModel() {
             listener = (ConnectionListener)WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getDefault());
             ConnectionManager.getDefault().addConnectionListener(listener);
+            connectionList = new ArrayList();
+            connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
         }
-        
+
         public Object getElementAt(int index) {
-            return getWrapper(ConnectionManager.getDefault().getConnections()[index]);
+            return connectionList.get(index);
         }
-        
+
         public int getSize() {
-            size = ConnectionManager.getDefault().getConnections().length;
-            return size;
+            return connectionList.size();
         }
-        
+
         public void setSelectedItem(Object object) {
-            selectedItem = object;
-            connectionsChanged();
+            if (sqlExecution != null) {
+                sqlExecution.setDatabaseConnection((DatabaseConnection)object);
+            }
         }
-        
+
         public Object getSelectedItem() {
-            return selectedItem;
+            return sqlExecution != null ? sqlExecution.getDatabaseConnection() : null;
         }
-        
-        public DatabaseConnection getSelectedConnection() {
-            if (selectedItem != null) {
-                return ((ConnectionWrapper)selectedItem).getConnection();
-            } else {
-                return null;
+
+        public void setSQLExecution(SQLExecution sqlExecution) {
+            if (this.sqlExecution != null) {
+                this.sqlExecution.removePropertyChangeListener(this);
+            }
+            this.sqlExecution = sqlExecution;
+            if (this.sqlExecution != null) {
+                this.sqlExecution.addPropertyChangeListener(this);
+            }
+            fireContentsChanged(this, 0, 0); // because the selected item might have changed
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            if (propertyName == null || propertyName.equals(SQLExecution.PROP_DATABASE_CONNECTION)) {
+                Mutex.EVENT.readAccess(new Runnable() {
+                    public void run() {
+                        fireContentsChanged(this, 0, 0); // because the selected item might have changed
+                    }
+                });
             }
         }
-        
+
         public void connectionsChanged() {
-            if (selectedItem != null && !Arrays.asList(ConnectionManager.getDefault().getConnections()).contains(((ConnectionWrapper)selectedItem).getConnection())) {
-                selectedItem = null;
-            }
-            fireContentsChanged(this, 0, size);
-        }
-        
-        private ConnectionWrapper getWrapper(DatabaseConnection dbconn) {
-            ConnectionWrapper wrapper = (ConnectionWrapper)map.get(dbconn);
-            if (wrapper == null) {
-                wrapper = new ConnectionWrapper(dbconn);
-                map.put(dbconn, wrapper);
-            }
-            return wrapper;
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    connectionList.clear();
+                    connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
+
+                    DatabaseConnection selectedItem = (DatabaseConnection)getSelectedItem();
+                    if (selectedItem != null && !connectionList.contains(selectedItem)) {
+                        setSelectedItem(null);
+                    }
+                    fireContentsChanged(this, 0, connectionList.size());
+                }
+            });
         }
     }
-    
-    private static final class ConnectionWrapper {
-        
-        private DatabaseConnection dbconn;
-        
-        private ConnectionWrapper(DatabaseConnection dbconn) {
-            this.dbconn = dbconn;
-        }
-        
-        public DatabaseConnection getConnection() {
-            return dbconn;
-        }
-        
-        public String toString() {
-            return dbconn.getName();
+
+    private static final class DatabaseConnectionRenderer extends DefaultListCellRenderer {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Object displayName = null;
+            String tooltipText = null;
+
+            if (value instanceof DatabaseConnection) {
+                DatabaseConnection dbconn = (DatabaseConnection)value;
+                tooltipText = dbconn.getDisplayName();
+                displayName = tooltipText;
+            } else {
+                displayName = value;
+            }
+            JLabel component = (JLabel)super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
+            component.setToolTipText(tooltipText);
+
+            return component;
         }
     }
 }

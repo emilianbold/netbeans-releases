@@ -19,10 +19,21 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-public class AddConnectionAction extends ConnectUsingDriverAction {
-    static final long serialVersionUID =5370365696803042542L;
+import org.openide.nodes.Node;
 
-    public AddConnectionAction() {
-        System.out.println("org.netbeans.modules.db.explorer.actions.AddConnectionAction deprecated: use org.netbeans.modules.db.explorer.actions.ConnectUsingDriverAction instead"); //NOI18N
+/**
+ * 
+ * @author Andrei Badea
+ */
+public class AddConnectionAction extends DatabaseAction {
+
+    static final long serialVersionUID = 5370365696803042542L;
+
+    protected boolean enable(Node[] activatedNodes) {
+        return (activatedNodes != null && activatedNodes.length == 1);
+    }
+
+    public void performAction(Node[] activatedNodes) {
+        new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(null, null);
     }
 }

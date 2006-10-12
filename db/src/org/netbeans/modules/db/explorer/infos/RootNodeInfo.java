@@ -104,6 +104,12 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
 
         DatabaseNode node = getNode();
         DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
+        
+        // the nodes have to be initialized too, otherwise the node created 
+        // for the new connection will not be added and the connection
+        // will be lost when the nodes are eventually initialized
+        children.getNodes(true); 
+        
         ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
         ConnectionList.getDefault().add(dbconn);
         DatabaseNode cnode = children.createSubnode(ninfo, true);

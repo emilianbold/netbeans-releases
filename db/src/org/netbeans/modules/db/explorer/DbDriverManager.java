@@ -23,7 +23,6 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.openide.ErrorManager;
 
 /**
  * Class to load drivers and create connections. It can find drivers and connections from
@@ -44,15 +44,17 @@ import org.netbeans.api.db.explorer.JDBCDriver;
  * environment. That is, registered drivers can retrieved regardless of the class loader of the
  * caller of the getDriver() method.</p>
  *
- * <p>In the future this class could be used to cache and reuse the class loaders used
- * to load the drivers from URLs. A known disadvantage of not reusing the class loaders
- * is that each driver loaded by them registers itself to DriverManager, resulting in 
- * multiple registrations of the same class (but different instances). See also
- * issue 63957.</p>
+ * <p>This class also caches and reuses the class loaders used to load the drivers' JAR files.
+ * It is not perfect, since when the JDBC driver properties are changed in the UI a new
+ * JDBCDriver instance is created, thus a new class loader is created for it. This
+ * has multiple implications, see issue 63957 and issue 76922.</p>
  *
  * @author Andrei Badea
  */
 public class DbDriverManager {
+    
+    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance("org.netbeans.modules.db.explorer.DbDriverManager"); // NOI18N
+    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
     
     private static final DbDriverManager DEFAULT = new DbDriverManager();
     
@@ -62,6 +64,11 @@ public class DbDriverManager {
      * Maps each connection to the driver used to create that connection.
      */
     private Map/*<Connection, Driver>*/ conn2Driver = new WeakHashMap();
+    
+    /**
+     * Maps each driver to the class loader for that driver.
+     */
+    private Map/*<JDBCDriver, ClassLoader>*/ driver2Loader = new WeakHashMap();
     
     private DbDriverManager() {
     }
@@ -81,12 +88,19 @@ public class DbDriverManager {
      * @param jdbcDriver the fallback JDBCDriver; can be null
      */
     public Connection getConnection(String databaseURL, Properties props, JDBCDriver jdbcDriver) throws SQLException {
+        if (LOG) {
+            LOGGER.log(ErrorManager.INFORMATIONAL, "Attempting to connect to '" + databaseURL + "'"); // NOI18N
+        }
+        
         // try to find a registered driver or use the supplied jdbcDriver
         // we'll look ourselves in DriverManager, don't look there
         Driver driver = getDriverInternal(databaseURL, jdbcDriver, false);
         if (driver != null) {
             Connection conn = driver.connect(databaseURL, props);
             if (conn == null) {
+                if (LOG) {
+                    LOGGER.log(ErrorManager.INFORMATIONAL, driver.getClass().getName() + ".connect() returned null"); // NOI18N
+                }
                 throw createDriverNotFoundException();
             }
             synchronized (conn2Driver) {
@@ -191,7 +205,7 @@ public class DbDriverManager {
         
         // didn't find it, try to load it from jdbcDriver, if any
         if (jdbcDriver != null) {
-            ClassLoader l = new DbURLClassLoader(jdbcDriver.getURLs());
+            ClassLoader l = getClassLoader(jdbcDriver);
             try {
                 return (Driver)Class.forName(jdbcDriver.getClassName(), true, l).newInstance();
             } catch (Exception e) {
@@ -211,6 +225,25 @@ public class DbDriverManager {
         }
         
         return null;
+    }
+    
+    private ClassLoader getClassLoader(JDBCDriver driver) {
+        ClassLoader loader = null;
+        synchronized (driver2Loader) {
+            loader = (ClassLoader)driver2Loader.get(driver);
+            if (loader == null) {
+                loader = new DbURLClassLoader(driver.getURLs());
+                if (LOG) {
+                    LOGGER.log(ErrorManager.INFORMATIONAL, "Creating " + loader); // NOI18N
+                }
+                driver2Loader.put(driver, loader);
+            } else {
+                if (LOG) {
+                    LOGGER.log(ErrorManager.INFORMATIONAL, "Reusing " + loader); // NOI18N
+                }
+            }
+        }
+        return loader;
     }
     
     private SQLException createDriverNotFoundException() {

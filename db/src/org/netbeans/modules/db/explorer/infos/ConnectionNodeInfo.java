@@ -22,7 +22,6 @@ package org.netbeans.modules.db.explorer.infos;
 import java.io.IOException;
 import java.sql.Connection;
 import java.text.MessageFormat;
-import java.util.Vector;
 
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.DatabaseProductNotFoundException;
@@ -32,7 +31,6 @@ import org.netbeans.lib.ddl.impl.SpecificationFactory;
 
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DerbyConectionEventListener;
 
@@ -41,7 +39,8 @@ import org.netbeans.modules.db.explorer.DerbyConectionEventListener;
 //import org.openide.nodes.Node;
 //import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 
-import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
     
@@ -219,5 +218,14 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             }
         }
         setName(infoConn.getName());
+    }
+
+    public void refreshChildren() throws DatabaseException {
+        Children children = getNode().getChildren();
+        Node[] nodes = children.getNodes();
+        for (int i = 0; i < nodes.length; i++) {
+            DatabaseNodeInfo info = (DatabaseNodeInfo)nodes[i].getCookie(DatabaseNodeInfo.class);
+            info.refreshChildren();
+        }
     }
 }

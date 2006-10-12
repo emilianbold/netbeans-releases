@@ -19,12 +19,14 @@
 
 package org.netbeans.modules.db.explorer;
 
+import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLStreamHandlerFactory;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -32,9 +34,7 @@ import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Properties;
 import org.netbeans.api.db.explorer.JDBCDriver;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.test.TestBase;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -196,9 +196,30 @@ public class DbDriverManagerTest extends TestBase {
         }
     }
     
+    public void testJDBCDriverCached() throws Exception {
+        JDBCDriver drv = createDummyJDBCDriver(getDataDir());
+        Driver driver1 = DbDriverManager.getDefault().getDriver(DriverImpl.DEFAULT_URL, drv);
+        Driver driver2 = DbDriverManager.getDefault().getDriver(DriverImpl.DEFAULT_URL, drv);
+        assertSame(driver1.getClass(), driver2.getClass());
+    }
+    
+    public void testNoJDBCDriverLeaks() throws Exception {
+        JDBCDriver drv = createJDBCDriver();
+        Driver driver = DbDriverManager.getDefault().getDriver(DriverImpl.DEFAULT_URL, drv);
+        Reference drvRef = new WeakReference(drv);
+        drv = null;
+
+        assertGC("Should be possible to GC the driver", drvRef);
+    }
+    
     private static JDBCDriver createJDBCDriver() {
         URL url = DbDriverManagerTest.class.getProtectionDomain().getCodeSource().getLocation();
         return JDBCDriver.create("test_driver", "DbDriverManagerTest Driver", "org.netbeans.modules.db.explorer.DbDriverManagerTest$DriverImpl", new URL[] { url });
+    }
+    
+    private static JDBCDriver createDummyJDBCDriver(File dataDir) throws MalformedURLException {
+        URL url = dataDir.toURL();
+        return JDBCDriver.create("test_driver", "DbDriverManagerTest DummyDriver", "DummyDriver", new URL[] { url });
     }
     
     public static final class DriverImpl implements Driver {
@@ -222,13 +243,11 @@ public class DbDriverManagerTest extends TestBase {
         public Connection connect(String url, Properties info) throws SQLException {
             return (Connection)Proxy.newProxyInstance(DriverImpl.class.getClassLoader(), new Class[] { ConnectionEx.class }, new InvocationHandler() {
                 public Object invoke(Object proxy, Method m, Object[] args) {
-                    System.out.println("Proxy " + System.identityHashCode(proxy) + ": called " + m.getName());
                     String methodName = m.getName();
                     if (methodName.equals("getDriver")) {
                         return DriverImpl.this;
                     } else if (methodName.equals("hashCode")) {
                         Integer i = new Integer(System.identityHashCode(proxy));
-                        System.out.println("Returning " + i);
                         return i;
                     } else if (methodName.equals("equals")) {
                         return Boolean.valueOf(proxy == args[0]);

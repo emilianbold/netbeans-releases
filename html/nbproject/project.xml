@@ -170,6 +170,10 @@ Microsystems, Inc. All Rights Reserved.
                       <compile-dependency/>
                   </test-dependency>
                   <test-dependency>
+                      <code-name-base>org.netbeans.modules.editor.structure</code-name-base>
+                      <compile-dependency/>
+                  </test-dependency>
+                  <test-dependency>
                       <code-name-base>org.openide.options</code-name-base>
                       <compile-dependency/>
                   </test-dependency>

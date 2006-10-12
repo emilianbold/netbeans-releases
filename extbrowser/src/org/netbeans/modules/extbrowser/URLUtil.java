@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -117,7 +119,22 @@ public class URLUtil {
             return suitable;
         }
         
-        return URLMapper.findURL(fo, URLMapper.NETWORK);
+        return makeURLLocal(URLMapper.findURL(fo, URLMapper.NETWORK));
+    }
+    
+    private static URL makeURLLocal(URL input) {
+        String host = input.getHost();
+        try {
+            if (host.equals(InetAddress.getLocalHost().getHostName())) {
+                host = "127.0.0.1"; // NOI18N
+                return new URL(input.getProtocol(), host, input.getPort(), input.getFile());
+            }
+            else return input;
+        } catch (UnknownHostException e) {
+            return input;
+        } catch (MalformedURLException e) {
+            return input;
+        }
     }
         
     /** Returns true if the protocol is acceptable for usual web browsers.

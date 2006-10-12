@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,46 +32,64 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
  * @author Andrei Badea
  */
 public abstract class ConnectionDialogMediator {
-
-    private List/*<ConnectionProgressListener>*/ listeners = new ArrayList/*<ConnectionProgressListener>*/();
-
+    
+    public static final String PROP_VALID = "valid"; // NOI18N
+    
+    private final List/*<ConnectionProgressListener>*/ connProgressListeners = new ArrayList/*<ConnectionProgressListener>*/();
+    private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
+    
+    private boolean valid = true;
+    
     public void addConnectionProgressListener(ConnectionProgressListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
+        synchronized (connProgressListeners) {
+            connProgressListeners.add(listener);
         }
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propChangeSupport.addPropertyChangeListener(listener);
     }
     
     protected abstract boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema);
     
     protected void fireConnectionStarted() {
-        for (Iterator i = listenersCopy(); i.hasNext();) {
+        for (Iterator i = connProgressListenersCopy(); i.hasNext();) {
             ((ConnectionProgressListener)i.next()).connectionStarted();
         }
     }
     
     protected void fireConnectionStep(String step) {
-        for (Iterator i = listenersCopy(); i.hasNext();) {
+        for (Iterator i = connProgressListenersCopy(); i.hasNext();) {
             ((ConnectionProgressListener)i.next()).connectionStep(step);
         }
     }
     
     protected void fireConnectionFinished() {
-        for (Iterator i = listenersCopy(); i.hasNext();) {
+        for (Iterator i = connProgressListenersCopy(); i.hasNext();) {
             ((ConnectionProgressListener)i.next()).connectionFinished();
         }
     }
 
     protected void fireConnectionFailed() {
-        for (Iterator i = listenersCopy(); i.hasNext();) {
+        for (Iterator i = connProgressListenersCopy(); i.hasNext();) {
             ((ConnectionProgressListener)i.next()).connectionFailed();
         }
     }
     
-    private Iterator/*<ConnectionProgressListener>*/ listenersCopy() {
+    private Iterator/*<ConnectionProgressListener>*/ connProgressListenersCopy() {
         List listenersCopy = null;
-        synchronized (listeners) {
-            listenersCopy = new ArrayList(listeners);
+        synchronized (connProgressListeners) {
+            listenersCopy = new ArrayList(connProgressListeners);
         }
         return listenersCopy.iterator();
+    }
+    
+    public void setValid(boolean valid) {
+        this.valid = valid;
+        propChangeSupport.firePropertyChange(PROP_VALID, null, null);
+    }
+    
+    public boolean getValid() {
+        return valid;
     }
 }

@@ -18,7 +18,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
 
     <folder name="Services">
@@ -31,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Actions">
         <folder name="System">
             <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.instance"/>
+            <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
         </folder>
     </folder>
     
@@ -64,10 +64,6 @@ Microsystems, Inc. All Rights Reserved.
                 </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <attr name="sql-separator-1.instance/org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance" boolvalue="true"/>
-                        <file name="sql-separator-1.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
                         <file name="org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance"/>
                         <attr name="org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance/sql-separator-2.instance" boolvalue="true"/>
                         <file name="sql-separator-2.instance">
@@ -81,6 +77,16 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="org-netbeans-modules-db-sql-editor-ui-actions-SelectInExplorerAction.instance"/>
                         <attr name="org-netbeans-modules-db-sql-editor-ui-actions-SelectInExplorerAction.instance/Separator0.instance" boolvalue="true"/>
                     </folder>
+                </folder>
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.shadow/sql-separator-1.instance" boolvalue="true"/>
+                    <file name="sql-separator-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sql-separator-1.instance/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>

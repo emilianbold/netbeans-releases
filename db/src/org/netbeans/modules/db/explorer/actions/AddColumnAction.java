@@ -53,14 +53,15 @@ public class AddColumnAction extends DatabaseAction {
         final TableNodeInfo nfo = (TableNodeInfo) info.getParent(nodename);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run () {
-                AddTableColumnDialog dlg = new AddTableColumnDialog((Specification) nfo.getSpecification(), nfo);
-                if (dlg.run())
-                    try {
+                try {
+                    AddTableColumnDialog dlg = new AddTableColumnDialog((Specification) nfo.getSpecification(), nfo);
+                    if (dlg.run()) {
                         nfo.addColumn(dlg.getColumnName());
-                    } catch(Exception exc) {
-                        String message = MessageFormat.format(bundle().getString("ERR_UnableToAddColumn"), new String[] {exc.getMessage()}); // NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     }
+                } catch(Exception exc) {
+                    String message = MessageFormat.format(bundle().getString("ERR_UnableToAddColumn"), new String[] {exc.getMessage()}); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                }
             }
         }, 0);
     }
