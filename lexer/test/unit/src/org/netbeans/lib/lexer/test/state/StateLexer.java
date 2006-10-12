@@ -46,11 +46,17 @@ final class StateLexer implements Lexer<StateTokenId> {
 
     private TokenFactory<StateTokenId> tokenFactory;
     
+    private LanguagePath languagePath;
+    
+    private InputAttributes inputAttributes;
+    
     StateLexer(LexerInput input, TokenFactory<StateTokenId> tokenFactory, Object state,
     LanguagePath languagePath, InputAttributes inputAttributes) {
         this.input = input;
         this.tokenFactory = tokenFactory;
         this.state = state;
+        this.languagePath = languagePath;
+        this.inputAttributes = inputAttributes;
 
         this.useIntStates = (inputAttributes != null)
                 ? Boolean.TRUE.equals((Boolean)inputAttributes.getValue(languagePath, "states"))
@@ -69,8 +75,11 @@ final class StateLexer implements Lexer<StateTokenId> {
     }
 
     public Token<StateTokenId> nextToken() {
+        boolean returnNullToken = (inputAttributes != null && Boolean.TRUE.equals(inputAttributes.getValue(languagePath, "returnNullToken")));
         while (true) {
             int c = input.read();
+            if (returnNullToken) // Test early return of null token
+                return null;
             switch (c) {
                 case 'a':
                     state = useIntStates ? AFTER_A_INT : AFTER_A;
