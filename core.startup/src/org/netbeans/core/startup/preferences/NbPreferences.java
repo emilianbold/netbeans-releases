@@ -29,7 +29,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Radek Mlatous
+ * @author Radek Matous
  */
 public abstract class NbPreferences extends AbstractPreferences {
     private static Preferences USER_ROOT;
@@ -129,6 +129,7 @@ public abstract class NbPreferences extends AbstractPreferences {
     
     protected void syncSpi() throws BackingStoreException {
         try {
+            properties.clear();
             properties().putAll(fileStorage.load());
         } catch (IOException ex) {
             throw new BackingStoreException(ex);
@@ -167,6 +168,7 @@ public abstract class NbPreferences extends AbstractPreferences {
         if (fileStorage.isReadOnly()) {
             throw new BackingStoreException("Unsupported operation: read-only storage");//NOI18N
         } else {
+            flushTask.waitFinished();
             super.sync();
         }
     }

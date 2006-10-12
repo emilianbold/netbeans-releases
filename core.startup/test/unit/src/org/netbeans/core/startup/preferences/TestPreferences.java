@@ -344,7 +344,17 @@ public class TestPreferences extends NbPreferencesTest.BasicSetupTest {
             pref.removeNodeChangeListener(l);
         }
     }
-
+    
+    public void testIsPersistent()  throws BackingStoreException,InterruptedException {
+        NbPreferences pref = (NbPreferences)getPreferencesNode();
+        assertNotNull(pref);
+        assertEquals(NbPreferences.UserPreferences.class, pref.getClass());
+        pref.put("key", "value");
+        assertEquals("value", pref.get("key", null));
+        pref.sync();
+        assertEquals("value", pref.get("key", null));
+    }    
+    
     protected int timeOut() {
         return 20000;
     }
