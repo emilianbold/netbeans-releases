@@ -160,7 +160,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         dialogDescriptor.setClosingOptions(new Object[]{options[0], options[1]});
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
-        dialog.show();
+        dialog.setVisible(true);
 
         return optionsListener.getResult();
 

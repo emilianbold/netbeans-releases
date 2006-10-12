@@ -21,41 +21,35 @@ package org.netbeans.modules.j2ee.earproject;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Pattern;
+import java.util.Set;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.AttachingDICookie;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.api.debugger.*;
-import org.netbeans.api.debugger.jpda.*;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.ArchiveProjectProperties;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.api.project.ProjectInformation;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-
-import org.openide.filesystems.FileUtil;
-import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-
-
-/** Action provider of the Eae project. This is the place where to do
- * strange things to Web actions. E.g. compile-single.
+/**
+ * Action provider of the Enterprise Application project.
  */
 public class EarActionProvider implements ActionProvider {
     
@@ -81,37 +75,25 @@ public class EarActionProvider implements ActionProvider {
     EarProject project;
     
     // Ant project helper of the project
-    private UpdateHelper updateHelper;
-    private ReferenceHelper refHelper;
-    private AntBasedProjectType abpt;
+    private final UpdateHelper updateHelper;
         
     /** Map from commands to ant targets */
-    Map/*<String,String[]>*/ commands;
+    Map<String,String[]> commands;
     
-    public EarActionProvider(
-        EarProject project,
-        UpdateHelper updateHelper, 
-        ReferenceHelper refHelper,
-        AntBasedProjectType abpt) {
-            
-        this.abpt = abpt;
-        
-        commands = new HashMap();
-            commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
-            commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
-            commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
-            commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
-            commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-            commands.put(EjbProjectConstants.COMMAND_REDEPLOY, new String[] {"run-deploy"}); // NOI18N
-            commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-            commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
-            commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
-            commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
-            commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
+    public EarActionProvider(EarProject project, UpdateHelper updateHelper) {
+        commands = new HashMap<String, String[]>();
+        commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
+        commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
+        commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
+        commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
+        commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+        commands.put(EjbProjectConstants.COMMAND_REDEPLOY, new String[] {"run-deploy"}); // NOI18N
+        commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+        commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
+        commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
         
         this.updateHelper = updateHelper;
         this.project = project;
-        this.refHelper = refHelper;
     }
     
     private FileObject findBuildXml() {
@@ -174,7 +156,7 @@ public class EarActionProvider implements ActionProvider {
      * @return array of targets or null to stop execution; can return empty array
      */
     String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        String[] targetNames = (String[])commands.get(command);
+        String[] targetNames = commands.get(command);
         
         //EXECUTION PART
         if (command.equals (COMMAND_RUN) || command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) { //  || command.equals (COMMAND_DEBUG)) {
@@ -182,19 +164,7 @@ public class EarActionProvider implements ActionProvider {
                 return null;
             }
             if (isDebugged()) {
-                NotifyDescriptor nd;
-                String text;
-                ProjectInformation pi = ProjectUtils.getInformation(project);
-                text = pi.getDisplayName();
-                nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(EarActionProvider.class, "MSG_SessionRunning", text),
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
-                    return null;
-                }
+                p.setProperty("is.debugged", "true"); // NOI18N
             }
             if (command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
                 p.setProperty("forceRedeploy", "true"); //NOI18N
@@ -202,28 +172,33 @@ public class EarActionProvider implements ActionProvider {
                 p.setProperty("forceRedeploy", "false"); //NOI18N
             }
         //DEBUGGING PART
-        } else if (command.equals (COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
+        } else if (command.equals (COMMAND_DEBUG)) {
             if (!isSelectedServer ()) {
                 return null;
             }
-            if (isDebugged()) {
+            
+            //see issue 83056
+            if (project.evaluator().getProperty("app.client") != null) { //MOI18N
                 NotifyDescriptor nd;
-                nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(EarActionProvider.class, "MSG_FinishSession"),
-                    NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
+                nd = new NotifyDescriptor.Message(NbBundle.getMessage(EarActionProvider.class, "MSG_Server_State_Question"), NotifyDescriptor.QUESTION_MESSAGE);
+                nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+                nd.setOptions(new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION});
+                if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(EarActionProvider.class, "MSG_Server_State"), NotifyDescriptor.INFORMATION_MESSAGE);
+                    Object o = DialogDisplayer.getDefault().notify(nd);
                     return null;
                 }
+            }
+            
+            if (isDebugged()) {
+                p.setProperty("is.debugged", "true"); // NOI18N
             }
 
             SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
             if (null != spp) {
-                StringBuffer edbd = new StringBuffer();
-                final java.util.Set s = spp.getSubprojects();
-                java.util.Iterator iter = s.iterator();
+                StringBuilder edbd = new StringBuilder();
+                final Set s = spp.getSubprojects();
+                Iterator iter = s.iterator();
                 while (iter.hasNext()) {
                     Project proj = (Project) iter.next();
                     WebModuleProvider wmp = (WebModuleProvider) proj.getLookup().lookup(WebModuleProvider.class);
@@ -231,20 +206,15 @@ public class EarActionProvider implements ActionProvider {
                         WebModule wm = wmp.findWebModule(proj.getProjectDirectory());
                         if (null != wm) {
                             FileObject fo = wm.getDocumentBase();
-			    if (null != fo) {
+                            if (null != fo) {
                                 edbd.append(FileUtil.toFile(fo).getAbsolutePath()+":"); //NOI18N
-			    }
+                            }
                         }
                     }
                 }
-                p.setProperty("ear.docbase.dirs", edbd.toString());
+                p.setProperty("ear.docbase.dirs", edbd.toString()); // NOI18N
             }
         //COMPILATION PART
-        } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            FileObject[] files = findJavaSources( context );
-            if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
-            }
         } else {
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
@@ -255,7 +225,6 @@ public class EarActionProvider implements ActionProvider {
     }
         
     public boolean isActionEnabled( String command, Lookup context ) {
-        
         if ( findBuildXml() == null ) {
             return false;
         }
@@ -263,34 +232,8 @@ public class EarActionProvider implements ActionProvider {
             J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
             return provider != null && provider.hasVerifierSupport();
         }
-        if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return true; // findJavaSources( context ) != null || findJsps (context) != null;
-        }
-        if ( command.equals( COMMAND_RUN_SINGLE ) ) {
-            return false;
-        }
-        else {
-            // other actions are global
-            return true;
-        }
-
-        
-    }
-    
-    // Private methods -----------------------------------------------------
-    
-    
-    private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
-    
-    /** Find selected java sources 
-     */
-    private FileObject[] findJavaSources(Lookup context) {
-        FileObject srcDir = project.getSourceDirectory ();
-        FileObject[] files = null;
-        if (srcDir != null) {
-            files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
-        }
-        return files;
+        // other actions are global
+        return true;
     }
     
     private boolean isDebugged() {
@@ -317,10 +260,10 @@ public class EarActionProvider implements ActionProvider {
                             return true;
                         }
                     } else {
-                        if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
-                            if (attCookie.getPortNumber() == sdi.getPort()) {
-                                return true;
-                            }
+                        if (attCookie.getHostName() != null
+                                && attCookie.getHostName().equalsIgnoreCase(sdi.getHost())
+                                && attCookie.getPortNumber() == sdi.getPort()) {
+                            return true;
                         }
                     }
                 }
@@ -331,7 +274,7 @@ public class EarActionProvider implements ActionProvider {
     
     private boolean isSelectedServer () {
         // XXX determine what to do with the ejb jar project properties
-        String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (ArchiveProjectProperties.J2EE_SERVER_INSTANCE);
+        String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_INSTANCE);
         if (instance != null) {
             String id = Deployment.getDefault().getServerID(instance);
             if (id != null) {
@@ -341,11 +284,11 @@ public class EarActionProvider implements ActionProvider {
         
         // if there is some server instance of the type which was used
         // previously do not ask and use it
-        String serverType = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (ArchiveProjectProperties.J2EE_SERVER_TYPE);
+        String serverType = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
         if (serverType != null) {
             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
             if (servInstIDs.length > 0) {
-                setServerInstance(servInstIDs[0]);
+                EarProjectProperties.setServerInstance(project, updateHelper, servInstIDs[0]);
                 return true;
             }
         }
@@ -355,11 +298,4 @@ public class EarActionProvider implements ActionProvider {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
         return false;
     }
-    
-    private void setServerInstance(String serverInstanceId) {
-        ArchiveProjectProperties wpp = new ArchiveProjectProperties (project, updateHelper, refHelper, abpt);
-        wpp.put (ArchiveProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceId);
-        wpp.store ();
-    }
-    
 }

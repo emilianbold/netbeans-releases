@@ -23,8 +23,8 @@ import java.io.File;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.modules.j2ee.ejbjarproject.test.TestBase;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -33,7 +33,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Andrei Badea
  */
-public class CompiledSourceForBinaryQueryTest extends NbTestCase {
+public class CompiledSourceForBinaryQueryTest extends TestBase {
     
     private Project project;
     private AntProjectHelper helper;

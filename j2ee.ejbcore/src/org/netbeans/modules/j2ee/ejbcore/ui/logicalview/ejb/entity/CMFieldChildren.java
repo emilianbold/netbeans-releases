@@ -66,23 +66,27 @@ public class CMFieldChildren extends Children.Keys implements PropertyChangeList
     private void updateKeys() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                List keys = getCmrFields(model.getEjbName());
-                CmpField[] cmpFields = model.getCmpField();
-                Arrays.sort(cmpFields, new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        String s1 = ((CmpField) o1).getFieldName();
-                        String s2 = ((CmpField) o2).getFieldName();
-                        if (s1 == null) {
-                            s1 = "";
+                if (controller.getBeanClass() == null) {
+                    setKeys(Collections.EMPTY_LIST);
+                } else {
+                    List keys = getCmrFields(model.getEjbName());
+                    CmpField[] cmpFields = model.getCmpField();
+                    Arrays.sort(cmpFields, new Comparator() {
+                        public int compare(Object o1, Object o2) {
+                            String s1 = ((CmpField) o1).getFieldName();
+                            String s2 = ((CmpField) o2).getFieldName();
+                            if (s1 == null) {
+                                s1 = "";
+                            }
+                            if (s2 == null) {
+                                s2 = "";
+                            }
+                            return s1.compareTo(s2);
                         }
-                        if (s2 == null) {
-                            s2 = "";
-                        }
-                        return s1.compareTo(s2);
-                    }
-                });
-                keys.addAll(Arrays.asList(cmpFields));
-                setKeys(keys);
+                    });
+                    keys.addAll(Arrays.asList(cmpFields));
+                    setKeys(keys);
+                }
             }
         });
     }

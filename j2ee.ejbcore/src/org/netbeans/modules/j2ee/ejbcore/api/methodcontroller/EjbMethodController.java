@@ -66,7 +66,7 @@ public abstract class EjbMethodController {
         EjbJar ejbJar = null;
         EjbMethodController controller = null;
         try {
-            ejbJar = provider.getDDRoot(ejbModule.getDeploymentDescriptor());
+            ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
             EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
             if (beans != null) {
                 Session s = (Session) beans.findBeanByName(
@@ -74,6 +74,7 @@ public abstract class EjbMethodController {
                         Ejb.EJB_CLASS, jc.getName());
                 if (s != null) {
                     controller = new SessionMethodController(s,cp);
+                    // TODO EJB3: on Java EE 5.0 this always sets controller to null
                     if (!controller.hasLocal() && !controller.hasRemote()) {
                         // this is either an error or a web service 
                         controller = null;

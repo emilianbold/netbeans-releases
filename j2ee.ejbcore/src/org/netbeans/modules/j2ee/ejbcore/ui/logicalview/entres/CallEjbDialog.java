@@ -25,32 +25,32 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.dnd.EjbReference;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.DialogDescriptor;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 
-
 /**
- * Handling of CallEjbDialog used from CallEjbAction and 
+ * Handling of CallEjbDialog used from CallEjbAction and
  * EjbReferenceTableModel from DDLoaders
  *
  * @author Martin Adamek
  */
 public class CallEjbDialog {
     
-
+    
     public boolean open(JavaClass beanClass, String title) {
         Project enterpriseProject = FileOwnerQuery.getOwner(JavaModel.getFileObject(beanClass.getResource()));
         
@@ -58,9 +58,7 @@ public class CallEjbDialog {
         List ejbProjectNodes = new LinkedList();
         
         for (int i = 0; i < allProjects.length; i++) {
-            LogicalViewProvider lvp =
-                    (LogicalViewProvider) allProjects[i].getLookup().lookup(LogicalViewProvider.class);
-            Node projectView = lvp.createLogicalView();
+            Node projectView = new EjbsNode(allProjects[i]);
             ejbProjectNodes.add(new FilterNode(projectView, new EjbChildren(projectView)) {
                 public Action[] getActions(boolean context) {
                     return new Action[0];
@@ -71,20 +69,23 @@ public class CallEjbDialog {
         Children.Array children = new Children.Array();
         children.add((Node[])ejbProjectNodes.toArray(new Node[ejbProjectNodes.size()]));
         Node root = new AbstractNode(children);
-        String ejbSelector = NbBundle.getMessage(CallEjbDialog.class, "LBL_EJBSelectorTitle");
         root.setDisplayName(NbBundle.getMessage(CallEjbDialog.class, "LBL_EJBModules"));
         EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
         enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
-        CallEjbPanel panel = new CallEjbPanel(root, erc.getServiceLocatorName(), beanClass);
+        boolean isJavaEE5orHigher = Utils.isJavaEE5orHigher(enterpriseProject);
+        CallEjbPanel panel = new CallEjbPanel(root, isJavaEE5orHigher ? null : erc.getServiceLocatorName(), beanClass);
+        if (isJavaEE5orHigher) {
+            panel.disableServiceLocator();
+        }
         
         final DialogDescriptor nd = new DialogDescriptor(
-                panel, 
-                title, 
+                panel,
+                title,
                 true,
                 DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(CallEjbPanel.class), 
+                new HelpCtx(CallEjbPanel.class),
                 null
                 );
         
@@ -107,13 +108,26 @@ public class CallEjbDialog {
         }
         Node ejbNode = panel.getEjb();
         boolean throwExceptions = !panel.convertToRuntime();
-        EjbReference ref = (EjbReference) ejbNode.getCookie(org.netbeans.modules.j2ee.api.ejbjar.EjbReference.class);
+        EjbReference ref = (EjbReference) ejbNode.getCookie(EjbReference.class);
         String referenceNameFromPanel = panel.getReferenceName();
         if (referenceNameFromPanel != null && referenceNameFromPanel.trim().equals("")) {
             referenceNameFromPanel = null;
         }
-        Utils.addReference(beanClass, ref, panel.getServiceLocator(), panel.isRemoteInterfaceSelected(), throwExceptions, referenceNameFromPanel);
+        DataObject dataObject = (DataObject) ejbNode.getCookie(DataObject.class);
+        Project nodeProject = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+        
+        Utils.addReference(beanClass, ref, panel.getServiceLocator(), 
+                panel.isRemoteInterfaceSelected(), throwExceptions, 
+                referenceNameFromPanel, nodeProject);
         return true;
+    }
+    
+    private class EjbsNode extends AbstractNode {
+        public EjbsNode(Project project) {
+            super(new EJBListViewChildren(project));
+            setIconBaseWithExtension( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif" ); // NOI18N
+            super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
+        }
     }
     
 }

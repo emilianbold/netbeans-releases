@@ -21,6 +21,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GenerateDTOAction;
 import org.openide.actions.*;
@@ -41,7 +42,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbTransferable;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
 import org.openide.util.WeakListeners;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceActionGroup;
 import org.openide.filesystems.FileObject;
@@ -67,7 +67,7 @@ public class EntityNode extends AbstractNode implements OpenCookie{
 
     private EntityNode(InstanceContent content, Entity model, EjbJar module, ClassPath srcPath, FileObject ddFile) {
         super(new EntityChildren(model, srcPath, module, ddFile), new AbstractLookup(content));
-        setIconBase("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/entity/EntityNodeIcon");
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/entity/EntityNodeIcon.gif");
         setName(model.getEjbName()+"");
         controller = new EjbViewController(model, module, srcPath);
         setDisplayName();

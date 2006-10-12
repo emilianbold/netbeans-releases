@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.j2ee.dd.api.ejb;
 
+import org.netbeans.modules.j2ee.metadata.MergedProvider;
+import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,16 +43,19 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.BufferedInputStream;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.HashMap;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.WeakHashMap;
+import org.netbeans.modules.j2ee.dd.impl.ejb.EjbAnnotationListener;
+import org.netbeans.modules.j2ee.metadata.NNMDRListener;
 
 /**
  * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.ejb.EjbJar} object)
@@ -59,15 +64,18 @@ import java.net.URL;
  */
 
 public final class DDProvider {
+    private static final String EJB_21_DOCTYPE = "http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"; //NOI18N
     private static final String EJB_20_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"; //NOI18N
     private static final String EJB_11_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN"; //NOI18N
     private static final DDProvider ddProvider = new DDProvider();
     private Map ddMap;
+    private Map<MetadataUnit, EjbJar> annotationDDMap;
 
     /** Creates a new instance of EjbModule */
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
         ddMap = new HashMap(5);
+        annotationDDMap = new WeakHashMap<MetadataUnit, EjbJar>(5);
     }
 
     /**
@@ -78,6 +86,54 @@ public final class DDProvider {
         return ddProvider;
     }
 
+    public EjbJar getMergedDDRoot(MetadataUnit mu) throws IOException {
+        if (mu == null) {
+            return null;
+        }
+        EjbJar xmlRoot = getDDRoot(mu.getDeploymentDescriptor());
+        //  for J2ee 1.4 and lower delegate to XML-only method
+        if (xmlRoot != null && !xmlRoot.getVersion().equals(new BigDecimal(EjbJar.VERSION_3_0))) {
+            return xmlRoot;
+        }
+        EjbJar annotationRoot = getAnnotationDDRoot(mu);
+        if (xmlRoot instanceof EjbJarProxy) {
+            xmlRoot = ((EjbJarProxy) xmlRoot).getOriginal();
+        }
+        if (annotationRoot instanceof EjbJarProxy) {
+            annotationRoot = ((EjbJarProxy) annotationRoot).getOriginal();
+        }
+        return (EjbJar) MergedProvider.getDefault().getRoot((BaseBean) annotationRoot, (BaseBean) xmlRoot);
+    }
+
+    private synchronized EjbJar getAnnotationDDRoot(MetadataUnit mu) throws IOException {
+        if (mu == null) {
+            return null;
+        }
+        EjbJar ejbJar = annotationDDMap.get(mu);
+        if (ejbJar != null) {
+            return ejbJar;
+        }
+        ejbJar = new org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0.EjbJar();
+        annotationDDMap.put(mu, ejbJar);
+        NNMDRListener.getDefault().addAnnotationListener(new EjbAnnotationListener(ejbJar, mu.getClassPath()));
+        return ejbJar;
+    }
+
+    public List<EjbJar> getRoots() {
+        synchronized (this) {
+            return new ArrayList(annotationDDMap.values());
+        }
+    }
+    
+    public boolean isScanInProgress() {
+        return NNMDRListener.getDefault().isScanInProgress();
+    }
+    
+    public void waitScanFinished() {
+        NNMDRListener.getDefault().waitScanFinished();
+    }
+
+    // used in: ddapi, ddloaders, ejbfreeform
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
      * The method is useful for clints planning to read only the deployment descriptor
@@ -86,6 +142,9 @@ public final class DDProvider {
      * @return EjbJar object - root of the deployment descriptor bean graph
      */
     public synchronized EjbJar getDDRoot(FileObject fo) throws java.io.IOException {
+        if (fo == null) {
+            return null;
+        }
         try {
             DataObject dataObject = DataObject.find(fo);
             if(dataObject instanceof DDProviderDataObject){
@@ -106,6 +165,7 @@ public final class DDProvider {
 
         ejbJarProxy = DDUtils.createEjbJarProxy(fo.getInputStream());
         putToCache(fo, ejbJarProxy);
+        
         return ejbJarProxy;
     }
 
@@ -188,7 +248,9 @@ public final class DDProvider {
     }
 
     private static EjbJar createEjbJar(String version, Document document) {
-        if (EjbJar.VERSION_2_1.equals(version)) {
+        if (EjbJar.VERSION_3_0.equals(version)) {
+            return new org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0.EjbJar(document, Common.USE_DEFAULT_VALUES);
+        } else if (EjbJar.VERSION_2_1.equals(version)) {
             return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar(document, Common.USE_DEFAULT_VALUES);
         } else if (EjbJar.VERSION_2_0.equals(version)) {
             return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar(document, Common.USE_DEFAULT_VALUES);
@@ -202,17 +264,31 @@ public final class DDProvider {
      */
     private static String extractVersion(Document document) {
         // first check the doc type to see if there is one
+        String id = null;
         DocumentType dt = document.getDoctype();
-        // This is the default version
         if (dt != null) {
-            if (EJB_20_DOCTYPE.equals(dt.getPublicId())) {
+            // it is DTD-based
+            id = dt.getPublicId();
+        } else {
+            // it is XSD-based
+            String schemaLocation = document.getDocumentElement().getAttribute("xsi:schemaLocation");
+            if (schemaLocation != null) {
+                id = schemaLocation.substring(schemaLocation.lastIndexOf(" ") + 1);
+            }
+        }
+        // This is the default version
+        if (id != null) {
+            if (EJB_21_DOCTYPE.equals(id)) {
+                return EjbJar.VERSION_2_1;
+            }
+            if (EJB_20_DOCTYPE.equals(id)) {
                 return EjbJar.VERSION_2_0;
             }
-            if (EJB_11_DOCTYPE.equals(dt.getPublicId())){
+            if (EJB_11_DOCTYPE.equals(id)){
                 return EjbJar.VERSION_1_1;
             }
         }
-        return EjbJar.VERSION_2_1;
+        return EjbJar.VERSION_3_0;
 
     }
 
@@ -247,6 +323,8 @@ public final class DDProvider {
                 resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_2_0.dtd"; //NOI18N
             } else if ("http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd".equals(systemId)) {
                 resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_2_1.xsd"; //NOI18N
+            } else if ("http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd".equals(systemId)) {
+                resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_3_0.xsd"; //NOI18N
             } else {
                 return null;
             }

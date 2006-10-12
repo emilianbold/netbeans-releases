@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.earproject.ui.actions;
 
 import java.util.LinkedList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -42,11 +41,6 @@ import org.openide.util.actions.CookieAction;
 import org.openide.util.lookup.Lookups;
 
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.ant.AntArtifactQuery;
-import java.util.Arrays;
-import java.util.Iterator;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.j2ee.earproject.EarProject;
@@ -102,7 +96,7 @@ public class AddModuleAction extends CookieAction {
     
     private Project[] getSelectedProjects(AntProjectHelper epp) throws UserCancelException {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
-        List moduleProjectNodes = new LinkedList();
+        List<Node> moduleProjectNodes = new LinkedList<Node>();
         for (int i = 0; i < allProjects.length; i++) {
             if (allProjects[i].getLookup().lookup(J2eeModule.class) != null &&
                 allProjects[i].getLookup().lookup(J2eeModuleContainer.class) == null) {
@@ -114,7 +108,7 @@ public class AddModuleAction extends CookieAction {
             }
         }
         Children.Array children = new Children.Array();
-        children.add((Node[])moduleProjectNodes.toArray(new Node[moduleProjectNodes.size()]));
+        children.add(moduleProjectNodes.toArray(new Node[moduleProjectNodes.size()]));
         final AbstractNode root = new AbstractNode(children);
         String moduleSelector = NbBundle.getMessage(AddModuleAction.class, "LBL_ModuleSelectorTitle");
         

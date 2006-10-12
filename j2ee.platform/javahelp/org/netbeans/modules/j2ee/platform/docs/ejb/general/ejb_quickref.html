@@ -1,14 +1,14 @@
-<html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2005 Sun Microsystems, Inc.
+ * Copyright © 2006 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <title>EJB Module Tasks: Quick Reference</title>
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
@@ -157,49 +157,7 @@
       </ol>
     </td>
   </tr>
-  <tr valign="top"> 
-    <td>Add a finder method to an enterprise bean.</td>
-    <td> 
-      <ol>
-        <li>Open the bean class for the enterprise bean in the Source Editor.</li>
-        <li>Right-click anywhere in the bean class and choose EJB Methods &gt; 
-          <a href="../editing/define_finder_method.html">Add Finder Method</a>.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Add a select method to an enterprise bean.</td>
-    <td> 
-      <ol>
-        <li>Open the bean class for the enterprise bean in the Source Editor.</li>
-        <li>Right-click the bean class and choose EJB Methods &gt; <a href="../editing/define_select_method.html">Add 
-          Select Method</a>.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Add a CMP field to an enterprise bean.</td>
-    <td> 
-      <ol>
-        <li>Open the bean class for the enterprise bean in the Source Editor.</li>
-        <li>Right-click the bean class and choose EJB Methods &gt; <a href="../editing/define_cmp_field.html">Add 
-          CMP Field</a>.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td>Set up container-managed relationships between entity beans.</td>
-    <td> 
-      <ol>
-        <li>Expand the Configuration Files node for the project and double-click 
-          <tt>ejb-jar.xml</tt>. </li>
-        <li>Click <a href="../configuring/ejb_relationship.html">CMP Relationships</a> 
-          in the top of the visual editor.</li>
-        <li>Add, edit, or remove CMP relationships in the table.</li>
-        <li>Update any CMP mappings in the server-specific deployment descriptor<tt></tt>.</li>
-      </ol>
-    </td>
-  </tr>
+
   <tr valign="top"> 
     <td>Debug an EJB module.</td>
     <td> 
@@ -210,6 +168,18 @@
         <li>If the module is a stand-alone EJB module, right-click the EJB module 
           project and choose Debug Project.</li>
       </ul>
+    </td>
+  </tr>
+    <tr valign="top"> 
+    <td>Repackage an existing EJB JAR file for deployment on a different application 
+server.</td>
+    <td> 
+      <ol>
+        <li>Create a <a href="../../archiveproject/archiveproject_about.html">Packaged Archive project</a> 
+based on the existing EJB JAR file.</li>
+        <li>In the new project, modify the appropriate configuration files and create 
+any necessary server-specific files.</li>
+      </ol>
     </td>
   </tr>
   <!--

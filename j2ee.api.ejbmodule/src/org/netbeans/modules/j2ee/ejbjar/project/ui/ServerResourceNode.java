@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.ejbjar.project.ui;
 
 import java.awt.Image;
 import org.openide.ErrorManager;
+import org.openide.actions.FileSystemAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.Repository;
 import org.openide.nodes.FilterNode;
@@ -120,6 +121,8 @@ public class ServerResourceNode extends FilterNode {
     public Action[] getActions( boolean context ) {
         return new Action[] {
             CommonProjectActions.newFileAction(),
+            null,
+            SystemAction.get(FileSystemAction.class),
             null,
             SystemAction.get(FindAction.class),
             null,

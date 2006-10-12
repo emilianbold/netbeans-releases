@@ -7,7 +7,7 @@
     <Component class="javax.swing.JLabel" name="jLabelName">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/ui/customizer/Bundle.properties" key="LBL_AACH_ProjectName_JLabel" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle.properties" key="LBL_AACH_ProjectName_JLabel" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -29,7 +29,7 @@
     <Component class="javax.swing.JLabel" name="jLabelJarFiles">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/ui/customizer/Bundle.properties" key="LBL_AACH_ProjectJarFiles_JLabel" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle.properties" key="LBL_AACH_ProjectJarFiles_JLabel" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>

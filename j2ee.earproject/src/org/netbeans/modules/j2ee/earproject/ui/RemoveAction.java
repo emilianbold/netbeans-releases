@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.j2ee.earproject.ui;
 
-import org.openide.nodes.Node;
-import org.openide.nodes.FilterNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;

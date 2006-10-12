@@ -87,9 +87,9 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         boolean hasRemote = ejbPanel.hasRemote();
         boolean hasLocal = ejbPanel.hasLocal();
         SessionGenerator sg = new SessionGenerator();
-        sg.generateSessionBean(ejbName, pkg, hasRemote, hasLocal, isStateful, project);
+        FileObject fo = sg.generateSessionBean(ejbName, pkg, hasRemote, hasLocal, isStateful, project);
         transactionHelper.write();
-        return Collections.EMPTY_SET; // change to return generated files
+        return Collections.singleton(fo);
     }
 
     public void addChangeListener(javax.swing.event.ChangeListener l) {

@@ -19,12 +19,12 @@
 
 package org.netbeans.modules.j2ee.dd.impl.application;
 
-/**
- *
- * @author  Nitya Doraisamy
- */
+import java.math.BigDecimal;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 
+/**
+ * @author  Nitya Doraisamy
+ */
 public class ApplicationProxy implements Application {
     private Application app;
     private String version;
@@ -62,7 +62,7 @@ public class ApplicationProxy implements Application {
     }
     
     public void setProxyVersion(java.lang.String value) {
-        if ((version==null && value!=null) || !version.equals(value)) {
+        if ((version==null && value!=null) || (version != null && !version.equals(value))) {
             java.beans.PropertyChangeEvent evt = 
                 new java.beans.PropertyChangeEvent(this, PROPERTY_VERSION, version, value);
             version=value;
@@ -205,8 +205,8 @@ public class ApplicationProxy implements Application {
         return app==null?null:app.getValue(propertyName);
     }
 
-    public java.math.BigDecimal getVersion() {
-        return new java.math.BigDecimal(version);
+    public BigDecimal getVersion() {
+        return version == null ? BigDecimal.ZERO : new BigDecimal(version);
     }
 
     public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface root, int mode) {

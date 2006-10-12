@@ -19,34 +19,41 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
+import java.awt.Component;
+import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JList;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-//import org.netbeans.modules.web.api.webmodule.WebModule;
-//import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
-import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.*;
-import java.util.List;
 /**
- *
  * @author  tz97951
  */
-public class LibrariesChooser extends javax.swing.JPanel {
-    private Collection incompatibleLibs;
+public class LibrariesChooser extends javax.swing.JPanel implements HelpCtx.Provider {
+
+    private final Collection incompatibleLibs;
 
     /** Creates new form LibrariesChooser */
     public LibrariesChooser(Collection alreadySelectedLibs, String j2eePlatform) {
         initComponents();
         jList1.setPrototypeCellValue("0123456789012345678901234");      //NOI18N
-        jList1.setModel(new LibrariesListModel(alreadySelectedLibs, j2eePlatform));
+        jList1.setModel(new LibrariesListModel());
         // XXX Examine this to see if we need pass this in from somewhere...
         incompatibleLibs = java.util.Collections.EMPTY_LIST;
                 // VisualClasspathSupport.getLibrarySet(WebProjectGenerator.getIncompatibleLibraries(j2eePlatform));
@@ -55,14 +62,18 @@ public class LibrariesChooser extends javax.swing.JPanel {
 
     public Library[] getSelectedLibraries () {
         Object[] selected = this.jList1.getSelectedValues();
-        Collection libs = new ArrayList();
+        Collection<Library> libs = new ArrayList<Library>();
         for (int i = 0; i < selected.length; i++) {
-            final Library lib = (Library) selected[i];
-            if(!incompatibleLibs.contains(lib)) {   // incompatible libraries are not added
+            Library lib = (Library) selected[i];
+            if(!incompatibleLibs.contains(lib)) { // incompatible libraries are not added
                 libs.add(lib);
             }
         }
-        return (Library[]) libs.toArray(new Library[libs.size()]);
+        return libs.toArray(new Library[libs.size()]);
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(LibrariesChooser.class);
     }
 
     public void addListSelectionListener(ListSelectionListener listener) {
@@ -99,8 +110,9 @@ public class LibrariesChooser extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(350, 250));
-        getAccessibleContext().setAccessibleDescription(null);
+        getAccessibleContext().setAccessibleDescription(null); // NOI18N
         jLabel1.setLabelFor(jList1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(LibrariesChooser.class, "CTL_Libraries")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -112,7 +124,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
         add(jLabel1, gridBagConstraints);
 
         jScrollPane1.setViewportView(jList1);
-        jList1.getAccessibleContext().setAccessibleDescription(null);
+        jList1.getAccessibleContext().setAccessibleDescription(null); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -125,6 +137,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
         add(jScrollPane1, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(edit, NbBundle.getMessage(LibrariesChooser.class, "CTL_ManageLibraries")); // NOI18N
         edit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editLibraries(evt);
@@ -137,25 +150,23 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(edit, gridBagConstraints);
-        edit.getAccessibleContext().setAccessibleDescription(null);
+        edit.getAccessibleContext().setAccessibleDescription(null); // NOI18N
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void editLibraries(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editLibraries
         LibrariesListModel model = (LibrariesListModel) jList1.getModel ();
-        Collection oldLibraries = Arrays.asList(model.getLibraries());
+        Collection<Library> oldLibraries = Arrays.asList(model.getLibraries());
         LibrariesCustomizer.showCustomizer((Library)this.jList1.getSelectedValue());
-        List currentLibraries = Arrays.asList(model.getLibraries());
-        Collection newLibraries = new ArrayList (currentLibraries);
+        List<Library> currentLibraries = Arrays.asList(model.getLibraries());
+        Collection<Library> newLibraries = new ArrayList<Library>(currentLibraries);
 
         newLibraries.removeAll(oldLibraries);
-        int indexes[] = new int [newLibraries.size()];
+        int indexes[] = new int[newLibraries.size()];
 
-        Iterator it = newLibraries.iterator();
-        for (int i=0; it.hasNext();i++) {
-            Library lib = (Library) it.next ();
-            indexes[i] = currentLibraries.indexOf (lib);
+        int i = 0;
+        for (Library lib : newLibraries) {
+            indexes[i++] = currentLibraries.indexOf(lib);
         }
         this.jList1.setSelectedIndices (indexes);
     }//GEN-LAST:event_editLibraries
@@ -173,23 +184,17 @@ public class LibrariesChooser extends javax.swing.JPanel {
     private static final class LibrariesListModel extends AbstractListModel implements PropertyChangeListener {
 
         private Library[] cache;
-        /** No of libs in LibraryManager when last refreshed */
+        /** Number of libraries in the LibraryManager when last refreshed. */
         private int numberOfLibs;
-        private Collection alreadySelectedLibs;
-        private String j2eePlatform;
         
         // XXX more stuff that needs a look-see
-
-        private static Collection filter13 = java.util.Collections.EMPTY_LIST;
-            //VisualClasspathSupport.getLibrarySet(
-            //    WebProjectGenerator.getIncompatibleLibraries(WebModule.J2EE_13_LEVEL));
-        private static Collection filter14 = java.util.Collections.EMPTY_LIST;
-            //VisualClasspathSupport.getLibrarySet(
-            //    WebProjectGenerator.getIncompatibleLibraries(WebModule.J2EE_14_LEVEL));
-
-        public LibrariesListModel (Collection alreadySelectedLibs, String j2eePlatform) {
-            this.j2eePlatform = j2eePlatform;
-            this.alreadySelectedLibs = alreadySelectedLibs;
+        
+        //VisualClasspathSupport.getLibrarySet(
+        //    WebProjectGenerator.getIncompatibleLibraries(WebModule.J2EE_13_LEVEL));
+        //VisualClasspathSupport.getLibrarySet(
+        //    WebProjectGenerator.getIncompatibleLibraries(WebModule.J2EE_14_LEVEL));
+        
+        public LibrariesListModel() {
             LibraryManager manager = LibraryManager.getDefault();
             manager.addPropertyChangeListener((PropertyChangeListener)WeakListeners.create(PropertyChangeListener.class,
                     this, manager));
@@ -237,11 +242,10 @@ public class LibrariesChooser extends javax.swing.JPanel {
         private Library[] createLibraries () {
             Library[] libs = LibraryManager.getDefault().getLibraries();
             numberOfLibs = libs.length;
-            Arrays.sort(libs, new Comparator () {
-                public int compare (Object o1, Object o2) {
-                    assert (o1 instanceof Library) && (o2 instanceof Library);
-                    String name1 = ((Library)o1).getDisplayName();
-                    String name2 = ((Library)o2).getDisplayName();
+            Arrays.sort(libs, new Comparator<Library> () {
+                public int compare (Library l1, Library l2) {
+                    String name1 = l1.getDisplayName();
+                    String name2 = l2.getDisplayName();
                     return name1.compareToIgnoreCase(name2);
                 }
             });
@@ -254,9 +258,9 @@ public class LibrariesChooser extends javax.swing.JPanel {
 
         private static final String LIBRARY_ICON = "org/netbeans/modules/j2ee/earproject/ui/resources/libraries.gif";  //NOI18N
         private Icon cachedIcon;
-        private Collection alreadySelectedLibs;
-        private Collection incompatibleLibs;
-        private String j2eePlatform;
+        private final Collection alreadySelectedLibs;
+        private final Collection incompatibleLibs;
+        private final String j2eePlatform;
 
         public LibraryRenderer(Collection alreadySelectedLibs, Collection incompatibleLibs, String j2eePlatform) {
             this.alreadySelectedLibs = alreadySelectedLibs;

@@ -37,6 +37,7 @@ public interface EjbJar extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     public static final String VERSION_1_1="1.1"; //NOI18N
     public static final String VERSION_2_0="2.0"; //NOI18N
     public static final String VERSION_2_1="2.1"; //NOI18N
+    public static final String VERSION_3_0="3.0"; //NOI18N
     public static final int STATE_VALID=0;
     public static final int STATE_INVALID_PARSABLE=1;
     public static final int STATE_INVALID_UNPARSABLE=2;
@@ -87,7 +88,12 @@ public interface EjbJar extends org.netbeans.modules.j2ee.dd.api.common.RootInte
     public void setEjbClientJar(String value);
     
     public String getSingleEjbClientJar();  
-           
+
+    // EJB 3.0
+    
+    void setInterceptors(Interceptors valueInterface) throws VersionNotSupportedException;
+    Interceptors getInterceptors() throws VersionNotSupportedException;
+    Interceptors newInterceptors() throws VersionNotSupportedException;
     
 }
 

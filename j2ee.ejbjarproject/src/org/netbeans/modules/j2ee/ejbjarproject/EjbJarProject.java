@@ -38,24 +38,37 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
+import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbJAXWSMetadataFinder;
+import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
+import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbEnterpriseReferenceContainerSupport;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
+import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
+import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+//import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -64,7 +77,9 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -80,7 +95,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.SourceLevelQueryImpl;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenServerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -117,15 +131,23 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private final EjbJarProvider ejbModule;
     private final EjbJar apiEjbJar;
     private WebServicesSupport apiWebServicesSupport;
+    private JAXWSSupport apiJaxwsSupport;
+    private EjbProjectJAXWSSupport jaxwsSupport;
     private WebServicesClientSupport apiWebServicesClientSupport;
+    private JAXWSClientSupport apiJAXWSClientSupport;
     private EjbJarWebServicesSupport ejbJarWebServicesSupport;
     private EjbJarWebServicesClientSupport ejbJarWebServicesClientSupport;
+    private EjbProjectJAXWSClientSupport jaxWsClientSupport;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     private PropertyHelper propertyHelper;
     private final EjbJarProjectClassPathExtender classpathExtender; 
     private PropertyChangeListener j2eePlatformListener;
     private PropertyChangeListener evalListener;
+    private JaxWsModel jaxWsModel;
+    private JaxWsListener jaxWsListener;
+    private FileObject jaxWsFo;
+    private JaxWsModel.ServiceListener jaxWsServiceListener;
     
     // TODO: AB: replace the code in EjbJarProjectProperties.setNewServerInstanceValue with this 
     /*private String propJ2eeServerInstance;
@@ -194,9 +216,13 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         ejbModule = new EjbJarProvider(this, helper);
         apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
+        jaxwsSupport = new EjbProjectJAXWSSupport(this, helper);
         ejbJarWebServicesClientSupport = new EjbJarWebServicesClientSupport(this, helper, refHelper);
+        jaxWsClientSupport = new EjbProjectJAXWSClientSupport(this);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport(ejbJarWebServicesSupport);
+        apiJaxwsSupport = JAXWSSupportFactory.createJAXWSSupport(jaxwsSupport);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(ejbJarWebServicesClientSupport);
+        apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
         classpathExtender = new EjbJarProjectClassPathExtender(this, updateHelper, evaluator(), refHelper);
@@ -292,10 +318,13 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarSources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 new EjbJarSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 new EjbJarFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
-                new RecommendedTemplatesImpl(),
+                new RecommendedTemplatesImpl(updateHelper),
                 refHelper,
                 classpathExtender,
-                new EjbJarProjectOperations(this)
+                new EjbJarProjectOperations(this),
+                new EjbJarPersistenceProvider(this, evaluator()),
+                new EjbJAXWSMetadataFinder(this),
+                getJaxWsModel()
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
     }
@@ -345,8 +374,16 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         return apiWebServicesSupport;
     }
 
+    JAXWSSupport getAPIJAXWSSupport () {
+            return apiJaxwsSupport;
+    }
+    
     WebServicesClientSupport getAPIWebServicesClientSupport () {
         return apiWebServicesClientSupport;
+    }
+    
+    JAXWSClientSupport getAPIJAXWSClientSupport () {
+            return apiJAXWSClientSupport;
     }
     
     /*public EjbJarProjectProperties getEjbJarProjectProperties() {
@@ -581,12 +618,15 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
      * contains these flags (along with {@link GeneratedFilesHelper#FLAG_MODIFIED}, 
      * which is always checked)
      * @param askInCurrentThread if false, asks in another thread
+     * @param checkForProjectXmlModified true if it is necessary to check whether the
+     * script is out of date with respect to <code>project.xml</code> and/or the stylesheet
      */
-    private void refreshBuildImplXml(int askUserIfFlags, boolean askInCurrentThread) {
+    private void refreshBuildImplXml(int askUserIfFlags, boolean askInCurrentThread, boolean checkForProjectXmlModified) {
         askUserIfFlags |= GeneratedFilesHelper.FLAG_MODIFIED;
         int flags = genFilesHelper.getBuildScriptState(
             GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-            EjbJarProject.class.getResource("resources/build-impl.xsl")); // NOI18N
+            EjbJarProject.class.getResource("resources/build-impl.xsl"), // NOI18N
+            jaxWsFo);
         if ((flags & askUserIfFlags) == askUserIfFlags) {
             Runnable run = new Runnable () {
                 public void run () {
@@ -604,7 +644,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         try {
                             genFilesHelper.generateBuildScriptFromStylesheet(
                                 GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                EjbJarProject.class.getResource("resources/build-impl.xsl")); // NOI18N
+                                EjbJarProject.class.getResource("resources/build-impl.xsl"),jaxWsFo); // NOI18N
                         } catch (IOException e) {
                             ErrorManager.getDefault().notify(e);
                         } catch (IllegalStateException e) {
@@ -622,7 +662,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                     EjbJarProject.class.getResource("resources/build-impl.xsl"), // NOI18N
-                    false);
+                    jaxWsFo,
+                    checkForProjectXmlModified);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -672,11 +713,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         ProjectXmlSavedHookImpl() {}
         
         protected void projectXmlSaved() throws IOException {
-            refreshBuildImplXml(0, false);
+            refreshBuildImplXml(0, false, false);
             
             genFilesHelper.refreshBuildScript(
                 getBuildXmlName(),
                 EjbJarProject.class.getResource("resources/build.xsl"),
+                jaxWsFo,
                 false);
         }
         
@@ -716,11 +758,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 
                 // Check up on build scripts.
                 
-                refreshBuildImplXml( GeneratedFilesHelper.FLAG_OLD_PROJECT_XML, true);
+                 refreshBuildImplXml( GeneratedFilesHelper.FLAG_OLD_PROJECT_XML, true, true);
                 
                 genFilesHelper.refreshBuildScript(
                     getBuildXmlName(),
                     EjbJarProject.class.getResource("resources/build.xsl"),
+                    jaxWsFo,
                     true);
                 
                 String servInstID = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
@@ -743,9 +786,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                         BrokenServerSupport.showAlert();
                     }
                 }
-                
-                // initialize the server configuration
-                ejbModule.getConfigSupport().ensureConfigurationReady();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -755,7 +795,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-            
+
+            // initialize the server configuration
+            // it MUST BE called AFTER classpaths are registered to GlobalPathRegistry!
+            // EJB DDProvider (used here) needs classpath set correctly when resolving Java Extents for annotations
+            ejbModule.getConfigSupport().ensureConfigurationReady();
+
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
@@ -792,6 +837,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if (evalListener != null) {
                 evaluator().removePropertyChangeListener(evalListener);
             }
+            
+            // remove file change listener from jax-ws.xml
+            if (jaxWsFo!=null) jaxWsFo.removeFileChangeListener(jaxWsListener);
+            
+            // remove ServiceListener from jaxWsModel            
+            if (jaxWsModel!=null) jaxWsModel.removeServiceListener(jaxWsServiceListener);
             
             // Probably unnecessary, but just in case:
             try {
@@ -839,44 +890,256 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         }
     }
     
-    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
-        
-        // List of primarily supported templates
-        
-        private static final String[] TYPES = new String[] {
-            "java-classes",         // NOI18N
-            "ejb-types",            // NOI18N
-            "web-services",         // NOI18N
-            "wsdl",                 // NOI18N
-            "j2ee-types",           // NOI18N
-            "java-beans",           // NOI18N
-            "java-main-class",      // NOI18N
-            "oasis-XML-catalogs",   // NOI18N
-            "XML",                  // NOI18N
-            "ant-script",           // NOI18N
-            "ant-task",             // NOI18N
-            "junit",                // NOI18N
-            "simple-files"          // NOI18N
-        };
-        
-        private static final String[] PRIVILEGED_NAMES = new String[] {
-            
-            "Templates/J2EE/Session", // NOI18N
-            "Templates/J2EE/Entity",  // NOI18N
-            "Templates/J2EE/RelatedCMP", // NOI18N                    
-            "Templates/J2EE/Message", //NOI18N
-            "Templates/WebServices/WebService", // NOI18N
-            "Templates/WebServices/MessageHandler", // NOI18N
-            "Templates/Classes/Class.java" // NOI18N
-        };
-        
+    // List of primarily supported templates
+    private static final String[] TYPES = new String[] {
+        "java-classes",         // NOI18N
+        "ejb-types_2_1",      // NOI18N
+        "ejb-types",            // NOI18N
+        "ejb-types-server",     // NOI18N
+        "web-services",         // NOI18N
+        "wsdl",                 // NOI18N
+        "j2ee-14-types",           // NOI18N
+        "j2ee-types",           // NOI18N
+        "java-beans",           // NOI18N
+        "java-main-class",      // NOI18N
+        "persistence",          // NOI18N
+        "oasis-XML-catalogs",   // NOI18N
+        "XML",                  // NOI18N
+        "ant-script",           // NOI18N
+        "ant-task",             // NOI18N
+        "junit",                // NOI18N
+        "simple-files"          // NOI18N
+    };
+    
+    /**
+     * Supported template categories for Java EE 5 projects.
+     */
+    private static final String[] JAVAEE5_TYPES = new String[] {
+        "java-classes",         // NOI18N
+        "ejb-types",            // NOI18N
+        "ejb-types-server",     // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "web-services",         // NOI18N
+        "web-service-clients",  // NOI18N
+        "wsdl",                 // NOI18N
+        "j2ee-types",           // NOI18N
+        "java-beans",           // NOI18N
+        "java-main-class",      // NOI18N
+        "persistence",          // NOI18N
+        "oasis-XML-catalogs",   // NOI18N
+        "XML",                  // NOI18N
+        "ant-script",           // NOI18N
+        "ant-task",             // NOI18N
+        "junit",                // NOI18N
+        "simple-files"          // NOI18N
+    };
+    
+    /**
+     * Supported template categories for archive projects.
+     */
+    private static final String[] ARCHIVE_TYPES = new String[] {
+        "ejb-deployment-descriptor",            // NOI18N
+        "deployment-descriptor",                // NOI18N
+        "XML",                                  // NOI18N
+    };
+
+    private static final String[] PRIVILEGED_NAMES = new String[] {
+        "Templates/J2EE/Session", // NOI18N
+        "Templates/J2EE/Entity",  // NOI18N
+        "Templates/J2EE/RelatedCMP", // NOI18N                    
+        "Templates/J2EE/Message", //NOI18N
+        "Templates/Classes/Class.java",             // NOI18N
+        "Templates/Classes/Package",                // NOI18N
+        "Templates/WebServices/WebService.java", // NOI18N
+        "Templates/WebServices/MessageHandler" // NOI18N
+    };
+    
+    private static final String[] PRIVILEGED_NAMES_EE5 = new String[] {
+        "Templates/J2EE/Session", // NOI18N
+        "Templates/J2EE/Message", // NOI18N
+        "Templates/Classes/Class.java",             // NOI18N
+        "Templates/Classes/Package",                // NOI18N
+        "Templates/Persistence/Entity.java", // NOI18N
+        "Templates/Persistence/RelatedCMP", // NOI18N
+        "Templates/WebServices/WebService.java", // NOI18N
+        "Templates/WebServices/WebServiceClient"   // NOI18N      
+    };
+    
+    private static final String[] PRIVILEGED_NAMES_ARCHIVE = new String[] {
+        "Templates/J2EE/ejbJarXml", // NOI18N
+    };
+
+    private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+        transient private boolean isEE5 = false;
+        transient private boolean checked = false;
+        transient private boolean isArchive = false;
+        transient private UpdateHelper helper = null;
+
+        RecommendedTemplatesImpl(UpdateHelper helper) {
+            this.helper = helper;
+        }
+
         public String[] getRecommendedTypes() {
-            return TYPES;
+            checkEnvironment();
+            String[] retVal = null;
+            if (isArchive) {
+                retVal = ARCHIVE_TYPES; 
+            } else if (isEE5) {
+                retVal = JAVAEE5_TYPES;
+            } else {
+                retVal = TYPES;
+            }
+            return retVal;
         }
         
         public String[] getPrivilegedTemplates() {
-            return PRIVILEGED_NAMES;
+            checkEnvironment();
+            String[] retVal = null;
+            if (isArchive) {
+                retVal = PRIVILEGED_NAMES_ARCHIVE;
+            } else if (isEE5) {
+                retVal = PRIVILEGED_NAMES_EE5;
+            } else {
+                retVal = PRIVILEGED_NAMES;
+            } 
+            return retVal;
         }
         
+        private void checkEnvironment(){
+            if (!checked){
+                isEE5 = J2eeModule.JAVA_EE_5.equals(getEjbModule().getJ2eePlatformVersion());
+                final Object srcType = helper.getAntProjectHelper().
+                        getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.JAVA_SOURCE_BASED);
+                if ("false".equals(srcType)) {
+                    isArchive = true;
+                }
+                checked = true;
+            }
+        }
+    }
+
+    /** copy jax-ws.xml from resource to nbproject directory,
+     *  generate JaxWsModel,
+     *  add FileChangeListener to jax-ws.xml file object
+     */
+    public void createJaxWsFileObject() throws IOException {
+        FileObject projectDir = helper.getProjectDirectory();
+        WSUtils.retrieveJaxWsFromResource(projectDir);
+        
+        jaxWsFo = findJaxWsFileObject(projectDir);
+        if (jaxWsFo!=null) {
+            jaxWsListener = new JaxWsListener();
+            jaxWsFo.addFileChangeListener(jaxWsListener);
+         
+            if (jaxWsModel!=null) {
+                jaxWsModel.setJaxWsFile(jaxWsFo);
+            } else {
+                jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
+                if (jaxWsModel!=null) {
+                    attachServiceListener(jaxWsModel);
+                }
+            }
+        }
+    }
+    
+    public FileObject findJaxWsFileObject() {
+        return findJaxWsFileObject(helper.getProjectDirectory());
+    }
+    
+    private FileObject findJaxWsFileObject(FileObject projectDir) {
+        return projectDir.getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
+    }
+
+    private JaxWsModel getJaxWsModel() {
+        if (jaxWsModel==null)
+            try {
+                final FileObject projectDir = helper.getProjectDirectory();
+                jaxWsFo = findJaxWsFileObject(projectDir);
+                if (jaxWsFo==null) {
+                    // create jaxWsModel from the resource
+                    jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(
+                            WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"));//NOI18N
+                    jaxWsModel.setJaxWsFile(projectDir);
+                } else {
+                    jaxWsListener = new JaxWsListener();
+                    try {
+                        jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
+                        jaxWsFo.addFileChangeListener(jaxWsListener);
+                    } catch (RuntimeException ex) {
+                        // create jaxWsModel from the resource
+                        jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(
+                                WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"));//NOI18N
+                        jaxWsModel.setJaxWsFile(projectDir);
+                        final FileObject oldJaxWsFo = jaxWsFo;
+                        jaxWsFo=null;
+                        final RuntimeException exception = ex;
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                try {
+                                    jaxWsFo = WSUtils.backupAndGenerateJaxWs(projectDir, oldJaxWsFo, exception);
+                                    if (jaxWsFo!=null) {
+                                        jaxWsModel.setJaxWsFile(jaxWsFo);
+                                        jaxWsFo.addFileChangeListener(jaxWsListener);
+                                    }
+                                } catch (IOException ex) {
+                                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                                }
+                            }
+                        });
+                    }
+                }
+                if (jaxWsModel!=null) {
+                    attachServiceListener(jaxWsModel);
+                }
+            } catch (IOException ex) {
+                ErrorManager.getDefault().log(ex.getLocalizedMessage());
+            }
+        return jaxWsModel;
+    }
+    
+    private void attachServiceListener(JaxWsModel jaxWsModel) {
+        jaxWsServiceListener = new JaxWsModel.ServiceListener() {
+            public void serviceAdded(String name, String implementationClass) {
+                getAPIJAXWSSupport().addService(name, implementationClass, isJsr109Supported());
+            }
+
+            public void serviceRemoved(String name) {
+                getAPIJAXWSSupport().serviceFromJavaRemoved(name);
+            }
+        };
+        jaxWsModel.addServiceListener(jaxWsServiceListener);
+    }
+
+    private boolean isJsr109Supported() {
+        boolean jsr109Supported = true;
+        String serverInstance = evaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+        if (serverInstance != null) {
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
+            if (j2eePlatform != null) {
+                jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+            }
+        }
+        return jsr109Supported;
+    }
+    
+    private class JaxWsListener extends FileChangeAdapter {
+        public void fileChanged(FileEvent fe) {
+            try {
+                final JaxWsModel newModel = JaxWsModelProvider.getDefault().getJaxWsModel(fe.getFile());
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        if (jaxWsModel!=null && newModel!=null) jaxWsModel.merge(newModel);
+                        try {
+                            genFilesHelper.refreshBuildScript(
+                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                            EjbJarProject.class.getResource("resources/build-impl.xsl"),
+                            jaxWsFo, false);
+                        } catch (IOException ex) {}
+                    }
+                    
+                });
+                
+            } catch (IOException ex) {}
+        }
     }
 }

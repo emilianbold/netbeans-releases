@@ -41,8 +41,8 @@ public class DDUtils {
         java.util.List maps = new java.util.ArrayList();
         for (int i=0;i<mapping.length;i++) {
             if (servlet.getServletName().equals(mapping[i].getServletName())) {
-            String urlPattern = mapping[i].getUrlPattern();
-            if (urlPattern!=null) maps.add(urlPattern);
+                String urlPattern = mapping[i].getUrlPattern();
+                if (urlPattern!=null) maps.add(urlPattern);
             }
         }
         String[] urlPatterns = new String[maps.size()];
@@ -68,7 +68,7 @@ public class DDUtils {
         maps.toArray(urlPatterns);
         return urlPatterns;
     }
-
+    
     public static String[] getStringArray(String text) {
         java.util.StringTokenizer tok = new java.util.StringTokenizer(text,",");
         java.util.Set set = new java.util.HashSet();
@@ -155,7 +155,7 @@ public class DDUtils {
         // removing old mappings
         for (int i=min;i<oldMaps.size();i++) {
             webApp.removeServletMapping((ServletMapping)oldMaps.get(i));
-        }     
+        }
     }
     
     public static ServletMapping[] getServletMappings(WebApp webApp, Servlet servlet) {
@@ -170,6 +170,24 @@ public class DDUtils {
         FilterMapping[] newMappings = new FilterMapping[maps.size()];
         maps.toArray(newMappings);
         return newMappings;
+    }
+    
+    /**
+     * @return filter mappings that refer to given <code>servlet</code>. 
+     */
+    public static FilterMapping[] getFilterMappings(WebApp webApp, Servlet servlet) {
+        java.util.List maps = new java.util.ArrayList();
+        if (servlet == null){
+            return new FilterMapping[0];
+        }
+        FilterMapping[] mapping = webApp.getFilterMapping();
+        for (int i=0;i<mapping.length;i++) {
+            FilterMapping fm = mapping[i];
+            if (fm.getServletName() != null && fm.getServletName().equals(servlet.getServletName())){
+                maps.add(fm);
+            }
+        }
+        return (FilterMapping[]) maps.toArray(new FilterMapping[maps.size()]);
     }
     
     private static java.util.List getServletMappingList(WebApp webApp, Servlet servlet) {
@@ -208,8 +226,8 @@ public class DDUtils {
                 FileObject target = fo.getFileObject(resource+".java"); //NOI18N
                 if (target!=null) {
                     DataObject javaDo = DataObject.find(target);
-                    org.openide.cookies.OpenCookie cookie = 
-                        (org.openide.cookies.OpenCookie)javaDo.getCookie(org.openide.cookies.OpenCookie.class);
+                    org.openide.cookies.OpenCookie cookie =
+                            (org.openide.cookies.OpenCookie)javaDo.getCookie(org.openide.cookies.OpenCookie.class);
                     if (cookie !=null) {
                         cookie.open();
                         return;
@@ -218,7 +236,7 @@ public class DDUtils {
             }
         } catch (java.io.IOException ex) {}
         org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(
-            org.openide.util.NbBundle.getMessage(DDUtils.class,"MSG_sourceNotFound")));
+                org.openide.util.NbBundle.getMessage(DDUtils.class,"MSG_sourceNotFound")));
     }
     
     public static void openEditorForSingleFile(DDDataObject dObj, String fileName) {
@@ -232,8 +250,8 @@ public class DDUtils {
             if (target!=null) {
                 try {
                     DataObject javaDo = DataObject.find(target);
-                    org.openide.cookies.OpenCookie cookie = 
-                        (org.openide.cookies.OpenCookie)javaDo.getCookie(org.openide.cookies.OpenCookie.class);
+                    org.openide.cookies.OpenCookie cookie =
+                            (org.openide.cookies.OpenCookie)javaDo.getCookie(org.openide.cookies.OpenCookie.class);
                     if (cookie !=null) {
                         cookie.open();
                         return;
@@ -242,9 +260,9 @@ public class DDUtils {
             }
         }
         org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(
-            org.openide.util.NbBundle.getMessage(DDUtils.class,"MSG_sourceNotFound")));
+                org.openide.util.NbBundle.getMessage(DDUtils.class,"MSG_sourceNotFound")));
     }
-
+    
     public static void openEditorForFiles(DDDataObject dObj, java.util.StringTokenizer tok) {
         FileObject docBase = null;
         try {
@@ -254,25 +272,25 @@ public class DDUtils {
         boolean found=false;
         if (docBase!=null)
             while (tok.hasMoreTokens()) {
-                String resource = tok.nextToken().trim();
-                if (resource.length()>0) {
-                    FileObject target = docBase.getFileObject(resource);
-                    if (target!=null) {
-                        try {
-                            DataObject javaDo = DataObject.find(target);
-                            org.openide.cookies.OpenCookie cookie = 
+            String resource = tok.nextToken().trim();
+            if (resource.length()>0) {
+                FileObject target = docBase.getFileObject(resource);
+                if (target!=null) {
+                    try {
+                        DataObject javaDo = DataObject.find(target);
+                        org.openide.cookies.OpenCookie cookie =
                                 (org.openide.cookies.OpenCookie)javaDo.getCookie(org.openide.cookies.OpenCookie.class);
-                            if (cookie !=null) {
-                                cookie.open();
-                                found=true;
-                            }
-                        } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
-                    }
+                        if (cookie !=null) {
+                            cookie.open();
+                            found=true;
+                        }
+                    } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
                 }
+            }
             }
         if (!found) {
             org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(
-            org.openide.util.NbBundle.getMessage(DDUtils.class,"MSG_sourcesNotFound")));
+                    org.openide.util.NbBundle.getMessage(DDUtils.class,"MSG_sourcesNotFound")));
         }
     }
     
@@ -295,7 +313,7 @@ public class DDUtils {
         if (wm==null) return null;
         return wm.getDocumentBase();
     }
-
+    
     public static String getResourcePath(SourceGroup[] groups, FileObject fo) {
         return getResourcePath(groups, fo, '.', false);
     }
@@ -421,7 +439,7 @@ public class DDUtils {
         } else if (uri.matches(".*\\*.*\\*.*")) { //NOI18N
             return NbBundle.getMessage(DDUtils.class,"MSG_TwoAsterisks");
         } else if (uri.matches("..*\\*..*")) { //NOI18N
-            return NbBundle.getMessage(DDUtils.class,"MSG_AsteriskInTheMiddle"); 
+            return NbBundle.getMessage(DDUtils.class,"MSG_AsteriskInTheMiddle");
         }
         return null;
     }

@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+    <title>Adding Java Persistence to a Web Application</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    
+    </head>
+    <body>
+    
+    <h2>Adding Java Persistence to a Web Application</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>If you are creating a web application, you can use the Java Persistence API
+    to access a relational database and manage persistent data objects. </p>
+    
+    <p>To work with persistent data, you use the following in your web application:</p>
+    <ul>
+        <li><b>Entity classes.</b> Entity classes are used to represent tables in a database.
+        The Java Persistence API enables you to use entity classes directly in your web application.
+        For more, see <a href="persistence_entityclasses.html">Creating an Entity Class</a>.</li>
+        <li><b>Entity Manager.</b> An entity manager manages the entities and performs database functions.
+        For more, see <a href="persistence_entitymanager.html">Obtaining an Entity Manager</a>.</li>
+        <li><b>Persistence Unit.</b> A persistence unit specifies the data source and which entities are managed by the entity manager.
+        For more, see <a href="persistence_unit.html">Creating a Persistence Unit</a>.</li>
+        
+    </ul>
+    
+    <p>To use the Java Persistence API in your web application, you need to deploy the application to a Java EE 5 container or
+    add support for Java Persistence to the project or to the container. 
+    For more, see <a href="persistence_support.html">Adding Support for Java Persistence</a>.</p>
+    <!--If you are deploying to a Java EE 5 container, you can do the following:
+    <ul class="note">
+        <li>Use resource injection to add an entity manager</li>
+        <li>Use JTA transactions to have the container manage the entity lifecycle</li>
+        <li>Use a data source in the persistence unit</li>
+    </ul>
+    -->
+    
+    <!--
+    As in JDBC technology, a DataSource object has a set of properties that identify and describe the real world data source that it represents. 
+    These properties include information such as the location of the database server, the name of the database, the network protocol to use to communicate with the server, and so on.
+    
+    An application that uses the Java Persistence API does not need to explicitly create a connection to the data source, as it would when using JDBC technology exclusively. 
+    Still, the DataSource object must be created in the Application Server. 
+    
+    
+    </p>
+-->    
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="persistence_about.html">About Java Persistence</a> </dd>
+        <dd><a href="persistence_quickref.html">Java Persistence Tasks: Quick Reference</a> </dd>
+        <dd><a href="persistence_entityclasses.html">Creating an Entity Class</a> </dd>
+        <dd><a href="persistence_entitymanager.html">Obtaining an Entity Manager</a> </dd>
+        <dd><a href="persistence_unit.html">Creating a Persistence Unit</a> </dd>
+        <dd><a href="persistence_support.html">Adding Support for Java Persistence</a> </dd>
+    </dl>
+    
+    <hr>
+    <small> <a href="../../credits.html">Legal Notices</a></small> 
+    <table cellpadding="50" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
+    </body>
+    
+</html>

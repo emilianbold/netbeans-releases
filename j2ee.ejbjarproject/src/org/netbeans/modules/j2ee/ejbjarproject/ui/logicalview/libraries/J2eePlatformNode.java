@@ -83,6 +83,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
             }
         }
     };
+    private PropertyChangeListener weakPlatformListener;
 
     private J2eePlatformNode(Project project, PropertyEvaluator evaluator, String platformPropName) {
         super(new PlatformContentChildren());
@@ -144,7 +145,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
     
     private void refresh() {
         if (platformCache != null)
-            platformCache.removePropertyChangeListener(platformListener);
+            platformCache.removePropertyChangeListener(weakPlatformListener);
 
         platformCache = null;
 
@@ -182,7 +183,8 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
                 platformCache = Deployment.getDefault().getJ2eePlatform(j2eePlatformInstanceId);
             }
             if (platformCache != null) {
-                platformCache.addPropertyChangeListener(platformListener);
+                weakPlatformListener = WeakListeners.propertyChange(platformListener, platformCache);
+                platformCache.addPropertyChangeListener(weakPlatformListener);
                 // the platform has likely changed, so force the node to display the new platform's icon
                 this.fireIconChange();
             }

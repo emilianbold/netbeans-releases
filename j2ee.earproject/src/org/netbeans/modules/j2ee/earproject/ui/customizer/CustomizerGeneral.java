@@ -20,32 +20,22 @@
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.TemplateWizard;
-import org.openide.util.NbBundle;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
-/** Customizer for general project attributes.
+/**
+ * Customizer for general project attributes.
  *
  * @author  phrebejk
  */
@@ -53,6 +43,9 @@ public class CustomizerGeneral extends JPanel implements ArchiveCustomizerPanel,
     
     private EarProjectProperties projProperties;
     private VisualPropertySupport vps;
+
+    /** Whether this panel was already initialized. */
+    private boolean initialized;
     
     /** Creates new form CustomizerCompile */
     public CustomizerGeneral(EarProjectProperties projProperties) {
@@ -65,7 +58,10 @@ public class CustomizerGeneral extends JPanel implements ArchiveCustomizerPanel,
         vps = new VisualPropertySupport(projProperties);
     }
     
-    public void initValues(  ) {
+    public void initValues() {
+        if (initialized) {
+            return;
+        }
         FileObject projectFolder = projProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile(projectFolder);
         jTextFieldProjectFolder.setText(pf == null ? "" : pf.getPath()); // NOI18N
@@ -80,20 +76,22 @@ public class CustomizerGeneral extends JPanel implements ArchiveCustomizerPanel,
         for( Iterator it = projProperties.getSortedSubprojectsList().iterator(); it.hasNext(); ) {
             lm.addElement( it.next() );
         }        
+        initialized = true;
         //jListSubprojects.setModel( lm );        
     } 
         
     private void initPlatforms(VisualPropertySupport vps) {
         // Read defined platforms
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        List platformNames = new ArrayList ();
+        List<String> platformNames = new ArrayList<String>();
         for( int i = 0; i < platforms.length; i++ ) {
             Specification spec = platforms[i].getSpecification();
-            if ("j2se".equalsIgnoreCase (spec.getName())) {
+            if ("j2se".equalsIgnoreCase (spec.getName())) { // NOI18N
                 platformNames.add(platforms[i].getDisplayName());
             }
         }
-        vps.register(jComboBoxTarget, (String[]) platformNames.toArray(new String[platformNames.size()]), EarProjectProperties.JAVA_PLATFORM);
+        vps.register(jComboBoxTarget, platformNames.toArray(
+                new String[platformNames.size()]), EarProjectProperties.JAVA_PLATFORM);
     }
     
     

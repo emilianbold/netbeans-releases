@@ -30,6 +30,8 @@ import java.util.Set;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -47,7 +49,7 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
     private TransactionHelper transactionHelper = new TransactionHelper();
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
-    private MessageEJBWizardDescriptor ejbPanel;
+    private MessageEJBWizardPanel ejbPanel;
     private WizardDescriptor wiz;
 
     private static final String [] SESSION_STEPS =
@@ -70,8 +72,8 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
-        ejbPanel = new MessageEJBWizardDescriptor(wiz);
-        WizardDescriptor.Panel p = JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true);
+        ejbPanel = new MessageEJBWizardPanel(wiz);
+        WizardDescriptor.Panel p = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
         JComponent c = (JComponent) p.getComponent ();
         Util.changeLabelInComponent(c, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(MessageEJBWizard.class, "LBL_EJB_Name") );
         Util.hideLabelAndLabelFor(c, NbBundle.getMessage(Util.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
@@ -79,20 +81,22 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         Utils.mergeSteps(wiz, panels, SESSION_STEPS);
     }
 
-    public Set instantiate () throws IOException {
+    public Set instantiate() throws IOException {
         FileObject pkg = Templates.getTargetFolder(wiz);
         String ejbName = Templates.getTargetName(wiz);
         Project project = Templates.getProject(wiz);
-        MessageGenerator sg = new MessageGenerator();
+        FileObject result = null;
+        
+        MessageGenerator generator = new MessageGenerator();
         try {
-            sg.generate(ejbName, pkg, ejbPanel.isQueue(), project);
+            result = generator.generate(ejbName, pkg, ejbPanel, project);
         } catch (VersionNotSupportedException vnse) {
             IOException ioe = new IOException();
             ioe.initCause(vnse);
             throw ioe;
         }
         transactionHelper.write();
-        return Collections.EMPTY_SET; // change to return generated files
+        return result == null ? Collections.EMPTY_SET : Collections.singleton(result);
     }
 
     public void addChangeListener(javax.swing.event.ChangeListener l) {
@@ -125,5 +129,23 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         return panels[index];
     }
 
-}
+    /**
+     * A panel which checks whether the target project has a valid server set,
+     * otherwise it delegates to another panel.
+     */
+    private static final class ValidatingPanel extends DelegatingWizardDescriptorPanel {
 
+        public ValidatingPanel(WizardDescriptor.Panel delegate) {
+            super(delegate);
+        }
+
+        public boolean isValid() {
+            if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(getProject())) {
+                getWizardDescriptor().putProperty("WizardPanel_errorMessage",
+                        NbBundle.getMessage(MessageEJBWizard.class, "ERR_MissingServer")); // NOI18N
+                return false;
+            }
+            return super.isValid();
+        }
+    }
+}

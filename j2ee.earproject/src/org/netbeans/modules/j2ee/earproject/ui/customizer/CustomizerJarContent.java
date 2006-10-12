@@ -24,37 +24,35 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.StringTokenizer;
 import javax.swing.DefaultListModel;
-
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-/** Customizer for WAR packaging.
+/**
+ * Customizer for Enterprise Application packaging.
  */
 public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPanel, ListSelectionListener, HelpCtx.Provider {
         
     private Dialog dialog;
     private final AddFilter filterDlg = new AddFilter();
-    private DefaultListModel dlm = new DefaultListModel();
-    EarProjectProperties webProperties;
-    private VisualPropertySupport vps;
-    private VisualArchiveIncludesSupport vws;
-    private ActionListener actionListener;
+    private final DefaultListModel dlm = new DefaultListModel();
+    private final EarProjectProperties earProperties;
+    private final VisualPropertySupport vps;
+    private final VisualArchiveIncludesSupport vws;
+    private final ActionListener actionListener;
 
-    /** Creates new form CustomizerCompile */
-    public CustomizerJarContent(EarProjectProperties webProperties) {
+    public CustomizerJarContent(EarProjectProperties earProperties) {
         initComponents();
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeWAR_A11YDesc")); //NOI18N
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_A11YDesc"));
 
-        this.webProperties = webProperties;        
-        vps = new VisualPropertySupport(webProperties);
-        vws = new VisualArchiveIncludesSupport( webProperties.getProject(),
-                                            (String) webProperties.get(EarProjectProperties.J2EE_PLATFORM),
+        this.earProperties = earProperties;        
+        vps = new VisualPropertySupport(earProperties);
+        vws = new VisualArchiveIncludesSupport( earProperties.getProject(),
+                                            (String) earProperties.get(EarProjectProperties.J2EE_PLATFORM),
                                             jTableAddContent,
                                             jButtonAddJar,
                                             jButtonAddLib,
@@ -83,15 +81,17 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         vps.register(jTextFieldFileName, EarProjectProperties.JAR_NAME);
         vps.register(jCheckBoxCommpress, EarProjectProperties.JAR_COMPRESS);
         vps.register(vws, EarProjectProperties.JAR_CONTENT_ADDITIONAL);
-
+        
         dlm.removeAllElements();
-        String exclude = (String) webProperties.get(EarProjectProperties.BUILD_CLASSES_EXCLUDES);
+        String exclude = (String) earProperties.get(EarProjectProperties.BUILD_CLASSES_EXCLUDES);
         if (exclude != null) {
             StringTokenizer excludeTokenizer = new StringTokenizer(exclude, ","); //NOI18N
-            while (excludeTokenizer.hasMoreElements())
+            while (excludeTokenizer.hasMoreElements()) {
                 dlm.addElement(excludeTokenizer.nextToken());
-        } else
-                dlm.addElement("**/*.java"); //NOI18N
+            }
+        } else {
+            dlm.addElement("**/*.java"); //NOI18N
+        }
         
         // Set the initial state of the buttons
         valueChanged(null);
@@ -128,7 +128,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabelFileName.setLabelFor(jTextFieldFileName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelFileName, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_FileName_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelFileName, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_FileName_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
@@ -140,7 +140,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jTextFieldFileName, gridBagConstraints);
-        jTextFieldFileName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_FileName_A11YDesc"));
+        jTextFieldFileName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_FileName_A11YDesc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -149,7 +149,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jPanel1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCommpress, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Commpres_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCommpress, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Commpres_JCheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -158,10 +158,10 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jCheckBoxCommpress, gridBagConstraints);
-        jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_Commpres_A11YDesc"));
+        jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_Commpres_A11YDesc"));
 
         jLabelExContent.setLabelFor(jListExContent);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelExContent, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Content_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelExContent, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Content_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -170,7 +170,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         add(jLabelExContent, gridBagConstraints);
 
         jScrollPane1.setViewportView(jListExContent);
-        jListExContent.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_Content_A11YDesc"));
+        jListExContent.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_Content_A11YDesc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = 2;
@@ -179,7 +179,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
         add(jScrollPane1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddFilter, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddFilter_JButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddFilter, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddFilter_JButton"));
         jButtonAddFilter.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonAddFilterActionPerformed(evt);
@@ -192,9 +192,9 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonAddFilter, gridBagConstraints);
-        jButtonAddFilter.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddFilter_A11YDesc"));
+        jButtonAddFilter.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddFilter_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveFilter, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_RemoveFilter_JButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveFilter, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_RemoveFilter_JButton"));
         jButtonRemoveFilter.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonRemoveFilterActionPerformed(evt);
@@ -208,10 +208,10 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(jButtonRemoveFilter, gridBagConstraints);
-        jButtonRemoveFilter.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_Remove_A11YDesc"));
+        jButtonRemoveFilter.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_Remove_A11YDesc"));
 
         jLabelAddContent.setLabelFor(jTableAddContent);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddContent, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddContent_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddContent, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddContent_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -239,7 +239,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jScrollPane2, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddJar, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddJar_JButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddJar, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddJar_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -247,9 +247,9 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonAddJar, gridBagConstraints);
-        jButtonAddJar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddJar_A11YDesc"));
+        jButtonAddJar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddJar_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddLib, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddLib_JButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddLib, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddLib_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -257,9 +257,9 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonAddLib, gridBagConstraints);
-        jButtonAddLib.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddLib_A11YDesc"));
+        jButtonAddLib.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddLib_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddProject, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddProject_JButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddProject, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_AddProject_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -267,9 +267,9 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonAddProject, gridBagConstraints);
-        jButtonAddProject.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddProject_A11YDesc"));
+        jButtonAddProject.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AddProject_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemove, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Remove_JButton"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemove, NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeEAR_Remove_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -279,16 +279,16 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonRemove, gridBagConstraints);
-        jButtonRemove.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AdditionalRemove_A11YDesc"));
+        jButtonRemove.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeEAR_AdditionalRemove_A11YDesc"));
 
     }
     // </editor-fold>//GEN-END:initComponents
 
     private void jButtonRemoveFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRemoveFilterActionPerformed
         Object[] items = jListExContent.getSelectedValues();
-        for (int i = 0; i < items.length; i++)
-            dlm.removeElement(items[i]);   
-        
+        for (int i = 0; i < items.length; i++) {
+            dlm.removeElement(items[i]);
+        }
         setExcludeProperty();
     }//GEN-LAST:event_jButtonRemoveFilterActionPerformed
 
@@ -320,8 +320,9 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
     // End of variables declaration//GEN-END:variables
         
     private void closeDialog() {
-        if (dialog != null)
+        if (dialog != null) {
             dialog.dispose();
+        }
     }
 
     public void valueChanged(ListSelectionEvent e) {
@@ -332,7 +333,7 @@ public class CustomizerJarContent extends JPanel implements ArchiveCustomizerPan
         String exclude = dlm.toString();
         exclude = exclude.replaceAll(" ", ""); //NOI18N
         exclude = exclude.substring(1, exclude.length() -1);
-        webProperties.put(EarProjectProperties.BUILD_CLASSES_EXCLUDES, exclude);
+        earProperties.put(EarProjectProperties.BUILD_CLASSES_EXCLUDES, exclude);
     }
 
     /** Help context where to find more about the paste type action.

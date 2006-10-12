@@ -34,6 +34,7 @@ import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
@@ -101,7 +102,7 @@ public class ServiceLocatorStrategy {
         Sources s = ProjectUtils.getSources(p);
         SourceGroup[] groups = 
                 s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        ClassPath cp = ClassPathSupport.createClassPath(Collections.EMPTY_LIST);
+        ClassPath cp = ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
         for (int i = 0; i < groups.length; i++) {
             FileObject root = groups[i].getRootFolder();
             if (root.getChildren().length > 0) {

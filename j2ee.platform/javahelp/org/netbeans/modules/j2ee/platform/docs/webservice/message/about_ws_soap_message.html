@@ -1,76 +1,81 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- * Copyright 2005 Sun Microsystems,
+<!-- * Copyright 2006 Sun Microsystems,
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-<head> 
-	<title>About Message Handlers</title>
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
-</head> 
-<body bgcolor="#FFFFFF">
-<h2>About Message Handlers</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+    <head> 
+        <title>About Handlers</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head> 
+    <body>
+        <h2>About Handlers</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
 
-<p>A SOAP message handler is a Java class that provides a filtering mechanism for
-preprocessing and postprocessing the SOAP message, by intercepting it and acting
-on the SOAP request or response. Handlers can be
-used on the client side, server side, or both. Handlers can be used to add features
-to a service call and are a good means to layer additional functionality over the
-core message. They are useful because they provide the ability to introduce
-security services, business processing, and error handling. They also permit managing
-the selection of content creation strategies in both service consumers and
-service implementations without changing client or server code.
+        <p>A handler is a Java class that provides a filtering mechanism for
+        preprocessing and postprocessing the web service message, by intercepting it and acting
+        on the request or response. Handlers can be
+        used on the client side, server side, or both. Handlers can be used to add features
+        to a service call and are a good means to layer additional functionality over the
+        core message. They are useful because they provide the ability to introduce
+        security services, business processing, and error handling. They also permit managing
+        the selection of content creation strategies in both service consumers and
+        service implementations without changing client or server code.
 
-<p>The handler is passed an instance of a MessageContext, which can be used to
-access the underlying Soap with Attachments API for Java (SAAJ) <tt>javax.xml.soap.SOAPMessage</tt> that
-represents the actual message. It can also be used to pass
-objects between handlers in the chain, to share state information specific to a request.
-Note that a handler is always stateless itself and should not hold any message-specific 
-state in an instance variable.
+        <p>Typical uses of handlers include:</p>
+        <ul>
+            <li>Logging and auditing</li>
+            <li>Encryption and decryption</li>
+            <li>Caching of data</li>
+        </ul>
 
+        <p> There are two types of handlers: message handlers
+        and logical handlers. These are the differences between them.</p>
 
-<p>Typical uses of handlers include:</p>
-<ul>
-  <li>Logging and auditing</li>
-  <li>Encryption and decryption</li>
-  <li>Caching of data</li>
-</ul>
-<p>Handlers must implement the <tt>javax.xml.rpc.handler.Handler</tt> interface. This interface
- provides the following methods:
-<ul>
-	<li><tt>init()</tt>. Life cycle method. Called when the message handler is initialized.
-	<li><tt>getHeaders()</tt>. Gets the header block for processing.
-	<li><tt>handleRequest()</tt>. Called when the processing a SOAP request.
-	<li><tt>handleResponse()</tt>. Called when the processing a SOAP response.
-	<li><tt>handleFault()</tt>. Called when the processing a SOAP fault.
-	<li><tt>destroy()</tt>. Life cycle method. Called when the message handler is destroyed.
-</ul>
-<p>There are four places in a client-service interaction where message handlers can execute:
-<ul><li>Client-side message handlers:
-<ul>
-	<li>The <tt>handleRequest()</tt> is called before the client's request is sent to the web service.
-	<li>The <tt>handleResponse()</tt> is called before the service's response is delivered to the client.
-</ul>
-<li>Service-side message handlers:
-<ul>
-<li>The <tt>handleRequest()</tt> is called before a client's request is delivered to the service.
-<li>The <tt>handleResponse()</tt> is called before the service's response is sent to the client.
-</ul></ul>
-<table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td> 
-<a href="../about/about_ws.html">About Web Services</a><br>
-<a href="../consume/about_wsc.html">About Web Service Clients</a><br>
-<a href="create_ws_soap_message.html">Creating a Message Handler</a><br>
-<a href="configure_ws_soap_message.html">Configuring a Message Handler</a><br>
-<a href="test_and_use_ws_soap_message.html">Testing and Using a Message Handler</a><br>
-</td>
-</tr>
-</table> 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small>
-</body></html>
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+            task name. The right column lists the steps to perform.">
+            <tr valign="top"> 
+                <th scope="col" align="left">Message Handlers</th>
+                <th scope="col" align="left">Logical Handlers</th>
+            </tr>
+            <tr valign="top"> 
+                <td>SOAP over HTTP or XML over HTTP.</td>
+                <td> 
+                    Protocol agnostic and cannot change any protocol 
+                    specific parts (like headers) of a message.
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>If you are using SOAP over HTTP, the contents of the SOAP Body 
+                forms the payload. If you are using XML over HTTP, the XML content 
+                of the primary part of the message becomes the payload.</td>
+                <td> 
+                    Only acts on the payload and the context of the message.
+                </td>
+            </tr>
+            
+        </table>
+       
+        <ul class="note">
+            <li>Logical handlers are only supported by web services
+                and clients that are compatible with the Java EE 5 specification.
+            </li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+            <dd><a href="configure_ws_soap_message.html">Configuring a Handler</a></dd>
+            <dd><a href="create_ws_soap_message.html">Creating a Handler</a></dd>
+            <dd><a href="test_and_use_ws_soap_message.html">Testing and Using a Handler</a></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+
+    </body>
+</html>

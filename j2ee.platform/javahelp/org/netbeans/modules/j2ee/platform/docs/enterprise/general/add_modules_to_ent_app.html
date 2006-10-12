@@ -1,23 +1,27 @@
- 
-<html>
-
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
-  *     Use is subject to license terms.
+ * Copyright © 2006 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
 -->
+<html>
 <head>
 
 
 <title>Adding a Module to an Enterprise Application</title> 
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 
 </head>
 <body>
 
 <h2>Adding a Module to an Enterprise Application</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>EJB or web application modules can be deployed either by themselves or as a part of an enterprise application.</p>
+<p>EJB or web application modules can be deployed either by themselves or as a part of an enterprise application.
+Likewise, Java application clients can be either regular Java desktop applicaitons, or can be 
+full Java EE application client modules. Adding an EJB module, web module, or application
+client module to an enterpirse application lets you further configure the way those modules interact
+with each other.</p>
 
 <p>When you add a module to an enterprise application, the IDE does the following:</p>
 <ul>
@@ -38,36 +42,32 @@
     the J2EE application and choose Add J2EE Module.</li>
   <li>In the dialog box, select the module and click OK.</li>
 </ol>
-<p><b>Notes:</b></p>
-<ul>
+<ul class="tip">
   <li>You can only add <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-      <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
+      <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
       <param name="viewerActivator" value="javax.help.LinkLabel">
       <param name="viewerStyle" value="javax.help.Popup">
       <param name="viewerSize" value="400,220">
       <param name="text" value="standard projects">
-      <param name="textFontSize" value="small">
+      <param name="textFontSize" value="medium">
       <param name="textFontFamily" value="SansSerif">
       <param name="textFontStyle" value="italic">
       <param name="textFontWeight" value="bold">
       <param name="textColor" value="blue">
     </object> to an enterprise application. Since the build and deploy process 
     for <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-      <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+      <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
       <param name="viewerActivator" value="javax.help.LinkLabel">
       <param name="viewerStyle" value="javax.help.Popup">
       <param name="viewerSize" value="400,220">
       <param name="text" value="free-form projects">
-      <param name="textFontSize" value="small">
+      <param name="textFontSize" value="medium">
       <param name="textFontFamily" value="SansSerif">
       <param name="textFontStyle" value="italic">
       <param name="textFontWeight" value="bold">
       <param name="textColor" value="blue">
     </object> is not controlled by the IDE, you cannot add a free-form project 
     to an enterprise application.</li>
-  <li>The IDE does not provide support for automatically adding application clients 
-    to an enterprise application. You have to add the application client by editing 
-    the enterprise application's deployment descriptors by hand.</li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>

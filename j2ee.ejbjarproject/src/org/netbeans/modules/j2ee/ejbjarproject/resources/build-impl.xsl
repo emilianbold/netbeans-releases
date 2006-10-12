@@ -25,10 +25,13 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:ejbjarproject2="http://www.netbeans.org/ns/j2ee-ejbjarproject/2"
                 xmlns:ejbjarproject3="http://www.netbeans.org/ns/j2ee-ejbjarproject/3"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
+                xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1"
                 exclude-result-prefixes="xalan p projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
+    <xsl:param name = "jax_ws_uri">jax-ws.xml</xsl:param>
+    <xsl:param name = "jaxws" select="document($jax_ws_uri)"/>
     <xsl:template match="/">
-
+        
         <xsl:comment><![CDATA[
 *** GENERATED FROM project.xml - DO NOT EDIT  ***
 ***         EDIT ../build.xml INSTEAD         ***
@@ -44,49 +47,48 @@ is divided into following sections:
   - javadoc
   - cleanup
 
-]]></xsl:comment>
-
+        ]]></xsl:comment>
+        
         <xsl:variable name="name" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:name"/>
-        <project name="{$name}-impl">
+        <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
+        <project name="{$codename}-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
-
+            <import file="ant-deploy.xml" />
             <target name="default">
                 <xsl:attribute name="depends">dist,javadoc</xsl:attribute>
                 <xsl:attribute name="description">Build whole project.</xsl:attribute>
             </target>
-
+            
             <xsl:comment> 
-    ======================
-    INITIALIZATION SECTION 
-    ======================
-    </xsl:comment>
-
+                INITIALIZATION SECTION 
+            </xsl:comment>
+            
             <target name="-pre-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-init-private">
                 <xsl:attribute name="depends">-pre-init</xsl:attribute>
                 <property file="nbproject/private/private.properties"/>
             </target>
-
+            
             <target name="-init-userdir">
                 <xsl:attribute name="depends">-pre-init,-init-private</xsl:attribute>
                 <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
             </target>
-
+            
             <target name="-init-user">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
             </target>
-
+            
             <target name="-init-project">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user</xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
-
+            
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
@@ -121,6 +123,8 @@ is divided into following sections:
                     <fail unless="platform.javac">Must set platform.javac</fail>
                     <fail if="platform.invalid">Platform is not correctly set up</fail>
                 </xsl:if>
+                <xsl:comment> Ensure configuration directory exists. </xsl:comment>
+                <mkdir dir="${{meta.inf}}"/>
                 <xsl:comment> The two properties below are usually overridden </xsl:comment>
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
                 <property name="default.javac.source" value="1.4"/>
@@ -162,12 +166,12 @@ is divided into following sections:
                     </not>
                 </condition>
             </target>
-
+            
             <target name="-post-init">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-init-check">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
@@ -201,9 +205,9 @@ is divided into following sections:
                     <sequential>
                         <property name="@{{name}}" value="${{@{{value}}}}"/>
                     </sequential>
-                  </macrodef>
+                </macrodef>
             </target>            
-
+            
             <target name="-init-macrodef-javac">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
@@ -255,9 +259,9 @@ is divided into following sections:
                             <customize/>
                         </javac>
                     </sequential>
-                 </macrodef>
+                </macrodef>
             </target>
-
+            
             <target name="-init-macrodef-junit">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
@@ -296,7 +300,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-
+            
             <target name="-init-macrodef-java">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
@@ -327,7 +331,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-
+            
             <target name="-init-macrodef-nbjpda">
                 <macrodef>
                     <xsl:attribute name="name">nbjpdastart</xsl:attribute>
@@ -367,7 +371,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-
+            
             <target name="-init-macrodef-debug">
                 <macrodef>
                     <xsl:attribute name="name">debug</xsl:attribute>
@@ -408,88 +412,303 @@ is divided into following sections:
             <target name="init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    ===================
-    COMPILATION SECTION
-    ===================
-    </xsl:comment>
-           
+                COMPILATION SECTION
+            </xsl:comment>
+            
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'-deps-module-jar'"/>
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
-
+            
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'-deps-ear-jar'"/>
                 <xsl:with-param name="type" select="'jar'"/>
                 <xsl:with-param name="ear" select="'true'"/>
             </xsl:call-template>
-
+            
             <target name="deps-jar">
                 <xsl:attribute name="depends">init, -deps-module-jar, -deps-ear-jar</xsl:attribute>
             </target>
-
-            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service|/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
-            <target name="wscompile-init" depends="init">
-                <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
-                    <classpath path="${{wscompile.classpath}}"/>
-                </taskdef>
-                <mkdir dir="${{classes.dir}}/META-INF/wsdl"/>
-                <mkdir dir="${{build.generated.dir}}/wsclient"/>
-                <mkdir dir="${{build.generated.dir}}/wsservice"/>
-                <mkdir dir="${{build.generated.dir}}/wsbinary"/>
-                <mkdir dir="${{meta.inf}}/wsdl"/>
+            
+            <!-- WS from java - support for WSDL generation -->
+            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
+                <target name="wsgen-init" depends="init">
+                    <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
+                    <mkdir dir="${{classes.dir}}"/>
+                    <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+                        <classpath path="${{j2ee.platform.wsgen.classpath}}"/>
+                    </taskdef>
                 </target>
             </xsl:if>
-
+            <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
+                <xsl:if test="not(jaxws:from-wsdl)">
+                    <xsl:variable name="wsname" select="@name"/>
+                    <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
+                    <target name="wsgen-{$wsname}" depends="wsgen-init, compile">
+                        <wsgen
+                            sourcedestdir="${{build.generated.dir}}/wsgen/service"
+                            resourcedestdir="${{build.generated.dir}}/wsgen/service"
+                            keep="false"
+                            genwsdl="true"
+                            sei="{$seiclass}"
+                        >
+                            <classpath path="${{classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                        </wsgen>
+                    </target>
+                </xsl:if>
+            </xsl:for-each>
+            <!-- END WS from Java -->
+            
+            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
+                <target name="wsgen-generate">
+                    <xsl:attribute name="depends">
+                        <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                            <xsl:variable name="wsname2">
+                                <xsl:value-of select="@name"/>
+                            </xsl:variable>
+                            <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/>
+                        </xsl:for-each>
+                    </xsl:attribute>
+                </target>
+            </xsl:if>
+            
+            <!-- wsimport task initialization -->
+            <xsl:if test="$jaxws/*/*/*/jaxws:wsdl-url">
+                <target name="wsimport-init" depends="init">
+                    <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
+                        <mkdir dir="${{build.generated.dir}}/wsimport/client"/>
+                        <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
+                    </xsl:if>
+                    <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">
+                        <mkdir dir="${{build.generated.dir}}/wsimport/service"/>
+                    </xsl:if>
+                    <mkdir dir="${{classes.dir}}"/>
+                    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+                        <classpath path="${{j2ee.platform.wsimport.classpath}}"/>
+                    </taskdef>
+                </target>
+            </xsl:if>
+            <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
+                <xsl:variable name="wsname" select="@name"/>
+                <xsl:variable name="package_name" select="jaxws:package-name"/>
+                <xsl:variable name="wsdl_url" select="jaxws:local-wsdl-file"/>
+                <xsl:variable name="wsdl_url_actual" select="jaxws:wsdl-url"/>
+                <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
+                <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
+                <target name="wsimport-client-check-{$wsname}" depends="wsimport-init">
+                    <condition property="wsimport-client-{$wsname}.notRequired">
+                        <available file="${{build.generated.dir}}/wsimport/client/{$package_path}" type="dir"/>
+                    </condition>
+                </target>
+                <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
+                    <xsl:if test="jaxws:package-name/@forceReplace">
+                        <wsimport
+                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            extension="true"
+                            package="{$package_name}"
+                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                            wsdlLocation="{$wsdl_url_actual}"
+                            catalog="{$catalog}">
+                            <xsl:if test="jaxws:binding">
+                                <binding dir="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/bindings">
+                                    <xsl:attribute name="includes">
+                                        <xsl:for-each select="jaxws:binding">
+                                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                                            <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                        </xsl:for-each>
+                                    </xsl:attribute>
+                                </binding>
+                            </xsl:if>
+                        </wsimport>
+                    </xsl:if>
+                    <xsl:if test="not(jaxws:package-name/@forceReplace)">
+                        <wsimport
+                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            extension="true"
+                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                            wsdlLocation="{$wsdl_url_actual}"
+                            catalog="{$catalog}">
+                            <xsl:if test="jaxws:binding">
+                                <binding dir="${{meta.inf}}/xml-resources/web-service-references/{$wsname}/bindings">
+                                    <xsl:attribute name="includes">
+                                        <xsl:for-each select="jaxws:binding">
+                                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                                            <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                        </xsl:for-each>
+                                    </xsl:attribute>
+                                </binding>
+                            </xsl:if>
+                        </wsimport>
+                    </xsl:if>
+                    <copy todir="${{classes.dir}}">
+                        <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
+                    </copy>
+                </target>
+                <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
+                    <delete dir="${{build.generated.dir}}/wsimport/client/{$package_path}"/>
+                </target>
+            </xsl:for-each>
+            
+            <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
+                <xsl:if test="jaxws:wsdl-url">
+                    <xsl:variable name="wsname" select="@name"/>
+                    <xsl:variable name="package_name" select="jaxws:package-name"/>
+                    <xsl:variable name="wsdl_url" select="jaxws:local-wsdl-file"/>
+                    <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
+                    <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
+                    <target name="wsimport-service-check-{$wsname}" depends="wsimport-init">
+                        <condition property="wsimport-service-{$wsname}.notRequired">
+                            <available file="${{build.generated.dir}}/wsimport/service/{$package_path}" type="dir"/>
+                        </condition>
+                    </target>
+                    <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">
+                        <xsl:if test="jaxws:package-name/@forceReplace">
+                            <wsimport
+                                sourcedestdir="${{build.generated.dir}}/wsimport/service"
+                                extension="true"
+                                verbose="true"
+                                package="{$package_name}"
+                                destdir="${{classes.dir}}"
+                                wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
+                                catalog="{$catalog}">
+                                <xsl:if test="jaxws:binding">
+                                    <binding dir="${{meta.inf}}/xml-resources/web-services/{$wsname}/bindings">
+                                        <xsl:attribute name="includes">
+                                            <xsl:for-each select="jaxws:binding">
+                                                <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                                <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                            </xsl:for-each>
+                                        </xsl:attribute>
+                                    </binding>
+                                </xsl:if>
+                            </wsimport>
+                        </xsl:if>
+                        <xsl:if test="not(jaxws:package-name/@forceReplace)">
+                            <wsimport
+                                sourcedestdir="${{build.generated.dir}}/wsimport/service"
+                                extension="true"
+                                verbose="true"
+                                destdir="${{classes.dir}}"
+                                wsdl="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"
+                                catalog="{$catalog}">
+                                <xsl:if test="jaxws:binding">
+                                    <binding dir="${{meta.inf}}/xml-resources/web-services/{$wsname}/bindings">
+                                        <xsl:attribute name="includes">
+                                            <xsl:for-each select="jaxws:binding">
+                                                <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                                <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                            </xsl:for-each>
+                                        </xsl:attribute>
+                                    </binding>
+                                </xsl:if>
+                            </wsimport>                           
+                        </xsl:if>
+                    </target>
+                    <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
+                        <delete dir="${{build.generated.dir}}/wsimport/service/{$package_path}"/>
+                    </target>
+                </xsl:if>
+            </xsl:for-each>
+            
+            <!-- wsimport-client-generate and wsimport-client-compile targets -->
+            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
+                <target name="wsimport-client-generate">
+                    <xsl:attribute name="depends">
+                        <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                            <xsl:text>wsimport-client-</xsl:text><xsl:value-of select="@name"/>
+                        </xsl:for-each>
+                    </xsl:attribute>
+                </target>
+                <target name="wsimport-client-compile" depends="wsimport-client-generate">
+                    <ejbjarproject2:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{classes.dir}}"/>
+                </target>
+            </xsl:if>
+            
+            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">
+                <target name="wsimport-service-generate">
+                    <xsl:attribute name="depends">
+                        <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                            <xsl:if test="jaxws:wsdl-url">
+                                <xsl:text>wsimport-service-</xsl:text><xsl:value-of select="@name"/>
+                            </xsl:if>
+                            <xsl:if test="not(jaxws:wsdl-url)">
+                                <xsl:text>wsimport-init</xsl:text>
+                            </xsl:if>
+                        </xsl:for-each>
+                    </xsl:attribute>
+                </target>
+                <target name="wsimport-service-compile" depends="wsimport-service-generate">
+                    <ejbjarproject2:javac srcdir="${{build.generated.dir}}/wsimport/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{classes.dir}}"/>
+                </target>
+            </xsl:if>
+            
+            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service|/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
+                <target name="wscompile-init" depends="init">
+                    <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
+                        <classpath path="${{wscompile.classpath}}"/>
+                    </taskdef>
+                    <mkdir dir="${{classes.dir}}/META-INF/wsdl"/>
+                    <mkdir dir="${{build.generated.dir}}/wsclient"/>
+                    <mkdir dir="${{build.generated.dir}}/wsservice"/>
+                    <mkdir dir="${{build.generated.dir}}/wsbinary"/>
+                    <mkdir dir="${{meta.inf}}/wsdl"/>
+                </target>
+            </xsl:if>
+            
             <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                 <target name="fromwsdl-noop"/>
             </xsl:if>
-
+            
             <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
-              <xsl:variable name="wsname">
-                <xsl:value-of select="ejbjarproject3:web-service-name"/>
-              </xsl:variable>
-              <xsl:choose>
-              <xsl:when test="ejbjarproject3:from-wsdl">
-                <target name="{$wsname}_wscompile" depends="init, wscompile-init">
-                  <wscompile import="true" 
-                     config="${{{$wsname}.config.name}}"
-                     features="${{wscompile.service.{$wsname}.features}}"
-                     mapping="${{meta.inf}}/${{{$wsname}.mapping}}"
-                     classpath="${{wscompile.classpath}}:${{javac.classpath}}" 
-                     nonClassDir="${{classes.dir}}/META-INF/wsdl" 
-                     verbose="true" 
-                     xPrintStackTrace="true" 
-                     xSerializable="true"
-                     base="${{build.generated.dir}}/wsbinary"
-                     sourceBase="${{src.dir}}" 
-                     keep="true" 
-                     fork="true" />
-                </target>  
-              </xsl:when>
-              <xsl:otherwise>
-                 <target name="{$wsname}_wscompile" depends="wscompile-init">
-                  <wscompile
-                     define="true"
-                     fork="true"
-                     keep="true"
-                     base="${{build.generated.dir}}/wsbinary"
-                     xPrintStackTrace="true"
-                     verbose="true"
-                     nonClassDir="${{classes.dir}}/META-INF/wsdl"
-                     classpath="${{wscompile.classpath}}:${{classes.dir}}:${{javac.classpath}}"
-                     mapping="${{classes.dir}}/META-INF/${{{$wsname}.mapping}}"
-                     config="${{{$wsname}.config.name}}"
-                     features="${{wscompile.service.{$wsname}.features}}"
-                     sourceBase="${{build.generated.dir}}/wsservice">
-                  </wscompile>
-                </target>
-              </xsl:otherwise>
-              </xsl:choose>
+                <xsl:variable name="wsname">
+                    <xsl:value-of select="ejbjarproject3:web-service-name"/>
+                </xsl:variable>
+                <xsl:choose>
+                    <xsl:when test="ejbjarproject3:from-wsdl">
+                        <target name="{$wsname}_wscompile" depends="init, wscompile-init">
+                            <wscompile import="true" 
+                                       config="${{{$wsname}.config.name}}"
+                                       features="${{wscompile.service.{$wsname}.features}}"
+                                       mapping="${{meta.inf}}/${{{$wsname}.mapping}}"
+                                       classpath="${{wscompile.classpath}}:${{javac.classpath}}" 
+                                       nonClassDir="${{classes.dir}}/META-INF/wsdl" 
+                                       verbose="true" 
+                                       xPrintStackTrace="true" 
+                                       xSerializable="true"
+                                       base="${{build.generated.dir}}/wsbinary"
+                                       sourceBase="${{src.dir}}" 
+                                       keep="true" 
+                                       fork="true" />
+                        </target>  
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <target name="{$wsname}_wscompile" depends="wscompile-init">
+                            <wscompile
+                                define="true"
+                                fork="true"
+                                keep="true"
+                                base="${{build.generated.dir}}/wsbinary"
+                                xPrintStackTrace="true"
+                                verbose="true"
+                                nonClassDir="${{classes.dir}}/META-INF/wsdl"
+                                classpath="${{wscompile.classpath}}:${{classes.dir}}:${{javac.classpath}}"
+                                mapping="${{classes.dir}}/META-INF/${{{$wsname}.mapping}}"
+                                config="${{{$wsname}.config.name}}"
+                                features="${{wscompile.service.{$wsname}.features}}"
+                                sourceBase="${{build.generated.dir}}/wsservice">
+                            </wscompile>
+                        </target>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:for-each>
-
+            
             <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
                 <xsl:variable name="wsclientname">
                     <xsl:value-of select="ejbjarproject3:web-service-client-name"/>
@@ -510,11 +729,11 @@ is divided into following sections:
                         <xsl:otherwise>false</xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
-
+                
                 <target name="{$wsclientname}-client-wscompile" depends="wscompile-init">
                     <property name="config_target" location="${{meta.inf}}/wsdl"/>
                     <copy file="${{meta.inf}}/wsdl/{$wsclientname}-config.xml"
-                        tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on">
+                          tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on">
                         <filterset>
                             <!-- replace token with reference to WSDL file in source tree, not build tree, since the
                                  the file probably has not have been copied to the build tree yet. -->
@@ -522,7 +741,12 @@ is divided into following sections:
                         </filterset>
                     </copy>
                     <wscompile
-                        xPrintStackTrace="true" verbose="false" fork="true" keep="true"
+                        verbose="${{wscompile.client.{$wsclientname}.verbose}}"
+                        debug="${{wscompile.client.{$wsclientname}.debug}}"
+                        xPrintStackTrace="${{wscompile.client.{$wsclientname}.xPrintStackTrace}}"
+                        xSerializable="${{wscompile.client.{$wsclientname}.xSerializable}}"
+                        optimize="${{wscompile.client.{$wsclientname}.optimize}}"
+                        fork="true" keep="true"
                         client="{$useclient}" import="{$useimport}"
                         features="${{wscompile.client.{$wsclientname}.features}}"
                         base="${{classes.dir}}"
@@ -533,8 +757,8 @@ is divided into following sections:
                     </wscompile>
                 </target>
             </xsl:for-each>
-                        
-                <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
+            
+            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
                 <target name="web-service-client-generate">
                     <xsl:attribute name="depends">
                         <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">
@@ -547,21 +771,21 @@ is divided into following sections:
                     </xsl:attribute>
                 </target>
                 <target name="web-service-client-compile" depends="web-service-client-generate">
-                    <ejbjarproject2:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}"/>
+                    <ejbjarproject2:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{classes.dir}}"/>
                 </target>
-                </xsl:if>
-
+            </xsl:if>
+            
             <target name="-pre-pre-compile">
-                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-generate</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-generate</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-generate</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">,wsimport-service-generate</xsl:if></xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
                 <mkdir dir="${{build.ear.classes.dir}}"/>
             </target>
-
+            
             <target name="-pre-compile">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="library-inclusion-in-archive" depends="compile">
                 <xsl:for-each select="//ejbjarproject3:included-library">
                     <xsl:variable name="included.prop.name">
@@ -596,11 +820,11 @@ is divided into following sections:
                             <copy todir="{$target}">
                                 <fileset dir="{$libfile}" includes="**/*"/>
                             </copy>
-                      </xsl:if>
+                        </xsl:if>
                     </xsl:if>
                 </xsl:for-each>   
             </target> 
-
+            
             <target name="library-inclusion-in-manifest" depends="compile">
                 <xsl:for-each select="//ejbjarproject3:included-library">
                     <xsl:variable name="included.prop.name">
@@ -610,17 +834,17 @@ is divided into following sections:
                         <xsl:value-of select="concat('included.lib.', $included.prop.name, '')"/>
                     </xsl:variable>
                     <xsl:if test="//ejbjarproject3:included-library[@files]">
-                      <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
-                        <xsl:call-template name="manifestBasenameIterateFiles">
-                            <xsl:with-param name="property" select="$base.prop.name"/>
-                            <xsl:with-param name="files" select="@files"/>
-                            <xsl:with-param name="libfile" select="$included.prop.name"/>
-                        </xsl:call-template>
-                      </xsl:if>
-                      <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
+                        <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
+                            <xsl:call-template name="manifestBasenameIterateFiles">
+                                <xsl:with-param name="property" select="$base.prop.name"/>
+                                <xsl:with-param name="files" select="@files"/>
+                                <xsl:with-param name="libfile" select="$included.prop.name"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                        <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                             <xsl:variable name="libfile" select="concat('${',$included.prop.name,'}')"/>
                             <basename property="{$base.prop.name}" file="{$libfile}"/>
-                      </xsl:if>
+                        </xsl:if>
                     </xsl:if>
                     <xsl:if test="//ejbjarproject3:included-library[@files]">
                         <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
@@ -650,7 +874,7 @@ is divided into following sections:
                             <copy todir="{$target}">
                                 <fileset dir="{$libfile}" includes="**/*"/>
                             </copy>
-                      </xsl:if>
+                        </xsl:if>
                     </xsl:if>
                 </xsl:for-each>   
                 
@@ -683,8 +907,8 @@ is divided into following sections:
                                     </xsl:if>
                                 </xsl:for-each>  
                             </xsl:attribute>
-                         </attribute>
-                     </xsl:if>
+                        </attribute>
+                    </xsl:if>
                 </manifest>
                 
             </target>
@@ -694,18 +918,18 @@ is divided into following sections:
                     <fileset dir="${{meta.inf}}" includes="**/*.dbschema"/>
                 </copy>
                 <copy todir="${{classes.dir}}/META-INF">
-                  <fileset dir="${{meta.inf}}" excludes="**/*.dbschema ${{meta.inf.excludes}}"/>
+                    <fileset dir="${{meta.inf}}" excludes="**/*.dbschema **/xml-resources/** ${{meta.inf.excludes}}"/>
                 </copy>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                     <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>  
                     <copy todir="${{classes.dir}}" overwrite="true"> 
-                      <fileset includes="META-INF/ejb-jar.xml META-INF/sun-ejb-jar.xml" dir="${{meta.inf}}"/>
+                        <fileset includes="META-INF/ejb-jar.xml META-INF/sun-ejb-jar.xml" dir="${{meta.inf}}"/>
                     </copy>
-                 </xsl:if>
+                </xsl:if>
             </target>
             
             <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-copy-meta-inf<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-copy-meta-inf<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:services/jaxws:service/jaxws:wsdl-url">,wsimport-service-compile</xsl:if></xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 <ejbjarproject2:javac destdir="${{classes.dir}}"/>
                 <copy todir="${{classes.dir}}">
@@ -720,35 +944,35 @@ is divided into following sections:
                 <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
                     <xsl:attribute name="depends">
                         <xsl:for-each select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-services/ejbjarproject3:web-service">
-                                <xsl:if test="position()!=1"><xsl:text>, </xsl:text>
-                                </xsl:if>
-                                <xsl:choose>
-                                  <xsl:when test="not(ejbjarproject3:from-wsdl)">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text>
+                            </xsl:if>
+                            <xsl:choose>
+                                <xsl:when test="not(ejbjarproject3:from-wsdl)">
                                     <xsl:value-of select="ejbjarproject3:web-service-name"/><xsl:text>_wscompile</xsl:text>
-                                  </xsl:when>
-                                  <xsl:otherwise>
+                                </xsl:when>
+                                <xsl:otherwise>
                                     <xsl:text>fromwsdl-noop</xsl:text>
-                                  </xsl:otherwise>
-                                </xsl:choose>
-                         </xsl:for-each>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:for-each>
                     </xsl:attribute>
                 </xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="compile">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile,-do-compile,-post-compile</xsl:attribute>
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
-
+            
             <target name="-pre-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-do-compile-single">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:web-service-clients/ejbjarproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <ejbjarproject2:javac>
                     <customize>
@@ -756,27 +980,25 @@ is divided into following sections:
                     </customize>
                 </ejbjarproject2:javac>
             </target>
-
+            
             <target name="-post-compile-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile-single,-do-compile-single,-post-compile-single</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    ====================
-    DIST BUILDING SECTION
-    ====================
-    </xsl:comment>
-
+                DIST BUILDING SECTION
+            </xsl:comment>
+            
             <target name="-pre-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-do-dist-with-manifest">
                 <xsl:attribute name="depends">init,compile,-pre-dist,library-inclusion-in-archive</xsl:attribute>
                 <xsl:attribute name="if">has.custom.manifest</xsl:attribute>
@@ -798,7 +1020,7 @@ is divided into following sections:
             </target>
             
             <target name="-do-dist" depends="init,compile,-pre-dist,library-inclusion-in-archive, -do-dist-without-manifest, -do-dist-with-manifest"/>
-
+            
             <target name="-do-ear-dist">
                 <xsl:attribute name="depends">init,compile,-pre-dist,library-inclusion-in-manifest</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.ear.jar}}"/>
@@ -812,95 +1034,152 @@ is divided into following sections:
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="dist">
                 <xsl:attribute name="depends">init,compile,-pre-dist,-do-dist,-post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (JAR).</xsl:attribute>
             </target>
-
+            
             <target name="dist-ear">
                 <xsl:attribute name="depends">init,compile,-pre-dist,-do-ear-dist,-post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (JAR) to be packaged into an EAR.</xsl:attribute>
             </target>
             
             <xsl:comment>
-    =================
-    EXECUTION SECTION
-    =================
-    </xsl:comment>
-    <target name="run">
-        <xsl:attribute name="depends">run-deploy</xsl:attribute>
-        <xsl:attribute name="description">Deploy to server.</xsl:attribute>
-    </target>
+                EXECUTION SECTION
+            </xsl:comment>
+            <target name="run">
+                <xsl:attribute name="depends">run-deploy</xsl:attribute>
+                <xsl:attribute name="description">Deploy to server.</xsl:attribute>
+            </target>
             
-    <target name="-init-deploy">
-        <property name="include.jar.manifest" value=""/>
-    </target>
-    
-    <target name="run-deploy">
-        <xsl:attribute name="depends">init,-init-deploy,compile,library-inclusion-in-archive,dist</xsl:attribute>
-        <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}"/>
-    </target>
-    
-    <target name="verify">
-        <xsl:attribute name="depends">dist</xsl:attribute>
-        <nbverify file="${{dist.jar}}"/>
-    </target>
-    
-    <target name="run-main">
-        <xsl:attribute name="depends">init,compile-single</xsl:attribute>
-        <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
-        <ejbjarproject3:java classname="${{run.class}}"/>
-    </target>
-    
-    <xsl:comment>
-    =================
-    DEBUGGING SECTION
-    =================
-    </xsl:comment>
-    <target name="debug">
-        <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
-        <xsl:attribute name ="depends">init,compile,dist</xsl:attribute>
-        <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
-        <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
-            <classpath>
-                <path path="${{debug.classpath}}"/>
-            </classpath>
-            <sourcepath>
-                <path path="${{web.docbase.dir}}"/>
-            </sourcepath>
-            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
-            <bootclasspath>
-                <path path="${{platform.bootcp}}"/>
-            </bootclasspath>
-            </xsl:if>
-        </nbjpdaconnect>
-    </target>
-
-    <target name="-pre-debug-fix">
-        <xsl:attribute name="depends">init</xsl:attribute>
-        <fail unless="fix.includes">Must set fix.includes</fail>
-        <property name="javac.includes" value="${{fix.includes}}.java"/>
-    </target>
-
-    <target name="-do-debug-fix">
-        <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <xsl:attribute name="depends">init,-pre-debug-fix,compile-single</xsl:attribute>
-        <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
-    </target>
-
-    <target name="debug-fix">
-        <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix</xsl:attribute>
-    </target>
-    
+            <target name="-init-deploy">
+                <property name="include.jar.manifest" value=""/>
+            </target>
+            
+            <target name="pre-run-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+            
+            <target name="post-run-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+            
+            <target name="-pre-nbmodule-run-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> This target can be overriden by NetBeans modules. Don't override it directly, use -pre-run-deploy task instead. </xsl:comment>
+            </target>
+            
+            <target name="-post-nbmodule-run-deploy">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> This target can be overriden by NetBeans modules. Don't override it directly, use -post-run-deploy task instead. </xsl:comment>
+            </target>
+            
+            <target name="-run-deploy-am">
+                <xsl:comment> Task to deploy to the Access Manager runtime. </xsl:comment>
+            </target>
+            
+            <target name="run-deploy">
+                <xsl:attribute name="depends">init,-init-deploy,compile,library-inclusion-in-archive,dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
+            </target>
+            
+            <target name="-run-deploy-nb" if="netbeans.home">
+                <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}"/>
+            </target>
+            
+            <target name="-init-deploy-ant" unless="netbeans.home">
+                <property name="deploy.ant.archive" value="${{dist.jar}}"/>
+                <property name="deploy.ant.resource.dir" value="${{resource.dir}}"/>
+                <property name="deploy.ant.enabled" value="true"/>
+            </target>
+            
+            <target name="run-undeploy">
+                <xsl:attribute name="depends">dist,-run-undeploy-nb,-init-deploy-ant,-undeploy-ant</xsl:attribute>
+            </target>
+            
+            <target name="-run-undeploy-nb" if="netbeans.home">
+                <fail message="Undeploy is not supported from within the IDE"/>
+            </target>
+            
+            <target name="verify">
+                <xsl:attribute name="depends">dist</xsl:attribute>
+                <nbverify file="${{dist.jar}}"/>
+            </target>
+            
+            <target name="run-main">
+                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+                <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+                <ejbjarproject3:java classname="${{run.class}}"/>
+            </target>
+            
             <xsl:comment>
-    ===============
-    JAVADOC SECTION
-    ===============
-    </xsl:comment>
-
+                DEBUGGING SECTION
+            </xsl:comment>
+            <target name="debug">
+                <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
+                <xsl:attribute name ="depends">init,compile,dist</xsl:attribute>
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <nbdeploy debugmode="true"/>
+                <antcall target="connect-debugger"/>
+            </target>
+            
+            <target name="connect-debugger" unless="is.debugged">
+                <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
+                    <classpath>
+                        <path path="${{debug.classpath}}"/>
+                    </classpath>
+                    <sourcepath>
+                        <path path="${{web.docbase.dir}}"/>
+                    </sourcepath>
+                    <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
+                        <bootclasspath>
+                            <path path="${{platform.bootcp}}"/>
+                        </bootclasspath>
+                    </xsl:if>
+                </nbjpdaconnect>
+            </target>
+            
+            <target name="-debug-start-debugger">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <ejbjarproject1:nbjpdastart />
+            </target>
+            
+            <target name="-debug-start-debuggee-single">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+                <fail unless="main.class">Must select one file in the IDE or set main.class</fail>
+                <ejbjarproject1:debug />
+            </target>
+            
+            <target name="debug-single-main">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-single,-debug-start-debugger,-debug-start-debuggee-single</xsl:attribute>
+            </target>
+            
+            <target name="-pre-debug-fix">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <fail unless="fix.includes">Must set fix.includes</fail>
+                <property name="javac.includes" value="${{fix.includes}}.java"/>
+            </target>
+            
+            <target name="-do-debug-fix">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,-pre-debug-fix,compile-single</xsl:attribute>
+                <ejbjarproject1:nbjpdareload/>
+            </target>
+            
+            <target name="debug-fix">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix</xsl:attribute>
+            </target>
+            
+            <xsl:comment>
+                JAVADOC SECTION
+            </xsl:comment>
+            
             <target name="javadoc-build">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{dist.javadoc.dir}}"/>
@@ -932,45 +1211,43 @@ is divided into following sections:
                         </xsl:call-template>
                     </sourcepath>
                     <xsl:call-template name="createPackagesets">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
-                            <xsl:with-param name="includes">*/**</xsl:with-param>
-                   </xsl:call-template>
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
+                        <xsl:with-param name="includes">*/**</xsl:with-param>
+                    </xsl:call-template>
                     <xsl:call-template name="createFilesets">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
-                            <xsl:with-param name="includes">*.java</xsl:with-param>
-                   </xsl:call-template>
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
+                        <xsl:with-param name="includes">*.java</xsl:with-param>
+                    </xsl:call-template>
                 </javadoc>
             </target>
-
+            
             <target name="javadoc-browse">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="unless">no.javadoc.preview</xsl:attribute>
                 <xsl:attribute name="depends">init,javadoc-build</xsl:attribute>
                 <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
             </target>
-
+            
             <target name="javadoc">
                 <xsl:attribute name="depends">init,javadoc-build,javadoc-browse</xsl:attribute>
                 <xsl:attribute name="description">Build Javadoc.</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    =========================
-    JUNIT COMPILATION SECTION
-    =========================
-    </xsl:comment>
-
+                JUNIT COMPILATION SECTION
+            </xsl:comment>
+            
             <target name="-pre-pre-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <mkdir dir="${{build.test.classes.dir}}"/>
             </target>
-
+            
             <target name="-pre-compile-test">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-do-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test</xsl:attribute>
@@ -991,21 +1268,21 @@ is divided into following sections:
                     </xsl:call-template>
                 </copy>
             </target>
-
+            
             <target name="-post-compile-test">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="compile-test">
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test,-do-compile-test,-post-compile-test</xsl:attribute>
             </target>
-
+            
             <target name="-pre-compile-test-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="-do-compile-test-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
@@ -1024,40 +1301,38 @@ is divided into following sections:
                     </customize>
                 </xsl:element>
             </target>
-
+            
             <target name="-post-compile-test-single">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="compile-test-single">
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single,-do-compile-test-single,-post-compile-test-single</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    =======================
-    JUNIT EXECUTION SECTION
-    =======================
-    </xsl:comment>
-
+                JUNIT EXECUTION SECTION
+            </xsl:comment>
+            
             <target name="-pre-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{build.test.results.dir}}"/>
             </target>
-
+            
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
                 <ejbjarproject2:junit/>
             </target>
-
+            
             <target name="-post-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run</xsl:attribute>
                 <fail if="tests.failed">Some tests failed; see details above.</fail>
             </target>
-
+            
             <target name="test-report">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
@@ -1070,7 +1345,7 @@ is divided into following sections:
                 </junitreport>
                 -->
             </target>
-
+            
             <target name="-test-browse">
                 <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
@@ -1078,91 +1353,87 @@ is divided into following sections:
                 <nbbrowse file="${{build.test.results.dir}}/junit-noframes.html"/>
                 -->
             </target>
-
+            
             <target name="test">
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse</xsl:attribute>
                 <xsl:attribute name="description">Run unit tests.</xsl:attribute>
             </target>
-
+            
             <target name="-pre-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <mkdir dir="${{build.test.results.dir}}"/>
             </target>
-
+            
             <target name="-do-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
                 <ejbjarproject2:junit includes="${{test.includes}}"/>
             </target>
-
+            
             <target name="-post-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single</xsl:attribute>
                 <fail if="tests.failed">Some tests failed; see details above.</fail>
             </target>
-
+            
             <target name="test-single">
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
                 <xsl:attribute name="description">Run single unit test.</xsl:attribute>
             </target>
-
+            
             <xsl:comment>
-    =======================
-    JUNIT DEBUGGING SECTION
-    =======================
-    </xsl:comment>
-
+                JUNIT DEBUGGING SECTION
+            </xsl:comment>
+            
             <target name="-debug-start-debuggee-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
                 <ejbjarproject1:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
             </target>
-
+            
             <target name="-debug-start-debugger-test">
                 <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <ejbjarproject1:nbjpdastart name="${{test.class}}" classpath="${{debug.test.classpath}}"/>
             </target>
-
+            
             <target name="debug-test">
                 <xsl:attribute name="depends">init,compile-test,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
             </target>
-
+            
             <target name="-do-debug-fix-test">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,compile-test-single</xsl:attribute>
                 <ejbjarproject1:nbjpdareload dir="${{build.test.classes.dir}}"/>
             </target>
-
+            
             <target name="debug-fix-test">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix-test</xsl:attribute>
             </target>
             
-    <xsl:comment>
-    ===============
-    CLEANUP SECTION
-    ===============
-    </xsl:comment>
-
+            <xsl:comment>
+                CLEANUP SECTION
+            </xsl:comment>
+            
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-clean'"/>
             </xsl:call-template>
-
+            
             <target name="-do-clean">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <delete dir="${{build.dir}}"/>
                 <delete dir="${{dist.dir}}"/>
             </target>
-
+            
             <target name="-post-clean">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-
+            
             <target name="clean">
                 <xsl:attribute name="depends">init,deps-clean,-do-clean,-post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
@@ -1175,8 +1446,8 @@ is divided into following sections:
             
             
         </project>
-
-<!-- TBD items:
+        
+        <!-- TBD items:
 
 Could pass <propertyset> to run, debug, etc. under Ant 1.6,
 optionally, by doing e.g.
@@ -1194,7 +1465,7 @@ to simulate
 -->
 
     </xsl:template>
-
+    
     <!---
     Generic template to build subdependencies of a certain type.
     Feel free to copy into other modules.
@@ -1268,40 +1539,40 @@ to simulate
             <or>
                 <xsl:for-each select="$roots/ejbjarproject3:root">
                     <xsl:element name="available">
-			        <xsl:attribute name="file"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-		            </xsl:element>
+                        <xsl:attribute name="file"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+                    </xsl:element>
                 </xsl:for-each>
             </or>
         </xsl:element>
     </xsl:template>
-
+    
     <xsl:template name="createSourcePathValidityTest">
         <xsl:param name="roots"/>
         <xsl:for-each select="$roots/ejbjarproject3:root">
             <xsl:element name="fail">
-			    <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
+                <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
                 <xsl:text>Must set </xsl:text><xsl:value-of select="@id"/>
-		    </xsl:element>
+            </xsl:element>
         </xsl:for-each>
     </xsl:template>
-
+    
     <xsl:template name="createFilesets">
-		<xsl:param name="roots"/>
+        <xsl:param name="roots"/>
         <xsl:param name="includes"/>
         <xsl:param name="excludes"/>
         <xsl:for-each select="$roots/ejbjarproject3:root">
             <xsl:element name="fileset">
-			    <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+                <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
                 <xsl:if test="$includes">
                     <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
                 </xsl:if>
                 <xsl:if test="$excludes">
-			        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
+                    <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
                 </xsl:if>
-		    </xsl:element>
+            </xsl:element>
         </xsl:for-each>
     </xsl:template>
-
+    
     <xsl:template name="createPackagesets">
         <xsl:param name="roots"/>
         <xsl:param name="includes"/>
@@ -1318,43 +1589,43 @@ to simulate
             </xsl:element>
         </xsl:for-each>
     </xsl:template>        
-
+    
     <xsl:template name="createPathElements">
         <xsl:param name="locations"/>
         <xsl:for-each select="$locations/ejbjarproject3:root">
             <xsl:element name="pathelement">
-			    <xsl:attribute name="location"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
-		    </xsl:element>
+                <xsl:attribute name="location"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+            </xsl:element>
         </xsl:for-each>
     </xsl:template>
-
+    
     <xsl:template name="createPath">
-            <xsl:param name="roots"/>
-            <xsl:for-each select="$roots/ejbjarproject3:root">
-                <xsl:if test="position() != 1">
-                        <xsl:text>:</xsl:text>
-                </xsl:if>
-                <xsl:text>${</xsl:text>
-                <xsl:value-of select="@id"/>
-                <xsl:text>}</xsl:text>
-            </xsl:for-each>						
-    </xsl:template>
-
-    <xsl:template name="manifestBasenameIterateFiles" >
-            <xsl:param name="property"/>
-            <xsl:param name="files" /><!-- number of files in the libfile property -->
-            <xsl:param name="libfile"/>
-            <xsl:if test="$files &gt; 0">
-                <xsl:variable name="fileNo" select="$files+(-1)"/>
-                <xsl:variable name="lib" select="concat('${',$libfile,'.libfile.',$files,'}')"/>
-                <xsl:variable name="propertyName" select="concat($property, '.', $fileNo+1)"/>
-                <basename property="{$propertyName}" file="{$lib}"/>
-                <xsl:call-template name="manifestBasenameIterateFiles">
-                    <xsl:with-param name="files" select="$fileNo"/>
-                    <xsl:with-param name="libfile" select="$libfile"/>
-                    <xsl:with-param name="property" select="$property"/>
-                </xsl:call-template>
+        <xsl:param name="roots"/>
+        <xsl:for-each select="$roots/ejbjarproject3:root">
+            <xsl:if test="position() != 1">
+                <xsl:text>:</xsl:text>
             </xsl:if>
+            <xsl:text>${</xsl:text>
+            <xsl:value-of select="@id"/>
+            <xsl:text>}</xsl:text>
+        </xsl:for-each>						
+    </xsl:template>
+    
+    <xsl:template name="manifestBasenameIterateFiles" >
+        <xsl:param name="property"/>
+        <xsl:param name="files" /><!-- number of files in the libfile property -->
+        <xsl:param name="libfile"/>
+        <xsl:if test="$files &gt; 0">
+            <xsl:variable name="fileNo" select="$files+(-1)"/>
+            <xsl:variable name="lib" select="concat('${',$libfile,'.libfile.',$files,'}')"/>
+            <xsl:variable name="propertyName" select="concat($property, '.', $fileNo+1)"/>
+            <basename property="{$propertyName}" file="{$lib}"/>
+            <xsl:call-template name="manifestBasenameIterateFiles">
+                <xsl:with-param name="files" select="$fileNo"/>
+                <xsl:with-param name="libfile" select="$libfile"/>
+                <xsl:with-param name="property" select="$property"/>
+            </xsl:call-template>
+        </xsl:if>
     </xsl:template>
     
     <xsl:template name="manifestPrintEntriesIterateFiles" >
@@ -1370,7 +1641,7 @@ to simulate
             </xsl:call-template>
         </xsl:if>
     </xsl:template>
-
+    
     <xsl:template name="manifestPrintEntriesIterateFilesIncreasingOrder" >
         <xsl:param name="property"/>
         <xsl:param name="files" /><!-- number of files in the libfile property -->
@@ -1393,17 +1664,17 @@ to simulate
         <xsl:param name="target"/>
         <xsl:param name="libfile"/>
         <xsl:if test="$files &gt; 0">
-        <xsl:variable name="fileNo" select="$files+(-1)"/>
-        <xsl:variable name="lib" select="concat('${',$libfile,'.libfile.',$files,'}')"/>
-        <copy file="{$lib}" todir="{$target}"/>
-        <xsl:call-template name="copyIterateFiles">
-            <xsl:with-param name="files" select="$fileNo"/>
-            <xsl:with-param name="target" select="$target"/>
-            <xsl:with-param name="libfile" select="$libfile"/>
-        </xsl:call-template>
+            <xsl:variable name="fileNo" select="$files+(-1)"/>
+            <xsl:variable name="lib" select="concat('${',$libfile,'.libfile.',$files,'}')"/>
+            <copy file="{$lib}" todir="{$target}"/>
+            <xsl:call-template name="copyIterateFiles">
+                <xsl:with-param name="files" select="$fileNo"/>
+                <xsl:with-param name="target" select="$target"/>
+                <xsl:with-param name="libfile" select="$libfile"/>
+            </xsl:call-template>
         </xsl:if>
     </xsl:template>
-            
+    
     <xsl:template name="copyIterateDirs" >
         <xsl:param name="files" />
         <xsl:param name="target"/>
@@ -1421,5 +1692,5 @@ to simulate
             </xsl:call-template>
         </xsl:if>
     </xsl:template>
-
+    
 </xsl:stylesheet>

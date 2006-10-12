@@ -74,6 +74,7 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         JavaMetamodel.getManager().waitScanFinished();
+                        isWaitingForScan = false;
                         fireChangeEvent();
                     }
                 });

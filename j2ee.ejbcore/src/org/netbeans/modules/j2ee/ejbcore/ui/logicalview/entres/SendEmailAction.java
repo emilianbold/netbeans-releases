@@ -23,10 +23,14 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.jmi.javamodel.Annotation;
+import org.netbeans.jmi.javamodel.AttributeValue;
+import org.netbeans.jmi.javamodel.Field;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
@@ -36,6 +40,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -44,6 +49,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
 import org.openide.DialogDescriptor;
 import org.openide.util.Lookup;
 
@@ -89,11 +96,15 @@ public class SendEmailAction extends NodeAction {
             }
         });
         p.checkJndiName();
-
+        
         Object option = DialogDisplayer.getDefault().notify(nd);
         if (option == NotifyDescriptor.OK_OPTION) {
             try {
                 
+                // TODO: for now I am leaving explicit creation of resource element in model here,
+                // because model builder doesn't handle @Resource annotation.
+                // Later it should be conditional - disabled for Java EE 5 projects
+                // and it should be autodiscovered by annotation listening.
                 String jndiName = generateJNDILookup(
                         p.getJndiName(), erc,
                         beanClass.getName());
@@ -104,7 +115,8 @@ public class SendEmailAction extends NodeAction {
                             ServiceLocatorStrategy.create(enterpriseProject, srcFile,
                             serviceLocator);
                 }
-                generateMethods(beanClass, jndiName, serviceLocatorStrategy);
+                generateMethods(enterpriseProject, beanClass, jndiName, p.getJndiName(), serviceLocatorStrategy);
+                fixImports(beanClass);
                 if (serviceLocator != null) {
                     erc.setServiceLocatorName(serviceLocator);
                 }
@@ -135,26 +147,54 @@ public class SendEmailAction extends NodeAction {
     private String generateJNDILookup(String jndiName,
             EnterpriseReferenceContainer erc,
             String className) throws IOException {
-        if(jndiName.startsWith("mail/")){ //NOI18N
-            jndiName = jndiName.substring(5);
-        }
         ResourceRef ref = erc.createResourceRef(className);
-        ref.setResRefName("mail/" + jndiName); // NOI18N
+        ref.setResRefName(jndiName); // NOI18N
         ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER);
         ref.setResSharingScope(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_SHARING_SCOPE_SHAREABLE);
         ref.setResType("javax.mail.Session"); //NOI18N
         return erc.addResourceRef(ref, className);
     }
     
-    private void generateMethods(JavaClass ce, String jndiName, ServiceLocatorStrategy sl){
-        generateSendMailMethod(ce);
-        generateLookupMethod(ce,jndiName,sl);
+    private void generateMethods(Project project, JavaClass ce, String jndiName, String simpleName, ServiceLocatorStrategy sl){
+        boolean rollback = true;
+        try{
+            JMIUtils.beginJmiTransaction(true);
+            String memberName = JMIUtils.uniqueMemberName(ce, simpleName, "mailResource"); //NOI18N
+            if (Utils.isJavaEE5orHigher(project) &&
+                    InjectionTargetQuery.isInjectionTarget(ce)) {
+                generateInjectedField(ce, simpleName, memberName);
+                generateSendMailMethod(ce, memberName, null);
+            } else {
+                String sessionGetter = generateLookupMethod(ce, jndiName, simpleName, sl);
+                generateSendMailMethod(ce, memberName, sessionGetter);
+            }
+            rollback = false;
+        } finally {
+            JMIUtils.endJmiTransaction(rollback);
+        }
     }
     
-    private void generateSendMailMethod(JavaClass ce){
+    /**
+     * Attempts to fix imports of the given <code>javaClass</code>. Executed
+     * in own transaction since fix imports would fail if called within a transaction
+     *  that has already changed the body of the given class.
+     */
+    private void fixImports(JavaClass javaClass){
+        boolean rollback = true;
+        try{
+            JMIUtils.beginJmiTransaction(true);
+            JMIUtils.fixImports(javaClass);
+            rollback = false;
+        } finally {
+            JMIUtils.endJmiTransaction(rollback);
+        }
+    }
+    
+    private void generateSendMailMethod(JavaClass ce, String sessionVariableName, String sessionGetter){
         Method me = JMIUtils.createMethod(ce);
         me.setModifiers(Modifier.PRIVATE);
-        me.setName("sendMail");
+        String methodName = JMIUtils.uniqueMemberName(ce, "sendMail", "mailResource"); //NOI18N
+        me.setName(methodName);
         me.setType(JMIUtils.resolveType("void"));
         // add parameters
         List parameters = me.getParameters();
@@ -163,23 +203,25 @@ public class SendEmailAction extends NodeAction {
         parameters.add(JMIUtils.createParameter(me,"body",JMIUtils.resolveType("String"),false));
         JMIUtils.addException(me, javax.naming.NamingException.class.getName());
         JMIUtils.addException(me, "javax.mail.MessagingException");
-        me.setBodyText(getSendCode());
+        me.setBodyText(getSendCode(sessionVariableName, sessionGetter));
         ce.getContents().add(me);
     }
     
-    private String getSendCode(){
-        return "javax.mail.Session session = getSession();\n" +
-        "javax.mail.internet.MimeMessage message = new javax.mail.internet.MimeMessage(session);\n" +
-        "message.setSubject(subject);\n" +
-        "message.setRecipients(javax.mail.Message.RecipientType.TO, javax.mail.internet.InternetAddress.parse(email, false));\n" +
-        "message.setText(body);\n" +                                                                                     
-        "javax.mail.Transport.send(message);\n";
+    private String getSendCode(String sessionVariableName, String sessionGetter){
+        return (sessionGetter != null ? "javax.mail.Session " + sessionVariableName + " = " + sessionGetter + "();\n" : "") +
+                "javax.mail.internet.MimeMessage message = new javax.mail.internet.MimeMessage(" + sessionVariableName + ");\n" +
+                "message.setSubject(subject);\n" +
+                "message.setRecipients(javax.mail.Message.RecipientType.TO, javax.mail.internet.InternetAddress.parse(email, false));\n" +
+                "message.setText(body);\n" +
+                "javax.mail.Transport.send(message);\n";
     }
     
-    private void generateLookupMethod(JavaClass ce, String jndiName, ServiceLocatorStrategy sl) {
+    private String generateLookupMethod(JavaClass ce, String jndiName, String simpleName, ServiceLocatorStrategy sl) {
         Method me = JMIUtils.createMethod(ce);
         me.setModifiers(Modifier.PRIVATE);
-        me.setName("getSession");
+        String sessionGetter = "get" + simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1);
+        sessionGetter = JMIUtils.uniqueMemberName(ce, sessionGetter, "mailResource");
+        me.setName(sessionGetter);
         me.setType(JMIUtils.resolveType("javax.mail.Session"));
         JMIUtils.addException(me, javax.naming.NamingException.class.getName());
         if (sl == null) {
@@ -188,6 +230,7 @@ public class SendEmailAction extends NodeAction {
             me.setBodyText(getSessionCode(jndiName, sl, ce));
         }
         ce.getContents().add(me);
+        return sessionGetter;
     }
     
     private String getSessionCode(String jndiName, ServiceLocatorStrategy sl, JavaClass target) {
@@ -202,38 +245,46 @@ public class SendEmailAction extends NodeAction {
                 new Object[] {jndiName});
     }
     
+    private void generateInjectedField(JavaClass jc, String jndiName, String simpleName) {
+        int modifier = InjectionTargetQuery.isStaticReferenceRequired(jc) ? (Modifier.STATIC | Modifier.PRIVATE) : Modifier.PRIVATE;
+        Field f = JMIGenerationUtil.createField(jc, simpleName, modifier, "javax.mail.Session");
+        AttributeValue av = JMIGenerationUtil.createAttributeValue(jc, "name", jndiName);
+        Annotation a = JMIGenerationUtil.createAnnotation(jc, "javax.annotation.Resource", Collections.singletonList(av));
+        f.getAnnotations().add(a);
+        jc.getFeatures().add(0, f);
+    }
+    
     protected boolean enable(Node[] nodes) {
         if (nodes == null || nodes.length != 1) {
             return false;
         }
-	JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[0]);
+        JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[0]);
         if (jc == null) {
             return false;
         }
         FileObject srcFile = JavaModel.getFileObject(jc.getResource());
         Project project = FileOwnerQuery.getOwner(srcFile);
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
-        Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
-	String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
-	if (serverInstanceId == null) {
-	    return true;
-	}
-	J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
-	if (platform == null) {
-	    return true;
-	}
-	if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
-	    return false;
-	}
-        return jc == null ? false : !jc.isInterface();
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
+        if (serverInstanceId == null) {
+            return true;
+        }
+        J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+        if (platform == null) {
+            return true;
+        }
+        if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+            return false;
+        }
+        return !jc.isInterface();
     }
     
     protected void initialize() {
         super.initialize();
     }
-
+    
     public Action createContextAwareInstance(Lookup actionContext) {
-        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template (Node.class)).allInstances().toArray(new Node[0]));
+        boolean enable = enable((Node[])actionContext.lookup(new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]));
         return enable ? this : null;
     }
     

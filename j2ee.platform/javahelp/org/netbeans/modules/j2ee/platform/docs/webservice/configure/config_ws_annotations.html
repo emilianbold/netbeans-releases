@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+    <head>
+        <meta name="lastupdated" content="2Feb04">
+        <!-- p2 -->
+
+        <title>Configuring Web Services via Annotations</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+
+        <h2>Configuring Web Services via Annotations</h2>
+        <p><small> 
+            <a href="#seealso">See Also</a> 
+        </small></p> 
+        <p>Annotations serve two purposes. Firstly, they affect the WSDL file that will 
+        be generated for the service. Secondly, they provide deployments and 
+        runtime information to the container.
+
+        <p>For example, you can use the <tt>@WebService</tt> annotation to 
+        specify the WSDL file's target namespace. You can also use the <tt>@SOAPBinding</tt>
+        annotation to specify the style/use configuration of the
+        service messages, for example, <tt>document/literal</tt> or <tt>rpc/literal</tt>.
+
+        <p>Before there were annotations, web services were deployed with a 
+        standard deployment descriptor, accompanied by service-specific descriptors. 
+        This can now be replaced by annotations. For example, the location of the WSDL
+        file in the deployed archive can now be specified through the <tt>wsdlLocation</tt>
+        attribute of the <tt>@WebService</tt> annotation. Likewise, message handlers 
+        can be configured using annotations, instead of including them in the 
+        deployment descriptor.
+     
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+            <dd><a href="about_annotations.html">About Annotations in Web Services</a></dd>
+            <dd><a href="config_ws_about.html">About Configuring Web Services</a></dd>
+            <dd><a href="config_ws_dd.html">Configuring Web Services via Deployment Descriptors</a></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+
+    </body>
+</html>

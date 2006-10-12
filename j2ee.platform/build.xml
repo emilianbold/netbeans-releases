@@ -23,11 +23,10 @@ Microsystems, Inc. All Rights Reserved.
     <property file="nbproject/project.properties" />
 
     <property name="external" location="../external"/>
-
-    <target name="j2ee-api-14" depends="build-init">
-        <copy file="${external}/j2eeri-1_4-doc-api.zip" todir="${cluster}/docs"/>
+    <target name="j2ee-api" depends="build-init">
+        <copy file="${external}/javaee5-doc-api.zip" todir="${cluster}/docs"/>
     </target>
-
-    <target name="netbeans-extra" depends="j2ee-api-14"/>
+    
+    <target name="netbeans-extra" depends="j2ee-api"/>
 
 </project>

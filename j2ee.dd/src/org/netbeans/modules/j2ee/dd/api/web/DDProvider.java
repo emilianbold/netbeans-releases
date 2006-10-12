@@ -23,15 +23,28 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
+import org.netbeans.modules.j2ee.metadata.MergedProvider;
 import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
+import org.netbeans.modules.j2ee.dd.impl.web.WebParseUtils;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
+import org.netbeans.modules.j2ee.metadata.MetadataUnit;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
+import org.netbeans.modules.j2ee.dd.impl.web.WebNNListener;
+import org.netbeans.modules.j2ee.metadata.NNMDRListener;
+import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -45,30 +58,31 @@ import org.openide.loaders.DataObjectNotFoundException;
 public final class DDProvider {
     private static DDProvider ddProvider;
     private Map ddMap;
+    private Map<MetadataUnit, WebApp> annotationDDMap;
     private Map baseBeanMap;
     private Map errorMap;
     private FCA fileChangeListener;
-
-    private static final String EXCEPTION_PREFIX="version:"; //NOI18N
+    private Map musMap;
     
     /** Creates a new instance of WebModule */
     private DDProvider() {
         ddMap=new java.util.HashMap(5);
+        annotationDDMap = new HashMap<MetadataUnit, WebApp>(5);
         baseBeanMap=new java.util.HashMap(5);
         errorMap=new java.util.HashMap(5);
-        fileChangeListener = new FCA ();
+        musMap=new HashMap(5);
+        fileChangeListener = new FCA();
     }
     
     /**
-    * Accessor method for DDProvider singleton
-    * @return DDProvider object
-    */
+     * Accessor method for DDProvider singleton
+     * @return DDProvider object
+     */
     public static synchronized DDProvider getDefault() {
         if (ddProvider==null) ddProvider = new DDProvider();
         return ddProvider;
     }
     
-
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
      * The method is useful for clints planning to read only the deployment descriptor
@@ -76,10 +90,55 @@ public final class DDProvider {
      * @param fo FileObject representing the web.xml file
      * @return WebApp object - root of the deployment descriptor bean graph
      */
-    public WebApp getDDRoot(FileObject fo) throws java.io.IOException {
+    public WebApp getMergedDDRoot(FileObject fo) throws IOException {
         if (fo == null) {
             throw new IllegalArgumentException("FileObject is null");  //NOI18N;
         }
+        
+        WebModule wm = WebModule.getWebModule(fo);
+        if(wm != null) {
+            //the MetadataUnits are cached; a key is the WM's DD FO
+            MetadataUnit mu = (MetadataUnit)musMap.get(wm.getDeploymentDescriptor());
+            if(mu == null) {
+                mu = new SimpleMetadataUnit(wm.getDeploymentDescriptor(), wm.getJavaSources());
+                musMap.put(wm.getDeploymentDescriptor(), mu);
+            }
+            return getMergedDDRoot(mu);
+        } else {
+            return getDDRoot(fo);
+        }
+    }
+    
+    public WebApp getMergedDDRoot(MetadataUnit mu) throws IOException {
+        WebApp xmlRoot = getDDRoot(mu.getDeploymentDescriptor());
+        if (xmlRoot != null && !xmlRoot.getVersion().equals(WebApp.VERSION_2_5)) {
+            return xmlRoot;
+        }
+        WebApp annotationRoot = getAnnotationRoot(mu);
+        if (xmlRoot instanceof WebAppProxy) {
+            xmlRoot = ((WebAppProxy) xmlRoot).getOriginal();
+        }
+        if (annotationRoot instanceof WebAppProxy) {
+            annotationRoot = ((WebAppProxy) annotationRoot).getOriginal();
+        }
+        return (WebApp) MergedProvider.getDefault().getRoot((BaseBean) annotationRoot, (BaseBean) xmlRoot);
+    }
+
+    private synchronized WebApp getAnnotationRoot(MetadataUnit mu) throws IOException {
+        if (mu == null) {
+            return null;
+        }
+        WebApp webApp = (WebApp) annotationDDMap.get(mu);
+        if (webApp != null) {
+            return webApp;
+        }
+        webApp = new org.netbeans.modules.j2ee.dd.impl.web.model_2_5.WebApp();
+        annotationDDMap.put(mu, webApp);
+        NNMDRListener.getDefault().addAnnotationListener(new WebNNListener(webApp, mu.getClassPath()));
+        return webApp;
+    }
+    
+    public WebApp getDDRoot(FileObject fo) throws java.io.IOException {
         WebAppProxy webApp = null;
         
         synchronized (ddMap) {
@@ -88,9 +147,9 @@ public final class DDProvider {
                 return webApp;
             }
         }
-
+        
         fo.addFileChangeListener(fileChangeListener);
-
+        
         String version = null;
         SAXParseException error = null;
         try {
@@ -98,7 +157,7 @@ public final class DDProvider {
             synchronized (baseBeanMap) {
                 original = getOriginalFromCache(fo);
                 if (original == null) {
-                    version = getVersion(fo.getInputStream());
+                    version = WebParseUtils.getVersion(fo.getInputStream());
                     // preparsing
                     error = parse(fo);
                     original = DDUtils.createWebApp(fo.getInputStream(), version);
@@ -126,7 +185,7 @@ public final class DDProvider {
         ddMap.put(fo.getURL(), new WeakReference(webApp));
         return webApp;
     }
-
+    
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
      * The method is useful for clients planning to modify the deployment descriptor.
@@ -138,8 +197,8 @@ public final class DDProvider {
     public WebApp getDDRootCopy(FileObject fo) throws java.io.IOException {
         return (WebApp)getDDRoot(fo).clone();
     }
-
-    private WebAppProxy getFromCache (FileObject fo) throws java.io.IOException {
+    
+    private WebAppProxy getFromCache(FileObject fo) throws java.io.IOException {
         if (fo == null) {
             return null;
         }
@@ -154,29 +213,29 @@ public final class DDProvider {
         return webApp;
     }
     
-    private WebApp getOriginalFromCache (FileObject fo) throws java.io.IOException {
-        WeakReference wr = (WeakReference) baseBeanMap.get(fo.getURL ());
+    private WebApp getOriginalFromCache(FileObject fo) throws java.io.IOException {
+        WeakReference wr = (WeakReference) baseBeanMap.get(fo.getURL());
         if (wr == null) {
             return null;
         }
-        WebApp webApp = (WebApp) wr.get ();
+        WebApp webApp = (WebApp) wr.get();
         if (webApp == null) {
-            baseBeanMap.remove (fo.getURL ());
-            errorMap.remove (fo.getURL ());
-            if (ddMap.get (fo.getURL ()) == null) {
+            baseBeanMap.remove(fo.getURL());
+            errorMap.remove(fo.getURL());
+            if (ddMap.get(fo.getURL()) == null) {
             }
         }
         return webApp;
     }
-
+    
     /**
      * Returns the root of deployment descriptor bean graph for java.io.File object.
      *
      * @param f File representing the web.xml file
      * @return WebApp object - root of the deployment descriptor bean graph
-     */    
+     */
     public WebApp getDDRoot(File f) throws IOException, SAXException {
-        return DDUtils.createWebApp(new FileInputStream(f), getVersion(new FileInputStream(f)));
+        return DDUtils.createWebApp(new FileInputStream(f), WebParseUtils.getVersion(new FileInputStream(f)));
     }
     
     /**  Convenient method for getting the BaseBean object from CommonDDBean object.
@@ -190,194 +249,125 @@ public final class DDProvider {
         else if (bean instanceof WebAppProxy) return (org.netbeans.modules.schema2beans.BaseBean) ((WebAppProxy)bean).getOriginal();
         return null;
     }
-
-    /** Parsing just for detecting the version  SAX parser used
-    */
-    private static String getVersion(java.io.InputStream is) throws java.io.IOException, SAXException {
-        javax.xml.parsers.SAXParserFactory fact = javax.xml.parsers.SAXParserFactory.newInstance();
-        fact.setValidating(false);
-        try {
-            javax.xml.parsers.SAXParser parser = fact.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            reader.setContentHandler(new VersionHandler());
-            reader.setEntityResolver(DDResolver.getInstance());
-            try {
-                reader.parse(new InputSource(is));
-            } catch (SAXException ex) {
-                is.close();
-                String message = ex.getMessage();
-                if (message!=null && message.startsWith(EXCEPTION_PREFIX))
-                    return message.substring(EXCEPTION_PREFIX.length());
-                else throw new SAXException(NbBundle.getMessage(DDProvider.class, "MSG_cannotParse"),ex);
-            }
-            is.close();
-            throw new SAXException(NbBundle.getMessage(DDProvider.class, "MSG_cannotFindRoot"));
-        } catch(javax.xml.parsers.ParserConfigurationException ex) {
-            throw new SAXException(NbBundle.getMessage(DDProvider.class, "MSG_parserProblem"),ex);
-        }
-    }
     
-    private static class VersionHandler extends org.xml.sax.helpers.DefaultHandler {
-        public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
-            if ("web-app".equals(rawName)) { //NOI18N
-                String version = atts.getValue("version"); //NOI18N
-                throw new SAXException(EXCEPTION_PREFIX+(version==null?WebApp.VERSION_2_3:version));
-            }
-        }
+    public SAXParseException parse(FileObject fo)
+    throws org.xml.sax.SAXException, java.io.IOException {
+        return WebParseUtils.parse(fo);
     }
   
-    private static class DDResolver implements EntityResolver {
-        static DDResolver resolver;
-        static synchronized DDResolver getInstance() {
-            if (resolver==null) {
-                resolver=new DDResolver();
-            }
-            return resolver;
-        }        
-        public InputSource resolveEntity (String publicId, String systemId) {
-            String resource=null;
-            // return a proper input source
-            if ("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN".equals(publicId)) { //NOI18N
-                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_3.dtd"; //NOI18N
-            } else if ("-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN".equals(publicId)) { //NOI18N
-                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_2.dtd"; //NOI18N
-            } else if ("http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd".equals(systemId)) {
-                resource="/org/netbeans/modules/j2ee/dd/impl/resources/web-app_2_4.xsd"; //NOI18N
-            }
-            if (resource==null) return null;
-            java.net.URL url = this.getClass().getResource(resource);
-            return new InputSource(url.toString());
-        }
-    }
     
-    private static class ErrorHandler implements org.xml.sax.ErrorHandler {
-        private int errorType=-1;
-        SAXParseException error;
-
-        public void warning(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
-            if (errorType<0) {
-                errorType=0;
-                error=sAXParseException;
-            }
-            //throw sAXParseException;
-        }
-        public void error(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
-            if (errorType<1) {
-                errorType=1;
-                error=sAXParseException;
-            }
-            //throw sAXParseException;
-        }        
-        public void fatalError(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
-            errorType=2;
-            throw sAXParseException;
-        }
-        
-        public int getErrorType() {
-            return errorType;
-        }
-        public SAXParseException getError() {
-            return error;
-        }        
-    }
-    
-    public SAXParseException parse (FileObject fo) 
-            throws org.xml.sax.SAXException, java.io.IOException {
-        DDProvider.ErrorHandler errorHandler = new DDProvider.ErrorHandler();
-        try {
-            SAXParser parser = createSAXParserFactory().newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            reader.setErrorHandler(errorHandler);
-            reader.setEntityResolver(DDProvider.DDResolver.getInstance());
-            reader.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
-            reader.setFeature("http://xml.org/sax/features/validation",  true); // NOI18N
-            reader.setFeature("http://xml.org/sax/features/namespaces",  true); // NOI18N
-            reader.parse(new InputSource(fo.getInputStream()));
-            SAXParseException error = errorHandler.getError();
-            if (error!=null) return error;
-        } catch (ParserConfigurationException ex) {
-            throw new org.xml.sax.SAXException(ex.getMessage());
-        } catch (SAXException ex) {
-            throw ex;
-        }
-        return null;
-    }
-    
-    /** Method that retrieves SAXParserFactory to get the parser prepared to validate against XML schema
+    /**
+     * Removes the entries associated with the given <code>fo</code> from
+     * the various caches that this class utilizes.
+     * @param fo
      */
-    private static SAXParserFactory createSAXParserFactory() throws ParserConfigurationException {
-        try {
-            SAXParserFactory fact = SAXParserFactory.newInstance();
-            if (fact!=null) {
-                try {
-                    fact.getClass().getMethod("getSchema", new Class[]{}); //NOI18N
-                    return fact;
-                } catch (NoSuchMethodException ex) {}
-            }
-            return (SAXParserFactory) Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance(); // NOI18N
-        } catch (Exception ex) {
-            throw new ParserConfigurationException(ex.getMessage());
+    private void removeFromCache(FileObject fo){
+        try{
+            URL foUrl = fo.getURL();
+            ddMap.remove(foUrl);
+            baseBeanMap.remove(foUrl);
+            errorMap.remove(foUrl);
+            musMap.remove(fo);
+        } catch (FileStateInvalidException ex) {
+            ErrorManager.getDefault().notify(ex);
         }
     }
-
+    
     private class FCA extends FileChangeAdapter {
-            public void fileChanged(FileEvent evt) {
-                FileObject fo=evt.getFile();
-                try {
-                    if (DataObject.find(fo) != null) {
-                        return;
-                    }
-                } catch (DataObjectNotFoundException e) {
+        public void fileChanged(FileEvent evt) {
+            FileObject fo=evt.getFile();
+            try {
+                if (DataObject.find(fo) != null) {
+                    return;
                 }
-                try {
-                    synchronized (ddMap) {
-                        synchronized (baseBeanMap) {
-                            WebAppProxy webApp = getFromCache (fo);
-                            WebApp orig = getOriginalFromCache (fo);
-                            if (webApp!=null) {
-                                String version = null;
-                                try {
-                                    version = getVersion(fo.getInputStream());
-                                    // preparsing
-                                    SAXParseException error = parse(fo);
-                                    if (error!=null) {
-                                        webApp.setError(error);
-                                        webApp.setStatus(WebApp.STATE_INVALID_PARSABLE);
-                                    } else {
-                                        webApp.setError(null);
-                                        webApp.setStatus(WebApp.STATE_VALID);
-                                    }
-                                    WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
-                                    baseBeanMap.put(fo.getURL(), new WeakReference (original));
-                                    errorMap.put(fo.getURL(), webApp.getError ());
-                                    webApp.merge(original, WebApp.MERGE_UPDATE);
-                                } catch (SAXException ex) {
-                                    if (ex instanceof SAXParseException) {
-                                        webApp.setError((SAXParseException)ex);
-                                    } else if ( ex.getException() instanceof SAXParseException) {
-                                        webApp.setError((SAXParseException)ex.getException());
-                                    }
-                                    webApp.setStatus(WebApp.STATE_INVALID_UNPARSABLE);
-                                    webApp.setOriginal(null);
-                                    webApp.setProxyVersion(version);
+            } catch (DataObjectNotFoundException e) {
+            }
+            try {
+                synchronized (ddMap) {
+                    synchronized (baseBeanMap) {
+                        WebAppProxy webApp = getFromCache(fo);
+                        WebApp orig = getOriginalFromCache(fo);
+                        if (webApp!=null) {
+                            String version = null;
+                            try {
+                                version = WebParseUtils.getVersion(fo.getInputStream());
+                                // preparsing
+                                SAXParseException error = parse(fo);
+                                if (error!=null) {
+                                    webApp.setError(error);
+                                    webApp.setStatus(WebApp.STATE_INVALID_PARSABLE);
+                                } else {
+                                    webApp.setError(null);
+                                    webApp.setStatus(WebApp.STATE_VALID);
                                 }
-                            } else if (orig != null) {
-                                String version = null;
-                                try {
-                                    version = getVersion(fo.getInputStream());
-                                    WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
-                                    if (original.getClass().equals (orig.getClass())) {
-                                        orig.merge(original,WebApp.MERGE_UPDATE);
-                                    } else {
-                                        baseBeanMap.put(fo.getURL(), new WeakReference (original));
-                                    }
-                                } catch (SAXException ex) {
-                                    baseBeanMap.remove(fo.getURL());
+                                WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
+                                baseBeanMap.put(fo.getURL(), new WeakReference(original));
+                                errorMap.put(fo.getURL(), webApp.getError());
+                                webApp.merge(original, WebApp.MERGE_UPDATE);
+                            } catch (SAXException ex) {
+                                if (ex instanceof SAXParseException) {
+                                    webApp.setError((SAXParseException)ex);
+                                } else if ( ex.getException() instanceof SAXParseException) {
+                                    webApp.setError((SAXParseException)ex.getException());
                                 }
+                                webApp.setStatus(WebApp.STATE_INVALID_UNPARSABLE);
+                                webApp.setOriginal(null);
+                                webApp.setProxyVersion(version);
+                            }
+                        } else if (orig != null) {
+                            String version = null;
+                            try {
+                                version = WebParseUtils.getVersion(fo.getInputStream());
+                                WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
+                                if (original.getClass().equals(orig.getClass())) {
+                                    orig.merge(original,WebApp.MERGE_UPDATE);
+                                } else {
+                                    baseBeanMap.put(fo.getURL(), new WeakReference(original));
+                                }
+                            } catch (SAXException ex) {
+                                baseBeanMap.remove(fo.getURL());
                             }
                         }
                     }
-                } catch (java.io.IOException ex){}
+                }
+            } catch (java.io.IOException ex){}
+        }
+        
+        public void fileDeleted(FileEvent fe) {
+            // need to remove cache entries, see #76431.
+            removeFromCache(fe.getFile());
+        }
+        
+        
+    }
+    
+    private class SimpleMetadataUnit implements MetadataUnit {
+        
+        private FileObject dd;
+        private FileObject[] roots;
+        
+        public SimpleMetadataUnit(FileObject dd, FileObject[] javaSources) {
+            this.dd = dd;
+            this.roots = javaSources;
+        }
+        
+        public FileObject getDeploymentDescriptor() {
+            return dd;
+        }
+        
+        public ClassPath getClassPath() {
+            if (roots.length > 0) {
+                FileObject fo = roots[0];
+                return ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                    ClassPath.getClassPath(fo, ClassPath.SOURCE),
+                    ClassPath.getClassPath(fo, ClassPath.COMPILE)
+                });
+            } else {
+                return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
             }
         }
+        
+        
+        
+    }
 }

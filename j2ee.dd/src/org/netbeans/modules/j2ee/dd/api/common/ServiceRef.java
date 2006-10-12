@@ -36,19 +36,19 @@ public interface ServiceRef extends ComponentInterface {
         /** Setter for service-ref-name property.
          * @param value property value
          */
-	public void setServiceRefName(java.lang.String value);
+	public void setServiceRefName(String value);
         /** Getter for service-ref-name property.
          * @return property value 
          */
-	public java.lang.String getServiceRefName();
+	public String getServiceRefName();
         /** Setter for service-interface property.
          * @param value property value
          */
-	public void setServiceInterface(java.lang.String value);
+	public void setServiceInterface(String value);
         /** Getter for service-interface property.
          * @return property value 
          */
-	public java.lang.String getServiceInterface();
+	public String getServiceInterface();
         /** Setter for wsdl-file property.
          * @param value property value
          */
@@ -60,19 +60,19 @@ public interface ServiceRef extends ComponentInterface {
         /** Setter for jaxrpc-mapping-file property.
          * @param value property value
          */
-	public void setJaxrpcMappingFile(java.lang.String value);
+	public void setJaxrpcMappingFile(String value);
         /** Getter for jaxrpc-mapping-file property.
          * @return property value 
          */
-	public java.lang.String getJaxrpcMappingFile();
+	public String getJaxrpcMappingFile();
         /** Setter for service-qname property.
          * @param value property value
          */
-	public void setServiceQname(java.lang.String value);
+	public void setServiceQname(String value);
         /** Getter for service-qname property.
          * @return property value 
          */
-	public java.lang.String getServiceQname();
+	public String getServiceQname();
         /** Setter for port-component-ref element.
          * @param index position in the array of elements
          * @param valueInterface port-component-ref element (PortComponentRef object)
@@ -137,5 +137,15 @@ public interface ServiceRef extends ComponentInterface {
          * @return index of the removed handler
          */
 	public int removeHandler(ServiceRefHandler valueInterface);
+
+        // Java EE 5
+        
+	void setMappedName(String value) throws VersionNotSupportedException;
+	String getMappedName() throws VersionNotSupportedException;
+	void setHandlerChains(ServiceRefHandlerChains valueInterface) throws VersionNotSupportedException;
+	ServiceRefHandlerChains getHandlerChains() throws VersionNotSupportedException;
+	PortComponentRef newPortComponentRef() throws VersionNotSupportedException;
+	ServiceRefHandler newServiceRefHandler() throws VersionNotSupportedException;
+	ServiceRefHandlerChains newServiceRefHandlerChains() throws VersionNotSupportedException;
 
 }

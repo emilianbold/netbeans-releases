@@ -27,6 +27,7 @@ import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -44,6 +45,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.LogicalViewChildren;
+import org.openide.actions.ToolsAction;
 
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -74,8 +76,11 @@ import org.openide.util.lookup.Lookups;
 
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
@@ -140,9 +145,27 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     return result;
                 }
             }
+            return findNodeInConfigFiles(root, fo);
         }
 
         return null;
+    }
+    
+    private Node findNodeInConfigFiles(Node root, FileObject fo) {
+        // XXX ugly, some node names contain the extension and other don't
+        // so retrieving the node name from the corresp. DataObject
+        String nodeName;
+        try {
+            DataObject dobj = DataObject.find(fo);
+            nodeName = dobj.getName();
+        } catch (DataObjectNotFoundException e) {
+            nodeName = fo.getName();
+        }
+        Node configFiles = root.getChildren().findChild(J2eeProjectView.CONFIG_FILES_VIEW_NAME); // NOI18N
+        if (configFiles == null) {
+            return null;
+        }
+        return NodeOp.findChild(configFiles, nodeName);
     }
     
     public synchronized void addChangeListener (ChangeListener l) {
@@ -275,7 +298,19 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                 groupsListeners.put(group, pcl);
                 group.addPropertyChangeListener(pcl);
                 FileObject fo = group.getRootFolder();
-                roots.add(fo);
+                if (project.getProjectDirectory().equals(fo)) {
+                    // add rather children of project's root folder than the
+                    // folder itself (cf. #78994)
+                    Enumeration en = project.getProjectDirectory().getChildren(false);
+                    while (en.hasMoreElements()) {
+                        FileObject child = (FileObject) en.nextElement();
+                        if (FileOwnerQuery.getOwner(child) == project) {
+                            roots.add(child);
+                        }
+                    }
+                } else {
+                    roots.add(fo);
+                }
             }
             setFiles(roots);
         }
@@ -500,6 +535,9 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             }
             
             actions.add(null);
+            actions.add(SystemAction.get(ToolsAction.class));
+            actions.add(null);
+            
             if (brokenLinksAction != null && brokenLinksAction.isEnabled()) {
                 actions.add(brokenLinksAction);
             }
@@ -510,7 +548,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
 
             return (Action[])actions.toArray(new Action[actions.size()]);
         }
-        
+
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
@@ -588,7 +626,15 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             }
 
             public void actionPerformed(ActionEvent e) {
-                BrokenServerSupport.showCustomizer(project, helper);
+                String j2eeSpec = EjbJarProjectProperties.getProperty(
+                        EjbJarProjectProperties.J2EE_PLATFORM,
+                        helper,
+                        AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String instance = BrokenServerSupport.selectServer(j2eeSpec, J2eeModule.EJB);
+                if (instance != null) {
+                    EjbJarProjectProperties.setServerInstance(
+                            project, helper, instance);
+                }
                 checkMissingServer();
             }
 

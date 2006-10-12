@@ -41,11 +41,13 @@ public class EjbJarView extends SectionNodeView {
                 Utils.ICON_BASE_DD_VALID);
         ejbJar = dataObject.getEjbJar();
         rootNode.addChild(new EjbJarDetailsNode(this, ejbJar));
+        rootNode.addChild(new EjbJarSecurityRolesNode(this, ejbJar));
         setRootNode(rootNode);
     }
 
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
-        if (oldValue instanceof EnterpriseBeans || newValue instanceof EnterpriseBeans) {
+        if (oldValue instanceof EnterpriseBeans || newValue instanceof EnterpriseBeans ||
+                propertyName.indexOf("MethodPermission") > 0 || propertyName.indexOf("SecurityIdentity") > 0) {   //NOI18N
             scheduleRefreshView();
         }
         super.dataModelPropertyChange(source, propertyName, oldValue, newValue);

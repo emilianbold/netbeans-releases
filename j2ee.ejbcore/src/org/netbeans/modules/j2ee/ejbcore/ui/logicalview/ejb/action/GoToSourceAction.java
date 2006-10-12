@@ -75,6 +75,9 @@ public class GoToSourceAction extends AbstractAction implements Presenter.Popup 
      * from NbJavaFastOpen
      */
     private void openSourceFO(FileObject fo){
+        if (fo == null) {
+            return;
+        }
         DataObject dob;
         try {
             dob = DataObject.find(fo);

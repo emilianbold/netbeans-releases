@@ -18,19 +18,22 @@
  */
 package org.netbeans.modules.j2ee.api.ejbjar;
 
+import java.util.Collections;
 import java.util.Iterator;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.ejbjar.EjbJarAccessor;
+import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.j2ee.spi.ejbjar.*;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
  * EjbJar should be used to access properties of an ejb jar module.
  * <p>
- * A client may obtain a EjbJar instance using
- * <code>EjbJar.getEjbJar(fileObject)</code> static method, for any
- * FileObject in the ejb jar module directory structure.
+ * A client may obtain an EjbJar instance using {@link EjbJar#getEjbJar} method
+ * for any FileObject in the ejb jar module directory structure.
  * </p>
  * <div class="nonnormative">
  * Note that the particular directory structure for ejb jar module is not guaranteed 
@@ -40,6 +43,7 @@ import org.openide.util.Lookup;
  * @author  Pavel Buzek
  */
 public final class EjbJar {
+    
     private EjbJarImplementation impl;
     private static final Lookup.Result implementations =
         Lookup.getDefault().lookup(new Lookup.Template(EjbJarProvider.class));
@@ -102,7 +106,10 @@ public final class EjbJar {
         return impl.getJ2eePlatformVersion();
     }
     
-    /** Deployment descriptor (ejb-jar.xml file) of the ejb module.
+    /**
+     * Deployment descriptor (ejb-jar.xml file) of an ejb module.
+     *
+     * @return descriptor FileObject or <code>null</code> if not available.
      */
     public FileObject getDeploymentDescriptor () {
         return impl.getDeploymentDescriptor();
@@ -123,4 +130,15 @@ public final class EjbJar {
     public FileObject getMetaInf() {
         return impl.getMetaInf();
     }
+
+    /**
+     * Coupling of deployment desrciptor and classpath containing annotated classes
+     * describing metadata of the EJB module
+     * 
+     * @return non-null value
+     */
+    public MetadataUnit getMetadataUnit() {
+        return impl.getMetadataUnit();
+    }
+    
 }

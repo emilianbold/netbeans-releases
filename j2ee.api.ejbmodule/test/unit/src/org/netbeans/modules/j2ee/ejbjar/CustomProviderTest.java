@@ -49,7 +49,7 @@ public class CustomProviderTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        File f = FileUtil.normalizeFile(new File(System.getProperty("test.data.dir")));
+        File f = getDataDir();
         assertTrue("example dir exists", f.exists());
         LocalFileSystem lfs = new LocalFileSystem ();
         lfs.setRootDirectory (f);

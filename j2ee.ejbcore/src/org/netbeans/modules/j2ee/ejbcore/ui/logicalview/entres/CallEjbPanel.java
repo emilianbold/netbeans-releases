@@ -41,12 +41,12 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
@@ -55,23 +55,23 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.util.NbBundle;
 
+
 /**
  *
  * @author Chris Webster
  * @author Martin Adamek
  */
 public class CallEjbPanel extends javax.swing.JPanel {
-
+    
     public static final String IS_VALID = "CallEjbPanel_isValid"; //NOI18N
-
+    
     private Set refNameSet;
-   
+    
     private NodeDisplayPanel nodeDisplayPanel;
     private ServiceLocatorStrategyPanel slPanel;
     private NodeAcceptor nodeAcceptor;
     private Project project;
     private JavaClass beanClass;
-    private EjbJar ejbJar;
     private FileObject srcFile;
     private String ejbName;
     
@@ -84,25 +84,28 @@ public class CallEjbPanel extends javax.swing.JPanel {
         this.beanClass = beanClass;
         this.refNameSet = Collections.EMPTY_SET;
         this.nodeAcceptor = new NodeAcceptorImpl();
-
+        
         // This is working only for EJB project. Will need some enhancement in EnterpriseReferenceContainer API?
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(srcFile);;
         if (ejbModule != null) {
             try {
-                this.ejbJar = DDProvider.getDefault().getDDRoot(ejbModule.getDeploymentDescriptor());
-                Ejb[] ejbs = ejbJar.getEnterpriseBeans().getEjbs();
-                for (int i = 0; i < ejbs.length; i++) {
-                    if (ejbs[i].getEjbClass().equals(beanClass.getName())) {
-                        String displayName = ejbs[i].getDefaultDisplayName();
-                        this.ejbName = displayName == null ? ejbs[i].getEjbName() : displayName;
-                        EjbRef[] ejbRefs = ejbs[i].getEjbRef();
-                        EjbLocalRef[] ejbLocalRefs = ejbs[i].getEjbLocalRef();
-                        this.refNameSet = new HashSet(ejbRefs.length + ejbLocalRefs.length);
-                        for (int j = 0; j < ejbRefs.length; j++) {
-                            this.refNameSet.add(ejbRefs[j].getEjbRefName());
-                        }
-                        for (int j = 0; j < ejbLocalRefs.length; j++) {
-                            this.refNameSet.add(ejbLocalRefs[j].getEjbRefName());
+                EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(ejbModule.getMetadataUnit());
+                EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
+                if (enterpriseBeans != null) {
+                    Ejb[] ejbs = enterpriseBeans.getEjbs();
+                    for (int i = 0; i < ejbs.length; i++) {
+                        if (ejbs[i].getEjbClass().equals(beanClass.getName())) {
+                            String displayName = ejbs[i].getDefaultDisplayName();
+                            this.ejbName = displayName == null ? ejbs[i].getEjbName() : displayName;
+                            EjbRef[] ejbRefs = ejbs[i].getEjbRef();
+                            EjbLocalRef[] ejbLocalRefs = ejbs[i].getEjbLocalRef();
+                            this.refNameSet = new HashSet(ejbRefs.length + ejbLocalRefs.length);
+                            for (int j = 0; j < ejbRefs.length; j++) {
+                                this.refNameSet.add(ejbRefs[j].getEjbRefName());
+                            }
+                            for (int j = 0; j < ejbLocalRefs.length; j++) {
+                                this.refNameSet.add(ejbLocalRefs[j].getEjbRefName());
+                            }
                         }
                     }
                 }
@@ -110,12 +113,10 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 this.refNameSet = Collections.EMPTY_SET;
             }
         }
-        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
-        errorField.setForeground(c == null ? new Color(89, 79, 191) : c);
+        setErrorFieldColor(true);
         nodeDisplayPanel = new NodeDisplayPanel(rootNode);
         nodeDisplayPanel.setBorder(new EtchedBorder());
         displayPanel.add(nodeDisplayPanel);
-        String errorMessage = " ";
         nodeDisplayPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
                 Node[] nodes = nodeDisplayPanel.getSelectedNodes();
@@ -124,7 +125,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 }
                 EjbReference ejbReference = (EjbReference) nodes[0].getCookie(EjbReference.class);
                 if (ejbReference != null) {
-                    generateName(ejbReference, remoteRadioButton.isSelected());
+                    generateName(ejbReference, remoteRadioButton.isSelected(), nodes[0]);
                 }
                 validateReferences();
             }
@@ -134,6 +135,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 validateReferences();
             }
         });
+        
         slPanel = new ServiceLocatorStrategyPanel(lastLocator);
         slPanel.getUnreferencedServiceLocator().addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -154,8 +156,32 @@ public class CallEjbPanel extends javax.swing.JPanel {
         serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
         validateReferences();
     }
-
+    
+    public void disableServiceLocator() {
+        serviceLocatorPanel.setVisible(false);
+    }
+    
+    private void setErrorFieldColor(boolean error){
+        if (error){
+            Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+            errorField.setForeground(c == null ? new Color(89, 79, 191) : c);
+        } else {
+            Color c = UIManager.getColor("nb.warningForeground"); //NOI18N
+            errorField.setForeground(c == null ? Color.DARK_GRAY : c);
+        }
+    }
+    
     private void setErrorMessage(String message) {
+        setErrorFieldColor(true);
+        setMessage(message);
+    }
+    
+    private void setWarningMessage(String message){
+        setErrorFieldColor(false);
+        setMessage(message);
+    }
+    
+    private void setMessage(String message){
         if (message == null) {
             message = " ";
         }
@@ -167,8 +193,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
     public void validateReferences() {
         boolean nodeAccepted = nodeAcceptor.acceptNodes(nodeDisplayPanel.getSelectedNodes());
         if ((slPanel.getUnreferencedServiceLocator().isSelected() &&
-            slPanel.getClassName().getText().trim().equals("")) ||
-            !nodeAccepted) {
+                slPanel.getClassName().getText().trim().equals("")) ||
+                !nodeAccepted) {
             firePropertyChange(IS_VALID, true, false);
         } else {
             firePropertyChange(IS_VALID, false, true);
@@ -231,7 +257,10 @@ public class CallEjbPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         add(displayPanel, gridBagConstraints);
+        displayPanel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_DisplayPanel"));
+        displayPanel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("ACSD_DisplayPanel"));
 
+        jLabel1.setLabelFor(displayPanel);
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_ModuleMustBeInSameApplication"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -317,7 +346,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
         remoteRadioButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/entres/Bundle").getString("LBL_Remote"));
 
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void remoteRadioButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_remoteRadioButtonItemStateChanged
         validateReferences();
     }//GEN-LAST:event_remoteRadioButtonItemStateChanged
@@ -348,7 +377,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
     public String getServiceLocator() {
         return slPanel.classSelected();
     }
-     
+    
     public String getReferenceName() {
         return referenceNameTextField.getText();
     }
@@ -357,14 +386,22 @@ public class CallEjbPanel extends javax.swing.JPanel {
         return remoteRadioButton.isSelected();
     }
     
-    private void generateName(EjbReference ejbReference, boolean remote) {
+    private void generateName(EjbReference ejbReference, boolean remote, Node selectedNode) {
         if (ejbReference.getClientJarTarget() == null) {
             referenceNameTextField.setText("");
             return;
         }
         String name;
         if (remote) {
-            name = ejbReference.createRef().getEjbRefName();
+            boolean targetIsJavaSE = Utils.isTargetJavaSE(beanClass);
+            if (targetIsJavaSE && Utils.isJavaEE5orHigher(project)){
+                Feature ejbRefClass = (Feature) selectedNode.getLookup().lookup(Feature.class);
+                name = ejbRefClass.getName();
+            } else if (targetIsJavaSE){
+                name = ejbReference.createRef().getHome();
+            } else {
+                name = ejbReference.createRef().getEjbRefName();
+            }
         } else {
             name = ejbReference.createLocalRef().getEjbRefName();
         }
@@ -375,12 +412,12 @@ public class CallEjbPanel extends javax.swing.JPanel {
         }
         referenceNameTextField.setText(name);
     }
-
+    
     private class NodeAcceptorImpl implements  NodeAcceptor {
-
+        
         public boolean acceptNodes(Node[] nodes) {
             setErrorMessage(" "); //NOI18N
-
+            
             // no node selected
             if (nodes.length == 0) {
                 setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_SelectOneEJB")); //NOI18N
@@ -424,56 +461,64 @@ public class CallEjbPanel extends javax.swing.JPanel {
             
             // if local ref is used, modules must be in same module or J2EE application
             DataObject dataObject = (DataObject) nodes[0].getCookie(DataObject.class);
-	    if (dataObject == null) {
-		setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NoSourcesForBean")); //NOI18N
-		return false;
-	    }
+            if (dataObject == null) {
+                setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NoSourcesForBean")); //NOI18N
+                return false;
+            }
             Project nodeProject = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
-            if (!isRemoteInterfaceSelected() && 
-                !nodeProject.equals(project) && 
-                !Utils.areInSameJ2EEApp(project, nodeProject)) {
+            if (!isRemoteInterfaceSelected() &&
+                    !nodeProject.equals(project) &&
+                    !Utils.areInSameJ2EEApp(project, nodeProject)) {
                 setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_NotInSameEarOrProject")); //NOI18N
                 return false;
             }
             
+            //AC cannot contain references to local beans
+            if (!isRemoteInterfaceSelected() &&
+                    Utils.isAppClient(project)) {
+                setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInAC")); //NOI18N
+                return false;
+            }
+
+            //Unit tests or classes in a JSE project cannot contain references to local beans
+            if (!isRemoteInterfaceSelected() &&
+                    Utils.isTargetJavaSE(beanClass)) {
+                setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallLocalInJSE")); //NOI18N
+                return false;
+            }
+            
+            // see #75876
+            if (!Utils.isJavaEE5orHigher(project) && Utils.isJavaEE5orHigher(nodeProject)){
+                setWarningMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_JEESpecificationLevelsDiffer")); //NOI18N
+            }
+            
             return true;
         }
-
+        
         private boolean acceptInterfaces(Node[] nodes) {
             EjbReference ejbReference = (EjbReference) nodes[0].getCookie(EjbReference.class);
             if (ejbReference == null) {
                 return false;
             }
-
-            String errorMessage = " "; //NOI18N
-            boolean shouldEnableLocal = true;
-            boolean shouldEnableRemote = true;
-            if (!ejbReference.supportsLocalInvocation()) {
-                shouldEnableLocal = false;
-            }
-            if (!ejbReference.supportsRemoteInvocation()) {
-                shouldEnableRemote = false;
-            }
+            
+            boolean shouldEnableLocal = ejbReference.supportsLocalInvocation();
+            boolean shouldEnableRemote = ejbReference.supportsRemoteInvocation();
             localRadioButton.setEnabled(shouldEnableLocal);
             remoteRadioButton.setEnabled(shouldEnableRemote);
             if (!shouldEnableLocal && !shouldEnableRemote) {
-                if (!ejbReference.supportsLocalInvocation() && !ejbReference.supportsRemoteInvocation()) {
-                    setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferencesNotSupported")); //NOI18N
-                }
-                setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_LocalAndRemoteRefAlreadyExist")); //NOI18N
+                setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_ReferencesNotSupported")); //NOI18N
                 return false;
             } else if (shouldEnableLocal && !shouldEnableRemote) {
                 localRadioButton.setSelected(true);
             } else if (!shouldEnableLocal && shouldEnableRemote) {
                 remoteRadioButton.setSelected(true);
             }
-            setErrorMessage(errorMessage);
+            setErrorMessage(" "); //NOI18N
             return true;
         }
         
         private boolean hasJarArtifact(Feature feature) {
             if (feature != null) {
-                JavaClass beanClass = JMIUtils.getDeclaringClass(feature);
                 Project nodeProject = FileOwnerQuery.getOwner(srcFile);
                 if (nodeProject.equals(project)) {
                     // we're in same project, no need for output jar
@@ -483,7 +528,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
             return false;
         }
-    
+        
         private boolean validateRefName() {
             String refName = referenceNameTextField.getText();
             if (refNameSet.contains(refName)) {

@@ -128,9 +128,6 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     
     private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
         
-        FileObject[] cache;
-        AntProjectHelper helper;
-        String propertyName;
         private ArrayList listeners;
         private SourceRoots sourceRoots;
         

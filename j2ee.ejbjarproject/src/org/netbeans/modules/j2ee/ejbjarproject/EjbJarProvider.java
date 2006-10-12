@@ -22,17 +22,23 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
+import org.netbeans.modules.j2ee.metadata.MetadataUnit;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
@@ -44,6 +50,7 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 
 
@@ -51,13 +58,16 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
  *
  * @author  Pavel Buzek
  */
-public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarImplementation, J2eeModule, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
+public final class EjbJarProvider extends J2eeModuleProvider
+        implements EjbJarImplementation, J2eeModule, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
     
-    public static final String FILE_DD        = "ejb-jar.xml";//NOI18N
+    public static final String FILE_DD = "ejb-jar.xml";//NOI18N
     
-    private EjbJarProject project;
-    private AntProjectHelper helper;
-    private Set versionListeners = null;
+    private final EjbJarProject project;
+    private final AntProjectHelper helper;
+    private Set versionListeners;
+    private MetadataUnit metadataUnit;
+    private ClassPath metadataClassPath;
     
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
@@ -68,11 +78,15 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     public FileObject getDeploymentDescriptor() {
+        FileObject ddFO = null;
         FileObject metaInfFo = getMetaInf();
-        if (metaInfFo == null) {
-            return null;
+        if (metaInfFo != null) {
+            ddFO = metaInfFo.getFileObject(FILE_DD);
         }
-        return metaInfFo.getFileObject(FILE_DD);
+        if (ddFO == null && !EjbJarProjectProperties.JAVA_EE_5.equals(getJ2eePlatformVersion())) {
+            // ...generate the DD from template...
+        }
+        return ddFO;
     }
     
     /** @deprecated use getJavaSources */
@@ -91,12 +105,24 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     public FileObject getMetaInf() {
         FileObject metaInf = getFileObject(EjbJarProjectProperties.META_INF);
         if (metaInf == null) {
-            String relativePath = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.META_INF);
-            String path = (relativePath != null ? helper.resolvePath(relativePath) : ""); // NOI18N
-            showErrorMessage(NbBundle.getMessage(EjbJarProject.class,"MSG_MetaInfCorrupted", project.getName(), path));
-            return null;
+            String version = project.getAPIEjbJar().getJ2eePlatformVersion();
+            if (needConfigurationFolder(version)) {
+                String relativePath = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.META_INF);
+                String path = (relativePath != null ? helper.resolvePath(relativePath) : "");
+                showErrorMessage(NbBundle.getMessage(EjbJarProvider.class,"MSG_MetaInfCorrupted", project.getName(), path));
+            }
         }
         return metaInf;
+    }
+    
+    /** Package-private for unit test only. */
+    static boolean needConfigurationFolder(final String version) {
+        return EjbJarProjectProperties.J2EE_1_3.equals(version) ||
+                EjbJarProjectProperties.J2EE_1_4.equals(version);
+    }
+    
+    public File getMetaInfAsFile() {
+        return getFile(EjbJarProjectProperties.META_INF);
     }
 
     public File getEnterpriseResourceDirectory() {
@@ -112,12 +138,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     public File getDeploymentConfigurationFile(String name) {
-        FileObject moduleFolder = getMetaInf();
-        if (moduleFolder == null) {
-            return null;
-        }
-        File configFolder = FileUtil.toFile(moduleFolder);
-        return new File(configFolder, name);
+        return new File(getMetaInfAsFile(), name);
     }
     
     public ClassPathProvider getClassPathProvider() {
@@ -125,7 +146,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     public FileObject getArchive() {
-        return getFileObject(EjbJarProjectProperties.DIST_JAR); //NOI18N
+        return getFileObject(EjbJarProjectProperties.DIST_JAR);
     }
     
     private FileObject getFileObject(String propname) {
@@ -154,7 +175,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     public boolean useDefaultServer() {
-        return true;
+        return false;
     }
     
     public String getServerID() {
@@ -165,8 +186,9 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
-    public void setServerInstanceID(String severInstanceID) {
-        EjbJarProjectProperties.setServerInstance(project, helper, severInstanceID);
+    public void setServerInstanceID(String serverInstanceID) {
+        assert serverInstanceID != null : "passed serverInstanceID cannot be null";
+        EjbJarProjectProperties.setServerInstance(project, helper, serverInstanceID);
     }
     
     public Iterator getArchiveContents() throws java.io.IOException {
@@ -174,23 +196,23 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     public FileObject getContentDirectory() {
-        return getFileObject(EjbJarProjectProperties.BUILD_CLASSES_DIR); //NOI18N
+        return getFileObject(EjbJarProjectProperties.BUILD_CLASSES_DIR);
     }
     
     public FileObject getBuildDirectory() {
-        return getFileObject(EjbJarProjectProperties.BUILD_DIR); //NOI18N
+        return getFileObject(EjbJarProjectProperties.BUILD_DIR);
     }
     
     public File getContentDirectoryAsFile() {
-        return getFile(EjbJarProjectProperties.BUILD_CLASSES_DIR); //NOI18N
+        return getFile(EjbJarProjectProperties.BUILD_CLASSES_DIR);
     }
     
     public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor(String location) {
         if (J2eeModule.EJBJAR_XML.equals(location)){
-            EjbJar webApp = getEjbJar();
-            if (webApp != null) {
+            EjbJar ejbJar = getEjbJar();
+            if (ejbJar != null) {
                 //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
-                return DDProvider.getDefault().getBaseBean(webApp);
+                return DDProvider.getDefault().getBaseBean(ejbJar);
             }
         }
         else if(J2eeModule.EJBSERVICES_XML.equals(location)){
@@ -204,11 +226,12 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     
     private EjbJar getEjbJar() {
         try {
-            FileObject ejbJarXml = getDeploymentDescriptor();
-            if (ejbJarXml == null) {
+            org.netbeans.modules.j2ee.api.ejbjar.EjbJar apiEjbJar = project.getAPIEjbJar();
+            if (apiEjbJar.getDeploymentDescriptor() == null && !EjbJarProjectProperties.JAVA_EE_5.equals(apiEjbJar.getJ2eePlatformVersion())) {
                 return null;
+            } else {
+                return DDProvider.getDefault().getMergedDDRoot(apiEjbJar.getMetadataUnit());
             }
-            return DDProvider.getDefault().getDDRoot(ejbJarXml);
         } catch (java.io.IOException e) {
             org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
         }
@@ -216,16 +239,23 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     private Webservices getWebservices() {
-        FileObject wsdd = getDD();
-        if(wsdd != null) {
+        if (Util.isJavaEE5orHigher(project)) {
+            WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(project.getProjectDirectory());
             try {
-                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault()
-                .getDDRoot(getDD());
-            } catch (java.io.IOException e) {
-                org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getMergedDDRoot(wss);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        } else {
+            FileObject wsdd = getDD();
+            if(wsdd != null) {
+                try {
+                    return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getDDRoot(wsdd);
+                } catch (java.io.IOException e) {
+                    org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+                }
             }
         }
-        
         return null;
     }
     
@@ -247,7 +277,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     
     public String getModuleVersion() {
         EjbJar ejbJar = getEjbJar();
-        return ejbJar.getVersion().toString();
+        return (ejbJar == null) ? EjbJar.VERSION_2_1 /* fallback */ : ejbJar.getVersion().toString();
     }
     
     private Set versionListeners() {
@@ -267,8 +297,9 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     public void removeVersionListener(J2eeModule.VersionListener vl) {
-        if (versionListeners != null)
+        if (versionListeners != null) {
             versionListeners.remove(vl);
+        }
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -297,7 +328,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     public String getUrl() {
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String name = ep.getProperty(EjbJarProjectProperties.JAR_NAME);
-        return name == null ? "" : ("/"+name); //NOI18N
+        return name == null ? "" : ('/' + name);
     }
     
     public boolean isManifestChanged(long timestamp) {
@@ -305,7 +336,7 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     }
     
     public void setUrl(String url) {
-        throw new UnsupportedOperationException("Cannot customize URL of web module");
+        throw new UnsupportedOperationException("Cannot customize URL of EJB module"); // NOI18N
     }
     
     public boolean ejbsChanged() {
@@ -320,13 +351,23 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM);
     }
 
+    public MetadataUnit getMetadataUnit() {
+        synchronized (this) {
+            if (metadataUnit == null) {
+                metadataUnit = new MetadataUnitImpl();
+            }
+            return metadataUnit;
+        }
+    }
+    
     public FileObject[] getSourceRoots() {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         List roots = new LinkedList();
         FileObject metaInf = getMetaInf();
-        if (metaInf != null)
+        if (metaInf != null) {
             roots.add(metaInf);
+        }
         
         for (int i = 0; i < groups.length; i++) {
             roots.add(groups[i].getRootFolder());
@@ -364,8 +405,9 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         if (OpenProjects.getDefault() != null) {
             Project[] projects = OpenProjects.getDefault().getOpenProjects();
             for (int i = 0; i < projects.length; i++) {
-                if (projects[i].equals(project)) 
+                if (projects[i].equals(project)) {
                     return true;
+                }
             }
             return false;
         } else {
@@ -374,7 +416,29 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
             return true;
         }
     }
-    
+
+    private ClassPath getMetadataClassPath() {
+        synchronized (this) {
+            if (metadataClassPath == null) {
+                ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
+                metadataClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                    cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                });
+            }
+            return metadataClassPath;
+        }
+    }
+
+    private class MetadataUnitImpl implements MetadataUnit {
+        public ClassPath getClassPath() {
+            return getMetadataClassPath();
+        }
+        public FileObject getDeploymentDescriptor() {
+            return EjbJarProvider.this.getDeploymentDescriptor();
+        }
+    }
+
     private static class IT implements Iterator {
         java.util.Enumeration ch;
         FileObject root;

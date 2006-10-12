@@ -1,16 +1,15 @@
- 
-<html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2005 Sun Microsystems, Inc. 
+ * Copyright © 2006 Sun Microsystems, Inc. 
  * All rights reserved.
  * Use is subject to license terms.
 -->
+ <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <title>Defining a Business Method</title> 
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 
 </head>
 <body>
@@ -25,8 +24,6 @@
   <li>Open the bean class in the Source Editor.</li>
   <li>Right-click anywhere in the Source Editor and choose EJB Methods &gt; Add 
     Business Method. </li>
-  <p>You can also right-click enterprise bean's node in the Projects window and 
-    choose Add &gt; Business Method. 
   <li>In the Add Business Method dialog box, define the method signature: 
     <ol>
       <li type="a">Name the method.</li>
@@ -40,13 +37,13 @@
     interface, or both.</li>
   <li>Click OK to create the method. 
     <p>The IDE adds the method signature to the interfaces and the method body 
-      to the bean class. </p>
+      to the bean class.</p>
   </li>
   <li>Edit your new business method. </li>
 </ol>
 <p><b>Notes:</b></p>
 <ul>
-  <li>When you create an enterprise bean in the IDE, the IDE creates a special 
+  <li>When you create an EJB 2.1 enterprise bean (J2EE 1.4), the IDE creates a special 
     <tt>Business</tt> interface in which it registers business 
     methods. The bean interface extends the <tt>Business</tt> interface 
     and the bean class implements both the <tt>Business</tt> interface 
@@ -54,10 +51,6 @@
   <li>When the IDE adds a business method to an enterprise bean, it does not save the 
     bean class or the bean interfaces. Only when you compile or save the class 
     is the new method saved to disk.</li>
-  <li>To fully remove a business method from both a enterprise bean's bean class 
-    and interfaces, delete the method from 
-    the bean's Local Methods list or Remote Methods list in the Projects window. If you delete the business 
-    method in the Source Editor, the IDE does not remove it from the bean interfaces.</li>
 </ul><!--TODO what about safely delete?-->
 <dl>
     <dt><a name="seealso">See Also</a></dt>

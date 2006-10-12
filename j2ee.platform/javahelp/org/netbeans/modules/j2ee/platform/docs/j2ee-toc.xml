@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 <!--
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -11,316 +11,358 @@
          "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-
-<!-- last updated 13Feb04 -->
-
-<tocitem text="Java Project Basics">
-    <tocitem text="Refactoring Java Source">
-        <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb"></tocitem>
-    </tocitem>
-</tocitem>
-
-
-<tocitem text="Servers and Databases">
-
-    <tocitem text="Servers">
-	<tocitem text="About Servers" target="about_server"/>
-	<tocitem text="About Connection Pools" target="server_aboutdbconnect"/>
-	<tocitem text="Registering a Server" target="server_register" />
-	<tocitem text="Starting and Stopping a Server" target="server_start" />
-	<tocitem text="Deploying a Web Application" target="deploy_webapp" />
-	<tocitem text="Deploying a Web Service" target="expose_ws" />
-	<tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
-	<tocitem text="Deploying an EJB Module" target="deploy_ejb" />
-	<tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" />
-	<tocitem text="Removing an Application from a Server" target="server_remove" />
-	<tocitem text="Sun Java System Application Server Platform Edition" />
-	<tocitem text="JBoss Application Server" >
-		<tocitem text="About the JBoss Application Server" target="about_jboss" />
-		<tocitem text="Working with the JBoss Application Server" target="jboss_process" />
-		<tocitem text="JBoss Application Server Tasks: Quick Reference" target="jboss_quickref" />
-		<tocitem text="Registering a JBoss Application Server" target="registering_app_server_jboss" />
-		<tocitem text="Accessing the JBoss Application Server Management Console" target="management_console_app_server_jboss" />
-		<tocitem text="Setting Up a Connection Pool on the JBoss Application Server" target="datasource_app_server_jboss" />
-		<tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>
-	</tocitem>
-	<tocitem text="BEA WebLogic Application Server">
-    	<tocitem text="Registering a BEA WebLogic Server" target="registering_app_server_weblogic" />
-    </tocitem>
-    </tocitem>
-
-</tocitem>
-
-<!-- Start of enterprise applications -->
-
-<tocitem text="Enterprise Applications">
-    <tocitem text="Developing Enterprise Applications" >
-        <tocitem text="About Enterprise Applications" >
-            <tocitem text="About Enterprise Applications" target="about_ent_apps" />
-            <tocitem text="Working With Enterprise Applications" target="ent_app_process" />
-            <tocitem text="Enterprise Application Tasks: Quick Reference" target="ent_app_quickref" />
-        </tocitem>
-        <tocitem text="Creating and Configuring Enterprise Applications" >
-            <tocitem text="Creating an Enterprise Application Project" target="ent_app_creating" />
-            <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
-	    <tocitem text="Adding an External Resource to an Enterprise Application" target="add_resources_to_ent_app" />
-            <tocitem text="Editing an Enterprise Application's Deployment Descriptor" target="ent_app_configure" />
-        </tocitem>
-        <tocitem text="Building and Running Enterprise Applications" >
-            <tocitem text="Building an Enterprise Application" target="ent_app_build" />
-            <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
-	    <tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" /> 
-            <tocitem text="Changing the Target Server" target="deploy_changeserver" />
-            <tocitem text="Changing the Default Web Browser" target="deploy_changebrowser" />
-        </tocitem>
-    </tocitem>
-    
-<tocitem text="Developing Web Applications">
-	
-    <tocitem text="About Web Applications">
-       <tocitem text="About Web Applications" target="about_webapps" />
-       <tocitem text="Working with Web Applications" target="webapps_process" />
-       <tocitem text="Web Application Tasks: Quick Reference" target="webapps_quickref"/>
-       <tocitem text="About the IDE's Web Development Support" target="webapps_idesupport" />
-       <tocitem text="About the IDE's Technology Version Support" target="webapps_techsupport" />   
-    </tocitem> 
-    
-    <tocitem text="Creating and Editing Web Applications">
-	   <tocitem text="About Creating Web Applications" target="about_create_webapps" />
-	   <tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
-	   <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
-	    <tocitem text="Web Application Frameworks" >
-	  <tocitem text="About Web Application Frameworks" target="about_framework"  />
-	  <tocitem text="JavaServer Faces" >      
-	  <tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
-	  <tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
-          </tocitem>
-          <tocitem text="Struts" >    
-          <tocitem text="Creating a New Application with Struts Support" target="framework_struts_create" />
-	  <tocitem text="Adding Struts Support to an Existing Application" target="framework_struts_add" />
-	  </tocitem>
-      </tocitem>
-	  </tocitem>
-    
-<tocitem text="Creating and Editing Web Components"> 
-      <tocitem text="About Creating Web Components" target="about_create_webcomps" />
-       <tocitem text="JSP and HTML Files">
-          <tocitem text="About Creating and Editing JSP, HTML, and Tag Files" target="about_jsp_edit" />
-          <tocitem text="About JavaServer Pages Technology" target="about_jsp_technology" />
-	  <tocitem text="About JSP Syntax" target="about_jsp_syntax" /> 
-	  <tocitem text="Creating a JSP File" target="jsp_create" />
-	  <tocitem text="Creating an HTML File" target="html_create" />
-	  <tocitem text="Editing a JSP, HTML, or Tag File" target="jsp_edit" />
-          <tocitem text="Setting Character Encoding for a JSP File">
-                  <tocitem text="About JSP Character Encoding" target="about_jsp_encoding" />
-		  <tocitem text="Setting Request Character Encoding for a JSP File" target="jsp_encoding_request" />
-		  <tocitem text="Setting Page Character Encoding for a JSP File" target="jsp_encoding_page" />
-		  <tocitem text="Setting Response Character Encoding for a JSP File" target="jsp_encoding_response" />
-          </tocitem>
-	  <tocitem text="Accessing a Custom Tag from a JSP Page" target="jsp_usetaglib"/>
-          <tocitem text="Accessing an Applet from a JSP Page" target="jsp_useapplet"/>
-	  <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>
-	  <tocitem text="Compiling a JSP File" target="jsp_compile" />
-	  <tocitem text="Enabling JDK 1.5 Compilation Support for Tomcat" target="jsp_compilation_tomcat"/>
-          <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
-          <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
-          <tocitem text="Running a JSP File" target="jsp_run" />
-     </tocitem>
-     <tocitem text="Tags">
-	  <tocitem text="About Tag Libraries" target="about_taglib"/>
-	  <tocitem text="About the JSTL" target="about_jstl" />
-      
-      <tocitem text="Tag Libraries" >
-          <tocitem text="Managing a Library" target="taglib_manage"/>
-          <tocitem text="Creating a Reusable Tag Library"  target="taglib_create_separate"/>     
-      </tocitem>
-      <tocitem text="Tag Library Descriptors" >
-          <tocitem text="About Tag Library Descriptors" target="about_tld"  />        
-          <tocitem text="Creating a Tag Library Descriptor" target="tld_create" />
-          <tocitem text="Editing a Tag Library Descriptor" target="tld_edit" />
-      </tocitem>
-      <tocitem text="Tag Files (JSP syntax)" >
-          <tocitem text="About Tag Files" target="about_tagfile" />
-          <tocitem text="Creating a Tag File" target="tagfile_create" />
-          <tocitem text="Editing a JSP, HTML, or Tag File" target="jsp_edit" />
-      </tocitem>
-      <tocitem text="Tag Handlers (Java programming language)" >
-          <tocitem text="Creating a Tag Handler" target="taghandler_create" />
-          <tocitem text="Defining a Tag Handler's TLD Information" target="taghandler_edit" />
-      </tocitem> 
-     
-      </tocitem> 
-       <tocitem text="Applets" >
-              <tocitem text="Creating an Applet" target="applet_create"/>
-	      <tocitem text="Running an Applet" target="applet_run"/>
-              <tocitem text="Setting Permissions for an Applet" target="applet_security"/>
-       </tocitem>
-       <tocitem text="Servlets">
-         <tocitem text="About Servlets" target="about_servlet" />
-         <tocitem text="Creating a Servlet" target="servlet_create" />
-	 <tocitem text="Editing a Servlet" target="servlet_edit"/>
-	 <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
-	 <tocitem text="Accessing a Connection Pool from a Java Class" target="use_db" />
-         <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
-         <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
-	 <tocitem text="Running a Servlet" target="servlet_run" />
-       </tocitem> 
-       <tocitem text="Filters"> 
-         <tocitem text="About Filters" target="about_filter"  />
-         <tocitem text="Creating a Filter" target="filter_create"/>
-         <tocitem text="Registering a Filter" target="filter_addtodd"/>
-         <tocitem text="Running a Filter" target="filter_run"/>
-      </tocitem> 
-      <tocitem text="Web Application Listeners">
-         <tocitem text="About Web Application Listeners" target="about_listener"  />       					
-         <tocitem text="Creating a Web Application Listener" target="listener_create"/>
-         <tocitem text="Registering a Web Application Listener" target="listener_addtodd"/>
-         <tocitem text="Running a Web Application Listener" target="listener_run"/>
-       </tocitem> 
-   </tocitem>
-   <tocitem text="Configuring Web Applications" >
-	   <tocitem text="About Configuring Web Applications" target="about_webapp_configure" />
-           <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
-           <tocitem text="Configuring Web Application Deployment Descriptors" target="configure_webapp_dd" />  
-   </tocitem>
-   <tocitem text="Building Web Applications"> 
-	    <tocitem text="About Building Web Applications" target="about_build"  />
-	    <tocitem text="Packaging a Resource in a WAR File" target="build_externalresources" />
-            <tocitem text="Building a WAR File" target="build_warfile" />
-            <tocitem text="Removing a WAR File" target="build_remove"/>        
-    </tocitem>
-
-   <tocitem text="Deploying Web Applications"> 
-            <tocitem text="About Deploying Web Applications" target="about_deploy" />
-	    <tocitem text="Web Application Deployment Tasks: Quick Reference" target="deploy_quickref" />
-	    <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
-	    <tocitem text="Setting a Context Path" target="server_context" />
-            <tocitem text="Authenticating the Tomcat Web Server" target="deploy_tomcat_manager" />
-            <tocitem text="Deploying a Web Application" target="deploy_webapp" />
-	    <tocitem text="Changing the Target Server" target="deploy_changeserver" />
-	    <tocitem text="Changing the Default Web Browser" target="deploy_changebrowser" />
-            <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->      
-    </tocitem> 
        
-    <tocitem text="Debugging and Testing Web Applications"> 
-            <tocitem text="About Debugging and Testing Web Applications" target="about_debug"/>
-    	    <tocitem text="Compiling a JSP File" target="jsp_compile" /> 
-	    <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
-	    <tocitem text="Debugging a Web Application" target="debug_webapp" /> 
-	    <tocitem text="Creating A Debug Target for a Free-Form Web Project" target="debug_freeform" />
-     </tocitem>
-    <tocitem text="Upgrading to the J2EE 1.4 Specification" target="upgrade_to_j2ee14" /> 
-<!-- End of web applications -->
-</tocitem>
-
-    <tocitem text="Developing Enterprise Beans" >
-        <tocitem text="About Enterprise Beans" >
-            <tocitem text="About Enterprise Beans" target="about_ejbs" />
-            <tocitem text="Working With Enterprise Beans" target="ejb_process" />
-            <tocitem text="Enterprise Bean Tasks: Quick Reference" target="ejb_quickref" />
-            <tocitem text="About Entity Beans" target="about_entity_beans" />
-            <tocitem text="About Session Beans" target="about_session_beans" />
-            <tocitem text="About Message-Driven Beans" target="about_msg_driven_beans" />
+    <tocitem text="Java Project Basics">
+        <tocitem text="Refactoring Java Source">
+            <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb"></tocitem>
         </tocitem>
-	<tocitem text="Creating and Editing Enterprise Beans" >
-            <tocitem text="Creating an EJB Module Project" target="create_ejb_project" />
-            <tocitem text="Creating an Enterprise Bean" target="create_ejb" />
-            <tocitem text="Generating CMP Entity Beans from a Database" target="generate_cmp_beans" />
-            <tocitem text="About Business Methods" target="about_business_method" />
-            <tocitem text="Defining a Business Method" target="define_business_method" />
-            <tocitem text="Defining a Finder Method" target="define_finder_method" />
-            <tocitem text="Adding EJB QL to a Finder or Select Method" target="add_ejbql" />
-            <tocitem text="Defining a Select Method" target="define_select_method" />
-            <tocitem text="Defining a CMP Field" target="define_cmp_field" />
-            <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
-            <tocitem text="Accessing a Connection Pool from a Java Class" target="use_db" />
-            <tocitem text="Sending an E-mail from a Java File" target="send_email" />
-            <tocitem text="Sending a JMS Message" target="send_jms" />
-            <tocitem text="Using a Service Locator" target="service_locator" />
-            <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb" />
-        </tocitem>
-        <tocitem text="Configuring EJB Modules" >
-            <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />
-            <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
-            <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
-            <tocitem text="Configuring EJB Deployment Descriptors" target="config_ejb_dd" />
-            <tocitem text="About Container-Managed Relationships" target="about_ejb_relationship" /> 
-            <tocitem text="Managing Container-Managed Relationships" target="ejb_relationship" /> 
-        </tocitem>
-        <tocitem text="Building and Deploying EJB Modules" >
-            <tocitem text="Building an EJB Module" target="build_ejb" />
-            <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
+    </tocitem>
+    
+    
+    <tocitem text="Servers and Databases">
+    
+        <tocitem text="Servers">
+            <tocitem text="About Servers" target="about_server"/>
+            <tocitem text="About Connection Pools" target="server_aboutdbconnect"/>
+            <tocitem text="Registering a Server" target="server_register" />
+            <tocitem text="Starting and Stopping a Server" target="server_start" />
+            <tocitem text="Deploying a Web Application" target="deploy_webapp" />
+            <tocitem text="Deploying a Web Service" target="expose_ws" />
+            <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
             <tocitem text="Deploying an EJB Module" target="deploy_ejb" />
+            <tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" />
+            <tocitem text="Removing an Application from a Server" target="server_remove" />
+            <tocitem text="Sun Java System Application Server Platform Edition" />
+            <tocitem text="JBoss Application Server" >
+                <tocitem text="About the JBoss Application Server" target="about_jboss" />
+                <tocitem text="Working with the JBoss Application Server" target="jboss_process" />
+                <tocitem text="JBoss Application Server Tasks: Quick Reference" target="jboss_quickref" />
+                <tocitem text="Registering a JBoss Application Server" target="registering_app_server_jboss" />
+                <tocitem text="Accessing the JBoss Application Server Utilities" target="management_console_app_server_jboss" />
+                <tocitem text="Setting Up a Connection Pool on the JBoss Application Server" target="datasource_app_server_jboss" />
+                <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>
+            </tocitem>
+            <tocitem text="BEA WebLogic Application Server">
+                <tocitem text="Registering a BEA WebLogic Server" target="registering_app_server_weblogic" />
+            </tocitem>
         </tocitem>
-        <tocitem text="Debugging and Testing EJB Modules" >
-            <tocitem text="Debugging an EJB Module" target="debug_ejb" />
-            <tocitem text="Writing A Debug Target for a Free-Form EJB Module Project" target="debug_ejb_freeform" />
-            <tocitem text="Testing an EJB Module" target="test_ejb" />
+
+    </tocitem>
+    
+    <!-- Start of enterprise applications -->
+    
+    <tocitem text="Enterprise Applications">
+
+
+
+    
+        <tocitem text="Developing Web Applications">
+    
+            <tocitem text="About Web Applications">
+                <tocitem text="About Web Applications" target="about_webapps" />
+                <tocitem text="Working with Web Applications" target="webapps_process" />
+                <tocitem text="Web Application Tasks: Quick Reference" target="webapps_quickref"/>
+                <tocitem text="About the IDE's Web Development Support" target="webapps_idesupport" />
+                <tocitem text="About the IDE's Technology Version Support" target="webapps_techsupport" />   
+            </tocitem> 
+    
+            <tocitem text="Creating and Editing Web Applications">
+                <tocitem text="About Creating Web Applications" target="about_create_webapps" />
+                <tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
+                <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
+                <tocitem text="Web Application Frameworks" >
+                    <tocitem text="About Web Application Frameworks" target="about_framework"  />
+                    <tocitem text="JavaServer Faces" >      
+                        <tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
+                        <tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
+                        <tocitem text="Adding a JSF Form to a JSP Page" target="framework_jsf_form" />
+                        <tocitem text="Adding a JSF Data Table to a JSP Page" target="framework_jsf_datatable" />
+                        <tocitem text="About CRUD Applications" target="about_crud" />
+                        <tocitem text="Generating JSF Pages from an Entity Class" target="framework_crud_generate" />
+                    </tocitem>
+                    <tocitem text="Struts" >    
+                        <tocitem text="Creating a New Application with Struts Support" target="framework_struts_create" />
+                        <tocitem text="Adding Struts Support to an Existing Application" target="framework_struts_add" />
+                    </tocitem>
+                </tocitem>
+            </tocitem>
+    
+            <tocitem text="Creating and Editing Web Components"> 
+                <tocitem text="About Creating Web Components" target="about_create_webcomps" />
+                <tocitem text="JSP and HTML Files">
+                    <tocitem text="About Creating and Editing JSP, HTML, and Tag Files" target="about_jsp_edit" />
+                    <tocitem text="About JavaServer Pages Technology" target="about_jsp_technology" />
+                    <tocitem text="About JSP Syntax" target="about_jsp_syntax" /> 
+                    <tocitem text="Creating a JSP File" target="jsp_create" />
+                    <tocitem text="Creating an HTML File" target="html_create" />
+                    <tocitem text="Editing a JSP, HTML, or Tag File" target="jsp_edit" />
+                    <tocitem text="Setting Character Encoding for a JSP File">
+                        <tocitem text="About JSP Character Encoding" target="about_jsp_encoding" />
+                        <tocitem text="Setting Request Character Encoding for a JSP File" target="jsp_encoding_request" />
+                        <tocitem text="Setting Page Character Encoding for a JSP File" target="jsp_encoding_page" />
+                        <tocitem text="Setting Response Character Encoding for a JSP File" target="jsp_encoding_response" />
+                    </tocitem>
+                    <tocitem text="Accessing a Custom Tag from a JSP Page" target="jsp_usetaglib"/>
+                    <tocitem text="Accessing an Applet from a JSP Page" target="jsp_useapplet"/>
+                    <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcat"/>
+                    <tocitem text="Compiling a JSP File" target="jsp_compile" />
+                    <tocitem text="Enabling JDK 1.5 Compilation Support for Tomcat" target="jsp_compilation_tomcat"/>
+                    <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
+                    <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
+                    <tocitem text="Running a JSP File" target="jsp_run" />
+                </tocitem>
+                <tocitem text="Tags">
+                    <tocitem text="About Tag Libraries" target="about_taglib"/>
+                    <tocitem text="About the JSTL" target="about_jstl" />
+    
+                    <tocitem text="Tag Libraries" >
+                        <tocitem text="Managing a Library" target="taglib_manage"/>
+                        <tocitem text="Creating a Reusable Tag Library"  target="taglib_create_separate"/>     
+                    </tocitem>
+                    <tocitem text="Tag Library Descriptors" >
+                        <tocitem text="About Tag Library Descriptors" target="about_tld"  />        
+                        <tocitem text="Creating a Tag Library Descriptor" target="tld_create" />
+                        <tocitem text="Editing a Tag Library Descriptor" target="tld_edit" />
+                    </tocitem>
+                    <tocitem text="Tag Files (JSP syntax)" >
+                        <tocitem text="About Tag Files" target="about_tagfile" />
+                        <tocitem text="Creating a Tag File" target="tagfile_create" />
+                        <tocitem text="Editing a JSP, HTML, or Tag File" target="jsp_edit" />
+                    </tocitem>
+                    <tocitem text="Tag Handlers (Java programming language)" >
+                        <tocitem text="Creating a Tag Handler" target="taghandler_create" />
+                        <tocitem text="Defining a Tag Handler's TLD Information" target="taghandler_edit" />
+                    </tocitem> 
+        
+                </tocitem> 
+                <tocitem text="Applets" >
+                    <tocitem text="Creating an Applet" target="applet_create"/>
+                    <tocitem text="Running an Applet" target="applet_run"/>
+                    <tocitem text="Setting Permissions for an Applet" target="applet_security"/>
+                </tocitem>
+                <tocitem text="Servlets">
+                    <tocitem text="About Servlets" target="about_servlet" />
+                    <tocitem text="Creating a Servlet" target="servlet_create" />
+                    <tocitem text="Editing a Servlet" target="servlet_edit"/>
+                    <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
+                    <tocitem text="Adding Java Persistence to a Web Application" target="persist_webapp" />
+                    <tocitem text="Accessing a Connection Pool from a Java Class" target="use_db" />
+                    <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
+                    <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
+                    <tocitem text="Running a Servlet" target="servlet_run" />
+                </tocitem> 
+                <tocitem text="Filters"> 
+                    <tocitem text="About Filters" target="about_filter"  />
+                    <tocitem text="Creating a Filter" target="filter_create"/>
+                    <tocitem text="Registering a Filter" target="filter_addtodd"/>
+                    <tocitem text="Running a Filter" target="filter_run"/>
+                </tocitem> 
+                <tocitem text="Web Application Listeners">
+                    <tocitem text="About Web Application Listeners" target="about_listener"  />       					
+                    <tocitem text="Creating a Web Application Listener" target="listener_create"/>
+                    <tocitem text="Registering a Web Application Listener" target="listener_addtodd"/>
+                    <tocitem text="Running a Web Application Listener" target="listener_run"/>
+                </tocitem> 
+            </tocitem>
+            <tocitem text="Configuring Web Applications" >
+                <tocitem text="About Configuring Web Applications" target="about_webapp_configure" />
+                <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
+                <tocitem text="Configuring Web Application Deployment Descriptors" target="configure_webapp_dd" />  
+            </tocitem>
+            <tocitem text="Building Web Applications"> 
+                <tocitem text="About Building Web Applications" target="about_build"  />
+                <tocitem text="Packaging a Resource in a WAR File" target="build_externalresources" />
+                <tocitem text="Building a WAR File" target="build_warfile" />
+                <tocitem text="Removing a WAR File" target="build_remove"/>        
+            </tocitem>
+    
+            <tocitem text="Deploying Web Applications"> 
+                <tocitem text="About Deploying Web Applications" target="about_deploy" />
+                <tocitem text="Web Application Deployment Tasks: Quick Reference" target="deploy_quickref" />
+                <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
+                <tocitem text="Setting a Context Path" target="server_context" />
+                <tocitem text="Authenticating the Tomcat Web Server" target="deploy_tomcat_manager" />
+                <tocitem text="Deploying a Web Application" target="deploy_webapp" />
+                <tocitem text="Changing the Target Server" target="deploy_changeserver" />
+                <tocitem text="Changing the Default Web Browser" target="deploy_changebrowser" />
+                <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->      
+            </tocitem> 
+    
+            <tocitem text="Debugging and Testing Web Applications"> 
+                <tocitem text="About Debugging and Testing Web Applications" target="about_debug"/>
+                <tocitem text="Compiling a JSP File" target="jsp_compile" /> 
+                <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
+                <tocitem text="Debugging a Web Application" target="debug_webapp" /> 
+                <tocitem text="Creating A Debug Target for a Free-Form Web Project" target="debug_freeform" />
+            </tocitem>
+            <!-- End of web applications -->
         </tocitem>
-</tocitem>
-<tocitem text="Developing Web Services">
-         <tocitem text="About Web Services" >
-		<tocitem text="About Web Services" target="about_ws" />
-		<tocitem text="Working with Web Services" target="ws_process" />
-		<tocitem text="Web Service Tasks: Quick Reference" target="ws_quickref" />	
-		<tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 	
- 	 </tocitem>
-	 <tocitem text="Implementing Web Services" >
-		<tocitem text="About Implementing Web Services" target="about_implement_ws" />
-		<tocitem text="Generate the Web Service from a WSDL File" >
-			<tocitem text="Creating a WSDL File" target="create_wsdl_file" />
-			<tocitem text="Creating a Web Service from a WSDL File" target="create_ws_from_wsdl" />
-		</tocitem>
-		<tocitem text="Generate the WSDL file from a Web Service" >
-			<tocitem text="Creating a Web Service without a WSDL File" target="create_ws_from_scratch" />
-			<tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
-		</tocitem>
-	</tocitem>
-        <tocitem text="Configuring Web Services" >
-	   <tocitem text="About Configuring Web Services" target="config_ws_about" />
-	   <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
-           <tocitem text="Configuring Web Service Deployment Descriptors" target="config_ws_dd" />
-	   <tocitem text="Configuring Web Application Deployment Descriptors" target="configure_webapp_dd" />
-           <tocitem text="Configuring EJB Deployment Descriptors" target="config_ejb_dd" />
-        </tocitem>  
-	<tocitem text="Building Web Services" >
-		 <tocitem text="About Building Web Services" target="about_build_ws" />
-	         <tocitem text="About the Web Service Compiler" target="about_wscompile" />
-		 <tocitem text="About the WSDL File" target="about_wsdl" />
-                 <tocitem text="About the Service Endpoint Interface" target="about_sei" />
-		 <tocitem text="Building a Document-Style Web Service" target="compile_doc" />
-		 <tocitem text="Building a RPC-Style Web Service" target="compile_rpc" />
-		 <tocitem text="Building a Web Service from a WSDL File" target="compile_wsdl" />
-		 <tocitem text="Regenerating a Web Service Created from a WSDL File" target="compile_wsdl_regenerate" />
-                 <tocitem text="Tweaking the WSDL File by Hand" target="tweak_wsdl" />
-	 </tocitem>
-	 <tocitem text="Deploying and Testing Web Services" >
-                 <tocitem text="Deploying a Web Service" target="expose_ws" />
-		 <tocitem text="Registering a Web Service" target="register_ws" />
-		 <tocitem text="Testing a Web Service on the Service Side" target="test_ws" /> 
-	 </tocitem>
-	 <tocitem text="Consuming Web Services" >
-		 <tocitem text="About Web Service Clients" target="about_wsc" />
-		 <tocitem text="Working with Web Service Clients" target="wsc_process" />
-		 <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
-		 <tocitem text="Creating a Web Service Client" target="wsc_create" />
-		 <tocitem text="Exposing the Web Service Client in the Projects Window" target="wsc_expose" />
-		 <tocitem text="Changing the Web Service Client Type" target="wsc_change" />
-		 <tocitem text="Testing a Web Service on the Client Side" target="wsc_test" /> 
-		 <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
-		 <tocitem text="Building a Web Service Client" target="wsc_build" />
-		 <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
-	 </tocitem>
-	 <tocitem text="Inserting Message Handlers" >
- 		<tocitem text="About Message Handlers" target="about_ws_soap_message" />
-		<tocitem text="Creating a Message Handler" target="create_ws_soap_message" />
-		<tocitem text="Configuring a Message Handler" target="configure_ws_soap_message" />
-		<tocitem text="Testing and Using a Message Handler" target="test_and_use_ws_soap_message" />
-		<tocitem text="Examples" >
-			<tocitem text="Logging" target="example_logging" />
-			<tocitem text="Auditing" target="example_auditing" />	
-		</tocitem>
-	</tocitem>
- </tocitem> 
-</tocitem>
+        <tocitem text="Developing Web Services">
+            <tocitem text="About Web Services" >
+                <tocitem text="About Web Services" target="about_ws" />
+                <tocitem text="About JAX-WS Web Services" target="about_jax_ws" />
+                <tocitem text="About JAX-RPC Web Services" target="about_jax_rpc" />
+                <tocitem text="About Web Service Support in the IDE" target="about_ws_support" />
+                <tocitem text="About Web Service Samples in the IDE" target="about_ws_samples" />
+                <tocitem text="Working with Web Services" target="ws_process" />
+                <tocitem text="Web Service Tasks: Quick Reference" target="ws_quickref" />	
+                <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 	
+            </tocitem>
+            <tocitem text="Implementing Web Services" >
+                <tocitem text="About Implementing Web Services" target="about_implement_ws" />
+                <tocitem text="Generate the WSDL file from Java" >
+                    <tocitem text="Creating a Web Service from Java" target="create_ws_from_scratch" />
+                    <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
+                </tocitem>
+                <tocitem text="Generate the Web Service from a WSDL File" >
+                    <tocitem text="Creating a WSDL File" target="create_wsdl_file" />
+                    <tocitem text="Creating a Web Service from a WSDL File" target="create_ws_from_wsdl" />
+                    <tocitem text="Refreshing Web Services and Clients" target="wsc_refresh" />
+                </tocitem>
+                
+            </tocitem>
+            <tocitem text="Configuring Web Services" >
+                <tocitem text="About Configuring Web Services" target="config_ws_about" />
+                <tocitem text="About Annotations" target="about_annotations" />	   
+                <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
+                <tocitem text="Configuring via Annotations" target="config_ws_annotations" />
+                <tocitem text="Configuring via Deployment Descriptors" target="config_ws_dd" />
+            </tocitem>  
+            <tocitem text="Building Web Services" >
+                <tocitem text="About Building Web Services" target="about_build_ws" />
+                <tocitem text="About the WSDL File" target="about_wsdl" />
+                <tocitem text="About the wsimport Tool" target="about_wsimport" />
+                <tocitem text="About the wscompile Tool" target="about_wscompile" />
+                <tocitem text="About the Web Service Attributes Editor" target="org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl" />
+                <tocitem text="About the Service Endpoint Interface" target="about_sei" />
+                <tocitem text="Building a JAX-RPC Document-Style Web Service" target="compile_doc" />
+                <tocitem text="Building a JAX-RPC RPC-Style Web Service" target="compile_rpc" />
+                <tocitem text="Building a JAX-RPC Web Service from a WSDL File" target="compile_wsdl" />
+                <tocitem text="Regenerating a JAX-RPC Web Service Created from a WSDL File" target="compile_wsdl_regenerate" />
+            </tocitem>
+            <tocitem text="Deploying and Testing Web Services" >
+                <tocitem text="About Deploying and Testing Web Services" target="about_deploy_and_test_ws" />
+                <tocitem text="Deploying a Web Service" target="expose_ws" />
+                <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
+                <tocitem text="Viewing the Published WSDL File" target="test_ws" /> 
+            </tocitem>
+            <tocitem text="Consuming Web Services" >
+                <tocitem text="About Web Service Clients" target="about_wsc" />
+                <tocitem text="Working with Web Service Clients" target="wsc_process" />
+                <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
+                <tocitem text="Creating a Web Service Client" target="wsc_create" />
+                <tocitem text="Exposing the Web Service Client in the Projects Window" target="wsc_expose" />
+                <tocitem text="Refreshing Web Services and Clients" target="wsc_refresh" />
+                <tocitem text="Changing the JAX-RPC Web Service Client Type" target="wsc_change" />
+                <tocitem text="Testing a JAX-WS Web Service" target="glassfish_tester-ws" />
+                <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
+                <tocitem text="Asynchronously Calling a JAX-WS Web Service Operation" target="wsc_call_ws_asynchronous" />
+                <tocitem text="Building a Web Service Client" target="wsc_build" />
+                <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
+            </tocitem>
+            <tocitem text="Configuring Handlers" >
+                <tocitem text="About Handlers" target="about_ws_soap_message" />
+                <tocitem text="Creating a Handler" target="create_ws_soap_message" />
+                <tocitem text="Configuring a Handler" target="configure_ws_soap_message" />
+                <tocitem text="Testing and Using a Handler" target="test_and_use_ws_soap_message" />
+            </tocitem>
+        </tocitem>
+        <tocitem text="Using Java Persistence" >
+            <tocitem text="About Java Persistence" target="persist_about" />
+            <tocitem text="Java Persistence Tasks: Quick Reference" target="persist_quickref" />
+            <tocitem text="About Persistence Units" target="persist_unitabout" />
+            <tocitem text="About Entity Managers" target="persist_entitymanagerabout" />
+            <tocitem text="Creating a Persistence Unit" target="persist_unit" />
+            <tocitem text="Creating an Entity Class" target="persist_entityclass" />
+            <tocitem text="Mapping Entity Classes" target="persist_mapping" />
+            <tocitem text="Generating Entity Classes from a Database" target="persist_fromdb" />
+            <tocitem text="Generating Session Beans for Entity Classes" target="persist_session" />
+            <tocitem text="Obtaining an Entity Manager" target="persist_entitymanager" />
+            <tocitem text="Adding Support for Java Persistence" target="persist_support" />
+        </tocitem>
+        <tocitem text="Developing Enterprise Beans" >
+            <tocitem text="About Enterprise Beans" >
+                <tocitem text="About Enterprise Beans" target="about_ejbs" />
+                <tocitem text="Working With Enterprise Beans" target="ejb_process" />
+                <tocitem text="Enterprise Bean Tasks: Quick Reference" target="ejb_quickref" />
+                <tocitem text="About Session Beans" target="about_session_beans" />
+                <tocitem text="About Message-Driven Beans" target="about_msg_driven_beans" />
+                <tocitem text="About EJB 2.1 Entity Beans" target="about_entity_beans" />
+            </tocitem>
+            <tocitem text="Creating and Editing Enterprise Beans" >
+                <tocitem text="Creating an EJB Module Project" target="create_ejb_project" />
+                <tocitem text="Creating an Enterprise Bean" target="create_ejb" />
+                <tocitem text="Generating Session Beans for Entity Classes" target="persist_session" />
+                <tocitem text="About Business Methods" target="about_business_method" />
+                <tocitem text="Defining a Business Method" target="define_business_method" />
+                <tocitem text="About Calling an Enterprise Bean" target="about_call_ejb" />
+                <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
+                <tocitem text="Accessing a Connection Pool from a Java Class" target="use_db" />
+                <tocitem text="Sending an E-mail from a Java File" target="send_email" />
+                <tocitem text="Sending a JMS Message" target="send_jms" />
+                <tocitem text="Using a Service Locator" target="service_locator" />
+                <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb" />
+            </tocitem>
+            <tocitem text="Configuring EJB Modules" >
+                <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />
+                <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
+                <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
+                <tocitem text="Configuring EJB Deployment Descriptors" target="config_ejb_dd" />
+                <tocitem text="About Container-Managed Relationships" target="about_ejb_relationship" /> 
+                <tocitem text="Managing Container-Managed Relationships" target="ejb_relationship" /> 
+            </tocitem>
+            <tocitem text="Building and Deploying EJB Modules" >
+                <tocitem text="Building an EJB Module" target="build_ejb" />
+                <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
+                <tocitem text="Deploying an EJB Module" target="deploy_ejb" />
+            </tocitem>
+            <tocitem text="Debugging and Testing EJB Modules" >
+                <tocitem text="Debugging an EJB Module" target="debug_ejb" />
+                <tocitem text="Writing A Debug Target for a Free-Form EJB Module Project" target="debug_ejb_freeform" />
+                <tocitem text="Testing an EJB Module" target="test_ejb" />
+            </tocitem>
+            <tocitem text="Developing EJB 2.1 Entity Beans" >
+                <tocitem text="About EJB 2.1 Entity Beans" target="about_entity_beans" />
+                <tocitem text="About EJB 2.1 CMP Mappings" target="about_cmp" />
+                <tocitem text="EJB 2.1 Entity Bean: Quick Reference" target="entity_quickref" />
+                <tocitem text="Generating CMP Entity Beans from a Database" target="generate_cmp_beans" />            
+                <tocitem text="Defining a Finder Method" target="define_finder_method" />
+                <tocitem text="Adding EJB QL to a Finder or Select Method" target="add_ejbql" />
+                <tocitem text="Defining a Select Method" target="define_select_method" />
+                <tocitem text="Defining a CMP Field" target="define_cmp_field" />
+            </tocitem>
+        </tocitem>
+        <tocitem text="Developing Application Clients">
+            <tocitem text="About Enterprise Application Clients" target="appclient_about"></tocitem>
+            <tocitem text="Working with Java EE Application Clients" target="appclient_process"></tocitem>
+            <tocitem text="Java EE Application Clients Tasks: Quick Reference" target="appclient_quickref"></tocitem>
+            <tocitem text="Creating an Enterprise Application Client" target="appclient_create" />
+            <tocitem text="Editing an Enterprise Application Client's Deployment Descriptors" target="appclient_edit_dd" />
+            <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
+        </tocitem>
+        <tocitem text="Assembling Enterprise Applications" >
+            <tocitem text="About Enterprise Applications" >
+                <tocitem text="About Enterprise Applications" target="about_ent_apps" />
+                <tocitem text="Working With Enterprise Applications" target="ent_app_process" />
+                <tocitem text="Enterprise Application Tasks: Quick Reference" target="ent_app_quickref" />
+            </tocitem>
+            <tocitem text="Creating and Configuring Enterprise Applications" >
+                <tocitem text="Creating an Enterprise Application Project" target="ent_app_creating" />
+                <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
+                <tocitem text="Adding an External Resource to an Enterprise Application" target="add_resources_to_ent_app" />
+                <tocitem text="Editing an Enterprise Application's Deployment Descriptor" target="ent_app_configure" />
+            </tocitem>
+            <tocitem text="Building and Running Enterprise Applications" >
+                <tocitem text="Building an Enterprise Application" target="ent_app_build" />
+                <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
+                <tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" /> 
+                <tocitem text="Changing the Target Server" target="deploy_changeserver" />
+                <tocitem text="Changing the Default Web Browser" target="deploy_changebrowser" />
+            </tocitem>
+        </tocitem>
+        <tocitem text="Repackaging an Archive for a Different Server">
+            <tocitem text="About Packaged Archive Projects" target="archiveproject_about" />
+            <tocitem text="Redeploying an Application to a Different Server" target="archiveproject-deploying" />
+        </tocitem>
+    </tocitem> 
 </toc>

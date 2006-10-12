@@ -109,7 +109,7 @@ public class MessageDestRefsTablePanel extends DefaultTablePanel {
             dialogPanel.getNameTF().getDocument().addDocumentListener(docListener);;
             
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.show();
+            d.setVisible(true);
             dialogPanel.getNameTF().getDocument().removeDocumentListener(docListener);
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {

@@ -20,130 +20,205 @@
 package org.netbeans.modules.j2ee.earproject;
 
 import java.io.File;
-import java.io.IOException;
-import junit.framework.*;
-import junit.framework.*;
-import org.netbeans.api.project.Project;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Mutex;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 /**
- *
  * @author vkraemer
  */
-public class EarProjectGeneratorTest extends TestCase {
+public class EarProjectGeneratorTest extends NbTestCase {
     
-    /**
-     * Test of createProject method, of class org.netbeans.modules.j2ee.earproject.EarProjectGenerator.
-     */
-    public void testCreateProject() {
-
-        System.out.println("testCreateProject");
-        
-        // TODO add your test code below by replacing the default call to fail.
-        //fail("The test case is empty.");
-        FileObject dir[] = null;
-        try {
-            File f = File.createTempFile("vbktest","ZZZZZZ");
-            File tmpdir = f.getParentFile();
-            f.delete();
-            f = new File(tmpdir,"EarProjectGeneratorTest");
-            f.mkdirs();
-            dir = FileUtil.fromFile(f);
-            //String typeName = t.getType();
-            EarProjectGenerator.createProject(f, "EarProjectGeneratorTest", 
-                "1.4", null);
-            //fail("this should not work");
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            fail("this looks wrong");
-        } catch (Throwable t) {
-            t.printStackTrace();
-            fail("caught an unexpected exception: "+t.getClass().toString());
-        } finally {
-            try {
-                if (null != dir && null != dir[0]) {
-                    dir[0].delete();
-                }
-            } catch (Throwable t) {
-                System.out.println("bummer there");
+    private String serverID;
+    
+    private static final String[] CREATED_FILES = {
+        "build.xml",
+        "nbproject/build-impl.xml",
+        "nbproject/genfiles.properties",
+        "nbproject/project.xml",
+        "nbproject/project.properties",
+        "nbproject/private/private.properties",
+        "src/conf/application.xml"
+    };
+    
+    private static final String[] CREATED_FILES_EXT_SOURCES = {
+        "build.xml",
+        "nbproject/build-impl.xml",
+        "nbproject/genfiles.properties",
+        "nbproject/project.xml",
+        "nbproject/project.properties",
+        "nbproject/private/private.properties",
+    };
+    
+    private static final String[] CREATED_PROPERTIES = {
+        "build.archive.dir",
+        "build.classes.dir",
+        "build.classes.excludes",
+        "build.dir",
+        "build.generated.dir",
+        "client.module.uri",
+        "client.urlPart",
+        "debug.classpath",
+        "display.browser",
+        "dist.dir",
+        "dist.jar",
+        "j2ee.appclient.mainclass.args",
+        "j2ee.platform",
+        "j2ee.server.type",
+        "jar.compress",
+        "jar.content.additional",
+        "jar.name",
+        "javac.debug",
+        "javac.deprecation",
+        "javac.source",
+        "javac.target",
+        "meta.inf",
+        "no.dependencies",
+        "platform.active",
+        "resource.dir",
+        "source.root",
+    };
+    
+    private static final String[] CREATED_PROPERTIES_EXT_SOURCES = {
+        "build.archive.dir",
+        "build.classes.dir",
+        "build.classes.excludes",
+        "build.dir",
+        "build.generated.dir",
+        "client.module.uri",
+        "client.urlPart",
+        "debug.classpath",
+        "display.browser",
+        "dist.dir",
+        "dist.jar",
+        "j2ee.appclient.mainclass.args",
+        "j2ee.platform",
+        "j2ee.server.type",
+        "jar.compress",
+        "jar.content.additional",
+        "jar.name",
+        "javac.debug",
+        "javac.deprecation",
+        "javac.source",
+        "javac.target",
+        "meta.inf",
+        "no.dependencies",
+        "platform.active",
+        //"resource.dir",  -XXX- this is not found in project.props
+        //        when the project is created from ex. sources. Bug or not???
+        "source.root",
+    };
+    
+    public EarProjectGeneratorTest(String name) {
+        super(name);
+    }
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestUtil.makeScratchDir(this);
+        serverID = TestUtil.registerSunAppServer(this);
+    }
+    
+    public void testCreateProject() throws Exception {
+        File prjDirF = new File(getWorkDir(), "EARProject");
+        AntProjectHelper aph = EarProjectGenerator.createProject(prjDirF, "test-project",
+                J2eeModule.JAVA_EE_5, serverID, "1.5");
+        assertNotNull(aph);
+        FileObject prjDirFO = aph.getProjectDirectory();
+        for (String file : CREATED_FILES) {
+            assertNotNull(file + " file/folder cannot be found", prjDirFO.getFileObject(file));
+        }
+        EditableProperties props = aph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        @SuppressWarnings("unchecked")
+        List createdProperties = new ArrayList(props.keySet());
+        for (String property : CREATED_PROPERTIES) {
+            assertNotNull(property + " property cannot be found in project.properties", props.getProperty(property));
+            createdProperties.remove(property);
+        }
+        assertEquals("Found unexpected property: " + createdProperties,
+                CREATED_PROPERTIES.length, props.keySet().size());
+    }
+    
+    public void testImportProject() throws Exception {
+        File prjDirF = new File(getWorkDir(), "EARProject");
+        AntProjectHelper helper = EarProjectGenerator.importProject(prjDirF, prjDirF,
+                "test-project-ext-src", J2eeModule.JAVA_EE_5, serverID, null,
+                "1.5", Collections.<FileObject, ModuleType>emptyMap());
+        assertNotNull(helper);
+        FileObject prjDirFO = FileUtil.toFileObject(prjDirF);
+        for (String createdFile : CREATED_FILES_EXT_SOURCES) {
+            assertNotNull(createdFile + " file/folder cannot be found", prjDirFO.getFileObject(createdFile));
+        }
+        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        @SuppressWarnings("unchecked")
+        List createdProperties = new ArrayList(props.keySet());
+        int extFileRefCount = 0;
+        for (String propName : CREATED_PROPERTIES_EXT_SOURCES) {
+            String propValue = props.getProperty(propName);
+            assertNotNull(propName+" property cannot be found in project.properties", propValue);
+            createdProperties.remove(propName);
+            if ("manifest.file".equals(propName)) {
+                assertEquals("Invalid value of manifest.file property.", "manifest.mf", propValue);
             }
         }
-    }
-
-//    public void testImportProject() {
-//
-//        System.out.println("testImportProject");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        //fail("The test case is empty.");
-//        FileObject dir[] = null;
-//        try {
-//            File f = File.createTempFile("vbktest","ZZZZZZ");
-//            File tmpdir = f.getParentFile();
-//            f.delete();
-//            f = new File(tmpdir,"EarProjectImportTest");
-//            f.mkdirs();
-//            dir = FileUtil.fromFile(f);
-//            //String typeName = t.getType();
-//            AntProjectHelper h = EarProjectGenerator.createProject(f, "EarProjectImportTest", 
-//                "1.4", null);
-//            //h.
-//            //FileObject fileToDelete = dir[0].getFileObject("nbproject");
-//            // XXX need to close the project, the project generator is making
-//            // sure there isn't a project in the directory about to be used.
-//            //ProjectManager.getDefault().
-//            //fileToDelete.delete();
-//            //fileToDelete = dir[0].getFileObject("build.xml");
-//            //fileToDelete.
-//            
-//            EarProjectGenerator.importProject(f, "EarProjectImportTestImport",  "1.4");
-//            //fail("this should not work");
-//        } catch (IOException ioe) {
-//            ioe.printStackTrace();
-//            fail("this looks wrong");
-//        } catch (Throwable t) {
-//            t.printStackTrace();
-//            fail("caught an unexpected exception: "+t.getClass().toString());
-//        } finally {
-//            try {
-//                if (null != dir && null != dir[0]) {
-////                    dir[0].delete();
-//                }
-//            } catch (Throwable t) {
-//                System.out.println("bummer there");
-//            }
-//        }
-//    }
-
-    public EarProjectGeneratorTest(java.lang.String testName) {
-        super(testName);
+        assertEquals("Found unexpected property: " + createdProperties,
+                CREATED_PROPERTIES_EXT_SOURCES.length, props.keySet().size() - extFileRefCount);
     }
     
-    /**
-     * Test of importProject method, of class org.netbeans.modules.j2ee.earproject.EarProjectGenerator.
-     *
-    public void testImportProject() {
-
-        System.out.println("testImportProject");
-        
-        // TODO add your test code below by replacing the default call to fail.
-        fail("The test case is empty.");
+    public void testProjectNameIsSet() throws Exception { // #73930
+        File prjDirF = new File(getWorkDir(), "EARProject");
+        EarProjectGenerator.createProject(prjDirF, "test-project",
+                J2eeModule.JAVA_EE_5, serverID, "1.5");
+        // test also build
+        final File buildXML = new File(prjDirF, "build.xml");
+        String projectName = (String) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
+                Document doc = XMLUtil.parse(new InputSource(buildXML.toURI().toString()),
+                        false, true, null, null);
+                Element project = doc.getDocumentElement();
+                return project.getAttribute("name");
+            }
+        });
+        assertEquals("project name is set in the build.xml", "test-project", projectName);
     }
-    */
+    
+    public void testProjectNameIsEscaped() throws Exception {
+        final File prjDirF = new File(getWorkDir(), "EARProject");
+        EarProjectGenerator.createProject(prjDirF, "test project",
+                J2eeModule.JAVA_EE_5, serverID, "1.5");
+        // test build.xml
+        String buildXmlProjectName = (String) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
+                Document doc = XMLUtil.parse(new InputSource(new File(prjDirF, "build.xml").toURI().toString()),
+                        false, true, null, null);
+                Element project = doc.getDocumentElement();
+                return project.getAttribute("name");
+            }
+        });
+        assertEquals("project name is escaped in build.xml", "test_project", buildXmlProjectName);
+        // test build-impl.xml
+        String buildImplXmlProjectName = (String) ProjectManager.mutex().readAccess(new Mutex.ExceptionAction() {
+            public Object run() throws Exception {
+                Document doc = XMLUtil.parse(new InputSource(new File(prjDirF, "nbproject/build-impl.xml").toURI().toString()),
+                        false, true, null, null);
+                Element project = doc.getDocumentElement();
+                return project.getAttribute("name");
+            }
+        });
+        assertEquals("project name is escaped in build-impl.xml", "test_project-impl", buildImplXmlProjectName);
+    }
     
 }

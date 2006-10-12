@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -38,12 +40,19 @@ public class EjbRefsTablePanel extends DefaultTablePanel {
     private EjbRefTableModel model;
     private WebApp webApp;
     private DDDataObject dObj;
+    /**
+     * Indicates whether we are dealing with a Java EE 5 project.
+     */
+    private boolean javaEE5;
     
     /** Creates new form ContextParamPanel */
     public EjbRefsTablePanel(final DDDataObject dObj, final EjbRefTableModel model) {
     	super(model);
     	this.model=model;
         this.dObj=dObj;
+        Project project = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
+        this.javaEE5 = org.netbeans.modules.j2ee.common.Util.isJavaEE5orHigher(project);
+        
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dObj.modelUpdatedFromUI();
@@ -131,7 +140,7 @@ public class EjbRefsTablePanel extends DefaultTablePanel {
                             return NbBundle.getMessage(EjbRefsTablePanel.class,"TXT_EjbRefNameExists",name);
                         }
                     }
-                    if (home.length()==0) {
+                    if (home.length()==0 && !javaEE5) {
                         return NbBundle.getMessage(EjbRefsTablePanel.class,"TXT_EmptyEjbHome");
                     }
                     if (remote.length()==0) {
@@ -149,7 +158,7 @@ public class EjbRefsTablePanel extends DefaultTablePanel {
             dialogPanel.getInterfaceTF().getDocument().addDocumentListener(docListener);
             
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.show();
+            d.setVisible(true);
             dialogPanel.getNameTF().getDocument().removeDocumentListener(docListener);
             dialogPanel.getHomeTF().getDocument().removeDocumentListener(docListener);
             dialogPanel.getInterfaceTF().getDocument().removeDocumentListener(docListener);

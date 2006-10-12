@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.j2ee.earproject;
 
-import org.netbeans.modules.j2ee.earproject.ui.customizer.ArchiveProjectProperties;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 
 /**

@@ -48,7 +48,6 @@ import org.openide.*;
 import org.netbeans.api.project.ProjectInformation;
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.javacore.JMManager;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -69,6 +68,7 @@ class EjbJarActionProvider implements ActionProvider {
         COMMAND_RUN, 
         COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
+        COMMAND_DEBUG_SINGLE, 
         EjbProjectConstants.COMMAND_REDEPLOY,
         JavaProjectConstants.COMMAND_JAVADOC, 
         COMMAND_TEST, 
@@ -87,7 +87,7 @@ class EjbJarActionProvider implements ActionProvider {
     EjbJarProject project;
     
     // Ant project helper of the project
-    private AntProjectHelper antProjectHelper;
+    private final AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
         
     /** Map from commands to ant targets */
@@ -223,18 +223,7 @@ class EjbJarActionProvider implements ActionProvider {
                 return null;
             }
             if (isDebugged()) {
-                NotifyDescriptor nd;
-                ProjectInformation pi = ProjectUtils.getInformation(project);
-                String text = pi.getDisplayName();
-                nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(EjbJarActionProvider.class, "MSG_SessionRunning", text),
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
-                    return null;
-                }
+                p.setProperty("is.debugged", "true");
             }
             if (command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
                 p.setProperty("forceRedeploy", "true"); //NOI18N
@@ -243,21 +232,50 @@ class EjbJarActionProvider implements ActionProvider {
             }
         //DEBUGGING PART
         } else if (command.equals (COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
-            if (!isSelectedServer ()) {
-                return null;
+            FileObject[] javaFiles = findJavaSources(context);
+            if (javaFiles != null && javaFiles.length == 1 && hasMainMethod(javaFiles[0])) {
+                FileObject javaFile = javaFiles[0];
+                // debug Java with Main method
+                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(), javaFile), javaFile);
+                p.setProperty("javac.includes", clazz); // NOI18N
+                // Convert foo/FooTest.java -> foo.FooTest
+                if (clazz.endsWith(".java")) { // NOI18N
+                    clazz = clazz.substring(0, clazz.length() - 5);
+                }
+                clazz = clazz.replace('/','.');
+                p.setProperty("main.class", clazz); // NOI18N
+                targetNames = new String [] {"debug-single-main"};
+                return targetNames;
             }
-            if (isDebugged()) {
-                NotifyDescriptor nd;
-                nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(EjbJarActionProvider.class, "MSG_FinishSession"),
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
+            
+            FileObject[] testFiles = findTestSources(context, false);
+            if (testFiles != null) {
+                targetNames = setupDebugTestSingle(p, testFiles);
+            } else {
+                if (!isSelectedServer()) {
                     return null;
                 }
+                if (isDebugged()) {
+                    p.setProperty("is.debugged", "true");
+                }
             }
+        // APPLY CODE CHANGES DEBUGGING
+        } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
+            FileObject[] files = findJavaSources(context);
+            String path = null;
+            if (files != null) {
+                path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),files[0]), files[0]);
+                targetNames = new String[] {"debug-fix"}; // NOI18N
+            } else {
+                files = findTestSources(context, false);
+                path = FileUtil.getRelativePath(getRoot(project.getTestSourceRoots().getRoots(),files[0]), files[0]);
+                targetNames = new String[] {"debug-fix-test"}; // NOI18N
+            }
+            // Convert foo/FooTest.java -> foo/FooTest
+            if (path.endsWith(".java")) { // NOI18N
+                path = path.substring(0, path.length() - 5);
+            }
+            p.setProperty("fix.includes", path); // NOI18N
         //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
@@ -275,7 +293,7 @@ class EjbJarActionProvider implements ActionProvider {
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupTestSingle(p, files);
-        } 
+        }
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             targetNames = setupDebugTestSingle(p, files);
@@ -345,7 +363,8 @@ class EjbJarActionProvider implements ActionProvider {
             return project.getEjbModule().hasVerifierSupport();
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return true; // findJavaSources( context ) != null || findJsps (context) != null;
+            return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
+                    || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
         }
         if ( command.equals( COMMAND_RUN_SINGLE ) ) {
             FileObject[] javaFiles = findTestSources(context,false);
@@ -361,6 +380,11 @@ class EjbJarActionProvider implements ActionProvider {
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             return files != null && files.length == 1;
+        } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
+            FileObject[] testFiles = findTestSources(context, false);
+            FileObject[] javaFiles = findJavaSources(context);
+            return ((testFiles != null && testFiles.length == 1) || 
+                    (javaFiles != null && javaFiles.length == 1));
         } else {
             // other actions are global
             return true;
@@ -426,7 +450,7 @@ class EjbJarActionProvider implements ActionProvider {
             }
         }
         if (checkInSrcDir && testSrcPath.length>0) {
-            FileObject[] files = findSources (context);
+            FileObject[] files = findJavaSources (context);
             if (files != null) {
                 //Try to find the test under the test roots
                 FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(),files[0]);
@@ -444,7 +468,7 @@ class EjbJarActionProvider implements ActionProvider {
     /** Find tests corresponding to selected sources.
      */
     private FileObject[] findTestSourcesForSources(Lookup context) {
-        FileObject[] sourceFiles = findSources(context);
+        FileObject[] sourceFiles = findJavaSources(context);
         if (sourceFiles == null) {
             return null;
         }
@@ -478,6 +502,9 @@ class EjbJarActionProvider implements ActionProvider {
         
         J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
         ServerDebugInfo sdi = jmp.getServerDebugInfo ();
+        if (sdi == null) {
+            return false;
+        }
 //        server.getServerInstance().getStartServer().getDebugInfo(null);
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         
@@ -534,14 +561,4 @@ class EjbJarActionProvider implements ActionProvider {
         EjbJarProjectProperties.setServerInstance(project, antProjectHelper, serverInstanceId);
     }
     
-    private FileObject[] findSources(Lookup context) {
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        for (int i=0; i< srcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-        return null;
-    }
 }

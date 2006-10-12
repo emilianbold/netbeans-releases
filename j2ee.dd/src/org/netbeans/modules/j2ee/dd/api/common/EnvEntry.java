@@ -33,25 +33,39 @@ public interface EnvEntry extends CommonDDBean, DescriptionInterface {
         /** Setter for env-entry-name property.
          * @param value property value
          */
-	public void setEnvEntryName(java.lang.String value);
+	public void setEnvEntryName(String value);
         /** Getter for env-entry-name property.
          * @return property value 
          */
-	public java.lang.String getEnvEntryName();
+	public String getEnvEntryName();
         /** Setter for env-entry-type property.
          * @param value property value
          */
-	public void setEnvEntryType(java.lang.String value);
+	public void setEnvEntryType(String value);
         /** Getter for env-entry-type property.
          * @return property value 
          */
-	public java.lang.String getEnvEntryType();
+	public String getEnvEntryType();
         /** Setter for env-entry-value property.
          * @param value property value
          */
-	public void setEnvEntryValue(java.lang.String value);
+	public void setEnvEntryValue(String value);
         /** Getter for env-entry-value property.
          * @return property value 
          */
-	public java.lang.String getEnvEntryValue();
+	public String getEnvEntryValue();
+
+        // Java EE 5
+        
+        void setMappedName(String value) throws VersionNotSupportedException;
+	String getMappedName() throws VersionNotSupportedException;
+	void setInjectionTarget(int index, InjectionTarget valueInterface) throws VersionNotSupportedException;
+	InjectionTarget getInjectionTarget(int index) throws VersionNotSupportedException;
+	int sizeInjectionTarget() throws VersionNotSupportedException;
+	void setInjectionTarget(InjectionTarget[] value) throws VersionNotSupportedException;
+	InjectionTarget[] getInjectionTarget() throws VersionNotSupportedException;
+	int addInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+	int removeInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+	InjectionTarget newInjectionTarget() throws VersionNotSupportedException;
+
 }

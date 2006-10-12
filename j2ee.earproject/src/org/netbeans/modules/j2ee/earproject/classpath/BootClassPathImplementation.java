@@ -22,9 +22,6 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -35,7 +32,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.WeakListeners;
 
@@ -51,7 +47,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private String activePlatformName;
     //active platform is valid (not broken reference)
     private boolean isActivePlatformValid;
-    private List resourcesCache;
+    private List<PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     public BootClassPathImplementation(PropertyEvaluator evaluator) {
@@ -60,22 +56,22 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    public synchronized List /*<PathResourceImplementation>*/ getResources() {
+    public synchronized List<PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
             JavaPlatform jp = findActivePlatform ();
             if (jp != null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
                 ClassPath cp = jp.getBootstrapLibraries();
-                List entries = cp.entries();
-                ArrayList result = new ArrayList (entries.size());
-                for (Iterator it = entries.iterator(); it.hasNext();) {
-                    ClassPath.Entry entry = (ClassPath.Entry) it.next();
-                    result.add (ClassPathSupport.createResource(entry.getURL()));
+                @SuppressWarnings("unchecked")
+                List<ClassPath.Entry> entries = cp.entries();
+                List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(entries.size());
+                for (ClassPath.Entry entry: entries) {
+                    result.add(ClassPathSupport.createResource(entry.getURL()));
                 }
                 resourcesCache = Collections.unmodifiableList (result);
             }
             else {
-                resourcesCache = Collections.EMPTY_LIST;
+                resourcesCache = Collections.emptyList();
             }
         }
         return this.resourcesCache;

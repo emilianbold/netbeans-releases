@@ -34,18 +34,31 @@ public interface ResourceEnvRef extends CommonDDBean, DescriptionInterface {
     /** Setter for resource-env-ref-name property 
      * @param value property value
      */
-    public void setResourceEnvRefName(java.lang.String value);
+    public void setResourceEnvRefName(String value);
     /** Getter for resource-env-ref-name property.
      * @return property value 
      */
-    public java.lang.String getResourceEnvRefName();
+    public String getResourceEnvRefName();
     /** Setter for resource-env-ref-type property.
      * @param value property value
      */
-    public void setResourceEnvRefType(java.lang.String value);
+    public void setResourceEnvRefType(String value);
     /** Getter for resource-env-ref-type property.
      * @return property value 
      */
-    public java.lang.String getResourceEnvRefType();
+    public String getResourceEnvRefType();
+
+    // Java EE 5
+        
+    void setMappedName(String value) throws VersionNotSupportedException;
+    String getMappedName() throws VersionNotSupportedException;
+    void setInjectionTarget(int index, InjectionTarget valueInterface) throws VersionNotSupportedException;
+    InjectionTarget getInjectionTarget(int index) throws VersionNotSupportedException;
+    int sizeInjectionTarget() throws VersionNotSupportedException;
+    void setInjectionTarget(InjectionTarget[] value) throws VersionNotSupportedException;
+    InjectionTarget[] getInjectionTarget() throws VersionNotSupportedException;
+    int addInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+    int removeInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+    InjectionTarget newInjectionTarget() throws VersionNotSupportedException;
 
 }

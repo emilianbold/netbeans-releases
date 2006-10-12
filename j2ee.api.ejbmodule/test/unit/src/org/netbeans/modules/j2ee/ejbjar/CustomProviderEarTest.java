@@ -20,12 +20,10 @@
 package org.netbeans.modules.j2ee.ejbjar;
 
 import java.io.File;
-import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
@@ -49,7 +47,7 @@ public class CustomProviderEarTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        File f = FileUtil.normalizeFile(new File(System.getProperty("test.data.dir")));
+        File f = getDataDir();
         assertTrue("example dir exists", f.exists());
         LocalFileSystem lfs = new LocalFileSystem ();
         lfs.setRootDirectory (f);
@@ -66,9 +64,12 @@ public class CustomProviderEarTest extends NbTestCase {
     public void testGetEar () throws Exception {
         FileObject foo = datadir.getFileObject ("a.foo");
         FileObject bar = datadir.getFileObject ("b.bar");
+        FileObject biz = datadir.getFileObject ("c.biz");
         Ear wm1 = Ear.getEar (foo);
         assertNotNull ("found ejb module", wm1);
         Ear wm2 = Ear.getEar (bar);
-        assertNull ("no ejb module", wm2);
-    }
+        assertNotNull ("found car module", wm2);
+        Ear wm3 = Ear.getEar (biz);
+        assertNull ("no ear module", wm3);
+   }
 }

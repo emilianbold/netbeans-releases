@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.j2ee.persistence
+OpenIDE-Module-Layer: org/netbeans/modules/j2ee/persistence/ui/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/persistence/ui/resources/Bundle.properties
+OpenIDE-Module-Implementation-Version: 1
+
+Name: org/netbeans/modules/j2ee/persistence/unit/PUDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject

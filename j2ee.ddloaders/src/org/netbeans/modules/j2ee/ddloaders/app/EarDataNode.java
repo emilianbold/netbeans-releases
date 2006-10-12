@@ -19,25 +19,29 @@
 
 package org.netbeans.modules.j2ee.ddloaders.app;
 
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.NbBundle;
-import java.util.ResourceBundle;
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
+import org.openide.actions.OpenAction;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
-import org.openide.*;
-import org.openide.filesystems.*;
-import org.openide.xml.XMLUtil;
-import org.netbeans.modules.j2ee.ddloaders.common.*;
-
-/** A node to represent this ejb-jar.xml object.
+/**
+ * A node to represent this ejb-jar.xml object.
  *
  * @author  Ludovic Champenois
  * @version 1.0
  */
-public class EarDataNode extends DataNode {
-
+public final class EarDataNode extends DataNode {
+    
     private static final String DEPLOYMENT="deployment"; // NOI18N
  
     private EarDataObject dataObject;
@@ -47,6 +51,8 @@ public class EarDataNode extends DataNode {
     
     /** Listener on dataobject */
     private PropertyChangeListener ddListener;
+
+    private Action[] filteredActions;
     
     public EarDataNode (EarDataObject obj) {
         this (obj, Children.LEAF);
@@ -55,11 +61,29 @@ public class EarDataNode extends DataNode {
     public EarDataNode (EarDataObject obj, Children ch) {
         super (obj, ch);
         dataObject=obj;
-        setIconBase (dataObject.getIconBaseForValidDocument ());
+        setIconBaseWithExtension(dataObject.getIconBaseForValidDocument());
         initListeners();
     }
 
-    /** Initialize listening on adding/removing server so it is 
+    /**
+     * <strong>Note:</strong> Temporary fix for #77261. Remove when MultiView
+     * editor is implemented for Enterprise Application deployment descriptor.
+     */
+    public Action[] getActions(boolean context) {
+        if (filteredActions == null) {
+            Action[] origActions = super.getActions(context);
+            List/*<Action>*/ actions = new ArrayList/*<Action>*/();
+            for (int i = 0; i < origActions.length; i++) {
+                if (!(origActions[i] instanceof OpenAction)) {
+                    actions.add(origActions[i]);
+                }
+            }
+            filteredActions = (Action[]) actions.toArray(new Action[actions.size()]);
+        }
+        return filteredActions;
+    }
+    
+    /** Initialize listening on adding/removing server so it is
      * possible to add/remove property sheets
      */
     private void initListeners(){
@@ -75,9 +99,9 @@ public class EarDataNode extends DataNode {
                 }
                 if (EarDataObject.PROP_DOC_VALID.equals (evt.getPropertyName ())) {
                     if (Boolean.TRUE.equals (evt.getNewValue ()))
-                        setIconBase (dataObject.getIconBaseForValidDocument ());
+                        setIconBaseWithExtension(dataObject.getIconBaseForValidDocument());
                     else
-                        setIconBase (dataObject.getIconBaseForInvalidDocument ());
+                        setIconBaseWithExtension(dataObject.getIconBaseForInvalidDocument());
                 }
                 if (Node.PROP_PROPERTY_SETS.equals (evt.getPropertyName ())) {
                     firePropertySetsChange(null,null);
@@ -88,10 +112,6 @@ public class EarDataNode extends DataNode {
         getDataObject ().addPropertyChangeListener (ddListener);
     } 
     
-    private EarDataObject getDDDataObject () {
-        return (EarDataObject) getDataObject ();
-    }
-   
     protected Sheet createSheet () {
         Sheet s = new Sheet ();
         Sheet.Set ss = new Sheet.Set ();

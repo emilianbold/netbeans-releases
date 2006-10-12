@@ -27,6 +27,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.ejb.*;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
@@ -43,10 +44,12 @@ import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.ErrorManager;
+import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -65,6 +68,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openide.awt.HtmlBrowser;
+import org.openide.loaders.MultiDataObject;
 
 /**
  * Represents a DD object in the Repository.
@@ -78,29 +83,33 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     private PropertyChangeListener ejbJarChangeListener;
     private Map entityHelperMap = new HashMap();
     private Map sessionHelperMap = new HashMap();
-
+    
     private static final long serialVersionUID = 8857563089355069362L;
-
+    
     /**
      * Property name for documentDTD property
      */
     public static final String PROP_DOCUMENT_DTD = "documentDTD";   // NOI18N
-
+    
     private static final int HOME = 10;
     private static final int REMOTE = 20;
     private static final int LOCAL_HOME = 30;
     private static final int LOCAL = 40;
     private static final String OVERVIEW = "Overview"; //NOI18N
     private static final String CMP_RELATIONSHIPS = "CmpRelationships"; //NOI18N
-
+    
     public EjbJarMultiViewDataObject(FileObject pf, EjbJarDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-
+        
         // added ValidateXMLCookie
         InputSource in = DataObjectAdapters.inputSource(this);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
-        getCookieSet().add(validateCookie);
-
+        CookieSet set = getCookieSet();
+        set.add(validateCookie);
+        CookieSet.Factory viewCookieFactory = new ViewCookieFactory();
+        set.add(ViewCookie.class, viewCookieFactory);
+        
+        
         Project project = getProject();
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
@@ -108,10 +117,11 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         refreshSourceFolders();
     }
-
+    
+    
     private void refreshSourceFolders() {
         ArrayList srcRootList = new ArrayList();
-
+        
         SourceGroup[] groups;
         Project project = getProject();
         if (project != null) {
@@ -138,17 +148,17 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         srcRoots = (FileObject[]) srcRootList.toArray(new FileObject[srcRootList.size()]);
     }
-
-
+    
+    
     private Project getProject() {
         return FileOwnerQuery.getOwner(getPrimaryFile());
     }
-
+    
     public FileObject getProjectDirectory() {
         Project project = getProject();
         return project == null ? null : project.getProjectDirectory();
     }
-
+    
     public SourceGroup[] getSourceGroups() {
         Project project = getProject();
         if (project != null) {
@@ -157,7 +167,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             return null;
         }
     }
-
+    
     private String getPackageName(FileObject clazz) {
         for (int i = 0; i < srcRoots.length; i++) {
             String rp = FileUtil.getRelativePath(srcRoots[i], clazz);
@@ -170,7 +180,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         return null;
     }
-
+    
     public EjbJar getEjbJar() {
         if (ejbJar == null) {
             try {
@@ -181,11 +191,11 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         return ejbJar;
     }
-
+    
     protected Node createNodeDelegate() {
         return new EjbJarMultiViewDataNode(this);
     }
-
+    
     /**
      * gets the Icon Base for node delegate when parser accepts the xml document as valid
      * <p/>
@@ -196,7 +206,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     protected String getIconBaseForValidDocument() {
         return Utils.ICON_BASE_DD_VALID;
     }
-
+    
     /**
      * gets the Icon Base for node delegate when parser finds error(s) in xml document
      *
@@ -207,7 +217,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     protected String getIconBaseForInvalidDocument() {
         return Utils.ICON_BASE_DD_INVALID; // NOI18N
     }
-
+    
     protected DataObject handleCopy(DataFolder f) throws IOException {
         DataObject dataObject = super.handleCopy(f);
         try {
@@ -217,7 +227,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         return dataObject;
     }
-
+    
     /**
      * This methods gets called when servlet is changed
      *
@@ -225,16 +235,16 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
      */
     public void deploymentChange(DDChangeEvent evt) {
     }
-
-
+    
+    
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-
+    
     private RequestProcessor.Task elementTask;
     private List deletedEjbNames;
     private List newFileNames;
-
+    
     private void elementCreated(final String elementName) {
         synchronized (this) {
             if (newFileNames == null) {
@@ -242,7 +252,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             }
             newFileNames.add(elementName);
         }
-
+        
         if (elementTask == null) {
             elementTask = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -266,8 +276,8 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
                                     found = true;
                                     DDChangeEvent ddEvent =
                                             new DDChangeEvent(EjbJarMultiViewDataObject.this,
-                                                    EjbJarMultiViewDataObject.this, deletedServletName, newFileName,
-                                                    DDChangeEvent.EJB_CHANGED);
+                                            EjbJarMultiViewDataObject.this, deletedServletName, newFileName,
+                                            DDChangeEvent.EJB_CHANGED);
                                     deploymentChange(ddEvent);
                                     synchronized (EjbJarMultiViewDataObject.this) {
                                         newFileNames.remove(newFileName);
@@ -278,8 +288,8 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
                             if (!found) {
                                 DDChangeEvent ddEvent =
                                         new DDChangeEvent(EjbJarMultiViewDataObject.this,
-                                                EjbJarMultiViewDataObject.this, null, deletedServletName,
-                                                DDChangeEvent.EJB_DELETED);
+                                        EjbJarMultiViewDataObject.this, null, deletedServletName,
+                                        DDChangeEvent.EJB_DELETED);
                                 deploymentChange(ddEvent);
                             }
                         } //end for
@@ -287,19 +297,19 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
                             deletedEjbNames = null;
                         }
                     } // servlets
-
+                    
                     synchronized (EjbJarMultiViewDataObject.this) {
                         newFileNames = null;
                     }
-
+                    
                 }///end run
-
+                
             }, 1500, Thread.MIN_PRIORITY);
         } else {
             elementTask.schedule(1500);
         }
     }
-
+    
     public void fileRenamed(FileRenameEvent fileRenameEvent) {
         FileObject fo = fileRenameEvent.getFile();
         String resourceName = getPackageName(fo);
@@ -313,10 +323,10 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             }
         }
     }
-
+    
     public void fileFolderCreated(FileEvent fileEvent) {
     }
-
+    
     public void fileDeleted(FileEvent fileEvent) {
         FileObject fo = fileEvent.getFile();
         String resourceName = getPackageName(fo);
@@ -339,7 +349,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             }
         }
     }
-
+    
     public void fileDataCreated(FileEvent fileEvent) {
         FileObject fo = fileEvent.getFile();
         String resourceName = getPackageName(fo);
@@ -347,17 +357,17 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             elementCreated(resourceName);
         }
     }
-
+    
     public void fileChanged(FileEvent fileEvent) {
     }
-
+    
     public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
     }
-
+    
     public void stateChanged(javax.swing.event.ChangeEvent e) {
         refreshSourceFolders();
     }
-
+    
     protected void parseDocument() throws IOException {
         DDProvider ddProvider = DDProvider.getDefault();
         if (ejbJar == null || ejbJar.getOriginal() == null) {
@@ -373,11 +383,11 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         setSaxError(ejbJar.getError());
     }
-
+    
     protected void validateDocument() throws IOException {
         setSaxError(DDUtils.createEjbJarProxy(createReader()).getError());
     }
-
+    
     private void setEjbJar(EjbJarProxy newEjbJar) {
         if(ejbJar != null) {
             ejbJar.removePropertyChangeListener(ejbJarChangeListener);
@@ -388,7 +398,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         ejbJar.addPropertyChangeListener(ejbJarChangeListener);
     }
-
+    
     protected RootInterface getDDModel() {
         if (ejbJar == null) {
             try {
@@ -399,32 +409,36 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         return ejbJar;
     }
-
+    
     public boolean isDocumentParseable() {
         return EjbJar.STATE_INVALID_UNPARSABLE != getEjbJar().getStatus();
     }
-
+    
     protected String getPrefixMark() {
         return "<ejb-jar";
     }
-
+    
     /**
      * Icon Base for MultiView editor
      */
     protected DesignMultiViewDesc[] getMultiViewDesc() {
+        if (Util.isJavaEE5orHigher(getProject())){
+            // only default xml view for ejb3 projects
+            return new DesignMultiViewDesc[0];
+        }
         return new DesignMultiViewDesc[]{
             new DDView(this, OVERVIEW),
             new DDView(this, CMP_RELATIONSHIPS),
         };
     }
-
+    
     /** Used to detect if data model has already been created or not.
      * Method is called before switching to the design view from XML view when the document isn't parseable.
      */
     protected boolean isModelCreated() {
         return (ejbJar!=null && ejbJar.getOriginal()!=null);
     }
-
+    
     public void showElement(final Object element) {
         if (element instanceof Relationships || element instanceof EjbRelation) {
             openView(1);
@@ -444,17 +458,53 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             }
         });
     }
+    
 
+    /**
+     * Factory for creating view cookies. <p>
+     */
+    private class ViewCookieFactory implements CookieSet.Factory {
+        
+        public Node.Cookie createCookie(Class klass) {
+            if (klass == ViewCookie.class) {
+                return new ViewSupport(EjbJarMultiViewDataObject.this.getPrimaryEntry());
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    /**
+     * An implementation of ViewCookie that opens an HTML browser
+     * for viewing the file.<p>
+     */
+    private static final class ViewSupport implements ViewCookie {
+        
+        private MultiDataObject.Entry primary;
+        
+        public ViewSupport(MultiDataObject.Entry primary) {
+            this.primary = primary;
+        }
+        
+        public void view() {
+            try {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(primary.getFile().getURL());
+            } catch (FileStateInvalidException e) {
+            }
+        }
+    }
+    
+    
     private static class DDView extends DesignMultiViewDesc implements java.io.Serializable {
         
         private String name;
         static final long serialVersionUID = -8759598009819101630L;
-
+        
         DDView(EjbJarMultiViewDataObject dataObject, String name) {
             super(dataObject, name);
             this.name=name;
         }
-
+        
         public MultiViewElement createElement() {
             EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getDataObject();
             if (name.equals(OVERVIEW)) {
@@ -466,16 +516,16 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
                 return null;
             }
         }
-
+        
         public HelpCtx getHelpCtx() {
             final EjbJarMultiViewDataObject dataObject = ((EjbJarMultiViewDataObject)getDataObject());
             return new HelpCtx(dataObject.getActiveMVElement().getSectionView().getClass());
         }
-
+        
         public Image getIcon() {
             return Utilities.loadImage(Utils.ICON_BASE_DD_VALID + ".gif"); //NOI18N
         }
-
+        
         public String preferredID() {
             return "dd_multiview_" + name; //NOI18N
         }
@@ -483,15 +533,15 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         public String getDisplayName() {
             return NbBundle.getMessage(EjbJarMultiViewDataObject.class,"LBL_"+name); //NOI18N
         }
-
+        
     }
-
+    
     /** Enable to access Active element
      */
     public ToolBarMultiViewElement getActiveMVElement() {
         return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
-
+    
     private Ejb getEjbFromEjbClass(String ejbClassName) {
         EnterpriseBeans enterpriseBeans = getEjbJar().getEnterpriseBeans();
         if(enterpriseBeans != null) {
@@ -504,10 +554,18 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         return null;
     }
-
+    
     private int getBeanInterfaceType(String interfaceName) {
         int interfaceType = -1;
-        EntityAndSession[] beans = getEjbJar().getEnterpriseBeans().getSession();
+        EjbJar ejbJar = getEjbJar();
+        if (ejbJar == null) {
+            return interfaceType;
+        }
+        EnterpriseBeans eb = ejbJar.getEnterpriseBeans();
+        if (eb == null) {
+            return interfaceType;
+        }
+        EntityAndSession[] beans = eb.getSession();
         for (int i = 0; i < beans.length; i++) {
             if (beans[i].getHome() != null &&
                     beans[i].getHome().equals(interfaceName)) {
@@ -532,51 +590,51 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         return interfaceType;
     }
-
+    
     private int getSpecificEvent(int eventType, int interfaceType) {
         if (eventType == DDChangeEvent.EJB_CHANGED) {
             switch (interfaceType) {
                 case HOME:
-                    {
-                        return DDChangeEvent.EJB_HOME_CHANGED;
-                    }
+                {
+                    return DDChangeEvent.EJB_HOME_CHANGED;
+                }
                 case REMOTE:
-                    {
-                        return DDChangeEvent.EJB_REMOTE_CHANGED;
-                    }
+                {
+                    return DDChangeEvent.EJB_REMOTE_CHANGED;
+                }
                 case LOCAL_HOME:
-                    {
-                        return DDChangeEvent.EJB_LOCAL_HOME_CHANGED;
-                    }
+                {
+                    return DDChangeEvent.EJB_LOCAL_HOME_CHANGED;
+                }
                 case LOCAL:
-                    {
-                        return DDChangeEvent.EJB_LOCAL_CHANGED;
-                    }
+                {
+                    return DDChangeEvent.EJB_LOCAL_CHANGED;
+                }
             }
         }
         if (eventType == DDChangeEvent.EJB_DELETED) {
             switch (interfaceType) {
                 case HOME:
-                    {
-                        return DDChangeEvent.EJB_HOME_DELETED;
-                    }
+                {
+                    return DDChangeEvent.EJB_HOME_DELETED;
+                }
                 case REMOTE:
-                    {
-                        return DDChangeEvent.EJB_REMOTE_DELETED;
-                    }
+                {
+                    return DDChangeEvent.EJB_REMOTE_DELETED;
+                }
                 case LOCAL_HOME:
-                    {
-                        return DDChangeEvent.EJB_LOCAL_HOME_DELETED;
-                    }
+                {
+                    return DDChangeEvent.EJB_LOCAL_HOME_DELETED;
+                }
                 case LOCAL:
-                    {
-                        return DDChangeEvent.EJB_LOCAL_DELETED;
-                    }
+                {
+                    return DDChangeEvent.EJB_LOCAL_DELETED;
+                }
             }
         }
         return -1;
     }
-
+    
     private boolean fireEvent(String oldResourceName, String resourceName, int eventType) {
         boolean elementFound = false;
         String resource;
@@ -587,7 +645,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             resource = resourceName;
         }
         Ejb ejb = getEjbFromEjbClass(resource);
-
+        
         if (ejb != null) {
             if (eventType == DDChangeEvent.EJB_CHANGED) {
                 specificEventType = DDChangeEvent.EJB_CLASS_CHANGED;
@@ -596,10 +654,10 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             }
             elementFound = true;
         }
-
+        
         if (!elementFound) {
             int interfaceType = getBeanInterfaceType(resource);
-
+            
             if (interfaceType > 0) {
                 specificEventType =
                         getSpecificEvent(eventType, interfaceType);
@@ -610,12 +668,12 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             assert(specificEventType > 0);
             DDChangeEvent ddEvent =
                     new DDChangeEvent(this, this, oldResourceName,
-                            resourceName, specificEventType);
+                    resourceName, specificEventType);
             deploymentChange(ddEvent);
         }
         return elementFound;
     }
-
+    
     public EntityHelper getEntityHelper(Entity entity) {
         EntityHelper entityHelper = (EntityHelper) entityHelperMap.get(entity);
         if (entityHelper == null) {
@@ -624,7 +682,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         return entityHelper;
     }
-
+    
     public SessionHelper getSessionHelper(Session session) {
         SessionHelper sessionHelper = (SessionHelper) sessionHelperMap.get(session);
         if (sessionHelper == null) {
@@ -633,9 +691,9 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         return sessionHelper;
     }
-
+    
     private class EjbJarPropertyChangeListener implements PropertyChangeListener {
-
+        
         public void propertyChange(PropertyChangeEvent evt) {
             if (EjbJar.PROPERTY_STATUS.equals(evt.getPropertyName())) {
                 return;
@@ -652,5 +710,6 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             }
         }
     }
-
+    
+    
 }

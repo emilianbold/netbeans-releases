@@ -24,7 +24,7 @@ import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -33,27 +33,30 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-/** Class which makes creation of the GUI easier. Registers JComponent
+/** 
+ * Class which makes creation of the GUI easier. Registers JComponent
  * property names and handles reading/storing the values from the components
- * automaticaly.
+ * automatically.
  *
  * @author Petr Hrebejk
  */
 public final class VisualPropertySupport {
     
-    private static final String WRONG_TYPE = "WrongType";
-    
-    private EarProjectProperties webProperties;
-    private HashMap component2property;
+    private EarProjectProperties earProperties;
+    private Map<Object, String> component2property;
     private ComponentListener componentListener;
     
-    private int comboType;  //0 ... display text == value
-                            //1 ... display text != value
+    /**
+     * 0 ... display text == value<br>
+     * 1 ... display text != value
+     */
+    private int comboType = -1;
+    
     private String[] comboValues;
     
-    public VisualPropertySupport( EarProjectProperties webProperties ) {
-        this.webProperties = webProperties;
-        this.component2property = new HashMap( 10 );
+    public VisualPropertySupport(final EarProjectProperties earProperties) {
+        this.earProperties = earProperties;
+        this.component2property = new HashMap<Object, String>(10);
         this.componentListener = new ComponentListener();
     }
         
@@ -61,8 +64,7 @@ public final class VisualPropertySupport {
      * with given object.
      */
     public void register( JCheckBox component, String propertyName ) {
-        
-        Boolean value = (Boolean)getAsType( propertyName, Boolean.class );
+        Boolean value = getAsType(earProperties, propertyName, Boolean.class);
         component2property.put( component, propertyName );
         component.setSelected( value != null && value.booleanValue() );
         component.removeActionListener( componentListener );
@@ -73,39 +75,43 @@ public final class VisualPropertySupport {
      * with given object.
      */
     public void register( JTextField component, String propertyName ) {
-        String value = (String)getAsType( propertyName, String.class );
+        String value = getAsType(earProperties, propertyName, String.class);
         component2property.put( component.getDocument(), propertyName );
         component.setText( value != null ? value : "" );
         component.getDocument().addDocumentListener( componentListener );
     }
     
-    /** Registers JTable containing VisualClassPath items and acompaniing
-     *  buttons for handling the class path
+    /** 
+     * Registers JTable containing VisualClassPath items and accompanying
+     * buttons for handling the class path.
      */
     public void register( VisualClasspathSupport component, String propertyName ) {
-        List value = (List)getAsType( propertyName, List.class );
+        @SuppressWarnings("unchecked")
+        List<VisualClassPathItem> value = getAsType(earProperties, propertyName, List.class);
         component2property.put( component, propertyName );
-        component.setVisualClassPathItems( value != null ? value : Collections.EMPTY_LIST );
+        component.setVisualClassPathItems( value != null ? value : Collections.<VisualClassPathItem>emptyList());
         component.removeActionListener( componentListener );
         component.addActionListener( componentListener );
     }
     
-    /** Registers JList containing VisualClassPath items and acompaniing
-     *  buttons for handling the class path
+    /** 
+     * Registers JList containing VisualClassPath items and accompanying
+     * buttons for handling the class path.
      */
     public void register(VisualArchiveIncludesSupport component, String propertyName) {
-        List value = (List) getAsType(propertyName, List.class);
+        @SuppressWarnings("unchecked")
+        List<VisualClassPathItem> value = getAsType(earProperties, propertyName, List.class);
         component2property.put(component, propertyName);
-        component.setVisualWarItems(value != null ? value : Collections.EMPTY_LIST);
+        component.setVisualWarItems(value != null ? value : Collections.<VisualClassPathItem>emptyList());
         component.removeActionListener( componentListener );
         component.addActionListener(componentListener);
     }
     
-    /** Registers combo box.
-     */
-    public void register( JComboBox component, String items[], String propertyName ) {
+    /** Registers combo box. */
+    public void register(JComboBox component, String items[], String propertyName) {
+        checkJComboBoxRegistered();
         comboType = 0;
-        String value = (String)getAsType( propertyName, String.class );
+        String value = getAsType(earProperties, propertyName, String.class);
         component2property.put( component, propertyName );
         // Add all items and find the selected one
         component.removeAllItems();
@@ -116,47 +122,54 @@ public final class VisualPropertySupport {
                 selectedIndex = i;
             }
         }    
-        if (selectedIndex > -1) 
+        if (selectedIndex > -1) {
             component.setSelectedIndex( selectedIndex );
+        }
         component.removeActionListener( componentListener );
         component.addActionListener( componentListener );
     }
 
-    /** Registers combo box.
-     */
+    /** Registers combo box. */
     public void register(JComboBox component, String displayNames[], String[] values, String propertyName) {
+        checkJComboBoxRegistered();
         comboType = 1;
         comboValues = values;
-        String value = (String) getAsType(propertyName, String.class);
+        String value = getAsType(earProperties, propertyName, String.class);
         component2property.put(component, propertyName);
         // Add all items and find the selected one
         component.removeAllItems();
         int selectedIndex = 0;
         for (int i = 0; i < displayNames.length; i++) {
             component.addItem(displayNames[i]);
-            if (values[i].equals(value))
+            if (values[i].equals(value)) {
                 selectedIndex = i;
+            }
         }
-        if (selectedIndex < component.getItemCount()) 
-            component.setSelectedIndex( selectedIndex );                      
+        if (selectedIndex < component.getItemCount()) {
+            component.setSelectedIndex( selectedIndex );
+        }
         component.removeActionListener( componentListener );
         component.addActionListener(componentListener);
     }
-
+    
+    private void checkJComboBoxRegistered() {
+        assert comboType == -1 : "JComboBox already registered and only " +
+                "one instance per VisualPropertySupport is supported. " + // NOI18N
+                "Another VisualPropertySupport instance may be used."; // NOI18N
+    }
     
     // Static methods for reading components and models ------------------------
     
     private static Boolean readValue( JCheckBox checkBox ) {
-        return checkBox.isSelected() ? Boolean.TRUE : Boolean.FALSE;
+        return checkBox.isSelected();
     }
     
     private static String readValue( Document document ) {
         try {
-            return document.getText( 0, document.getLength() );            
-        }
-        catch ( BadLocationException e ) {
-            assert false : "Invalid document "; //NOI18N
-            return ""; // NOI18N
+            return document.getText( 0, document.getLength() );
+        } catch ( BadLocationException e ) {
+            assert false : e;
+            return "";
         }
     }
     
@@ -166,25 +179,24 @@ public final class VisualPropertySupport {
     
     // Private methods ---------------------------------------------------------
     
-    private Object getAsType( String propertyName, Class expectedType ) {
-        return getAsType( propertyName, expectedType, true );
+    private static <T> T getAsType(final EarProjectProperties earProperties, 
+            String propertyName, Class<T> expectedType) {
+        return getAsType(earProperties, propertyName, expectedType, true);
     }
     
-    private Object getAsType( String propertyName, Class expectedType, boolean throwException ) {
-        Object value = webProperties.get( propertyName );
-        
-        if ( value == null || expectedType.isInstance( value ) ) {
-            return value;
+    @SuppressWarnings("unchecked")
+    private static <T> T getAsType(final EarProjectProperties earProperties,
+            String propertyName, Class<T> expectedType, boolean throwException) {
+        T result = null;
+        Object value = earProperties.get(propertyName);
+        if (value == null || expectedType.isInstance(value)) {
+            result = (T) value;
+        } else if ( throwException ) {
+            throw new IllegalArgumentException( "Value of property: " + propertyName + // NOI18N
+                    " exbected to be: " + expectedType.getClass().getName() + // NOI18N
+                    " but was: " + value.getClass().getName() + "!" ); // NOI18N
         }
-        else if ( throwException ) {            
-            throw new IllegalArgumentException( "Value of property: " + propertyName +        // NOI18N
-                                                " exbected to be: " + expectedType.getName() + // NOI18N
-                                                " but was: " + value.getClass().getName() + "!" );   // NOI18N
-        }
-        else {
-            return WRONG_TYPE;
-        }
-        
+        return result;
     }
     
     private class ComponentListener implements ActionListener, DocumentListener {
@@ -193,25 +205,28 @@ public final class VisualPropertySupport {
         
         public void actionPerformed( ActionEvent e ) {
             Object source = e.getSource();
-            String propertyName = (String)component2property.get( source );
+            String propertyName = component2property.get( source );
             if( propertyName != null ) {
                 if ( source instanceof JCheckBox ) {
-                    webProperties.put( propertyName, readValue( (JCheckBox)source ) );                    
+                    earProperties.put( propertyName, readValue( (JCheckBox)source ) );                    
                 } else if ( source instanceof VisualClasspathSupport ) {
-                    webProperties.put( propertyName, ((VisualClasspathSupport)source).getVisualClassPathItems() );
+                    earProperties.put( propertyName, ((VisualClasspathSupport)source).getVisualClassPathItems() );
                 } else if ( source instanceof JComboBox ) {
                     if (((JComboBox) source).getItemCount() == 0) {
                         return;
                     }
-                    
                     switch (comboType) {
-                        case 0: webProperties.put(propertyName, readValue((JComboBox) source));
-                                break;
-                        case 1: webProperties.put(propertyName, comboValues[((JComboBox) source).getSelectedIndex()]);
-                                break;
+                        case 0:
+                            earProperties.put(propertyName, readValue((JComboBox) source));
+                            break;
+                        case 1:
+                            earProperties.put(propertyName, comboValues[((JComboBox) source).getSelectedIndex()]);
+                            break;
+                        default:
+                            assert false : "Unknown comboType: " + comboType;
                     }
                 } else if ( source instanceof VisualArchiveIncludesSupport ) {
-                    webProperties.put( propertyName, ((VisualArchiveIncludesSupport)source).getVisualWarItems() );
+                    earProperties.put( propertyName, ((VisualArchiveIncludesSupport)source).getVisualWarItems() );
                 }
             }
         }                
@@ -220,9 +235,9 @@ public final class VisualPropertySupport {
         
         public void changedUpdate( DocumentEvent e ) {
             Document document = e.getDocument();            
-            String propertyName = (String)component2property.get( document );            
+            String propertyName = component2property.get( document );            
             if( propertyName != null ) {
-                webProperties.put( propertyName, readValue( document ) );                
+                earProperties.put( propertyName, readValue( document ) );                
             }
         }
         
@@ -234,4 +249,5 @@ public final class VisualPropertySupport {
             changedUpdate( e );
         }
     }
+
 }

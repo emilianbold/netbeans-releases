@@ -42,5 +42,6 @@ public class EntityNode extends EjbNode {
         }
         addChild(new BeanEnvironmentNode(sectionNodeView, entity));
         addChild(new BeanDetailNode(sectionNodeView, entity));
+        addChild(new EjbSecurityNode(sectionNodeView, entity));
     }
 }

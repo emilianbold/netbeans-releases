@@ -40,7 +40,7 @@ class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private Sources delegate;
-    private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private SourcesHelper sourcesHelper;
 
     EarSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
@@ -99,7 +99,7 @@ class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
             if (listeners.isEmpty()) {
                 return;
             }
-            _listeners = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
+            _listeners = listeners.toArray(new ChangeListener[listeners.size()]);
         }
         ChangeEvent ev = new ChangeEvent(this);
         for (int i = 0; i < _listeners.length; i++) {

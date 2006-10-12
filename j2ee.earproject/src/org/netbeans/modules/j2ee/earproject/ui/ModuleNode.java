@@ -20,52 +20,49 @@
 package org.netbeans.modules.j2ee.earproject.ui;
 
 import java.awt.Image;
-import javax.swing.Action;
-
+import java.util.ArrayList;
 import java.util.List;
-
-
-import org.openide.actions.*;
-import org.openide.nodes.*;
+import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.earproject.ProjectPropertyProvider;
+import org.netbeans.modules.j2ee.earproject.ui.actions.OpenModuleProjectAction;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
-import org.openide.util.Utilities;
-import org.netbeans.api.project.Project;
-
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.earproject.ui.actions.OpenModuleProjectAction;
-
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.modules.j2ee.earproject.ProjectPropertyProvider;
-import org.netbeans.api.project.FileOwnerQuery;
-
 /**
- * A simple node with no children.
- * Often used in conjunction with some kind of underlying data model, where
- * each node represents an element in that model. In this case, you should see
- * the Container Node template which will permit you to create a whole tree of
- * such nodes with the proper behavior.
+ * Represents one node in the <em>J2EE Modules</em> node in the EAR project's
+ * logical view.
+ *
  * @author vkraemer
  * @author Ludovic Champenois
  */
-public class ModuleNode extends AbstractNode implements Node.Cookie {
-    private VisualClassPathItem key;
-    private AntProjectHelper helper;
+public final class ModuleNode extends AbstractNode implements Node.Cookie {
     
-    // will frequently accept an element from some data model in the constructor:
-    public ModuleNode(VisualClassPathItem key, AntProjectHelper helper) {
+    /** Package-private for unit tests <strong>only</strong>. */
+    static final String MODULE_NODE_NAME = "module.node"; // NOI18N
+    
+    private static Action[] actions;
+    
+    private final FileObject projectDirectory;
+    private final VisualClassPathItem key;
+    
+    public ModuleNode(final VisualClassPathItem key, final FileObject projectDirectory) {
         super(Children.LEAF);
         this.key = key;
-        this.helper = helper;
-        setName("preferablyUniqueNameForThisNodeAmongSiblings"); // or, super.setName if needed
-        setDisplayName(key.getCompletePathInArchive()); // toString());
-        setShortDescription(NbBundle.getMessage(ModuleNode.class, "HINT_ModuleNode"));//NOI18N
+        this.projectDirectory = projectDirectory;
+        setName(ModuleNode.MODULE_NODE_NAME);
+        setDisplayName(key.getCompletePathInArchive());
+        setShortDescription(NbBundle.getMessage(ModuleNode.class, "HINT_ModuleNode"));
     }
-    
-    static private Action[] actions = null;
     
     // Create the popup menu:
     public Action[] getActions(boolean context) {
@@ -73,8 +70,8 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
             actions = new Action[] {
                 SystemAction.get(OpenModuleProjectAction.class),
                 SystemAction.get(RemoveAction.class)
-        };
-        getCookieSet().add(this);
+            };
+            getCookieSet().add(this);
         }
         return actions;
     }
@@ -83,13 +80,16 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
         return SystemAction.get(OpenModuleProjectAction.class);
     }
     
-    
-    public Image getIcon(int type){
-        if (key.toString().endsWith("war")) //FIXME
+    public Image getIcon(int type) {
+        // XXX the "algorithm" based on the ant property name - in the case of
+        // application client; is little odd. Also the rest is rather unclear.
+        if (key.toString().endsWith("war")) { // NOI18N
             return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/WebModuleNode.gif");//NOI18N
-        else
+        } else if (key.getRaw().indexOf("j2ee-module-car") > 0) { //NOI18N
+            return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/CarModuleNodeIcon.gif");//NOI18N
+        } else {
             return Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/EjbModuleNodeIcon.gif");//NOI18N
-            
+        }
     }
     
     public Image getOpenedIcon(int type){
@@ -101,27 +101,15 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
     }
     
     void removeFromJarContent() {
-        List newList = new java.util.ArrayList();
-        Project p = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+        List<VisualClassPathItem> newList = new ArrayList<VisualClassPathItem>();
+        Project p = FileOwnerQuery.getOwner(projectDirectory);
         ProjectPropertyProvider ppp =
                 (ProjectPropertyProvider) p.getLookup().lookup(ProjectPropertyProvider.class);
         EarProjectProperties epp = ppp.getProjectProperties();
-       Object t = epp.get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
-        if (!(t instanceof List)) {
-            assert false : "jar content isn't a List???";
-            return;
-        }
-        List vcpis = (List) t;
-        newList.addAll(vcpis);
+        newList.addAll(epp.getJarContentAdditional());
         newList.remove(key);
         epp.put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, newList);
         epp.store();
-                try {
-                    org.netbeans.api.project.ProjectManager.getDefault().saveProject(epp.getProject());
-                }
-                catch ( java.io.IOException ex ) {
-                    org.openide.ErrorManager.getDefault().notify( ex );
-                }
     }
     
     public VisualClassPathItem getVCPI() {
@@ -129,7 +117,6 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
     }
     
     // Handle copying and cutting specially:
-    /**/
     public boolean canCopy() {
         return false;
     }

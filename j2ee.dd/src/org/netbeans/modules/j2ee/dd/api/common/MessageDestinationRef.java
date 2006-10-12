@@ -38,34 +38,47 @@ public interface MessageDestinationRef extends CommonDDBean, DescriptionInterfac
     /** Setter for message-destination-ref-name property.
      * @param value property value
      */
-    public void setMessageDestinationRefName(java.lang.String value);
+    public void setMessageDestinationRefName(String value);
     /** Getter for message-destination-ref-name property.
      * @return property value 
      */
-    public java.lang.String getMessageDestinationRefName();
+    public String getMessageDestinationRefName();
     /** Setter for message-destination-type property.
      * @param value property value
      */
-    public void setMessageDestinationType(java.lang.String value);
+    public void setMessageDestinationType(String value);
     /** Getter for message-destination-type property.
      * @return property value 
      */
-    public java.lang.String getMessageDestinationType();
+    public String getMessageDestinationType();
     /** Setter for message-destination-usage property.
      * @param value property value
      */
-    public void setMessageDestinationUsage(java.lang.String value);
+    public void setMessageDestinationUsage(String value);
     /** Getter for message-destination-usage property.
      * @return property value 
      */
-    public java.lang.String getMessageDestinationUsage();
+    public String getMessageDestinationUsage();
     /** Setter for message-destination-link property.
      * @param value property value
      */
-    public void setMessageDestinationLink(java.lang.String value);
+    public void setMessageDestinationLink(String value);
     /** Getter for message-destination-link property.
      * @return property value 
      */
-    public java.lang.String getMessageDestinationLink();
+    public String getMessageDestinationLink();
+
+    // Java EE 5
+    
+    void setMappedName(String value) throws VersionNotSupportedException;
+    String getMappedName() throws VersionNotSupportedException;
+    void setInjectionTarget(int index, InjectionTarget valueInterface) throws VersionNotSupportedException;
+    InjectionTarget getInjectionTarget(int index) throws VersionNotSupportedException;
+    int sizeInjectionTarget() throws VersionNotSupportedException;
+    void setInjectionTarget(InjectionTarget[] value) throws VersionNotSupportedException;
+    InjectionTarget[] getInjectionTarget() throws VersionNotSupportedException;
+    int addInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+    int removeInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+    InjectionTarget newInjectionTarget() throws VersionNotSupportedException;
 
 }

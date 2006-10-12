@@ -24,27 +24,30 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.*;
-
-import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-
-import org.openide.DialogDisplayer;
-import org.openide.DialogDescriptor;
-import org.openide.util.NbBundle;
-
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
-
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /** Handles adding and removing of additional war content.
  */
@@ -61,7 +64,7 @@ final class VisualArchiveIncludesSupport {
     private final ClasspathTableModel classpathModel;
     private Object[][] data; 
 
-    private final ArrayList actionListeners = new ArrayList();
+    private final List<ActionListener> actionListeners = new ArrayList<ActionListener>();
     
     public VisualArchiveIncludesSupport(Project master,
                                     String j2eePlatform,
@@ -115,23 +118,23 @@ final class VisualArchiveIncludesSupport {
         csl.valueChanged(null);
     } 
     
-    public void setVisualWarItems(List items) {
+    public void setVisualWarItems(List<VisualClassPathItem> items) {
         Object data[][] = new Object[items.size()][2];
         this.data = data;
         for (int i = 0; i < items.size(); i++) {
-            classpathModel.setValueAt((VisualClassPathItem) items.get(i), i, 0);
-            String pathInWAR = ((VisualClassPathItem) items.get(i)).getPathInWAR();
+            classpathModel.setValueAt(items.get(i), i, 0);
+            String pathInWAR = items.get(i).getPathInEAR();
             classpathModel.setValueAt(pathInWAR, i, 1);
         }
         
         classpathModel.fireTableDataChanged();        
     }
     
-    public List getVisualWarItems() {
-        ArrayList items = new ArrayList();
-        for (int i = 0; i < data.length; i++)
+    public List<VisualClassPathItem> getVisualWarItems() {
+        List<VisualClassPathItem> items = new ArrayList<VisualClassPathItem>();
+        for (int i = 0; i < data.length; i++) {
             items.add((VisualClassPathItem) classpathModel.getValueAt(i, 0));
-        
+        }
         return items;
     } 
     
@@ -155,28 +158,26 @@ final class VisualArchiveIncludesSupport {
     }
     
     private void fireActionPerformed() {
-        ArrayList listeners;
+        List<ActionListener> listeners;
         
         synchronized (this) {
-             listeners = new ArrayList( actionListeners );
+             listeners = new ArrayList<ActionListener>( actionListeners );
         }
         
         ActionEvent ae = new ActionEvent( this, 0, null );
         
-        for( Iterator it = listeners.iterator(); it.hasNext(); ) {
-            ActionListener al = (ActionListener)it.next();
+        for (ActionListener al : listeners) {
             al.actionPerformed( ae );
         }
     }
         
     // Private methods ---------------------------------------------------------
 
-    private Collection getLibraries () {
-        ArrayList list = new ArrayList ();
-        for (Iterator iter = getVisualWarItems().iterator(); iter.hasNext();) {
-            VisualClassPathItem vcpi = (VisualClassPathItem) iter.next();
-            if (vcpi.getType() == VisualClassPathItem.TYPE_LIBRARY) {
-                list.add (vcpi.getObject());
+    private Collection<Object> getLibraries () {
+        List<Object> list = new ArrayList<Object>();
+        for (VisualClassPathItem vcpi : getVisualWarItems()) {
+            if (vcpi.getType() == VisualClassPathItem.Type.LIBRARY) {
+                list.add(vcpi.getObject());
             }
         }
         return list;
@@ -184,27 +185,27 @@ final class VisualArchiveIncludesSupport {
     
     private void addLibraries (Library[] libraries) {
         if (libraries.length > 0) {   
-            List newLibList = new ArrayList(Arrays.asList(libraries));
+            List<Library> newLibList = new ArrayList<Library>(Arrays.asList(libraries));
             classpathTable.clearSelection();
             int n0 = data.length;
             for (int i = 0; i < n0; i++) {
                 VisualClassPathItem item = (VisualClassPathItem) data[i][0];
-                if(item.getType() == VisualClassPathItem.TYPE_LIBRARY) {
-                    if(newLibList.remove(item.getObject()))
-                        classpathTable.addRowSelectionInterval(i, i);
+                if(item.getType() == VisualClassPathItem.Type.LIBRARY &&
+                        newLibList.remove(item.getObject())) {
+                    classpathTable.addRowSelectionInterval(i, i);
                 }
             }
             int n = newLibList.size();
             if (n > 0) {
                 Object[][] newData = new Object[n0 + n][2];
-                for (int i = 0; i < n0; i++)
+                for (int i = 0; i < n0; i++) {
                     newData[i] = data[i];
+                }
                 for (int i = 0; i < n; i++) {
-                    Library library = (Library) newLibList.get(i);
-                    String libraryName = library.getName();
-                    VisualClassPathItem item = new VisualClassPathItem(library, VisualClassPathItem.TYPE_LIBRARY, "${libs."+libraryName+".classpath}", libraryName, VisualClassPathItem.PATH_IN_WAR_APPLET);//NOI18N
+                    Library library = newLibList.get(i);
+                    VisualClassPathItem item = VisualClassPathItem.createLibrary(library);
                     newData[n0 + i][0] = item; 
-                    newData[n0 + i][1] = VisualClassPathItem.PATH_IN_WAR_APPLET;
+                    newData[n0 + i][1] = VisualClassPathItem.PATH_IN_EAR;
                 }
 
                 data = newData;
@@ -219,11 +220,13 @@ final class VisualArchiveIncludesSupport {
 
     private void addJarFiles( File files[] ) {
         Object[][] newData = new Object[data.length + files.length][2];
-        for (int i = 0; i < data.length; i++)
+        for (int i = 0; i < data.length; i++) {
             newData[i] = data[i];
+        }
         for (int i = 0; i < files.length; i++) {
-            newData[data.length + i][0] = new VisualClassPathItem(files[i], VisualClassPathItem.TYPE_JAR, null, files[i].getPath(), VisualClassPathItem.PATH_IN_WAR_APPLET);
-            newData[data.length + i][1] = VisualClassPathItem.PATH_IN_WAR_APPLET;
+            VisualClassPathItem jarFile = VisualClassPathItem.createJAR(files[i]);
+            newData[data.length + i][0] = jarFile;
+            newData[data.length + i][1] = jarFile.getPathInEAR();
         }
         
         data = newData;
@@ -234,11 +237,13 @@ final class VisualArchiveIncludesSupport {
     
     private void addArtifacts( AntArtifact artifacts[] ) {
         Object[][] newData = new Object[data.length + artifacts.length][2];
-        for (int i = 0; i < data.length; i++)
+        for (int i = 0; i < data.length; i++) {
             newData[i] = data[i];
+        }
         for (int i = 0; i < artifacts.length; i++) {
-            newData[data.length + i][0] = new VisualClassPathItem(artifacts[i], VisualClassPathItem.TYPE_ARTIFACT, null, artifacts[i].getArtifactLocations()[0].toString(), VisualClassPathItem.PATH_IN_WAR_APPLET);
-            newData[data.length + i][1] = VisualClassPathItem.PATH_IN_WAR_APPLET;
+            VisualClassPathItem vcpi = VisualClassPathItem.createArtifact(artifacts[i]);
+            newData[data.length + i][0] = vcpi;
+            newData[data.length + i][1] = vcpi.getPathInEAR();
         }
         
         data = newData;
@@ -253,7 +258,7 @@ final class VisualArchiveIncludesSupport {
         if (sm.isSelectionEmpty()) {
             assert false : "Remove button should be disabled"; // NOI18N
         }
-        Collection elements = new ArrayList();
+        Collection<Object> elements = new ArrayList<Object>();
         final int n0 = data.length;
         for (int i = 0; i < n0; i++) {
             if (!sm.isSelectedIndex(i)) {
@@ -261,7 +266,7 @@ final class VisualArchiveIncludesSupport {
             }
         }
         final int n = elements.size();
-        data = (Object[][]) elements.toArray(new Object[n][2]);
+        data = elements.toArray(new Object[n][2]);
         classpathModel.fireTableRowsDeleted(elements.size(), n0 - 1);
 
         if (index >= n) {
@@ -306,9 +311,9 @@ final class VisualArchiveIncludesSupport {
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
                 Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
                 dlg.setVisible(true);
-                if (desc.getValue() == options[0])
+                if (desc.getValue() == options[0]) {
                    addLibraries (panel.getSelectedLibraries());
-                
+                }
                 dlg.dispose();
             } else if ( source == addArtifactButton ) { 
 //       AntArtifact artifacts[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, master);
@@ -319,8 +324,9 @@ final class VisualArchiveIncludesSupport {
                         WebProjectConstants.ARTIFACT_TYPE_WAR_EAR_ARCHIVE,
                         JavaProjectConstants.ARTIFACT_TYPE_JAR });
          //                AntArtifact artifacts[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, master);
-                if ( artifacts != null )
+                if ( artifacts != null ) {
                     addArtifacts( artifacts );
+                }
             } else if ( source == removeButton ) { 
                 removeElements();
             }
@@ -339,8 +345,9 @@ final class VisualArchiveIncludesSupport {
             // and when the selection does not contain unremovable item
             if (remove) {
                 VisualClassPathItem vcpi = (VisualClassPathItem) classpathModel.getValueAt(index, 0);
-                if (!vcpi.canDelete())
+                if (!vcpi.canDelete()) {
                     remove = false;
+                }
             }
                         
             removeButton.setEnabled(remove);
@@ -348,12 +355,9 @@ final class VisualArchiveIncludesSupport {
         
         // TableModelListener --------------------------------------
         public void tableChanged(TableModelEvent e) {
-            if (e.getType() == javax.swing.event.TableModelEvent.DELETE) {
-//                cpItem
-            }
             if (e.getColumn() == 1) {
                 VisualClassPathItem cpItem = (VisualClassPathItem) classpathModel.getValueAt(e.getFirstRow(), 0);
-                cpItem.setPathInWAR((String) classpathModel.getValueAt(e.getFirstRow(), 1));
+                cpItem.setPathInEAR((String) classpathModel.getValueAt(e.getFirstRow(), 1));
                 
                 fireActionPerformed();
             }
@@ -380,8 +384,9 @@ final class VisualArchiveIncludesSupport {
         }
 
         public int getRowCount() {
-            if (data == null)
+            if (data == null) {
                 return 0;
+            }
             return data.length;
         }
 
@@ -390,10 +395,7 @@ final class VisualArchiveIncludesSupport {
         }
 
         public boolean isCellEditable(int row, int col) {
-            if (col == 1)
-                return true;
-            else
-                return false;
+            return col == 1;
         }
 
         public void setValueAt(Object value, int row, int col) {

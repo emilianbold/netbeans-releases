@@ -149,7 +149,10 @@ public abstract class AbstractAddMethodStrategy {
             boolean rollback = true;
             try {
                 JMIUtils.fixImports(jc);
-                JMIUtils.fixImports(c.getBeanClass());
+                JavaClass beanClass = c.getBeanClass();
+                if (!jc.equals(beanClass)) {
+                    JMIUtils.fixImports(beanClass);
+                }
                 rollback = false;
             } finally {
                 JMIUtils.endJmiTransaction(rollback);

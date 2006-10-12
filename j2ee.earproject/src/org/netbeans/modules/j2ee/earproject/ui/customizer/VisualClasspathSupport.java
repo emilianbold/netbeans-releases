@@ -19,19 +19,23 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.libraries.LibrariesCustomizer;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-//import org.netbeans.modules.web.project.WebProjectGenerator;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
-import javax.swing.*;
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -40,18 +44,20 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.*;
-import java.util.List;
-
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
-/** Handles adding, removing, editing and reordering of classpath.
- */
+/** Handles adding, removing, editing and reordering of classpath. */
 public final class VisualClasspathSupport {
     
     final Project master;
@@ -67,8 +73,8 @@ public final class VisualClasspathSupport {
     
     private final ClasspathTableModel classpathModel;
 
-    private final ArrayList actionListeners = new ArrayList();
-    private static Collection baseLibrarySet = java.util.Collections.EMPTY_LIST; // getLibrarySet(WebProjectGenerator.getBaseLibraries());
+    private final List<ActionListener> actionListeners = new ArrayList<ActionListener>();
+    private static Collection baseLibrarySet = Collections.EMPTY_LIST; // getLibrarySet(WebProjectGenerator.getBaseLibraries());
 
         public VisualClasspathSupport(Project master,
                                   String j2eePlatform,
@@ -141,11 +147,11 @@ public final class VisualClasspathSupport {
         csl.valueChanged(null);
     } 
     
-    public void setVisualClassPathItems(List items) {
+    public void setVisualClassPathItems(List<VisualClassPathItem> items) {
         classpathModel.setItems(items);
     }
     
-    public List getVisualClassPathItems() {
+    public List<VisualClassPathItem> getVisualClassPathItems() {
         return classpathModel.getItems();
     }
     
@@ -161,27 +167,24 @@ public final class VisualClasspathSupport {
     }
     
     private void fireActionPerformed() {
-        ArrayList listeners;
+        List<ActionListener> listeners;
         
         synchronized ( this ) {
-             listeners = new ArrayList( actionListeners );
+             listeners = new ArrayList<ActionListener>(actionListeners);
         }
         
         ActionEvent ae = new ActionEvent( this, 0, null );
-        
-        for( Iterator it = listeners.iterator(); it.hasNext(); ) {
-            ActionListener al = (ActionListener)it.next();
+        for (ActionListener al : listeners) {
             al.actionPerformed( ae );
         }
     }
         
     // Private methods ---------------------------------------------------------
 
-    private Collection getLibraries () {
-        Collection libs = new HashSet ();
-        for (Iterator iter = getVisualClassPathItems().iterator(); iter.hasNext();) {
-            VisualClassPathItem vcpi = (VisualClassPathItem) iter.next();
-            if (vcpi.getType() == VisualClassPathItem.TYPE_LIBRARY) {
+    private Collection<Object> getLibraries () {
+        Collection<Object> libs = new HashSet<Object>();
+        for (VisualClassPathItem vcpi : getVisualClassPathItems()) {
+            if (vcpi.getType() == VisualClassPathItem.Type.LIBRARY) {
                 libs.add (vcpi.getObject());
             }
         }
@@ -190,22 +193,20 @@ public final class VisualClasspathSupport {
 
     private void addLibraries(Library[] libraries) {
         if (libraries.length > 0) {   
-            List newLibList = new ArrayList(Arrays.asList(libraries));
+            List<Library> newLibList = new ArrayList<Library>(Arrays.asList(libraries));
             classpathTable.clearSelection();
             int n0 = classpathModel.size();
             for (int i = 0; i < n0; i++) {
                 VisualClassPathItem item = classpathModel.get(i);
-                if(item.getType() == VisualClassPathItem.TYPE_LIBRARY) {
-                    if(newLibList.remove(item.getObject())) {
-                        classpathTable.addRowSelectionInterval(i, i);
-                    }
+                if(item.getType() == VisualClassPathItem.Type.LIBRARY
+                        && newLibList.remove(item.getObject())) {
+                    classpathTable.addRowSelectionInterval(i, i);
                 }
             }
             int n = newLibList.size();
             if (n > 0) {
-                for (int i = 0; i < n; i++) {
-                    Library library = (Library) newLibList.get(i);
-                    VisualClassPathItem item = VisualClassPathItem.create (library, VisualClassPathItem.PATH_IN_WAR_LIB);
+                for (Library library : newLibList) {
+                    VisualClassPathItem item = VisualClassPathItem.createLibrary(library, VisualClassPathItem.PATH_IN_WAR_LIB);
                     classpathModel.add(item);
                 }
                 rowsAdded(n0, n);
@@ -219,13 +220,13 @@ public final class VisualClasspathSupport {
             classpathTable.clearSelection();
             final int n0 = classpathModel.size();
             for (int i = 0; i < n; i++) {
-                String pathInWar;
+                String pathInEAR;
                 if (files[i].isDirectory()) {
-                    pathInWar = VisualClassPathItem.PATH_IN_WAR_NONE;
+                    pathInEAR = VisualClassPathItem.PATH_IN_EAR_NONE;
                 } else {
-                    pathInWar = VisualClassPathItem.PATH_IN_WAR_LIB;
+                    pathInEAR = VisualClassPathItem.PATH_IN_WAR_LIB;
                 }
-                classpathModel.add(VisualClassPathItem.create (files[i], pathInWar));
+                classpathModel.add(VisualClassPathItem.createJAR(files[i], null, pathInEAR));
             }
             rowsAdded(n0, n);
         }
@@ -237,7 +238,7 @@ public final class VisualClasspathSupport {
             classpathTable.clearSelection();
             final int n0 = classpathModel.size();
             for (int i = 0; i < n; i++) {
-                classpathModel.add(VisualClassPathItem.create (artifacts[i], VisualClassPathItem.PATH_IN_WAR_LIB));
+                classpathModel.add(VisualClassPathItem.createArtifact(artifacts[i], null, VisualClassPathItem.PATH_IN_WAR_LIB));
             }
             rowsAdded(n0, n);
         }
@@ -311,20 +312,22 @@ public final class VisualClasspathSupport {
     private void editLibrary() {
         DefaultListSelectionModel sm = (DefaultListSelectionModel) classpathTable.getSelectionModel();
         int index = sm.getMinSelectionIndex();
-        if (sm.isSelectionEmpty())
+        if (sm.isSelectionEmpty()) {
             assert false : "EditLibrary button should be disabled"; // NOI18N
+        }
 
         VisualClassPathItem item = classpathModel.get(index);
-        if (item.getType() == VisualClassPathItem.TYPE_LIBRARY)
+        if (item.getType() == VisualClassPathItem.Type.LIBRARY) {
             LibrariesCustomizer.showCustomizer((Library) item.getObject());
+        }
 
         fireActionPerformed();
     }
 
-    static Collection getLibrarySet(final Collection libraryNames) {
-        final Collection librarySet = new HashSet();
-        for (Iterator it = libraryNames.iterator(); it.hasNext();) {
-            librarySet.add(LibraryManager.getDefault().getLibrary((String) it.next()));
+    static Collection<Library> getLibrarySet(final Collection<String> libraryNames) {
+        final Collection<Library> librarySet = new HashSet<Library>();
+        for (String libName : libraryNames) {
+            librarySet.add(LibraryManager.getDefault().getLibrary(libName));
         }
         return librarySet;
     }
@@ -334,11 +337,11 @@ public final class VisualClasspathSupport {
     }
 
     public static String getLibraryString(Library lib) {
-        final List content = lib.getContent("classpath");
-        StringBuffer sb = new StringBuffer();
+        final List content = lib.getContent("classpath"); // NOI18N
+        StringBuilder sb = new StringBuilder();
         for (Iterator it = content.iterator(); it.hasNext();) {
             if (sb.length() > 0) {
-                sb.append(";");
+                sb.append(';');
             }
             sb.append(it.next().toString());
         }
@@ -378,7 +381,7 @@ public final class VisualClasspathSupport {
                 }
             } else if ( source == addLibraryButton ) {
                 final LibrariesChooser panel = new LibrariesChooser(getLibraries(), j2eePlatform);
-                final JButton btnAddLibrary = new JButton(getBundleResource("LBL_AddLibrary"));
+                final JButton btnAddLibrary = new JButton(getBundleResource("LBL_AddLibrary")); // NOI18N
                 Object[] options = new Object[]{btnAddLibrary, DialogDescriptor.CANCEL_OPTION};
                 final DialogDescriptor desc = new DialogDescriptor(panel,
                         getBundleResource("LBL_CustomizeCompile_Classpath_AddLibrary"), //NOI18N
@@ -436,7 +439,7 @@ public final class VisualClasspathSupport {
                 for (int i = 0; i < si.length; i++) {
                     int index = si[i];
                     final VisualClassPathItem item = classpathModel.get(index);
-                    if(item.getType() != VisualClassPathItem.TYPE_LIBRARY && !isBaseLibraryItem(item)) {
+                    if(item.getType() != VisualClassPathItem.Type.LIBRARY && !isBaseLibraryItem(item)) {
                         edit = true;
                         break;
                     }
@@ -480,9 +483,9 @@ public final class VisualClasspathSupport {
             if (e.getColumn() == 1) {
                 VisualClassPathItem item = classpathModel.get(e.getFirstRow());
                 if (classpathModel.getValueAt(e.getFirstRow(), 1) == Boolean.TRUE) {
-                    item.setPathInWAR(VisualClassPathItem.PATH_IN_WAR_LIB);
+                    item.setPathInEAR(VisualClassPathItem.PATH_IN_WAR_LIB);
                 } else {
-                    item.setPathInWAR(VisualClassPathItem.PATH_IN_WAR_NONE);
+                    item.setPathInEAR(VisualClassPathItem.PATH_IN_EAR_NONE);
                 }
 
                 fireActionPerformed();
@@ -509,8 +512,8 @@ public final class VisualClasspathSupport {
     }
 
     private static class BooleanCellRenderer implements TableCellRenderer {
-        private TableCellRenderer booleanRenderer;
-        private TableCellRenderer defaultRenderer;
+        private final TableCellRenderer booleanRenderer;
+        private final TableCellRenderer defaultRenderer;
 
         public BooleanCellRenderer(JTable table) {
             booleanRenderer = table.getDefaultRenderer(Boolean.class);
@@ -528,24 +531,23 @@ public final class VisualClasspathSupport {
         int columnCount = 2;
         
         ClasspathTableModel(boolean singleColumn) {
-            if (singleColumn)
+            if (singleColumn) {
                 columnCount = 1;
+            }
         }
 
-        private List cpItems;
+        private List<VisualClassPathItem> cpItems;
 
         public int getColumnCount() {
             return columnCount; //classpath item name, WAR checkbox
         }
 
         public int getRowCount() {
-            if (cpItems == null)
-                return 0;
-            return cpItems.size();
+            return cpItems == null ? 0 : cpItems.size();
         }
 
         public Object getValueAt(int row, int col) {
-            final VisualClassPathItem item = (VisualClassPathItem) cpItems.get(row);
+            final VisualClassPathItem item = cpItems.get(row);
             if(col == 0) {
                 return item;
             } else {
@@ -572,14 +574,14 @@ public final class VisualClasspathSupport {
         }
 
         public VisualClassPathItem remove(int index) {
-            return (VisualClassPathItem) cpItems.remove(index);
+            return cpItems.remove(index);
         }
 
         private Boolean isInWar(VisualClassPathItem item) {
             Boolean isInWar;
-            final String pathInWAR = item.getPathInWAR();
-            if (pathInWAR == null || pathInWAR.equals(VisualClassPathItem.PATH_IN_WAR_NONE)) {
-                if(isBaseLibraryItem(item) || (item.getType() == VisualClassPathItem.TYPE_JAR && 
+            final String pathInWAR = item.getPathInEAR();
+            if (pathInWAR == null || pathInWAR.equals(VisualClassPathItem.PATH_IN_EAR_NONE)) {
+                if(isBaseLibraryItem(item) || (item.getType() == VisualClassPathItem.Type.JAR && 
                     ((File) item.getObject()).isDirectory())) {
                     isInWar = null;
                 } else {
@@ -618,20 +620,20 @@ public final class VisualClasspathSupport {
                 setItem(row, (VisualClassPathItem) value);
             } else {
                 if (value instanceof Boolean) {
-                    ((VisualClassPathItem) cpItems.get(row)).setPathInWAR(value == Boolean.TRUE ?
-                            VisualClassPathItem.PATH_IN_WAR_LIB : VisualClassPathItem.PATH_IN_WAR_NONE);
+                    (cpItems.get(row)).setPathInEAR(value == Boolean.TRUE ?
+                        VisualClassPathItem.PATH_IN_WAR_LIB : VisualClassPathItem.PATH_IN_EAR_NONE);
                     fireTableCellUpdated(row, col);
                 }
             }
         }
 
-        public void setItems(List items) {
-            cpItems = new ArrayList(items);
+        public void setItems(List<VisualClassPathItem> items) {
+            cpItems = new ArrayList<VisualClassPathItem>(items);
             fireTableDataChanged();
         }
 
-        public List getItems() {
-            return new ArrayList(cpItems);
+        public List<VisualClassPathItem> getItems() {
+            return new ArrayList<VisualClassPathItem>(cpItems);
 
         }
 
@@ -641,8 +643,8 @@ public final class VisualClasspathSupport {
     }
     
     private static class SimpleFileFilter extends FileFilter {
-        private String description;
-        private Collection extensions;
+        private final String description;
+        private final Collection extensions;
 
         public SimpleFileFilter(String description, String[] extensions) {
             this.description = description;
@@ -650,12 +652,14 @@ public final class VisualClasspathSupport {
         }
 
         public boolean accept(File f) {
-            if (f.isDirectory())
+            if (f.isDirectory()) {
                 return true;
+            }
             String name = f.getName();
             int index = name.lastIndexOf('.'); //NOI18N
-            if (index <= 0 || index==name.length()-1)
+            if (index <= 0 || index==name.length()-1) {
                 return false;
+            }
             String extension = name.substring(index+1).toUpperCase();
             return this.extensions.contains(extension);
         }

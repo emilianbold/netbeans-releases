@@ -65,5 +65,5 @@ public interface EntityAndSession extends Ejb {
     public int addSecurityRoleRef(org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef value);
     
     public SecurityRoleRef newSecurityRoleRef();
-        
+    
 }

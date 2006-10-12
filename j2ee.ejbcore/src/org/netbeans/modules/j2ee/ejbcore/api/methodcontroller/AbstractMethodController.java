@@ -27,6 +27,7 @@ import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.MultipartId;
 import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.jmi.javamodel.StatementBlock;
 import org.netbeans.jmi.javamodel.TypeReference;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
@@ -46,10 +47,12 @@ public abstract class AbstractMethodController extends EjbMethodController {
     protected Set classesForSave;
     private int transactionLevel = 0;
     private boolean writeTransactionRollBack = false;
+    private boolean simplified = false;
 
     public AbstractMethodController(EntityAndSession model, ClassPath cp) {
         this.model = model;
         this.cp = cp;
+        this.simplified = model.getRoot().getVersion().doubleValue() > 2.1;
     }
 
     public interface GenerateFromImpl {
@@ -109,7 +112,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
             }
             TypeReference typeReference = JavaModelUtil.resolveImportsForType(isComponent ? component : home, clientView.getType());
             clientView.setTypeName(typeReference);
-            if (!local) {
+            if (!local && !simplified) {
                 addExceptionIfNecessary(clientView, RemoteException.class.getName());
             }
             JMIUtils.fixImports(component);
@@ -119,7 +122,16 @@ public abstract class AbstractMethodController extends EjbMethodController {
             endWriteJmiTransaction(rollback);
         }
         if (methodToOpen != null) {
-            JMIUtils.openInEditor(methodToOpen.getBody());
+            StatementBlock stBlock = null;
+            JMIUtils.beginJmiTransaction();
+            try {
+                if (methodToOpen.isValid())
+                    stBlock = methodToOpen.getBody();
+            } finally {
+                JMIUtils.endJmiTransaction();
+            }
+            if (stBlock != null)
+                JMIUtils.openInEditor(stBlock);
         }
     }
 
@@ -142,7 +154,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
             registerClassForSave(component);
             v.getInterfaceMethodFromImpl(t,home,component);
             Method me = v.getInterfaceMethod();
-            if (!local) {
+            if (!local && !simplified) {
                 addExceptionIfNecessary(me, RemoteException.class.getName());
             }
             me.setModifiers(0);
@@ -391,8 +403,10 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     public boolean hasRemote() {
         String intf = model.getHome();
-        if (intf == null || findJavaClass(intf) == null) {
-            return false;
+        if (!simplified) {
+            if (intf == null || findJavaClass(intf) == null) {
+                return false;
+            }
         }
         intf = model.getRemote();
         if (intf == null || findBusinessInterface(intf) == null) {
@@ -403,8 +417,10 @@ public abstract class AbstractMethodController extends EjbMethodController {
     
     public boolean hasLocal() {
         String intf = model.getLocalHome();
-        if (intf == null || findJavaClass(intf) == null) {
-            return false;
+        if (!simplified) {
+            if (intf == null || findJavaClass(intf) == null) {
+                return false;
+            }
         }
         intf = model.getLocal();
         if (intf == null || findBusinessInterface(intf) == null) {

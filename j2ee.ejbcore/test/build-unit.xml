@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="j2ee/ejbcore/test-unit" basedir="." default="all">
+    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+
+    <property name="test.classpath" value=""/>
+    <property name="xtest.ide.commandline.suffix" value="-J-Xint -J-Dnetbeans.javacore.noscan=true"/>
+
+    <!-- 
+        This target expects to have installed appserver at /space/appserver on Unix machine 
+        or e:\space\appserver on Windows machine (that's how it is set on test servers).
+        Symlink on Unix is also OK.
+    -->
+    <target name="set-appserver-path" unless="xtest.ide.commandline.suffix">
+        <condition property="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=e:\\space\\appserver">
+           <os family="windows"/>
+        </condition>
+        <condition property="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=/space/appserver">
+           <os family="unix"/>
+        </condition>
+    </target>
+
+    <target name="runidetest" depends="init,init-cp,set-appserver-path">
+        <executeTests pluginname="ide"/>
+    </target>
+</project>

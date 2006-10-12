@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp;
 
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.*;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -32,7 +33,8 @@ public class CMPMapping implements OriginalCMPMapping {
     private CMPMappingModel model;
     private FileObject schema;
 
-    CMPMapping(String ejbName, CMPMappingModel m, FileObject schema) {
+
+    public CMPMapping(String ejbName, CMPMappingModel m, FileObject schema) {
         this.ejbName = ejbName;
         model = m;
         this.schema = schema;

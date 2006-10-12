@@ -19,34 +19,43 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
+import org.openide.util.NbBundle;
 
 /**
  * @author pfiala
  */
 public class SelectMethodsNode extends EjbSectionNode {
-
+    
     private EntityHelper.Queries queries;
-
+    
     SelectMethodsNode(SectionNodeView sectionNodeView, EntityHelper.Queries queries) {
         super(sectionNodeView, true, queries, Utils.getBundleMessage("LBL_CmpSelects"), Utils.ICON_BASE_MISC_NODE);
         this.queries = queries;
     }
-
+    
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         final SelectMethodsTableModel model = queries.getSelectMethodsTableModel();
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
+
             protected void editCell(final int row, final int column) {
-                model.editRow(row);
+                if (!model.editRow(row)){
+                    getSectionNodeView().getErrorPanel().setError(
+                            new org.netbeans.modules.xml.multiview.Error(org.netbeans.modules.xml.multiview.Error.TYPE_WARNING,
+                            NbBundle.getMessage(SelectMethodsNode.class, "TXT_MethodNotFound"), getTable()));
+                }
             }
-
+            
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
-                super.dataModelPropertyChange(source, propertyName, oldValue, newValue);    
+                super.dataModelPropertyChange(source, propertyName, oldValue, newValue);
             }
-
+            
+            
             public void focusData(Object element) {
                 if (element instanceof Query) {
                     final int row = queries.getSelectMethodRow((Query) element);
@@ -54,12 +63,21 @@ public class SelectMethodsNode extends EjbSectionNode {
                         getTable().getSelectionModel().setSelectionInterval(row, row);
                     }
                 }
-
+                
             }
         };
+        innerTablePanel.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                
+            }
+            public void focusLost(FocusEvent e) {
+                innerTablePanel.getSectionView().getErrorPanel().clearError();
+            }
+        });
+        
         return innerTablePanel;
     }
-
+    
     public SectionNode getNodeForElement(Object element) {
         if (element instanceof Query) {
             if (queries.getSelectMethodRow((Query) element) >= 0) {
@@ -68,5 +86,5 @@ public class SelectMethodsNode extends EjbSectionNode {
         }
         return super.getNodeForElement(element);
     }
-
+    
 }

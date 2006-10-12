@@ -68,4 +68,17 @@ public interface ResourceRef extends CommonDDBean, DescriptionInterface {
          */
 	public java.lang.String getResSharingScope();
 
+        // Java EE 5
+
+        void setMappedName(String value) throws VersionNotSupportedException;
+        String getMappedName() throws VersionNotSupportedException;
+        void setInjectionTarget(int index, InjectionTarget valueInterface) throws VersionNotSupportedException;
+        InjectionTarget getInjectionTarget(int index) throws VersionNotSupportedException;
+        int sizeInjectionTarget() throws VersionNotSupportedException;
+        void setInjectionTarget(InjectionTarget[] value) throws VersionNotSupportedException;
+        InjectionTarget[] getInjectionTarget() throws VersionNotSupportedException;
+        int addInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+        int removeInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+        InjectionTarget newInjectionTarget() throws VersionNotSupportedException;
+
 }

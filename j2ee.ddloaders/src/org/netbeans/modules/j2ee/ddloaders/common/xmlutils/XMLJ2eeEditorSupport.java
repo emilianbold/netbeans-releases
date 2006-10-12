@@ -19,37 +19,55 @@
 
 package org.netbeans.modules.j2ee.ddloaders.common.xmlutils;
 
-import java.io.*;
+import java.awt.Dialog;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
 
-import org.openide.cookies.*;
+import org.netbeans.modules.xml.api.EncodingUtil;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
+import org.openide.awt.UndoRedo;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.PrintCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
-import org.openide.windows.CloneableOpenSupport;
-
-import javax.swing.event.*;
-import javax.swing.text.*;
-import org.openide.awt.StatusDisplayer;
-import org.openide.awt.UndoRedo;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-
-import org.netbeans.modules.xml.api.EncodingUtil;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.CloneableOpenSupport;
 
 /** Support for editing a XMLJ2eeDataObject as text.
  *
  * @author mkuchtiak
  */
-
-public class XMLJ2eeEditorSupport extends DataEditorSupport 
-implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, CloseCookie, PrintCookie {
-
-    /** Delay for automatic parsing - in miliseconds */
+public class XMLJ2eeEditorSupport extends DataEditorSupport
+        implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, CloseCookie, PrintCookie {
+    
+    /** Delay for automatic parsing - in milliseconds */
     private static final int AUTO_PARSING_DELAY = 2000;
-    private org.openide.DialogDescriptor dialog;    
+    private DialogDescriptor dialog;    
     private RequestProcessor.Task parsingDocumentTask;
     XMLJ2eeDataObject dataObject;
 
@@ -144,8 +162,6 @@ implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, Clos
      * When saved, saves the document to disk and marks the object unmodified.
      */
     private class Save implements SaveCookie {
-        public Save () {
-        }
         
         public void save () throws IOException {
             XMLJ2eeDataObject obj = (XMLJ2eeDataObject) getDataObject ();
@@ -155,12 +171,12 @@ implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, Clos
             }else {
                 obj.displayErrorMessage();
                 StatusDisplayer.getDefault().setStatusText("");
-                dialog = new org.openide.DialogDescriptor(
+                dialog = new DialogDescriptor(
                     NbBundle.getMessage (XMLJ2eeEditorSupport.class, "MSG_invalidXmlWarning"),
                     NbBundle.getMessage (XMLJ2eeEditorSupport.class, "TTL_invalidXmlWarning"));
-                java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-                d.show();
-                if (dialog.getValue() == org.openide.DialogDescriptor.OK_OPTION) {
+                Dialog d = DialogDisplayer.getDefault().createDialog(dialog);
+                d.setVisible(true);
+                if (dialog.getValue() == DialogDescriptor.OK_OPTION) {
                     obj.setSavingDocument(true);
                     saveDocument();
                 }
@@ -178,19 +194,22 @@ implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, Clos
      * Save document using encoding declared in XML prolog if possible otherwise
      * at UTF-8 (in such case it updates the prolog).
      */
-    public void saveDocument () throws java.io.IOException {
-        final javax.swing.text.StyledDocument doc = getDocument();
+    public void saveDocument () throws IOException {
+        final StyledDocument doc = getDocument();
         // dependency on xml/core
         String enc = EncodingUtil.detectEncoding(doc);
         if (enc == null) enc = "UTF8"; //!!! // NOI18N
         
         try {
             //test encoding on dummy stream
-            new java.io.OutputStreamWriter(new java.io.ByteArrayOutputStream(1), enc);
+            new OutputStreamWriter(new ByteArrayOutputStream(1), enc);
+            if (!checkCharsetConversion(enc)) {
+                return;
+            }
             super.saveDocument();
             //moved from Env.save()
             getDataObject().setModified (false);
-        } catch (java.io.UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException ex) {
             // ask user what next?
             String message = NbBundle.getMessage(XMLJ2eeEditorSupport.class,"TEXT_SAVE_AS_UTF", enc);
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
@@ -241,13 +260,36 @@ implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, Clos
                     getDataObject().setModified (false);
 
                 } catch (BadLocationException lex) {
-                    org.openide.ErrorManager.getDefault().notify(lex);
+                    ErrorManager.getDefault().notify(lex);
                 }
 
             } else { // NotifyDescriptor != YES_OPTION
                 return;
             }
         }
+    }
+    
+    private boolean checkCharsetConversion(final String encoding) {
+        boolean value = true;
+        try {
+            CharsetEncoder coder = Charset.forName(encoding).newEncoder();
+            if (!coder.canEncode(getDocument().getText(0, getDocument().getLength()))){
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                        NbBundle.getMessage(XMLJ2eeEditorSupport.class, "MSG_BadCharConversion",
+                        new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                        encoding}),
+                        NotifyDescriptor.YES_NO_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE);
+                nd.setValue(NotifyDescriptor.NO_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+                if(nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                    value = false;
+                }
+            }
+        } catch (BadLocationException e){
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        return value;
     }
     
     public UndoRedo.Manager getUndo(){
@@ -260,11 +302,11 @@ implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, Clos
     */
     protected String messageName () {
         String name = super.messageName();
-        int index1 = name.indexOf("["); // NOI18N
+        int index1 = name.indexOf('[');
         
         if (index1>=0) {
             String prefix = name.substring(0,index1);
-            int index2 = name.lastIndexOf("]"); // NOI18N
+            int index2 = name.lastIndexOf(']');
             String postfix="";
             if (index2>=0) postfix = name.substring(index2+1);
             return prefix+postfix;

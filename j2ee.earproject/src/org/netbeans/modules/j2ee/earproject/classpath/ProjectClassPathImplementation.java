@@ -19,20 +19,20 @@
 package org.netbeans.modules.j2ee.earproject.classpath;
 
 import java.beans.PropertyChangeEvent;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.net.MalformedURLException;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
@@ -41,7 +41,7 @@ import org.openide.util.WeakListeners;
  */
 final class ProjectClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private AntProjectHelper helper;
     private String expression;
     private boolean isProperty;
@@ -101,14 +101,14 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
         if (!isProperty) {
             String eval = evaluator.evaluate (expression);
-            if (eval == resolved) {
+            if (eval != null && eval.equals(resolved)) {
                 return;
             } else {
                 resolved = eval;
             }
         }
         
-        List newRoots = getPath ();
+        List<PathResourceImplementation> newRoots = getPath();
         boolean fire = false;
         synchronized (this) {
             if (this.resources != null && !this.resources.equals(newRoots)) {
@@ -121,8 +121,8 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
     }
     
-    private List getPath() {
-        List result = new ArrayList ();
+    private List<PathResourceImplementation> getPath() {
+        List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         String prop = isProperty ? evaluator.getProperty(expression) : resolved;
         if (prop != null) {
             String[] pieces = PropertyUtils.tokenizePath(prop);

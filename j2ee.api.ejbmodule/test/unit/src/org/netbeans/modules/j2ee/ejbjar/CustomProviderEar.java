@@ -20,8 +20,14 @@
 package org.netbeans.modules.j2ee.ejbjar;
 
 import java.util.HashMap;
-import org.netbeans.modules.j2ee.api.ejbjar.*;
-import org.netbeans.modules.j2ee.spi.ejbjar.*;
+import org.netbeans.modules.j2ee.api.ejbjar.Car;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
@@ -45,6 +51,14 @@ public class CustomProviderEar implements EarProvider {
             }
             return em;
         }
+        if (file.getExt ().equals ("bar")) {
+            Ear em  = (Ear) cache.get (file.getParent ());
+            if (em == null) {
+                em = CarFactory.createEar (new EM (file.getParent (), EjbProjectConstants.J2EE_14_LEVEL));
+                cache.put (file.getParent (), em);
+            }
+            return em;
+        }
         return null;
     }
     
@@ -62,7 +76,7 @@ public class CustomProviderEar implements EarProvider {
         }
         
         public FileObject getDeploymentDescriptor () {
-            return root.getFileObject ("conf/ejb-jar.xml");
+            return root.getFileObject ("conf/application.xml");
         }
         
         public FileObject getMetaInf () {
@@ -75,5 +89,8 @@ public class CustomProviderEar implements EarProvider {
         public void addWebModule(WebModule module) {
             
         }
+        public void addCarModule(Car module) {
+            
+        }        
     }
 }

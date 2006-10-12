@@ -124,8 +124,7 @@ public class AddCmpFieldAction extends NodeAction {
         NotifyDescriptor nd = new NotifyDescriptor(fc, NAME, NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, null, null);
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
-            fc.isOK();  // apply possible changes in dialog fields;
-            return true;
+            return fc.isOK();  // apply possible changes in dialog field
         } else {
             return false;
         }

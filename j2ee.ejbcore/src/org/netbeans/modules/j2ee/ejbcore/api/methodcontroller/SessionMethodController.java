@@ -57,6 +57,9 @@ public class SessionMethodController extends AbstractMethodController {
     }
 
     public MethodType getMethodTypeFromInterface(Method clientView) {
+        if (!clientView.isValid()) {
+            return null;
+        }
         assert clientView.getDeclaringClass() != null: "declaring class cannot be null";
         // see if the interface is home or local home, otherwise assume business
         String cName = clientView.getDeclaringClass().getName();
@@ -81,7 +84,7 @@ public class SessionMethodController extends AbstractMethodController {
     public boolean supportsMethodType(int mt) {
         boolean stateless = 
                 Session.SESSION_TYPE_STATELESS.equals(model.getSessionType());
-        return  mt == MethodType.METHOD_TYPE_BUSINESS ||
-                (!stateless && (mt == MethodType.METHOD_TYPE_CREATE));
+        boolean simplified = model.getRoot().getVersion().doubleValue() > 2.1;
+        return  mt == MethodType.METHOD_TYPE_BUSINESS || (!simplified && !stateless && (mt == MethodType.METHOD_TYPE_CREATE));
     }
 }

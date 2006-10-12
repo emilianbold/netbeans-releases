@@ -226,7 +226,7 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
             super(org.openide.nodes.Children.LEAF);
             this.group=group;
             setDisplayName(view.getJspGroupNodeName(group));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/jspObject"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/jspObject.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"jspPropertyGroupNode"); //NOI18N
@@ -237,7 +237,7 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
         WelcomeFilesNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_welcomeFiles"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/htmlObject"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/htmlObject.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"welcomeFilesNode"); //NOI18N
@@ -248,7 +248,7 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
         ErrorPagesNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_errorPages"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/htmlObject"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/htmlObject.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"errorPagesNode"); //NOI18N
@@ -312,7 +312,7 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
             dialogPanel.getTextComponents()[2].getDocument().addDocumentListener(docListener);
             
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.show();
+            d.setVisible(true);
             dialogPanel.getTextComponents()[2].getDocument().removeDocumentListener(docListener);
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
@@ -366,7 +366,7 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
             org.openide.DialogDescriptor desc = new ConfirmDialog(
                 NbBundle.getMessage(PagesMultiViewElement.class,"TXT_removeJspGroupConfirm"));
             java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-            dialog.show();
+            dialog.setVisible(true);
             if (org.openide.DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
                 SectionPanel sectionPanel = ((SectionPanel.HeaderButton)evt.getSource()).getSectionPanel();
                 JspPropertyGroup group = (JspPropertyGroup)sectionPanel.getKey();

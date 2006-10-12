@@ -11,6 +11,14 @@ Name: org/netbeans/modules/j2ee/ddloaders/ejb/EjbJarDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
 
+Name: org/netbeans/modules/j2ee/ddloaders/ejb/EjbJar30DataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+
+Name: org/netbeans/modules/j2ee/ddloaders/client/ClientDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+
 Name: org/netbeans/modules/j2ee/ddloaders/app/EarDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject

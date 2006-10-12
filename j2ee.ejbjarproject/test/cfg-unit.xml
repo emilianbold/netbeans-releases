@@ -20,8 +20,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="Configuration of J2EE EJB unit tests">
-
-    <testbag testattribs="stable" executor="ide" name="j2ee/ejbjarproject">
+    
+    <testbag testattribs="stable" executor="unit-executor" name="j2ee/ejbjarproject">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -30,6 +30,6 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
-
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>    
+    
 </mconfig>

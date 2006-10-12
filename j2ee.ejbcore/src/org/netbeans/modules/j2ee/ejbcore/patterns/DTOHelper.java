@@ -72,7 +72,7 @@ public class DTOHelper {
         
         DDProvider provider = DDProvider.getDefault();
         try{
-            ejbJar = provider.getDDRoot(ejbModule.getDeploymentDescriptor());
+            ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
             beans = ejbJar.getEnterpriseBeans();
             
             entity = (Entity) beans.findBeanByName(

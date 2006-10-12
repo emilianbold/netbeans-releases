@@ -22,16 +22,11 @@ package org.netbeans.modules.j2ee.earproject;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.ArchiveProjectProperties;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -270,11 +265,11 @@ public class UpdateHelper  {
                         webFileText = webFileText.substring(2, webFileText.length() - 1);
                         if (webFileText.startsWith("libs.")) {
                             String libName = webFileText.substring(5, webFileText.indexOf(".classpath")); //NOI18N
-                            List/*<URL>*/ roots = LibraryManager.getDefault().getLibrary(libName).getContent("classpath"); //NOI18N
-                            ArrayList files = new ArrayList();
-                            ArrayList dirs = new ArrayList();
-                            for (Iterator it = roots.iterator(); it.hasNext();) {
-                                URL rootUrl = (URL) it.next();
+                            @SuppressWarnings("unchecked")
+                            List<URL> roots = LibraryManager.getDefault().getLibrary(libName).getContent("classpath"); //NOI18N
+                            List<FileObject> files = new ArrayList<FileObject>();
+                            List<FileObject> dirs = new ArrayList<FileObject>();
+                            for (URL rootUrl : roots) {
                                 FileObject root = org.openide.filesystems.URLMapper.findFileObject(rootUrl);
                                 if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
                                     root = FileUtil.getArchiveFile(root);

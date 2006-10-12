@@ -39,6 +39,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -56,6 +57,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
@@ -77,6 +79,7 @@ import org.openide.filesystems.URLMapper;
  */
 public class EjbJarProjectProperties {
     
+    public static final String JAVA_EE_5 = "1.5"; // NOI18N
     public static final String J2EE_1_4 = "1.4"; // NOI18N
     public static final String J2EE_1_3 = "1.3"; // NOI18N
     
@@ -143,6 +146,11 @@ public class EjbJarProjectProperties {
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     
+    public static final String DEPLOY_ANT_PROPS_FILE = "deploy.ant.properties.file"; //NOI18N
+    
+    public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
+    
+    public static final String JAVA_SOURCE_BASED = "java.source.based";
     
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
@@ -220,7 +228,6 @@ public class EjbJarProjectProperties {
     private PropertyEvaluator evaluator;
     private ReferenceHelper refHelper;
     private UpdateHelper updateHelper;
-    private EjbJarProvider ejbJarProvider;
     
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
@@ -269,7 +276,7 @@ public class EjbJarProjectProperties {
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
-        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE));
+        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(J2EE_PLATFORM));
                 
         // CustomizerCompile
         JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
@@ -378,7 +385,7 @@ public class EjbJarProjectProperties {
                 if (ejbJarModules.length > 0) {
                     FileObject ddFo = ejbJarModules[0].getDeploymentDescriptor();
                     if (ddFo != null) {
-                        EjbJar ddRoot = DDProvider.getDefault().getDDRoot(ddFo);
+                        EjbJar ddRoot = DDProvider.getDefault().getMergedDDRoot(ejbJarModules[0].getMetadataUnit());
                         if (ddRoot != null) {
                             ddRoot.setVersion(new BigDecimal(EjbJar.VERSION_2_1));
                             ddRoot.write(ddFo);
@@ -403,8 +410,8 @@ public class EjbJarProjectProperties {
     
     private void storeAdditionalProperties(EditableProperties projectProperties) {
         for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
-            Object key = i.next();
-            projectProperties.put(key, additionalProperties.get(key));
+            String key = i.next().toString();
+            projectProperties.put(key, additionalProperties.getProperty(key));
         }
     }
     
@@ -561,12 +568,44 @@ public class EjbJarProjectProperties {
         privateProps.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
 
         // update j2ee.platform.wscompile.classpath
-        if (j2eePlatform.isToolSupported(WebServicesConstants.WSCOMPILE)) {
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(WebServicesConstants.WSCOMPILE);
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
             privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
                     Utils.toClasspathString(wsClasspath));
         } else {
             privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH);
+        }
+        
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
+            privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, 
+                    Utils.toClasspathString(wsClasspath));
+        } else {
+            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH);
+        }
+
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
+            privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
+                    Utils.toClasspathString(wsClasspath));
+        } else {
+            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH);
+        }
+
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
+            privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH, 
+                    Utils.toClasspathString(wsClasspath));
+        } else {
+            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_WSIT_CLASSPATH);
+        }
+
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP)) {
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP);
+            privateProps.setProperty(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH, 
+                    Utils.toClasspathString(wsClasspath));
+        } else {
+            privateProps.remove(WebServicesConstants.J2EE_PLATFORM_JWSDP_CLASSPATH);
         }
         
         // update j2ee.server.type
@@ -574,6 +613,20 @@ public class EjbJarProjectProperties {
         
         // update j2ee.server.instance
         privateProps.setProperty(J2EE_SERVER_INSTANCE, newServInstID);
+        
+        // ant deployment support
+        File projectFolder = FileUtil.toFile(project.getProjectDirectory());
+        try {
+            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ANT_DEPLOY_BUILD_SCRIPT), J2eeModule.EJB, newServInstID); // NOI18N
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        }
+        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(newServInstID);
+        if (deployAntPropsFile == null) {
+            privateProps.remove(DEPLOY_ANT_PROPS_FILE);
+        } else {
+            privateProps.setProperty(DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
+        }
     }
     
     public static String getProperty(final String property, final AntProjectHelper helper, final String path) {

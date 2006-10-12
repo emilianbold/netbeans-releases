@@ -16,8 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.j2ee.spi.ejbjar;
 
+import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -31,12 +33,17 @@ public interface EjbJarImplementation {
      * @return J2EE platform version
      */
     String getJ2eePlatformVersion ();
-
-    /** META-INF folder for the web module.
+    /**
+     * META-INF folder for the ejb module.
+     *
+     * @return the {@link FileObject}; might be <code>null</code>
      */
     FileObject getMetaInf ();
 
-    /** Deployment descriptor (ejb-jar.xml file) of the ejb module.
+    /**
+     * Deployment descriptor (ejb-jar.xml file) of the ejb module.
+     *
+     * @return the {@link FileObject}; might be <code>null</code>
      */
     FileObject getDeploymentDescriptor ();
 
@@ -47,4 +54,13 @@ public interface EjbJarImplementation {
      * </div>
      */
     FileObject[] getJavaSources();
+    
+    /**
+     * Coupling of deployment desrciptor and classpath containing annotated classes
+     * describing metadata of the EJB module
+     * 
+     * @return non-null value
+     */
+    MetadataUnit getMetadataUnit();
+    
 }

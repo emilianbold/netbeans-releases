@@ -19,9 +19,14 @@
 
 package org.netbeans.modules.j2ee.ejbjar;
 
+import java.util.Collections;
 import java.util.HashMap;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.api.ejbjar.*;
+import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.j2ee.spi.ejbjar.*;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /** A dummy provider that things that any *.foo file belongs to its web module.
@@ -50,6 +55,7 @@ public class CustomProvider implements EjbJarProvider {
     private class EM implements EjbJarImplementation {
         FileObject root;
         String ver;
+        private MetadataUnit metadataUnit;
         
         public EM (FileObject root, String ver) {
             this.root = root;
@@ -70,6 +76,24 @@ public class CustomProvider implements EjbJarProvider {
 
         public FileObject[] getJavaSources() {
             return null;
+        }
+
+        public MetadataUnit getMetadataUnit() {
+            synchronized (this) {
+                if (metadataUnit == null) {
+                    metadataUnit = new MetadataUnitImpl();
+                }
+                return metadataUnit;
+            }
+        }
+
+        private class MetadataUnitImpl implements MetadataUnit {
+            public ClassPath getClassPath() {
+                return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
+            }
+            public FileObject getDeploymentDescriptor() {
+                return EM.this.getDeploymentDescriptor();
+            }
         }
     }
 }

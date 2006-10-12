@@ -57,7 +57,7 @@ public class EjbContainerChildren extends Children.Keys implements PropertyChang
         this.model = model;
         //this.srcPath = srcPath;
         // method controllers need full classpath to handle beans correctly
-        ClassPath bootClassPath = ClassPath.getClassPath(ddFile, ClassPath.BOOT);
+        ClassPath bootClassPath = ClassPath.getClassPath(srcPath.getRoots()[0], ClassPath.BOOT);
         this.srcPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{srcPath, bootClassPath});
         this.ddFile = ddFile;
         this.nodeFactory = nodeFactory;

@@ -29,6 +29,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
@@ -45,11 +46,11 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.dd.api.ejb.MethodPermission;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.dnd.EjbReferenceImpl;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.dnd.EjbReference;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
@@ -117,7 +118,7 @@ public class EjbViewController {
         } else {
             moduleJarTarget = antArtifacts[0];
         }
-        return new EjbReference(moduleJarTarget, (EntityAndSession)model);
+        return new EjbReferenceImpl(moduleJarTarget, (EntityAndSession)model);
     }
      
     private FileObject findBeanFo() {
@@ -171,8 +172,9 @@ public class EjbViewController {
     
     
     private void writeDD() throws IOException {
-        FileObject ddFile = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar (srcPath.getRoots()[0]).getDeploymentDescriptor();
-        DDProvider.getDefault().getDDRoot(ddFile).write(ddFile);
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar apiEjbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar (srcPath.getRoots()[0]);
+        FileObject ddFile = apiEjbJar.getDeploymentDescriptor();
+        DDProvider.getDefault().getMergedDDRoot(apiEjbJar.getMetadataUnit()).write(ddFile);
     }
     
     private boolean isEjbUsed(EjbRelationshipRole role, String ejbName) {

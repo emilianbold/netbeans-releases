@@ -123,7 +123,7 @@ public class FilterMappingsTablePanel extends DefaultTablePanel {
                 }
             });
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.show();
+            d.setVisible(true);
             dialogPanel.getUrlTF().getDocument().removeDocumentListener(docListener);
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
                 dObj.modelUpdatedFromUI();

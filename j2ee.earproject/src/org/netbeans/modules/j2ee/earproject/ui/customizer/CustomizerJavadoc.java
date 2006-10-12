@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-
 import org.openide.util.HelpCtx;
 
 /** Customizer for general project attributes.

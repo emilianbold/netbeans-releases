@@ -963,9 +963,12 @@ public class WebAppProxy implements WebApp {
             if (WebApp.VERSION_2_3.equals(version)) {
                 ((org.netbeans.modules.schema2beans.BaseBean)clonedWebApp).changeDocType
                     ("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN","http://java.sun.com/dtd/web-app_2_3.dtd");
-            } else {
+            } else if (WebApp.VERSION_2_4.equals(version)) {
                 ((org.netbeans.modules.j2ee.dd.impl.web.model_2_4.WebApp)clonedWebApp)._setSchemaLocation
                     ("http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd");
+            } else /*if (WebApp.VERSION_2_5.equals(version))*/ {
+                ((org.netbeans.modules.j2ee.dd.impl.web.model_2_5.WebApp)clonedWebApp)._setSchemaLocation
+                    ("http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd");
             }
         }
         proxy.setError(error);
@@ -979,5 +982,13 @@ public class WebAppProxy implements WebApp {
 
     public void setWriting(boolean writing) {
         this.writing=writing;
+    }
+    
+    public void setMetadataComplete(boolean value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+        if (webApp!=null) webApp.setMetadataComplete(value);
+    }
+    
+    public boolean isMetadataComplete() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException{
+        return webApp==null?false:webApp.isMetadataComplete();
     }
 }

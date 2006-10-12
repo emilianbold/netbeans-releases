@@ -49,6 +49,8 @@ public interface Ejb extends CommonDDBean, ComponentInterface {
         public static final String MESSAGE_DESTINATION_REF = "MessageDestinationRef";	// NOI18N
         public static final String SECURITY_IDENTITY = "SecurityIdentity";	// NOI18N
         
+        public EjbJar getRoot();
+
         public String getEjbName();
         
         public void setEjbName(String value);

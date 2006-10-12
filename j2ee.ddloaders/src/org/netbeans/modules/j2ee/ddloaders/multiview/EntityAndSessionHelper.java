@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import javax.jmi.reflect.JmiException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.jmi.javamodel.ClassMember;
@@ -52,16 +53,16 @@ import org.openide.nodes.Node;
  * @author pfiala
  */
 public abstract class EntityAndSessionHelper implements PropertyChangeListener, PropertyChangeSource {
-
+    
     protected final EntityAndSession ejb;
     protected final EjbJarMultiViewDataObject ejbJarMultiViewDataObject;
     protected final FileObject ejbJarFile;
-
+    
     protected ClassPath sourceClassPath;
-
+    
     private List listeners = new LinkedList();
     public AbstractMethodController abstractMethodController;
-
+    
     public EntityAndSessionHelper(EjbJarMultiViewDataObject ejbJarMultiViewDataObject, EntityAndSession ejb) {
         this.ejb = ejb;
         this.ejbJarMultiViewDataObject = ejbJarMultiViewDataObject;
@@ -69,15 +70,15 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
         sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
         ejbJarMultiViewDataObject.getEjbJar().addPropertyChangeListener(this);
     }
-
+    
     public JavaClass getLocalBusinessInterfaceClass() {
         return abstractMethodController.getBeanInterface(true, true);
     }
-
+    
     public JavaClass getRemoteBusinessInterfaceClass() {
         return abstractMethodController.getBeanInterface(false, true);
     }
-
+    
     public void removeInterfaces(boolean local) {
         JMIUtils.beginJmiTransaction(true);
         boolean rollback = true;
@@ -110,36 +111,36 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
         }
         modelUpdatedFromUI();
     }
-
+    
     public void modelUpdatedFromUI() {
         ejbJarMultiViewDataObject.modelUpdatedFromUI();
     }
-
+    
     private void removeBeanInterface(String name) {
         JMIUtils.removeInterface(getBeanClass(), name);
         Utils.removeClass(sourceClassPath, name);
     }
-
+    
     public String getEjbClass() {
         return ejb.getEjbClass();
     }
-
+    
     public String getLocal() {
         return ejb.getLocal();
     }
-
+    
     public String getLocalHome() {
         return ejb.getLocalHome();
     }
-
+    
     public String getRemote() {
         return ejb.getRemote();
     }
-
+    
     public String getHome() {
         return ejb.getHome();
     }
-
+    
     public String getBusinessInterfaceName(boolean local) {
         JavaClass beanInterface = abstractMethodController.getBeanInterface(local, true);
         if (beanInterface == null) {
@@ -153,7 +154,7 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
             return name;
         }
     }
-
+    
     public void addInterfaces(boolean local) {
         EntityAndSessionGenerator generator = getGenerator();
         String packageName = Utils.getPackage(ejb.getEjbClass());
@@ -212,11 +213,11 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
             Utils.notifyError(e);
         }
     }
-
+    
     /**
      * Generates local or remote home interface based on provided opposite existing remote or local interface.
      * It will copy all create methods and findByPrimaryKey method from existing opposite home interface.
-     * 
+     *
      * @param oldHome name of home interface from which create and findByPrimary methods will be taken
      * @param newHome name of home interface to create
      * @param oldBusiness name of existing business interface (returned by create and findByPrimaryKey method of home interface)
@@ -274,21 +275,23 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
             JMIUtils.endJmiTransaction(rollback);
         }
     }
-
+    
     /**
      * Fids all create methods and findByPrimaryKey method in home interface
      *
-     * @param homeInterface  
+     * @param homeInterface
      * @return collection of method or empty collection if no methods found
      */
     private static Collection getImportantHomeMethods(JavaClass homeInterface) {
-        Collection result = new HashSet();
+        Collection result = new ArrayList();
         for (Iterator it = homeInterface.getContents().iterator(); it.hasNext();) {
             ClassMember classMember = (ClassMember) ((ClassMember) it.next()).duplicate();
             if (classMember instanceof Method && Modifier.isInterface(homeInterface.getModifiers())) {
                 Method method = (Method) classMember;
                 if (method.getName().startsWith("create") || method.getName().equals("findByPrimaryKey")) {
-                    result.add(method);
+                    if (!result.contains(method)){
+                        result.add(method);
+                    }
                 }
             }
         }
@@ -296,37 +299,37 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
     }
     
     protected abstract EntityAndSessionGenerator getGenerator();
-
+    
     public JavaClass getLocalHomeInterfaceClass() {
         return abstractMethodController.getBeanInterface(true, false);
-
+        
     }
-
+    
     public JavaClass getHomeInterfaceClass() {
         return abstractMethodController.getBeanInterface(false, false);
     }
-
+    
     protected Node createEntityNode() {
         return Utils.createEntityNode(ejbJarFile, sourceClassPath, (Entity) ejb);
     }
-
+    
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         listeners.add(listener);
     }
-
+    
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         listeners.remove(listener);
     }
-
+    
     protected void firePropertyChange(PropertyChangeEvent evt) {
         for (Iterator iterator = listeners.iterator(); iterator.hasNext();) {
             ((PropertyChangeListener) iterator.next()).propertyChange(evt);
         }
     }
-
+    
     public void propertyChange(PropertyChangeEvent evt) {
     }
-
+    
     public JavaClass getBeanClass() {
         return abstractMethodController.getBeanClass();
     }

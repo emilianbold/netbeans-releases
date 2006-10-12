@@ -19,40 +19,50 @@
 
 package org.netbeans.modules.j2ee.dd.api.application;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.impl.application.ApplicationProxy;
+import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Common;
-import org.openide.filesystems.*;
-import org.xml.sax.*;
-import java.util.Map;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.ejb.EjbJar} object)
  *
  * @author  Milan Kuchtiak
  */
-
 public final class DDProvider {
+    
     private static final String APP_13_DOCTYPE = "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN"; //NOI18N
     //private static final String EJB_11_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN"; //NOI18N
     private static final DDProvider ddProvider = new DDProvider();
+    
     private Map ddMap;
     
-    static java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/dd/Bundle");
+    static ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/j2ee/dd/Bundle");
     
     /** Creates a new instance of EjbModule */
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
-        ddMap = new java.util.HashMap(5);
+        ddMap = new HashMap(5);
     }
     
     /**
@@ -65,12 +75,15 @@ public final class DDProvider {
     
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
-     * The method is useful for clints planning to read only the deployment descriptor
+     * The method is useful for clients planning to read only the deployment descriptor
      * or to listen to the changes.
-     * @param fo FileObject representing the ejb-jar.xml file
-     * @return EjbJar object - root of the deployment descriptor bean graph
+     * @param fo FileObject representing the application.xml file
+     * @return Application object - root of the deployment descriptor bean graph
      */
-    public synchronized Application getDDRoot(FileObject fo) throws java.io.IOException {
+    public synchronized Application getDDRoot(FileObject fo) throws IOException {
+        if (fo == null) {
+            return null;
+        }
         ApplicationProxy ejbJarProxy = null;
         synchronized (ddMap) {
             ejbJarProxy = getFromCache (fo);
@@ -121,7 +134,7 @@ public final class DDProvider {
                             }
                         }
                     }
-                } catch (java.io.IOException ex){}
+                } catch (IOException ex){}
             }
         });
         
@@ -153,7 +166,7 @@ public final class DDProvider {
      * @param fo FileObject representing the ejb-jar.xml file
      * @return EjbJar object - root of the deployment descriptor bean graph
      */
-    public Application getDDRootCopy(FileObject fo) throws java.io.IOException {
+    public Application getDDRootCopy(FileObject fo) throws IOException {
         return (Application)getDDRoot(fo).clone();
     }
 
@@ -185,12 +198,15 @@ public final class DDProvider {
     }
     
     // PENDING j2eeserver needs BaseBean - this is a temporary workaround to avoid dependency of web project on DD impl
-    /**  Convenient method for getting the BaseBean object from CommonDDBean object
-     * 
+    /** 
+     * Convenient method for getting the BaseBean object from CommonDDBean object.
      */
-    public org.netbeans.modules.schema2beans.BaseBean getBaseBean(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean bean) {
-        if (bean instanceof org.netbeans.modules.schema2beans.BaseBean) return (org.netbeans.modules.schema2beans.BaseBean)bean;
-        else if (bean instanceof ApplicationProxy) return (org.netbeans.modules.schema2beans.BaseBean) ((ApplicationProxy)bean).getOriginal();
+    public BaseBean getBaseBean(CommonDDBean bean) {
+        if (bean instanceof BaseBean) {
+            return (BaseBean)bean;
+        } else if (bean instanceof ApplicationProxy) {
+            return (BaseBean) ((ApplicationProxy)bean).getOriginal();
+        }
         return null;
     }
 
@@ -211,6 +227,8 @@ public final class DDProvider {
               return new org.netbeans.modules.j2ee.dd.impl.application.model_1_4.Application(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
           } else if (Application.VERSION_1_3.equals(version)) {
               return new org.netbeans.modules.j2ee.dd.impl.application.model_1_3.Application(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
+          } else if (Application.VERSION_5.equals(version)) {
+              return new org.netbeans.modules.j2ee.dd.impl.application.model_5.Application(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
           } 
           
           return jar;
@@ -234,6 +252,8 @@ public final class DDProvider {
              return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application_1_3.dtd"); //NOI18N
             } else if ("http://java.sun.com/xml/ns/j2ee/application_1_4.xsd".equals(systemId)) {
                 return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/application_1_4.xsd"); //NOI18N
+            } else if ("http://java.sun.com/xml/ns/javaee/application_5.xsd".equals(systemId)) {
+                return new InputSource("nbres:/org/netbeans/modules/javaee/dd/impl/resources/application_5.xsd"); //NOI18N
             } else {
                 // use the default behaviour
                 return null;
@@ -245,21 +265,21 @@ public final class DDProvider {
         private int errorType=-1;
         SAXParseException error;
 
-        public void warning(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
+        public void warning(SAXParseException sAXParseException) throws SAXException {
             if (errorType<0) {
                 errorType=0;
                 error=sAXParseException;
             }
             //throw sAXParseException;
         }
-        public void error(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
+        public void error(SAXParseException sAXParseException) throws SAXException {
             if (errorType<1) {
                 errorType=1;
                 error=sAXParseException;
             }
             //throw sAXParseException;
         }        
-        public void fatalError(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
+        public void fatalError(SAXParseException sAXParseException) throws SAXException {
             errorType=2;
             throw sAXParseException;
         }
@@ -273,23 +293,23 @@ public final class DDProvider {
     }
 
     public SAXParseException parse(FileObject fo) 
-    throws org.xml.sax.SAXException, java.io.IOException {
+    throws SAXException, IOException {
         DDParse parseResult = parseDD(fo);
         return parseResult.getWarning();
     }
     
     private DDParse parseDD (FileObject fo) 
-    throws SAXException, java.io.IOException {
+    throws SAXException, IOException {
         return parseDD(fo.getInputStream());
     }
     
     private DDParse parseDD (InputStream is) 
-    throws SAXException, java.io.IOException {
+    throws SAXException, IOException {
         return parseDD(new InputSource(is));
     }
     
     private DDParse parseDD (InputSource is) 
-    throws SAXException, java.io.IOException {
+    throws SAXException, IOException {
         DDProvider.ErrorHandler errorHandler = new DDProvider.ErrorHandler();
         
         DocumentBuilder parser=null;
@@ -310,8 +330,8 @@ public final class DDProvider {
      * This class represents one parse of the deployment descriptor
      */
     private static class DDParse {
-        private Document document;
-        private SAXParseException saxException;
+        private final Document document;
+        private final SAXParseException saxException;
         private String version;
         public DDParse(Document d, SAXParseException saxEx) {
             document = d;
@@ -330,17 +350,34 @@ public final class DDProvider {
          * @return version of deployment descriptor. 
          */
         private void extractVersion () {
+            // This is the default version
+            version = Application.VERSION_5;
+            
             // first check the doc type to see if there is one
             DocumentType dt = document.getDoctype();
-            // This is the default version
-            version = Application.VERSION_1_4;
-            if (dt != null) {
+
+            if(dt == null) {
+                //check application node version attribute
+                NodeList nl = document.getElementsByTagName("application");//NOI18N
+                if(nl != null && nl.getLength() > 0) {
+                    Node appNode = nl.item(0);
+                    NamedNodeMap attrs = appNode.getAttributes();
+                    Node vNode = attrs.getNamedItem("version");//NOI18N
+                    if(vNode != null) {
+                        String versionValue = vNode.getNodeValue();
+                        if(Application.VERSION_1_4.equals(versionValue)) {
+                            version = Application.VERSION_1_4;
+                        } else if(Application.VERSION_1_3.equals(versionValue)) {
+                            version = Application.VERSION_1_3;
+                        } else {
+                            version = Application.VERSION_5; //default
+                        }
+                    }
+                }
+            } else {
                 if (APP_13_DOCTYPE.equals(dt.getPublicId())) {
                     version = Application.VERSION_1_3;
                 }
-                //if (EJB_11_DOCTYPE.equals(dt.getPublicId())){
-                //    version = Application.VERSION_1_1;
-                //}
             }
         }
         

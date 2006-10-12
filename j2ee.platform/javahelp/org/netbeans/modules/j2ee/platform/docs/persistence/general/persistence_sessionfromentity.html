@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+        <title>Generating Session Beans for Entity Classes</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>Generating Session Beans for Entity Classes</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>You use the Session Beans for Entity Classes wizard to generate session bean for entity classes. 
+            In the wizard you choose the entity classes in your EJB module for which you want session beans.
+            The wizard creates a session facade as well as any local or remote facades for the selected entity class.</p>
+
+        <p><b>To generate session beans from entity classes:</b></p> 
+        <ol>
+            <li>Right-click the module project node in the Projects window and choose New &gt; File/Folder.</li>
+            <li>In the New File wizard, select Session Beans for Entity Classes from the Persistence category.</li>
+            <li>Select any entity classes from the list in the left pane and click the Add button. 
+                Any referenced entity classes are automatically added to the list in the right pane. 
+                The IDE will generate session beans for each entity class listed in the right pane.
+                <ul class="note">
+                    <li>Deselect Include Referenced Classes if you do not want session beans created for referenced classes.</li> 
+                </ul>
+            </li>
+            <li>Click Next.</li>
+            <li>Select the location where you want to save the session beans.</li>
+            <li>Select an existing package from the Package drop-down menu or type the name of a new package.</li>
+            <li>Select the session facade interfaces that you want the wizard to generate.</li>
+            <li>Click Finish.</li>
+        </ol>
+        
+        <p>When you click Finish, the IDE creates session beans for each of the entity classes you specified in the wizard.
+        </p>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../../enterprise/general/ent_app_process.html">Working with Enterprise Applications</a> </dd>
+            <dd><a href="../../ejb/general/about_session_beans.html">About Session Beans</a> </dd>
+            <dd><a href="persistence_about.html">About Java Persistence</a></dd>
+            <dd><a href="persistence_unit.html">Creating a Persistence Unit</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

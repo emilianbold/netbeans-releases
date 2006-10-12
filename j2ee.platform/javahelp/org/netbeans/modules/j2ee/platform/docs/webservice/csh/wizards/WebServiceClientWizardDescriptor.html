@@ -1,71 +1,80 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
-<head>
-	<title>New Web Service Client Wizard: Specify Web Service Client Information</title>
-<link rel="StyleSheet" href="../../../../../../usersguide/ide.css" type="text/css">
-</head>
-<body>
-	<h2>New Web Service Client Wizard: Specify Web Service Client Information</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>The New Web Service Client wizard creates a new <a href="../../consume/about_wsc.html">Web Service Client</a>.
- You open the New Web Service Client wizard by right-clicking a web application or
- Java application, choosing New &gt; File/Folder and selecting Web Service Client 
-  from the Web Services category.
-<p>In the Specify Web Service Client Information page, you have to set the following properties: 
-<ul>
-	<li>Source of the WSDL description:
-	<ul><li><b>Running Web Service. </b>Specifies the URL to a running web service's WSDL file. If you
-		 use a proxy server, you must click Proxy Settings and set the proxy host and port number,
-		  otherwise the IDE will not be able to download the WSDL file. Click Retrieve WSDL and, if
-		   the WSDL file's name automatically appears in the Local Filename field, the WSDL file
-		   is successfully downloaded.</li>
-		<li><b>Existing WSDL File. </b>Specifies a WSDL file in your local filesystem. Click Browse
-		 to locate it in your filesystem.</li></ul>
-  <li><b>Package.</b> Specifies the package where the client stubs and other artifacts will be generated.
-  Note that you will not be able to see this package and the client files in the Projects window, because they are
-   re-generated whenever you build the project and deleted when you clean the project. By default, files of this
-   nature are only displayed in the Files window and never in the Projects window. To override this behavior and display
-    the client files in the Projects window anyway, right-click the project node in the Projects window, choose Properties,
-     and use the Sources panel to add the package containing the client files. The package will then
-      be displayed in the Projects window, but beware of creating files in this package, because the
-      IDE will re-generate it when the project is built and delete it when the project is cleaned.</li>
-  <li><b>Client Type.</b> Specifies the type of client stubs that will be created by the wizard.
-<ul><li><b>J2EE Container-generated static stub.</b> 
-This type is based on JSR-109, which enhances JSR-101 by defining the packaging
-of web services into standard J2EE modules, including a new deployment descriptor,
-and defining web services that are implemented as session beans or servlets.
-This is the recommended and portable (via J2EE 1.4 specification) type.
-When you choose this type, the IDE adds deployment information in the 
- deployment descriptors and the container does the generation of the stub and other artifacts.</li>
- <li><b>IDE-generated static stub.</b> 
-This type is based on JSR-101, which defines the mapping of WSDL to Java and vice versa.
-It also defines a client API to invoke a remote web service and a runtime environment 
-on the server to host a web service. This type is not portable.
-When you choose this type, the IDE generates 
-the stub and other 
-artifacts, packages them in the archive, and deploys them.</li></ul>
- </ul>
-<table>
-  <tr>
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-  </tr>
-  <tr>      
- <td width="23"></td>
-    <td>
-    <a href="../../consume/wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a><br>
-    <a href="../../consume/wsc_create.html">Creating a Web Service Client</a><br>
-    </td>
-  </tr>
-</table>
-<hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font>
+    <head>
+        <title>New Web Service Client Wizard: Specify Web Service Client Information</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>New Web Service Client Wizard: Specify Web Service Client Information</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <p>The New Web Service Client wizard creates a new <a href="../../consume/about_wsc.html">Web Service Client</a>.
+        You open the New Web Service Client wizard by right-clicking a web application or
+        Java application, choosing New &gt; File/Folder and selecting Web Service Client 
+        from the Web Services category.
+        <p>In the Specify Web Service Client Information page, you have to set the following properties: 
+        <ul>
+        <li>Specify the WSDL file of the web service:
+        <ul>
+            <li><b>Project.</b> Specifies an open project where the web service is defined. Click
+            Browse to locate it in the IDE.
+            <li><b>Local File.</b> Specifies a WSDL file in your local filesystem. Click Browse
+            to locate it in your filesystem.</li>
+            <li><b>WSDL URL.</b> Specifies the URL to a running web service's WSDL file. If you
+            use a proxy server, you must click Proxy Settings and set the proxy host and port number,
+            otherwise the IDE will not be able to download the WSDL file.</li>
+        </ul>
+        <li><b>Package.</b> Specifies the package where the client stubs and other artifacts will be generated.
+        Note that you will not be able to see this package and the client files in the Projects window, because they are
+        re-generated whenever you build the project and deleted when you clean the project. By default, files of this
+        nature are only displayed in the Files window and never in the Projects window. To override this behavior and display
+        the client files in the Projects window anyway, right-click the project node in the Projects window, choose Properties,
+        and use the Sources panel to add the package containing the client files. The package will then
+        be displayed in the Projects window, but beware of creating files in this package, because the
+        IDE will re-generate it when the project is built and delete it when the project is cleaned.</li>
+        <li><b>Client Type.</b> Specifies the type of client stubs that will be created by the wizard. The
+        types available depends on the web service architecure used:
+        
+        <ul><li><b>JAX-WS.</b> (Java EE 5 specification) For consuming JAX-WS web services, there is one type
+            of web service client, the IDE-generated static stub. The IDE generates 
+            the stub and other artifacts from the specified WSDL file, packages them in the archive,
+            and deploys them. Since
+            JAX-WS does not work with deployment descriptors, but uses annotations within
+            the Java code instead, a J2EE container-generated static stub, which
+            implies the use of deployment descriptors, would be superfluous.
+            <li><b>JAX-RPC.</b>  (J2EE 1.4 specification) For consuming JAX-RPC web services, there are two types of web service client:
+        
+            <ul><li><b>J2EE Container-generated static stub.</b> 
+            This type is based on JSR-109, which enhances JSR-101 by defining the packaging
+            of web services into standard J2EE modules, including a new deployment descriptor,
+            and defining web services that are implemented as session beans or servlets.
+            This is the recommended and portable (via J2EE 1.4 specification) type.
+            When you choose this type, the IDE adds deployment information in the 
+            deployment descriptors and the container generates the stub and other artifacts.</li>
+            <li><b>IDE-generated static stub.</b> 
+            This type is based on JSR-101, which defines the mapping of WSDL to Java and vice versa.
+            It also defines a client API to invoke a remote web service and a runtime environment 
+            on the server to host a web service. This type is not portable.
+            When you choose this type, the IDE generates 
+            the stub and other 
+            artifacts, packages them in the archive, and deploys them.</li></ul>
+        </ul></ul>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../../about/about_ws.html">About Web Services</a></dd>
+        </dl>
 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table></body>
+
+        <hr>
+        <small><a href="../../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+
+    </body>
 </html>

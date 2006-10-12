@@ -111,7 +111,7 @@ public class ResRefsTablePanel extends DefaultTablePanel {
             dialogPanel.getTypeTF().getDocument().addDocumentListener(docListener);
             
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.show();
+            d.setVisible(true);
             dialogPanel.getNameTF().getDocument().removeDocumentListener(docListener);
             dialogPanel.getTypeTF().getDocument().removeDocumentListener(docListener);
             

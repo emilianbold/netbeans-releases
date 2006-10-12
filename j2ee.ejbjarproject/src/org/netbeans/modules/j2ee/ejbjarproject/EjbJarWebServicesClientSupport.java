@@ -23,39 +23,25 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
-import org.netbeans.jmi.javamodel.Field;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
-import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
-import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
-import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
+import static org.netbeans.modules.websvc.api.client.WebServicesClientConstants.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportImpl;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -66,21 +52,17 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
-import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-
-import java.lang.reflect.Modifier;
 
 /**
  *
  * @author  rico
  * Implementation of WebServicesSupportImpl and WebServicesClientSupportImpl
  */
-public class EjbJarWebServicesClientSupport implements WebServicesClientSupportImpl, WebServicesClientConstants {
+public class EjbJarWebServicesClientSupport implements WebServicesClientSupportImpl{
     
     private EjbJarProject project;
     private AntProjectHelper helper;
@@ -207,7 +189,8 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
 
     private EjbJar getEjbJar() {
         try {
-            return DDProvider.getDefault().getDDRoot(getDeploymentDescriptor());
+            // TODO: first one API EjbJar from project is taken... this should be fixed
+            return DDProvider.getDefault().getMergedDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getMetadataUnit());
         } catch (java.io.IOException e) {
             org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
         }
@@ -379,6 +362,10 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
         }
     }
     
+    public FileObject[] getJavaSources() {
+        return project.getSourceRoots().getRoots();
+    }
+
     public void addServiceClientReference(String serviceName, String fqServiceName, String relativeWsdlPath, String relativeMappingPath, String[] portSEIInfo) {
 
         FileObject ddFO = getDeploymentDescriptor();
@@ -387,7 +374,8 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
         if (ddFO != null) {
 
             try {
-                RootInterface rootDD = DDProvider.getDefault().getDDRoot(ddFO);
+                // TODO: first one API EjbJar from project is taken... this should be fixed
+                RootInterface rootDD = DDProvider.getDefault().getMergedDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getMetadataUnit());
 
                 ServiceRef serviceRef = (ServiceRef) rootDD.findBeanByName("ServiceRef", "ServiceRefName", serviceName); // NOI18N
                 if (serviceRef == null) {
@@ -470,7 +458,6 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
         /** Locate root of web service client node structure in project,xml
          */
         Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
         NodeList nodes = data.getElementsByTagName(WEB_SERVICE_CLIENTS);
         Element clientElements = null;
         
@@ -535,10 +522,11 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
     
     public List/*StubDescriptor*/ getStubDescriptors() {
         ArrayList stubs = new ArrayList(2);
+        /*
         String version = project.getEjbModule().getJ2eePlatformVersion();
         if(EjbProjectConstants.J2EE_14_LEVEL.equals(version)) {
             stubs.add(jsr109ClientStub);
-        }
+        }*/
         stubs.add(jaxrpcClientStub);
         return stubs;
     }
@@ -621,8 +609,21 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
                             currentFeatures = "wsi, strict";
                         }
                         ClientStubDescriptor stubType = getClientStubDescriptor(clientNameElement.getParentNode());
+                        boolean propVerbose = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".verbose")); //NOI18N
+                        boolean propDebug = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".debug")); //NOI18N                
+                        boolean propPrintStackTrace = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".xPrintStackTrace")); //NOI18N
+                        boolean propExtensible = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".xSerializable")); //NOI18N
+                        boolean propOptimize = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".optimize")); //NOI18N
+                        boolean[] options = new boolean[] { //NOI18N
+                            propVerbose,propDebug,propPrintStackTrace,propExtensible,propOptimize
+                        };
                         WsCompileClientEditorSupport.ServiceSettings settings = new WsCompileClientEditorSupport.ServiceSettings(
-                        serviceName, stubType, currentFeatures, allClientFeatures, importantClientFeatures);
+                        serviceName, stubType, options, currentFeatures, allClientFeatures, importantClientFeatures);
                         serviceNames.add(settings);
                     } else {
                         // !PW FIXME node is wrong type?! - log message or trace?
@@ -665,7 +666,6 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
     
     public String getWsdlSource(String serviceName) {
         Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
         String wsdlSource = null;
         
         Element clientElement = getWebServiceClientNode(data, serviceName);
@@ -773,7 +773,12 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
     /** Does nothing in ejb-jar project */
     public void setProxyJVMOptions(String proxyHost, String proxyPort) {
     }
+
+    public String getServiceRefName(String serviceName) {
+        return "service/" + serviceName;
+    }
     
+
     /** Stub descriptor for clients supported by this project type.
      */
     private static class JAXRPCClientStubDescriptor extends ClientStubDescriptor {

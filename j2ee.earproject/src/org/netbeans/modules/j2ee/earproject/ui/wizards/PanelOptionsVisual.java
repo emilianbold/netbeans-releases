@@ -19,34 +19,32 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.wizards;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
-import java.util.ResourceBundle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import javax.swing.text.Document;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.netbeans.modules.j2ee.earproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
-public class PanelOptionsVisual extends javax.swing.JPanel implements DocumentListener {
+public class PanelOptionsVisual extends JPanel implements PropertyChangeListener {
     
-    private PanelConfigureProject panel;
-    private boolean contextModified = false;
-    private List serverInstanceIDs;
-    private String projName = "";
+    private final PanelConfigureProject panel;
+    private final DefaultComboBoxModel serversModel = new DefaultComboBoxModel();
     private J2eeVersionWarningPanel warningPanel;
-    
-    private static final String J2EE_SPEC_13_LABEL = NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_13"); //NOI18N
-    private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_14"); //NOI18N
-    
-    private static final String WEB_MOD_SUFFIX =
-            NbBundle.getMessage(PanelOptionsVisual.class, "WEB_MOD_SUFFIX");
-    private static final String EJB_MOD_SUFFIX =
-            NbBundle.getMessage(PanelOptionsVisual.class, "EJB_MOD_SUFFIX");
+    private boolean valid;
     
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual(PanelConfigureProject panel, boolean importStyle) {
@@ -54,18 +52,55 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements DocumentLi
         initComponents();
         this.panel = panel;
         setJ2eeVersionWarningPanel();
-        initServerInstances();
-        jTextFieldEjbModuleName.getDocument().addDocumentListener(this);
-        jTextFieldWebAppName.getDocument().addDocumentListener(this);
-        
+        initServers(FoldersListSettings.getDefault().getLastUsedServer());
+        // preselect the first item in the j2ee spec combo
+        if (j2eeSpecComboBox.getModel().getSize() > 0) {
+            j2eeSpecComboBox.setSelectedIndex(0);
+        }
         // if this panel is used during import there are lots of things we don't
         // need to ask about -- hide them from the user.
-        createEjbCheckBox.setSelected(!importStyle);
-        createWARCheckBox.setSelected(!importStyle);
-        createEjbCheckBox.setVisible(!importStyle);
-        createWARCheckBox.setVisible(!importStyle);
-        jTextFieldEjbModuleName.setVisible(!importStyle);
-        jTextFieldWebAppName.setVisible(!importStyle);
+        if (importStyle) {
+            createEjbCheckBox.setSelected(!importStyle);
+            createWARCheckBox.setSelected(!importStyle);
+            createCarCheckBox.setSelected(!importStyle);
+            createEjbCheckBox.setVisible(!importStyle);
+            createWARCheckBox.setVisible(!importStyle);
+            createCarCheckBox.setVisible(!importStyle);
+            jTextFieldEjbModuleName.setVisible(!importStyle);
+            jTextFieldWebAppName.setVisible(!importStyle);
+            jTextFieldCarName.setVisible(!importStyle);
+            mainClassLabel.setVisible(!importStyle);
+            mainClassTextField.setVisible(!importStyle);
+        } else {
+            DocumentListener subProjectNameListener = new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    projectNameChanged();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    projectNameChanged();
+                }
+                public void changedUpdate(DocumentEvent e) {
+                    projectNameChanged();
+                }
+            };
+            jTextFieldEjbModuleName.getDocument().addDocumentListener(subProjectNameListener);
+            jTextFieldWebAppName.getDocument().addDocumentListener(subProjectNameListener);
+            jTextFieldCarName.getDocument().addDocumentListener(subProjectNameListener);
+            this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    mainClassChanged();
+                }
+            
+                public void removeUpdate(DocumentEvent e) {
+                    mainClassChanged();
+                }
+            
+                public void changedUpdate(DocumentEvent e) {
+                    mainClassChanged();
+                }
+            
+            });
+        }
         //j2eeSpecComboBox.setVisible(!importStyle);
         //j2eeSpecLabel.setVisible(!importStyle);
     }
@@ -80,44 +115,213 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements DocumentLi
         java.awt.GridBagConstraints gridBagConstraints;
 
         setAsMainCheckBox = new javax.swing.JCheckBox();
-        j2eeSpecLabel = new javax.swing.JLabel();
-        j2eeSpecComboBox = new javax.swing.JComboBox();
-        serverInstanceLabel = new javax.swing.JLabel();
-        serverInstanceComboBox = new javax.swing.JComboBox();
         createEjbCheckBox = new javax.swing.JCheckBox();
         jTextFieldEjbModuleName = new javax.swing.JTextField();
         createWARCheckBox = new javax.swing.JCheckBox();
         jTextFieldWebAppName = new javax.swing.JTextField();
         warningPlaceHolderPanel = new javax.swing.JPanel();
+        createCarCheckBox = new javax.swing.JCheckBox();
+        jTextFieldCarName = new javax.swing.JTextField();
+        mainClassLabel = new javax.swing.JLabel();
+        mainClassTextField = new javax.swing.JTextField();
+        serverAndVersionPanel = new javax.swing.JPanel();
+        serverInstanceLabel = new javax.swing.JLabel();
+        serverInstanceComboBox = new javax.swing.JComboBox();
+        manageServersButton = new javax.swing.JButton();
+        j2eeSpecLabel = new javax.swing.JLabel();
+        j2eeSpecComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_ManageServers")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCD_ManageServers")); // NOI18N
         setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox"));
+        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(setAsMainCheckBox, gridBagConstraints);
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc")); // NOI18N
+
+        createEjbCheckBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(createEjbCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NEAP_CreateEjbModule")); // NOI18N
+        createEjbCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        createEjbCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createEjbCheckBox_action(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 11);
+        add(createEjbCheckBox, gridBagConstraints);
+        createEjbCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_CreateEJBModule")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
+        add(jTextFieldEjbModuleName, gridBagConstraints);
+        jTextFieldEjbModuleName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_EjbModuleName")); // NOI18N
+        jTextFieldEjbModuleName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_EjbModuleName")); // NOI18N
+
+        createWARCheckBox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(createWARCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NEAP_CreatWebAppModule")); // NOI18N
+        createWARCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        createWARCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createWebAppCheckBox_action(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 11);
+        add(createWARCheckBox, gridBagConstraints);
+        createWARCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_CreateWebModule")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
+        add(jTextFieldWebAppName, gridBagConstraints);
+        jTextFieldWebAppName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_WebAppName")); // NOI18N
+        jTextFieldWebAppName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_WebAppName")); // NOI18N
+
+        warningPlaceHolderPanel.setLayout(new java.awt.BorderLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+        add(warningPlaceHolderPanel, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(createCarCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NEAP_CreateCarModule")); // NOI18N
+        createCarCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        createCarCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createCarCheckBox_action(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 11);
+        add(createCarCheckBox, gridBagConstraints);
+        createCarCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_CreateAppClientModule")); // NOI18N
+
+        jTextFieldCarName.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
+        add(jTextFieldCarName, gridBagConstraints);
+        jTextFieldCarName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_AppClientName")); // NOI18N
+        jTextFieldCarName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_AppClientName")); // NOI18N
+
+        mainClassLabel.setLabelFor(mainClassTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(mainClassLabel, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NWP1_MainClass_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(mainClassLabel, gridBagConstraints);
+
+        mainClassTextField.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 5);
+        add(mainClassTextField, gridBagConstraints);
+        mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextFiled")); // NOI18N
+        mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_mainClassTextFiled")); // NOI18N
+
+        serverAndVersionPanel.setLayout(new java.awt.GridBagLayout());
+
+        serverInstanceLabel.setLabelFor(serverInstanceComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(serverInstanceLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 11);
+        serverAndVersionPanel.add(serverInstanceLabel, gridBagConstraints);
+
+        serverInstanceComboBox.setModel(serversModel);
+        serverInstanceComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serverInstanceComboBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 6);
+        serverAndVersionPanel.add(serverInstanceComboBox, gridBagConstraints);
+        serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_NWP1_Server_ComboBox_A11YDesc")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_ManageServers")); // NOI18N
+        manageServersButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageServersButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        serverAndVersionPanel.add(manageServersButton, gridBagConstraints);
+        manageServersButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_ManageButton")); // NOI18N
 
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(j2eeSpecLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(j2eeSpecLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_J2EESpecLevel_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 11, 11);
-        add(j2eeSpecLabel, gridBagConstraints);
+        serverAndVersionPanel.add(j2eeSpecLabel, gridBagConstraints);
 
-        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
-        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
+        j2eeSpecComboBox.setPrototypeDisplayValue("MMMMMMMMM" /* "Java EE 5" */);
         j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 j2eeSpecComboBoxActionPerformed(evt);
@@ -130,178 +334,173 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements DocumentLi
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 5);
-        add(j2eeSpecComboBox, gridBagConstraints);
-        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc"));
+        serverAndVersionPanel.add(j2eeSpecComboBox, gridBagConstraints);
+        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc")); // NOI18N
 
-        serverInstanceLabel.setLabelFor(serverInstanceComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(serverInstanceLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_Server_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 11);
-        add(serverInstanceLabel, gridBagConstraints);
-
-        serverInstanceComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                serverInstanceComboBoxActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
-        add(serverInstanceComboBox, gridBagConstraints);
-        serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_NWP1_Server_ComboBox_A11YDesc"));
-
-        createEjbCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(createEjbCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NEAP_CreateEjbModule"));
-        createEjbCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        createEjbCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createEjbCheckBox_action(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 11);
-        add(createEjbCheckBox, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
-        add(jTextFieldEjbModuleName, gridBagConstraints);
-        jTextFieldEjbModuleName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_EjbModuleName"));
-        jTextFieldEjbModuleName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_EjbModuleName"));
-
-        createWARCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(createWARCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NEAP_CreatWebAppModule"));
-        createWARCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        createWARCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createWebAppCheckBox_action(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 11, 11);
-        add(createWARCheckBox, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 5);
-        add(jTextFieldWebAppName, gridBagConstraints);
-        jTextFieldWebAppName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_WebAppName"));
-        jTextFieldWebAppName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_WebAppName"));
-
-        warningPlaceHolderPanel.setLayout(new java.awt.BorderLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-        add(warningPlaceHolderPanel, gridBagConstraints);
+        add(serverAndVersionPanel, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+
+    private void manageServersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageServersButtonActionPerformed
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        String lastSelectedServerInstanceID = null;
+        if (serverInstanceWrapper != null) {
+            lastSelectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
+        }
+        ServerManager.showCustomizer(lastSelectedServerInstanceID);
+        String lastSelectedJ2eeSpecLevel = (String) j2eeSpecComboBox.getSelectedItem();
+        // refresh the list of servers
+        initServers(lastSelectedServerInstanceID);
+        if (lastSelectedJ2eeSpecLevel != null) {
+            j2eeSpecComboBox.setSelectedItem(lastSelectedJ2eeSpecLevel);
+        }
+    }//GEN-LAST:event_manageServersButtonActionPerformed
+    
+    private void createCarCheckBox_action(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createCarCheckBox_action
+        jTextFieldCarName.setEnabled(createCarCheckBox.isSelected());
+        mainClassTextField.setEnabled(createCarCheckBox.isSelected());
+        this.panel.fireChangeEvent();
+    }//GEN-LAST:event_createCarCheckBox_action
     
     private void createWebAppCheckBox_action(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createWebAppCheckBox_action
         jTextFieldWebAppName.setEnabled(createWARCheckBox.isSelected());
-        updateTexts(jTextFieldWebAppName.getDocument());
+        this.panel.fireChangeEvent();
     }//GEN-LAST:event_createWebAppCheckBox_action
     
     private void createEjbCheckBox_action(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createEjbCheckBox_action
         jTextFieldEjbModuleName.setEnabled(createEjbCheckBox.isSelected());
-        updateTexts(jTextFieldEjbModuleName.getDocument());
+        this.panel.fireChangeEvent();
     }//GEN-LAST:event_createEjbCheckBox_action
     
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
-        String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
-        int dex = serverInstanceComboBox.getSelectedIndex();
-        if (dex > -1) {
-            String servInsID = (String)serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex());
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(servInsID);
-            Set supportedVersions = j2eePlatform.getSupportedSpecVersions();
+        String prevSelectedItem = (String) j2eeSpecComboBox.getSelectedItem();
+        // update the j2ee spec list according to the selected server
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        if (serverInstanceWrapper != null) {
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceWrapper.getServerInstanceID());
+            Set supportedVersions = j2eePlatform.getSupportedSpecVersions(J2eeModule.EAR);
             j2eeSpecComboBox.removeAllItems();
-            if (supportedVersions.contains(J2eeModule.J2EE_14)) j2eeSpecComboBox.addItem(J2EE_SPEC_14_LABEL);
-            //if (supportedVersions.contains(J2eeModule.J2EE_13)) j2eeSpecComboBox.addItem(J2EE_SPEC_13_LABEL);
+            if (supportedVersions.contains(J2eeModule.JAVA_EE_5)) {
+                j2eeSpecComboBox.addItem(EarProjectProperties.JAVA_EE_SPEC_50_LABEL);
+            }
+            if (supportedVersions.contains(J2eeModule.J2EE_14)) {
+                j2eeSpecComboBox.addItem(EarProjectProperties.J2EE_SPEC_14_LABEL);
+            }
             if (prevSelectedItem != null) {
                 j2eeSpecComboBox.setSelectedItem(prevSelectedItem);
             }
+            boolean carSupported = j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.CLIENT);
+            createCarCheckBox.setEnabled(carSupported);
+            jTextFieldCarName.setEnabled(carSupported && createCarCheckBox.isSelected());
+            mainClassLabel.setEnabled(carSupported);
+            mainClassTextField.setEnabled(carSupported && createCarCheckBox.isSelected());
+        } else {
+            j2eeSpecComboBox.removeAllItems();
         }
+        // revalidate the form
+        panel.fireChangeEvent();
     }//GEN-LAST:event_serverInstanceComboBoxActionPerformed
     
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
-        // trigger validation...
-        updateTexts(jTextFieldEjbModuleName.getDocument());
+        setJ2eeVersionWarningPanel();
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
+
+    public void propertyChange(PropertyChangeEvent event) {
+        if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
+            String newProjectName = (String) event.getNewValue();
+            if (newProjectName.trim().equals("")) {
+                return;
+            }
+            this.jTextFieldEjbModuleName.setText(MessageFormat.format(
+                    NbBundle.getMessage(PanelOptionsVisual.class,"TXT_EJBProjectName"), new Object[] {newProjectName}));
+            this.jTextFieldWebAppName.setText(MessageFormat.format(
+                    NbBundle.getMessage(PanelOptionsVisual.class,"TXT_WebAppProjectName"), new Object[] {newProjectName}));
+            this.jTextFieldCarName.setText(MessageFormat.format(
+                    NbBundle.getMessage(PanelOptionsVisual.class,"TXT_AppClientProjectName"), new Object[] {newProjectName}));
+            newProjectName = CompleteEarProjectWizardIterator.getPackageName(newProjectName);
+            if (!Utilities.isJavaIdentifier(newProjectName)) {
+                newProjectName = NbBundle.getMessage(PanelOptionsVisual.class, "TXT_PackageNameSuffix", newProjectName);
+            }
+            this.mainClassTextField.setText(MessageFormat.format(
+                    NbBundle.getMessage(PanelOptionsVisual.class,"TXT_ClassName"), new Object[] {newProjectName}));
+        }
+    }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (getSelectedServer() == null) {
-            String errMsg = NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoServer"); // NOI18N
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+            setErrorMessage("MSG_NoServer", wizardDescriptor); // NOI18N
             return false;
         }
         
         if (createWARCheckBox.isSelected()) {
             String warName = jTextFieldWebAppName.getText();
             if (warName.length() < 1) {
-                String errMsg = NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoWARName"); // NOI18N
-                wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+                setErrorMessage("MSG_NoWARName", wizardDescriptor); // NOI18N
                 return false;
             }
-            if (!warName.equals(projName + "-war")) { // NOI18N
+            if (!warName.endsWith("-war")) { // NOI18N
                 // this is really just a warning
-                String errMsg = NbBundle.getMessage(PanelOptionsVisual.class, "MSG_WARNameNotBlueprints"); //NOI18N
-                wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+                setErrorMessage("MSG_WARNameNotBlueprints", wizardDescriptor); // NOI18N
             }
         }
         
         if (createEjbCheckBox.isSelected()) {
             String jarName = jTextFieldEjbModuleName.getText();
             if (jarName.length() < 1) {
-                String errMsg = NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoJARName"); // NOI18N
-                wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+                setErrorMessage("MSG_NoJARName", wizardDescriptor); // NOI18N
                 return false;
             }
-            if (!jarName.equals(projName + "-ejb")) { //NOI18N
+            if (!jarName.endsWith("-ejb")) { //NOI18N
                 // this is really just a warning
-                String errMsg = NbBundle.getMessage(PanelOptionsVisual.class, "MSG_JARNameNotBlueprints"); // NOI18N
-                wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+                setErrorMessage("MSG_JARNameNotBlueprints", wizardDescriptor); // NOI18N
+            }
+        }
+        
+        if (createCarCheckBox.isSelected()) {
+            String jarName = jTextFieldCarName.getText();
+            if (jarName.length() < 1) {
+                setErrorMessage("MSG_NoCARName", wizardDescriptor); // NOI18N
+                return false;
+            }
+            if (!valid) {
+                setErrorMessage("ERROR_IllegalMainClassName", wizardDescriptor); // NOI18N
+                return this.valid;
+            }
+            if (!jarName.endsWith("-app-client")) { //NOI18N
+                // this is really just a warning
+                setErrorMessage("MSG_CARNameNotBlueprints", wizardDescriptor); // NOI18N
+            }
+        }
+        
+        // check whether an application client is supported by the target server
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        if (serverInstanceWrapper != null) {
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceWrapper.getServerInstanceID());
+            if (!j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.CLIENT)) {
+                // show warning/info
+                setErrorMessage("MSG_CARIsNotSupported", wizardDescriptor);
             }
         }
         
         String specVer = getSelectedJ2eeSpec();
         if (null == specVer || specVer.equals(J2eeModule.J2EE_13)) {
-            String errMsg = NbBundle.getMessage(PanelOptionsVisual.class, "MSG_UnsupportedSpec");  // NOI18N
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", errMsg); // NOI18N
+            setErrorMessage("MSG_UnsupportedSpec", wizardDescriptor); // NOI18N
             return false;
-            
         }
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
         return true;
+    }
+    
+    private static void setErrorMessage(
+            final String errMsgKey, final WizardDescriptor wizardDescriptor) {
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                NbBundle.getMessage(PanelOptionsVisual.class, errMsgKey));
     }
     
     void store(WizardDescriptor d) {
@@ -311,11 +510,31 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements DocumentLi
         //        d.putProperty(WizardProperties.CONTEXT_PATH, jTextFieldContextPath.getText().trim());
         d.putProperty(WizardProperties.CREATE_WAR, createWARCheckBox.isSelected() ? Boolean.TRUE: Boolean.FALSE);
         d.putProperty(WizardProperties.CREATE_JAR, createEjbCheckBox.isSelected() ? Boolean.TRUE: Boolean.FALSE);
+        d.putProperty(WizardProperties.CREATE_CAR, createCarCheckBox.isSelected() ? Boolean.TRUE: Boolean.FALSE);
         d.putProperty(WizardProperties.WAR_NAME,  jTextFieldWebAppName.getText());
         d.putProperty(WizardProperties.JAR_NAME, jTextFieldEjbModuleName.getText());
-        if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
-            d.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getJava14PlatformName());
-            d.putProperty(WizardProperties.SOURCE_LEVEL, "1.4"); // NOI18N
+        d.putProperty(WizardProperties.CAR_NAME, jTextFieldCarName.getText());
+        d.putProperty(WizardProperties.MAIN_CLASS, mainClassTextField.getText().trim()); // NOI18N
+        if (warningPanel != null && warningPanel.getWarningType() != null && warningPanel.getDowngradeAllowed()) {
+            d.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
+            String j2ee = getSelectedJ2eeSpec();
+            if (j2ee != null) {
+                String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
+                FoldersListSettings fls = FoldersListSettings.getDefault();
+                String srcLevel = "1.6"; // NOI18N
+                if ((warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14)
+                        || warningType.equals(J2eeVersionWarningPanel.WARN_SET_JDK_14))
+                        && fls.isAgreedSetSourceLevel14()) {
+                    srcLevel = "1.4"; // NOI18N
+                } else if ((warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15)
+                        || warningType.equals(J2eeVersionWarningPanel.WARN_SET_JDK_15))
+                        && fls.isAgreedSetSourceLevel15()) {
+                    srcLevel = "1.5"; // NOI18N
+                }
+                d.putProperty(WizardProperties.SOURCE_LEVEL, srcLevel);
+            }
+        } else {
+            d.putProperty(WizardProperties.SOURCE_LEVEL, null);
         }
     }
     
@@ -323,147 +542,150 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements DocumentLi
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox createCarCheckBox;
     private javax.swing.JCheckBox createEjbCheckBox;
     private javax.swing.JCheckBox createWARCheckBox;
     private javax.swing.JComboBox j2eeSpecComboBox;
     private javax.swing.JLabel j2eeSpecLabel;
+    private javax.swing.JTextField jTextFieldCarName;
     private javax.swing.JTextField jTextFieldEjbModuleName;
     private javax.swing.JTextField jTextFieldWebAppName;
+    private javax.swing.JLabel mainClassLabel;
+    private javax.swing.JTextField mainClassTextField;
+    private javax.swing.JButton manageServersButton;
+    private javax.swing.JPanel serverAndVersionPanel;
     private javax.swing.JComboBox serverInstanceComboBox;
     private javax.swing.JLabel serverInstanceLabel;
     private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JPanel warningPlaceHolderPanel;
     // End of variables declaration//GEN-END:variables
     
-    private void initServerInstances() {
-        String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
-        serverInstanceIDs = new ArrayList();
-        for (int i = 0; i < servInstIDs.length; i++) {
-            J2eePlatform j2eePlat = Deployment.getDefault().getJ2eePlatform(servInstIDs[i]);
-            String servInstDisplayName = Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]);
-            if (servInstDisplayName != null
-                    && j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.EAR)) {
-                serverInstanceIDs.add(servInstIDs[i]);
-                serverInstanceComboBox.addItem(servInstDisplayName);
+    /**
+     * Init servers model
+     * @param selectedServerInstanceID preselected instance or null if non is preselected
+     */
+    private void initServers(String selectedServerInstanceID) {
+        // init the list of server instances
+        serversModel.removeAllElements();
+        Set<ServerInstanceWrapper> servers = new TreeSet<ServerInstanceWrapper>();
+        ServerInstanceWrapper selectedItem = null;
+        boolean sjasFound = false;
+        for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
+            String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EAR)) {
+                ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
+                // decide whether this server should be preselected
+                if (selectedItem == null || !sjasFound) {
+                    if (selectedServerInstanceID != null) {
+                        if (selectedServerInstanceID.equals(serverInstanceID)) {
+                            selectedItem = serverWrapper;
+                        }
+                    } else {
+                        // preselect the best server ;)
+                        String shortName = Deployment.getDefault().getServerID(serverInstanceID);
+                        if ("J2EE".equals(shortName)) { // NOI18N
+                            selectedItem = serverWrapper;
+                            sjasFound = true;
+                        }
+                        else
+                        if ("JBoss4".equals(shortName)) { // NOI18N
+                            selectedItem = serverWrapper;
+                        }
+                    }
+                }
+                servers.add(serverWrapper);
             }
         }
-        if (serverInstanceIDs.size() > 0) {
-            serverInstanceComboBox.setSelectedIndex(0);
-        } else {
-            serverInstanceComboBox.setEnabled(false);
-            j2eeSpecComboBox.setEnabled(false);
+        for (ServerInstanceWrapper item : servers) {
+            serversModel.addElement(item);
+        }
+        if (selectedItem != null) {
+            // set the preselected item
+            serversModel.setSelectedItem(selectedItem);
+        } else if (serversModel.getSize() > 0) {
+            // set the first item
+            serversModel.setSelectedItem(serversModel.getElementAt(0));
         }
     }
     
     private String getSelectedJ2eeSpec() {
         Object item = j2eeSpecComboBox.getSelectedItem();
         return item == null ? null
-                : item.equals(J2EE_SPEC_14_LABEL) ? J2eeModule.J2EE_14 : J2eeModule.J2EE_13;
+                : item.equals(EarProjectProperties.JAVA_EE_SPEC_50_LABEL) ? J2eeModule.JAVA_EE_5 :
+                    ( item.equals(EarProjectProperties.J2EE_SPEC_14_LABEL) ? J2eeModule.J2EE_14 : J2eeModule.J2EE_13);
     }
     
     private String getSelectedServer() {
-        int idx = serverInstanceComboBox.getSelectedIndex();
-        return idx == -1 ? null
-                : (String)serverInstanceIDs.get(idx);
-    }
-    
-    protected boolean isContextModified() {
-        return contextModified;
-    }
-    
-    // Implementation of DocumentListener --------------------------------------
-    public void changedUpdate(DocumentEvent e) {
-        updateTexts(e.getDocument());
-    }
-    
-    public void insertUpdate(DocumentEvent e) {
-        updateTexts(e.getDocument());
-    }
-    
-    public void removeUpdate(DocumentEvent e) {
-        updateTexts(e.getDocument());
-    }
-    // End if implementation of DocumentListener -------------------------------
-    
-    
-    /** Handles changes in the project name and sub-module names
-     */
-    private void updateTexts(Document d) {
-        boolean updated = updateWARName(d);
-        updated |= updateJARName(d);
-        updateProjName(d);
-        if (updated)
-            panel.fireChangeEvent(); // Notify that the panel changed
-    }
-    
-    private void updateProjName(Document d) {
-        if (d.equals(jTextFieldWebAppName.getDocument())) {
-            return;
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        if (serverInstanceWrapper == null) {
+            return null;
         }
-        if (d.equals(jTextFieldEjbModuleName.getDocument())) {
-            return;
-        }
-        try {
-            projName = d.getText(0,d.getLength());
-        } catch (javax.swing.text.BadLocationException ble) {
-            // this had better not happen here
-        }
-        
-    }
-    
-    private boolean updateWARName(Document d) {
-        if (d.equals(jTextFieldWebAppName.getDocument())) {
-            return true;
-        }
-        if (d.equals(jTextFieldEjbModuleName.getDocument())) {
-            return false;
-        } else {
-            // check to see if we need to update the field
-            int len = d.getLength();
-            try {
-                if (len > 0) {
-                    jTextFieldWebAppName.setText(d.getText(0,len)+
-                            WEB_MOD_SUFFIX);
-                } else {
-                    jTextFieldWebAppName.setText("");
-                }
-            } catch (javax.swing.text.BadLocationException ble) {
-                // this should not be possible
-            }
-            return true;
-        }
-    }
-   
-    private boolean updateJARName(Document d) {
-        if (d.equals(jTextFieldWebAppName.getDocument())) {
-            return false;
-        }
-        if (d.equals(jTextFieldEjbModuleName.getDocument())) {
-            return true;
-        } else {
-            // check to see if we need to update the field
-            int len = d.getLength();
-            try {
-                if (len > 0) {
-                    jTextFieldEjbModuleName.setText(d.getText(0,d.getLength())+
-                            EJB_MOD_SUFFIX);
-                } else {
-                    jTextFieldEjbModuleName.setText("");
-                }
-            } catch (javax.swing.text.BadLocationException ble) {
-                // this should not be possible
-            }
-            return false;
-        }
+        return serverInstanceWrapper.getServerInstanceID();
     }
     
     private void setJ2eeVersionWarningPanel() {
-        String warningType = J2eeVersionWarningPanel.findWarningType();
-        if (warningType == null)
+        String j2ee = getSelectedJ2eeSpec();
+        if (j2ee == null) {
             return;
-        
-        warningPanel = new J2eeVersionWarningPanel(warningType);
-        warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
+        }
+        String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
+        if (warningType == null && warningPanel == null) {
+            return;
+        }
+        if (warningPanel == null) {
+            warningPanel = new J2eeVersionWarningPanel(warningType);
+            warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
+        }
+        warningPanel.setWarningType(warningType);
     }
+    
+    private void mainClassChanged() {
+        String mainClassName = this.mainClassTextField.getText().trim();
+        StringTokenizer tk = new StringTokenizer(mainClassName, "."); //NOI18N
+        boolean valid = tk.countTokens() > 0;
+        while (tk.hasMoreTokens()) {
+            String token = tk.nextToken();
+            if (token.length() == 0 || !Utilities.isJavaIdentifier(token)) {
+                valid = false;
+                break;
+            }
+        }
+        this.valid = valid;
+        this.panel.fireChangeEvent();
+    }
+    
+    private void projectNameChanged() {
+        this.panel.fireChangeEvent();
+    }
+    
+    /**
+     * Server instance wrapper represents server instances in the servers combobox.
+     * @author sherold
+     */
+    private static class ServerInstanceWrapper implements Comparable {
+
+        private final String serverInstanceID;
+        private final String displayName;
+
+        ServerInstanceWrapper(String serverInstanceID, String displayName) {
+            this.serverInstanceID = serverInstanceID;
+            this.displayName = displayName;
+        }
+
+        public String getServerInstanceID() {
+            return serverInstanceID;
+        }
+
+        public String toString() {
+            return displayName;
+        }
+
+        public int compareTo(Object o) {
+            return toString().compareTo(o.toString());
+        }
+        
+    }
+    
 }
 

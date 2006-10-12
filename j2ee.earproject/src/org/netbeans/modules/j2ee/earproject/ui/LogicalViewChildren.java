@@ -19,32 +19,23 @@
 
 package org.netbeans.modules.j2ee.earproject.ui;
 
-import java.util.*;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import org.openide.ErrorManager;
-
-import org.openide.nodes.*;
-
-import org.netbeans.modules.j2ee.dd.api.application.*;
-
-import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
-
-
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.api.project.ant.AntArtifact;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.openide.util.RequestProcessor;
-
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.earproject.EarProject;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.openide.ErrorManager;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
-
-import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.api.project.FileOwnerQuery;
 /**
  * List of children of a containing node.
  * Each child node is represented by one key from some data model.
@@ -55,10 +46,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 public class LogicalViewChildren extends Children.Keys  implements AntProjectListener {
     
     private final AntProjectHelper model;
+    private java.util.Map<String, VisualClassPathItem> vcpItems;
     
     public LogicalViewChildren(AntProjectHelper model) {
-        if (null == model)
-            throw new IllegalArgumentException("model");
+        if (null == model) {
+            throw new IllegalArgumentException("model cannot be null"); // NOI18N
+        }
         this.model = model;
     }
     
@@ -71,54 +64,32 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
     }
     
     private void updateKeys() {
-        List keys = Collections.EMPTY_LIST;
-
         Project p = FileOwnerQuery.getOwner(model.getProjectDirectory());
         //#62823 debug
         if(p == null) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, 
-                    new IllegalStateException("FileOwnerQuery.getOwner("+ model.getProjectDirectory() + ") returned null. " + 
-                    "Please report this with the situation description to issue #62823 " + 
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, 
+                    new IllegalStateException("FileOwnerQuery.getOwner("+ model.getProjectDirectory() + ") returned null. " + // NOI18N
+                    "Please report this with the situation description to issue #62823 " + // NOI18N
                     "(http://www.netbeans.org/issues/show_bug.cgi?id=62823)."));
             return ;
         }
         
-        EarProject ep = (EarProject) p.getLookup().lookup(EarProject.class);
-        EarProjectProperties epp = ep.getProjectProperties();
-        Object t = epp.get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
-        if (!(t instanceof List)) {
-            assert false : "jar content isn't a List???";
-            return;
-        }
-        List vcpis = (List) t;
-        Iterator iter = vcpis.iterator();
-        keys = new ArrayList();
-        while (iter.hasNext()) {
-            t = iter.next();
-            if (! (t instanceof VisualClassPathItem)) {
-                assert false : "jar content element isn't a VCPI?????";
+        EarProject earProject = (EarProject) p.getLookup().lookup(EarProject.class);
+        List<VisualClassPathItem> vcpis = earProject.getProjectProperties().getJarContentAdditional();
+        vcpItems = new HashMap<String, VisualClassPathItem>();
+        for (VisualClassPathItem vcpi : vcpis) {
+            Object obj = vcpi.getObject();
+            if (!(obj instanceof AntArtifact)) {
                 continue;
             }
-            VisualClassPathItem vcpi = (VisualClassPathItem) t;
-            Object obj = vcpi.getObject();
-            AntArtifact aa;
-            if (obj instanceof AntArtifact) {
-                aa = (AntArtifact) obj;
-                p = aa.getProject();            
+            AntArtifact aa = (AntArtifact) obj;
+            Project vcpiProject = aa.getProject();
+            J2eeModuleProvider jmp = (J2eeModuleProvider) vcpiProject.getLookup().lookup(J2eeModuleProvider.class);
+            if (null != jmp) {
+                vcpItems.put(vcpi.getRaw(), vcpi);
             }
-            else continue;
-            J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
-            if (null != jmp) keys.add(vcpi);
-            
         }
-        
-       
-            
-        
-        // get your keys somehow from the data model:
-        //MyDataElement[] keys = model.getChildren();
-        // you can also use Collection rather than an array
-        setKeys(keys);
+        setKeys(vcpItems.keySet());
     }
     
     protected void removeNotify() {
@@ -128,9 +99,8 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
     }
     
     protected Node[] createNodes(Object key) {
-        // interpret your key here...usually one node generated, but could be zero or more
-        VisualClassPathItem vcpi = (VisualClassPathItem) key;
-        return new Node[] { new ModuleNode(vcpi, model) };
+        VisualClassPathItem vcpItem = vcpItems.get((String) key);
+        return new Node[] { new ModuleNode(vcpItem, model.getProjectDirectory() ) };
     }
     
     public void modelChanged(Object ev) {
@@ -149,7 +119,6 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
     }
  
     public void propertiesChanged(final AntProjectEvent ape) {
-        
         // unsafe to call Children.setKeys() while holding a mutext
         // here the caller holds ProjectManager.mutex() read access
         RequestProcessor.getDefault().post(new Runnable() {
@@ -157,7 +126,6 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
                 updateKeys();
             }
         });
-        
     }
 
 }

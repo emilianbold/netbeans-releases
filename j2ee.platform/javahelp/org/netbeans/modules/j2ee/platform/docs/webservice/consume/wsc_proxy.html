@@ -1,132 +1,131 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- * Copyright 2005 Sun Microsystems,
+<!-- * Copyright 2006 Sun Microsystems,
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-<head> 
-<title>Setting a Proxy for Web Services and Clients</title>
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
-</head> 
-<body bgcolor="#FFFFFF">
-<h2>Setting a Proxy for Web Services and Clients</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+    <head> 
+        <title>Setting a Proxy for Web Services and Clients</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head> 
+    <body>
+        <h2>Setting a Proxy for Web Services and Clients</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
 
-<p>If you want to access a web service, but your system is 
-behind a firewall or you use a proxy server, you need to configure the IDE with your proxy settings.
-For working with web services, setting a proxy can be important in one or more of the following areas:
+        <p>If you want to access a remote web service, but your system is 
+        behind a firewall or you use a proxy server, you need to configure the IDE with your proxy settings.
+        For working with remote web services, setting a proxy can be important in one or more of the following areas:
 
-<ul>
-	<li>When retrieving the WSDL file in the Web Service Client wizard.
-	<li>When using the IDE to test the web service.
-	<li>When deploying to the Sun Java System Application Server.
-	<li>When deploying to the JBoss Server.
-	<li>When deploying to the Tomcat Web Server.
-	<li>When deploying a web service client in a Java application.
-</ul>
+        <ul>
+            <li>When retrieving the WSDL file in the Web Service Client wizard.
+            <li>When using the IDE to test the web service.
+            <li>When deploying to the Sun Java System Application Server.
+            <li>When deploying to the JBoss Server.
+            <li>When deploying to the Tomcat Web Server.
+            <li>When deploying a web service client in a Java application.
+        </ul>
 
-<p>The proxy settings for each of the situations above are described below.
+        <p>The proxy settings for each of the situations above are described below.
 
-<p><b>To retrieve the WSDL file in the Web Service Client wizard:</b>
-<p>Typically, an error such as the following is displayed in the Web Service Client wizard when the proxy settings
- for retrieving a WSDL file have
- not been set correctly:
- <p><tt>Download failed. I/O exception: (Check the proxy settings.)</tt>
-<p>Do the following to check and set the proxy:
-<ol>
-	<li>Click Proxy Settings in the Web Service Client wizard.
-	<li>In the HTTP Proxy Settings window, set the proxy host and port number.</ol>
-<p>The changes take effect when you click OK.
-
-
-<p><b>To use the IDE to test the web service:</b>
-<p>Typically, an error such as the following is returned when the proxy settings
- for testing a web service from the IDE have
- not been set correctly:
- <p><tt>org.netbeans.modules.websvc.registry.ui.ReflectionHelper.callMethodWithParams(ReflectionHelper.java:449)</tt>
-<p>Do the following to check and set the proxy:
-<ol>
-	<li>Choose Tools &gt; Options.
-	<li>In the Options window, set the proxy host and port number.</ol>
-<p>The changes take effect when you exit the Options window.
-
-<p><b>To deploy to the Sun Java System Application Server:</b>
-<p>Typically, an error such as the following is returned when the proxy settings
- for a web service or web service client deployed to the Sun Java System Application Server have
- not been set correctly:
-<p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
-<p>Do the following to check and set the proxy:
-<ol>
-	<li>Open the Runtime window (Ctrl-5).
-	<li>If the Sun Java System
-	Application Server is not started, start it.
-	<li>Expand Sun Java System
-	Application Server's node, right-click the JVMs node, and choose Properties.
-	<li>In the JVMs Properties dialog box, click JVMOptions.
-	<li>Add the following properties:
-	  <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
-	  <br><tt>-Dhttp.proxyPort=<i>your.proxy.port.number</tt></i></ol>
-  <p>Stop and then restart the server for the new proxy settings to take effect.
-
-<p><b>To deploy to the JBoss Server:</b>
-<p>Typically, <i>nothing</i> is displayed in the browser when the proxy settings
- for a web service or web service client deployed to JBoss have
- not been set correctly.
-<p>Do the following to check and set the proxy:
-<ol>
-	<li>In your filesystem, go to <tt><i>jboss_install_dir\</i>bin\run.bat</tt>.
-	<li>Add this line:
-	<tt>set JAVA_OPTS=-Dhttp.proxyHost=<i>your.proxy.host</i> -Dhttp.proxyPort=<i>your.proxy.port.number</i></tt></ol>
-  <p>Stop and then restart the server for the new proxy settings to take effect.
+        <p><b>To retrieve the WSDL file in the Web Service Client wizard:</b>
+        <p>Typically, an error such as the following is displayed in the Web Service Client wizard when the proxy settings
+        for retrieving a WSDL file have
+        not been set correctly:
+        <p><tt>Download failed. I/O exception: (Check the proxy settings.)</tt>
+        <p>Do the following to check and set the proxy:
+        <ol>
+        <li>Click Proxy Settings in the Web Service Client wizard.
+        <li>In the HTTP Proxy Settings window, set the proxy host and port number.</ol>
+        <p>The changes take effect when you click OK.
 
 
-<p><b>To deploy to the Tomcat Web Server:</b>
-<p>Typically, <i>nothing</i> is displayed in the browser when the proxy settings
- for a web service or web service client deployed to JBoss have
- not been set correctly.
-<p>Do the following to check and set the proxy:
-<ol>
-	<li>Open the Runtime window (Ctrl-5).
-	<li>If the Tomcat Web Server is started, stop it.
-	<li>Right-click the Tomcat node and choose Properties.
-	<li>In the Platform tab, add the following properties in the VM Options text box:
-	  <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
-	  <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</tt></i></ol>
-  <p>Start the server for the new proxy settings to take effect.
+        <p><b>To use the IDE to test the web service:</b>
+        <p>Typically, an error such as the following is returned when the proxy settings
+        for testing a web service from the IDE have
+        not been set correctly:
+        <p><tt>org.netbeans.modules.websvc.registry.ui.ReflectionHelper.callMethodWithParams(ReflectionHelper.java:449)</tt>
+        <p>Do the following to check and set the proxy:
+        <ol>
+        <li>Choose Tools &gt; Options.
+        <li>In the Options window, set the proxy host and port number.</ol>
+        <p>The changes take effect when you exit the Options window.
+
+        <p><b>To deploy to the Sun Java System Application Server:</b>
+        <p>Typically, an error such as the following is returned when the proxy settings
+        for a web service or web service client deployed to the Sun Java System Application Server have
+        not been set correctly:
+        <p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
+        <p>Do the following to check and set the proxy:
+        <ol>
+        <li>Open the Runtime window (Ctrl-5).
+        <li>If the Sun Java System
+        Application Server is not started, start it.
+        <li>Expand Sun Java System
+        Application Server's node, right-click the JVM's node, and choose Properties.
+        <li>In the JVM's Properties dialog box, click JVMOptions.
+        <li>Add the following properties:
+        <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
+        <br><tt>-Dhttp.proxyPort=<i>your.proxy.port.number</tt></i></ol>
+        <p>Stop and then restart the server for the new proxy settings to take effect.
+
+        <p><b>To deploy to the JBoss Server:</b>
+        <p>Typically, <i>nothing</i> is displayed in the browser when the proxy settings
+        for a web service or web service client deployed to JBoss have
+        not been set correctly.
+        <p>Do the following to check and set the proxy:
+        <ol>
+        <li>In your filesystem, go to <tt><i>jboss_install_dir\</i>bin\run.bat</tt>.
+        <li>Add this line:
+        <tt>set JAVA_OPTS=-Dhttp.proxyHost=<i>your.proxy.host</i> -Dhttp.proxyPort=<i>your.proxy.port.number</i></tt></ol>
+        <p>Stop and then restart the server for the new proxy settings to take effect.
+
+
+        <p><b>To deploy to the Tomcat Web Server:</b>
+        <p>Typically, <i>nothing</i> is displayed in the browser when the proxy settings
+        for a web service or web service client deployed to JBoss have
+        not been set correctly.
+        <p>Do the following to check and set the proxy:
+        <ol>
+        <li>Open the Runtime window (Ctrl-5).
+        <li>If the Tomcat Web Server is started, stop it.
+        <li>Right-click the Tomcat node and choose Properties.
+        <li>In the Platform tab, add the following properties in the VM Options text box:
+        <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
+        <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</tt></i></ol>
+        <p>Start the server for the new proxy settings to take effect.
   
-<p><b>To deploy a web service client in a Java application:</b>
+        <p><b>To deploy a web service client in a Java application:</b>
 
-<p>Typically, an error such as the following is returned when the proxy settings
-for a web service or web service client deployed from a Java application have
- not been set correctly:
-<p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
-<p>Do the following to check and set the proxy:
-<ol>
-	<li>Right-click the Java application project node in the Projects window
-	 and choose Properties.
-	 <li>In the Project Properties dialog box, click Run.
-	 <li>Add the following properties to the VM Options field:
-	 <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</i></tt> <tt>-Dhttp.proxyPort=<i>your.proxy.port</i></tt></ol>
+        <p>Typically, an error such as the following is returned when the proxy settings
+        for a web service or web service client deployed from a Java application have
+        not been set correctly:
+        <p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
+        <p>Do the following to check and set the proxy:
+        <ol>
+        <li>Right-click the Java application project node in the Projects window
+        and choose Properties.
+        <li>In the Project Properties dialog box, click Run.
+        <li>Add the following properties to the VM Options field:
+        <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</i></tt> <tt>-Dhttp.proxyPort=<i>your.proxy.port</i></tt></ol>
 
- <p>The changes take effect when you click OK.
- <p>Note that for client deployment from Java applications, you must set the proxy for each project, because
- each Java application runs as a standalone JVM process and each can provide different JVM parameters. For web
- applications sharing the same instance of a server, you need set the proxy only once --
-  on the server itself, as described above.
+        <p>The changes take effect when you click OK.
+        <p>Note that for client deployment from Java applications, you must set the proxy for each project, because
+        each Java application runs as a stand-alone JVM process and each can provide different JVM parameters. For web
+        applications sharing the same instance of a server, you need set the proxy only once --
+        on the server itself, as described above.
   
-<table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td>
-	<a href="../about/about_ws.html">About Web Services</a><br>
-	<a href="about_wsc.html">About Web Service Clients</a><br>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+        </dl>
 
 
-</td>
-</tr>
-</table>   
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small>
-</body></html>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+
+    </body>
+</html>

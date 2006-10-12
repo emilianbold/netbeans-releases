@@ -86,14 +86,14 @@ public class SessionChildren extends Children.Keys implements PropertyChangeList
         if (LOCAL_KEY.equals(key)) {
             Children c = new MethodChildren(controller, controller.getLocalInterfaces(), true);
             MethodsNode n = new MethodsNode(model, jar, srcPath, c, true);
-            n.setIconBase("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon");
+            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
             return new Node[] { n };
         }
         if (REMOTE_KEY.equals(key)) {
             Children c = new MethodChildren(controller, controller.getRemoteInterfaces(), false);
             MethodsNode n = new MethodsNode(model, jar, srcPath, c, false);
-            n.setIconBase("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon");
+            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
             return new Node[] { n };
         }
@@ -101,7 +101,11 @@ public class SessionChildren extends Children.Keys implements PropertyChangeList
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
-        updateKeys();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateKeys();
+            }
+        });
     }
     
 }

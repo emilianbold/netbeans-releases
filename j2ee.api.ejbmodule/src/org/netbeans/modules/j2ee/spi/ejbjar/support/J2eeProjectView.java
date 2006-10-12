@@ -50,6 +50,15 @@ import org.openide.util.actions.SystemAction;
  * @author Pavel Buzek
  */
 public final class J2eeProjectView {
+    
+    /**
+     * The programmatic name (returned by {@link org.openide.nodes.Node.getName})
+     * of the node created by the {@link createConfigFilesView} method.
+     *
+     * @since 1.6
+     */
+    public static final String CONFIG_FILES_VIEW_NAME = "configurationFiles"; // NOI18N
+    
     private static EjbNodesFactory factoryInstance = null;
     
     private J2eeProjectView() {
@@ -102,6 +111,10 @@ public final class J2eeProjectView {
             Node folderNode = getOriginal();
             Image image = opened ? folderNode.getOpenedIcon( type ) : folderNode.getIcon( type );
             return Utilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
+        }
+        
+        public String getName() {
+            return CONFIG_FILES_VIEW_NAME;
         }
 
         public String getDisplayName() {

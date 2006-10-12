@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
 import org.openide.actions.*;
@@ -39,7 +40,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbTransferable;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared.EjbViewController;
 import org.openide.util.WeakListeners;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceActionGroup;
 import org.openide.cookies.OpenCookie;
@@ -66,7 +66,7 @@ public class SessionNode extends AbstractNode implements OpenCookie {
     
     private SessionNode(InstanceContent content, Session model, EjbJar module, ClassPath srcPath) {
         super(new SessionChildren(model, srcPath, module), new AbstractLookup(content));
-        setIconBase("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon");
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon.gif");
         setName(model.getEjbName()+"");
         controller = new EjbViewController(model, module, srcPath);
         setDisplayName();

@@ -44,7 +44,7 @@ import org.openide.util.NbBundle;
  */
 public class ClassPathUiSupport {
     
-    private ClassPathSupport cps;
+    // private ClassPathSupport cps;
      
     /** Creates a new instance of ClassPathSupport */
     /*

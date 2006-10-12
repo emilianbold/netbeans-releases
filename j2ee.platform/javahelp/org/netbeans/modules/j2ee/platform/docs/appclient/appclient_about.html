@@ -1,0 +1,53 @@
+ 
+<html>
+    
+<!--
+ *     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ -->
+<head>
+    <title>About Enterprise Application Clients</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+    <h2>About Enterprise Application Clients</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+    <p>A Java EE application client is a stand-alone application that is configured
+    to work as part of a Java EE enterprise application. Any Java application can access 
+    remote EJB methods and web services, so you do not necessarily have 
+    to create a Java EE application client to access your enterprise application. The advantage of accessing enterprise applications
+    from enterprise application clients is that application clients have access to services and functionality running on the 
+    enterprise application server, while regular Java applications do not. For example, you can configure security roles and 
+    permissions for an enterprise application client.</p>
+    <p>An application client is configured using deployment descriptors and is added to an enterprise application 
+    as a module. An application client has the following deployment descriptors:</p>
+    <ul>
+        <li><tt>application.xml</tt>. The general J2EE deployment descriptor that 
+        configures deployment settings on any Java EE compliant implementation.</li>
+        <li>The server-specific deployment descriptor that configures deployment 
+        settings for the application server to which you are deploying. For the Sun 
+        Java System Application Server, the IDE provides a graphical deployment 
+        descriptor editor and automatically updates the deployment descriptor as you 
+        edit your files. For all other application servers, you have to write the 
+        server-specific deployment descriptors yourself.</li>
+    </ul>
+    <p>In the IDE, you can create an application client project and import an existing
+    application client into an IDE project. You can create an application client as part of a new
+    enterprise application or create a single application client and add it to any existing
+    enterprise application.</p>
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="appclient_create.html">Creating an Enterprise Application Client</a></dd>
+    <dd><a href="appclient_edit_dd.html">Editing an Enterprise Application Client's Deployment Descriptors</a></dd>
+    <dd><a href="../enterprise/general/add_modules_to_ent_app.html">Adding a Module to an Enterprise Application</a></dd>
+    <dd><a href="../ejb/editing/call_ejb.html">Calling an Enterprise Bean</a></dd>
+    </dl>
+    <hr>
+    <small> <a href="../credits.html">Legal Notices</a></small> 
+    <table cellpadding="50" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
+</body>
+    
+</html>

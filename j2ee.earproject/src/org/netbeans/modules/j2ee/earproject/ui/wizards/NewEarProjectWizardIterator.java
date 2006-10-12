@@ -24,39 +24,37 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.LinkedHashSet;
-
 import java.util.NoSuchElementException;
 import java.util.Set;
-
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
+import org.netbeans.modules.j2ee.dd.api.application.Application;
+import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.earproject.EarProject;
+import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
+import org.netbeans.modules.j2ee.earproject.EarProjectType;
+import org.netbeans.modules.j2ee.earproject.ui.FoldersListSettings;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
+import org.netbeans.modules.web.project.api.WebProjectCreateData;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-
-import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
-
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
-import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.j2ee.dd.api.application.Application;
-import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
-
-import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.earproject.EarProjectType;
-import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
-import org.netbeans.modules.web.project.api.WebProjectUtilities;
+import org.openide.util.NbBundle;
 
 /**
- * Wizard to create a new Web project.
+ * Wizard to create a new Enterprise Application project.
  * @author Jesse Glick
  */
 public class NewEarProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
@@ -64,21 +62,22 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
     private static final long serialVersionUID = 1L;
     
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
-
-    /** Create a new wizard iterator. */
-    public NewEarProjectWizardIterator() {}
+    
+    private transient int index;
+    private transient WizardDescriptor.Panel[] panels;
+    transient WizardDescriptor wiz;
     
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
-            new org.netbeans.modules.j2ee.earproject.ui.wizards.PanelConfigureProject(PROP_NAME_INDEX, 
-                NbBundle.getBundle(NewEarProjectWizardIterator.class),
-                new HelpCtx(this.getClass())),
+            new PanelConfigureProject(PROP_NAME_INDEX,
+                    NbBundle.getBundle(NewEarProjectWizardIterator.class),
+                    new HelpCtx(this.getClass())),
         };
     }
     
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName") //NOI18N
+            NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName")
         };
     }
     
@@ -87,39 +86,40 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
-        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
-        Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        // Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         Boolean createWAR = (Boolean) wiz.getProperty(WizardProperties.CREATE_WAR);
         String warName = null;
         if (createWAR.booleanValue()) {
             warName = (String) wiz.getProperty(WizardProperties.WAR_NAME);
         }
         Boolean createJAR = (Boolean) wiz.getProperty(WizardProperties.CREATE_JAR);
-        String jarName = null;
+        String ejbJarName = null;
         if (createJAR.booleanValue()) {
-            jarName = (String) wiz.getProperty(WizardProperties.JAR_NAME);
+            ejbJarName = (String) wiz.getProperty(WizardProperties.JAR_NAME);
+        }
+        Boolean createCAR = (Boolean) wiz.getProperty(WizardProperties.CREATE_CAR);
+        String carName = null;
+        String mainClass = null;
+        if (createCAR.booleanValue()) {
+            carName = (String) wiz.getProperty(WizardProperties.CAR_NAME);
+            mainClass = (String) wiz.getProperty(WizardProperties.MAIN_CLASS);
         }
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
         String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
-        
-        return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, contextPath, warName,jarName, platformName, sourceLevel);
+        // remember last used server
+        FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
+        return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, warName,
+                ejbJarName, carName, mainClass, platformName, sourceLevel);
     }
     
-    Set testableInstantiate(File dirF, String name, String j2eeLevel,
-            String serverInstanceID, String contextPath, String warName, String jarName,
-            String platformName, String sourceLevel) throws IOException {
-        Set resultSet = new LinkedHashSet();
-        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, contextPath, sourceLevel);
+    /** <strong>Package private for unit test only</strong>. */
+    static Set<FileObject> testableInstantiate(File dirF, String name, String j2eeLevel,
+            String serverInstanceID, String warName, String ejbJarName, String carName,
+            String mainClass, String platformName, String sourceLevel) throws IOException {
+        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+        AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, sourceLevel);
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         Project p = ProjectManager.getDefault().findProject(dir);
-        // XXX -- this code may be necessary for 54381 (once 54534 is addressed)
-//        try {
-//            FileObject fileToOpen = dir.getFileObject("src/conf/application.xml");
-//            assert fileToOpen != null : "cannot find the file to open: src/conf/application.xml";
-//            resultSet.add(fileToOpen);
-//        } catch (Exception x) {
-//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, x.getLocalizedMessage());
-//        }
         EarProject earProject = (EarProject) p.getLookup().lookup(EarProject.class);
         if (null != earProject) {
             Application app = null;
@@ -127,8 +127,8 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
                 app = DDProvider.getDefault().getDDRoot(earProject.getAppModule().getDeploymentDescriptor());
                 app.setDisplayName(name);
                 app.write(earProject.getAppModule().getDeploymentDescriptor());
-            } catch (java.io.IOException ioe) {
-                org.openide.ErrorManager.getDefault().log(ioe.getLocalizedMessage());
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().log(ioe.getLocalizedMessage());
             }
         }
         
@@ -137,40 +137,88 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
         ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator());
         EarProjectProperties epp = new EarProjectProperties((EarProject) p, refHelper, new EarProjectType());
+        Project webProject = null;
         if (null != warName) {
-            File webAppDir = new File(dirF, name+"-war"); // NOI18N
-            h = WebProjectUtilities.createProject(FileUtil.normalizeFile(webAppDir),
-                    warName,
-                    serverInstanceID,
-                    WebProjectUtilities.SRC_STRUCT_BLUEPRINTS,
-                    j2eeLevel, "/"+warName); //NOI18N
-            if (platformName != null || sourceLevel != null) {
-                WebProjectUtilities.setPlatform(h, platformName, sourceLevel);
-            }
-            FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
-            p = ProjectManager.getDefault().findProject(dir2);
-            epp.addJ2eeSubprojects(new Project[] { p });
-            resultSet.add(dir2);
+            File webAppDir = new File(dirF, warName);
+            
+            WebProjectCreateData createData = new WebProjectCreateData();
+            createData.setProjectDir(FileUtil.normalizeFile(webAppDir));
+            createData.setName(warName);
+            createData.setServerInstanceID(serverInstanceID);
+            createData.setSourceStructure(WebProjectUtilities.SRC_STRUCT_BLUEPRINTS);
+            createData.setJavaEEVersion(EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID, J2eeModule.WAR));
+            createData.setContextPath('/' + warName); //NOI18N
+            createData.setJavaPlatformName(platformName);
+            createData.setSourceLevel(sourceLevel);
+            AntProjectHelper webHelper = WebProjectUtilities.createProject(createData);           
+            
+            FileObject webAppDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
+            webProject = ProjectManager.getDefault().findProject(webAppDirFO);
+            epp.addJ2eeSubprojects(new Project[] { webProject });
+            resultSet.add(webAppDirFO);
         }
-        if (null != jarName) {
-            File ejbJarDir = new File(dirF,name+"-ejb"); // NOI18N
-            h = EjbJarProjectGenerator.createProject(FileUtil.normalizeFile(ejbJarDir),jarName,
-                    j2eeLevel, serverInstanceID);
+        Project appClient = null;
+        if (null != carName) {
+            File carDir = new File(dirF,carName);
+            AntProjectHelper clientHelper = AppClientProjectGenerator.createProject(
+                    FileUtil.normalizeFile(carDir), carName, mainClass,
+                    EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID,
+                    J2eeModule.CLIENT), serverInstanceID);
             if (platformName != null || sourceLevel != null) {
-                EjbJarProjectGenerator.setPlatform(h, platformName, sourceLevel);
+                AppClientProjectGenerator.setPlatform(clientHelper, platformName, sourceLevel);
             }
-            FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(ejbJarDir));
-            p = ProjectManager.getDefault().findProject(dir2);
-            epp.addJ2eeSubprojects(new Project[] { p });
-            resultSet.add(dir2);
+            FileObject carDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(carDir));
+            appClient = ProjectManager.getDefault().findProject(carDirFO);
+            
+            epp.addJ2eeSubprojects(new Project[] { appClient });
+            resultSet.add(carDirFO);
         }
-        
+        if (null != ejbJarName) {
+            File ejbJarDir = new File(dirF,ejbJarName);
+            AntProjectHelper ejbHelper = EjbJarProjectGenerator.createProject(FileUtil.normalizeFile(ejbJarDir),ejbJarName,
+                    EarProjectGenerator.checkJ2eeVersion(j2eeLevel, serverInstanceID, J2eeModule.EJB), serverInstanceID);
+            if (platformName != null || sourceLevel != null) {
+                EjbJarProjectGenerator.setPlatform(ejbHelper, platformName, sourceLevel);
+            }
+            FileObject ejbJarDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(ejbJarDir));
+            Project ejbJarProject = ProjectManager.getDefault().findProject(ejbJarDirFO);
+            epp.addJ2eeSubprojects(new Project[] { ejbJarProject });
+            resultSet.add(ejbJarDirFO);
+            EarProjectGenerator.addEJBToClassPaths(ejbJarProject, appClient, webProject); // #74123
+        }
+        updateModuleURI(warName, carName, epp);
+        NewEarProjectWizardIterator.setProjectChooserFolder(dirF);
         return resultSet;
     }
     
-    private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
-    transient WizardDescriptor wiz;
+    static void setProjectChooserFolder(final File dirF) {
+        File parentF = (dirF != null) ? dirF.getParentFile() : null;
+        if (parentF != null && parentF.exists()) {
+            ProjectChooser.setProjectsFolder(parentF);
+        }
+    }
+    
+    private static void updateModuleURI(final String warName,
+            final String carName, final EarProjectProperties epp) {
+        String clientModuleURI = null;
+        if (warName != null) {
+            // genereate application client related properties
+            String[] webURIs = epp.getWebUris();
+            assert webURIs.length == 1 : "Exactly one application client " +
+                    "may be generated during creation. Is: " + webURIs.length; // NOI18N
+            clientModuleURI = webURIs[0];
+        } else if (carName != null) {
+            // genereate application client related properties
+            String[] appClientURIs = epp.getAppClientUris();
+            assert appClientURIs.length == 1 : "Exactly one application client " +
+                    "may be generated during creation. Is: " + appClientURIs.length; // NOI18N
+            clientModuleURI = appClientURIs[0];
+        }
+        if (clientModuleURI != null) {
+            epp.put(EarProjectProperties.CLIENT_MODULE_URI, clientModuleURI);
+            epp.store();
+        }
+    }
     
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
@@ -189,39 +237,50 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", i); // NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
         }
     }
+    
     public void uninitialize(WizardDescriptor wiz) {
-        if (null != wiz) {
-        this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
-        this.wiz.putProperty(WizardProperties.NAME,null);
+        if (this.wiz != null) {
+            this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
+            this.wiz.putProperty(WizardProperties.NAME,null);
         }
         this.wiz = null;
         panels = null;
     }
     
     public String name() {
-        return MessageFormat.format(NbBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/wizards/Bundle").getString("LBL_WizardStepsCount"), new String[] {(new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
+        return MessageFormat.format(
+                NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_WizardStepsCount"),
+                index + 1, panels.length);
     }
     
     public boolean hasNext() {
         return index < panels.length - 1;
     }
+    
     public boolean hasPrevious() {
         return index > 0;
     }
+    
     public void nextPanel() {
-        if (!hasNext()) throw new NoSuchElementException();
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         index++;
     }
+    
     public void previousPanel() {
-        if (!hasPrevious()) throw new NoSuchElementException();
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
         index--;
     }
+    
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
@@ -232,11 +291,8 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
     
     // helper methods, finds indexJSP's FileObject
     FileObject getIndexJSPFO(FileObject webRoot, String indexJSP) {
-        // replace '.' with '/'
-        indexJSP = indexJSP.replace ('.', '/'); // NOI18N
-        
-        // ignore unvalid mainClass ???
-        
-        return webRoot.getFileObject (indexJSP, "jsp"); // NOI18N
+        // XXX: ignore unvalid mainClass?
+        return webRoot.getFileObject(indexJSP.replace('.', '/'), "jsp"); // NOI18N
     }
+    
 }

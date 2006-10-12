@@ -66,7 +66,7 @@ public class EntityGenerator extends EntityAndSessionGenerator {
         this.isCMP = isCMP;
         DDProvider provider = DDProvider.getDefault();
         EjbJar ejbModule = EjbJar.getEjbJar(pkg);
-        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = provider.getDDRoot(ejbModule.getDeploymentDescriptor());
+        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = provider.getMergedDDRoot(ejbModule.getMetadataUnit());
         ClassPath cp = ClassPath.getClassPath(pkg, ClassPath.SOURCE);
 
         this.primaryKeyFQN = primaryKeyClassName;
@@ -211,7 +211,7 @@ public class EntityGenerator extends EntityAndSessionGenerator {
     private void populateCMP(Bean genData, Entity e) {
         genData.addCmField(true);
         genData.setCmFieldMethodName(0, "Key");
-        genData.setCmFieldClassname(0, this.primaryKeySimpleName);
+        genData.setCmFieldClassname(0, this.primaryKeyFQN);
         genData.addCmFieldName("key");
         e.setPersistenceType(Entity.PERSISTENCE_TYPE_CONTAINER);
         CmpField f = e.newCmpField();
@@ -237,7 +237,7 @@ public class EntityGenerator extends EntityAndSessionGenerator {
         }
         find.addParam(true);
         find.addParamName("key");
-        find.addParamType(this.primaryKeySimpleName);
+        find.addParamType(this.primaryKeyFQN);
         find.addException(true);
         find.addExceptionType("javax.ejb.FinderException");
         
@@ -253,7 +253,7 @@ public class EntityGenerator extends EntityAndSessionGenerator {
             }
             create.addParam(true);
             create.addParamName("key");
-            create.addParamType(this.primaryKeySimpleName);
+            create.addParamType(this.primaryKeyFQN);
             create.addException(true);
             create.addExceptionType("javax.ejb.CreateException");
 

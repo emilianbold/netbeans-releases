@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>New Session Beans for Entity Classes: Entity Classes</title>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>New Session Beans for Entity Classes: Entity Classes</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+
+<p>This wizard generates Session EJB Facade classes based on the entity classes that you specify.
+In this wizard you choose from the available entity classes in your module.
+
+The IDE then generates a session class with basic access methods and the required interfaces for each entity class.</p>
+<p>You open the wizard by right-clicking an EJB module node and choosing New File/Folder, selecting the Persistence category and then selecting Session Beans for Entity Classes.</p>
+<p>Use this page of the wizard as follows:</p>
+<ol>
+  <li>Select any entity classes from the list of available entity classes in the left pane, and click the Add button. 
+    Any referenced entity class are automatically added to the Selected Entity Class list in the right pane.
+    If an entity class is greyed out, it indicates that it is a referenced entity class.
+    <ul class="note">
+        <li>If you do not want session bean classes created from referenced entity classes, deselect Include Referenced Classes.</li> 
+    </ul>
+    </li>
+    <li>Click Next to specify the interfaces you want to create and where to save the session bean classes.</li>
+</ol>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../../ejb/general/about_session_beans.html">About Session Beans</a></dd>
+</dl>
+
+<hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

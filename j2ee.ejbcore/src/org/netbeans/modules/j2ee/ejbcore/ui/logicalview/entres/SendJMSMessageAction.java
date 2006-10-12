@@ -28,6 +28,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -159,11 +160,12 @@ public class SendJMSMessageAction extends NodeAction {
 	}
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
         Object moduleType = j2eeModuleProvider.getJ2eeModule().getModuleType();
-        if ((J2eeModule.WAR.equals(moduleType) && !WebApp.VERSION_2_4.equals(j2eeVersion)) || 
-           (J2eeModule.EJB.equals(moduleType) && !EjbJar.VERSION_2_1.equals(j2eeVersion)))  {
-            return false;
+        if (Util.isJavaEE5orHigher(project) ||
+            (J2eeModule.WAR.equals(moduleType) && WebApp.VERSION_2_4.equals(j2eeVersion)) || 
+            (J2eeModule.EJB.equals(moduleType) && EjbJar.VERSION_2_1.equals(j2eeVersion)))  {
+            return !jc.isInterface();
         }
-        return !jc.isInterface();
+        return false;
     }
     
     /** Perform extra initialization of this action's singleton.

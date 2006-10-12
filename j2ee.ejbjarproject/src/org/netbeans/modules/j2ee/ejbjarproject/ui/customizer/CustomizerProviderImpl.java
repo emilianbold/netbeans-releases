@@ -202,28 +202,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString( "LBL_Config_BuildCategory" ), // NOI18N
                 null,
                 new ProjectCustomizer.Category[] { build, jar, javadoc }  );
-                
-        ProjectCustomizer.Category services = ProjectCustomizer.Category.create(
-                WEBSERVICES,
-                bundle.getString( "LBL_Config_WebServices" ), // NOI18N
-                null,
-                null);
-                
-        ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(
-                WEBSERVICECLIENTS,
-                bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
-                null,
-                null);
-                
-        ProjectCustomizer.Category webServices = ProjectCustomizer.Category.create(
-                WEBSERVICE_CATEGORY,
-                bundle.getString( "LBL_Config_WebServicesCategory" ), // NOI18N
-                null,
-//                new ProjectCustomizer.Category[] { services, clients } );
-                new ProjectCustomizer.Category[] { services } );
-                
+
+        ProjectCustomizer.Category services=null;
+        
         List servicesSettings = null;
-        List serviceClientsSettings = null;
+        
         EjbJarProvider ejbJarProvider = (EjbJarProvider)project.getLookup().lookup(EjbJarProvider.class);
         FileObject metaInf = ejbJarProvider.getMetaInf();
         if (metaInf != null) {
@@ -231,19 +214,30 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             if (servicesSupport != null) {
                 servicesSettings = servicesSupport.getServices();
             }
-            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(metaInf);
-            if (clientSupport != null) {
-                serviceClientsSettings = clientSupport.getServiceClients();
-            }
         }
-        
-        categories = new ProjectCustomizer.Category[] { 
-                sources,
-                libraries,        
-                buildCategory,
-                run,
-                webServices
-        };
+
+        if ((servicesSettings!=null && servicesSettings.size()>0)) {
+            services = ProjectCustomizer.Category.create(
+                    WEBSERVICES,
+                    bundle.getString( "LBL_Config_WebServices" ), // NOI18N
+                    null,
+                    null);
+            
+            categories = new ProjectCustomizer.Category[] { 
+                    sources,
+                    libraries,
+                    buildCategory,
+                    run,  
+                    services
+            };
+        } else {
+            categories = new ProjectCustomizer.Category[] { 
+                    sources,
+                    libraries,
+                    buildCategory,
+                    run
+            };
+        }
         
         Map panels = new HashMap();
         panels.put( sources, new CustomizerSources( uiProperties ) );
@@ -257,12 +251,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         } else {
             panels.put( services, new NoWebServicesPanel());
         }
-        if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
-            panels.put( clients, new CustomizerWSClientHost( uiProperties, serviceClientsSettings ));
-        } else {
-            panels.put( clients, new NoWebServiceClientsPanel());
-        }
-        
         panelProvider = new PanelProvider( panels );
     }
     
@@ -284,7 +272,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     /** Listens to the actions on the Customizer's option buttons */
-    private class OptionListener extends WindowAdapter implements ActionListener {
+    private static class OptionListener extends WindowAdapter implements ActionListener {
     
         private Project project;
         private EjbJarProjectProperties uiProperties;
@@ -360,16 +348,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         
         public HelpCtx getHelpCtx() {
             return new HelpCtx(CustomizerWSServiceHost.class.getName() + "Disabled"); // NOI18N
-        }
-    }
-    
-    private class NoWebServiceClientsPanel extends LabelPanelWithHelp {
-        NoWebServiceClientsPanel() {
-            super(NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizeWsServiceClientHost_NoWebServiceClients"));
-        }
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(CustomizerWSClientHost.class.getName() + "Disabled"); // NOI18N
         }
     }
 }

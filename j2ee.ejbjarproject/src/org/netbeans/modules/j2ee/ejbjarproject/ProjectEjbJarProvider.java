@@ -27,9 +27,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProper
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject, ProjectPropertiesSupport {
     
@@ -42,25 +40,7 @@ public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject, 
     public EjbJar findEjbJar (FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof EjbJarProject) {
-            EjbJarProject ep = (EjbJarProject) project;
-            // TODO: ma154696: this is changed entry of Pavel Buzek added AFTER branching; have to be checked!!!
-            FileObject[] sourceRoots = ep.getSourceRoots().getRoots();
-            for (int i = 0; i < sourceRoots.length; i++) {
-                FileObject src = sourceRoots[i];
-                if (src != null && (src.equals(file) || FileUtil.isParentOf(src, file))) {
-                    return ep.getAPIEjbJar();
-                }
-            }
-
-            FileObject build = ep.getEjbModule().getBuildDirectory();
-            if (build != null && (build.equals (file) || FileUtil.isParentOf (build, file))) {
-                return ep.getAPIEjbJar();
-            }
-
-            FileObject prjdir = ep.getProjectDirectory();
-            if (prjdir != null && (prjdir.equals (file) || FileUtil.isParentOf(prjdir, file))) {
-                return ep.getAPIEjbJar();
-            }
+            return ((EjbJarProject) project).getAPIEjbJar();
         }
         return null;
     }

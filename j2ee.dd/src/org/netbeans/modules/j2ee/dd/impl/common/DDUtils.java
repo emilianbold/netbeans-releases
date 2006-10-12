@@ -18,10 +18,12 @@
  */
 package org.netbeans.modules.j2ee.dd.impl.common;
 
+import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
+import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -29,7 +31,6 @@ import org.xml.sax.SAXParseException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.math.BigDecimal;
 
 /**
  * @author pfiala
@@ -38,11 +39,11 @@ public class DDUtils {
     public static EjbJarProxy createEjbJarProxy(InputStream inputStream) throws IOException {
         return createEjbJarProxy(new InputSource(inputStream));
     }
-
+    
     public static EjbJarProxy createEjbJarProxy(Reader reader) throws IOException {
         return createEjbJarProxy(new InputSource(reader));
     }
-
+    
     public static EjbJarProxy createEjbJarProxy(InputSource inputSource) throws IOException {
         try {
             return (EjbJarProxy) DDProvider.getDefault().getDDRoot(inputSource);
@@ -59,8 +60,8 @@ public class DDUtils {
             return ejbJarProxy;
         }
     }
-
-
+    
+    
     public static void merge(EjbJarProxy ejbJarProxy, Reader reader) {
         try {
             EjbJarProxy newEjbJarProxy = createEjbJarProxy(reader);
@@ -81,18 +82,38 @@ public class DDUtils {
             // so lets not set the original to null here but wait
             // until the file becomes parsable again to do a merge
             //ejbJarProxy.setOriginal(null);
+        } catch (Schema2BeansRuntimeException ex2){ // see #70286    
+            ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+            ejbJarProxy.setError(new SAXParseException(null, null, ex2));
         }
     }
-
+    
     public static WebApp createWebApp(InputStream is, String version) throws IOException, SAXException {
         try {
             if (WebApp.VERSION_2_3.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.web.model_2_3.WebApp.createGraph(is);
-            } else {
+            } else if (WebApp.VERSION_2_4.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.web .model_2_4.WebApp.createGraph(is);
+            } else /*if (WebApp.VERSION_2_5.equals(version))*/ {
+                return org.netbeans.modules.j2ee.dd.impl.web .model_2_5.WebApp.createGraph(is);
             }
         } catch (RuntimeException ex) {
-            throw new SAXException (ex.getMessage());
+            throw new SAXException(ex);
         }
+    }
+    
+    public static AppClient createAppClient(InputStream is, String version) throws IOException, SAXException {
+        try {
+            if (AppClient.VERSION_1_3.equals(version)) {
+                return org.netbeans.modules.j2ee.dd.impl.client.model_1_3.ApplicationClient.createGraph(is);
+            } else if (AppClient.VERSION_1_4.equals(version)) {
+                return org.netbeans.modules.j2ee.dd.impl.client.model_1_4.ApplicationClient.createGraph(is);
+            } else if (AppClient.VERSION_5_0.equals(version)) {
+                return org.netbeans.modules.j2ee.dd.impl.client.model_5_0.ApplicationClient.createGraph(is);
+            }
+        } catch (RuntimeException ex) {
+            throw new SAXException(ex);
+        }
+        return null;
     }
 }

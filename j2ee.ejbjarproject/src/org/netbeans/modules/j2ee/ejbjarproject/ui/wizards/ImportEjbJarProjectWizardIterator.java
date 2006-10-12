@@ -27,6 +27,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
@@ -76,7 +77,6 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
             dirF = FileUtil.normalizeFile(dirF);
         }
         String name = (String) wiz.getProperty(WizardProperties.NAME);
-        File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
         File[] sourceFolders = (File[]) wiz.getProperty(WizardProperties.JAVA_ROOT);
         File[] testFolders = (File[]) wiz.getProperty(WizardProperties.TEST_ROOT);
         File configFilesFolder = (File) wiz.getProperty(WizardProperties.CONFIG_FILES_FOLDER);
@@ -102,6 +102,9 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder (dirF);    
         }
+        
+        // remember last used server
+	FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
         
         // downgrade the Java platform or src level to 1.4        
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);

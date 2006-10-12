@@ -177,7 +177,7 @@ public class EarDataObject extends DD2beansDataObject
      * @return Icon Base for node delegate
      */
     protected String getIconBaseForValidDocument() {
-        return "org/netbeans/modules/j2ee/ddloaders/ejb/DDDataIcon"; // NOI18N
+        return "org/netbeans/modules/j2ee/ddloaders/ejb/DDDataIcon.gif"; // NOI18N
     }
     
     /** gets the Icon Base for node delegate when parser finds error(s) in xml document
@@ -186,7 +186,7 @@ public class EarDataObject extends DD2beansDataObject
      * PENDING: move into node
      */
     protected String getIconBaseForInvalidDocument() {
-        return "org/netbeans/modules/j2ee/ddloaders/ejb/DDDataIcon1"; // NOI18N
+        return "org/netbeans/modules/j2ee/ddloaders/ejb/DDDataIcon1.gif"; // NOI18N
     }    
     
     /** gets the String for node delegate when parser accepts the xml document as valid
@@ -495,7 +495,7 @@ public class EarDataObject extends DD2beansDataObject
         
         try {
             confirmChangesDialog[0] = DialogDisplayer.getDefault ().createDialog (confirmChangesDescriptor);
-            confirmChangesDialog[0].show ();
+            confirmChangesDialog[0].setVisible(true);
         } finally {
             confirmChangesDialog[0].dispose ();
         }

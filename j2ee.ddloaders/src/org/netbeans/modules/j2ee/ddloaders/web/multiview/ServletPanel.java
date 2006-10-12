@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
@@ -26,6 +29,7 @@ import org.netbeans.modules.xml.multiview.ui.*;
 import org.netbeans.modules.xml.multiview.Utils;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.dd.api.common.RunAs;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,6 +40,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
     private Servlet servlet;
     private javax.swing.JButton linkServletClass, linkJspFile;
     private InitParamsPanel initParamsPanel;
+    private JComboBox runAsCB;
     
     /** Creates new form ServletPanel */
     public ServletPanel(SectionView sectionView, DDDataObject dObj,Servlet servlet) {
@@ -84,7 +89,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         // Init Params
         InitParamTableModel model = new InitParamTableModel();
         initParamsPanel = new InitParamsPanel(dObj, model);
-        initParamsPanel.setModel(servlet,servlet.getInitParam());       
+        initParamsPanel.setModel(servlet,servlet.getInitParam());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -95,6 +100,49 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         //gridBagConstraints.weightx = 1.0;
         //gridBagConstraints.weighty = 5.0;
         add(initParamsPanel, gridBagConstraints);
+        
+        JLabel securityRoleRefsLabel = new JLabel();
+        securityRoleRefsLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_securityRoleRefs_mnem").charAt(0));
+        securityRoleRefsLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_SecurityRoleRefs"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(15, 10, 0, 0);
+        add(securityRoleRefsLabel, gridBagConstraints);
+        
+        // Security Role Refs
+        SecurityRoleRefTableModel roleRefModel = new SecurityRoleRefTableModel();
+        SecurityRoleRefTablePanel roleRefPanel = new SecurityRoleRefTablePanel(dObj, roleRefModel);
+        roleRefPanel.setModel(dObj.getWebApp(), servlet, servlet.getSecurityRoleRef());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 10, 0, 0);
+        add(roleRefPanel, gridBagConstraints);
+        
+        RunAsPanel runAsPanel = new RunAsPanel(dObj.getWebApp());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 10, 0, 0);
+        add(runAsPanel, gridBagConstraints);
+        runAsCB = runAsPanel.getRunAsCB();
+        
+        RunAs runAs = servlet.getRunAs();
+        if (runAs == null) {
+            runAsCB.setSelectedItem("");    //NOI18N
+        } else {
+            runAsCB.setSelectedItem(runAs.getRoleName());
+        }
+        addModifier(runAsCB);
         
         linkServletClass = new LinkButton(this, servlet, "ClassName"); //NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -119,7 +167,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         setAccessibility();
     }
     
-    private void setAccessibility() { 
+    private void setAccessibility() {
         linkServletClass.setMnemonic(NbBundle.getMessage(ServletPanel.class, "LBL_goToSource_mnem").charAt(0));
         linkJspFile.setMnemonic(NbBundle.getMessage(ServletPanel.class, "LBL_goToSource_mnem2").charAt(0));
         initParamsLabel.setLabelFor(initParamsPanel.getTable());
@@ -336,7 +384,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void browseButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButton1ActionPerformed
         // TODO add your handling code here:
         try {
@@ -355,7 +403,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
             }
         } catch (java.io.IOException ex) {}
     }//GEN-LAST:event_browseButton1ActionPerformed
-
+    
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         // TODO add your handling code here:
         try {
@@ -500,6 +548,11 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
             for (int i=0;i<maps.length;i++) {
                 maps[i].setServletName(text);
             }
+            // change refering filter mappings
+            FilterMapping[] filterMappings = DDUtils.getFilterMappings(dObj.getWebApp(), servlet);
+            for (int i = 0; i < filterMappings.length; i++) {
+                filterMappings[i].setServletName(text);
+            }
             // change servlet-name
             servlet.setServletName(text);
             //change panel title, node name
@@ -522,6 +575,21 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         } else if (source==orderTF) {
             String text = (String)value;
             servlet.setLoadOnStartup(text.length()==0?null:new java.math.BigInteger(text));
+        } else if (source == runAsCB) {
+            String text = (String) runAsCB.getSelectedItem();
+            
+            if (text.length() == 0) {
+                servlet.setRunAs(null);
+            } else {
+                try {
+                    RunAs runAs = (RunAs) dObj.getWebApp().createBean("RunAs"); //NOI18N
+                    runAs.setRoleName(text);
+                    servlet.setRunAs(runAs);
+                } catch (ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                }     //NOI18N
+                
+            }
         }
     }
     
@@ -540,7 +608,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
             orderTF.setText(los==null?"":los.toString());
         }
     }
-
+    
     /** This will be called before model is changed from this panel
      */
     protected void startUIChange() {
@@ -554,4 +622,5 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         dObj.setChangedFromUI(false);
     }
     
- }
+    
+}

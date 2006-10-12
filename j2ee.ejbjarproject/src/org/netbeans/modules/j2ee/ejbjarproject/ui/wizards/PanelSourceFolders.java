@@ -41,7 +41,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 //XXX There should be a way how to add nonexistent test dir
 
@@ -51,11 +50,11 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
  */
 public class PanelSourceFolders extends SettingsPanel implements PropertyChangeListener {
 
-    private Panel firer;
+    private final Panel firer;
     private WizardDescriptor wizardDescriptor;
     private File oldProjectLocation;
     
-    private DocumentListener configFilesDocumentListener = new DocumentListener() {
+    private final DocumentListener configFilesDocumentListener = new DocumentListener() {
         public void changedUpdate(DocumentEvent e) {
             configFilesChanged();
         }
@@ -73,7 +72,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     public PanelSourceFolders (Panel panel) {
         this.firer = panel;
         initComponents();
-        this.setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"LAB_ConfigureSourceRoots"));
+        this.setName(NbBundle.getMessage(PanelSourceFolders.class,"LAB_ConfigureSourceRoots"));
         this.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelSourceFolders.class,"TXT_ImportEJBModule")); // NOI18N
         this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelSourceFolders.class,"AN_PanelSourceFolders"));
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelSourceFolders.class,"AD_PanelSourceFolders"));
@@ -88,8 +87,13 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         ((FolderList) this.sourcePanel).setLastUsedDir(FileUtil.toFile(fo));
         ((FolderList) this.testsPanel).setLastUsedDir(FileUtil.toFile(fo));
         
-        String configFiles = FileUtil.toFile(FileSearchUtility.guessConfigFilesPath(fo)).getAbsolutePath();
-        jTextFieldConfigFiles.setText(configFiles);
+        FileObject confFO = FileSearchUtility.guessConfigFilesPath(fo);
+        if (confFO == null) { // without deployment descriptor
+            // XXX guess appropriate conf. folder
+        } else {
+            String configFiles = FileUtil.toFile(confFO).getAbsolutePath();
+            jTextFieldConfigFiles.setText(configFiles);
+        }
         FileObject librariesFO = FileSearchUtility.guessLibrariesFolder(fo);
         if (librariesFO != null) {
             String libraries = FileUtil.toFile(librariesFO).getAbsolutePath();
@@ -134,7 +138,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             if (testRoot != null) {
                 ((FolderList)this.testsPanel).setFiles (testRoot);
             }
-            initValues(FileUtil.toFileObject(projectLocation));
+            initValues(FileUtil.toFileObject(FileUtil.normalizeFile(projectLocation)));
             oldProjectLocation = projectLocation;
         }
     }
@@ -144,7 +148,12 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
         settings.putProperty (WizardProperties.JAVA_ROOT,sourceRoots);    //NOI18N
         settings.putProperty(WizardProperties.TEST_ROOT,testRoots);      //NOI18N
-        settings.putProperty(WizardProperties.CONFIG_FILES_FOLDER, new File(jTextFieldConfigFiles.getText().trim()));
+        String configFiles = jTextFieldConfigFiles.getText().trim();
+        if (configFiles.length() > 0) {
+            settings.putProperty(WizardProperties.CONFIG_FILES_FOLDER, new File(configFiles));
+        } else {
+            settings.putProperty(WizardProperties.CONFIG_FILES_FOLDER, null);
+        }
         String libPath = jTextFieldLibraries.getText().trim();
         if (libPath != null && !libPath.equals("")) {
             settings.putProperty(WizardProperties.LIB_FOLDER, new File(libPath));
@@ -153,10 +162,15 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     
     boolean valid (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty (WizardProperties.PROJECT_DIR);  //NOI18N
-        File configFilesLocation = jTextFieldConfigFiles.getText().trim().length() > 0 ? getConfigFiles() : null;
+        String confFolder = jTextFieldConfigFiles.getText().trim();
+        if (confFolder.length() == 0) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(PanelSourceFolders.class, "MSG_BlankConfigurationFilesFolder"));
+            return false;
+        }
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
-        String result = checkValidity (projectLocation, configFilesLocation, sourceRoots, testRoots);
+        String result = checkValidity (projectLocation, getConfigFiles(), sourceRoots, testRoots);
         if (result == null) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage"," ");   //NOI18N
             return true;
@@ -170,13 +184,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     static String checkValidity (final File projectLocation, final File configFilesLocation, final File[] sources, final File[] tests ) {
         String ploc = projectLocation.getAbsolutePath ();
         if (configFilesLocation != null) {
-            FileObject fo = FileUtil.toFileObject(configFilesLocation);
-            FileObject ejbJarXml = null;
-            if (fo != null) {
-                ejbJarXml = fo.getFileObject("ejb-jar.xml"); // NOI18N
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(configFilesLocation));
+            if (fo == null || !fo.isFolder()) {
+                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_IllegalConfigurationFilesFolder");
             }
-            if (ejbJarXml == null || !ejbJarXml.isData()) 
-                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_NoEjbJarXml");
         }
         if (sources.length ==0) {
             return " ";  //NOI18N
@@ -339,7 +350,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jTextFieldConfigFiles, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonConfigFilesLocation, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonConfigFilesLocation, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button_w"));
         jButtonConfigFilesLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonConfigFilesLocationActionPerformed(evt);
@@ -382,8 +393,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonLibraries, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLibrariesActionPerformed
         JFileChooser chooser = new JFileChooser();
@@ -392,7 +402,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (jTextFieldLibraries.getText().length() > 0 && getLibraries().exists()) {
             chooser.setSelectedFile(getLibraries());
         } else {
-            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+            chooser.setCurrentDirectory((File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR));
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File configFilesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
@@ -407,7 +417,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (jTextFieldConfigFiles.getText().length() > 0 && getConfigFiles().exists()) {
             chooser.setSelectedFile(getConfigFiles());
         } else {
-            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+            chooser.setCurrentDirectory((File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR));
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File configFilesDir = FileUtil.normalizeFile(chooser.getSelectedFile());

@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.earproject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -40,20 +41,18 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
  * @author Jan Lahoda
  */
 public class EarProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
-    private EarProject project;
+    private final EarProject project;
     
     public EarProjectOperations(EarProject project) {
         this.project = project;
     }
     
-    private static void addFile(FileObject projectDirectory, String fileName, List/*<FileObject>*/ result) {
+    private static void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
         FileObject file = projectDirectory.getFileObject(fileName);
-        
         if (file != null) {
             result.add(file);
         }
@@ -61,23 +60,18 @@ public class EarProjectOperations implements DeleteOperationImplementation, Copy
     
     public List/*<FileObject>*/ getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        List/*<FileObject>*/ files = new ArrayList();
+        List<FileObject> files = new ArrayList<FileObject>();
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, "build.xml", files); // NOI18N
+        addFile(projectDirectory, "src", files); // NOI18N
+        addFile(projectDirectory, ".cvsignore", files); // NOI18N
         
         return files;
     }
     
-    public List/*<FileObject>*/ getDataFiles() {
-        FileObject projectDirectory = project.getProjectDirectory();
-        List/*<FileObject>*/ files = new ArrayList();
-        
-        FileObject src = project.getSourceDirectory();
-        if (src != null)
-            files.add(src);
-        
-        return files;
+    public List<FileObject> getDataFiles() {
+        return Collections.emptyList();
     }
     
     public void notifyDeleting() throws IOException {

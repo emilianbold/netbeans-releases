@@ -21,4 +21,19 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="j2ee/earproject/test-unit" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="run-unit-test" depends="init-cp">
+        <unzip src="${xtest.data}/SunAppServer.zip" dest="${xtest.tmpdir}"/>
+        <property name="appserv.home.dir" value="${xtest.tmpdir}/SunAppServer"/>
+        <property name="xtest.jvm.args" value="-Dappserv.home=${appserv.home.dir}"/>
+        <executeTests pluginname="jvm">
+            <classpath refid="test.unit.run.cp"/>
+        </executeTests>
+        <delete dir="${appserv.home.dir}"/>
+    </target>
+        
 </project>

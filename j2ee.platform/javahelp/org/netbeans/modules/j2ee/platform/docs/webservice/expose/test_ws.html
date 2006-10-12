@@ -1,53 +1,50 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- * Copyright 2005 Sun Microsystems,
+<!-- * Copyright 2006 Sun Microsystems,
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-<head> 
-<title>Testing a Web Service on the Service Side</title>
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
-</head> 
-<body bgcolor="#FFFFFF">
-<h2>Testing a Web Service on the Service Side</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+    <head> 
+        <title>Viewing the Published WSDL File</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head> 
+    <body bgcolor="#FFFFFF">
+        <h2>Viewing the Published WSDL File</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        
+        
+        <p>After successfully deploying a web service, the container
+        published the WSDL file. You might want to see the published WSDL file
+        as evidence of a successfully deployed web service.
+        
+        <p><b>To view a published WSDL file:</b></p>
+        
+        <ol>
+            
+            <li>Open a browser.
+            <li>Go to this URL:
+            
+            <pre><i>context_path/web_service_name</i>Service?WSDL</pre>
+        
+            <p>The WSDL file opens in the browser.
+        </ol>
+      
+        </ol>
 
-<p>You can test a web service from the IDE. Do this right before you expose a web service to
-make sure that it is working as expected and providing
-the functionality that you want the client to consume.</p> 
-<b>To test a web service on the service side:</b>
-<ol>
-  <li><a href="expose_ws.html">Deploy the web service</a>.</li> 
-  <li><a href="register_ws.html">Register the web service in the IDE</a>.</li>
-<li>Expand the Web Services node in the Runtime window,
-then expand the web service instance node and the <tt><i>webservicename</i>Soap</tt> node.
-Right-click the web service's operation node and choose Test Operation.</li>
-<p>The Test Web Service Operation dialog box appears. You can test the operation and view
-information such as the operation's input and return data types.</p>
-<li>Type values for
-the parameters, click the Submit button, and view the results.</li>
-	 
-</ol>
-<p><b>Troubleshooting</b>
-<p>Check your proxy settings, if error messages such as the following are returned:
+         <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Deploying and Testing Web Services</a></dd>
+            <dd><a href="about_deploy_and_test_ws.html">Deploying a Web Service</a></dd>
+            <dd><a href="expose_ws.html">Deploying a Web Service</a></dd>
+            <dd><a href="glassfish_tester-ws.html">Testing a JAX-WS Web Service</a></dd>
+        </dl>
 
-<p><tt>org.netbeans.modules.websvc.registry.ui.ReflectionHelper.callMethodWithParams(ReflectionHelper.java:449)</tt></p>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
 
-<p>For details, see <a href="../consume/wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a>.
-
-
-<table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td>
-	<a href="../about/about_ws.html">About Web Services</a><br>
-	<a href="../csh/websvcdb.html">Test Web Service Operation Dialog Box</a><br>
-
-</td>
-</tr>
-</table>   
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small>
-</body></html>
+    </body>
+</html>

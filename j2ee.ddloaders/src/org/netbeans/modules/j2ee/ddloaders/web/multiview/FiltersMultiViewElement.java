@@ -190,7 +190,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
         FilterMappingsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_FilterMappings"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/mappingsNode"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/mappingsNode.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"filterMappingsNode"); //NOI18N
@@ -207,7 +207,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
             this.webApp=webApp;
             this.view=view;
             setDisplayName(filter.getFilterName());
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/class"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/class.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"filterNode"); //NOI18N
@@ -267,7 +267,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
             dialogPanel.getTextComponents()[1].getDocument().addDocumentListener(docListener);
             
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.show();
+            d.setVisible(true);
             dialogPanel.getTextComponents()[0].getDocument().removeDocumentListener(docListener);
             dialogPanel.getTextComponents()[1].getDocument().removeDocumentListener(docListener);
             
@@ -310,7 +310,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
             org.openide.DialogDescriptor desc = new ConfirmDialog(
                 NbBundle.getMessage(FiltersMultiViewElement.class,"TXT_removeFilterConfirm"));
             java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-            dialog.show();
+            dialog.setVisible(true);
             if (org.openide.DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
                 SectionPanel sectionPanel = ((SectionPanel.HeaderButton)evt.getSource()).getSectionPanel();
                 Filter filter = (Filter)sectionPanel.getKey();

@@ -1,28 +1,30 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
 <head>
-<title>New CMP Bean from Database Wizard: Database Source and Beans Location</title>
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+<title>New CMP Entity Beans from Database Wizard: Database Tables</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>New CMP Bean from Database Wizard: Database Source and Beans Location</h2>
+<h2>New CMP Entity Beans from Database Wizard: Database Tables</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 <p>This wizard generates a set of container-managed persistence (CMP) <a href="../general/about_entity_beans.html">entity 
-  beans</a> from an existing database connection. The IDE generates a CMP bean 
-  for each related table with CMP fields for each of the collumns in the database 
-  tables. You can also automatically generate finder methods for each of the CMP 
-  fields. 
+    beans</a> from an existing database connection. The IDE generates a CMP bean 
+    for each related table with CMP fields for each of the columns in the database 
+    tables. You can also automatically generate finder methods for each of the CMP fields.</p>
 <p>You open the wizard by right-clicking the project node or Enterprise Beans 
-  node for any EJB module project and choosing New &gt; CMP Bean from Database. 
-<p>Use this page as follows:</p>
+  node for any EJB module project and choosing New &gt; CMP Bean from Database.</p>
+<p>This page of the wizard lets you select the tables for which you want 
+  to generate beans. Use this page of the wizard as follows:</p>
 <ol>
-  <li>Specify whether to generate the beans from a JDBC connection to a database 
-    or from a database schema.You can select any of the database connections registered 
-    in the Runtime window or add a new connection. When you select a JDBC connection, 
+  <li>Specify whether to generate the beans from a connection to a database 
+    or from a database schema. When you select data source, the datasources for your
+    project are listed. You can add a new connection by selecting New Data Source from the
+    drop-down menu and create a datasource from any of the database connections registered 
+    in the Runtime window. When you generate entity beans from a data source, 
     the IDE also creates a database schema for the database and saves it in your 
     <tt>src/conf </tt>folder.</li>
   <ul class="note">
@@ -30,19 +32,14 @@
       sure that your database server is not connected to any database other than 
       the one from which you want to generate the beans.</li>
   </ul>
-  <li>Select the source folder where you want to create the session bean files 
-    in the Sources drop-down list..</li>
-  <li>Select an existing package or type the name of a new package in the Package 
-    drop-down list.</li>
-  <li>Specify whether to add finder methods for all of the CMP fields.</li>
-  <li>Specify whether to add the CMP and CMR fields to the local interface. </li>
-  <li>Click Next to select the tables from which you want to generate the beans. 
-  </li>
+   <li>Select any tables in the left pane and click the Add button. 
+   Any tables related to selected tables are automatically added to the list in the right pane. 
+   The IDE will also generate beans for each of the linked tables.</li>
+  <li>Click Next. </li>
 </ol>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="ejb_generate_cmp2.html">New CMP Bean from Database Wizard: Select 
-    Database Tables</a></dd>
+  <dd><a href="ejb_generate_cmp2.html">New CMP Entity Beans from Database Wizard: Entity Beans Location</a></dd>
   <dd><a href="../general/about_entity_beans.html">About Entity Beans</a></dd>
   <dd><a href="../editing/generate_cmp_beans.html">Generating CMP Entity Beans 
     from a Database</a></dd>

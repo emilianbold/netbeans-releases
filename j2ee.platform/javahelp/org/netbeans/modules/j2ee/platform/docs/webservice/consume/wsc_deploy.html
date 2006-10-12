@@ -1,82 +1,69 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
-<head>
-<title>Deploying a Web Service Client</title>
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
-</head>
-<body>
+    <head>
+        <title>Deploying a Web Service Client</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
 
-<h2>Deploying a Web Service Client</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <h2>Deploying a Web Service Client</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 
 
-<p>Right-click the project and choose one of the 
-    following: 
-    <ul><li><b>Run Project.</b> Only takes the 
-	    minimal steps needed to run the project. For example, if you only changed one file,
-	    only that file is sent to the server.
-	    </li>
-      <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
-        no matter what changes you made, even if none.</li>
-    </ul>
+        <p>Right-click the project and choose one of the 
+        following: 
+        <ul><li><b>Run Project.</b> Only takes the 
+            minimal steps needed to run the project. For example, if you only changed one file,
+            only that file is sent to the server.
+        </li>
+            <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
+            no matter what changes you made, even if none.</li>
+        </ul>
   
 
-<p>For web applications, unless the project in which the web service 
-  client is implemented is designed to be deployed as a stand-alone application, you 
-  should always deploy it by deploying the enterprise application that contains 
-  it. If you run the Run Project or Deploy Project commands on an individual module 
-  that is part of an enterprise application, the IDE only deploys that module 
-  itself. Any changes you have made in the other modules in the project are not 
-  propagated to the server.</p>
+        <p>For web applications, unless the project in which the web service 
+        client is implemented is designed to be deployed as a stand-alone application, you 
+        should always deploy it by deploying the enterprise application that contains 
+        it. If you run the Run Project or Deploy Project commands on an individual module 
+        that is part of an enterprise application, the IDE only deploys that module 
+        itself. Any changes you have made in the other modules in the project are not 
+        propagated to the server.</p>
 
-  <p><b>To deploy a client from within an enterprise application project:</b></p>
-  <ol>
-	  <li>In the Projects window, <a href="../../web/configure/about_webapp_configure.html">add the web application module</a>
-	   to the enterprise application.</li>
-  <li>Right-click the enterprise application project and choose one of the 
-    following: 
-    <ul>
-	    <li><b>Run Project.</b> Only takes the 
-	    minimal steps needed to run the project. For example, if you only changed one file,
-	    only that file is sent to the server.</li>
-      <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
-        no matter what changes you made, even if none.</li>
-      </ul>
-  </li>
-</ol>
-
-  
-<p><b>Troubleshooting</b>
-<ol>
-<li><a href="wsc_test.html">Test the web service from the IDE</a> to make sure it is available.
-<li>Check your proxy settings, if error messages such as the following are returned:
-
-<p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt></p>
-
-<p>For details, see <a href="wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a>.</ol>
+        <p><b>To deploy a client from within an enterprise application project:</b></p>
+        <ol>
+            <li>In the Projects window, <a href="../../web/configure/about_webapp_configure.html">add the web application module</a>
+            to the enterprise application.</li>
+            <li>Right-click the enterprise application project and choose one of the 
+                following: 
+                <ul>
+                    <li><b>Run Project.</b> Only takes the 
+                    minimal steps needed to run the project. For example, if you only changed one file,
+                    only that file is sent to the server.</li>
+                    <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
+                    no matter what changes you made, even if none.</li>
+                </ul>
+            </li>
+        </ol>
 
   
-<table>
-  <tr> 
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-  </tr>
-  <tr> 
-    <td width="23"></td>
-    <td><a href="../../enterprise/general/about_ent_apps.html">About Enterprise Applications</a><br>
-	    <a href="wsc_build.html">About Building Web Service Clientss</a><br>
-	    <a href="../../enterprise/general/ent_app_verify.html">Verifying an Enterprise Application</a><br></td>
-  </tr>
-</table>
+       
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+        </dl>
 
-<hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table></body>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+
+    </body>
 </html>

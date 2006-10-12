@@ -157,7 +157,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         OverviewNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_Overview"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/class"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/class.gif"); //NOI18N
         }    
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"overviewNode"); //NOI18N
@@ -168,7 +168,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         ContextParamsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_ContextParams"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramsNode"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramsNode.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"contextParamsNode"); //NOI18N
@@ -179,7 +179,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         ListenersNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_Listeners"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/class"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/class.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"listenersNode"); //NOI18N

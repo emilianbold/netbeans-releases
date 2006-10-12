@@ -1,25 +1,28 @@
-<html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2005 Sun Microsystems, Inc. 
+ * Copyright © 2006 Sun Microsystems, Inc. 
  * All rights reserved.
  * Use is subject to license terms.
 -->
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>About Entity Beans</title>
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+<title>About EJB 2.1 Entity Beans</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 
 </head>
 <body>
-<h2>About Entity Beans</h2>
+<h2>About EJB 2.1 Entity Beans</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>An entity bean is an enterprise bean that represents data that is typically 
-  stored in a database.</p>
+  stored in a database. Entity beans are part of the EJB 2.1 specification and are 
+  used in J2EE 1.4 enterprise applications. In Java EE 5 enterprise applications,
+  you use the <a href="../../persistence/general/persistence_about.html">Java Persistence API</a> 
+  to interact with databases.</p>
 <p>Each entity bean represents a set of data, such as the fields in a database 
   record. Each instance of the entity bean contains one element of that data, 
   such as a row from a database table.</p>
-<p>There are two types of persistence for entity beans, bean-managed and container-managed:</p>
+<p>There are two types of persistence for entity beans:</p>
 <ul>
   <li><b>Bean-managed persistence.</b> The entity bean code that you write contains 
     the calls that access the database, making its code potentially dependent 

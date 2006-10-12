@@ -25,18 +25,15 @@ import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.ui.ConfirmDialog;
 import org.openide.util.NbBundle;
-import org.openide.filesystems.FileObject;
-
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.jmi.javamodel.JavaClass;
 
 /**
  * @author pfiala
  */
 public class EjbReferencesTableModel extends InnerTableModel {
-
+    
     private XmlMultiViewDataObject dataObject;
     Ejb ejb;
     private static final String[] COLUMN_NAMES = {
@@ -45,21 +42,21 @@ public class EjbReferencesTableModel extends InnerTableModel {
         NbBundle.getBundle(EjbReferencesTableModel.class).getString("LBL_Interface"),
         NbBundle.getBundle(EjbReferencesTableModel.class).getString("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{170, 260, 70, 250};
-
+    
     public EjbReferencesTableModel(XmlMultiViewDataObject dataObject, Ejb ejb) {
         super(((EjbJarMultiViewDataObject)dataObject).getModelSynchronizer(), COLUMN_NAMES, COLUMN_WIDTHS);
         this.dataObject = dataObject;
         this.ejb = ejb;
     }
-
+    
     public int getRowCount() {
         return ejb.getEjbLocalRef().length + ejb.getEjbRef().length;
     }
-
+    
     public boolean isCellEditable(int row, int column) {
-        return false;
+        return isColumnEditable(column);
     }
-
+    
     public int addRow() {
         JavaClass beanClass = (JavaClass) JMIUtils.resolveType(ejb.getEjbClass());
         if (CallEjb.showCallEjbDialog(beanClass, NbBundle.getMessage(EjbReferencesTableModel.class, "LBL_AddEjbReference"))) { // NOI18N
@@ -67,11 +64,27 @@ public class EjbReferencesTableModel extends InnerTableModel {
         }
         return -1;
     }
-
+    
     public void removeRow(int selectedRow) {
-        // TODO: implement removal of reference
+        org.openide.DialogDescriptor desc = new ConfirmDialog(NbBundle.getMessage(EjbReferencesTableModel.class,"LBL_RemoveEjbRefWarning"));
+        java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
+        dialog.setVisible(true);
+        if (org.openide.DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
+            EjbLocalRef localRef = ejb.getEjbLocalRef(selectedRow);
+            if (localRef != null){
+                ejb.removeEjbLocalRef(localRef);
+            } else {
+                EjbRef ref = ejb.getEjbRef(selectedRow);
+                if (ref != null){
+                    ejb.removeEjbRef(ref);
+                }
+            }
+            modelUpdatedFromUI();
+        }
     }
-
+    
+    
+    
     public Object getValueAt(int rowIndex, int columnIndex) {
         int n = ejb.getEjbLocalRef().length;
         if (rowIndex < n) {
@@ -101,4 +114,27 @@ public class EjbReferencesTableModel extends InnerTableModel {
         }
         return null;
     }
+    
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        if (!isColumnEditable(columnIndex)){
+            return;
+        }
+        EjbRef ref = ejb.getEjbRef(rowIndex);
+        if (ref != null){
+            ref.setDescription((String) aValue);
+        } else {
+            EjbLocalRef localRef = ejb.getEjbLocalRef(rowIndex);
+            if (localRef != null){
+                localRef.setDescription((String) aValue);
+            }
+        }
+        modelUpdatedFromUI();
+    }
+    
+    
+    private boolean isColumnEditable(int columnIndex){
+        // only description is editable
+        return columnIndex == 3;
+    }
+    
 }

@@ -1,83 +1,94 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
-<head>
-<meta name="lastupdated" content="2Feb04">
-<!-- p2 -->
+    <head>
+        <meta name="lastupdated" content="15Aug06">
+        <!-- p2 -->
 
-<title>Configuring Web Service Deployment Descriptors</title>
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
-</head>
-<body>
+        <title>Configuring Web Services via Deployment Descriptors</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
 
-<h2>Configuring Web Service Deployment Descriptors</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p> 
-<p>Deployment descriptors are XML-based text files whose elements 
-describe how to assemble and deploy a module to a specific environment. 
-The elements also contain behavioral information about components not included directly in code.</p>
-<p>For web services, there are the following types of deployment descriptors:</p>
-<ul><li><b><tt>webservices.xml.</tt></b>
-The web service deployment descriptor that configures 
-web services.</li>
-<li><b><tt><i>filename</i>-config.xml.</tt></b>
-The deployment descriptor processed by the <tt>wscompile</tt> tool to
- generate service-side and client-side artifacts.</li></ul>
+        <h2>Configuring Web Services via Deployment Descriptors</h2>
+        <p><small> 
+            <a href="#seealso">See Also</a> 
+        </small></p> 
+        <p>In <a href="../about/about_jax_rpc.html">JAX-RPC</a> (J2EE 1.4), you use deployment descriptors
+        to configure web services. 
+        
+        <ul class="note">
+            <li>For <a href="../about/about_jax_ws.html">JAX-WS</a> web services, that is, those that comply with the Java EE 5
+            specification, you use <a href="about_annotations.html">annotations</a> instead of
+            deployment descriptors, except when you want to override annotations by
+            means of deployment descriptors. </li>
+        </ul>
+        
+        <p>Deployment descriptors are XML-based text files whose elements 
+        describe how to assemble and deploy a module to a specific environment. 
+        The elements also contain behavioral information about components not included directly in code.</p>
+        <p>For web services, there are the following types of deployment descriptors:</p>
+        <ul><li><b><tt>webservices.xml.</tt></b>
+        The web service deployment descriptor that configures 
+        web services.</li>
+        <li><b><tt><i>filename</i>-config.xml.</tt></b>
+        The deployment descriptor processed by the <tt>wscompile</tt> tool to
+        generate service-side and client-side artifacts.</li></ul>
 
-<p><b>To edit <tt>webservices.xml</tt>:</b> </p>
-<ol>
-  <li>In the Projects window, expand the Configuration Files node for your project.</li>
-  <li>Double-click <tt>webservices.xml</tt> to open it in the Source Editor. 
-    <li>Edit the deployment descriptor as necessary. </li>
-  <li>Choose File &gt; Save 
-    to save your changes.</li>
-</ol>
-<ul class="note">
-  <li>If you enter any XML syntax errors the IDE automatically alerts you. To 
-    fully ensure your changes have not cause any errors, you should verify the 
-    web application. </li>
-</ul>
-<p><b>To edit <i>filename</i>-config.xml</tt>:</b></p>
-<ol>
-  <li>In the Projects window, expand the Source Packages node for your project.</li>
-  <li>Double-click <tt><i>filename</i>-config.xml</tt> to open it in the Source Editor. 
-    <li>Edit the configuration file as necessary. </li>
-  <li>Choose File &gt; Save 
-    to save your changes.</li>
-</ol>
-<ul class="note">
-  <li>If you enter any XML syntax errors the IDE automatically alerts you. To 
-    fully ensure your changes have not cause any errors, you should verify the 
-    web application. </li>
-</ul>
+        <ul class="note">
+            <li>In most cases, there is no need to manually edit the
+            deployment descriptors. The IDE's wizards normally take care
+            of configuring deployment descriptors correctly. Normally, only if your
+            deployment descriptor becomes corrupted for some reason, does
+            it make sense to manually edit it.</li>
+        </ul>
+        
+        
+        <p><b>To edit <tt>webservices.xml</tt>:</b> </p>
+        <ol>
+            <li>In the Projects window, expand the Configuration Files node for your project.</li>
+            <li>Double-click <tt>webservices.xml</tt> to open it in the Source Editor. 
+            <li>Edit the deployment descriptor as necessary. </li>
+            <li>Choose File &gt; Save 
+            to save your changes.</li>
+        </ol>
+        <ul class="note">
+            <li>If you introduce any XML syntax errors, the IDE automatically alerts you. To 
+            ensure your changes have not cause any errors, verify the 
+            web application. </li>
+        </ul>
+        <p><b>To edit <i>filename</i>-config.xml</tt>:</b></p>
+        <ol>
+            <li>In the Projects window, expand the Source Packages node for your project.</li>
+            <li>Double-click <tt><i>filename</i>-config.xml</tt> to open it in the Source Editor. 
+            <li>Edit the configuration file as necessary. </li>
+            <li>Choose File &gt; Save 
+            to save your changes.</li>
+        </ol>
+        <ul class="note">
+            <li>If you enter any XML syntax errors the IDE automatically alerts you. To 
+            ensure your changes have not cause any errors, verify the 
+            web application. </li>
+        </ul>
 
-<table>
-<tr>
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-    <td width="23">&nbsp;</td>
-    <td>
-	    <a href="../../web/create/about/about_struct_webapps.html">About Structuring Web Source Files</a><br>
-	<a href="../../web/create/about/upgrade_to_j2ee14.html">Upgrading a Specification</a><br>
-        <a href="../../web/create/filter/filter_addtodd.html">Registering a Filter</a><br>
-	<a href="../../web/create/listener/listener_addtodd.html">Registering a Web Application Listener</a><br>
-      </td>
-</tr>
-</table> 
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+            <dd><a href="about_annotations.html">About Annotations in Web Services</a></dd>
+            <dd><a href="config_ws_about.html">About Configuring Web Services</a></dd>
+            <dd><a href="config_ws_annotations.html">Configuring Web Services via Annotations</a></dd>
+        </dl>
 
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
-
-  </body>
+    </body>
 </html>

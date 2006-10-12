@@ -85,7 +85,7 @@ public class GoToSourceActionGroup extends EJBActionGroup {
     private EntityAndSession getEjb() {
         try {
             JavaClass jc = JMIUtils.getJavaClassFromNode(getActivatedNodes()[0]);
-            EjbJar ejbJar = DDProvider.getDefault().getDDRoot(getDDFileObject(jc));
+            EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(getApiEjbJar(jc).getMetadataUnit());
             Ejb[] ejbs = ejbJar.getEnterpriseBeans().getEjbs();
             for (int i = 0; i < ejbs.length; i++) {
                 if (jc.getName().equals(ejbs[i].getEjbClass())) {
@@ -97,10 +97,10 @@ public class GoToSourceActionGroup extends EJBActionGroup {
         }
         return null;
     }
-    
-    private FileObject getDDFileObject(JavaClass jc) {
-        FileObject fo = JavaModel.getFileObject(jc.getResource());
-        return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fo).getDeploymentDescriptor();
-    }
 
+    private org.netbeans.modules.j2ee.api.ejbjar.EjbJar getApiEjbJar(JavaClass jc) {
+        FileObject fo = JavaModel.getFileObject(jc.getResource());
+        return org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fo);
+    }
+    
 }

@@ -25,8 +25,12 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardPanel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -65,6 +69,13 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
         if (wizardDescriptor == null) {
             return true;
         }
+        Project project = Templates.getProject(wizardDescriptor);
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+        String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
+        if (EjbJar.VERSION_3_0.equals(j2eeVersion)) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"MSG_DisabledForEJB3")); //NOI18N
+            return false;
+        }
         boolean isLocalOrRemote = (p.isLocal() || p.isRemote());
         if (!isLocalOrRemote) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
@@ -80,6 +91,7 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         JavaMetamodel.getManager().waitScanFinished();
+                        isWaitingForScan = false;
                         fireChangeEvent();
                     }
                 });

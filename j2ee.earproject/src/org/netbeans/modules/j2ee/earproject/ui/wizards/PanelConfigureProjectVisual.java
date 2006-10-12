@@ -19,92 +19,74 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.wizards;
 
-import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.openide.WizardDescriptor;
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
 import java.util.ResourceBundle;
+import javax.swing.JPanel;
+import org.openide.WizardDescriptor;
 
 public class PanelConfigureProjectVisual extends JPanel {
 
-    private PanelConfigureProject panel;
-
-//    private PanelProjectLocationVisual projectLocationPanel;
-    private SettingsPanel projectLocationPanel;
-    private PanelOptionsVisual optionsPanel;
+    private final SettingsPanel projectLocationPanel;
+    private final PanelOptionsVisual optionsPanel;
 
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual(PanelConfigureProject panel, String namePropIndex, ResourceBundle customBundle, boolean importStyle) {
-        this.panel = panel;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(customBundle.getString("ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
         
-        if (!importStyle)
+        if (!importStyle) {
             projectLocationPanel = new PanelProjectLocationVisual(panel, namePropIndex, customBundle,importStyle);
-        else 
+        } else {
             projectLocationPanel = new PanelProjectImportVisual(panel, namePropIndex, customBundle,importStyle);
-        locationContainer.add(projectLocationPanel, java.awt.BorderLayout.CENTER);
+        }
+        locationContainer.add(projectLocationPanel, BorderLayout.CENTER);
 
         optionsPanel = new PanelOptionsVisual(panel,importStyle);
-        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         optionsContainer.add(optionsPanel, gridBagConstraints);
-
-        if (!importStyle)
-            projectLocationPanel.addNameListener(optionsPanel);
-
-        DocumentListener dl = new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                setContextPath(e);
-            }
-
-            public void insertUpdate(DocumentEvent e) {
-                setContextPath(e);
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                setContextPath(e);
-            }
-
-            private void setContextPath(DocumentEvent e) {
-                if (null != optionsPanel) {
-                }
-            }
-        };
-        projectLocationPanel.addNameListener(dl);
-
-
+        
+        if (!importStyle) {
+            projectLocationPanel.addPropertyChangeListener(optionsPanel);
+        }
+        
         // Provide a name in the title bar.
         setName(customBundle.getString("LBL_NWP1_ProjectTitleName")); //NOI18N
-        if (!importStyle)
-            putClientProperty ("NewProjectWizard_Title", customBundle.getString("TXT_NewProject")); //NOI18N
-        else
-            putClientProperty ("NewProjectWizard_Title", customBundle.getString("TXT_ImportProject")); //NOI18N
-            
+        if (!importStyle) {
+            putClientProperty("NewProjectWizard_Title", customBundle.getString("TXT_NewProject")); //NOI18N
+        } else {
+            putClientProperty("NewProjectWizard_Title", customBundle.getString("TXT_ImportProject")); //NOI18N
+        }
     }
-
+    
     boolean valid(WizardDescriptor wizardDescriptor) {
+        if (!projectLocationPanel.valid(wizardDescriptor)) {
+            return false;
+        }
         boolean optionsValid = true;
-        if (optionsPanel != null)
+        if (optionsPanel != null) {
             optionsValid = optionsPanel.valid(wizardDescriptor);
-        return optionsValid && projectLocationPanel.valid(wizardDescriptor);
+        }
+        return optionsValid;
     }
 
     void read (WizardDescriptor d) {
         projectLocationPanel.read(d);
-        if (null != optionsPanel)
-        optionsPanel.read(d);
+        if (null != optionsPanel) {
+            optionsPanel.read(d);
+        }
     }
 
     void store(WizardDescriptor d) {
         projectLocationPanel.store(d);
-        if (null != optionsPanel)
-        optionsPanel.store(d);
+        if (null != optionsPanel) {
+            optionsPanel.store(d);
+        }
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

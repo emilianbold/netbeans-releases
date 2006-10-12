@@ -2,7 +2,7 @@
 <html>
 
 <!--
-  *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+  *     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
   *     Use is subject to license terms.
 -->
 <head>
@@ -10,7 +10,7 @@
 
 <title>Creating an Enterprise Bean</title> 
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 
 </head>
 <body>
@@ -25,21 +25,27 @@
   <ul>
     <li><a href="../csh/ejb_new_session.html">Session Bean</a></li>
     <li><a href="../csh/ejb_new_mdb.html">Message-Driven Bean</a></li>
-    <li><a href="../csh/ejb_new_entity.html">Entity Bean</a></li>
-    <li><a href="../csh/ejb_generate_cmp1.html">Entity Beans from Database</a></li>
+    <li><a href="../csh/ejb_new_entity.html">Entity Bean (J2EE 1.4 projects only)</a></li>
+    <li><a href="../csh/ejb_generate_cmp1.html">CMP Entity Beans from Database (J2EE 1.4 projects only)</a></li>
   </ul>
   <li>Follow the directions in the rest of the wizard.</li>
 </ol>
-<p>When you create an enterprise bean, the IDE does the following: </p>
+<p>When you create an enterprise bean in a Java EE 5 project, the IDE does the following: </p>
+<ul>
+  <li>Creates the bean class and the interfaces under the Source Packages node.</li>
+  <li>Opens the bean class in the Source Editor.</li>
+</ul>
+<p>When you create an enterprise bean in a J2EE 1.4 project, the IDE does the following: </p>
 <ul>
   <li>Adds a node for the enterprise bean under the project's Enterprise Beans 
     node. This node contains a node for the bean class and nodes for the bean's 
     business methods and CMP fields. </li>
-  <li>Updates the deployment descriptors for the EJB module and the J2EE module 
+  <li>Updates the deployment descriptors for the EJB module and the Java EE module 
     that contains the EJB module. If your target server is the Sun Java System 
     Application Server, the IDE also configures the server-specific deployment 
     descriptors. For all other application servers, you have to write the server-specific 
     deployment descriptors yourself.</li>
+  <li>Opens the bean class in the Source Editor.</li>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
@@ -48,9 +54,9 @@
       Application Project</a></dd>
       <dd><a href="../../web/create/about/about_create_webapps.html">About Creating 
       Web Applications</a></dd>
-      <dd><a href="define_cmp_field.html">Defining a CMP Field</a></dd>
-      <dd><a href="generate_cmp_beans.html">Generating CMP Entity Beans from a Database</a> 
-    </dd>
+      <dd><a href="generate_cmp_beans.html">Generating CMP Entity Beans from a Database</a></dd>
+      <dd><a href="../../persistence/general/persistence_fromdb.html">Generating 
+      Persistent Entity Classes from a Database</a></dd>
 </dl>
  
 

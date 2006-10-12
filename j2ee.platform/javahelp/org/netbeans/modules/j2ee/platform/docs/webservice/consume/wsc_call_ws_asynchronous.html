@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- * Copyright 2006 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+    <head> 
+        <title>Asynchronously Calling a JAX-WS Web Service Operation</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head> 
+    <body bgcolor="#FFFFFF">
+        <h2>Asynchronously Calling a JAX-WS Web Service Operation</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        <p>When a client calls a JAX-WS web service operation asynchronously,
+        the client does not need to wait for the response to be received.
+        When a client use this communication style, it consumes the web services either 
+        through the "polling" approach or the "callback" approach. 
+        <ul>
+            <li><b>Polling.</b> The client invokes a web service 
+            method and 
+            repeatedly asks for the result. Polling is a 
+            blocking operation because
+            it blocks the calling thread, which is why you
+            do not want to use it in a GUI application.</li>
+            <li><b>Callback.</b> The client passes a callback
+            handler during the web service method invocation. The handler's 
+            <tt></tt>handleResponse()</tt> method is called when the result is
+            available. 
+            This approach is suitable to GUI applications because you do not 
+            have to wait for the response. For example, you make a call from 
+            a GUI event handler and return control immediately, keeping the 
+            user interface responsive.</li>
+        </ul>
+        
+        <p><b>Note:</b> You can use the IDE to generate skeleton
+        asynchronous methods, as explained below.
+        
+        <p><b>To call a web service operation asynchronously:</b>
+        <ol>
+        <li><a href="wsc_create.html">Create a web service client</a>.</li>
+        <li>If the web service client is deployed from a web application, you can call the
+        web service from a servlet or from a JSP page. If the web service client is deployed from
+        a Java application, use a Java source file instead. So, do one of the following:
+        <ul><li>Create a Java source file, such as a <a href="../../web/create/servlet/servlet_create.html">servlet</a>.</li>
+        <li>Use the default <tt>index.jsp</tt> file that is created for you when you create
+        a web application or <a href="../../web/create/jsp/jsp_create.html">create a JSP file</a>.</li></ul>
+        <li>In the Projects window, expand the Web Service References node, right-click the web service node (the first node
+        within the Web Service References node), and choose Edit Web Service Attributes.
+        <li>In the Edit Web Service Attributes editor, within the PortType Operations node,
+        expand the node with the same name
+        as the web service operation you want to invoke.
+        <li>Select Enable Asynchronous Client. Click OK.
+        <li>Open the file in the Source Editor and do one of the following:
+        <ul>
+        <li>Expand the Web Service References node and continue expanding subnodes until
+        you get to the node representing the asynchronous operation. Using your mouse, drag and drop
+        the node to where you need it to be in the file.
+        <li>Right-click in the method (for Java files) or anywhere in the Source Editor (for JSP file)
+        from where  you want to call the web service, and choose Web Service Client Resources 
+        &gt; Call Web Service Operation. The Select Operation to Invoke dialog box appears.
+        Expand the nodes and select the asynchronous operation. Click OK.</ol>
+        <p>The IDE adds the code required for asynchronously calling the web service to the file.
+       
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+        </dl>
+
+
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+
+    </body>
+</html>

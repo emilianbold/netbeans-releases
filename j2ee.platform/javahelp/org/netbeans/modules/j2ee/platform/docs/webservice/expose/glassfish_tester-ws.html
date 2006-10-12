@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- * Copyright 2006 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+    <head> 
+        <title>Testing a JAX-WS Web Service</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head> 
+    <body bgcolor="#FFFFFF">
+        <h2>Testing a JAX-WS Web Service</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        
+        
+        <p>For JAX-WS web services, 
+        depending on the container to which you deploy
+        the web service, the IDE may provide you with functionality
+        for testing the web service:
+        
+        <ul>
+            <li><b>Sun Java System Application Server.</b> The Sun Java
+            System Application Server comes with its own Tester
+            application. When you right-click a web service node
+            in the Projects window and choose Test Web Service,
+            the IDE's default browser opens at this location:
+            
+            <p><tt><i>context_path/web_service_name</i>Service?Tester</tt>
+            
+            <p>The form that opens lets you test your web service
+            implementation.
+            
+            <li><b>Tomcat Web Server.</b> When you test a web service
+            deployed to the Tomcat Web Server, the browser opens and
+            a web page is displayed, informing you that deployment
+            has succeeded. To access this web page,
+            right-click a web service node
+            in the Projects window and choose Test Web Service. The IDE
+            accesses this URL:
+            
+            <p><tt><i>context_path/web_service_name</i>?Tester</tt>
+            
+            <li><b>EJB Container.</b> No tester application is available
+            for EJB modules.
+            
+        </ul> 
+        
+    
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Deploying and Testing Web Services</a></dd>
+            <dd><a href="about_deploy_and_test_ws.html">Deploying a Web Service</a></dd>
+            <dd><a href="expose_ws.html">Deploying a Web Service</a></dd>
+            <dd><a href="test_ws.html">Viewing the Published WSDL File</a></dd>
+        </dl>
+
+
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+
+    </body>
+</html>

@@ -40,25 +40,23 @@ is divided into following sections:
   - dist
   - execution
   - debugging
-  - javadoc
   - cleanup
 
 ]]></xsl:comment>
 
         <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
-        <project name="{$name}-impl">
+        <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
+        <project name="{$codename}-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
-
+            <import file="ant-deploy.xml" />
             <target name="default">
-                <xsl:attribute name="depends">dist,javadoc</xsl:attribute>
+                <xsl:attribute name="depends">dist</xsl:attribute>
                 <xsl:attribute name="description">Build whole project.</xsl:attribute>
             </target>
 
             <xsl:comment> 
-    ======================
     INITIALIZATION SECTION 
-    ======================
     </xsl:comment>
 
             <target name="pre-init">
@@ -115,9 +113,6 @@ is divided into following sections:
                 <xsl:if test="/p:project/p:configuration/ear2:data/ear2:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
                 </xsl:if>
-                <condition property="no.javadoc.preview">
-                    <isfalse value="${{javadoc.preview}}"/>
-                </condition>
                 <condition property="do.compile.jsps">
                     <istrue value="${{compile.jsps}}"/>
                 </condition>
@@ -128,6 +123,36 @@ is divided into following sections:
                     </and>
                 </condition>
                 <available property="has.custom.manifest" file="${{meta.inf}}/MANIFEST.MF"/>
+                <condition property="j2ee.appclient.mainclass.tool.param" value="-mainclass ${{main.class}}" else="">
+                    <and>
+                        <isset property="main.class"/>
+                        <not>
+                            <equals arg1="${{main.class}}" arg2="" trim="true"/>
+                        </not>
+                    </and>
+                </condition>
+                <condition property="j2ee.appclient.jvmoptions.param" value="${{j2ee.appclient.jvmoptions}}" else="">
+                    <and>
+                        <isset property="j2ee.appclient.jvmoptions"/>
+                        <not>
+                            <equals arg1="${{j2ee.appclient.jvmoptions}}" arg2="" trim="true"/>
+                        </not>
+                    </and>
+                </condition>
+                <condition property="application.args.param" value="${{application.args}}" else="">
+                    <and>
+                        <isset property="application.args"/>
+                        <not>
+                            <equals arg1="${{application.args}}" arg2="" trim="true"/>
+                        </not>
+                    </and>
+                </condition>
+                <condition property="can.debug.appclient">
+                    <and>
+                        <isset property="netbeans.home"/>
+                        <isset property="app.client"/>
+                    </and>
+                </condition>
             </target>
 
             <target name="post-init">
@@ -140,148 +165,21 @@ is divided into following sections:
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
-                <fail unless="src.dir">Must set src.dir</fail>
                 <fail unless="build.dir">Must set build.dir</fail>
                 <fail unless="build.archive.dir">Must set build.archive.dir</fail>
                 <fail unless="build.generated.dir">Must set build.generated.dir</fail>
                 <fail unless="dist.dir">Must set dist.dir</fail>
                 <fail unless="build.classes.dir">Must set build.classes.dir</fail>
-                <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
             </target>
 
-            <target name="init-macrodef-javac">
-                <macrodef>
-                    <xsl:attribute name="name">javac</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">srcdir</xsl:attribute>
-                        <xsl:attribute name="default">${src.dir}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">destdir</xsl:attribute>
-                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">debug</xsl:attribute>
-                        <xsl:attribute name="default">${javac.debug}</xsl:attribute>
-                    </attribute>
-                    <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
-                        <xsl:attribute name="optional">true</xsl:attribute>
-                    </element>
-                    <sequential>
-                        <javac>
-                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
-                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
-                            <xsl:attribute name="debug">@{debug}</xsl:attribute>
-                            <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
-                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
-                            <xsl:attribute name="target">${javac.target}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                                <xsl:attribute name="fork">yes</xsl:attribute>
-                                <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
-                            </xsl:if>
-                            <xsl:attribute name="includeantruntime">false</xsl:attribute>
-                            <classpath>
-                                <path path="@{{classpath}}"/>
-                            </classpath>
-                            <customize/>
-                        </javac>
-                    </sequential>
-                 </macrodef>
-            </target>
-
-            <target name="init-macrodef-nbjpda">
-                <macrodef>
-                    <xsl:attribute name="name">nbjpdastart</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">name</xsl:attribute>
-                        <xsl:attribute name="default">${main.class}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
-                    </attribute>
-                    <sequential>
-                        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}">
-                            <classpath>
-                                <path path="@{{classpath}}"/>
-                            </classpath>
-                            <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                                <bootclasspath>
-                                    <path path="${{platform.bootcp}}"/>
-                                </bootclasspath>
-                            </xsl:if>
-                        </nbjpdastart>
-                    </sequential>
-                </macrodef>
-                <macrodef>
-                    <xsl:attribute name="name">nbjpdareload</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">dir</xsl:attribute>
-                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
-                    </attribute>
-                    <sequential>
-                        <nbjpdareload>
-                            <fileset includes="${{fix.includes}}*.class" dir="@{{dir}}"/>
-                        </nbjpdareload>
-                    </sequential>
-                </macrodef>
-            </target>
-
-            <target name="init-macrodef-debug">
-                <macrodef>
-                    <xsl:attribute name="name">debug</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/1</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">classname</xsl:attribute>
-                        <xsl:attribute name="default">${main.class}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">classpath</xsl:attribute>
-                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">args</xsl:attribute>
-                        <xsl:attribute name="default">${application.args}</xsl:attribute>
-                    </attribute>
-                    <sequential>
-                        <java fork="true" classname="@{{classname}}">
-                            <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                                <bootclasspath>
-                                    <path path="${{platform.bootcp}}"/>
-                                </bootclasspath>
-                            </xsl:if>
-                            <jvmarg value="-Xdebug"/>
-                            <jvmarg value="-Xnoagent"/>
-                            <jvmarg value="-Djava.compiler=none"/>
-                            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
-                            <classpath>
-                                <path path="@{{classpath}}"/>
-                            </classpath>
-                            <arg line="@{{args}}"/>
-                        </java>
-                    </sequential>
-                </macrodef>
-            </target>
-            
             <target name="init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-nbjpda,init-macrodef-debug</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check</xsl:attribute>
             </target>
 
             <xsl:comment>
-    ===================
     COMPILATION SECTION
-    ===================
     </xsl:comment>
 
             <xsl:call-template name="deps.target">
@@ -311,7 +209,6 @@ is divided into following sections:
 
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
-                <earproject:javac xmlns:earproject="http://www.netbeans.org/ns/j2ee-earproject/1"/>
                 
                 <copy todir="${{build.dir}}/META-INF">
                   <fileset dir="${{meta.inf}}"/>
@@ -363,34 +260,8 @@ is divided into following sections:
                 <xsl:attribute name="description">Compile project.</xsl:attribute>
             </target>
 
-            <target name="pre-compile-single">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
-            </target>
-
-            <target name="do-compile-single">
-                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile</xsl:attribute>
-                <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <earproject:javac xmlns:earproject="http://www.netbeans.org/ns/j2ee-earproject/1">
-                    <customize>
-                        <include name="${{javac.includes}}"/>
-                    </customize>
-                </earproject:javac>
-            </target>
-
-            <target name="post-compile-single">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
-            </target>
-
-            <target name="compile-single">
-                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single</xsl:attribute>
-            </target>
-
             <xsl:comment>
-    ====================
     DIST BUILDING SECTION
-    ====================
     </xsl:comment>
 
             <target name="pre-dist">
@@ -429,18 +300,60 @@ is divided into following sections:
             </target>
 
             <xsl:comment>
-    =================
     EXECUTION SECTION
-    =================
     </xsl:comment>
     <target name="run">
-        <xsl:attribute name="depends">run-deploy,run-display-browser</xsl:attribute>
+        <xsl:attribute name="depends">run-deploy,run-display-browser,run-ac</xsl:attribute>
         <xsl:attribute name="description">Deploy to server.</xsl:attribute>
     </target>
             
+    <target name="pre-run-deploy">
+        <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+        <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+    </target>
+
+    <target name="post-run-deploy">
+        <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+        <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+    </target>
+    
+    <target name="-pre-nbmodule-run-deploy">
+        <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+        <xsl:comment> This target can be overriden by NetBeans modules. Don't override it directly, use -pre-run-deploy task instead. </xsl:comment>
+    </target>
+            
+    <target name="-post-nbmodule-run-deploy">
+        <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+        <xsl:comment> This target can be overriden by NetBeans modules. Don't override it directly, use -post-run-deploy task instead. </xsl:comment>
+    </target>
+
+    <target name="-run-deploy-am" unless="no.deps">
+        <xsl:comment> Task to deploy to the Access Manager runtime. </xsl:comment>
+        <xsl:call-template name="am.target">
+	    <xsl:with-param name="targetname" select="'-run-deploy-am'"/>
+        </xsl:call-template>
+    </target>
+            
     <target name="run-deploy">
-        <xsl:attribute name="depends">dist</xsl:attribute>
+        <xsl:attribute name="depends">dist,pre-run-deploy,-pre-nbmodule-run-deploy,-run-deploy-nb,-init-deploy-ant,-deploy-ant,-run-deploy-am,-post-nbmodule-run-deploy,post-run-deploy</xsl:attribute>
+    </target>
+
+    <target name="-run-deploy-nb" if="netbeans.home">
         <nbdeploy debugmode="false" forceRedeploy="${{forceRedeploy}}" clientUrlPart="${{client.urlPart}}" clientModuleUri="${{client.module.uri}}"/>
+    </target>
+    
+    <target name="-init-deploy-ant" unless="netbeans.home">
+        <property name="deploy.ant.archive" value="${{dist.jar}}"/>
+        <property name="deploy.ant.resource.dir" value="${{resource.dir}}"/>
+        <property name="deploy.ant.enabled" value="true"/>
+    </target>
+
+    <target name="run-undeploy">
+        <xsl:attribute name="depends">dist,-run-undeploy-nb,-init-deploy-ant,-undeploy-ant</xsl:attribute>
+    </target>
+
+    <target name="-run-undeploy-nb" if="netbeans.home">
+        <fail message="Undeploy is not supported from within the IDE"/>
     </target>
     
     <target name="verify">
@@ -448,24 +361,100 @@ is divided into following sections:
         <nbverify file="${{dist.jar}}"/>
     </target>
     
-            <target name="run-display-browser" if="do.display.browser">
-                <xsl:attribute name="depends">run-deploy</xsl:attribute>
-                <nbbrowse url="${{client.url}}"/>
-            </target>
+    <target name="run-display-browser">
+        <xsl:attribute name="depends">run-deploy,-init-display-browser,-display-browser-nb,-display-browser-cl</xsl:attribute>
+    </target>
+    
+    <target name="-init-display-browser" if="do.display.browser">
+        <condition property="do.display.browser.nb">
+            <isset property="netbeans.home"/>
+        </condition>
+        <condition property="do.display.browser.cl">
+            <and>
+                <isset property="deploy.ant.enabled"/>
+                <isset property="deploy.ant.client.url"/>
+            </and>
+        </condition>
+    </target>
+
+    <target name="-display-browser-nb" if="do.display.browser.nb">
+        <nbbrowse url="${{client.url}}"/>
+    </target>
+
+    <target name="-get-browser" if="do.display.browser.cl" unless="browser">
+        <condition property="browser" value="rundll32">
+            <os family="windows"/>
+        </condition>
+        <condition property="browser.args" value="url.dll,FileProtocolHandler" else="">
+            <os family="windows"/>
+        </condition>
+        <condition property="browser" value="/usr/bin/open">
+            <os family="mac"/>
+        </condition>
+        <property environment="env"/>
+        <condition property="browser" value="${{env.BROWSER}}">
+            <isset property="env.BROWSER"/>
+        </condition>
+        <condition property="browser" value="/usr/bin/firefox">
+            <available file="/usr/bin/firefox"/>
+        </condition>
+        <condition property="browser" value="/usr/local/firefox/firefox">
+            <available file="/usr/local/firefox/firefox"/>
+        </condition>
+        <condition property="browser" value="/usr/bin/mozilla">
+            <available file="/usr/bin/mozilla"/>
+        </condition>
+        <condition property="browser" value="/usr/local/mozilla/mozilla">
+            <available file="/usr/local/mozilla/mozilla"/>
+        </condition>
+        <condition property="browser" value="/usr/sfw/lib/firefox/firefox">
+            <available file="/usr/sfw/lib/firefox/firefox"/>
+        </condition>
+        <condition property="browser" value="/opt/csw/bin/firefox">
+            <available file="/opt/csw/bin/firefox"/>
+        </condition>
+        <condition property="browser" value="/usr/sfw/lib/mozilla/mozilla">
+            <available file="/usr/sfw/lib/mozilla/mozilla"/>
+        </condition>
+        <condition property="browser" value="/opt/csw/bin/mozilla">
+            <available file="/opt/csw/bin/mozilla"/>
+        </condition>
+    </target>
+
+    <target name="-display-browser-cl" depends="-get-browser" if="do.display.browser.cl">
+        <fail unless="browser">
+            Browser not found, cannot launch the deployed application. Try to set the BROWSER environment variable.
+        </fail>
+        <property name="browse.url" value="${{deploy.ant.client.url}}${{client.urlPart}}"/>
+        <echo>Launching ${browse.url}</echo>
+        <exec executable="${{browser}}" spawn="true">
+            <arg line="${{browser.args}} ${{browse.url}}"/>
+        </exec>
+    </target>
+    
+    <!-- application client execution -->
+    <xsl:call-template name="run.target">
+        <xsl:with-param name="id" select="'j2ee-module-car'"/>
+        <xsl:with-param name="type" select="'j2ee_ear_archive'"/>
+    </xsl:call-template>
+
     <xsl:comment>
-    =================
     DEBUGGING SECTION
-    =================
     </xsl:comment>
     <target name="debug">
-        <xsl:attribute name="depends">run-debug,run-display-browser</xsl:attribute>
+        <xsl:attribute name="depends">run-debug,run-display-browser,run-debug-appclient</xsl:attribute>
         <xsl:attribute name="description">Deploy to server.</xsl:attribute>
     </target>
     <target name="run-debug">
         <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
         <xsl:attribute name ="depends">dist</xsl:attribute>
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
+        <xsl:attribute name="unless">app.client</xsl:attribute>
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" clientModuleUri="${{client.module.uri}}"/>
+        <antcall target="connect-debugger"/>
+    </target>
+
+    <target name="connect-debugger" unless="is.debugged">
         <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
             <classpath>
                 <path path="${{debug.classpath}}"/>
@@ -481,75 +470,14 @@ is divided into following sections:
         </nbjpdaconnect>
     </target>
 
-    <target name="pre-debug-fix">
-        <xsl:attribute name="depends">init</xsl:attribute>
-        <fail unless="fix.includes">Must set fix.includes</fail>
-        <property name="javac.includes" value="${{fix.includes}}.java"/>
-    </target>
-
-    <target name="do-debug-fix">
-        <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <xsl:attribute name="depends">init,pre-debug-fix,compile-single</xsl:attribute>
-        <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
-    </target>
-
-    <target name="debug-fix">
-        <xsl:attribute name="if">netbeans.home</xsl:attribute>
-        <xsl:attribute name="depends">init,pre-debug-fix,do-debug-fix</xsl:attribute>
-    </target>
+    <!-- application client debugging -->
+    <xsl:call-template name="debug.target">
+        <xsl:with-param name="id" select="'j2ee-module-car'"/>
+        <xsl:with-param name="type" select="'j2ee_ear_archive'"/>
+    </xsl:call-template>
     
             <xsl:comment>
-    ===============
-    JAVADOC SECTION
-    ===============
-    </xsl:comment>
-
-            <target name="javadoc-build">
-                <xsl:attribute name="depends">init</xsl:attribute>
-                <mkdir dir="${{dist.javadoc.dir}}"/>
-                <!-- XXX do an up-to-date check first -->
-                <javadoc destdir="${{dist.javadoc.dir}}" source="${{javac.source}}"
-                         notree="${{javadoc.notree}}"
-                         use="${{javadoc.use}}"
-                         nonavbar="${{javadoc.nonavbar}}"
-                         noindex="${{javadoc.noindex}}"
-                         splitindex="${{javadoc.splitindex}}"
-                         author="${{javadoc.author}}"
-                         version="${{javadoc.version}}"
-                         windowtitle="${{javadoc.windowtitle}}"
-                         private="${{javadoc.private}}" >
-                         <!-- encoding="${{javadoc.encoding}}" -->
-                    <classpath>
-                        <path path="${{javac.classpath}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <pathelement location="${{src.dir}}"/>
-                    </sourcepath>
-                    <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                        <bootclasspath>
-                            <path path="${{platform.bootcp}}"/>
-                        </bootclasspath>
-                    </xsl:if>
-                    <fileset dir="${{src.dir}}"/>
-                </javadoc>
-            </target>
-
-            <target name="javadoc-browse">
-                <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="unless">no.javadoc.preview</xsl:attribute>
-                <xsl:attribute name="depends">init,javadoc-build</xsl:attribute>
-                <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
-            </target>
-
-            <target name="javadoc">
-                <xsl:attribute name="depends">init,javadoc-build,javadoc-browse</xsl:attribute>
-                <xsl:attribute name="description">Build Javadoc.</xsl:attribute>
-            </target>
-            
-            <xsl:comment>
-    ===============
     CLEANUP SECTION
-    ===============
     </xsl:comment>
 
             <xsl:call-template name="deps.target">
@@ -628,39 +556,199 @@ to simulate
         </target>
     </xsl:template>
 
-            <xsl:template name="copyIterateFiles" >
-            <xsl:param name="files" />
-            <xsl:param name="target"/>
-            <xsl:param name="libfile"/>
-            <xsl:if test="$files &gt; 0">
-                <xsl:variable name="fileNo" select="$files+(-1)"/>
-                <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
-                <copy file="{$lib}" todir="{$target}"/>
-                <xsl:call-template name="copyIterateFiles">
-                    <xsl:with-param name="files" select="$fileNo"/>
-                    <xsl:with-param name="target" select="$target"/>
-                    <xsl:with-param name="libfile" select="$libfile"/>
-                </xsl:call-template>
-            </xsl:if>
-        </xsl:template>
-            
-        <xsl:template name="copyIterateDirs" >
-            <xsl:param name="files" />
-            <xsl:param name="target"/>
-            <xsl:param name="libfile"/>
-            <xsl:if test="$files &gt; 0">
-                <xsl:variable name="fileNo" select="$files+(-1)"/>
-                <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libdir.',$files,'}')"/>
-                <copy todir="{$target}">
-                    <fileset dir="{$lib}" includes="**/*"/>
-                </copy>
-                <xsl:call-template name="copyIterateDirs">
-                    <xsl:with-param name="files" select="$fileNo"/>
-                    <xsl:with-param name="target" select="$target"/>
-                    <xsl:with-param name="libfile" select="$libfile"/>
-                </xsl:call-template>
-            </xsl:if>
-        </xsl:template>
     
+    <!-- Template to generate run target(s) for AC -->
+    <xsl:template name="run.target">
+        <xsl:param name="id"/>
+        <xsl:param name="type"/>
+        <target name="run-ac" depends="init" if="app.client">
+            <antcall target="run-${{app.client}}"/>
+        </target>
+        <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
+        <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
+        <xsl:for-each select="$references/projdeps:reference[not($type) or (projdeps:artifact-type = $type and projdeps:id = $id)]">
+            <xsl:variable name="subprojname" select="projdeps:foreign-project"/>
+            <xsl:variable name="script" select="projdeps:script"/>
+            <target name="run-{$subprojname}" depends="-tool-{$subprojname},-java-{$subprojname}"/>
+            <target name="-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="-as-retrieve-option-workaround">
+                <java fork="true" classname="${{j2ee.appclient.tool.mainclass}}">
+                    <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                    </xsl:if>
+                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
+                    <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
+                    <arg line="${{j2ee.appclient.tool.args}}"/>
+                    <arg line="-client ${{client.jar}}"/>
+                    <arg line="${{j2ee.appclient.mainclass.tool.param}}"/>
+                    <arg line="${{application.args.param}}"/>
+                    <classpath>
+                        <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
+                    </classpath>
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                </java>
+            </target>
+            <target name="-java-{$subprojname}" if="j2ee.clientName" unless="j2ee.appclient.mainclass.args">
+                <java fork="true" classname="${{main.class}}">
+                    <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                    </xsl:if>
+                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
+                    <jvmarg line="-Dj2ee.clientName=${{app.client}}"/>
+                    <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
+                    <arg line="${{application.args.param}}"/>
+                    <classpath>
+                        <path path="${{jar.content.additional}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
+                    </classpath>
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                    </syspropertyset>
+                </java>
+            </target>
+        </xsl:for-each>
+        
+        <!--
+           Idea is to add new non-mandatory option to nbdeploy task. This
+           option should be a replacement for asadmin deploy -retrieve local_dir
+           command. See also http://www.netbeans.org/issues/show_bug.cgi?id=82929.
+        -->
+        <target name="-as-retrieve-option-workaround">
+            <xsl:attribute name="if">j2ee.appclient.mainclass.args</xsl:attribute>
+            <xsl:attribute name="unless">j2ee.clientName</xsl:attribute>
+            <property name="client.jar" value="${{dist.dir}}/{$name}Client.jar"/>
+            <sleep seconds="3"/>
+            <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}"/>                
+        </target>
+    </xsl:template>
+
+    <xsl:template name="debug.target">
+        <xsl:param name="id"/>
+        <xsl:param name="type"/>
+        <target name="run-debug-appclient" depends="init" if="can.debug.appclient">
+                <macrodef>
+                    <xsl:attribute name="name">debug-appclient</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-earproject/2</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">mainclass</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <attribute>
+                        <xsl:attribute name="name">args</xsl:attribute>
+                        <xsl:attribute name="default">${application.args.param}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <parallel>
+                            <java fork="true" classname="@{{mainclass}}">
+                                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                                    <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                                    <bootclasspath>
+                                        <path path="${{platform.bootcp}}"/>
+                                    </bootclasspath>
+                                </xsl:if>
+                                <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
+                                <jvmarg value="-Xdebug"/>
+                                <jvmarg value="-Xnoagent"/>
+                                <jvmarg value="-Djava.compiler=none"/>
+                                <jvmarg value="-Xrunjdwp:transport=${{jpda.transport}},server=y,address=${{jpda.address}},suspend=y"/>
+                                <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
+                                <arg line="@{{args}}"/>
+                                <classpath>
+                                    <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
+                                    <path path="@{{classpath}}"/>
+                                </classpath>
+                                <syspropertyset>
+                                    <propertyref prefix="run-sys-prop."/>
+                                    <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                                </syspropertyset>
+                                <customize/>
+                            </java>
+                            <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
+                                <classpath>
+                                    <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
+                                    <path path="@{{classpath}}"/>
+                                </classpath>
+                                <sourcepath>
+                                    <path path="${{src.dir}}"/>
+                                </sourcepath>
+                            </nbjpdaconnect>
+                        </parallel>
+                    </sequential>
+                </macrodef>
+            <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}" clientModuleUri="${{client.module.uri}}"/>
+            <antcall target="debug-${{app.client}}"/>
+        </target>
+        <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
+        <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
+        <xsl:for-each select="$references/projdeps:reference[not($type) or (projdeps:artifact-type = $type and projdeps:id = $id)]">
+            <xsl:variable name="subprojname" select="projdeps:foreign-project"/>
+            <xsl:variable name="script" select="projdeps:script"/>
+            <target name="debug-{$subprojname}" depends="-debug-tool-{$subprojname},-debug-java-{$subprojname}"/>
+            <target name="-debug-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="init,-as-retrieve-option-workaround">
+                <ear2:debug-appclient mainclass="${{j2ee.appclient.tool.mainclass}}" args="-client ${{client.jar}} ${{j2ee.appclient.tool.args}} ${{j2ee.appclient.mainclass.tool.param}} ${{application.args.param}}"/>
+            </target>
+            <target name="-debug-java-{$subprojname}" if="j2ee.clientName" unless="j2ee.appclient.mainclass.args">
+                <ear2:debug-appclient mainclass="${{main.class}}" args="${{application.args.param}}" classpath="${{jar.content.additional}}"/>
+            </target>
+        </xsl:for-each>
+    </xsl:template>
+    
+    <xsl:template name="copyIterateFiles" >
+        <xsl:param name="files" />
+        <xsl:param name="target"/>
+        <xsl:param name="libfile"/>
+        <xsl:if test="$files &gt; 0">
+            <xsl:variable name="fileNo" select="$files+(-1)"/>
+            <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
+            <copy file="{$lib}" todir="{$target}"/>
+            <xsl:call-template name="copyIterateFiles">
+                <xsl:with-param name="files" select="$fileNo"/>
+                <xsl:with-param name="target" select="$target"/>
+                <xsl:with-param name="libfile" select="$libfile"/>
+            </xsl:call-template>
+        </xsl:if>
+    </xsl:template>
+
+    <xsl:template name="copyIterateDirs" >
+        <xsl:param name="files" />
+        <xsl:param name="target"/>
+        <xsl:param name="libfile"/>
+        <xsl:if test="$files &gt; 0">
+            <xsl:variable name="fileNo" select="$files+(-1)"/>
+            <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libdir.',$files,'}')"/>
+            <copy todir="{$target}">
+                <fileset dir="{$lib}" includes="**/*"/>
+            </copy>
+            <xsl:call-template name="copyIterateDirs">
+                <xsl:with-param name="files" select="$fileNo"/>
+                <xsl:with-param name="target" select="$target"/>
+                <xsl:with-param name="libfile" select="$libfile"/>
+            </xsl:call-template>
+        </xsl:if>
+    </xsl:template>
+    
+    <!---
+    Access Manager deploy template to build subdependencies.
+    @return an Ant target which invokes the Access Manager deployment
+    for all known subprojects
+    -->
+    <xsl:template name="am.target">
+        <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
+        <xsl:for-each select="$references/projdeps:reference[not(projdeps:id='j2ee-module-car')]">
+            <xsl:variable name="subproj" select="projdeps:foreign-project"/>
+            <xsl:variable name="script" select="projdeps:script"/>
+            <ant target="-run-deploy-am" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+            </ant>
+        </xsl:for-each>
+    </xsl:template>
     
 </xsl:stylesheet>

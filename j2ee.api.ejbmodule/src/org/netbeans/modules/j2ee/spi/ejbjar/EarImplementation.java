@@ -19,6 +19,7 @@
 package org.netbeans.modules.j2ee.spi.ejbjar;
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
@@ -51,5 +52,10 @@ public interface EarImplementation {
      * @param module the module to be added
      */
     void addEjbJarModule (EjbJar module);
+    
+    /** Add j2ee application client module into application.
+     * @param module the module to be added
+     */
+    void addCarModule (Car module);
     
 }

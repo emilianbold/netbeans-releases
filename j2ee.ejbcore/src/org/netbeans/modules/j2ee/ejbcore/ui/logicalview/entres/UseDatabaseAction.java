@@ -24,14 +24,21 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
+import java.util.Collections;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.jmi.javamodel.Annotation;
+import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.jmi.javamodel.AttributeValue;
+import org.netbeans.jmi.javamodel.Field;
+import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.common.JMIGenerationUtil;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -43,6 +50,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.openide.DialogDescriptor;
 
 
@@ -57,68 +65,59 @@ public class UseDatabaseAction extends NodeAction {
         JavaClass beanClass = JMIUtils.getJavaClassFromNode(nodes[0]);
         FileObject srcFile = JavaModel.getFileObject(beanClass.getResource());
         Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
-
+        
         //make sure configuration is ready
         J2eeModuleProvider pwm = (J2eeModuleProvider) enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
         pwm.getConfigSupport().ensureConfigurationReady();
         
         EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
-            enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
+        enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         
-        SelectDatabasePanel p = new SelectDatabasePanel("myDatabase", erc.getServiceLocatorName()); //NOI18N
+        SelectDatabasePanel p = new SelectDatabasePanel(pwm, erc.getServiceLocatorName()); //NOI18N
         final DialogDescriptor nd = new DialogDescriptor(
-                p, 
+                p,
                 NbBundle.getMessage(UseDatabaseAction.class, "LBL_ChooseDatabase"),
                 true,
                 DialogDescriptor.OK_CANCEL_OPTION,
                 DialogDescriptor.OK_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN, 
-                new HelpCtx(SelectDatabasePanel.class), 
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(SelectDatabasePanel.class),
                 null
                 );
+        //#73163: disable OK button when no db connections are available
+        nd.setValid(checkConnections());
         p.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(SelectDatabasePanel.IS_VALID)) {
                     Object newvalue = evt.getNewValue();
                     if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                        nd.setValid(((Boolean)newvalue).booleanValue());
+                        nd.setValid(((Boolean)newvalue).booleanValue() && checkConnections());
                     }
                 }
             }
         });
-        p.checkDatabaseName();
+        p.checkDatasource();
         Object option = DialogDisplayer.getDefault().notify(nd);
         if (option == NotifyDescriptor.OK_OPTION) {
             try {
-                DatabaseConnection dbconn = p.getConnection();
-                if (dbconn != null) {
-                    String displayName = dbconn.getName();
-                    if (dbconn.getJDBCConnection() == null) {
-                        ConnectionManager.getDefault().showConnectionDialog(dbconn);
-                    }
+                Datasource ds = p.getDatasource();
+                String serviceLocator = p.getServiceLocator();
+                ServiceLocatorStrategy serviceLocatorStrategy = null;
+                if (serviceLocator != null) {
+                    serviceLocatorStrategy = ServiceLocatorStrategy.create(enterpriseProject, srcFile, serviceLocator);
+                }
                 
-                    String databaseName = p.getDatabaseName();
-                    if((databaseName.startsWith("jdbc/")) || (databaseName.startsWith("Jdbc/"))){       //NOI18N
-                        databaseName = databaseName.substring("jdbc/".length());                        //NOI18N
-                    }
-                    
-                    if (dbconn.getJDBCConnection() != null) {
-                        String jndiName = generateJNDILookup(
-                                databaseName, erc, 
-                                beanClass.getName(), displayName, p.createServerResources());
-                        String serviceLocator = p.getServiceLocator();
-                        ServiceLocatorStrategy serviceLocatorStrategy = null;
-                        if (serviceLocator != null) {
-                            serviceLocatorStrategy = 
-                            ServiceLocatorStrategy.create(enterpriseProject, srcFile, 
-                                                          serviceLocator);
-                        }
-                        generateLookupMethod(beanClass, jndiName, databaseName,
-                                             serviceLocatorStrategy);
-                        if (serviceLocator != null) {
-                            erc.setServiceLocatorName(serviceLocator);
-                        }
-                    }
+                if (Utils.isJavaEE5orHigher(enterpriseProject) &&
+                        InjectionTargetQuery.isInjectionTarget(beanClass) &&
+                        serviceLocatorStrategy == null) {
+                    generateInjectedField(beanClass, ds.getJndiName());
+                } else {
+                    String jndiName = generateJNDILookup(ds.getJndiName(), erc, beanClass.getName(), ds.getUrl(), p.createServerResources()); // NOI18N
+                    generateLookupMethod(beanClass, jndiName, serviceLocatorStrategy);
+                }
+                
+                if (serviceLocator != null) {
+                    erc.setServiceLocatorName(serviceLocator);
                 }
             } catch (IOException ioe) {
                 NotifyDescriptor ndd = new NotifyDescriptor.Message(ioe.getMessage(),
@@ -126,6 +125,10 @@ public class UseDatabaseAction extends NodeAction {
                 DialogDisplayer.getDefault().notify(ndd);
             }
         }
+    }
+    
+    private boolean checkConnections() {
+        return ConnectionManager.getDefault().getConnections().length > 0;
     }
     
     public String getName() {
@@ -142,29 +145,26 @@ public class UseDatabaseAction extends NodeAction {
         return false;
     }
     
-    private String generateJNDILookup(String databaseName, 
-                                    EnterpriseReferenceContainer erc,
-                                    String className, 
-                                    String nodeName, boolean createServerResources) throws IOException {
+    private String generateJNDILookup(String jndiName,
+            EnterpriseReferenceContainer erc,
+            String className,
+            String nodeName, boolean createServerResources) throws IOException {
         ResourceRef ref = erc.createResourceRef(className);
         if (createServerResources) {
             ref.setDescription(nodeName);
         }
-        ref.setResRefName("jdbc/"+databaseName); // NOI18N
-        ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER); 
+        ref.setResRefName(jndiName); // NOI18N
+        ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER);
         ref.setResSharingScope(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_SHARING_SCOPE_SHAREABLE);
         ref.setResType(javax.sql.DataSource.class.getName()); //NOI18N
         return erc.addResourceRef(ref, className);
     }
     
-    private void generateLookupMethod(JavaClass ce, String jndiName, String databaseName,
-                                      ServiceLocatorStrategy sl) {
+    private void generateLookupMethod(JavaClass ce, String jndiName, ServiceLocatorStrategy sl) {
+        String methodName = "get" + Utils.jndiNameToCamelCase(jndiName, false, null); //NO18N
         Method me = JMIUtils.createMethod(ce);
         me.setModifiers(Modifier.PRIVATE);
-        String dbName = databaseName == null ? "db":databaseName;               //NOI18N
-        StringBuffer dbBuff = new StringBuffer(dbName);
-        dbBuff.setCharAt(0, Character.toUpperCase(dbBuff.charAt(0)));
-        me.setName("get"+dbBuff);
+        me.setName(methodName);
         me.setType(JMIUtils.resolveType(javax.sql.DataSource.class.getName()));
         JMIUtils.addException(me, javax.naming.NamingException.class.getName());
         if (sl == null) {
@@ -172,8 +172,12 @@ public class UseDatabaseAction extends NodeAction {
         } else {
             me.setBodyText(getLookupCode(jndiName, sl, ce));
         }
-        ce.getContents().add(me);
+        if (!Utils.containsFeature(ce, me)){
+            ce.getContents().add(me);
+            fixImports(ce, me);
+        }
     }
+    
     
     private String getLookupCode(String jndiName, ServiceLocatorStrategy sl, JavaClass target) {
         String jdbcLookupString = sl.genDataSource(jndiName, target);
@@ -187,11 +191,35 @@ public class UseDatabaseAction extends NodeAction {
                 new Object[] {jndiName});
     }
     
+    private void generateInjectedField(JavaClass javaClass, String jndiName) {
+        int modifier = InjectionTargetQuery.isStaticReferenceRequired(javaClass) ? (Modifier.STATIC | Modifier.PRIVATE) : Modifier.PRIVATE;
+        String fieldName = Utils.jndiNameToCamelCase(jndiName, true, null);
+        Field field = JMIGenerationUtil.createField(javaClass, fieldName, modifier, "javax.sql.DataSource");
+        AttributeValue av = JMIGenerationUtil.createAttributeValue(javaClass, "name", jndiName);
+        Annotation a = JMIGenerationUtil.createAnnotation(javaClass, "javax.annotation.Resource", Collections.singletonList(av));
+        field.getAnnotations().add(a);
+        if (!Utils.containsFeature(javaClass, field)){
+            javaClass.getFeatures().add(0, field);
+            fixImports(javaClass, field);
+        }
+    }
+    
+    private void fixImports(JavaClass beanClass, Feature f) {
+        boolean failed = true;
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            JMIUtils.fixImports(beanClass, f);
+            failed = false;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(failed);
+        }
+    }
+    
     protected boolean enable(Node[] nodes) {
         if (nodes == null || nodes.length != 1) {
             return false;
         }
-	JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[0]);
+        JavaClass jc = JMIUtils.getJavaClassFromNode(nodes[0]);
         return jc == null ? false : !jc.isInterface();
     }
     

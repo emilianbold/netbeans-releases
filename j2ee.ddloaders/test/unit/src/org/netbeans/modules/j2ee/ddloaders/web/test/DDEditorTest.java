@@ -119,16 +119,21 @@ public class DDEditorTest extends NbTestCase {
             }
         };
 
-
         new StepIterator() {
             private SaveCookie saveCookie;
+            private int steps;
 
             public boolean step() throws Exception {
+                steps++;
                 saveCookie = (SaveCookie) dObj.getCookie(SaveCookie.class);
                 return saveCookie != null;
             }
 
             public void finalCheck() {
+                // for debugging random failures
+                if (saveCookie == null){
+                    log("Data object was not modified. Steps taken: " + steps + ", DataCache contents: " + dObj.getDataCache().getStringData());
+                }
                 // check if save cookie was created
                 assertNotNull("Data Object Not Modified", saveCookie);
             }

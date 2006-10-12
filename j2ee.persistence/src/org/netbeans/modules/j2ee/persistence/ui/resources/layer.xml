@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Edit">
+            <file name="org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.persistence.action.PersistenceActionGroup"/>
+            </file>
+            <file name="org-netbeans-modules-j2ee-persistence-action-UseEntityManagerAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.persistence.action.UseEntityManagerAction"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="Persistence">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.ui.resources.Bundle"/>
+            <file name="Entity.java">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizard.create"/>
+                <attr name="templateCategory" stringvalue="persistence"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityEJB.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.entity.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityNodeIcon.gif"/>
+            </file>
+            <attr name="Entity/RelatedCMP" boolvalue="true"/>
+            <file name="RelatedCMP">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard.createForJPA"/>
+                <attr name="templateCategory" stringvalue="persistence"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityDatabase.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityNodeIcon.gif"/>
+
+            </file>
+            <attr name="RelatedCMP/PersistenceUnit" boolvalue="true"/>
+            <file name="PersistenceUnit">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizard.create"/>
+                <attr name="templateCategory" stringvalue="persistence,deployment-descriptor"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/PersistenceUnit.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/ui/resources/EntityNodeIcon.gif"/>
+            </file>
+            <file name="ejbFacade">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.wizard.dao.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.persistence.wizard.dao.EjbFacadeWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="ejb-types_3_0"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/persistence/wizard/dao/ejbFacade.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/session/SessionNodeIcon.gif"/>
+            </file>
+        </folder>    
+    </folder>
+    
+    <folder name="Databases">
+        <folder name="MetaDataListeners">
+            <file name="DBMetaDataProviderMetaDataListener.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.db.api.explorer.MetaDataListener"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.persistence.editor.completion.db.DBMetaDataProvider.createMetaDataListener"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-j2ee-persistence-editor-completion-NNCompletionProvider.instance"/>
+                </folder>
+                <folder name="Popup">
+                    <attr name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.shadow" boolvalue="true"/>
+                    <file name="org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.instance"/>
+                    </file>
+                    <attr name="org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.shadow/org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-EnterpriseRefActionGroup.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-persistence1.0">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+                <folder name="x-orm1.0">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+        
+    
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-persistence1.0">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-EditAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-EditAction.instance"/>
+                    <attr name="org-openide-actions-EditAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PasteAction.instance"/>
+                    <attr name="org-openide-actions-PasteAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-netbeans-modules-xml-tools-actions-CheckAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
+                    <attr name="org-netbeans-modules-xml-tools-actions-CheckAction.instance/org-netbeans-modules-xml-tools-actions-ValidateAction.instance" boolvalue="true" />
+                    <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
+                    <attr name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance/sep-5.instance" boolvalue="true"/>
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file> 
+                    <attr name="sep-5.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="PUResolver.xml" url="../../unit/PUResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.persistence.unit.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-modules-j2ee-persistence">
+        <file name="persistence-1.0.xml" url="persistence-1.0.xml"/>
+        <file name="persistence_ORM-1.0.xml" url="persistence_ORM-1.0.xml"/>
+    </folder>
+
+    <folder name="Plugins">
+        <!-- Register XML module catalog plugin -->
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-j2ee-persistence-unit-PersistenceCatalog.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.persistence.unit.PersistenceCatalog"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>

@@ -19,32 +19,39 @@
 
 package org.netbeans.modules.j2ee.api.ejbjar;
 
+import org.openide.nodes.Node;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Feature;
+import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 
-public interface EjbReference {
-    public AntArtifact getClientJarTarget();
-    public boolean supportsLocalInvocation();
-    public boolean supportsRemoteInvocation();
-
-    public EjbRef createRef();
-    public EjbLocalRef createLocalRef();
-
-    public void populateReference(EjbRef ref);
-    public void populateReference(EjbLocalRef ref);
-       
-    /**
-     * Create JNDI Lookup method and do no throw any checked exceptions in the
-     * generated method.
-     */
-    public Method generateJNDILookup(EjbRef ref, boolean throwExceptions);
+/**
+ *
+ * @author Martin Adamek
+ */
+public interface EjbReference extends Node.Cookie {
     
-    /**
-     * Create JNDI Lookup method and do no throw any checked exceptions in the
-     * generated method.
-     */
-    public Method generateJNDILookup(EjbLocalRef ref, boolean throwExceptions);
+    boolean supportsLocalInvocation();
+    
+    boolean supportsRemoteInvocation();
+    
+    void populateReference(EjbRef ref);
+    
+    void populateReference(EjbLocalRef ref);
 
+    AntArtifact getClientJarTarget();
+    
+    EjbRef createRef();
+    
+    EjbLocalRef createLocalRef();
+    
+    Feature generateReferenceCode(JavaClass target, EjbRef ref, boolean throwExceptions);
+    
+    Feature generateReferenceCode(JavaClass target, EjbLocalRef ref, boolean throwExceptions);
+    
+    Feature generateServiceLocatorLookup(JavaClass target, EjbRef ref, String serviceLocatorName, boolean throwExceptions);
+    
+    Feature generateServiceLocatorLookup(JavaClass target, EjbLocalRef ref, String serviceLocatorName, boolean throwExceptions);
+    
 }

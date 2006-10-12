@@ -55,7 +55,7 @@ public class MessageNode extends AbstractNode implements OpenCookie {
     
     private MessageNode(InstanceContent content, MessageDriven model, EjbJar module, ClassPath srcPath) {
         super(Children.LEAF, new AbstractLookup(content));
-        setIconBase("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/mdb/MessageNodeIcon");
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/mdb/MessageNodeIcon.gif");
         setName(model.getEjbName()+"");
         controller = new EjbViewController(model, module, srcPath);
         setDisplayName();

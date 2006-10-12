@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -43,7 +44,6 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -258,6 +258,7 @@ public class UpdateHelper {
         
         ProjectManager.getDefault().saveProject (this.project);
         this.genFileHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH, UpdateHelper.class.getResource("resources/build-impl.xsl"),
+            ((EjbJarProject)project).findJaxWsFileObject(),
             true);
         synchronized(this) {
             this.isCurrent = Boolean.TRUE;

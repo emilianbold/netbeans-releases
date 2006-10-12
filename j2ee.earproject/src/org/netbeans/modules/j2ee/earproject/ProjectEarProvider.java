@@ -21,27 +21,17 @@ package org.netbeans.modules.j2ee.earproject;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.application.Application;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public class ProjectEarProvider implements  EarProvider {
-    
-    public ProjectEarProvider () {
-    }
+public final class ProjectEarProvider implements EarProvider {
     
     public Ear findEar (FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof EarProject) {
             EarProject ep = (EarProject) project;
-            FileObject src = ep.getSourceDirectory ();
-            if (src != null && src.equals (file) || FileUtil.isParentOf(src, file)) {
-                return ep.getEar();
-            }
             FileObject prjdir = ep.getProjectDirectory();
             if (prjdir != null && (prjdir.equals (file) || FileUtil.isParentOf(prjdir, file))) {
                 return ep.getEar();

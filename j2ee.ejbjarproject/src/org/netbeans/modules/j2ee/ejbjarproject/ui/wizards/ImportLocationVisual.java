@@ -22,23 +22,18 @@ package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.*;
-import javax.swing.event.ChangeListener;
+import java.util.TreeSet;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
@@ -52,6 +47,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -62,29 +60,21 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-
 /**
- *
  * @author  pb97924, Martin Adamek
  */
-public class ImportLocationVisual extends javax.swing.JPanel /*implements DocumentListener */{
+public class ImportLocationVisual extends JPanel /*implements DocumentListener */{
+
+    private static final String J2EE_SPEC_15_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_15");
+    private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_14");
+    private static final String J2EE_SPEC_13_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_13");
     
-    private ImportLocation panel;
-    private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
-    private java.util.List serverInstanceIDs;
-    private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_14"); //NOI18N
-    private static final String J2EE_SPEC_13_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_13"); //NOI18N
-    private ChangeListener listener;
-    private DocumentListener documentListener;
-    /** Was projectFolder property edited by user? */
-    private boolean projectFolderTouched = false;
-    /** Was projectName property edited by user? */
-    private boolean projectNameTouched = false;
+    private final DefaultComboBoxModel serversModel = new DefaultComboBoxModel();
+    private final ImportLocation panel;
+    private final DocumentListener documentListener;
     private List earProjects;
     private BigDecimal ejbJarXmlVersion;
     private WizardDescriptor wizardDescriptor;
@@ -95,13 +85,17 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         this.panel = panel;
         initComponents ();
         setJ2eeVersionWarningPanel();
-        initServerInstances();
+        initServers(FoldersListSettings.getDefault().getLastUsedServer());
+        // preselect the first item in the j2ee spec combo
+        if (j2eeSpecComboBox.getModel().getSize() > 0) {
+            j2eeSpecComboBox.setSelectedIndex(0);
+        }
         initEnterpriseApplications();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
         setName(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ImportTitle")); //NOI18N
         putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(ImportLocationVisual.class, "TXT_ImportEJBModule")); //NOI18N
-        this.listener = panel;
         this.projectName.setText("");
+        
         documentListener = new DocumentListener() {           
             public void insertUpdate(DocumentEvent e) {
                 update(e);
@@ -117,6 +111,8 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         };
         this.projectName.getDocument().addDocumentListener(documentListener);
         this.projectFolder.getDocument().addDocumentListener(documentListener);
+        this.projectLocation.getDocument().addDocumentListener(documentListener);
+        
     }
     
     /** This method is called from within the constructor to
@@ -148,6 +144,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         addToAppLabel = new javax.swing.JLabel();
         addToAppComboBox = new javax.swing.JComboBox();
         warningPlaceHolderPanel = new javax.swing.JPanel();
+        manageServersButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -188,7 +185,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         add(projectLocation, gridBagConstraints);
         projectLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseProjectLocation, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseProjectLocation, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button_w"));
         browseProjectLocation.setNextFocusableComponent(projectName);
         browseProjectLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -254,6 +251,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
 
         org.openide.awt.Mnemonics.setLocalizedText(browseProjectFolder, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        browseProjectFolder.setNextFocusableComponent(addToAppComboBox);
         browseProjectFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseProjectFolderActionPerformed(evt);
@@ -302,9 +300,8 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         jPanel1.add(serverInstanceLabel, gridBagConstraints);
 
-        serverInstanceComboBox.setMinimumSize(new java.awt.Dimension(150, 24));
-        serverInstanceComboBox.setNextFocusableComponent(j2eeSpecComboBox);
-        serverInstanceComboBox.setPreferredSize(new java.awt.Dimension(150, 24));
+        serverInstanceComboBox.setModel(serversModel);
+        serverInstanceComboBox.setNextFocusableComponent(manageServersButton);
         serverInstanceComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverInstanceComboBoxActionPerformed(evt);
@@ -317,6 +314,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(serverInstanceComboBox, gridBagConstraints);
         serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_SelectServerInstance_A11YDesc"));
@@ -331,9 +329,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         jPanel1.add(jLabel7, gridBagConstraints);
 
-        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
-        j2eeSpecComboBox.setNextFocusableComponent(jCheckBox1);
-        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
+        j2eeSpecComboBox.setPrototypeDisplayValue("MMMMMMMMM" /* "Java EE 5" */);
         j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 j2eeSpecComboBoxActionPerformed(evt);
@@ -385,6 +381,23 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(warningPlaceHolderPanel, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_ManageServers"));
+        manageServersButton.setNextFocusableComponent(j2eeSpecComboBox);
+        manageServersButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageServersButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
+        jPanel1.add(manageServersButton, gridBagConstraints);
+        manageServersButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ASCN_ManageServers"));
+        manageServersButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ASCD_ManageServers"));
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -399,34 +412,29 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }// </editor-fold>//GEN-END:initComponents
 
     private void projectLocationFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_projectLocationFocusLost
-        if (projectLocation.getText().trim().length() > 0) {
-            updateProjectName();
-            updateProjectFolder();
-            File f = new File(projectLocation.getText().trim());
-            FileObject fo = FileUtil.toFileObject(f);
-            if (fo != null) {
-                FileObject configFilesPath = FileSearchUtility.guessConfigFilesPath(fo);
-                if (configFilesPath != null) {
-                    FileObject ejbJarXml = configFilesPath.getFileObject("ejb-jar.xml"); // NOI18N
-                    checkEjbJarXmlJ2eeVersion(ejbJarXml);
-                }
-                listener.stateChanged(null);
-            }
+        File f = new File(projectLocation.getText().trim());
+        if (f.isDirectory()) {
+            updateJ2EEVersion();
         }
     }//GEN-LAST:event_projectLocationFocusLost
 
+    private void manageServersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageServersButtonActionPerformed
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        String lastSelectedServerInstanceID = null;
+        if (serverInstanceWrapper != null) {
+            lastSelectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
+        }
+        ServerManager.showCustomizer(lastSelectedServerInstanceID);
+        String lastSelectedJ2eeSpecLevel = (String) j2eeSpecComboBox.getSelectedItem();
+        // refresh the list of servers
+        initServers(lastSelectedServerInstanceID);
+        if (lastSelectedJ2eeSpecLevel != null) {
+            j2eeSpecComboBox.setSelectedItem(lastSelectedJ2eeSpecLevel);
+        }
+    }//GEN-LAST:event_manageServersButtonActionPerformed
+
     private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
-        String errorMessage;
-        String selectedItem = (String)j2eeSpecComboBox.getSelectedItem();
-        
-        if (J2EE_SPEC_14_LABEL.equals(selectedItem) && new BigDecimal(EjbJar.VERSION_2_0).equals(ejbJarXmlVersion)) {
-            errorMessage = NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "MSG_EjbJarXMLNotSupported");
-        } else {
-            errorMessage = null;
-        }
-        if (wizardDescriptor != null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); //NOI18N
-        }
+        panel.stateChanged(null);
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
 
     private void addToAppComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToAppComboBoxActionPerformed
@@ -434,16 +442,27 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }//GEN-LAST:event_addToAppComboBoxActionPerformed
 
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
-        String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
-        String servInsID = (String)serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex());
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(servInsID);
-        Set supportedVersions = j2eePlatform.getSupportedSpecVersions();
-        j2eeSpecComboBox.removeAllItems();
-        if (supportedVersions.contains(J2eeModule.J2EE_14)) j2eeSpecComboBox.addItem(J2EE_SPEC_14_LABEL);
-        if (supportedVersions.contains(J2eeModule.J2EE_13)) j2eeSpecComboBox.addItem(J2EE_SPEC_13_LABEL);
-        if (prevSelectedItem != null) {
-            j2eeSpecComboBox.setSelectedItem(prevSelectedItem);
+        String prevSelectedItem = (String) j2eeSpecComboBox.getSelectedItem();
+        // update the j2ee spec list according to the selected server
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        if (serverInstanceWrapper != null) {
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceWrapper.getServerInstanceID());
+            Set supportedVersions = j2eePlatform.getSupportedSpecVersions(J2eeModule.EJB);
+            j2eeSpecComboBox.removeAllItems();
+            if (supportedVersions.contains(J2eeModule.JAVA_EE_5)) {
+                j2eeSpecComboBox.addItem(J2EE_SPEC_15_LABEL);
+            }
+            if (supportedVersions.contains(J2eeModule.J2EE_14)) {
+                j2eeSpecComboBox.addItem(J2EE_SPEC_14_LABEL);
+            }
+            if (prevSelectedItem != null) {
+                j2eeSpecComboBox.setSelectedItem(prevSelectedItem);
+            }
+        } else {
+            j2eeSpecComboBox.removeAllItems();
         }
+        // revalidate the form
+        panel.fireChangeEvent();
     }//GEN-LAST:event_serverInstanceComboBoxActionPerformed
 
     private void browseProjectFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectFolderActionPerformed
@@ -489,17 +508,11 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         
         chooser.setDialogTitle(NbBundle.getMessage(ImportLocationVisual.class, "LBL_SelectExistingLocation")); // NOI18N
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File projectLoc = FileUtil.normalizeFile(chooser.getSelectedFile());
-            FileObject configFilesPath = FileSearchUtility.guessConfigFilesPath(FileUtil.toFileObject(projectLoc));
-            if (configFilesPath != null) {
-                FileObject ejbJarXml = configFilesPath.getFileObject("ejb-jar.xml"); // NOI18N
-                checkEjbJarXmlJ2eeVersion(ejbJarXml);
-            }
-            projectLocation.setText(projectLoc.getAbsolutePath());
+            projectLocation.setText(FileUtil.normalizeFile(chooser.getSelectedFile()).getAbsolutePath());
+            updateJ2EEVersion();
             updateProjectName();
             updateProjectFolder();
-            listener.stateChanged(null);
-
+            panel.stateChanged(null);
         }
     }//GEN-LAST:event_browseProjectLocationActionPerformed
     
@@ -518,6 +531,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     private javax.swing.JLabel jLabelSrcLocationDesc;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JButton manageServersButton;
     public javax.swing.JTextField projectFolder;
     public javax.swing.JTextField projectLocation;
     public javax.swing.JTextField projectName;
@@ -526,24 +540,43 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     private javax.swing.JPanel warningPlaceHolderPanel;
     // End of variables declaration//GEN-END:variables
     
-    private static JFileChooser createChooser() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
+    private void setJ2eeVersionWarning() {
+        String errorMessage;
+        String selectedItem = (String)j2eeSpecComboBox.getSelectedItem();
         
-        return chooser;
-    }
-    
-    private static JFileChooser createChooser(String path) {
-        JFileChooser chooser = new JFileChooser(path);
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
+        if (J2EE_SPEC_14_LABEL.equals(selectedItem) && new BigDecimal(EjbJar.VERSION_2_0).equals(ejbJarXmlVersion)) {
+            errorMessage = NbBundle.getMessage(ImportLocationVisual.class, "MSG_EjbJarXMLNotSupported");
+        } else {
+            errorMessage = null;
+        }
+        if (wizardDescriptor != null) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMessage); //NOI18N
+        }
         
-        return chooser;
+        setJ2eeVersionWarningPanel();
     }
     
     private boolean ignoreEvent = false;
-
+    
+    private String lastComputedPrjName = null;
+    private String computeProjectName() {
+        String cPrjName = null;
+        FileObject fo = FileUtil.toFileObject(getProjectLocation());
+        if (fo != null) {
+            cPrjName = fo.getName();
+        }
+        return cPrjName;
+    }
+    
+    private String lastComputedPrjFolder = null;
+    private String computeProjectFolder() {
+        String cPrjFolder = null;
+        if (isValidProjectLocation()) {
+            cPrjFolder = getProjectLocation().getAbsolutePath();
+        }
+        return cPrjFolder;
+    }
+    
     private void update(DocumentEvent e) {
         if (ignoreEvent) {
             // side-effect of changes done in this handler
@@ -557,77 +590,86 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
             updateProjectName();
             updateProjectFolder();
         }
-
+        
         // stop ignoring events
         ignoreEvent = false;
-
-        if (projectFolder.getDocument() == e.getDocument()) {
-            projectFolderTouched = !"".equals(projectFolder.getText());
-        }
-        if (projectName.getDocument() == e.getDocument()) {
-            projectNameTouched = !"".equals(projectName.getText());
-        }
-        listener.stateChanged(null);
+        
+        panel.stateChanged(null);
     }
-
+    
     private void updateProjectName() {
-        if (projectNameTouched) {
+        String prjName = computeProjectName();
+        if ((lastComputedPrjName != null) && (!lastComputedPrjName.equals(projectName.getText().trim()))) {
             return;
         }
-        FileObject fo = FileUtil.toFileObject(getProjectLocation());
-        if (fo != null) {
-            projectName.setText(fo.getName()); // NOI18N
+        lastComputedPrjName = prjName;
+        if (prjName != null) {
+            projectName.setText(prjName);
         }
     }
-
+    
     private void updateProjectFolder() {
-        if (projectFolderTouched) {
-            return;                                                                
+        String prjFolder = computeProjectFolder();
+        if ((lastComputedPrjFolder != null) && (!lastComputedPrjFolder.equals(projectFolder.getText().trim()))) {
+            return;
         }
-        if (isValidProjectLocation()) {
-            projectFolder.setText(getProjectLocation().getAbsolutePath());
+        lastComputedPrjFolder = prjFolder;
+        if (prjFolder != null) {
+            projectFolder.setText(prjFolder);
         } else {
             projectFolder.setText(""); // NOI18N
         }
     }
-
+    
+    private void updateJ2EEVersion() {
+        File f = new File(projectLocation.getText().trim());
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+        if (fo != null) {
+            FileObject configFilesPath = FileSearchUtility.guessConfigFilesPath(fo);
+            if (configFilesPath != null) {
+                FileObject ejbJarXML = configFilesPath.getFileObject(EjbJarProvider.FILE_DD);
+                checkEjbJarXmlJ2eeVersion(ejbJarXML);
+            } else {
+                // suppose highest
+                j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_15_LABEL);
+            }
+        }
+    }
+    
     private boolean isValidProjectLocation() {
         return (getProjectLocation().exists() && getProjectLocation().isDirectory() &&
                 projectLocation.getText().length() > 0 && (!projectLocation.getText().endsWith(":"))); // NOI18N
     }
-
-    private boolean isEjbJarModule(FileObject dir) {
-        return FileSearchUtility.guessConfigFilesPath(dir) != null && FileSearchUtility.guessJavaRoots(dir) != null;
-    }
     
     public boolean valid(WizardDescriptor wizardDescriptor) {
-        File f = new File(projectLocation.getText().trim());
-        File prjFolder = new File(projectFolder.getText().trim());
+        File prjDir = new File(projectLocation.getText().trim());
+//        File prjFolder = new File(projectFolder.getText().trim());
         String prjName = projectName.getText().trim();
         
         if (getSelectedServerInstanceID() == null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_NoServer")); //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_NoServer")); //NOI18N
             return false;
         }
             
-        if (!f.isDirectory()) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_ProvideExistingSourcesLocation")); //NOI18N
+        if (!prjDir.isDirectory()) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_ProvideExistingSourcesLocation")); //NOI18N
             return false; //Existing sources location not specified
         }
         
         //Do we need this check?
         //            if (!prjFolder.isDirectory()) {
-        //                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_ProjectFolderDoesNotExists")); //NOI18N
+        //                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_ProjectFolderDoesNotExists")); //NOI18N
         //                return false; //Project folder not specified
         //            }
         
-        if (!isEjbJarModule(FileUtil.toFileObject(f))) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_NoEjbJarModule")); //NOI18N
-            return false; //No ejb jar module location
-        }
+        // we will leave it up to user if he provides project folder with sources or not
+        // if (FileSearchUtility.guessJavaRoots(FileUtil.toFileObject(FileUtil.normalizeFile(prjDir))) == null) {
+        //     wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_NoEjbJarModule")); //NOI18N
+        //     return false; // No java project location
+        // }
         
         if (prjName == null || prjName.length() == 0) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_ProvideProjectName")); //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_ProvideProjectName")); //NOI18N
             return false; //Project name not specified
         }
         
@@ -639,21 +681,23 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
 
         wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         
+        setJ2eeVersionWarning();
+        
         return true;
     }
 
     static String checkValidity (final String projectName, final String projectLocation) {
         File projLoc = new File (projectLocation).getAbsoluteFile();
-
+        
         if (PanelProjectLocationVisual.getCanonicalFile(projLoc) == null) {
-            return NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
+            return NbBundle.getMessage(ImportLocationVisual.class, "MSG_IllegalProjectLocation");
         }
-
+        
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_ProjectFolderReadOnly");
+            return NbBundle.getMessage(ImportLocationVisual.class,"MSG_ProjectFolderReadOnly");
         }
 
         File destFolder = FileUtil.normalizeFile(new File( projectLocation ));
@@ -663,22 +707,22 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
             for (int i=0; i< kids.length; i++) {
                 String childName = kids[i].getName();
                 if ("nbproject".equals(childName)) {   //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_NetBeansProject");
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_NetBeansProject");
                 }
                 else if ("build".equals(childName)) {    //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildFolder");
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_BuildFolder");
                 }
                 else if ("dist".equals(childName)) {   //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_DistFolder");
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_DistFolder");
                 }
                 else if ("build.xml".equals(childName)) {   //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_BuildXML");
                 }
                 else if ("manifest.mf".equals(childName)) { //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_Manifest");
+                    file = NbBundle.getMessage (ImportLocationVisual.class,"TXT_Manifest");
                 }
                 if (file != null) {
-                    String format = NbBundle.getMessage (PanelSourceFolders.class,"MSG_ProjectFolderInvalid");
+                    String format = NbBundle.getMessage (ImportLocationVisual.class,"MSG_ProjectFolderInvalid");
                     return MessageFormat.format(format, new Object[] {file});
                 }
             }
@@ -687,14 +731,14 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         if (destFolder.isDirectory()) {
             FileObject destFO = FileUtil.toFileObject(destFolder);
             assert destFO != null : "No FileObject for " + destFolder;
-            boolean clear = false;
+            boolean clear;
             try {
                 clear = ProjectManager.getDefault().findProject(destFO) == null;
             } catch (IOException e) {
-                // need not report here; clear remains false -> error
+                clear = false;
             }
             if (!clear) {
-                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_ProjectFolderHasDeletedProject");
+                return NbBundle.getMessage(ImportLocationVisual.class, "MSG_ProjectFolderHasDeletedProject");
             }
         }
         return null;
@@ -716,14 +760,27 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         File moduleLocFile =  new File(moduleLoc);
         d.putProperty(WizardProperties.SOURCE_ROOT, moduleLocFile);
         d.putProperty(WizardProperties.NAME, name);
-        d.putProperty(WizardProperties.JAVA_ROOT, FileSearchUtility.guessJavaRootsAsFiles(FileUtil.toFileObject(moduleLocFile)));
+        d.putProperty(WizardProperties.JAVA_ROOT, FileSearchUtility.guessJavaRootsAsFiles(FileUtil.toFileObject(FileUtil.normalizeFile(moduleLocFile))));
         d.putProperty(WizardProperties.SERVER_INSTANCE_ID, getSelectedServerInstanceID());
         d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
         d.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
         if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
-            d.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getJava14PlatformName());
-            d.putProperty(WizardProperties.SOURCE_LEVEL, "1.4"); // NOI18N
-        }
+            d.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
+            
+            String j2ee = getSelectedJ2eeSpec();
+            if (j2ee != null) {
+                String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
+                FoldersListSettings fls = FoldersListSettings.getDefault();
+                String srcLevel = "1.6"; //NOI18N
+                if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14())
+                    srcLevel = "1.4"; //NOI18N
+                else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15())
+                    srcLevel = "1.5"; //NOI18N
+                
+                d.putProperty(WizardProperties.SOURCE_LEVEL, srcLevel);
+            }            
+        } else
+            d.putProperty(WizardProperties.SOURCE_LEVEL, null);
         
         // TODO: ma154696: add also search for test roots
     }
@@ -733,12 +790,12 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     
     void validate (WizardDescriptor d) throws WizardValidationException {
         File dirF = new File(projectFolder.getText());
-        JButton ok = new JButton(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_OK")); //NOI18N
-        ok.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic")); //NOI18N
-        ok.setMnemonic(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_BuildFileDialog_OK_LabelMnemonic").charAt(0)); //NOI18N
-        JButton cancel = new JButton(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel")); //NOI18N
-        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "ACS_IW_BuildFileDialog_CancelButton_LabelMnemonic")); //NOI18N
-        cancel.setMnemonic(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_BuildFileDialog_Cancel_LabelMnemonic").charAt(0)); //NOI18N
+        JButton ok = new JButton(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Buildfile_OK")); //NOI18N
+        ok.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic")); //NOI18N
+        ok.setMnemonic(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_BuildFileDialog_OK_LabelMnemonic").charAt(0)); //NOI18N
+        JButton cancel = new JButton(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Buildfile_Cancel")); //NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_IW_BuildFileDialog_CancelButton_LabelMnemonic")); //NOI18N
+        cancel.setMnemonic(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_BuildFileDialog_Cancel_LabelMnemonic").charAt(0)); //NOI18N
         
         final ImportBuildfile ibf = new ImportBuildfile(dirF.getAbsolutePath(), ok);
         if ((new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH)).exists()) {
@@ -747,10 +804,10 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
                     Object src = event.getSource();
                     if (src instanceof JButton) {
                         String name = ((JButton) src).getText();
-                        if (name.equals(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_OK"))) { //NOI18N
+                        if (name.equals(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Buildfile_OK"))) { //NOI18N
                             closeDialog();
-                        } else if (name.equals(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel"))) { //NOI18N
-                            NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_Buildfile_CancelConfirmation"), NotifyDescriptor.YES_NO_OPTION); //NOI18N
+                        } else if (name.equals(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Buildfile_Cancel"))) { //NOI18N
+                            NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Buildfile_CancelConfirmation"), NotifyDescriptor.YES_NO_OPTION); //NOI18N
                             Object ret = DialogDisplayer.getDefault().notify(ndesc);
                             if (ret == NotifyDescriptor.YES_OPTION) {
                                 closeDialog();
@@ -762,7 +819,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
             
             DialogDescriptor descriptor = new DialogDescriptor(
                     ibf,
-                    NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_BuildfileTitle"), //NOI18N
+                    NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_BuildfileTitle"), //NOI18N
                     true,
                     new Object[] {ok, cancel},
                     DialogDescriptor.OK_OPTION,
@@ -772,26 +829,14 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
                             );
                     
                     dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-                    dialog.show();
-        } else
+                    dialog.setVisible(true);
+        } else {
             return;
+        }
     }
 
     private void closeDialog() {
         dialog.dispose();
-    }
-
-    //use it as a project root iff it is not sources or document root
-    // NOTE: the order of the searches in kind of important in this method for
-    //   performance reasons
-    public boolean isSuitableProjectRoot(FileObject dir) {
-        FileObject configFilesRoot = FileSearchUtility.guessConfigFilesPath(dir);
-        if (configFilesRoot != null && !FileUtil.isParentOf(dir, configFilesRoot))
-            return false;
-        FileObject[] srcRoots = FileSearchUtility.guessJavaRoots(dir);
-        if (srcRoots != null && !isParentOf(dir, srcRoots))
-            return false;
-        return true;
     }
     
     private boolean isParentOf(FileObject dir, FileObject[] fos) {
@@ -807,38 +852,70 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         return result;
     }
     
-    private void initServerInstances() {
-        String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
-        serverInstanceIDs = new ArrayList();
-        for (int i = 0; i < servInstIDs.length; i++) {
-            J2eePlatform j2eePlat = Deployment.getDefault().getJ2eePlatform(servInstIDs[i]);
-            String servInstDisplayName = Deployment.getDefault().getServerInstanceDisplayName(servInstIDs[i]);
-            if (servInstDisplayName != null && !servInstDisplayName.equals("")
-                && j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
-                serverInstanceIDs.add(servInstIDs[i]);
-                serverInstanceComboBox.addItem(servInstDisplayName);
+    /**
+     * Init servers model
+     * @param selectedServerInstanceID preselected instance or null if non is preselected
+     */
+    private void initServers(String selectedServerInstanceID) {
+        // init the list of server instances
+        serversModel.removeAllElements();
+        Set<ServerInstanceWrapper> servers = new TreeSet<ServerInstanceWrapper>();
+        ServerInstanceWrapper selectedItem = null;
+        boolean sjasFound = false;
+        for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
+            String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
+                // decide whether this server should be preselected
+                if (selectedItem == null || !sjasFound) {
+                    if (selectedServerInstanceID != null) {
+                        if (selectedServerInstanceID.equals(serverInstanceID)) {
+                            selectedItem = serverWrapper;
+                        }
+                    } else {
+                        // preselect the best server ;)
+                        String shortName = Deployment.getDefault().getServerID(serverInstanceID);
+                        if ("J2EE".equals(shortName)) { // NOI18N
+                            selectedItem = serverWrapper;
+                            sjasFound = true;
+                        }
+                        else
+                        if ("JBoss4".equals(shortName)) { // NOI18N
+                            selectedItem = serverWrapper;
+                        }
+                    }
+                }
+                servers.add(serverWrapper);
             }
         }
-        if (serverInstanceIDs.size() > 0) {
-            serverInstanceComboBox.setSelectedIndex(0);
-        } else {
-            serverInstanceComboBox.setEnabled(false);
-            j2eeSpecComboBox.setEnabled(false);
+        for (ServerInstanceWrapper item : servers) {
+            serversModel.addElement(item);
+        }
+        if (selectedItem != null) {
+            // set the preselected item
+            serversModel.setSelectedItem(selectedItem);
+        } else if (serversModel.getSize() > 0) {
+            // set the first item
+            serversModel.setSelectedItem(serversModel.getElementAt(0));
         }
     }
     
     public String getSelectedServerInstanceID() {
-        int idx = serverInstanceComboBox.getSelectedIndex();
-        return idx == -1 ? null 
-                         : (String)serverInstanceIDs.get(idx);
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        if (serverInstanceWrapper == null) {
+            return null;
+        }
+        return serverInstanceWrapper.getServerInstanceID();
     }
     
     public String getSelectedJ2eeSpec() {
         Object item = j2eeSpecComboBox.getSelectedItem();
         return item == null ? null
-                            : item.equals(J2EE_SPEC_14_LABEL) ? J2eeModule.J2EE_14 : J2eeModule.J2EE_13;
+                : item.equals(J2EE_SPEC_14_LABEL) ? J2eeModule.J2EE_14
+                : item.equals(J2EE_SPEC_15_LABEL) ? J2eeModule.JAVA_EE_5 : J2eeModule.J2EE_13;
     }
-
+    
     private File getAsFile(String filename) {
         return FileUtil.normalizeFile(new File(filename));
     }
@@ -861,7 +938,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }
     
     private void initEnterpriseApplications() {
-        addToAppComboBox.addItem(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEApp_None"));
+        addToAppComboBox.addItem(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_AddToEApp_None"));
         addToAppComboBox.setSelectedIndex(0);
         
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
@@ -881,18 +958,27 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     
     private BigDecimal getEjbJarXmlVersion(FileObject ejbJarXml) throws IOException {
         if (ejbJarXml != null) {
-            return DDProvider.getDefault().getDDRoot(ejbJarXml).getVersion();
-        } else {
-            return null;
+            EjbJar ejbJar = null;
+            org.netbeans.modules.j2ee.api.ejbjar.EjbJar apiEjbJar = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(ejbJarXml);
+            if (apiEjbJar != null) {
+              ejbJar = DDProvider.getDefault().getMergedDDRoot(apiEjbJar.getMetadataUnit());
+            } else {
+              ejbJar = DDProvider.getDefault().getDDRoot(ejbJarXml);
+            }
+            if (ejbJar != null) {
+                return ejbJar.getVersion();
+            }
         }
+        return null;
     }
 
     private void checkEjbJarXmlJ2eeVersion(FileObject ejbJarXml) {
         try {
             BigDecimal version = getEjbJarXmlVersion(ejbJarXml);
             ejbJarXmlVersion = version;
-            if (version == null)
+            if (version == null) {
                 return;
+            }
             
             if(new BigDecimal(EjbJar.VERSION_2_0).equals(version)) {
                 j2eeSpecComboBox.setSelectedItem(J2EE_SPEC_13_LABEL);
@@ -907,11 +993,47 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     }
     
     private void setJ2eeVersionWarningPanel() {
-        String warningType = J2eeVersionWarningPanel.findWarningType();
-        if (warningType == null)
+        String j2ee = getSelectedJ2eeSpec();
+        if (j2ee == null) {
             return;
-        
-        warningPanel = new J2eeVersionWarningPanel(warningType);
-        warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
+        }
+        String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
+        if (warningType == null && warningPanel == null) {
+            return;
+        }
+        if (warningPanel == null) {
+            warningPanel = new J2eeVersionWarningPanel(warningType);
+            warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
+            warningPanel.setWarningType(warningType);
+        } else {
+            warningPanel.setWarningType(warningType);
+        }
+    }
+    
+    /**
+     * Server instance wrapper represents server instances in the servers combobox.
+     * @author sherold
+     */
+    private static class ServerInstanceWrapper implements Comparable {
+
+        private final String serverInstanceID;
+        private final String displayName;
+
+        ServerInstanceWrapper(String serverInstanceID, String displayName) {
+            this.serverInstanceID = serverInstanceID;
+            this.displayName = displayName;
+        }
+
+        public String getServerInstanceID() {
+            return serverInstanceID;
+        }
+
+        public String toString() {
+            return displayName;
+        }
+
+        public int compareTo(Object o) {
+            return toString().compareTo(o.toString());
+        }
     }
 }

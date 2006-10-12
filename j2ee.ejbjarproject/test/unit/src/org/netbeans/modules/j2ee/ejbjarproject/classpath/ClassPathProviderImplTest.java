@@ -29,11 +29,11 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.ejbjarproject.TestPlatformProvider;
+import org.netbeans.modules.j2ee.ejbjarproject.test.TestBase;
+import org.netbeans.modules.j2ee.ejbjarproject.test.TestUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -43,7 +43,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Andrei Badea
  */
-public class ClassPathProviderImplTest extends NbTestCase {
+public class ClassPathProviderImplTest extends TestBase {
     
     private static final String DEFAULT_PLATFORM_ROOT = "DefaultPlatformRoot";
     
@@ -63,7 +63,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         FileObject defaultPlatformBootRoot = scratch.createFolder(DEFAULT_PLATFORM_ROOT);
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[] { defaultPlatformBootRoot.getURL() });
         
-        TestUtil.setLookup(new Object[] {
+        setLookup(new Object[] {
             new TestPlatformProvider(defBCP, defBCP)
         });
         
@@ -164,8 +164,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
     private void checkCompileClassPath(ClassPath cp) {
         // this jar is on javac.classpath
         assertTrue(classPathEntriesContainJar(cp.entries(), "jar0.jar"));
-        // this jar is on j2ee.classpath
-        assertTrue(classPathEntriesContainJar(cp.entries(), "j2ee.jar"));
+        // XXX should also test J2EE classpath
     }
 
     private void checkBootClassPath(ClassPath cp) {

@@ -19,16 +19,13 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
-import java.awt.Dialog;
 import java.awt.Dimension;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -38,9 +35,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-
 import org.openide.NotifyDescriptor;
 
 /** Accessory component used in the ProjectChooser for choosing project

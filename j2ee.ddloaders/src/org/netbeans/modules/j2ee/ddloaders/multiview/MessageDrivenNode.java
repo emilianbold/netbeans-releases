@@ -33,5 +33,6 @@ public class MessageDrivenNode extends EjbNode {
         addChild(new MdbImplementationNode(sectionNodeView, messageDriven));
         addChild(new BeanEnvironmentNode(sectionNodeView, messageDriven));
         addChild(new BeanDetailNode(sectionNodeView, messageDriven));
+        addChild(new EjbSecurityNode(sectionNodeView, messageDriven));
     }
 }

@@ -36,6 +36,7 @@ import org.openide.util.NbBundle;
  */
 public class J2eePlatformUiSupport {
     
+    private static final String JAVA_EE_5_DISPLAY_NAME = NbBundle.getMessage(J2eePlatformUiSupport.class, "JAVA_EE_5_displayName"); // NOI18N 
     private static final String J2EE_1_4_DISPLAY_NAME = NbBundle.getMessage(J2eePlatformUiSupport.class, "J2EE_1_4_displayName"); // NOI18N 
     private static final String J2EE_1_3_DISPLAY_NAME = NbBundle.getMessage(J2eePlatformUiSupport.class, "J2EE_1_3_displayName"); // NOI18N  
 
@@ -135,8 +136,10 @@ public class J2eePlatformUiSupport {
             initialJ2eeSpecVersion = new J2eePlatformComboBoxItem(j2eeSpecVersion);
             
             List orderedListItems = new ArrayList();
+            orderedListItems.add(new J2eePlatformComboBoxItem(EjbJarProjectProperties.JAVA_EE_5));
             orderedListItems.add(new J2eePlatformComboBoxItem(EjbJarProjectProperties.J2EE_1_4));
-            if (!initialJ2eeSpecVersion.getCode().equals(EjbJarProjectProperties.J2EE_1_4))
+            if (!initialJ2eeSpecVersion.getCode().equals(EjbJarProjectProperties.JAVA_EE_5) &&
+                    !initialJ2eeSpecVersion.getCode().equals(EjbJarProjectProperties.J2EE_1_4))
                 orderedListItems.add(0, new J2eePlatformComboBoxItem(EjbJarProjectProperties.J2EE_1_3));
             
             j2eeSpecVersions = (J2eePlatformComboBoxItem[])orderedListItems.toArray(new J2eePlatformComboBoxItem[orderedListItems.size()]);
@@ -174,6 +177,7 @@ public class J2eePlatformUiSupport {
         }
 
         private static String findDisplayName(String code){
+            if(code.equals(EjbJarProjectProperties.JAVA_EE_5)) return JAVA_EE_5_DISPLAY_NAME;
             if(code.equals(EjbJarProjectProperties.J2EE_1_4)) return J2EE_1_4_DISPLAY_NAME;
             if(code.equals(EjbJarProjectProperties.J2EE_1_3)) return J2EE_1_3_DISPLAY_NAME;
             return code; //version display name not found, use the version code for display name        
@@ -194,7 +198,7 @@ public class J2eePlatformUiSupport {
         
         J2eePlatform j2eePlatform = ((J2eePlatformAdapter)j2eePlatformModelObject).getJ2eePlatform();
         String specVersion = (String)j2eeSpecVersionModelObject;
-        return j2eePlatform.getSupportedSpecVersions().contains(specVersion);
+        return j2eePlatform.getSupportedSpecVersions(J2eeModule.EJB).contains(specVersion);
     }
     
     private static final class J2eePlatformAdapter implements Comparable {

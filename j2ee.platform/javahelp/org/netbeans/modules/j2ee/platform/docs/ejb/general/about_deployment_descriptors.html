@@ -1,14 +1,14 @@
-<html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2005 Sun Microsystems, Inc. 
+ * Copyright © 2006 Sun Microsystems, Inc. 
  * All rights reserved.
  * Use is subject to license terms.
 -->
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <title>About Deployment Descriptors</title>
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 
 </head>
 <body>
@@ -31,7 +31,7 @@
 <p>There are different types of deployment descriptors: EJB deployment descriptors 
   described in the Enterprise JavaBeans specification, web deployment descriptors 
   described in the Servlet specification, and application and application client 
-  deployment descriptors described in the J2EE specification. For each type of 
+  deployment descriptors described in the Java EE specification. For each type of 
   module or application, there are two deployment descriptors:</p>
 <ul>
   <li>A general deployment descriptor that configures deployment settings on any 
@@ -44,11 +44,11 @@
     The deployment descriptor for the Tomcat Web Server is named <tt>context.xml</tt>.</li>
 </ul>
 <h3>Deployment Descriptors in the IDE</h3>
-<p>The&nbsp;IDE generates a deployment descriptor from the settings for EJB modules, 
-  web application modules, and J2EE applications.when you create an empty enterprise project. 
+<p>The IDE generates a deployment descriptor from the settings for EJB modules, 
+  web application modules, and enterprise applications, when you create an empty enterprise project. 
   It also reads your existing deployment descriptors when you import existing 
   enterprise beans, enterprise applications, and web applications into the IDE. 
-  The deployment descriptors are located in the conf folder of your project directory, 
+  The deployment descriptors are located in the <tt>conf</tt> folder of your project directory, 
   and are displayed under the Configuration Files node in the Projects window.</p>
 <p>As you work with your projects, the IDE updates the general deployment descriptors 
   to reflect changes you have made, such as adding business methods to an enterprise 
@@ -58,9 +58,9 @@
   Server. For all other application servers, you have to write the deployment 
   descriptors yourself.</p>
 <p>You can open a graphical editor for a deployment descriptor by double-clicking 
-  its node in the Projects window. You can edit the deplyment descriptor's XML 
+  its node in the Projects window. You can edit the deployment descriptor's XML 
   by right-clicking its node and choosing Edit.</p>
-<p>The IDE also automatically registers the DTDs and schemas for all the J2EE 
+<p>The IDE also automatically registers the DTDs and schemas for all the Java EE 
   deployment descriptors, as well as the Sun Java System Application Server DTDs. 
   You can therefore check and validate the XML in your deployment descriptors 
   according to the DTDs and schemas. You can view the DTDs by going to the Runtime 
@@ -73,7 +73,7 @@
       <dd><a href="../../web/configure/configure_webapp_dd.html">Configuring Web Application 
       Deployment Descriptors</a> </dd>
       
-  <dd><a href="nbdocs:/org/netbeans/modules/usersguide/xml/catalog/xmlcatalog_about.html">About 
+  <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/xml/catalog/xmlcatalog_about.html">About 
     XML Catalogs</a> </dd>
 </dl>
  

@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:project="http://www.netbeans.org/ns/project/1"
-                xmlns:ear="http://www.netbeans.org/ns/j2ee-earproject/1"
+                xmlns:ear="http://www.netbeans.org/ns/j2ee-earproject/2"
                 xmlns:xalan="http://xml.apache.org/xslt"
                 exclude-result-prefixes="xalan project">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -38,7 +38,10 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:comment> (If you delete it and reopen the project it will be recreated.) </xsl:comment>
         
         <xsl:variable name="name" select="/project:project/project:configuration/ear:data/ear:name"/>
-        <project name="{$name}">
+        <!-- Synch with build-impl.xsl: -->
+        <!-- XXX really should translate all chars that are *not* safe (cf. PropertyUtils.getUsablePropertyName): -->
+        <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
+        <project name="{$codename}">
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">.</xsl:attribute>
             <description>Builds, tests, and runs the project <xsl:value-of select="$name"/>.</description>
@@ -54,11 +57,11 @@ Microsystems, Inc. All Rights Reserved.
       post-init:                called after initialization of project properties 
       pre-compile:              called before javac compilation 
       post-compile:             called after javac compilation 
-      pre-compile-single:       called before javac compilation of single file
-      post-compile-single:      called after javac compilation of single file
       pre-dist:                 called before jar building 
       post-dist:                called after jar building 
       post-clean:               called after cleaning build products 
+      pre-run-deploy:           called before deploying
+      post-run-deploy:          called after deploying
 
     Example of pluging an obfuscator after the compilation could look like 
 
@@ -75,11 +78,8 @@ Microsystems, Inc. All Rights Reserved.
     Other way how to customize the build is by overriding existing main targets.
     The target of interest are: 
 
-      init-macrodef-javac:    defines macro for javac compilation
-      init-macrodef-debug:    defines macro for class debugging
       do-dist:                jar archive building
       run:                    execution of project 
-      javadoc-build:          javadoc generation 
 
     Example of overriding the target for project execution could look like 
 

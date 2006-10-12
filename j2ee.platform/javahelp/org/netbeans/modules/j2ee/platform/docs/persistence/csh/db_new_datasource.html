@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Create Data Source Dialog Box</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Create Data Source Dialog Box</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <p>This dialog box enables you to create a data source (JDBC resource) which 
+            provides applications with a means of connecting to a database. 
+            To connect to a database, the JNDI name of the data source is used to locate the associated database.
+            Typically, the administrator creates a data source for each database accessed by the applications 
+        deployed in a domain. (However, more than one data source can be created for a database.)</p>
+        <p>To create a data source to use in your application, you need to supply the following:</p>
+        <ul>
+            <li><b>JNDI Name.</b> The JNDI name is the unique name for the data source. 
+            The JNDI name of the data source must also be registered on the target server.
+            
+                <ul class="note">
+                    <li>Because the data source is a JDBC resource, the JNDI name is expected in the <tt>java:comp/env/jdbc</tt> subcontext.
+                For example, for a database name MyDatabase, specify <tt>jdbc/MyDatabase</tt> as the JNDI name.</li>
+                </ul>
+            </li>
+            <li><b>Database Connection.</b> Choose the database connection to your database from the drop-down menu.
+                The data source refers to a specific database connection. 
+                The drop-down menu contains the database connections listed under the Databases node in the Runtime window.
+            Choose New Database Connection to create a new database connection.</li>
+        </ul>
+        <p>When you create a new data source for your application, the data source appears under the Server Resources node of your project
+        in the Projects window. If you are deploying to the Sun Java System Application Server, 
+        the data source is registered with the server upon deployment.</p>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
+        </dl>
+        
+        <hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+        
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

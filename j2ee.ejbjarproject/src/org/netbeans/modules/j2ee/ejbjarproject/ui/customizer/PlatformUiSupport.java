@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JList;
@@ -44,6 +43,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -218,8 +218,8 @@ public class PlatformUiSupport {
      * @param initialValue initial source level value
      * @return {@link ComboBoxModel} of {@link SpecificationVersion}
      */
-    public static ComboBoxModel createSourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue) {
-        return new SourceLevelComboBoxModel (platformComboBoxModel, initialValue);
+    public static ComboBoxModel createSourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue, String j2eePlatform) {
+        return new SourceLevelComboBoxModel (platformComboBoxModel, initialValue, j2eePlatform);
     }
     
     private static JavaPlatform getPlatform (PlatformKey platformKey) {
@@ -298,7 +298,7 @@ public class PlatformUiSupport {
     
     private static class PlatformComboBoxModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
         
-        private JavaPlatformManager pm;
+        private final JavaPlatformManager pm;
         private PlatformKey[] platformNamesCache;
         private String initialPlatform;
         private PlatformKey selectedPlatform;
@@ -342,7 +342,6 @@ public class PlatformUiSupport {
         private synchronized PlatformKey[] getPlatformNames () {
             if (this.platformNamesCache == null) {
                 JavaPlatform[] platforms = pm.getPlatforms (null, new Specification("j2se",null));    //NOI18N
-                JavaPlatform defaultPlatform = pm.getDefaultPlatform ();
                 Set/*<PlatformKey>*/ orderedNames = new TreeSet ();
                 boolean activeFound = false;
                 for (int i=0; i< platforms.length; i++) {
@@ -402,21 +401,34 @@ public class PlatformUiSupport {
         
         private static final String VERSION_PREFIX = "1.";      //The version prefix
         private static final int INITIAL_VERSION_MINOR = 2;     //1.2
+        // if project is JAVA EE 5 show only 1.5 and higher
+        private static final int INITIAL_VERSION_MINOR_JAVA_EE_5 = 5;     // 1.5
         
         private SpecificationVersion selectedSourceLevel;
         private SpecificationVersion[] sourceLevelCache;
         private final ComboBoxModel platformComboBoxModel;
         private PlatformKey activePlatform;
+        private String j2eePlatform = null;
         
         public SourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue) {            
             this.platformComboBoxModel = platformComboBoxModel;
             this.activePlatform = (PlatformKey) this.platformComboBoxModel.getSelectedItem();
             this.platformComboBoxModel.addListDataListener (this);
             if (initialValue != null && initialValue.length()>0) {
-                this.selectedSourceLevel = new SpecificationVersion (initialValue);
+                try {
+                    this.selectedSourceLevel = new SpecificationVersion (initialValue);
+                } catch (NumberFormatException nfe) {
+                    // If the javac.source has invalid value, do not preselect and log it.  
+                    ErrorManager.getDefault().log("Invalid javac.source: " + initialValue);
+                }
             }
         }
-                
+        
+        public SourceLevelComboBoxModel (ComboBoxModel platformComboBoxModel, String initialValue, String j2eePlatform) {
+            this(platformComboBoxModel, initialValue);
+            this.j2eePlatform = j2eePlatform;
+        }
+        
         public int getSize () {
             SpecificationVersion[] sLevels = getSourceLevels ();
             return sLevels.length;
@@ -485,8 +497,12 @@ public class PlatformUiSupport {
                 //If platform == null broken platform, the source level range is unknown
                 //The source level combo box should be empty and disabled
                 if (platform != null) {                    
-                    SpecificationVersion version = platform.getSpecification().getVersion();                                        
+                    SpecificationVersion version = platform.getSpecification().getVersion();
                     int index = INITIAL_VERSION_MINOR;
+                    // #71619 - source level lower than 1.5 won't be shown for Java EE 5 project
+                    if (j2eePlatform != null && j2eePlatform.equals(EjbJarProjectProperties.JAVA_EE_5)) {
+                        index = INITIAL_VERSION_MINOR_JAVA_EE_5;
+                    }
                     SpecificationVersion template = new SpecificationVersion (VERSION_PREFIX + Integer.toString (index++));                    
                     while (template.compareTo(version)<=0) {
                         sLevels.add (template);

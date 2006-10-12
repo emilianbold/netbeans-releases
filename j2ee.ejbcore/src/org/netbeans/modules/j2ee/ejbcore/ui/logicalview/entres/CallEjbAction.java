@@ -74,18 +74,20 @@ public class CallEjbAction extends NodeAction {
         FileObject srcFile = JavaModel.getFileObject(jc.getResource());
         Project project = FileOwnerQuery.getOwner(srcFile);
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
-	String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
-	if (serverInstanceId == null) {
-	    return true;
-	}
-	J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
-	if (platform == null) {
-	    return true;
-	}
-	if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
-	    return false;
-	}
-        return jc == null ? false : !jc.isInterface();
+        if (j2eeModuleProvider != null) {
+            String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
+            if (serverInstanceId == null) {
+                return true;
+            }
+            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+            if (platform == null) {
+                return true;
+            }
+            if (!platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                return false;
+            }
+        }
+        return !jc.isInterface();
     }
     
     /** Perform extra initialization of this action's singleton.

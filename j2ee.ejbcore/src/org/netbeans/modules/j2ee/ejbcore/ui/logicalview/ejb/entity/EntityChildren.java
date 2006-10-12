@@ -94,20 +94,20 @@ public class EntityChildren extends Children.Keys implements PropertyChangeListe
         if (LOCAL_KEY.equals(key)) {
             Children c = new MethodChildren(controller, model, controller.getLocalInterfaces(), true, ddFile);
             MethodsNode n = new MethodsNode(model, jar, srcPath, c, true);
-            n.setIconBase("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon");
+            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
             return new Node[] { n };
         }
         if (REMOTE_KEY.equals(key)) {
             Children c = new MethodChildren(controller, model, controller.getRemoteInterfaces(), false, ddFile);
             MethodsNode n = new MethodsNode(model, jar, srcPath, c, false);
-            n.setIconBase("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon");
+            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
             return new Node[] { n };
         }
         if (CMP_FIELDS.equals(key)) {
             CMPFieldsNode n = new CMPFieldsNode(controller,model,jar, ddFile);
-            n.setIconBase("org/netbeans/modules/j2ee/ejbcore/resources/CMFieldContainerIcon");
+            n.setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbcore/resources/CMFieldContainerIcon.gif");
             n.setDisplayName(NbBundle.getMessage(EntityChildren.class, "LBL_CMPFields"));
             return new Node[] { n };
         }
@@ -116,7 +116,11 @@ public class EntityChildren extends Children.Keys implements PropertyChangeListe
     
     public void propertyChange(PropertyChangeEvent ev) {
         //TODO add code for detecting class name changes 
-        updateKeys();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateKeys();
+            }
+        });
     }
     
 }

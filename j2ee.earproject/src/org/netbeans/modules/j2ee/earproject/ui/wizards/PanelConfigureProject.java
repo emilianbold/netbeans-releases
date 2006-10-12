@@ -44,6 +44,7 @@ final public class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     private ResourceBundle customBundle;
     boolean importStyle = false;
     private HelpCtx helpId;
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     /** Create the wizard panel descriptor. */
     public PanelConfigureProject(String namePropIndex, ResourceBundle customBundle, 
@@ -79,7 +80,6 @@ final public class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
         return component.valid(wizardDescriptor);
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -91,13 +91,13 @@ final public class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
     

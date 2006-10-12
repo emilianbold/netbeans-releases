@@ -1,0 +1,111 @@
+
+<html>
+    
+    <!--
+    *     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+    *     Use is subject to license terms.
+    -->
+    <head>
+        
+        
+        <title>About Calling an Enterprise Bean</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>About Calling an Enterprise Bean</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Calling an enterprise bean is the process of getting a reference to the enterprise 
+        bean so that you can call its methods. In order to call an enterprise bean's methods,
+        you need to create an instance of the bean's local or remote interface, then call
+        methods of the interface.</p>
+        <p>You can automatically generate lookup code for an enterprise bean, including any 
+        deployment descriptor configuration code, by right-clicking a Java file and choosing 
+        Enterprise Resources &gt; Call Enterprise Bean. See <a href="call_ejb.html">
+        Calling an Enterprise Bean</a> for more information.</p>
+        <p>The process of calling an enterprise bean differs for Java EE 5 applications
+        and J2EE 1.4 applications.</p>
+        <ul>
+            <li>
+                <b>Java EE 5 Specification.</b> You use the <tt>@EJB</tt> annotation to inject
+                an interface tag. You therefore only have to declare the remote or local interface
+                by using code similar to the following:
+                <pre>@EJB
+private MyEJBInterface newMyEJB;
+                </pre>
+                <p>If you are calling an enterprise bean in a different project, you also
+                have to add the EJB project to the classpath of the project that is
+                calling the enterprise bean.</p>
+            </li>
+            <li>
+                <b>J2EE 1.4 Specification.</b> You use JNDI lookup to locate the bean and retrieve
+                an instance of the local or remote interface. Each enterprise bean is given a unique
+                JNDI name in its deployment descriptor. You use a lookup method similar to the following
+                to locate the enterprise bean:
+                <pre>private MySessionRemote lookupMySessionBean() {
+    try {
+        Context c = new InitialContext();
+        Object remote = c.lookup("java:comp/env/ejb/MySessionBean");
+        MySessionRemoteHome rv = 
+            (MySessionRemoteHome) PortableRemoteObject.narrow(remote, MySessionRemoteHome.class);
+        return rv.create();
+    }
+    catch <i>exceptions</i></pre>
+                <p>You then have to get an instance of the interface using code similar to the following:</p>
+                <pre>private MySessionRemote newMySessionRemote = lookupMySessionBean();</pre>
+                <p>Finally, you register the EJB reference in the deployment descriptor of the module
+                from which you are calling the enterprise bean. If and where the reference 
+                is added depends on which of the following applies:</p>
+                <ul>
+                    <li>If the lookup is made from an enterprise bean implementation class, 
+                    the reference is added to the corresponding bean.</li> 
+                    <li>If the lookup is made from any class of a web application,
+                    the reference is added to the web application.</li> 
+                    <li>If the lookup is made from a plain Java class of an EJB module, 
+                    no reference is added. In this case, the reference has to be added manually 
+                    to the bean calling the plain Java class.</li> 
+                </ul>
+            </li>
+        </ul>
+        <p><b>Notes:</b></p>
+        <ul>
+            <li>If you are calling an enterprise bean that is in a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+                <param name="viewerActivator" value="javax.help.LinkLabel">
+                <param name="viewerStyle" value="javax.help.Popup">
+                <param name="viewerSize" value="400,220">
+                <param name="text" value="free-form EJB module project">
+                <param name="textFontSize" value="medium">
+                <param name="textFontFamily" value="SansSerif">
+                <param name="textFontStyle" value="italic">
+                <param name="textFontWeight" value="bold">
+                <param name="textColor" value="blue">
+            </object> and you get an error that the selected bean is not specified in 
+            the distribution archive, you have to specify the EJB module project's output. 
+            Right-click the EJB module's project node, choose Properties, and specify 
+            the output JAR file in the Output panel.</li>
+            <li>The IDE cannot assist you when calling an enterprise bean from a free-form 
+            web application project.</li>
+            <li>You can only call an enterprise bean from a free-form EJB module project 
+            if the enterprise bean is located in the same project.</li>
+        </ul>        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../../enterprise/general/add_modules_to_ent_app.html">Adding 
+            a Module to an Enterprise Application</a></dd>
+            <dd><a href="../configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a></dd>
+            <dd><a href="define_business_method.html">Defining a Business Method</a> </dd>
+            
+            <dd><a href="create_ejb.html">Creating an Enterprise Bean</a></dd>
+            <dd><a href="create_ejb.html">Using Service Locators</a></dd>
+        </dl>
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

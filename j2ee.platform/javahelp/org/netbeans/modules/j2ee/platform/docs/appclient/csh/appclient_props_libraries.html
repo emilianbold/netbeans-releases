@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Enterprise Application Client Project Properties Dialog Box: Libraries</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Enterprise Application Client Project Properties Dialog Box: Libraries</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>The Libraries panel enables you to register libraries on a project's various 
+  classpaths as well as set the target Java platform against which all source 
+  files are compiled and run. You open the Enterprise Application Client Properties 
+  dialog box by right-clicking any application client node and choosing Properties. 
+<p> You can configure the following project classpaths: 
+<ul>
+	
+  <li>Compilation classpath
+  <li>Runtime classpath
+  <li>JUnit test compilation classpath
+  <li>JUnit test runtime classpath
+</ul>
+<p>Use the buttons on the right  side of the panel to add, remove, 
+  and change the order of classpath elements. You can add any of the following: 
+<ul>
+  <li><b>JAR file.</b> A Java archive file somewhere on your system.  </li>
+  <li><b><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/compile/comp_libraries.html">Library</a>. </b>A collection
+  	 of binary files, source files, and Javadoc files. </li>
+  <li><b><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/compile/comp_dependencies.html">Project</a>.</b> The build 
+    output, source files, and Javadoc files of another IDE project.</li>
+</ul>
+<p><b>Notes:</b>
+<ul>
+  <li>If a JAR file with attached souce code and Javadoc documentation is registered
+  	with a project as a member of a Java Class Library, you can simply
+  	add the JAR file to the classpath and the IDE finds the Javadoc documentation
+  	and source code automatically. <!--You should use the Add Library button if you
+  		want to add a library that contains several JAR files. -->
+	Adding a Java Class Library rather than a regular JAR file also makes it easier for other developers
+  		you share the project with to fix broken references to Javadoc documentation
+	and source code. </li>
+  <li>Adding a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form project">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object> 
+  to the classpath of a standard project does nothing 
+    unless you also declare the free-form project's build outputs in the Output
+   page of its Project Properties dialog box.</li>
+  <li>By default, the project's compiled sources and everything on the compilation
+  	classpath are also on the runtime classpath.</li>
+  <li>By default, the project's compiled test files and everything on the tests'
+  	compilation classpath are also on the test runtime classpath.</li>
+</ul>
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../appclient_about.html">About Enterprise Application Clients</a></dd>
+  <dd><a href="../appclient_create.html">Creating an Enterprise Application Client</a></dd>
+  <dd>Enterprise Application Client Properties Dialog Box:</dd>
+  <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="appclient_props_sources.html">Sources</a></dd>
+  <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="appclient_props_compiling.html">Compiling</a></dd>
+  <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="appclient_props_packaging.html">Packaging</a> 
+  </dd>
+  <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="appclient_props_documenting.html">Documenting</a></dd>
+  <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="appclient_props_run.html">Run</a></dd>
+  <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="appclient_props_wsclient.html">Web Service Clients</a></dd>
+</dl>
+
+<hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

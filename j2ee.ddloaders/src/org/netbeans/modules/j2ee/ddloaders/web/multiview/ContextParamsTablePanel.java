@@ -123,7 +123,7 @@ public class ContextParamsTablePanel extends DefaultTablePanel {
             dialogPanel.getTextComponents()[1].getDocument().addDocumentListener(docListener);
             
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.show();
+            d.setVisible(true);
             dialogPanel.getTextComponents()[0].getDocument().removeDocumentListener(docListener);
             dialogPanel.getTextComponents()[1].getDocument().removeDocumentListener(docListener);
             

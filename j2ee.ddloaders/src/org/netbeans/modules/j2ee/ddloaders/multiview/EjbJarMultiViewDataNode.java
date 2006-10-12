@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import java.awt.Image;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.openide.loaders.DataNode;
@@ -29,10 +30,12 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.openide.util.NbBundle;
 
 /**
  * A node to represent this ejb-jar.xml object.
@@ -40,39 +43,39 @@ import java.beans.PropertyChangeListener;
  * @author pfiala
  */
 public class EjbJarMultiViewDataNode extends DataNode {
-
+    
     private static final String DEPLOYMENT = "deployment"; // NOI18N
-
+    
     private EjbJarMultiViewDataObject dataObject;
-
+    
     /**
      * Name of property for spec version
      */
     public static final String PROPERTY_DOCUMENT_TYPE = "documentType"; // NOI18N
-
+    
     /**
      * Listener on dataobject
      */
     private PropertyChangeListener ddListener;
-
+    
     public EjbJarMultiViewDataNode(EjbJarMultiViewDataObject obj) {
         this(obj, Children.LEAF);
     }
-
+    
     public EjbJarMultiViewDataNode(EjbJarMultiViewDataObject obj, Children ch) {
         super(obj, ch);
         dataObject = obj;
         initListeners();
         setIconBase(dataObject.getSaxError() == null);
     }
-
+    
     /**
      * Initialize listening on adding/removing server so it is
      * possible to add/remove property sheets
      */
     private void initListeners() {
         ddListener = new PropertyChangeListener() {
-
+            
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
                 Object oldValue = evt.getOldValue();
@@ -87,22 +90,22 @@ public class EjbJarMultiViewDataNode extends DataNode {
                     firePropertySetsChange(null, null);
                 } else if (XmlMultiViewDataObject.PROP_SAX_ERROR.equals(propertyName)) {
                     fireShortDescriptionChange((String) oldValue, (String) newValue);
-                }  
+                }
             }
-
+            
         };
         getDataObject().addPropertyChangeListener(ddListener);
     }
-
+    
     private void setIconBase(final boolean valid) {
         if (valid) {
-            setIconBase(dataObject.getIconBaseForValidDocument());
+            setIconBaseWithExtension(dataObject.getIconBaseForValidDocument());
         } else {
-            setIconBase(dataObject.getIconBaseForInvalidDocument());
+            setIconBaseWithExtension(dataObject.getIconBaseForInvalidDocument());
         }
         fireIconChange();
     }
-
+    
     protected Sheet createSheet() {
         Sheet s = new Sheet();
         Sheet.Set ss = new Sheet.Set();
@@ -110,7 +113,7 @@ public class EjbJarMultiViewDataNode extends DataNode {
         ss.setDisplayName(NbBundle.getMessage(EjbJarMultiViewDataNode.class, "PROP_deploymentSet"));
         ss.setShortDescription(NbBundle.getMessage(EjbJarMultiViewDataNode.class, "HINT_deploymentSet"));
         ss.setValue("helpID", "TBD---Ludo ejbjar node");   // NOI18N
-
+        
         Property p = new PropertySupport.ReadWrite(PROPERTY_DOCUMENT_TYPE,
                 String.class,
                 NbBundle.getBundle(EjbJarMultiViewDataNode.class).getString("PROP_documentDTD"),
@@ -119,7 +122,7 @@ public class EjbJarMultiViewDataNode extends DataNode {
                 java.math.BigDecimal version = dataObject.getEjbJar().getVersion();
                 return (version == null ? "" : version.toString());
             }
-
+            
             public void setValue(Object value) {
                 String val = (String) value;
                 if (EjbJar.VERSION_2_1.equals(val) && !val.equals(dataObject.getEjbJar().getVersion().toString())) {
@@ -130,18 +133,29 @@ public class EjbJarMultiViewDataNode extends DataNode {
         };
         ss.put(p);
         s.put(ss);
-
+        
         return s;
     }
-
+    
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
+    
+    public java.awt.Image getIcon(int type) {
+        Image ejbJarXmlIcon = Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); //NOI18N
+        
+        if (dataObject.getSaxError() == null){
+            return ejbJarXmlIcon;
+        }
 
+        Image errorBadgeIcon = Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/error-badge.gif"); //NOI18N
+        return Utilities.mergeImages(ejbJarXmlIcon, errorBadgeIcon, 6, 6);
+    }
+    
     void descriptionChanged(String oldDesc, String newDesc) {
         setShortDescription(newDesc == null ? "Enterprise Bean deployment descriptor" : newDesc); //NOI18N
     }
-
+    
     public String getShortDescription() {
         SAXException saxError = dataObject.getSaxError();
         if (saxError==null) {

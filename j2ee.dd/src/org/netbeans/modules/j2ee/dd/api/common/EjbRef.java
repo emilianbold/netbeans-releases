@@ -43,42 +43,56 @@ public interface EjbRef extends CommonDDBean, DescriptionInterface {
         /** Setter for ejb-ref-name property.
          * @param value property value
          */
-	public void setEjbRefName(java.lang.String value);
+	public void setEjbRefName(String value);
         /** Getter for ejb-ref-name property.
          * @return property value 
          */
-	public java.lang.String getEjbRefName();
+	public String getEjbRefName();
         /** Setter for ejb-ref-type property.
          * @param value property value
          */
-	public void setEjbRefType(java.lang.String value);
+	public void setEjbRefType(String value);
         /** Getter for ejb-ref-type property.
          * @return property value 
          */
-	public java.lang.String getEjbRefType();
+	public String getEjbRefType();
         /** Setter for home property.
          * @param value property value
          */
-	public void setHome(java.lang.String value);
+	public void setHome(String value);
         /** Getter for home property.
          * @return property value 
          */
-	public java.lang.String getHome();
+	public String getHome();
         /** Setter for remote property.
          * @param value property value
          */
-	public void setRemote(java.lang.String value);
+	public void setRemote(String value);
         /** Getter for remote property.
          * @return property value 
          */
-	public java.lang.String getRemote();
+	public String getRemote();
         /** Setter for ejb-link property.
          * @param value property value
          */
-	public void setEjbLink(java.lang.String value);
+	public void setEjbLink(String value);
         /** Getter for ejb-link property.
          * @return property value 
          */
-	public java.lang.String getEjbLink();
+	public String getEjbLink();
+
+        // Java EE 5
+        
+        void setMappedName(String value) throws VersionNotSupportedException;
+	String getMappedName() throws VersionNotSupportedException;
+	void setInjectionTarget(int index, InjectionTarget valueInterface) throws VersionNotSupportedException;
+	InjectionTarget getInjectionTarget(int index) throws VersionNotSupportedException;
+	int sizeInjectionTarget() throws VersionNotSupportedException;
+	void setInjectionTarget(InjectionTarget[] value) throws VersionNotSupportedException;
+	InjectionTarget[] getInjectionTarget() throws VersionNotSupportedException;
+	int addInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+	int removeInjectionTarget(InjectionTarget valueInterface) throws VersionNotSupportedException;
+	InjectionTarget newInjectionTarget() throws VersionNotSupportedException;
+
 }
 

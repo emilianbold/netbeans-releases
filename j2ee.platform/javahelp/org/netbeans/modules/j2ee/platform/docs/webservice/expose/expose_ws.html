@@ -1,71 +1,70 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
-<head>
-<title>Deploying a Web Service</title>
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
-</head>
-<body>
+    <head>
+        <title>Deploying a Web Service</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
 
-<h2>Deploying a Web Service</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>Unless the module (EJB module or web application module) in which the web service 
-  is implemented is designed to be deployed as a stand-alone module, you should 
-  always deploy it by deploying the enterprise application that contains it. If 
-  you run the Run Project or Deploy Project commands on an individual module that 
-  is part of an enterprise application, the IDE only deploys that module itself. 
-  Any changes you have made in the other modules in the project are not propagated 
-  to the server.</p>
+        <h2>Deploying a Web Service</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <p>Unless the module (EJB module or web application module) in which the web service 
+        is implemented is designed to be deployed as a stand-alone module, you should 
+        always deploy it by deploying the enterprise application that contains it. If 
+        you run the Run Project or Deploy Project commands on an individual module that 
+        is part of an enterprise application, the IDE only deploys that module itself. 
+        Any changes you have made in the other modules in the project are not propagated 
+        to the server.</p>
   
-<p><b>To expose a web service from within an enterprise application project:</b></p>
-  <ol>
-	  <li>In the Projects window, <a href="../../web/configure/about_webapp_configure.html">add the web application module</a>
-	  or <a href="../../ejb/configuring/config_ejb_about.html">add the EJB module</a> to the enterprise application.</li>
-  <li>Right-click the enterprise application project and choose one of the 
-    following: 
-    <ul>
-	    <li><b>Run Project.</b> Only takes the 
-	    minimal steps needed to run the project. For example, if you only changed one file,
-	    only that file is sent to the server.</li>
-      <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
-        no matter what changes you made, even if none.</li>
-      </ul>
-  </li>
-</ol>
-<p><b>To expose a web service from within a module project:</b></p>
- <ul>
-  <li>Right-click the module project and choose one of the 
-    following: 
-    <ul><li><b>Run Project.</b> Only takes the 
-	    minimal steps needed to run the project. For example, if you only changed one file,
-	    only that file is sent to the server.
-	    </li>
-      <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
-        no matter what changes you made, even if none.</li>
-    </ul>
-  </li>
-</ul>
+        <p><b>To expose a web service from within an enterprise application project:</b></p>
+        <ol>
+            <li>In the Projects window, <a href="../../web/configure/about_webapp_configure.html">add the web application module</a>
+            or <a href="../../ejb/configuring/config_ejb_about.html">add the EJB module</a> to the enterprise application.</li>
+            <li>Right-click the enterprise application project and choose one of the 
+                following: 
+                <ul>
+                    <li><b>Run Project.</b> Only takes the 
+                    minimal steps needed to run the project. For example, if you only changed one file,
+                    only that file is sent to the server.</li>
+                    <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
+                    no matter what changes you made, even if none.</li>
+                </ul>
+            </li>
+        </ol>
+        <p><b>To expose a web service from within a module project:</b></p>
+        <ul>
+            <li>Right-click the module project and choose one of the 
+                following: 
+                <ul><li><b>Run Project.</b> Only takes the 
+                    minimal steps needed to run the project. For example, if you only changed one file,
+                    only that file is sent to the server.
+                </li>
+                    <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
+                    no matter what changes you made, even if none.</li>
+                </ul>
+            </li>
+        </ul>
 
-<table>
-  <tr> 
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-  </tr>
-  <tr> 
-    <td width="23"></td>
-    <td><a href="../../enterprise/general/about_ent_apps.html">About Enterprise Applications</a><br>
-	    <a href="../build/about_build_ws.html">About Building Web Services</a><br>
-	    <a href="../../enterprise/general/ent_app_verify.html">Verifying an Enterprise Application</a><br></td>
-  </tr>
-</table>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Deploying and Testing Web Services</a></dd>
+            <dd><a href="about_deploy_and_test_ws.html">Deploying a Web Service</a></dd>
+            <dd><a href="glassfish_tester-ws.html">Testing a JAX-WS Web Service</a></dd>
+            <dd><a href="test_ws.html">Viewing the Published WSDL File</a></dd>
+        </dl>
 
-<hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table></body>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+
+    </body>
 </html>

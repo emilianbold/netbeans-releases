@@ -38,4 +38,8 @@ public interface MessageDestination extends CommonDDBean, DescriptionInterface, 
      */
     public java.lang.String getMessageDestinationName();
 
+    // Java EE 5
+    
+    void setMappedName(String value) throws VersionNotSupportedException;
+    String getMappedName() throws VersionNotSupportedException;
 }

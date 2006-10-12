@@ -1,0 +1,90 @@
+
+<html>
+
+<!--
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<head>
+    <title>Creating an Enterprise Application Client</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+
+<h2>Creating an Enterprise Application Client</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<ol>
+    <li>Choose File &gt; New Project (Ctrl-Shift-N). 
+        <ul class="note">
+            <li>Before you can create an enterprise application project, you must <a href="../server/server_register.html">register</a> 
+            an application server.</li>
+        </ul>
+    </li>
+    <li>From the Enterprise category, select one of the following project templates: 
+        <ul>
+            
+      <li><a href="csh/new_appclient.html">Enterprise Application Client</a>. 
+        Creates an empty enterprise application client in a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                    <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
+                    <param name="viewerActivator" value="javax.help.LinkLabel">
+                    <param name="viewerStyle" value="javax.help.Popup">
+                    <param name="viewerSize" value="400,220">
+                    <param name="text" value="standard project">
+                    <param name="textFontSize" value="medium">
+                    <param name="textFontFamily" value="SansSerif">
+                    <param name="textFontStyle" value="italic">
+                    <param name="textFontWeight" value="bold">
+                    <param name="textColor" value="blue">
+            </object>.</li>
+            
+      <li><a href="csh/appclient_with_source_wizard1.html">Enterprise Application 
+        Client with Existing Sources</a>. Imports an existing enterprise application 
+        client into a standard project. The project's folder structure must adhere 
+        to the <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                    <param name="content" value="../web/glossary/blueprints.html">
+                    <param name="viewerActivator" value="javax.help.LinkLabel">
+                    <param name="viewerStyle" value="javax.help.Popup">
+                    <param name="viewerSize" value="450,680">
+                    <param name="text" value="J2EE Blueprints conventions for application structure">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object> and the project must contain at least the <tt>application-client.xml</tt> deployment
+                descriptor. For more information, see: 
+                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://java.sun.com/blueprints/code/projectconventions.html">
+                    <param name="text" value="<html><u>http://java.sun.com/blueprints/code/projectconventions.html</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object> 
+            </li>
+        </ul>
+    </li>
+    <li>Follow the steps in the rest of the wizard.</li>
+</ol>
+<p><b>Notes:</b></p>
+<ul>
+    <li>If you want to turn a regular Java project into a Java EE application client,
+    you have to add at least the <tt>application-client.xml</tt> deployment descriptor to the
+    <tt>src/conf</tt> folder, then close the project and create it again using the
+    Enterprise Application Client with Existing Sources template as described above.</li>
+    <li>You can also create an application client as part of creating a new enterprise application.
+    In the New Enterprise Application wizard, select the Create Application Client checkbox and specify
+    the name of the application client and the main class.</li>
+</ul>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="appclient_about.html">About Enterprise Application Clients</a></dd>
+    <dd><a href="appclient_edit_dd.html">Editing an Enterprise Application Client's Deployment Descriptors</a></dd>
+    <dd><a href="../enterprise/general/add_modules_to_ent_app.html">Adding a Module to an Enterprise Application</a></dd>
+    <dd><a href="../ejb/editing/call_ejb.html">Calling an Enterprise Bean</a></dd>
+</dl>
+<hr>
+<small> <a href="../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+    
+</html>

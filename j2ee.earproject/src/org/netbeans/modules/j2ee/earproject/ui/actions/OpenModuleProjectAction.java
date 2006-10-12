@@ -19,48 +19,60 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.actions;
 
-import org.openide.nodes.*;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.earproject.ui.ModuleNode;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.openide.util.actions.CookieAction;
 
-import org.netbeans.modules.j2ee.earproject.ui.ModuleNode;
-
-public class OpenModuleProjectAction extends org.openide.util.actions.CookieAction {
-        OpenModuleProjectAction() {
-            // why do I need this?
-        }
-        
-        protected Class[] cookieClasses() {
-            return new Class[] { ModuleNode.class };
-        }
-        
-        protected int mode() {
-            return org.openide.util.actions.CookieAction.MODE_ALL;
-        }
-        
-        public void performAction(Node[] nodes) {
-            Project args[] = new Project[nodes.length];
-            for (int i = 0; i < nodes.length; i++) {
-                VisualClassPathItem vcpi = ((ModuleNode)nodes[i].getCookie(ModuleNode.class)).getVCPI();
-                if (vcpi.TYPE_ARTIFACT == vcpi.getType()) {
-                    args[i] = ((AntArtifact) vcpi.getObject()).getProject();
-                } else return;
+public class OpenModuleProjectAction extends CookieAction {
+    
+    protected Class[] cookieClasses() {
+        return new Class[] { ModuleNode.class };
+    }
+    
+    protected int mode() {
+        return CookieAction.MODE_ALL;
+    }
+    
+    public void performAction(Node[] nodes) {
+        Project projects[] = new Project[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            VisualClassPathItem vcpi = ((ModuleNode)nodes[i].getCookie(ModuleNode.class)).getVCPI();
+            if (VisualClassPathItem.Type.ARTIFACT == vcpi.getType()) {
+                projects[i] = ((AntArtifact) vcpi.getObject()).getProject();
+            } else {
+                continue;
             }
-            org.netbeans.api.project.ui.OpenProjects.getDefault().open(args,false);
         }
-        
-        public org.openide.util.HelpCtx getHelpCtx() {
-            return null;
+        Set<Project> validProjects = new HashSet<Project>();
+        for (int i = 0; i < nodes.length; i++) {
+            if (ProjectManager.getDefault().isValid(projects[i])) {
+                validProjects.add(projects[i]);
+            } // XXX else make project broken?
         }
-        
-        public String getName() {
-            return NbBundle.getMessage(ModuleNode.class, "LBL_OpenProject");
-        }
-        
-        protected boolean asynchronous() {
-            return false;
+        if (!validProjects.isEmpty()) {
+            OpenProjects.getDefault().open(projects,false);
         }
     }
+    
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+    
+    public String getName() {
+        return NbBundle.getMessage(OpenModuleProjectAction.class, "LBL_OpenProject");
+    }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
+    
+}

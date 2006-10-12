@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Web Service Attributes Editor: Port Types</title>
+        <link rel="StyleSheet" href="../../../../../../usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Web Service Attributes Editor: Port Types</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <p>The WSDL Customization panel of the Web Service Attributes Editor 
+        is available to JAX-WS (Java EE 5) web services and clients
+        that are created from WSDL. In these scenarios, <tt>wsimport</tt> is invoked to
+        generate the JAX-WS artifacts. By default, <tt>wsimport</tt> follows
+        the binding rules specified by the JAX-WS specification. You use the WSDL Customization 
+        panel to
+        customize the behaviour of <tt>wsimport</tt> when generating these artifacts. 
+        <p>You access the WSDL Customization panel of the Web Service Attributes Editor from the Projects window.
+        Right-click the node representing a "from WSDL" artifact and then choose Edit Web Service
+        Attributes. For example, for web service clients, expand the Web Service References
+        node, right-click a node representing a web service client, and choose Edit
+        Web Service Attributes. The editor appears. Choose the WSDL Customization tab and
+        the panel opens.
+        <h3>Port Types</h3>
+        <p>Use the Port Types section to customize WSDL properties at the
+        port type level. For example, you can customize the name of the Java class
+        that is generated from the WSDL file. By default, the Java class
+        that is generated has the name provided by the WSDL file.
+        
+        <p>You can define the following properties at the port type level:
+        <ul>
+            <li><b>Java Class.</b> Customizes the Java class name provided by the WSDL file.</li>
+            <li><b>Enable Wrapper Style.</b> Customizes the  way the parameter types and return 
+            types of a WSDL operation are generated. By default, <tt>wsimport</tt> uses
+            the wrapper style. For example, if an operation has one input message, named
+            <tt>setLastTradePrice</tt>, and one output message, named <tt>setLastTradePriceResponse</tt>, and
+            the part in the <tt>setLastTradePrice</tt> is really made up of two primitive types, 
+            a string and a float, <i>without</i> wrapper style, <tt>wsimport</tt> generates the following 
+            Java code:
+            <pre>SetLastTradePriceResponse setLastTradePrice(SetLastTradePrice setLastTradePrice);</pre>
+            
+            <p>However, <i>with</i> wrapper style, <tt>wsimport</tt> generates the following Java code:
+            <pre>void setLastTradePrice(String tickerSymbol, float lastTradePrice);</pre>
+            
+            <p>As you can see, with the wrapper style, the method parameters are 
+            broken down to its components.
+            Thus, specifying wrapper or non-wrapper style is dependent on the
+            coding style of the developer. 
+            
+            
+            <li><b>Enable Asynchronous Client.</b> Generates asynchchronous methods for
+                the WSDL operations. For each operation, two asynchronous methods are
+            generated. For details, see <a href="../../consume/wsc_call_ws_asynchronous.html">Asynchronously Calling a Web Service Operation</a>.</li>
+        </ul>
+        
+        <ul class="note">
+            <li>If the latter two properties are enabled in the Global Customization section,
+                all port types will be affected. You can then override at the port type level to affect only the operations 
+                of that port type. And, finally, you can overrride at the port type operation level to designate which operations
+            are affected.</li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="EditWSAttributesCookieImpl.html">Web Service Attributes Editor</a></dd>
+            <dd><a href="ID_GLOBAL.html">Global Customization</a></dd>
+            <dd><a href="ID_PORT_TYPE_OPERATION_FAULT.html">Port Type Faults</a></dd>
+            <dd><a href="ID_BINDING.html">Bindings</a></dd>
+            <dd><a href="ID_BINDING_OPERATION.html">Binding Operations</a></dd>
+            <dd><a href="ID_SERVICE.html">Services</a></dd>
+            <dd><a href="ID_PORT.html">Ports</a></dd>
+            <dd><a href="ID_EXTERNAL_BINDING.html">External Binding Files</a></dd>
+        </dl> 
+        
+        <hr>
+        <font size=-2><a href="../../../credits.html">Legal Notices</a></font> 
+        <table border="0" cellpadding="20">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>
+

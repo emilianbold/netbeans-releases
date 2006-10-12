@@ -124,30 +124,6 @@ public class Utils {
     /**
      * JMI transaction must be started and JMI classpath must be set to use this method
      */
-    public static void save(JavaClass jc) {
-        if (jc == null) {
-            return;
-        }
-        DataObject dataObject = null;
-        try {
-            DataObject.find(JavaModel.getFileObject(jc.getResource()));
-        } catch (DataObjectNotFoundException dnfe) {
-        }
-        SaveCookie saveCookie = dataObject == null ? null : (SaveCookie) dataObject.getCookie(SaveCookie.class);
-        // TODO: SaveCookie - is returned if file is not modified?
-//        assert saveCookie != null: ("SaveCookie not found for " + jc.getName());
-        if (saveCookie != null) {
-            try {
-                saveCookie.save();
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
-            }
-        }
-    }
-
-    /**
-     * JMI transaction must be started and JMI classpath must be set to use this method
-     */
     public static boolean isModified(JavaClass ce) {        
         DataObject dataObject = JavaMetamodel.getManager().getDataObject(ce.getResource());
         assert dataObject != null: ("DataObject not found for " + ce.getName());

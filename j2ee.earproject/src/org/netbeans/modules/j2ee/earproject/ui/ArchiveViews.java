@@ -21,49 +21,36 @@ package org.netbeans.modules.j2ee.earproject.ui;
 
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import javax.swing.Action;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.actions.FindAction;
-import org.openide.actions.FileSystemRefreshAction;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.ChangeableDataFilter;
+import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
-
-import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-
-import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-
-import org.openide.filesystems.FileChangeListener;
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
-import org.netbeans.api.queries.VisibilityQuery;
-import org.openide.loaders.ChangeableDataFilter;
-import org.openide.loaders.DataFilter;
-
 
 class ArchiveViews {
         
@@ -74,14 +61,13 @@ class ArchiveViews {
         
         // XXX does not react correctly to addition or removal of src/ subdir
 
-        private static final String KEY_SOURCE_DIR = "srcDir"; // NOI18N
         private static final String KEY_DOC_BASE = "docBase"; //NOI18N
         private static final String KEY_SETUP_DIR = "setupDir"; //NOI18N
         
-        private Project project;
-        private AntProjectHelper helper;
+        private final Project project;
+        private final AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
-        private FileObject projectDir;
+        private final FileObject projectDir;
 
         public LogicalViewChildren (Project project, AntProjectHelper helper, PropertyEvaluator evaluator) {
             assert project != null;
@@ -94,24 +80,20 @@ class ArchiveViews {
         
         protected void addNotify() {
             super.addNotify();
-            projectDir.addFileChangeListener(this);
+            projectDir.addFileChangeListener(FileUtil.weakFileChangeListener(this, projectDir));
             createNodes();
         }
         
         private void createNodes() {
-            List l = new ArrayList();
-            DataFolder srcDir = getFolder(EarProjectProperties.SRC_DIR);
-            if (srcDir != null) {
-                l.add(KEY_SOURCE_DIR);
-            }
+            List<String> keys = new ArrayList<String>();
            
             DataFolder docBaseDir = getFolder(EarProjectProperties.META_INF);
             if (docBaseDir != null) {
-                l.add(KEY_DOC_BASE);
+                keys.add(KEY_DOC_BASE);
             }
-            l.add(KEY_SETUP_DIR);
+            keys.add(KEY_SETUP_DIR);
             
-            setKeys(l);
+            setKeys(keys);
         }
         
         protected void removeNotify() {
@@ -134,7 +116,7 @@ class ArchiveViews {
             String prop = evaluator.getProperty (propName);
             if (prop != null) {
                 FileObject fo = helper.resolveFileObject(prop);
-                if (fo != null) {
+                if (fo != null && fo.isValid() && fo.isFolder()) {
                     DataFolder df = DataFolder.findFolder(fo);
                     return df;
                 }
@@ -143,26 +125,26 @@ class ArchiveViews {
         }
         
         // file change events in the project directory
-        public void fileAttributeChanged(org.openide.filesystems.FileAttributeEvent fe) {
+        public void fileAttributeChanged(FileAttributeEvent fe) {
         }
         
-        public void fileChanged(org.openide.filesystems.FileEvent fe) {
+        public void fileChanged(FileEvent fe) {
         }
         
-        public void fileDataCreated(org.openide.filesystems.FileEvent fe) {
+        public void fileDataCreated(FileEvent fe) {
         }
         
-        public void fileDeleted(org.openide.filesystems.FileEvent fe) {
+        public void fileDeleted(FileEvent fe) {
             // setup folder deleted
            createNodes();
         }
         
-        public void fileFolderCreated(org.openide.filesystems.FileEvent fe) {
+        public void fileFolderCreated(FileEvent fe) {
             // setup folder could be created
             createNodes();
         }
         
-        public void fileRenamed(org.openide.filesystems.FileRenameEvent fe) {
+        public void fileRenamed(FileRenameEvent fe) {
             // setup folder could be renamed
             createNodes();
         }
@@ -205,9 +187,9 @@ class ArchiveViews {
     }
 
     private static final class DocBaseNode extends FilterNode {
-        private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
 
-        private static Image CONFIGURATION_FILES_BADGE = Utilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/archive.gif", true ); // NOI18N
+        private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
+        private static final Image CONFIGURATION_FILES_BADGE = Utilities.loadImage( "org/netbeans/modules/j2ee/earproject/ui/resources/archive.gif", true ); // NOI18N
         
         public DocBaseNode(DataFolder folder) {
             super(folder.getNodeDelegate(), folder.createNodeChildren(VISIBILITY_QUERY_FILTER));

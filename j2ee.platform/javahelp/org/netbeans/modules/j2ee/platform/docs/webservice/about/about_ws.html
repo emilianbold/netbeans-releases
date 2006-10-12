@@ -1,125 +1,77 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- * Copyright 2005 Sun Microsystems,
+<!-- * Copyright 2006 Sun Microsystems,
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
 <head> 
-<title>About Web Services</title>
-<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <title>About Web Services</title>
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head> 
 <body bgcolor="#FFFFFF">
-<h2>About Web Services</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>Web services are distributed application components that conform to standards 
-  that make them externally available. They solve the problem of integrating diverse 
-  computer applications that have been developed independently and run on a variety 
-  of software and hardware platforms. The proliferation of distributed environments 
-  has created a need for an enterprise to be able to expose all or part of the 
-  functionality of an application to other applications over an open network.</p>
-<P>The promise of web services architecture is to allow you to
-connect applications that were developed on different platforms and
-in different programming languages. This can only work if vendors can
-agree on common standards. The web service architecture is based on
-the following three specifications:</P>
-<UL>
-	<LI><P><B>SOAP (Simple Object Access Protocol).</B> Defines the
-	mechanism by which a web service is called and how data is returned.
-	For detailed information, refer to the SOAP 1.1 Specification. 
-	</P>
-	<LI><P><B>WSDL (Web Service Definition Language).</B> Describes the
-	external interface of a web service. For detailed information, refer
-	to the WSDL 1.1 Specification. 
-	</P>
-	<LI><P><B>UDDI (Universal Discovery, Description, and Integration)</B>
-	Registries contain information about web services, including the
-	location of WSDL files and the location of the running services. The
-	IDE does not let you publish web services to or
-	browse from a UDDI registry, although the WSDL files that you
-	use can come from a variety of sources, including a UDDI registry.</P>
-</UL>
-<p>Web services come in two styles, document-style and RPC-style:	
-<ul><li><b>Document-style.</b> The client interacts with the web service using 
-  documents that are meant to be processed as complete entities. These documents 
-  typically take the form of XML, which is defined by a commonly agreed upon schema 
-  between the service provider and its client. It is also possible that the document 
-  exchanged in such an interaction could be in a format other than XML (such as 
-  encrypted files); however, the value of agreeing on a XML schema is to facilitate 
-  interoperability. In other words, the document represents a complete unit of 
-  information and may be completely self-describing.
-  <p>If the following statements are true for your application, you should
-probably create a document-style web service:</p>
-<ul>
-<li>The client interacts asynchronously with the web service, so that immediate responses
-are not expected.</li>
-<li>The web service is data-oriented, not process-oriented.
-</ul></li>
-<li><b>RPC-style.</b> The client interacts with the web service using 
-    operations exposed by the web service. The web service is viewed by the client as a single logical 
-    application or component with encapsulated data, where the WSDL described 
-    by the publicly-published interface and the XML in the SOAP messages exchanged 
-    is formatted to map to the discrete operations published by that application. 
-    In fact, the messages directly map onto input and output parameters of the 
-    procedure calls or operations. Typically, such invocations occur over a synchronous 
-    transport protocol like HTTP, where the SOAP request and response is piggybacked 
-    on the protocol-level request-and-response, respectively, to form synchronous 
-    request-response interaction patterns.</p> 
-    <p>For example, a RPC-style web service can implement a payment service that accepts 
-  payments and returns a status, or a stock quote service that accepts a ticker 
-  symbol and returns the current quote in the HTTP response.</p>
-  <p>If the following statements are true for your application, you should
-probably create a RPC-style web service:</p>
-<ul>
-	<li>The web service client requires an immediate response, in a synchronous  fashion.</li>
-<li>The web service is process-oriented, not data-oriented.</li>
-</ul></li></ul>
-<h3>Web Services in the IDE</h3>
-<p>In the IDE, you can <a href="../create/create_ws_from_scratch.html">create a web service from scratch</a>
-or by <a href="../create/create_ws_from_wsdl.html">implementing an existing WSDL file</a>:
-<ul><li><b>From scratch.</b> The IDE generates deployment information in the deployment descriptors, the WSDL file that describes
-	the web service, and a compilation target in
-the Ant build script. After you finish development,
-you can finetune your source files to  
-<a href="../build/compile_doc.html">build a document-style web service</a>, or to <a href="../build/compile_rpc.html">build a RPC-style web service</a>.
-Then, when you
-  build the web service, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> 
-  is called to generate the web service artifacts required for deployment.</li> 
-  <li><b>From a WSDL file.</b> 
-  The IDE generates deployment information in the deployment descriptors, the web service artifacts that describe
-  the web service (the implementation class and the Service End Point Interface), and a compilation target in
-the Ant build script. Before you build a web service that implements a WSDL file,
-you can  
-<a href="../build/compile_wsdl.html">set options to finetune</a> it. However, if you do so, note that
- before building the web service 
- you must <a href="../build/compile_wsdl_regenerate.html">regenerate the web service
-   artifacts</a> 
-  by explicitly calling the compilation target in
-  the Ant build script. </p>
-<table cellpadding="3" cellspacing="0" border="0">
-<tr valign="top"> 
-<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-    <td>For tips on designing web services, go to Help &gt; Java 
-      BluePrints Solutions Catalog and select from the Web Service Design section of the drop down. </td>
-</tr>
-</table>
-<table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td> 
-	<a href="../consume/about_wsc.html">About Web Service Clients</a><br>
-<object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://java.sun.com/j2ee/1.4/docs/tutorial/doc/JAXRPC4.html#wp130550">
-    <param name="text" value="<html><u>Types Supported by JAX-RPC</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
-</td>
-</tr>
-</table>  
+    <h2>About Web Services</h2>
+    <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+    <p>Web services are distributed application components that conform to standards 
+    that make them externally available. They solve the problem of integrating diverse 
+    computer applications that have been developed independently and run on a variety 
+    of software and hardware platforms. The proliferation of distributed environments 
+    has created a need for an enterprise to be able to expose all or part of the 
+    functionality of an application to other applications over an open network.</p>
+    <P>The promise of web services architecture is to allow you to
+    connect applications that were developed on different platforms and
+    in different programming languages. This can only work if vendors can
+    agree on common standards. 
+
+    <p>There are two distinct web service programming models, both of which
+    are supported by the IDE, the first is specific to the Java EE 5 specification,
+    while the second is specific to the J2EE 1.4 specification:
+    <ul><li><b>Java API for XML Web Services (JAX-WS).</b> This programming model
+        relates specifically to Java EE 5. A follow-on release of Java API for XML-based RPC 1.1 (JAX-RPC), JAX-WS 
+        simplifies the task of developing web services using Java technology. It addresses some of 
+        the issues in JAX-RPC 1.1 by providing, for example, annotations to simplify web service 
+        development and reduce the size of runtime JAR files. 
+
+        <p>For further information on JAX-WS web services, see <a href="about_jax_ws.html">About JAX-WS Web Services</a>
+        
+        <li><b>Java API for XML-based RPC (JAX-RPC).</b> JAX-RPC is the 
+        programming model for creating web services and
+        clients in Java (not necessarily J2EE 1.4). The JSR 109 implementation facilitates the
+        creation of JAX-RPC web services and clients in the J2EE 1.4 environment. 
+        <p>For further information on JAX-RPC web services, see <a href="about_jax_rpc.html">About JAX-RPC Web Services</a>
+    </ul> 
+
+    <p>Both programming models are based on
+    the following three specifications:</P>
+    <UL>
+        <LI><P><B>SOAP (Simple Object Access Protocol).</B> Defines the
+            mechanism by which a web service is called and how data is returned.
+            For detailed information, refer to the SOAP 1.1 Specification. 
+        </P>
+        <LI><P><B>WSDL (Web Service Definition Language).</B> Describes the
+            external interface of a web service. For detailed information, refer
+            to the WSDL 1.1 Specification. 
+        </P>
+        <LI><P><B>UDDI (Universal Discovery, Description, and Integration)</B>
+        Registries contain information about web services, including the
+        location of WSDL files and the location of the running services. The
+        IDE does not let you publish web services to or
+        browse from a UDDI registry, although the WSDL files that you
+        use can come from a variety of sources, including a UDDI registry.</P>
+    </UL>
+    
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="ws_process.html">Working with Web Services</a></dd>
+        <dd><a href="ws_quickref.html">Web Service Tasks: Quick Reference</a></dd>
+        <dd><a href="../consume/about_wsc.html">About Web Service Clients</a></dd>
+    </dl>
 
 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small>
-</body></html>
+
+   <hr>
+<small><a href="../../credits.html">Legal Notices</a> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
+</small></body></html>

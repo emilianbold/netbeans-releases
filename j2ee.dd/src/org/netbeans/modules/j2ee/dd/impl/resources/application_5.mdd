@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<metaDD>
+	<meta-element>
+		<dtd-name>application</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>Application</bean-name>
+		<implements>org.netbeans.modules.j2ee.dd.api.application.Application</implements>
+                <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
+                <user-code>
+                    public org.xml.sax.SAXParseException getError() {
+                        return null;
+                    }
+                    public int getStatus() {
+                        return STATE_VALID;
+                    }
+               </user-code>
+	</meta-element>
+	<meta-element>
+		<dtd-name>moduleType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>Module</bean-name>
+		<implements>org.netbeans.modules.j2ee.dd.api.application.Module</implements>
+                <extends>org.netbeans.modules.j2ee.dd.impl.common.EnclosingBean</extends> 
+                <user-code>
+                    public String getAltDdId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                    public void setAltDdId(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                    public String getJavaId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                    public void setJavaId(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                    public String getEjbId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                    public void setEjbId(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                    public String getConnectorId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                    public void setConnectorId(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                </user-code>
+	</meta-element>
+	<meta-element>
+		<dtd-name>security-roleType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>SecurityRole</bean-name>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.SecurityRole</implements>
+		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
+	</meta-element>
+	<meta-element>
+		<dtd-name>pathType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>Path</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>descriptionType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>Description</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>xsdStringType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>XsdString</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>role-nameType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>RoleName</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>webType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>Web</bean-name>
+		<implements>org.netbeans.modules.j2ee.dd.api.application.Web</implements>
+                <extends>org.netbeans.modules.j2ee.dd.impl.common.EnclosingBean</extends> 
+                <user-code>
+                    public String getWebUriId() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                    public void setWebUriId(String value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(org.netbeans.modules.j2ee.dd.api.application.Application.VERSION_1_4);
+                    }
+                </user-code>
+	</meta-element>
+	<meta-element>
+		<dtd-name>string</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>String</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>display-nameType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>DisplayName</bean-name>
+		<wrapper-class>java.lang.String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>iconType</dtd-name>
+		<namespace>http://java.sun.com/xml/ns/javaee</namespace>
+		<bean-name>Icon</bean-name>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.Icon</implements>
+                <extends>org.netbeans.modules.j2ee.dd.impl.common.EnclosingBean</extends> 
+	</meta-element>
+</metaDD>

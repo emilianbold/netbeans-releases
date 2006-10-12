@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project basedir="." default="netbeans" name="j2ee/persistence">
+    <import file="../../nbbuild/templates/projectized.xml"/>
+
+    <property name="s2b_root_orm_1_0" location="src/org/netbeans/modules/j2ee/persistence/dd/orm/model_1_0"/>
+    <property name="s2b_root_persistence_1_0" location="src/org/netbeans/modules/j2ee/persistence/dd/persistence/model_1_0"/>
+    <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/persistence/dd/resources"/>
+
+    <target name="s2binit" depends="build-init">
+        <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+            <classpath>
+                <pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+                <pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
+                <pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
+            </classpath>
+        </taskdef>
+    </target>
+
+    <target name="dd2beansgen" depends="s2binit">
+        <echo message="generating code generation input file information" />
+        <schema2beans schema="${s2b_res_root}/orm_1_0.xsd"
+        docRoot="entity-mappings"
+        mddFile="${s2b_res_root}/orm_1_0.mdd"
+        package="org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0"
+        schemaType="xmlschema"
+        useInterfaces="true"
+        validate="true"
+        attrProp="true"
+        removeUnreferencedNodes="true"
+        rootDir="src"/> 
+        <schema2beans schema="${s2b_res_root}/persistence_1_0.xsd"
+        mddFile="${s2b_res_root}/persistence_1_0.mdd"
+        package="org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0"
+        schemaType="xmlschema"
+        useInterfaces="true"
+        validate="true"
+        attrProp="true"
+        removeUnreferencedNodes="true"
+        rootDir="src"/> 
+    </target>
+
+    <target name="compile" depends="dd2beansgen,projectized-common.compile"/>
+  
+    <target name="clean" depends="projectized-common.clean,clean-ddgen-src"/>
+
+    <target name="clean-ddgen-src">
+        <mkdir dir="${s2b_root_orm_1_0}"/>
+        <mkdir dir="${s2b_root_persistence_1_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_orm_1_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_orm_1_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_persistence_1_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_persistence_1_0}"/>
+    </target>
+        
+</project>

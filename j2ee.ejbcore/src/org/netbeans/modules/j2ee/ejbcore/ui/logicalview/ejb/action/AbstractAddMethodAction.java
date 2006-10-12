@@ -21,7 +21,6 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EjbMethodController;
@@ -88,14 +87,6 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
         if (jc != null) {
             strategy.addMethod(jc);
         }
-    }
-
-    private Element getMemberElement(Node node) {
-        return (Element) node.getLookup().lookup(Element.class);
-    }
-
-    private boolean isMemberElementNode(Node node) {
-        return getMemberElement(node) != null;
     }
 
     public Object getValue(String key) {

@@ -19,9 +19,10 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.wizards;
 
+import java.io.File;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
-
 
 abstract class SettingsPanel extends JPanel {
 
@@ -30,6 +31,23 @@ abstract class SettingsPanel extends JPanel {
     abstract void read (WizardDescriptor settings);
 
     abstract boolean valid (WizardDescriptor settings);
+    
+    abstract void addNameListener(DocumentListener dl);
+    
+    protected static File findExistingParent(String path) {
+        File ret = new File(path).getParentFile();
+        while (ret != null && !ret.exists()) {
+            ret = ret.getParentFile();
+        }
+        return ret;
+    }
+    
+    static boolean isValidProjectName(String projectName) {
+        return projectName.length() != 0
+                && projectName.indexOf('*')  < 0
+                && projectName.indexOf('/')  < 0
+                && projectName.indexOf('\\') < 0
+                && projectName.indexOf(':')  < 0;
+    }
 
-    abstract void addNameListener(javax.swing.event.DocumentListener dl);
 }

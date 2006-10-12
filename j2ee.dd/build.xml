@@ -12,7 +12,6 @@ and include the License file at http://www.netbeans.org/cddl.txt.
 If applicable, add the following below the CDDL Header, with the fields
 enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
-
 The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
@@ -24,12 +23,18 @@ Microsystems, Inc. All Rights Reserved.
 
   <property name="s2b_root_2_3" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_3"/>
   <property name="s2b_root_2_4" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_4"/>
+  <property name="s2b_root_2_5" location="src/org/netbeans/modules/j2ee/dd/impl/web/model_2_5"/>
   <property name="s2b_root_1_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_1_1"/>
   <property name="s2b_root_2_0" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_0"/>
   <property name="s2b_root_2_1" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_2_1"/>
+  <property name="s2b_root_3_0" location="src/org/netbeans/modules/j2ee/dd/impl/ejb/model_3_0"/>
   <property name="s2b_root_app_1_3" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_1_3"/>
   <property name="s2b_root_app_1_4" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_1_4"/>
+  <property name="s2b_root_app_5" location="src/org/netbeans/modules/j2ee/dd/impl/application/model_5"/>
   <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/dd/impl/resources"/>
+  <property name="s2b_root_client_1_3" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_1_3"/>
+  <property name="s2b_root_client_1_4" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_1_4"/>
+  <property name="s2b_root_client_5_0" location="src/org/netbeans/modules/j2ee/dd/impl/client/model_5_0"/>
 
   <target name="build-init" depends="projectized.build-init"/>
 
@@ -62,6 +67,15 @@ Microsystems, Inc. All Rights Reserved.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
+	<schema2beans schema="${s2b_res_root}/web-app_2_5.xsd"
+	  mddFile="${s2b_res_root}/web-app_2_5.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.web.model_2_5"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
 	<schema2beans schema="${s2b_res_root}/ejb-jar_1_1.dtd"
  	  mddFile="${s2b_res_root}/ejb-jar_1_1.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_1_1"
@@ -85,6 +99,15 @@ Microsystems, Inc. All Rights Reserved.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/> 
+	<schema2beans schema="${s2b_res_root}/ejb-jar_3_0.xsd"
+ 	  mddFile="${s2b_res_root}/ejb-jar_3_0.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.ejb.model_3_0"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/> 
         <schema2beans schema="${s2b_res_root}/application_1_3.dtd"
  	  mddFile="${s2b_res_root}/application_1_3.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.application.model_1_3"
@@ -101,8 +124,42 @@ Microsystems, Inc. All Rights Reserved.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>  
+        <schema2beans schema="${s2b_res_root}/application_5.xsd"
+ 	  mddFile="${s2b_res_root}/application_5.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.application.model_5"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>  
 	  <!--<delete file="${s2b_root_2_4}/WebAppType.java"/>-->
-
+        <schema2beans schema="${s2b_res_root}/application-client_1_3.dtd"
+ 	  mddFile="${s2b_res_root}/application-client_1_3.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.client.model_1_3"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
+        <schema2beans schema="${s2b_res_root}/application-client_1_4.xsd"
+ 	  mddFile="${s2b_res_root}/application-client_1_4.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.client.model_1_4"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
+        <schema2beans schema="${s2b_res_root}/application-client_5.xsd"
+ 	  mddFile="${s2b_res_root}/application-client_5.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.client.model_5_0"
+	  schemaType="xmlschema"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
   </target>
 
   <target name="compile" depends="dd2beansgen,projectized-common.compile"/>
@@ -112,11 +169,17 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean-ddgen-src">
         <mkdir dir="${s2b_root_2_3}"/>
         <mkdir dir="${s2b_root_2_4}"/>
+        <mkdir dir="${s2b_root_2_5}"/>
         <mkdir dir="${s2b_root_1_1}"/>
         <mkdir dir="${s2b_root_2_0}"/>
         <mkdir dir="${s2b_root_2_1}"/>
+        <mkdir dir="${s2b_root_3_0}"/>
         <mkdir dir="${s2b_root_app_1_3}"/>
         <mkdir dir="${s2b_root_app_1_4}"/>
+        <mkdir dir="${s2b_root_app_5}"/>
+        <mkdir dir="${s2b_root_client_1_3}"/>
+        <mkdir dir="${s2b_root_client_1_4}"/>
+        <mkdir dir="${s2b_root_client_5_0}"/>
         <delete>
             <fileset dir="${s2b_root_2_3}">
                 <include name="*.java"/>
@@ -129,6 +192,12 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete dir="${s2b_root_2_4}"/>
+        <delete>
+            <fileset dir="${s2b_root_2_5}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_2_5}"/>
         <delete>
             <fileset dir="${s2b_root_1_1}">
                 <include name="*.java"/>
@@ -148,6 +217,12 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete dir="${s2b_root_2_1}"/>
         <delete>
+            <fileset dir="${s2b_root_3_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_3_0}"/>
+        <delete>
             <fileset dir="${s2b_root_app_1_3}">
                 <include name="*.java"/>
             </fileset>
@@ -159,6 +234,30 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete dir="${s2b_root_app_1_4}"/>
+        <delete>
+            <fileset dir="${s2b_root_app_5}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_app_5}"/>
+        <delete>
+            <fileset dir="${s2b_root_client_1_3}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_client_1_3}"/>
+        <delete>
+            <fileset dir="${s2b_root_client_1_4}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_client_1_4}"/>
+        <delete>
+            <fileset dir="${s2b_root_client_5_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_client_5_0}"/>
   </target>
   
   <target name="javadoc" depends="init-javadoc, projectized.javadoc"/>

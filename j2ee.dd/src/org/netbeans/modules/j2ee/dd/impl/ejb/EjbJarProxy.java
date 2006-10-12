@@ -19,7 +19,9 @@
 
 package org.netbeans.modules.j2ee.dd.impl.ejb;
 
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.Interceptors;
 import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
 import org.netbeans.modules.schema2beans.Schema2BeansUtil;
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -450,5 +452,23 @@ public class EjbJarProxy implements EjbJar {
             return null;
         else
             return ejbJar.newRelationships();
+    }
+
+    public void setInterceptors(Interceptors valueInterface) throws VersionNotSupportedException {
+        if (ejbJar!=null) ejbJar.setInterceptors(valueInterface);
+    }
+
+    public Interceptors newInterceptors() throws VersionNotSupportedException {
+        if(ejbJar == null)
+            return null;
+        else
+            return ejbJar.newInterceptors();
+    }
+
+    public Interceptors getInterceptors() throws VersionNotSupportedException {
+        if(ejbJar == null)
+            return null;
+        else
+            return ejbJar.getInterceptors();
     }
 }

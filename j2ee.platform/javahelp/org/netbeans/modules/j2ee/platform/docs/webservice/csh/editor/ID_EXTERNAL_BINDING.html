@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Web Service Attributes Editor: External Binding Files</title>
+        <link rel="StyleSheet" href="../../../../../../usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Web Service Attributes Editor: External Binding Files</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+        <p>The WSDL Customization panel of the Web Service Attributes Editor 
+        is available to JAX-WS (Java EE 5) web services and clients
+        that are created from WSDL. In these scenarios, <tt>wsimport</tt> is invoked to
+        generate the JAX-WS artifacts. By default, <tt>wsimport</tt> follows
+        the binding rules specified by the JAX-WS specification. You use the WSDL Customization 
+        panel to
+        customize the behaviour of <tt>wsimport</tt> when generating these artifacts. 
+        <p>You access the WSDL Customization panel of the Web Service Attributes Editor from the Projects window.
+        Right-click the node representing a "from WSDL" artifact and then choose Edit Web Service
+        Attributes. For example, for web service clients, expand the Web Service References
+        node, right-click a node representing a web service client, and choose Edit
+        Web Service Attributes. The editor appears. Choose the WSDL Customization tab and
+        the panel opens.
+        
+        <h3>External Binding Files</h3>
+        <p>Use the External Bindings section to add 
+        user-created customization files. You may add multiple JAXB customization files,
+ JAXWS customization files, or both. If you add a JAXWS customization file,
+ the <tt>wsdlLocation</tt> attribute
+will automatically be changed to point to the correct location of the WSDL file
+  in the project. If you add a JAXB customization file, you will need to
+  manually change the <tt>schemaLocation</tt> attribute to
+ point to the correct schema location, which is relative to the WSDL file,
+  in the project.
+       
+        
+        <dl>
+             <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="EditWSAttributesCookieImpl.html">Web Service Attributes Editor</a></dd>
+            <dd><a href="ID_GLOBAL.html">Global Customization</a></dd>
+            <dd><a href="ID_PORT_TYPE.html">Port Types</a></dd>
+            <dd><a href="ID_PORT_TYPE_OPERATION_FAULT.html">Port Type Faults</a></dd>
+            <dd><a href="ID_BINDING.html">Bindings</a></dd>
+            <dd><a href="ID_BINDING_OPERATION.html">Binding Operations</a></dd>
+            <dd><a href="ID_SERVICE.html">Services</a></dd>
+            <dd><a href="ID_PORT.html">Ports</a></dd>
+        </dl> 
+        
+        <hr>
+        <font size=-2><a href="../../../credits.html">Legal Notices</a></font> 
+        <table border="0" cellpadding="20">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>
+

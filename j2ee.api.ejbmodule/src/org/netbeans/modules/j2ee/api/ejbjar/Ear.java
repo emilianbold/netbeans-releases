@@ -20,10 +20,11 @@ package org.netbeans.modules.j2ee.api.ejbjar;
 
 import java.util.Iterator;
 import org.netbeans.modules.j2ee.ejbjar.EarAccessor;
-import org.netbeans.modules.j2ee.spi.ejbjar.*;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /**
  * Ear should be used to access properties of an ear module.
@@ -40,7 +41,8 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
  * @author  Pavel Buzek
  */
 public final class Ear {
-    private EarImplementation impl;
+    
+    private final EarImplementation impl;
     private static final Lookup.Result implementations =
         Lookup.getDefault().lookup(new Lookup.Template(EarProvider.class));
     
@@ -62,8 +64,9 @@ public final class Ear {
         this.impl = impl;
     }
     
-    /** Find the Ear for given file or null if the file does not belong
-     * to any web module.
+    /**
+     * Find the Ear for given file or <code>null</code> if the file does not
+     * belong to any Enterprise Application.
      */
     public static Ear getEar (FileObject f) {
         if (f == null) {
@@ -94,6 +97,7 @@ public final class Ear {
     public FileObject getDeploymentDescriptor () {
         return impl.getDeploymentDescriptor();
     }
+    
     /** Add j2ee webmodule into application.
      * @param module the module to be added
      */
@@ -101,10 +105,18 @@ public final class Ear {
         impl.addWebModule (module);
     }
     
-    /** Add j2ee Ear module into application.
+    /** Add j2ee Ejb module into application.
      * @param module the module to be added
      */
     public void addEjbJarModule (EjbJar module) {
         impl.addEjbJarModule (module);
     }
+    
+    /** Add j2ee application client module into application.
+     * @param module the module to be added
+     */
+    public void addCarModule(Car module) {
+        impl.addCarModule(module);
+    }
+    
 }

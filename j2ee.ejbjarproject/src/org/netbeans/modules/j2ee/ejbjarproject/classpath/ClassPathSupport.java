@@ -56,6 +56,8 @@ public class ClassPathSupport {
     
     public final static String ELEMENT_INCLUDED_LIBRARIES = "included-library"; // NOI18N
     
+    private static String[] ejbjarElemOrder = new String[] { "name", "minimum-ant-version", "explicit-platform", "use-manifest", "included-library", "web-services", "source-roots", "test-roots" };
+    
     private static final String ATTR_FILES = "files"; //NOI18N
     private static final String ATTR_DIRS = "dirs"; //NOI18N
     
@@ -325,14 +327,71 @@ public class ClassPathSupport {
             for(int idx = 0; idx < classpath.size(); idx++ ) {
                 ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.get(idx);
                 String libraryPropName = "${" + libraryName + "}";
-                if(libraryPropName.equals(item.getReference()))
-                    data.appendChild(createLibraryElement(doc, libraryName, item, includedLibrariesElement));
+                if(libraryPropName.equals(item.getReference())) {
+                    appendChildElement(data, createLibraryElement(doc, libraryName, item, includedLibrariesElement), ejbjarElemOrder);
+                }
             }
         }
         
         antProjectHelper.putPrimaryConfigurationData( data, true );
     }
     
+    /**
+     * Find all direct child elements of an element.
+     * More useful than {@link Element#getElementsByTagNameNS} because it does
+     * not recurse into recursive child elements.
+     * Children which are all-whitespace text nodes are ignored; others cause
+     * an exception to be thrown.
+     * @param parent a parent element in a DOM tree
+     * @return a list of direct child elements (may be empty)
+     * @throws IllegalArgumentException if there are non-element children besides whitespace
+     */
+    private static List/*<Element>*/ findSubElements(Element parent) throws IllegalArgumentException {
+        NodeList l = parent.getChildNodes();
+        List/*<Element>*/ elements = new ArrayList(l.getLength());
+        for (int i = 0; i < l.getLength(); i++) {
+            Node n = l.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE) {
+                elements.add((Element)n);
+            } else if (n.getNodeType() == Node.TEXT_NODE) {
+                String text = ((Text)n).getNodeValue();
+                if (text.trim().length() > 0) {
+                    throw new IllegalArgumentException("non-ws text encountered in " + parent + ": " + text); // NOI18N
+                }
+            } else if (n.getNodeType() == Node.COMMENT_NODE) {
+                // skip
+            } else {
+                throw new IllegalArgumentException("unexpected non-element child of " + parent + ": " + n); // NOI18N
+            }
+        }
+        return elements;
+    }
+    
+    /**
+     * Append child element to the correct position according to given
+     * order.
+     * @param parent parent to which the child will be added
+     * @param el element to be added
+     * @param order order of the elements which must be followed
+     */
+    private static void appendChildElement(Element parent, Element el, String[] order) {
+        Element insertBefore = null;
+        List l = Arrays.asList(order);
+        int index = l.indexOf(el.getLocalName());
+        assert index != -1 : el.getLocalName()+" was not found in "+l; // NOI18N
+        Iterator it = findSubElements(parent).iterator();
+        while (it.hasNext()) {
+            Element e = (Element)it.next();
+            int index2 = l.indexOf(e.getLocalName());
+            assert index2 != -1 : e.getLocalName()+" was not found in "+l; // NOI18N
+            if (index2 > index) {
+                insertBefore = e;
+                break;
+            }
+        }
+        parent.insertBefore(el, insertBefore);
+    }
+        
     private static Element createLibraryElement(Document doc, String pathItem, Item item, String includedLibrariesElement ) {
         Element libraryElement = doc.createElementNS( EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, includedLibrariesElement );
         ArrayList files = new ArrayList ();
@@ -500,13 +559,13 @@ public class ClassPathSupport {
         }
 
         public boolean isIncludedInDeployment() {
-            boolean result = includedInDeployment;
-            if (getType() == TYPE_JAR) {
+//            boolean result = includedInDeployment;
+//            if (getType() == TYPE_JAR) {
                 // at the moment we can't include folders in deployment
 //                FileObject fo = FileUtil.toFileObject(getFile());
 //                if (fo == null || fo.isFolder())
 //                    return false;
-            }
+//            }
             return includedInDeployment;
         }
         

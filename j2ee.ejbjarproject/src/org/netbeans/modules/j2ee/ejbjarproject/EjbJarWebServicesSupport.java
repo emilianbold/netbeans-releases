@@ -26,12 +26,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.jmi.javamodel.Field;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.MultipartId;
 import org.netbeans.jmi.javamodel.Parameter;
+import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
@@ -61,26 +63,27 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import static org.netbeans.modules.websvc.spi.webservices.WebServicesConstants.*;
 
 import java.lang.reflect.Modifier;
-import org.netbeans.modules.j2ee.ejbjarproject.Utils;
+import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 
 /**
  *
  * @author  rico
  * Implementation of WebServicesSupportImpl
  */
-public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServicesConstants {
+public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     
     private EjbJarProject project;
     private AntProjectHelper helper;
     private ReferenceHelper referenceHelper;
+    private ClassPath projectSourcesClassPath;
     
     /** Creates a new instance of EjbJarWebServicesSupport */
     public EjbJarWebServicesSupport(EjbJarProject project, AntProjectHelper helper, ReferenceHelper referenceHelper) {
@@ -168,7 +171,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJarModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0];
         org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = null;
         try {
-            ejbJar = provider.getDDRoot(ejbJarModule.getDeploymentDescriptor());
+            ejbJar = provider.getMergedDDRoot(ejbJarModule.getMetadataUnit());
         }
         catch(java.io.IOException e) {
             //FIX-ME: handle this
@@ -257,7 +260,6 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     
     public boolean isFromWSDL(String serviceName) {
         Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
         NodeList nodes = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
         WEB_SERVICES); //NOI18N
         Element webservices = null;
@@ -317,7 +319,6 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         }
         //Remove entry in the project.xml file (we should move this to websvc)
         Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
         NodeList nodes = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
         WEB_SERVICES); //NOI18N
         Element webservices = null;
@@ -719,7 +720,8 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     
     private EjbJar getEjbJar() {
         try {
-            return DDProvider.getDefault().getDDRoot(getDeploymentDescriptor());
+            // TODO: first one API EjbJar from project is taken... this should be fixed
+            return DDProvider.getDefault().getMergedDDRoot(org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0].getMetadataUnit());
         } catch (java.io.IOException e) {
             org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
         }
@@ -780,6 +782,19 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         
         return wsdlFolder;
     }
+
+    public ClassPath getClassPath() {
+        synchronized (this) {
+            if (projectSourcesClassPath == null) {
+                ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
+                projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                    cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                });
+            }
+            return projectSourcesClassPath;
+        }
+    }
     
     // Service stub descriptors
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
@@ -791,7 +806,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     StubDescriptor.WSDL_SERVICE_STUB,
     NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"), // NOI18N
     new String [] { "wsi", "strict" }); // NOI18N
-    
+
     /** Stub descriptor for services supported by this project type.
      */
     private static class JAXRPCStubDescriptor extends StubDescriptor {

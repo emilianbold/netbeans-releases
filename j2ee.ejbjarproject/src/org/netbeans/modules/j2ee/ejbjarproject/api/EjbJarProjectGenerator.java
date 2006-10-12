@@ -22,8 +22,11 @@ package org.netbeans.modules.j2ee.ejbjarproject.api;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Stack;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbjarproject.*;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -89,11 +92,6 @@ public class EjbJarProjectGenerator {
         srcRoot.createFolder(DEFAULT_JAVA_FOLDER); //NOI18N
         FileObject testRoot = fo.createFolder(DEFAULT_TEST_FOLDER);
         FileObject confRoot = srcRoot.createFolder(DEFAULT_DOC_BASE_FOLDER); // NOI18N
-        // create ejb-jar.xml
-        FileObject ddFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-2.1.xml"), confRoot, "ejb-jar"); //NOI18N
-        EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFile);
-        ejbJar.setDisplayName(name);
-        ejbJar.write(ddFile);
         
         //create a default manifest
         FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-ejbjarproject/MANIFEST.MF"), confRoot, "MANIFEST"); //NOI18N
@@ -108,19 +106,60 @@ public class EjbJarProjectGenerator {
         
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory ());
         ProjectManager.getDefault().saveProject(p);
-        ((EjbJarProject)p).getEjbModule().getConfigSupport ().createInitialConfiguration();
+
+        // create ejb-jar.xml
+        if (!J2eeModule.JAVA_EE_5.equals(j2eeLevel)) {
+            String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-2.1.xml";
+            FileObject ddFile = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource(resource), confRoot, "ejb-jar"); //NOI18N
+            EjbJar ejbJar = DDProvider.getDefault().getMergedDDRoot(
+                    org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(ddFile).getMetadataUnit());
+            ejbJar.setDisplayName(name);
+            ejbJar.write(ddFile);
+        }
 
         return h;
     }
-
+    
+    /**
+     * Import project from source or exploded archive
+     * @param dir root directory of project
+     * @param name name of the project
+     * @param sourceFolders Array of folders that hold the projects source
+     * or exploded archive
+     * @param testFolders folders that hold test code for the project
+     * @param configFilesBase Folder that holds the projects config files 
+     * like deployment descriptors
+     * @param libFolder the libraries associated with the project   
+     * @param j2eeLevel spec revision level
+     * @param serverInstanceID id of target server
+     * @param fromJavaSources flag whether the project is from source or 
+     * exploded archive of class files
+     * @throws java.io.IOException if something goes wrong
+     * @return The AntProjectHelper for the project
+     */
     public static AntProjectHelper importProject(final File dir, final String name,
+            final File[] sourceFolders, final File[] testFolders,
+            final File configFilesBase, final File libFolder, final String j2eeLevel, 
+            String serverInstanceID, boolean fromJavaSources) throws IOException {
+        
+        AntProjectHelper retVal = importProject(dir,name,sourceFolders,testFolders,
+                configFilesBase,libFolder,j2eeLevel,serverInstanceID);
+        EditableProperties subEp = retVal.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        subEp.setProperty(EjbJarProjectProperties.JAVA_SOURCE_BASED,fromJavaSources+""); // NOI18N
+        retVal.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,subEp);
+        Project subP = ProjectManager.getDefault().findProject(retVal.getProjectDirectory());
+        ProjectManager.getDefault().saveProject(subP); 
+        return retVal;
+    }
+    
+   public static AntProjectHelper importProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders, 
             final File configFilesBase, final File libFolder, final String j2eeLevel, String serverInstanceID) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = createProjectDir (dir);
         // this constructor creates only java application type
         final AntProjectHelper h = setupProject(dirFO, name, null, null, 
-                configFilesBase.getAbsolutePath(), (libFolder == null ? null : libFolder.getAbsolutePath()), null, j2eeLevel, serverInstanceID);
+                configFilesBase, (libFolder == null ? null : libFolder), null, j2eeLevel, serverInstanceID);
         final EjbJarProject p = (EjbJarProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
@@ -185,7 +224,8 @@ public class EjbJarProjectGenerator {
         FileObject ejbJarXml = FileUtil.toFileObject(configFilesBase).getFileObject("ejb-jar.xml"); // NOI18N
         if (ejbJarXml != null) {
             try {
-                EjbJar root = DDProvider.getDefault().getDDRoot(ejbJarXml);
+                EjbJar root = DDProvider.getDefault().getMergedDDRoot(
+                        org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(ejbJarXml).getMetadataUnit());
                 boolean writeDD = false;
                 if (new BigDecimal(EjbJar.VERSION_2_0).equals(root.getVersion()) && j2eeLevel.equals(EjbJarProjectProperties.J2EE_1_4)) { // NOI18N
                     root.setVersion(new BigDecimal(EjbJar.VERSION_2_1));
@@ -207,6 +247,14 @@ public class EjbJarProjectGenerator {
         return h;
     }
 
+    private static String createFileReference(ReferenceHelper refHelper, FileObject projectFO, FileObject referencedFO) {
+        if (FileUtil.isParentOf(projectFO, referencedFO)) {
+            return relativePath(projectFO, referencedFO);
+        } else {
+            return refHelper.createForeignFileReference(FileUtil.toFile(referencedFO), null);
+        }
+    }
+    
     private static String relativePath (FileObject parent, FileObject child) {
         if (child.equals (parent))
             return "";
@@ -216,9 +264,11 @@ public class EjbJarProjectGenerator {
     }
     
     private static AntProjectHelper setupProject (FileObject dirFO, String name, 
-            String srcRoot, String testRoot, String configFiles, String libraries, String resources, 
+            String srcRoot, String testRoot, File configFiles, File libraries, String resources, 
             String j2eeLevel, String serverInstanceID) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, EjbJarProjectType.TYPE);
+        final EjbJarProject prj = (EjbJarProject) ProjectManager.getDefault().findProject(h.getProjectDirectory());
+        final ReferenceHelper referenceHelper = prj.getReferenceHelper();
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -231,7 +281,7 @@ public class EjbJarProjectGenerator {
         // TODO: ma154696: not sure if needed
 //        Element addLibs = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "ejb-module-additional-libraries"); //NOI18N
 //        data.appendChild(addLibs);
-        
+                
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         if (srcRoot != null) {
@@ -253,13 +303,6 @@ public class EjbJarProjectGenerator {
         data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);
         
-        if (configFiles != null) {
-            ep.setProperty(EjbJarProjectProperties.META_INF, configFiles);
-        }
-        if (libraries != null) {
-            ep.setProperty(EjbJarProjectProperties.LIBRARIES_DIR, libraries);
-        }
-
         if (resources != null) {
             ep.setProperty(EjbJarProjectProperties.RESOURCE_DIR, resources);
         } else {
@@ -323,19 +366,48 @@ public class EjbJarProjectGenerator {
 
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
+        if (configFiles != null) {
+            String ref = createFileReference(referenceHelper, dirFO, FileUtil.toFileObject(configFiles));
+            EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            props.setProperty(EjbJarProjectProperties.META_INF, ref);
+            h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        }
+        if (libraries != null) {
+            String ref = createFileReference(referenceHelper, dirFO, FileUtil.toFileObject(libraries));
+            EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            props.setProperty(EjbJarProjectProperties.LIBRARIES_DIR, ref);
+            h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        }
+        
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
         
         // set j2ee.platform.classpath
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+        if (!j2eePlatform.getSupportedSpecVersions(J2eeModule.EJB).contains(j2eeLevel)) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "J2EE level:" + j2eeLevel + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type EJB");
+        }
         String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
-        ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath.toString());
+        ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
         
         // set j2ee.platform.wscompile.classpath
-        if (j2eePlatform.isToolSupported(WebServicesConstants.WSCOMPILE)) { 
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(WebServicesConstants.WSCOMPILE);
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) { 
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
                     Utils.toClasspathString(wsClasspath));
+        }
+        
+        // ant deployment support
+        File projectFolder = FileUtil.toFile(dirFO);
+        try {
+            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, EjbJarProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
+                    J2eeModule.EJB, serverInstanceID);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        }
+        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
+        if (deployAntPropsFile != null) {
+            ep.setProperty(EjbJarProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
         }
         
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -345,18 +417,20 @@ public class EjbJarProjectGenerator {
     }
 
     private static FileObject createProjectDir (File dir) throws IOException {
-        FileObject dirFO;
-        if(!dir.exists()) {
-            //Refresh before mkdir not to depend on window focus
-            refreshFileSystem (dir);
-            if (!dir.mkdirs()) {
-                throw new IOException ("Can not create project folder.");   //NOI18N
-            }
-            refreshFileSystem (dir);
+        Stack stack = new Stack ();
+        while (!dir.exists()) {
+            stack.push (dir.getName());
+            dir = dir.getParentFile();
         }        
-        dirFO = FileUtil.toFileObject(dir);
-        assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
-        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
+        FileObject dirFO = FileUtil.toFileObject (dir);
+        if (dirFO == null) {
+            refreshFileSystem(dir);
+            dirFO = FileUtil.toFileObject (dir);
+        }
+        assert dirFO != null;
+        while (!stack.isEmpty()) {
+            dirFO = dirFO.createFolder((String)stack.pop());
+        }        
         return dirFO;
     }
 

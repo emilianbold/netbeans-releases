@@ -107,6 +107,7 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(jLabelJ2eeVersion, gridBagConstraints);
 
+        jComboBoxJ2eeSpecVersion.setEnabled(false);
         jComboBoxJ2eeSpecVersion.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBoxJ2eeSpecVersionItemStateChanged(evt);
@@ -145,8 +146,7 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         gridBagConstraints.weightx = 1.0;
         add(jLabelWarnDdChange, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jComboBoxJ2eeSpecVersionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxJ2eeSpecVersionItemStateChanged
         //checkJ2eePlatformSpecMatch();

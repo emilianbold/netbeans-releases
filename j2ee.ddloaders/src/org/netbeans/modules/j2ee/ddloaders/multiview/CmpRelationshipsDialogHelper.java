@@ -444,6 +444,9 @@ public class CmpRelationshipsDialogHelper {
     }
 
     private Entity getEntity(String entityName) {
+        if (entityName == null){
+            return null;
+        }
         Entity[] entities = ejbJar.getEnterpriseBeans().getEntity();
         for (int i = 0; i < entities.length; i++) {
             Entity entity = entities[i];
@@ -549,6 +552,12 @@ public class CmpRelationshipsDialogHelper {
             } else if (!isCmrFieldSpecified()) {
                 errorLabel.setText(Utils.getBundleMessage("MSG_NoCmrDefined"));
                 dialogDescriptor.setValid(false);
+            } else if (ejbJar.getEnterpriseBeans().getEntity() == null || ejbJar.getEnterpriseBeans().getEntity().length == 0){
+                errorLabel.setText(Utils.getBundleMessage("MSG_NoEntitiesFound"));
+                dialogDescriptor.setValid(false);
+            } else if (isEmpty(roleA.getEjbName()) || isEmpty(roleB.getEjbName())){
+                errorLabel.setText(Utils.getBundleMessage("MSG_NoEJbNameSpecified"));
+                dialogDescriptor.setValid(false);
             } else {
                 String s1 = roleA.validateFieldName();
                 if (s1 != null) {
@@ -565,6 +574,10 @@ public class CmpRelationshipsDialogHelper {
                     }
                 }
             }
+        }
+        
+        private boolean isEmpty(String str){
+            return null == str || "".equals(str.trim());
         }
     }
 }

@@ -245,6 +245,9 @@ public class EntityMethodController extends AbstractMethodController {
     }
 
     public MethodType getMethodTypeFromInterface(Method clientView) {
+        if (!clientView.isValid()) {
+            return null;
+        }
         assert clientView.getDeclaringClass() != null: "declaring class cannot be null";
         String cName = clientView.getDeclaringClass().getName();
         MethodType mt;

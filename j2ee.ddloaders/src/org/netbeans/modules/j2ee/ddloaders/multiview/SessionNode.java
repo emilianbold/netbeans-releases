@@ -35,6 +35,7 @@ public class SessionNode extends EjbNode {
         addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, session, helper));
         addChild(new BeanEnvironmentNode(sectionNodeView, session));
         addChild(new BeanDetailNode(sectionNodeView, session));
+        addChild(new EjbSecurityNode(sectionNodeView, session));
     }
 
 }

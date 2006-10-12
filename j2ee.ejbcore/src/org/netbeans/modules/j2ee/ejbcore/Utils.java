@@ -19,20 +19,22 @@
 
 package org.netbeans.modules.j2ee.ejbcore;
 import java.lang.reflect.Modifier;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Iterator;
 import javax.jmi.reflect.JmiException;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.dnd.EjbReference;
-import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.ServiceLocatorStrategy;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.netbeans.modules.javacore.jmiimpl.javamodel.MethodImpl;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -42,13 +44,11 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.jmi.javamodel.ClassDefinition;
+import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
@@ -152,27 +152,23 @@ public class Utils {
     }
     
     public static boolean areInSameJ2EEApp(Project p1, Project p2) {
-        Set globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
-        Iterator iter = globalPath.iterator();
-        while (iter.hasNext()) {
-            FileObject sourceRoot = (FileObject)iter.next();
-            Project project = FileOwnerQuery.getOwner(sourceRoot);
-            if (project != null) {
-                Object j2eeAppProvider = project.getLookup().lookup(J2eeAppProvider.class);
-                if (j2eeAppProvider != null) { // == it is j2ee app
-                    J2eeAppProvider j2eeApp = (J2eeAppProvider)j2eeAppProvider;
-                    J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
-                    if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
-                        J2eeModuleProvider affectedPrjProvider1 =
-                                (J2eeModuleProvider)p1.getLookup().lookup(J2eeModuleProvider.class);
-                        J2eeModuleProvider affectedPrjProvider2 =
-                                (J2eeModuleProvider)p2.getLookup().lookup(J2eeModuleProvider.class);
-                        if (affectedPrjProvider1 != null && affectedPrjProvider2 != null) {
-                            List childModules = Arrays.asList(j2eeModules);
-                            if (childModules.contains(affectedPrjProvider1) &&
-                                    childModules.contains(affectedPrjProvider2)) {
-                                return true;
-                            }
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < openProjects.length; i++) {
+            Project project = openProjects[i];
+            Object j2eeAppProvider = project.getLookup().lookup(J2eeAppProvider.class);
+            if (j2eeAppProvider != null) { // == it is j2ee app
+                J2eeAppProvider j2eeApp = (J2eeAppProvider)j2eeAppProvider;
+                J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
+                if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
+                    J2eeModuleProvider affectedPrjProvider1 =
+                            (J2eeModuleProvider)p1.getLookup().lookup(J2eeModuleProvider.class);
+                    J2eeModuleProvider affectedPrjProvider2 =
+                            (J2eeModuleProvider)p2.getLookup().lookup(J2eeModuleProvider.class);
+                    if (affectedPrjProvider1 != null && affectedPrjProvider2 != null) {
+                        List childModules = Arrays.asList(j2eeModules);
+                        if (childModules.contains(affectedPrjProvider1) &&
+                                childModules.contains(affectedPrjProvider2)) {
+                            return true;
                         }
                     }
                 }
@@ -180,6 +176,7 @@ public class Utils {
         }
         return false;
     }
+    
     
     // =========================================================================
     
@@ -233,60 +230,63 @@ public class Utils {
     }
     
     public  static void addReference(JavaClass beanClass, EjbReference ref, String serviceLocator, boolean remote,
-            boolean throwExceptions, String ejbRefName) {
+            boolean throwExceptions, String ejbRefName, Project nodeProject) {
         // find the project containing the source file
         FileObject srcFile = JavaModel.getFileObject(beanClass.getResource());
         Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
-        EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
-        enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
-        ServiceLocatorStrategy serviceLocatorStrategy = null;
-        if (serviceLocator != null) {
-            serviceLocatorStrategy =
-                    ServiceLocatorStrategy.create(enterpriseProject, srcFile,
-                    serviceLocator);
-        }
-        
         try {
-            String orgRefName = ejbRefName;
+            EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
+            enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
+            
+            boolean enterpriseProjectIsJavaEE5 = isJavaEE5orHigher(enterpriseProject);
+            boolean nodeProjectIsJavaEE5 = isJavaEE5orHigher(nodeProject);
+            
             if (remote) {
                 EjbRef ejbRef = ref.createRef();
                 if (ejbRefName != null) {
                     ejbRef.setEjbRefName(ejbRefName);
                 }
-                erc.addEjbReferernce(ejbRef, beanClass.getName(), ref.getClientJarTarget());
-                if (serviceLocatorStrategy == null) {
-                    MethodImpl lookupMethodImpl = (MethodImpl) ref.generateJNDILookup(ejbRef, throwExceptions);
-                    JavaModelPackage jmp = (JavaModelPackage) beanClass.refImmediatePackage();
-                    Method methodToAdd = (Method) lookupMethodImpl.duplicate(jmp);
-                    generateUniqueMethodName(beanClass, methodToAdd, orgRefName);
-                    beanClass.getContents().add(methodToAdd);
-                    JMIUtils.openInEditor(methodToAdd.getBody());
+                if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(beanClass)) {
+                    addProjectToClassPath(enterpriseProject, ref);
+                } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
+                    erc.addEjbReferernce(ejbRef, beanClass.getName(), ref.getClientJarTarget());
+                }
+                if (serviceLocator == null) {
+                    Feature f = ref.generateReferenceCode(beanClass, ejbRef, throwExceptions);
+//                    JMIUtils.openInEditor(f);
                 } else {
-                    ref.generateServiceLocatorLookup(ejbRef, throwExceptions,
-                            beanClass, serviceLocatorStrategy);
+                    ref.generateServiceLocatorLookup(beanClass, ejbRef, serviceLocator, throwExceptions);
                 }
             } else {
                 EjbLocalRef ejbLocalRef = ref.createLocalRef();
                 if (ejbRefName != null) {
                     ejbLocalRef.setEjbRefName(ejbRefName);
                 }
-                erc.addEjbLocalReference(ejbLocalRef, beanClass.getName(), ref.getClientJarTarget());
-                if (serviceLocatorStrategy == null) {
-                    MethodImpl lookupMethodImpl = (MethodImpl) ref.generateJNDILookup(ejbLocalRef, throwExceptions);
-                    JavaModelPackage jmp = (JavaModelPackage) beanClass.refImmediatePackage();
-                    Method methodToAdd = (Method) lookupMethodImpl.duplicate(jmp);
-                    // fixes #70329
-                    generateUniqueMethodName(beanClass, methodToAdd, orgRefName);
-                    beanClass.getContents().add(methodToAdd);
-                    JMIUtils.openInEditor(methodToAdd.getBody());
+                if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(beanClass)) {
+                    addProjectToClassPath(enterpriseProject, ref);
+                } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
+                    erc.addEjbLocalReference(ejbLocalRef, beanClass.getName(), ref.getClientJarTarget());
+                }
+                if (serviceLocator == null) {
+                    Feature f = ref.generateReferenceCode(beanClass, ejbLocalRef, throwExceptions);
+//                    JMIUtils.openInEditor(f);
                 } else {
-                    ref.generateServiceLocatorLookup(ejbLocalRef, throwExceptions,
-                            beanClass, serviceLocatorStrategy);
+                    ref.generateServiceLocatorLookup(beanClass, ejbLocalRef, serviceLocator, throwExceptions);
                 }
                 
             }
+            
             if (serviceLocator != null) {
                 erc.setServiceLocatorName(serviceLocator);
+            }
+            
+            boolean failed = true;
+            JavaModel.getJavaRepository().beginTrans(true);
+            try {
+                JMIUtils.fixImports(beanClass);
+                failed = false;
+            } finally {
+                JavaModel.getJavaRepository().endTrans(failed);
             }
         } catch (IOException ioe) {
             Utils.notifyError(ioe);
@@ -294,6 +294,21 @@ public class Utils {
             ErrorManager.getDefault().notify(jmie);
         }
     }
+    
+    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref) throws IOException {
+        AntArtifact target = ref.getClientJarTarget();
+        boolean differentProject = target != null && !enterpriseProject.equals(target.getProject());
+        if (differentProject) {
+            ProjectClassPathExtender pcpe = (ProjectClassPathExtender) enterpriseProject.getLookup().lookup(ProjectClassPathExtender.class);
+            if (pcpe != null) {
+                URI locations[] = target.getArtifactLocations();
+                for (int i = 0; i < locations.length; i++) {
+                    pcpe.addAntArtifact(target, locations[i]);
+                }
+            }
+        }
+    }
+    
     /** Returns list of all EJB projects that can be called from the caller project.
      *
      * @param enterpriseProject the caller enterprise project
@@ -327,32 +342,130 @@ public class Utils {
         return (Project []) filteredResults.toArray(new Project[filteredResults.size()]);
     }
     
-    /**
-     * Generates and sets an unique name for given method.
-     * @param beanClass the JavaClass which existing methods are checked for conflicts.
-     * @param method the method for which generated name will be set.
-     * @param orgRefName original name of the ejb reference.
-     */
-    private static void generateUniqueMethodName(JavaClass beanClass, Method method, String orgRefName){
-        orgRefName = orgRefName.substring(orgRefName.lastIndexOf('/') + 1);
-        // resolves the "original" name of the method, i.e. the name the method would
-        // have if there was no additional lookups generated.
-        String orgMethodName = 
-                method.getName().substring(0, method.getName().lastIndexOf(orgRefName) + orgRefName.length());
-
-        Method[] existing = JMIUtils.getMethods(beanClass);
-        List existingMethodNames = new ArrayList();
-        
-        for (int i = 0; i < existing.length; i++) {
-            existingMethodNames.add(existing[i].getName());
+//TODO: this method should be removed and org.netbeans.modules.j2ee.common.Util.isJavaEE5orHigher(Project project)
+//should be called instead of it
+    public static boolean isJavaEE5orHigher(Project project) {
+        if (project == null) {
+            return false;
         }
-        
-        int uniquefier = 1;
-        String newName = orgMethodName;
-        while (existingMethodNames.contains(newName)){
-            newName = orgMethodName + uniquefier++;
+        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
+            if (j2eeModule != null) {
+                Object type = j2eeModule.getModuleType();
+                double version = Double.parseDouble(j2eeModule.getModuleVersion());
+                if (J2eeModule.EJB.equals(type) && (version > 2.1)) {
+                    return true;
+                };
+                if (J2eeModule.WAR.equals(type) && (version > 2.4)) {
+                    return true;
+                }
+                if (J2eeModule.CLIENT.equals(type) && (version > 1.4)) {
+                    return true;
+                }
+            }
         }
-        method.setName(newName);
+        return false;
     }
     
+    public static boolean isAppClient(Project project) {
+        J2eeModuleProvider module = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        return  (module != null) ? module.getJ2eeModule().getModuleType().equals(J2eeModule.CLIENT) : false;
+    }
+    
+    /**
+     * @return true if given <code>target</code> is defined in a Java SE environment.
+     */
+    public static boolean isTargetJavaSE(JavaClass target){
+        Project owner = FileOwnerQuery.getOwner(JavaModel.getFileObject(target.getResource()));
+        if (owner.getLookup().lookup(J2eeModuleProvider.class) == null){
+            return true;
+        }
+        return extendsTestCase(target);
+    }
+    
+    /**
+     * @return true if given <code>javaClass</code> is a subtype (direct or
+     * indirect) of <code>junit.framework.TestCase</code>.
+     */
+    private static boolean extendsTestCase(JavaClass javaClass){
+        if (javaClass == null){
+            return false;
+        }
+        if (javaClass.getName().equals("junit.framework.TestCase")){
+            return true;
+        }
+        return extendsTestCase(javaClass.getSuperClass());
+    }
+    
+    /**
+     * Converts the given <code>jndiName</code> to camel case, i.e. removes
+     * all <code>/</code> characters and converts characters to upper case appropriately.
+     * For example, returns <code>SomeJndiName</code> for <code>some/jndi/name</code> or 
+     * <code>someJndiName</code> if <code>lowerCaseFirstChar</code> is true.
+     * @param jndiName the JNDI name to convert; must not be null.
+     * @param lowerCaseFirstChar defines whether the first char of the resulting name
+     * should be lower case (note that if all chars of the given <code>jndiName</code> are
+     * uppercase characters, its first char will not be converted to lower case even 
+     * if this param is true).
+     * @param prefixToStrip the prefix that will be stripped from the resulting name. If null, 
+     * nothing will be stripped.
+     * @return String representing the converted name.
+     */
+    public static String jndiNameToCamelCase(String jndiName, boolean lowerCaseFirstChar, String prefixToStrip){
+        
+        if (prefixToStrip != null && jndiName.startsWith(prefixToStrip)){
+            jndiName = jndiName.substring(jndiName.indexOf(prefixToStrip) + prefixToStrip.length());
+        }
+        
+        StringBuilder result = new StringBuilder();
+        
+        for (String token : jndiName.split("/")){
+            if (token.length() == 0){
+                continue;
+            }
+            char firstChar = token.charAt(0);
+            if (lowerCaseFirstChar && result.length() == 0 && !isAllUpperCase(token)){
+                firstChar = Character.toLowerCase(firstChar);
+            } else {
+                firstChar = Character.toUpperCase(firstChar);
+            }
+            result.append(firstChar);
+            result.append(token.substring(1));
+        }
+        
+        return result.toString();
+    }
+    
+    /**
+     * @return true if the given <code>str</code> has more than one char 
+     *  and all its chars are uppercase, false otherwise.
+     */
+    private static boolean isAllUpperCase(String str){
+        if (str.length() <= 1){
+            return false;
+        }
+        for (char c : str.toCharArray()) {
+            if (Character.isLowerCase(c)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @return true if the given <code>javaClass</code> contains a feature
+     * whose name is identical with the given <code>feature</code>'s name.
+     */
+    public static boolean containsFeature(JavaClass javaClass, Feature feature){
+        for (Iterator it = javaClass.getFeatures().iterator(); it.hasNext();) {
+            Feature existing = (Feature) it.next();
+            String name = existing.getName();
+            if (name != null && name.equals(feature.getName())){
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

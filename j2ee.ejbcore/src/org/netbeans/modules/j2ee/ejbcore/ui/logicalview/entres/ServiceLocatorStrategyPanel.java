@@ -171,7 +171,6 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void classNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classNameActionPerformed
-        System.out.println("### 111");
         validateClass();
     }//GEN-LAST:event_classNameActionPerformed
 

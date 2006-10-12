@@ -167,8 +167,7 @@ class ActionFilterNode extends FilterNode {
             this.cpRoot = cpRooot;
         }
 
-        protected Node[] createNodes(Object key) {
-            Node n = (Node) key;
+        protected Node[] createNodes(Node n) {
             switch (mode) {
                 case MODE_ROOT:
                 case MODE_PACKAGE:
@@ -178,14 +177,14 @@ class ActionFilterNode extends FilterNode {
                         return new Node[0];
                     }
                     else if (dobj.getPrimaryFile().isFolder()) {
-                        return new Node[] {new ActionFilterNode ((Node)key, MODE_PACKAGE,cpRoot,dobj.getPrimaryFile())};
+                        return new Node[] {new ActionFilterNode (n, MODE_PACKAGE,cpRoot,dobj.getPrimaryFile())};
                     }
                     else {
-                        return new Node[] {new ActionFilterNode ((Node)key, MODE_FILE,cpRoot,dobj.getPrimaryFile())};
+                        return new Node[] {new ActionFilterNode (n, MODE_FILE,cpRoot,dobj.getPrimaryFile())};
                     }
                 case MODE_FILE:
                 case MODE_FILE_CONTENT:
-                    return new Node[] {new ActionFilterNode ((Node)key, MODE_FILE_CONTENT)};
+                    return new Node[] {new ActionFilterNode (n, MODE_FILE_CONTENT)};
                 default:
                     assert false : "Unknown mode";  //NOI18N
                     return new Node[0];

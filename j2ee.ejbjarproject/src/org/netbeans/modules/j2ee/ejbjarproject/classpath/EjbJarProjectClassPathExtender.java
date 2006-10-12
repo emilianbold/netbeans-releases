@@ -43,6 +43,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
+import org.openide.util.RequestProcessor;
 
 public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender,  PropertyChangeListener {
     
@@ -55,6 +56,8 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender,
     private PropertyEvaluator eval;
     
     private ClassPathSupport cs;
+    
+    private volatile boolean projectDeleted;
 
     public EjbJarProjectClassPathExtender (Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper) {
         this.project = project;
@@ -238,6 +241,9 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender,
     }
     
     public void propertyChange (PropertyChangeEvent e) {
+        if (projectDeleted) {
+            return;
+        }
         if (e.getSource().equals(eval) && (e.getPropertyName().equals(EjbJarProjectProperties.JAVAC_CLASSPATH))) {
             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH); //Reread the properties, PathParser changes them
             String javacCp = props.getProperty(EjbJarProjectProperties.JAVAC_CLASSPATH);
@@ -261,14 +267,21 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender,
                 EjbJarProjectProperties.storeLibrariesLocations(wmLibs.iterator(), privateProps);
                 helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
 
-                try {
-                    ProjectManager.getDefault().saveProject(project);
-                }
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            ProjectManager.getDefault().saveProject(project);
+                        } catch (IOException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
+                    }
+                });
             }
         });
     }
     
+    public void notifyDeleting() {
+        projectDeleted = true;
+        eval.removePropertyChangeListener(this);
+    }
 }

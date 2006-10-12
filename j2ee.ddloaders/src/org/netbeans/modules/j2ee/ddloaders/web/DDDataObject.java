@@ -47,6 +47,7 @@ import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
 import org.openide.DialogDisplayer;
 import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
+import org.netbeans.modules.j2ee.dd.impl.web.WebParseUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -81,6 +82,8 @@ public class DDDataObject extends  DDMultiViewDataObject
     public static final String HELP_ID_PREFIX_FILTERS="dd_multiview_filters_"; //NOI18N
     public static final String HELP_ID_PREFIX_PAGES="dd_multiview_pages_"; //NOI18N
     public static final String HELP_ID_PREFIX_REFERENCES="dd_multiview_references_"; //NOI18N
+    public static final String HELP_ID_PREFIX_SECURITY="dd_multiview_security_"; //NOI18N
+
 
     /** Holder of documentDTD property value */
     private String documentDTD;
@@ -220,10 +223,10 @@ public class DDDataObject extends  DDMultiViewDataObject
         WebAppProxy webAppProxy = (WebAppProxy) webApp;
         try {
             // preparsing
-            SAXParseException error = DDUtils.parse(new InputSource(createReader()));
+            SAXParseException error = WebParseUtils.parse(new InputSource(createReader()));
             setSaxError(error);
 
-            String version = DDUtils.getVersion(new InputSource(createReader()));
+            String version = WebParseUtils.getVersion(new InputSource(createReader()));
             // creating model
             WebAppProxy app = new WebAppProxy(org.netbeans.modules.j2ee.dd.impl.common.DDUtils.createWebApp(
                     createInputStream(), version), version);
@@ -326,6 +329,14 @@ public class DDDataObject extends  DDMultiViewDataObject
             return;
         }
 
+        // these are now handled in j2ee/refactoring - see #70389. 
+        else if (evt.getType() == DDChangeEvent.LISTENER_DELETED 
+                || evt.getType() == DDChangeEvent.FILTER_DELETED
+                || evt.getType() == DDChangeEvent.SERVLET_DELETED){
+            
+            return;
+        }
+        
         synchronized (this) {
             if (updates == null) {
                 updates = new Vector ();
@@ -462,7 +473,7 @@ public class DDDataObject extends  DDMultiViewDataObject
 
         try {
             confirmChangesDialog[0] = DialogDisplayer.getDefault ().createDialog (confirmChangesDescriptor);
-            confirmChangesDialog[0].show ();
+            confirmChangesDialog[0].setVisible(true);
         } finally {
             confirmChangesDialog[0].dispose ();
         }
@@ -591,7 +602,7 @@ public class DDDataObject extends  DDMultiViewDataObject
         public void operationDelete(OperationEvent ev) {
             FileObject fo = ev.getObject().getPrimaryFile();
             String resourceName = getPackageName (fo);
-            if (resourceName != null && "java".equals(fo.getExt())) { //NOI18N
+            if (resourceName != null && "java".equals(fo.getExt()) && getWebApp() != null) { //NOI18N
                 boolean foundElement=false;
                 Servlet[] servlets = getWebApp().getServlet();
                 for (int i=0;i<servlets.length;i++) {
@@ -691,6 +702,7 @@ public class DDDataObject extends  DDMultiViewDataObject
     public static final String MULTIVIEW_FILTERS = "Filters"; // NOI18N
     public static final String MULTIVIEW_PAGES = "Pages"; // NOI18N
     public static final String MULTIVIEW_REFERENCES = "References"; // NOI18N
+    public static final String MULTIVIEW_SECURITY = "Security"; //NOI18N
 
     private ServletsMultiViewElement servletMVElement;
 
@@ -700,7 +712,8 @@ public class DDDataObject extends  DDMultiViewDataObject
             new DDView(this,MULTIVIEW_SERVLETS),
             new DDView(this,MULTIVIEW_FILTERS),
             new DDView(this,MULTIVIEW_PAGES),
-            new DDView(this,MULTIVIEW_REFERENCES)
+            new DDView(this,MULTIVIEW_REFERENCES),
+            new DDView(this, MULTIVIEW_SECURITY)
             //new DDView(this,"Security")
         };
     }
@@ -728,8 +741,10 @@ public class DDDataObject extends  DDMultiViewDataObject
                 return new PagesMultiViewElement(dObj,3);
             } else if(name.equals(MULTIVIEW_REFERENCES)) {
                 return new ReferencesMultiViewElement(dObj,4);
+            } else if (name.equals(MULTIVIEW_SECURITY)) {
+                return new SecurityMultiViewElement(dObj, 5);
             }
-            return null;
+            return null; 
         }
 
         public HelpCtx getHelpCtx() {
@@ -798,10 +813,11 @@ public class DDDataObject extends  DDMultiViewDataObject
             });
         }
     }
-    /** Do not allow to remove web.xml
+    /** 
+     * Do not allow to remove web.xml except for version 2.5.
      */
     public boolean isDeleteAllowed() {
-        return false;
+        return WebApp.VERSION_2_5.equals(getWebApp().getVersion());
     }
     /** Enable to access Active element 
      */

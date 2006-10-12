@@ -126,7 +126,7 @@ public class ListenersTablePanel extends DefaultTablePanel {
             dialogPanel.getTextComponents()[0].getDocument().addDocumentListener(docListener);
             
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.show();
+            d.setVisible(true);
             dialogPanel.getTextComponents()[0].getDocument().removeDocumentListener(docListener);
             
             if (dialog.getValue().equals(EditDialog.OK_OPTION)) {

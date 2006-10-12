@@ -229,10 +229,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cp == null) {
             switch (type) {
                 case 0:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots,this.helper));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots,this.helper));
                     break;
             }
         }
@@ -287,7 +287,20 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         return null;
     }
 
-
+    /**
+     * Returns the given type of the classpath for the project sources
+     * (i.e., excluding tests roots). Valid types are SOURCE and COMPILE.
+     */
+    public ClassPath getProjectSourcesClassPath(String type) {
+        if (ClassPath.SOURCE.equals(type)) {
+            return getSourcepath(0);
+        }
+        if (ClassPath.COMPILE.equals(type)) {
+            return getCompileTimeClasspath(0);
+        }
+        assert false;
+        return null;
+    }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
         this.dirCache.clear();

@@ -182,7 +182,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         EnvEntriesNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_EnvEntries"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }    
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"envEntriesNode"); //NOI18N
@@ -193,7 +193,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         ResRefsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_ResRefs"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"resRefsNode"); //NOI18N
@@ -204,7 +204,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         ResEnvRefsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_ResEnvRefs"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"resEnvRefsNode"); //NOI18N
@@ -215,7 +215,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         EjbRefsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_EjbRefs"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"ejbRefsNode"); //NOI18N
@@ -226,7 +226,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         MessageDestRefsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_MessageDestRefs"));
-            setIconBase("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/paramNode.gif"); //NOI18N
         }
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"messageDestRefsNode"); //NOI18N
