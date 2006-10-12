@@ -91,7 +91,7 @@ public final class MimePath {
     private static final Object LOCK = new Object();
 
     /** The List of Recently Used mime paths. */
-    private static final ArrayList LRU = new ArrayList();
+    private static final ArrayList<MimePath> LRU = new ArrayList<MimePath>();
     
     /** The maximum size of the List of Recently Used mime paths.
     /* package */ static final int MAX_LRU_SIZE = 3;
@@ -180,7 +180,7 @@ public final class MimePath {
     /**
      * Mapping of embedded mimeType to a weak reference to mimePath.
      */
-    private Map mimeType2mimePathRef;
+    private Map<String, SoftReference<MimePath>> mimeType2mimePathRef;
 
     /**
      * The lookup with objects registered for this mime path.
@@ -278,9 +278,9 @@ public final class MimePath {
         // to be tested for correctness
         synchronized (LOCK) {
             if (mimeType2mimePathRef == null) {
-                mimeType2mimePathRef = new HashMap();
+                mimeType2mimePathRef = new HashMap<String, SoftReference<MimePath>>();
             }
-            Reference mpRef = (Reference)mimeType2mimePathRef.get(mimeType);
+            Reference mpRef = mimeType2mimePathRef.get(mimeType);
             MimePath mimePath;
             if (mpRef == null || (mimePath = (MimePath)mpRef.get()) == null) {
                 // Check mimeType correctness
@@ -296,7 +296,7 @@ public final class MimePath {
 
                 // Construct the mimePath
                 mimePath = new MimePath(this, mimeType);
-                mimeType2mimePathRef.put(mimeType, new SoftReference(mimePath));
+                mimeType2mimePathRef.put(mimeType, new SoftReference<MimePath>(mimePath));
 
                 // Hard reference the last few MimePaths created.
                 LRU.add(0, mimePath);

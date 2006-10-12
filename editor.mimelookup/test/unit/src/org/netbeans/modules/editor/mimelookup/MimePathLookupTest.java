@@ -56,7 +56,7 @@ public class MimePathLookupTest extends NbTestCase {
         );
     }
     
-    private void checkAddingMimeDataProvider(String instanceFile, Class markerClass) throws Exception {
+    private <T> void checkAddingMimeDataProvider(String instanceFile, Class<T> markerClass) throws Exception {
         MimePath path = MimePath.get("text/x-java");
         Lookup lookup = MimeLookup.getLookup(path);
         
@@ -82,7 +82,7 @@ public class MimePathLookupTest extends NbTestCase {
         );
     }
     
-    private void checkAddingMimeDataProvider2(String instanceFile, Class markerClass) throws Exception {
+    private <T> void checkAddingMimeDataProvider2(String instanceFile, Class<T> markerClass) throws Exception {
         MimePath path = MimePath.get("text/x-java");
         
         Lookup.Result result = MimeLookup.getLookup(path).lookupResult(markerClass);
@@ -113,7 +113,7 @@ public class MimePathLookupTest extends NbTestCase {
         );
     }
     
-    private void checkRemovingMimeDataProvider(String instanceFile, Class markerClass) throws Exception {
+    private <T> void checkRemovingMimeDataProvider(String instanceFile, Class<T> markerClass) throws Exception {
         TestUtilities.createFile(getWorkDir(), instanceFile);
         TestUtilities.sleepForWhile();
 
@@ -141,7 +141,7 @@ public class MimePathLookupTest extends NbTestCase {
         );
     }
     
-    private void checkRemovingMimeDataProvider2(String instanceFile, Class markerClass) throws Exception {
+    private <T> void checkRemovingMimeDataProvider2(String instanceFile, Class<T> markerClass) throws Exception {
         TestUtilities.createFile(getWorkDir(), instanceFile);
         TestUtilities.sleepForWhile();
 

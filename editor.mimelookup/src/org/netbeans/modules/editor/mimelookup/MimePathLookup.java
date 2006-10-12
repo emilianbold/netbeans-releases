@@ -37,8 +37,8 @@ import org.openide.util.lookup.ProxyLookup;
 public final class MimePathLookup extends ProxyLookup implements LookupListener {
     
     private MimePath mimePath;
-    private Lookup.Result dataProviders;
-    private Lookup.Result mimeInitializers; // This is supported for backwards compatibility only.
+    private Lookup.Result<MimeDataProvider> dataProviders;
+    private Lookup.Result<MimeLookupInitializer> mimeInitializers; // This is supported for backwards compatibility only.
     
     /** Creates a new instance of MimePathLookup */
     public MimePathLookup(MimePath mimePath) {
@@ -50,10 +50,10 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
         
         this.mimePath = mimePath;
 
-        dataProviders = Lookup.getDefault().lookup(new Lookup.Template(MimeDataProvider.class));
+        dataProviders = Lookup.getDefault().lookup(new Lookup.Template<MimeDataProvider>(MimeDataProvider.class));
         dataProviders.addLookupListener((LookupListener) WeakListeners.create(LookupListener.class, this, dataProviders));
 
-        mimeInitializers = Lookup.getDefault().lookup(new Lookup.Template(MimeLookupInitializer.class));
+        mimeInitializers = Lookup.getDefault().lookup(new Lookup.Template<MimeLookupInitializer>(MimeLookupInitializer.class));
         mimeInitializers.addLookupListener((LookupListener) WeakListeners.create(LookupListener.class, this, mimeInitializers));
         
         rebuild();
@@ -64,18 +64,16 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
     }
     
     private void rebuild() {
-        ArrayList lookups = new ArrayList();
+        ArrayList<Lookup> lookups = new ArrayList<Lookup>();
         
-        for (Iterator i = dataProviders.allInstances().iterator(); i.hasNext(); ) {
-            MimeDataProvider provider = (MimeDataProvider) i.next();
+        for (MimeDataProvider provider : dataProviders.allInstances()) {
             Lookup mimePathLookup = provider.getLookup(mimePath);
             if (mimePathLookup != null) {
                 lookups.add(mimePathLookup);
             }
         }
         
-        for (Iterator i = mimeInitializers.allInstances().iterator(); i.hasNext(); ) {
-            MimeLookupInitializer initializer = (MimeLookupInitializer) i.next();
+        for (MimeLookupInitializer initializer : mimeInitializers.allInstances()) {
             for (int j = 0; j < mimePath.size(); j++) {
                 Lookup.Result children = initializer.child(mimePath.getMimeType(j));
                 for (Iterator k = children.allInstances().iterator(); k.hasNext(); ) {

@@ -147,7 +147,7 @@ public final class MimeLookup extends Lookup {
      * @deprecated Use {@link #getLookup(MimePath)} and the methods provided by
      * the ordinary <code>Lookup</code> instance returned.
      */
-    public Object lookup(Class clazz){
+    public <T> T lookup(Class<T> clazz) {
         return mimePathLookup.lookup(clazz);
     }
 
@@ -160,7 +160,7 @@ public final class MimeLookup extends Lookup {
      * @deprecated Use {@link #getLookup(MimePath)} and the methods provided by
      * the ordinary <code>Lookup</code> instance returned.
      */
-    public Result lookup(Template template) {
+    public <T> Result<T> lookup(Template<T> template) {
         return mimePathLookup.lookup(template);
     }
 
