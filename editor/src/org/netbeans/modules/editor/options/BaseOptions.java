@@ -127,6 +127,7 @@ public class BaseOptions extends OptionSupport {
     public static final String LINE_NUMBER_VISIBLE_PROP = "lineNumberVisible"; // NOI18N
     public static final String MACRO_MAP_PROP = "macroMap"; // NOI18N
     public static final String MARGIN_PROP = "margin"; // NOI18N
+    public static final String PAIR_CHARACTERS_COMPLETION = "pairCharactersCompletion"; // NOI18N
     public static final String SCROLL_FIND_INSETS_PROP = "scrollFindInsets"; // NOI18N
     public static final String SCROLL_JUMP_INSETS_PROP = "scrollJumpInsets"; // NOI18N
     public static final String SPACES_PER_TAB_PROP = "spacesPerTab"; // NOI18N
@@ -160,6 +161,7 @@ public class BaseOptions extends OptionSupport {
         //LINE_NUMBER_VISIBLE_PROP,
         MACRO_MAP_PROP,
         MARGIN_PROP,
+        PAIR_CHARACTERS_COMPLETION,
         SCROLL_FIND_INSETS_PROP,
         SCROLL_JUMP_INSETS_PROP,
         SPACES_PER_TAB_PROP,
@@ -1316,6 +1318,16 @@ public class BaseOptions extends OptionSupport {
         setSettingInteger(SettingsNames.FIND_HISTORY_SIZE, size,
         FIND_HISTORY_SIZE_PROP);
     }
+    
+    public boolean getPairCharactersCompletion() {
+      return getSettingBoolean(SettingsNames.PAIR_CHARACTERS_COMPLETION);
+    }
+
+    public void setPairCharactersCompletion(boolean v) {
+        setSettingBoolean(SettingsNames.PAIR_CHARACTERS_COMPLETION, v,
+            PAIR_CHARACTERS_COMPLETION);
+    }
+
     
     public Color getTextLimitLineColor() {
         loadSettings(FontsColorsMIMEProcessor.class);

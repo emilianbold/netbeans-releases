@@ -76,8 +76,6 @@ public class JavaOptions extends BaseOptions {
     
     public static final String FAST_IMPORT_PACKAGE_PROP = "fastImportPackage"; // NOI18N    
      
-    public static final String PAIR_CHARACTERS_COMPLETION = "pairCharactersCompletion"; // NOI18N
-
     public static final String GOTO_CLASS_CASE_SENSITIVE_PROP = "gotoClassCaseSensitive"; //NOI18N
 
     public static final String GOTO_CLASS_SHOW_INNER_CLASSES_PROP = "gotoClassShowInnerClasses"; //NOI18N
@@ -101,8 +99,7 @@ public class JavaOptions extends BaseOptions {
                                                 GOTO_CLASS_CASE_SENSITIVE_PROP,
                                                 GOTO_CLASS_SHOW_INNER_CLASSES_PROP,
                                                 GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP,
-                                                CODE_FOLDING_PROPS_PROP,
-						PAIR_CHARACTERS_COMPLETION
+                                                CODE_FOLDING_PROPS_PROP
                                             });
 
     static final long serialVersionUID =-7951549840240159575L;
@@ -285,15 +282,6 @@ public class JavaOptions extends BaseOptions {
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
-    }
-
-    public boolean getPairCharactersCompletion() {
-      return getSettingBoolean(JavaSettingsNames.PAIR_CHARACTERS_COMPLETION);
-    }
-
-    public void setPairCharactersCompletion(boolean v) {
-        setSettingBoolean(JavaSettingsNames.PAIR_CHARACTERS_COMPLETION, v,
-            PAIR_CHARACTERS_COMPLETION);
     }
 
     public Map getCodeFoldingProps(){
