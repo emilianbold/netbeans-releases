@@ -26,7 +26,7 @@
     <h3 align="left">Usage Notes</h3>
     <h4 align="left">How to obtain NetBeans Preferences?</h4>
     To get preference node there are two <A
-      HREF="http://www.netbeans.org/source/browse/openide/util/src/org/openide/util/Attic/NbPreferences.java?rev=1.1.2.1&only_with_tag=preferences_prototype&view=markup">factory
+      HREF="http://www.netbeans.org/source/browse/openide/util/src/org/openide/util/NbPreferences.java?view=markup">factory
     methods in Utilities API (org.openide.util)</A>:
     <ul>
       <li><code>NbPreferences.root()</code> returns root preference node. </li>
@@ -41,7 +41,7 @@
     <h4 align="left">How to verify that preferences work properly?</h4>
     Layout of files on disk:<br>
     <p> </p>
-<pre>  config/Preferences/<br>`-- UserRoot<br>    `-- org<br>        |-- netbeans<br>        |   `-- modules<br>        |       `-- derby<br>        |           `-- prefs.properties<br>        `-- yourorghere<br>            `-- mymodule<br>                `-- prefs.properties<br>   </pre>
+<pre>config/Preferences/<br>`-- org<br>        |-- netbeans<br>        |   `-- modules<br>        |       `-- derby<br>        |           `-- prefs.properties<br>        `-- yourorghere<br>            `-- mymodule<br>                `-- prefs.properties<br>   </pre>
     <p> prefs.properties is regular properties file. See: </p>
     <p> </p>
 <pre>#Thu Sep 28 18:15:22 CEST 2006<br>location=/tmp/location<br>systemHome=/tmp/systemHome<br>  </pre>
@@ -98,24 +98,6 @@
 +        return INSTANCE;
      }
       </PRE>
-      <LI>It is recommended to delete settings file not just from layer but also from userdir:
-      <PRE>
-     public static DerbyOptions getDefault() {
--        return (DerbyOptions)SharedClassObject.findObject(DerbyOptions.class, true);
-+        if (INSTANCE == null) {
-+            INSTANCE = new DerbyOptions();
-+            <B>FileObject toDel = Repository.getDefault().getDefaultFileSystem().findResource("/Services/org-netbeans-modules-derby-DerbyOptions.settings");</B>
-+            if (toDel != null) {
-+                try {
-+                    <B>toDel.delete();</B>
-+                } catch (IOException ex) {
-+                    Logger.getLogger(DerbyOptions.class.getName()).log(Level.INFO, null, ex);
-+                }
-+            }
-+        }
-+        return INSTANCE;
-     }
-      </PRE>
       <LI>Replace all other SystemOption and SharedClassObject calls. E.g.:
       <PRE>
 +    protected final String putProperty(String key, String value, boolean notify) {
@@ -165,8 +147,8 @@
               &lt;tr&gt;
                   &lt;th&gt;key&lt;/th&gt;
                   &lt;th&gt;description&lt;/th&gt;
-                  &lt;th&gt;Read&lt;/th&gt;
-                  &lt;th&gt;Write&lt;/th&gt;
+                  &lt;th&gt;read&lt;/th&gt;
+                  &lt;th&gt;write&lt;/th&gt;
               &lt;/tr&gt;
               &lt;tr&gt;
                   &lt;td&gt;location&lt;/td&gt;
@@ -230,8 +212,8 @@ public class DerbyOptionsTest extends BasicTestForImport {
 If the tests  didn't pass then probably there is more complicated object graph
 serialized then you must subclass <CODE>PropertyProcessor</CODE> and put your
 own code in.
-(See as an example: <A HREF="http://www.netbeans.org/source/browse/ide/launcher/upgrade/src/org/netbeans/upgrade/systemoptions/Attic/TaskTagsProcessor.java?rev=1.1.2.2&only_with_tag=preferences_prototype&view=markup">TaskTagsProcessor</A>
+(See as an example: <A HREF="http://www.netbeans.org/source/browse/ide/launcher/upgrade/src/org/netbeans/upgrade/systemoptions/TaskTagsProcessor.java?view=markup">TaskTagsProcessor</A>
  and here is a <A
-   HREF="http://www.netbeans.org/source/browse/ide/launcher/upgrade/test/unit/src/org/netbeans/upgrade/systemoptions/Attic/ExampleSettingsTest.java?rev=1.1.2.1&only_with_tag=preferences_prototype&view=markup">test</A>).
+   HREF="http://www.netbeans.org/source/browse/ide/launcher/upgrade/test/unit/src/org/netbeans/upgrade/systemoptions/ExampleSettingsTest.java?view=markup">test</A>).
 </body>
 </html>
