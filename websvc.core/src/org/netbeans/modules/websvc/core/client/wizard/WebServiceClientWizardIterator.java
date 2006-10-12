@@ -20,56 +20,28 @@
 package org.netbeans.modules.websvc.core.client.wizard;
 
 import java.io.*;
-import java.net.URL;
 import java.util.*;
 import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.UnresolvedClass;
-import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
-        
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileAlreadyLockedException;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-
-import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.core.Utilities;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 
 /** Wizard for adding web service clients to an application
  */
-public class WebServiceClientWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
 
     private int index = 0;
     private WizardDescriptor.Panel [] panels;
 
-    private WizardDescriptor wiz;
+    private TemplateWizard wiz;
     // !PW FIXME How to handle freeform???
     private Project project;
 
@@ -85,7 +57,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         };
     }
 
-    public void initialize(WizardDescriptor wizard) {
+    public void initialize(TemplateWizard wizard) {
         wiz = wizard;
         project = Templates.getProject(wiz);
 
@@ -117,305 +89,18 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         }
     }
 
-    public void uninitialize(WizardDescriptor wizard) {
-        wiz.putProperty(WizardProperties.WSDL_DOWNLOAD_URL, null);
-        wiz.putProperty(WizardProperties.WSDL_DOWNLOAD_FILE, null);
-        wiz.putProperty(WizardProperties.WSDL_DOWNLOAD_SCHEMAS, null);
-        wiz.putProperty(WizardProperties.WSDL_FILE_PATH,null);
-        wiz.putProperty(WizardProperties.WSDL_PACKAGE_NAME,null);
-        wiz.putProperty(WizardProperties.CLIENT_STUB_TYPE, null);
-
+    public void uninitialize(TemplateWizard wizard) {
         wiz = null;
         panels = null;
     }
-
-    /**
-     * Returns Java source groups for all source packages in given project.<br>
-     * Doesn't include test packages.
-     *
-     * @param project Project to search
-     * @return Array of SourceGroup. It is empty if any probelm occurs.
-     */
-    static SourceGroup[] getJavaSourceGroups(Project project) {
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
-                                    JavaProjectConstants.SOURCES_TYPE_JAVA);
-        Set testGroups = getTestSourceGroups(project, sourceGroups);
-        List result = new ArrayList();
-        for (int i = 0; i < sourceGroups.length; i++) {
-            if (!testGroups.contains(sourceGroups[i])) {
-                result.add(sourceGroups[i]);
-            }
-        }
-        return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
-    }
     
-    private static Set/*<SourceGroup>*/ getTestSourceGroups(Project project, SourceGroup[] sourceGroups) {
-        Map foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
-        Set testGroups = new HashSet();
-        for (int i = 0; i < sourceGroups.length; i++) {
-            testGroups.addAll(getTestTargets(sourceGroups[i], foldersToSourceGroupsMap));
-        }
-        return testGroups;
-    }
-    
-    private static List/*<SourceGroup>*/ getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
-        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
-        if (rootURLs.length == 0) {
-            return new ArrayList();
-        }
-        List result = new ArrayList();
-        List sourceRoots = getFileObjects(rootURLs);
-        for (int i = 0; i < sourceRoots.size(); i++) {
-            FileObject sourceRoot = (FileObject) sourceRoots.get(i);
-            SourceGroup srcGroup = (SourceGroup) foldersToSourceGroupsMap.get(sourceRoot);
-            if (srcGroup != null) {
-                result.add(srcGroup);
-            }
-        }
-        return result;
-    }
-    
-    private static Map createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
-        Map result;
-        if (sourceGroups.length == 0) {
-            result = Collections.EMPTY_MAP;
-        } else {
-            result = new HashMap(2 * sourceGroups.length, .5f);
-            for (int i = 0; i < sourceGroups.length; i++) {
-                SourceGroup sourceGroup = sourceGroups[i];
-                result.put(sourceGroup.getRootFolder(), sourceGroup);
-            }
-        }
-        return result;
-    }
-    
-    private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
-        List result = new ArrayList();
-        for (int i = 0; i < urls.length; i++) {
-            FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
-            if (sourceRoot != null) {
-                result.add(sourceRoot);
-            } else {
-                int severity = ErrorManager.INFORMATIONAL;
-                if (ErrorManager.getDefault().isNotifiable(severity)) {
-                    ErrorManager.getDefault().notify(severity, new IllegalStateException(
-                       "No FileObject found for the following URL: " + urls[i])); //NOI18N
-                }
-            }
-        }
-        return result;
-    }
-    
-    public Set/*FileObject*/ instantiate() throws IOException {
-
-        Set result = Collections.EMPTY_SET;
-
-        // Steps:
-        // 1. invoke wizard to select which service to add a reference to.
-        //    How to interpret node input set --
-        //    + empty: wizard forces project selection, then service selection
-        //    + client node: determine project and start on service page
-        //    + wsdl node: would select project, but not service.  would also
-        //      have to verify that WSDL is fully formed.
-
-        WebServicesClientSupport clientSupport = null;
-        project = Templates.getProject(wiz);
-
-        // !PW Get client support from project (from first page of wizard)
-        if(project != null) {
-            clientSupport = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
-        }
-
-        if(clientSupport == null) {
-            // notify no client support
-//			String mes = MessageFormat.format (
-//				NbBundle.getMessage (WebServiceClientWizardIterator.class, "ERR_WebServiceClientSupportNotFound"),
-//				new Object [] {"Servlet Listener"}); //NOI18N
-            String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_NoWebServiceClientSupport"); // NOI18N
-            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(desc);
-            return result;
-        }
-
+    public Set/*FileObject*/ instantiate(TemplateWizard wiz) throws IOException {
+        FileObject template = Templates.getTemplate( wiz );
+        DataObject dTemplate = DataObject.find( template );                
         
-        final byte [] sourceWsdlDownload = (byte []) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_FILE);
-        final List /*WsdlRetriever.SchemaInfo */ downloadedSchemas = (List) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_SCHEMAS);
-        String wsdlFilePath = (String) wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
-        String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
-        ClientStubDescriptor stubDescriptor = (ClientStubDescriptor) wiz.getProperty(WizardProperties.CLIENT_STUB_TYPE);
-
-        String sourceUrl;
-        FileObject sourceWsdlFile = null;
-        
-        if(sourceWsdlDownload == null) {
-            // Verify the existence of the source WSDL file and that we can get a file object for it.
-            File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(wsdlFilePath));
-            sourceUrl = normalizedWsdlFilePath.toString();
-            sourceWsdlFile = FileUtil.toFileObject(normalizedWsdlFilePath);
-
-            if(sourceWsdlFile == null) {
-                String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_WsdlFileNotFound", normalizedWsdlFilePath); // NOI18N
-                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(desc);
-                return result;
-            }
-        } else {
-            // create a temporary WSDL file
-            File wsdlFile = new File(System.getProperty("java.io.tmpdir"), wsdlFilePath);
-            if(!wsdlFile.exists()) {
-                try {
-                    wsdlFile.createNewFile();
-                } catch(IOException ex) {
-                    String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_UnableToCreateTempFile", wsdlFile.getPath()); // NOI18N
-                    NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify(desc);
-                    return result;
-                }
-            }
-            
-            sourceUrl = (String) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_URL);
-            sourceWsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdlFile));
-        
-            if(sourceWsdlFile != null) {
-                FileLock wsdlLock = sourceWsdlFile.lock();
-
-                try {
-                    OutputStream out = sourceWsdlFile.getOutputStream(wsdlLock);
-                    try {
-                        out.write(sourceWsdlDownload);
-                        out.flush();
-                    } finally {
-                        if(out != null) {
-                            out.close();
-                        }
-                    }
-                } finally {
-                    wsdlLock.releaseLock();
-                }
-            } else {
-                String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_UnableToCreateTempFile", wsdlFile.getPath()); // NOI18N
-                NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(desc);
-                return result;
-            }
-            
-            // create temporary Schema Files            
-            if (downloadedSchemas!=null) {
-                Iterator it = downloadedSchemas.iterator();
-                while (it.hasNext()) {
-                    WsdlRetriever.SchemaInfo schemaInfo = (WsdlRetriever.SchemaInfo)it.next();
-                    File schemalFile = new File(System.getProperty("java.io.tmpdir"), schemaInfo.getSchemaName());
-                    try {
-                        schemalFile.createNewFile();
-                    } catch(IOException ex) {
-                        String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_UnableToCreateTempFile", schemalFile.getPath()); // NOI18N
-                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(desc);
-                        return result;
-                    }
-                    FileObject schemaFo = FileUtil.toFileObject(FileUtil.normalizeFile(schemalFile));
-                    if(schemaFo != null) {
-                        FileLock lock = schemaFo.lock();
-
-                        try {
-                            OutputStream out = schemaFo.getOutputStream(lock);
-                            try {
-                                out.write(schemaInfo.getSchemaContent());
-                                out.flush();
-                            } finally {
-                                if(out != null) {
-                                    out.close();
-                                }
-                            }
-                        } finally {
-                            lock.releaseLock();
-                        }
-                    } else {
-                        String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_UnableToCreateTempFile", schemalFile.getPath()); // NOI18N
-                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(desc);
-                        return result;
-                    }
-                } //end while
-            } // end if
-        } //end else
-        
-        // 2. add jax-rpc library if wscompile isnt present
-        SourceGroup[] sgs = getJavaSourceGroups(project);
-        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
-
-        if (clientSupport.getDeploymentDescriptor()==null) { // testing java project type
-            // test for the platform
-            String javaVersion = System.getProperty("java.version"); //NOI18N   
-            if (javaVersion!=null && javaVersion.startsWith("1.4")) { //NOI18N
-                FileObject documentRangeFO = classPath.findResource("org/w3c/dom/ranges/DocumentRange.class"); //NOI18N
-                FileObject saxParserFO = classPath.findResource("com/sun/org/apache/xerces/internal/jaxp/SAXParserFactoryImpl.class"); //NOI18N
-                if (documentRangeFO == null || saxParserFO == null) {
-                    ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
-                    Library jaxrpclib_ext = LibraryManager.getDefault().getLibrary("jaxrpc16_xml"); //NOI18N
-                    if ((pce!=null) && (jaxrpclib_ext != null)) {
-                        pce.addLibrary(jaxrpclib_ext);
-                    } else {
-                        String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_CannotAddXMLLibrary"); // NOI18N
-                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                        DialogDisplayer.getDefault().notify(desc);
-                        return result;
-                    }
-                }
-            }
-        }
-
-        FileObject wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class");
-        if (wscompileFO==null) {
-            // add jax-rpc16 if webservice is not on classpath
-            ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
-            Library jaxrpclib = LibraryManager.getDefault().getLibrary("jaxrpc16"); //NOI18N
-            if ((pce!=null) && (jaxrpclib != null)) {
-                pce.addLibrary(jaxrpclib);
-            }
-        }
-        
-        // sets JVM Proxy Options
-        clientSupport.setProxyJVMOptions(WebProxySetter.getInstance().getProxyHost(),WebProxySetter.getInstance().getProxyPort());
-        
-        // 3. add the service client to the project.
-        // Use Progress API to display generator messages.
-
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizCreateClient"));
-        handle.start(100);
-        final ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, packageName, sourceUrl, stubDescriptor);
-        final FileObject sourceWsdlFileTmp = sourceWsdlFile;
-        
-        org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                try {
-                    builder.generate(handle);
-
-                    if(sourceWsdlDownload != null) {
-                        // we used a temp file, delete it now.
-                        try {
-                            sourceWsdlFileTmp.delete();
-                        } catch(FileAlreadyLockedException ex) {
-                            String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_TempFileLocked", sourceWsdlFileTmp.getNameExt()); // NOI18N
-                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(desc);
-                        } catch(IOException ex) {
-                            String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_TempFileNotDeleted", sourceWsdlFileTmp.getNameExt()); // NOI18N
-                            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(desc);
-                        }
-                    }
-                    
-                    handle.progress(NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizDone"),99);
-                } finally {
-                    handle.finish();
-                }
-            }
-        });
-
-        
-        return result;
+        new WebServiceClientCreator(project,wiz).create();
+                
+        return Collections.singleton(dTemplate);
     }
 
     public String name() {

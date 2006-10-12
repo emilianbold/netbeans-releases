@@ -19,11 +19,10 @@
 
 package org.netbeans.modules.j2ee.dd.api.webservices;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -32,18 +31,24 @@ import org.netbeans.modules.schema2beans.Common;
 import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
+import org.netbeans.modules.j2ee.metadata.MergedProvider;
+import org.netbeans.modules.j2ee.dd.impl.webservices.WsAnnotationListener;
+import org.netbeans.modules.j2ee.metadata.MetadataUnit;
+import org.netbeans.modules.j2ee.metadata.NNMDRListener;
+import org.netbeans.modules.schema2beans.BaseBean;
 import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
 
 public final class DDProvider {
     
     private static final DDProvider ddProvider = new DDProvider();
     private Map ddMap;
+    private Map<MetadataUnit, Webservices> annotationDDMap;
     
     /** Creates a new instance of WebSvcModule */
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
         ddMap = new java.util.HashMap(5);
+        annotationDDMap = new java.util.WeakHashMap<MetadataUnit, Webservices>(5);
     }
     
     /**
@@ -54,6 +59,39 @@ public final class DDProvider {
         return ddProvider;
     }
     
+    public Webservices getMergedDDRoot(MetadataUnit mu) throws IOException {
+        if (mu == null) {
+            return null;
+        }
+        Webservices xmlRoot = getDDRoot(mu.getDeploymentDescriptor());
+        //  for J2ee 1.4 and lower delegate to XML-only method
+        if (xmlRoot != null && !xmlRoot.getVersion().equals(new BigDecimal(Webservices.VERSION_1_2))) {
+            return xmlRoot;
+        }
+        Webservices annotationRoot = getAnnotationDDRoot(mu);
+        if (xmlRoot instanceof WebServicesProxy) {
+            xmlRoot = ((WebServicesProxy) xmlRoot).getOriginal();
+        }
+        if (annotationRoot instanceof WebServicesProxy) {
+            annotationRoot = ((WebServicesProxy) annotationRoot).getOriginal();
+        }
+        return (Webservices) MergedProvider.getDefault().getRoot((BaseBean) annotationRoot, (BaseBean) xmlRoot);
+    }
+
+    private synchronized Webservices getAnnotationDDRoot(MetadataUnit mu) throws IOException {
+        if (mu == null) {
+            return null;
+        }
+        Webservices ws = annotationDDMap.get(mu);
+        if (ws != null) {
+            return ws;
+        }
+        ws = new org.netbeans.modules.j2ee.dd.impl.webservices.model_1_2.Webservices();
+        annotationDDMap.put(mu, ws);
+        NNMDRListener.getDefault().addAnnotationListener(new WsAnnotationListener(ws, mu.getClassPath()));
+        return ws;
+    }
+
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
      * The method is useful for clints planning to read only the deployment descriptor
@@ -114,13 +152,12 @@ public final class DDProvider {
         
         try {
             DDParse parseResult = parseDD(fo);
-            SAXParseException error = parseResult.getWarning();
             Webservices original = createWebSvcJar(parseResult);
             webSvcProxy = new WebServicesProxy(original,parseResult.getVersion());
             setProxyErrorStatus(webSvcProxy, parseResult);
         } catch (SAXException ex) {
             // XXX lets throw an exception here
-            webSvcProxy = new WebServicesProxy(org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1.Webservices.createGraph(),"1.1");
+            webSvcProxy = new WebServicesProxy(org.netbeans.modules.j2ee.dd.impl.webservices.model_1_2.Webservices.createGraph(),"1.2");
             webSvcProxy.setStatus(Webservices.STATE_INVALID_UNPARSABLE);
             if (ex instanceof SAXParseException) {
                 webSvcProxy.setError((SAXParseException)ex);
@@ -191,7 +228,13 @@ public final class DDProvider {
               } catch (RuntimeException ex) {
                   throw new SAXException(ex.getMessage());
               }
-          } 
+          } else if (Webservices.VERSION_1_2.equals(version)) {
+              try {
+                return new org.netbeans.modules.j2ee.dd.impl.webservices.model_1_2.Webservices(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
+              } catch (RuntimeException ex) {
+                  throw new SAXException(ex.getMessage());
+              }
+          }
           
           return jar;
     }
@@ -209,6 +252,10 @@ public final class DDProvider {
                 return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/j2ee_web_services_1_1.xsd"); //NOI18N
             } else if ("http://java.sun.com/xml/ns/j2ee/j2ee_web_services_1_1.xsd".equals(systemId)) {
                 return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/j2ee_web_services_1_1.xsd"); //NOI18N
+            } else if ("http://www.ibm.com/webservices/xsd/javaee_web_services_1_2.xsd".equals(systemId)) {
+                return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/javaee_web_services_1_2.xsd"); //NOI18N
+            } else if ("http://java.sun.com/xml/ns/j2ee/javaee_web_services_1_2.xsd".equals(systemId)) {
+                return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/javaee_web_services_1_2.xsd"); //NOI18N
             } else {
                 // use the default behaviour
                 return null;
@@ -305,8 +352,8 @@ public final class DDProvider {
          */
         private void extractVersion () {
             // This is the default version
-            version = Webservices.VERSION_1_1;
-            
+            String ver = document.getDocumentElement().getAttribute("version"); //NOI18N
+            version = (Webservices.VERSION_1_1.equals(ver))?Webservices.VERSION_1_1:Webservices.VERSION_1_2;
         }
         
         public String getVersion() {

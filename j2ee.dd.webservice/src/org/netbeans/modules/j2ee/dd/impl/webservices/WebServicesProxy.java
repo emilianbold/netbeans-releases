@@ -35,7 +35,6 @@ public class WebServicesProxy implements Webservices {
     private String version;
     private java.util.List listeners;
     public boolean writing = false;
-    private OutputProvider outputProvider;
     private org.xml.sax.SAXParseException error;
     private int ddStatus;
 
@@ -371,7 +370,13 @@ public class WebServicesProxy implements Webservices {
                 org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1.Webservices webSvcImpl = 
                     (org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1.Webservices)webSvc;
                 if (webSvcImpl._getSchemaLocation()==null) {
-                    webSvcImpl._setSchemaLocation("http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/j2ee_web_services_1_1.xsd");
+                    webSvcImpl._setSchemaLocation("http://java.sun.com/xml/ns/j2ee http://www.ibm.com/webservices/xsd/j2ee_web_services_1_1.xsd"); //NOI18N
+                }
+            } else if (webSvc instanceof org.netbeans.modules.j2ee.dd.impl.webservices.model_1_2.Webservices) {
+                org.netbeans.modules.j2ee.dd.impl.webservices.model_1_2.Webservices webSvcImpl = 
+                    (org.netbeans.modules.j2ee.dd.impl.webservices.model_1_2.Webservices)webSvc;
+                if (webSvcImpl._getSchemaLocation()==null) {
+                    webSvcImpl._setSchemaLocation("http://java.sun.com/xml/ns/javaee http://www.ibm.com/webservices/xsd/javaee_web_services_1_2.xsd"); //NOI18N
                 }
             }
             webSvc.write(os);
@@ -414,7 +419,10 @@ public class WebServicesProxy implements Webservices {
             proxy = new WebServicesProxy(clonedWebSvc, version);
             if (Webservices.VERSION_1_1.equals(version)) {
                 ((org.netbeans.modules.j2ee.dd.impl.webservices.model_1_1.Webservices)clonedWebSvc)._setSchemaLocation
-                    ("http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/j2ee_web_services_1_1.xsd");
+                    ("http://java.sun.com/xml/ns/j2ee http://www.ibm.com/webservices/xsd/j2ee_web_services_1_1.xsd"); //NOI18N
+            } else if (Webservices.VERSION_1_2.equals(version)) {
+                ((org.netbeans.modules.j2ee.dd.impl.webservices.model_1_2.Webservices)clonedWebSvc)._setSchemaLocation
+                    ("http://java.sun.com/xml/ns/javaee http://www.ibm.com/webservices/xsd/javaee_web_services_1_2.xsd"); //NOI18N
             }
         }
         proxy.setError(error);

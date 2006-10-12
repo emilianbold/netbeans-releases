@@ -19,6 +19,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="jax-ws">
+        <file name="default-binding-handler.xml" url="default-binding-handler.xml"/>
+    </folder>
     <folder name="Templates">
         <attr name="Classes/WebServices" boolvalue="true"/>
         <folder name="WebServices">
@@ -46,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle"
                     stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon"
-                    urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl.gif"/>
+                    urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl16.gif"/>
                 <attr name="templateCategory" stringvalue="wsdl"/>
             </file>
             <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
@@ -55,6 +58,10 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-websvc-editor-completion-WSCompletionProvider.instance"/>
+                </folder>
+
                 <folder name="Popup">
                     <!-- Place after EJBActionGroup and/or EnterpriseRefActionGroup -->
                     <attr name="generate-goto-popup/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>

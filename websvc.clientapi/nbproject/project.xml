@@ -24,6 +24,14 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.websvc.clientapi</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.apache.tools.ant.module</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -40,11 +48,37 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxwsmodel</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.dialogs</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.execution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.8.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -73,13 +107,22 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.web.project</friend>
-                <friend>org.netbeans.modules.java.j2seproject</friend>
+                <friend>org.netbeans.modules.e2e.end2end</friend>
+                <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2ee.verification</friend>
+                <friend>org.netbeans.modules.java.j2seproject</friend>
+                <friend>org.netbeans.modules.tcpmon.integration</friend>
+                <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
-                <package>org.netbeans.modules.websvc.spi.client</package>
+                <friend>org.netbeans.modules.websvc.customization</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>com.sun.rave.project.jsfproject</friend>
                 <package>org.netbeans.modules.websvc.api.client</package>
+                <package>org.netbeans.modules.websvc.api.jaxws.client</package>
+                <package>org.netbeans.modules.websvc.spi.client</package>
+                <package>org.netbeans.modules.websvc.spi.jaxws.client</package>
             </friend-packages>
         </data>
     </configuration>

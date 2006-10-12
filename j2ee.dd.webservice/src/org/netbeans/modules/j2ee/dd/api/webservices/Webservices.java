@@ -27,6 +27,7 @@ package org.netbeans.modules.j2ee.dd.api.webservices;
 public interface Webservices extends org.netbeans.modules.j2ee.dd.api.common.RootInterface {
         public static final String PROPERTY_VERSION="dd_version"; //NOI18N
         public static final String VERSION_1_1="1.1"; //NOI18N
+        public static final String VERSION_1_2="1.2"; //NOI18N
         public static final int STATE_VALID=0;
         public static final int STATE_INVALID_PARSABLE=1;
         public static final int STATE_INVALID_UNPARSABLE=2;

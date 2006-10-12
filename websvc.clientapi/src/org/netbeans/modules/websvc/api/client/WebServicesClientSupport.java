@@ -215,6 +215,10 @@ public final class WebServicesClientSupport {
     public void setProxyJVMOptions(String proxyHost, String proxyPort) {
         impl.setProxyJVMOptions(proxyHost, proxyPort);
     }
+    
+    public String getServiceRefName(String serviceName){
+        return impl.getServiceRefName(serviceName);
+    }
 
 /* !PW FIXME What to put here?  (commented code came from WebModule API)
  *

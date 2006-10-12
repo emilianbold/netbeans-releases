@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.client;
 
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -29,16 +30,28 @@ public class ProjectWebServicesClientSupportProvider implements WebServicesClien
 
     public ProjectWebServicesClientSupportProvider() {
     }
-
-    public WebServicesClientSupport findWebServicesClientSupport(FileObject file) { 
-        Project project = FileOwnerQuery.getOwner (file);
+    
+    public WebServicesClientSupport findWebServicesClientSupport(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
         if (project != null) {
-            WebServicesClientSupportProvider provider = (WebServicesClientSupportProvider) project.getLookup ().lookup (WebServicesClientSupportProvider.class);
+            WebServicesClientSupportProvider provider = (WebServicesClientSupportProvider) project.getLookup().lookup(WebServicesClientSupportProvider.class);
             if (provider != null) {
-                return provider.findWebServicesClientSupport (file);
+                return provider.findWebServicesClientSupport(file);
             }
         }
         return null;
-	}
+    }
+
+    public JAXWSClientSupport findJAXWSClientSupport(FileObject file) {
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project != null) {
+            WebServicesClientSupportProvider provider = (WebServicesClientSupportProvider) project.getLookup().lookup(WebServicesClientSupportProvider.class);
+            if (provider != null) {
+                return provider.findJAXWSClientSupport(file);
+            }
+        }
+        return null;
+    }
+    
 
 }

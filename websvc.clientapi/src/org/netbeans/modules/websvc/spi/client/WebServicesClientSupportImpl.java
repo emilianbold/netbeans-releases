@@ -57,4 +57,6 @@ public interface WebServicesClientSupportImpl {
     
     public void setProxyJVMOptions(String proxyHost, String proxyPort);
     
+    public String getServiceRefName(String serviceName);
+    
 }

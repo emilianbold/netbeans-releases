@@ -26,14 +26,8 @@ import java.util.Set;
 import java.awt.Component;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -98,6 +92,7 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
     public boolean isValid() { 
         boolean projectDirValid=true;
         String illegalChar = null;
+        
         if (projectPath.indexOf("%")>=0) {
             projectDirValid=false;
             illegalChar="%";
@@ -112,13 +107,9 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
             wizardDescriptor.putProperty("WizardPanel_errorMessage",
                     NbBundle.getMessage(WebServiceClientWizardDescriptor.class,"MSG_InvalidProjectPath",projectPath,illegalChar));
             return false;
-        } else if (!testClassPath() ) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage",
-                    NbBundle.getMessage(WebServiceClientWizardDescriptor.class,"MSG_MissingXMLJars"));
-            return false;
-        } else {
-            return component.valid(wizardDescriptor);   
         }
+        
+        return component.valid(wizardDescriptor);   
     }
 
     public void readSettings(Object settings) {
@@ -140,24 +131,7 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
     }
 
     public void validate() throws org.openide.WizardValidationException {
+        component.validatePanel();
     }
     
-    private boolean testClassPath() {
-        SourceGroup[] sgs = WebServiceClientWizardIterator.getJavaSourceGroups(project);
-        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
-        // test for the platform
-        String javaVersion = System.getProperty("java.version"); //NOI18N   
-        if (javaVersion!=null && javaVersion.startsWith("1.4")) { //NOI18N
-            FileObject documentRangeFO = classPath.findResource("org/w3c/dom/ranges/DocumentRange.class"); //NOI18N
-            FileObject saxParserFO = classPath.findResource("com/sun/org/apache/xerces/internal/jaxp/SAXParserFactoryImpl.class"); //NOI18N
-            if (documentRangeFO == null || saxParserFO == null) {
-                ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
-                Library jaxrpclib_ext = LibraryManager.getDefault().getLibrary("jaxrpc16_xml"); //NOI18N
-                if (pce==null || jaxrpclib_ext == null) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 }

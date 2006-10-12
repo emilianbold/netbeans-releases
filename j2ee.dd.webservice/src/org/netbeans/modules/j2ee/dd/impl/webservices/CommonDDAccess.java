@@ -27,8 +27,6 @@ package org.netbeans.modules.j2ee.dd.impl.webservices;
 import java.lang.reflect.*;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 
 /**
@@ -153,19 +151,23 @@ public class CommonDDAccess {
      * Handle special cases of version differences
      */
     private static String getImplementationBeanName (CommonDDBean parent, String beanName, String version) {
-        if ("Webservices".equals(beanName))
+        if ("Webservices".equals(beanName)) {
             return beanName;
-        else
+        } else {
             return beanName + "Type"; //NOI18N
+        }
     }
     
     /**
      * Handle special cases of version differences
      */
     private static String getNameForMethod (CommonDDBean parent, String beanName) {
-        if ("Webservices".equals(beanName))
+        if ("Webservices".equals(beanName) || 
+            "WebserviceDescription".equals(beanName) ||
+            "PortComponent".equals(beanName)) {
             return beanName;
-        else
+        } else {
             return beanName + "Type"; //NOI18N
+        }
     }
 }

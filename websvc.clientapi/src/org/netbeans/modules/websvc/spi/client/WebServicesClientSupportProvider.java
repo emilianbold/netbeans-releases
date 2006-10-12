@@ -20,15 +20,18 @@
 package org.netbeans.modules.websvc.spi.client;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.openide.filesystems.FileObject;
 
 /**
  * Provider interface for web services.
  *
- * @author Peter Williams
+ * @author Peter Williams, Milan Kuchtiak
  */
 public interface WebServicesClientSupportProvider {
 
 	WebServicesClientSupport findWebServicesClientSupport(FileObject file);
-
+        
+        JAXWSClientSupport findJAXWSClientSupport(FileObject file);
+    
 }

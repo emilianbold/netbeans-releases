@@ -19,6 +19,7 @@
 package org.netbeans.modules.websvc.core.webservices.action;
 
 import javax.swing.*;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -73,13 +74,13 @@ public class WebServiceActionGroup extends NodeAction implements Presenter.Popup
     private boolean hasWebService() {
         Node[] activatedNodes = getActivatedNodes();
         DataObject dobj = (DataObject)activatedNodes[0].getLookup().lookup(DataObject.class);
-        if(dobj != null)
-		{
-			WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(dobj.getPrimaryFile());
-            if(wsSupport != null)
-			{
-				return (wsSupport.getWebservicesDD() != null);
-			}
+        if(dobj != null) {
+            JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(dobj.getPrimaryFile());
+            if (jaxWsSupport!=null && jaxWsSupport.getServices().size()>0) return true;
+            WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(dobj.getPrimaryFile());
+            if(wsSupport != null) {
+                return (wsSupport.getWebservicesDD() != null);
+            }
         }
         return false;
     }

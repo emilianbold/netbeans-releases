@@ -22,7 +22,7 @@ package org.netbeans.modules.websvc.api.client;
 /**
  * @author  rico
  */
-public interface WebServicesClientConstants {
+public class WebServicesClientConstants {
     public static final String WEBSERVICES_DD = "webservices";//NOI18N
     public static final String WEB_SERVICES =     "web-services";//NOI18N
     public static final String WEB_SERVICE  =     "web-service";//NOI18N

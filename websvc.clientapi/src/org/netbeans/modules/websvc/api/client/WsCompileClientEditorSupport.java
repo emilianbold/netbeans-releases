@@ -34,10 +34,8 @@ public interface WsCompileClientEditorSupport {
 
     /** Editor fires this property event when the user edits a feature list
      */
-    public static final String PROP_FEATURES_CHANGED = "featuresChanged";
-    public static final String PROP_DEBUG_CHANGED = "debugChanged";
-    public static final String PROP_OPTIMIZE_CHANGED = "optimizeChanged";
-    public static final String PROP_VERBOSE_CHANGED = "verboseChanged";
+    public static final String PROP_FEATURES_CHANGED = "featuresChanged"; //NOI18N
+    public static final String PROP_OPTIONS_CHANGED = "optionsChanged"; //NOI18N
     
     public WsCompileClientEditorSupport.Panel getWsCompileSupport();
     
@@ -63,10 +61,12 @@ public interface WsCompileClientEditorSupport {
         private List/*String*/ importantFeatures;
         private String currentFeatures;
         private String newFeatures;
+        private boolean[] options;
         
-        public ServiceSettings(String sn, ClientStubDescriptor st, String c, List a, List i) {
+        public ServiceSettings(String sn, ClientStubDescriptor st, boolean[] options, String c, List a, List i) {
             name = sn;
             stubType = st;
+            this.options=options;
             currentFeatures = newFeatures = c;
             availableFeatures = Collections.unmodifiableList(a);
             importantFeatures = Collections.unmodifiableList(i);
@@ -82,6 +82,14 @@ public interface WsCompileClientEditorSupport {
         
         public String getCurrentFeatures() {
             return currentFeatures;
+        }
+        
+        public boolean[] getOptions() {
+            return options;
+        }
+        
+        public void setOptions(boolean[] options) {
+            this.options=options;
         }
         
         public String getNewFeatures() {
@@ -121,6 +129,24 @@ public interface WsCompileClientEditorSupport {
         
         public String getFeatures() {
             return features;
+        }
+    }
+    
+    public final class OptionDescriptor {
+        private String serviceName;
+        private boolean[] options;
+        
+        public OptionDescriptor(String serviceName, boolean[] options) {
+            this.serviceName = serviceName;
+            this.options = options;
+        }
+        
+        public String getServiceName() {
+            return serviceName;
+        }
+        
+        public boolean[] getOptions() {
+            return options;
         }
     }
 }

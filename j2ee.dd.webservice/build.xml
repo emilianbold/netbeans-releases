@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
   <import file="../../nbbuild/templates/projectized.xml"/>
 
   <property name="s2b_root_1_1" location="src/org/netbeans/modules/j2ee/dd/impl/webservices/model_1_1"/>
+  <property name="s2b_root_1_2" location="src/org/netbeans/modules/j2ee/dd/impl/webservices/model_1_2"/>
   <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/dd/impl/resources"/>
 
   <target name="s2binit" depends="build-init">
@@ -50,6 +51,20 @@ Microsystems, Inc. All Rights Reserved.
 	  useInterfaces="true"
 	  extendBaseBean="true"
 	  finder="on /webservices find webservice-description by webservice-description-name,on /webservices/webservice-description/port-component find handler by handler-name,on /webservices/webservice-description/port-component/handler find init-param by param-name,on /webservices/webservice-description find port-component by port-component-name"/>
+          
+	<schema2beans schema="${s2b_res_root}/javaee_web_services_1_2.xsd"
+ 	  mddFile="${s2b_res_root}/javaee_web_services_1_2.mdd"
+	  package="org.netbeans.modules.j2ee.dd.impl.webservices.model_1_2"
+      schemaType="xmlschema"
+	  rootDir="src"
+	  validate="true"
+	  attrProp="true"
+	  generateHasChanged="true"
+	  outputType="javabeans"
+	  commonInterface="CommonBean"
+	  useInterfaces="true"
+	  extendBaseBean="true"
+	  finder="on /webservices find webservice-description by webservice-description-name,on /webservices/webservice-description/port-component find handler by handler-name,on /webservices/webservice-description/port-component/handler find init-param by param-name,on /webservices/webservice-description find port-component by port-component-name"/>
   </target>
 
   <target name="compile" depends="dd2beansgen, projectized-common.compile"/>
@@ -58,12 +73,17 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="clean-ddgen-src">
         <mkdir dir="${s2b_root_1_1}"/>
+        <mkdir dir="${s2b_root_1_2}"/>
         <delete>
             <fileset dir="${s2b_root_1_1}">
                 <include name="*.java"/>
             </fileset>
+             <fileset dir="${s2b_root_1_2}">
+                <include name="*.java"/>
+            </fileset>
         </delete>
         <delete dir="${s2b_root_1_1}"/>
+        <delete dir="${s2b_root_1_2}"/>
   </target>
   
   <target name="clean-javadoc">

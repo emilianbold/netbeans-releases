@@ -5,7 +5,7 @@
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>Webservices</bean-name>
                 <implements>org.netbeans.modules.j2ee.dd.api.webservices.Webservices</implements>
-                <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
+                <extends>org.netbeans.modules.j2ee.dd.impl.commonws.ComponentBeanMultiple</extends>
 		<user-code>
                     public org.xml.sax.SAXParseException getError() {
                         return null;
@@ -81,16 +81,16 @@
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>PortComponentHandlerType</bean-name>
                 <implements>org.netbeans.modules.j2ee.dd.api.webservices.PortComponentHandler</implements>
-                <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
+                <extends>org.netbeans.modules.j2ee.dd.impl.commonws.ComponentBeanMultiple</extends>
 	</meta-element>
 	<meta-element>org.netbeans.modules.j2ee.dd.api.web
 		<dtd-name>param-valueType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>ParamValueType</bean-name>
                 <implements>
-                org.netbeans.modules.j2ee.dd.api.common.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.common.InitParam, org.netbeans.modules.j2ee.dd.impl.commonws.KeyBean
                 </implements>
-                <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
+                <extends>org.netbeans.modules.j2ee.dd.impl.commonws.DescriptionBeanMultiple</extends>
 		<user-code>
                     public String getKeyProperty() { return "ParamName"; }
                 </user-code>
