@@ -273,7 +273,7 @@ public final class TokenListUpdater {
         }
 
         // State from which the lexer can be started
-        Object relexState = (relexIndex > 0) ? tokenList.state(relexIndex) : null;
+        Object relexState = (relexIndex > 0) ? tokenList.state(relexIndex - 1) : null;
         // Update the matchOffset so that it corresponds to the state
         // after the modification
         matchOffset += change.insertedLength() - change.removedLength();
@@ -294,6 +294,7 @@ public final class TokenListUpdater {
         // Necessary condition for no-relexing is that the matchToken
         // has zero lookahead (if lookahead would be >0 
         // then the matchToken would be affected and relexOffset != matchOffset).
+        // The states before relex token must match the state after the modified token
         // In case of removal starting and ending at token boundaries
         // the relexing might not be necessary.
         boolean relex = (relexOffset != matchOffset)
