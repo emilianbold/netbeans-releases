@@ -42,19 +42,34 @@ public interface WebModuleImplementation {
      */
     String getJ2eePlatformVersion ();
     
-    /** WEB-INF folder for the web module.
+    /**
+     * WEB-INF folder for the web module.
      * <div class="nonnormative">
      * The WEB-INF folder would typically be a child of the folder returned 
      * by {@link #getDocumentBase} but does not need to be.
      * </div>
+     *
+     * @return the {@link FileObject}; might be <code>null</code>
      */
     FileObject getWebInf ();
 
-    /** Deployment descriptor (web.xml file) of the web module.
+    /**
+     * Deployment descriptor (web.xml file) of the web module.
      * <div class="nonnormative">
      * The web.xml file would typically be a child of the folder returned 
      * by {@link #getWebInf} but does not need to be.
      * </div>
+     *
+     * @return the {@link FileObject}; might be <code>null</code>
      */
     FileObject getDeploymentDescriptor ();
+    
+    /** Source roots associated with the web module.
+     * <div class="nonnormative">
+     * Note that not all the java source roots in the project (e.g. in a freeform project)
+     * belong to the web module.
+     * </div>
+     */
+    FileObject[] getJavaSources();
+    
 }

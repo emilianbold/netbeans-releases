@@ -44,9 +44,7 @@ import org.openide.util.NbBundle;
 public final class TLDLoader extends UniFileLoader {
     
     public static final String tldExt = "tld"; //NOI18N
-    private static final String REQUIRED_MIME_1 = "text/x-tld2.0"; //NOI18N
-    private static final String REQUIRED_MIME_2 = "text/x-tld1.2"; //NOI18N
-    private static final String REQUIRED_MIME_3 = "text/x-tld1.1"; //NOI18N
+    private static final String REQUIRED_MIME_1 = "text/x-tld"; //NOI18N
     
     private static final long serialVersionUID = -7367746798495347598L;
     
@@ -64,8 +62,6 @@ public final class TLDLoader extends UniFileLoader {
 	ext.addExtension(tldExt);
 	setExtensions(ext);
         getExtensions().addMimeType(REQUIRED_MIME_1);
-        getExtensions().addMimeType(REQUIRED_MIME_2);
-        getExtensions().addMimeType(REQUIRED_MIME_3);
     }
 
     protected MultiDataObject createMultiObject(final FileObject fo)
@@ -78,23 +74,8 @@ public final class TLDLoader extends UniFileLoader {
 	return NbBundle.getMessage (TLDLoader.class, "TLD_loaderName");
     }
     
-    protected org.openide.util.actions.SystemAction[] defaultActions () {
-        return new SystemAction[] {
-	    SystemAction.get(OpenAction.class),
-	    SystemAction.get (FileSystemAction.class),
-	    null,
-	    SystemAction.get(CutAction.class),
-	    SystemAction.get(CopyAction.class),
-	    SystemAction.get(PasteAction.class),
-	    null,
-	    SystemAction.get(DeleteAction.class),
-	    SystemAction.get(RenameAction.class),
-            null,
-            SystemAction.get (SaveAsTemplateAction.class),
-	    null,
-	    SystemAction.get(ToolsAction.class),
-	    SystemAction.get(PropertiesAction.class),
-	};
+    protected String actionsContext() {
+        return "Loaders/text/x-tld/Actions/"; // NOI18N
     }
-
+    
 }

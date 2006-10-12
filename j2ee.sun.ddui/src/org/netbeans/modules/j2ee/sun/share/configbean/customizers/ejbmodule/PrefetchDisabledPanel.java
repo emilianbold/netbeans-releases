@@ -63,6 +63,14 @@ public class PrefetchDisabledPanel extends MethodTablePanel {
         this.customizer = customizer;
     }
 
+    protected java.awt.GridBagConstraints getTableGridBagConstraints(){
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        return gridBagConstraints;
+    }
 
     protected MethodTableModel getMethodTableModel(){
         List methodList = getMethodList();

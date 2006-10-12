@@ -87,7 +87,7 @@ public class HttpMonitorSupport {
 
 
     
-    public static void synchronizeMonitorWithFlag(SunDeploymentManagerInterface tm) throws IOException, SAXException {
+    public static boolean synchronizeMonitorWithFlag(SunDeploymentManagerInterface tm) throws IOException, SAXException {
         boolean monitorFlag = getMonitorFlag((DeploymentManager)tm);
         boolean monitorModuleAvailable = isMonitorEnabled();
         boolean shouldInstall = monitorModuleAvailable && monitorFlag;
@@ -95,12 +95,12 @@ public class HttpMonitorSupport {
         File webXML = getDefaultWebXML(tm);
         if (webXML == null) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(""));
-            return;
+            return false;
         }
         WebApp webApp = DDProvider.getDefault().getDDRoot(webXML);
         if (webApp == null) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(""));
-            return;
+            return false;
         }
         boolean needsSave = false;
         boolean result;
@@ -125,6 +125,7 @@ public class HttpMonitorSupport {
                 os.close();
             }
         }
+        return needsSave;
     }
     
     private static File getDefaultWebXML(SunDeploymentManagerInterface tm) {

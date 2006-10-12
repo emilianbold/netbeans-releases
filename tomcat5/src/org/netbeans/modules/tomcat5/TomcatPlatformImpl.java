@@ -26,10 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -46,7 +45,6 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     private static final Set/*<Object>*/ MODULE_TYPES = new HashSet();
     private static final Set/*<String>*/ SPEC_VERSIONS = new HashSet();
     
-    private static final String WSCOMPILE = "wscompile"; // NOI18N    
     private static final String WSCOMPILE_LIBS[] = new String[] {
         "jaxrpc/lib/jaxrpc-api.jar",        // NOI18N
         "jaxrpc/lib/jaxrpc-impl.jar",       // NOI18N
@@ -57,10 +55,86 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
         "jwsdp-shared/lib/activation.jar"   // NOI18N
     };
 
+    private static final String JWSDP_LIBS[] = new String[] {
+        "fastinfoset/lib/FastInfoset.jar",              // NOI18N
+        "jaxb/lib/jaxb1-impl.jar",                      // NOI18N
+        "jaxb/lib/jaxb-impl.jar",                       // NOI18N
+        "jaxb/lib/jaxb-api.jar",                        // NOI18N
+        "jaxb/lib/jaxb-xjc.jar",                        // NOI18N
+        "jaxws/lib/jaxws-api.jar",                      // NOI18N
+        "jaxws/lib/jaxws-rt.jar",                       // NOI18N
+        "jaxws/lib/jaxws-tools.jar",                    // NOI18N
+        "jaxws/lib/jsr181-api.jar",                     // NOI18N
+        "jaxws/lib/jsr250-api.jar",                     // NOI18N
+        "saaj/lib/saaj-api.jar",                        // NOI18N
+        "saaj/lib/saaj-impl.jar",                       // NOI18N
+        "sjsxp/lib/sjsxp.jar",                          // NOI18N
+        "sjsxp/lib/jsr173_api.jar",                     // NOI18N
+        "jwsdp-shared/lib/activation.jar",              // NOI18N
+        "jwsdp-shared/lib/jaas.jar",                    // NOI18N
+        "jwsdp-shared/lib/jta-spec1_0_1.jar",           // NOI18N
+        "jwsdp-shared/lib/mail.jar",                    // NOI18N
+        //"jwsdp-shared/lib/PackageFormat.jar",           // NOI18N
+        "jwsdp-shared/lib/relaxngDatatype.jar",         // NOI18N
+        "jwsdp-shared/lib/resolver.jar",                // NOI18N
+        "jwsdp-shared/lib/xmlsec.jar",                  // NOI18N
+        "jwsdp-shared/lib/xsdlib.jar"                  // NOI18N
+    };
+
+    private static final String WSIT_LIBS[] = new String[] {
+        "shared/lib/webservices-rt.jar",              // NOI18N
+        "shared/lib/webservices-tools.jar"     // NOI18N
+    };
+    
+    private static final String JWSDP_WSGEN_LIBS[] = new String[] {
+        "jaxws/lib/jaxws-tools.jar",                // NOI18N
+        "jaxws/lib/jaxws-rt.jar",                   // NOI18N
+        "sjsxp/lib/sjsxp.jar",                      // NOI18N
+        "jaxb/lib/jaxb-xjc.jar",                    // NOI18N
+        "saaj/lib/saaj-impl.jar",                    // NOI18N
+        "saaj/lib/saaj-api.jar",                    // NOI18N
+        "jwsdp-shared/lib/relaxngDatatype.jar",     // NOI18N
+        "jwsdp-shared/lib/resolver.jar"             // NOI18N
+    };
+
+    private static final String JWSDP_WSIMPORT_LIBS[] = new String[] {
+        "jaxws/lib/jaxws-tools.jar",                // NOI18N
+        "jaxws/lib/jaxws-rt.jar",                   // NOI18N
+        "sjsxp/lib/sjsxp.jar",                      // NOI18N
+        "jaxb/lib/jaxb-xjc.jar",                    // NOI18N
+        "jwsdp-shared/lib/relaxngDatatype.jar",     // NOI18N
+        "jwsdp-shared/lib/resolver.jar"             // NOI18N
+    };
+
+    private static final String WSIT_WSIMPORT_LIBS[] = new String[] {
+        "shared/lib/webservices-rt.jar",               // NOI18N
+        "shared/lib/webservices-tools.jar"         // NOI18N
+    };
+
+    private static final String WSIT_WSGEN_LIBS[] = new String[] {
+        "shared/lib/webservices-rt.jar",               // NOI18N
+        "shared/lib/webservices-tools.jar"         // NOI18N
+    };
+
+    private static final String[] KEYSTORE_LOCATION = new String[] {
+        "xws-security/etc/server-keystore.jks"  //NOI18N
+    };
+    
+    private static final String[] TRUSTSTORE_LOCATION = new String[] {
+        "xws-security/etc/server-truststore.jks"  //NOI18N
+    };
+    
+    private static final String[] KEYSTORE_CLIENT_LOCATION = new String[] {
+        "xws-security/etc/client-keystore.jks"  //NOI18N
+    };
+    
+    private static final String[] TRUSTSTORE_CLIENT_LOCATION = new String[] {
+        "xws-security/etc/client-truststore.jks"  //NOI18N
+    };
     
     private static final String ICON = "org/netbeans/modules/tomcat5/resources/tomcat5instance.png"; // NOI18N
     
-    private String displayName;    
+    private String displayName;
     private TomcatProperties tp;
     
     private List/*<LibraryImpl>*/ libraries  = new ArrayList();
@@ -110,13 +184,122 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     }
     
     public File[] getToolClasspathEntries(String toolName) {
-        // jwsdp support
-        if (WSCOMPILE.equals(toolName)) {
-            if (isToolSupported(WSCOMPILE)) {
+        // wscompile support
+        if (J2eePlatform.TOOL_WSCOMPILE.equals(toolName)) {
+            if (isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
                 File[] retValue = new File[WSCOMPILE_LIBS.length];
                 File homeDir = tp.getCatalinaHome();
                 for (int i = 0; i < WSCOMPILE_LIBS.length; i++) {
                     retValue[i] = new File(homeDir, WSCOMPILE_LIBS[i]);
+                }
+                return retValue;
+            }
+        }
+        // wsgen support
+        if (J2eePlatform.TOOL_WSGEN.equals(toolName)) {
+            if (isToolSupported(J2eePlatform.TOOL_WSGEN)) {
+                if (isToolSupported(J2eePlatform.TOOL_WSIT)) {
+                    File[] retValue = new File[WSIT_WSGEN_LIBS.length];
+                    File homeDir = tp.getCatalinaHome();
+                    for (int i = 0; i < WSIT_WSGEN_LIBS.length; i++) {
+                        retValue[i] = new File(homeDir, WSIT_WSGEN_LIBS[i]);
+                    }
+                    return retValue;
+                } else {
+                    File[] retValue = new File[JWSDP_WSGEN_LIBS.length];
+                    File homeDir = tp.getCatalinaHome();
+                    for (int i = 0; i < JWSDP_WSGEN_LIBS.length; i++) {
+                        retValue[i] = new File(homeDir, JWSDP_WSGEN_LIBS[i]);
+                    }
+                    return retValue;
+                }
+            }
+        }
+        // wsimport support
+        if (J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
+            if (isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
+                if (isToolSupported(J2eePlatform.TOOL_WSIT)) {
+                    File[] retValue = new File[WSIT_WSIMPORT_LIBS.length];
+                    File homeDir = tp.getCatalinaHome();
+                    for (int i = 0; i < WSIT_WSIMPORT_LIBS.length; i++) {
+                        retValue[i] = new File(homeDir, WSIT_WSIMPORT_LIBS[i]);
+                    }
+                    return retValue;
+                } else {
+                    File[] retValue = new File[JWSDP_WSIMPORT_LIBS.length];
+                    File homeDir = tp.getCatalinaHome();
+                    for (int i = 0; i < JWSDP_WSIMPORT_LIBS.length; i++) {
+                        retValue[i] = new File(homeDir, JWSDP_WSIMPORT_LIBS[i]);
+                    }
+                    return retValue;
+                }
+            }
+        }
+        // jwsdp support
+        if (J2eePlatform.TOOL_JWSDP.equals(toolName)) {
+            if (isToolSupported(J2eePlatform.TOOL_WSIT)) {
+                return getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
+            } else {
+                if (isToolSupported(J2eePlatform.TOOL_JWSDP)) {
+                    File[] retValue = new File[JWSDP_LIBS.length];
+                    File homeDir = tp.getCatalinaHome();
+                    for (int i = 0; i < JWSDP_LIBS.length; i++) {
+                        retValue[i] = new File(homeDir, JWSDP_LIBS[i]);
+                    }
+                    return retValue;
+                }
+            }
+        }
+        // keystore support
+        if (J2eePlatform.TOOL_KEYSTORE.equals(toolName)) {
+            if (isToolSupported(J2eePlatform.TOOL_KEYSTORE)) {
+                File[] retValue = new File[KEYSTORE_LOCATION.length];
+                File homeDir = tp.getCatalinaHome();
+                for (int i = 0; i < KEYSTORE_LOCATION.length; i++) {
+                    retValue[i] = new File(homeDir, KEYSTORE_LOCATION[i]);
+                }
+                return retValue;
+            }
+        }
+        // truststore support
+        if (J2eePlatform.TOOL_TRUSTSTORE.equals(toolName)) {
+            if (isToolSupported(J2eePlatform.TOOL_TRUSTSTORE)) {
+                File[] retValue = new File[TRUSTSTORE_LOCATION.length];
+                File homeDir = tp.getCatalinaHome();
+                for (int i = 0; i < TRUSTSTORE_LOCATION.length; i++) {
+                    retValue[i] = new File(homeDir, TRUSTSTORE_LOCATION[i]);
+                }
+                return retValue;
+            }
+        }
+        if (J2eePlatform.TOOL_KEYSTORE_CLIENT.equals(toolName)) {
+            if (isToolSupported(J2eePlatform.TOOL_KEYSTORE_CLIENT)) {
+                File[] retValue = new File[KEYSTORE_CLIENT_LOCATION.length];
+                File homeDir = tp.getCatalinaHome();
+                for (int i = 0; i < KEYSTORE_CLIENT_LOCATION.length; i++) {
+                    retValue[i] = new File(homeDir, KEYSTORE_CLIENT_LOCATION[i]);
+                }
+                return retValue;
+            }
+        }
+        // truststore support
+        if (J2eePlatform.TOOL_TRUSTSTORE_CLIENT.equals(toolName)) {
+            if (isToolSupported(J2eePlatform.TOOL_TRUSTSTORE_CLIENT)) {
+                File[] retValue = new File[TRUSTSTORE_CLIENT_LOCATION.length];
+                File homeDir = tp.getCatalinaHome();
+                for (int i = 0; i < TRUSTSTORE_CLIENT_LOCATION.length; i++) {
+                    retValue[i] = new File(homeDir, TRUSTSTORE_CLIENT_LOCATION[i]);
+                }
+                return retValue;
+            }
+        }
+        // wsit support
+        if (J2eePlatform.TOOL_WSIT.equals(toolName)) {
+            if (isToolSupported(J2eePlatform.TOOL_WSIT)) {
+                File[] retValue = new File[WSIT_LIBS.length];
+                File homeDir = tp.getCatalinaHome();
+                for (int i = 0; i < WSIT_LIBS.length; i++) {
+                    retValue[i] = new File(homeDir, WSIT_LIBS[i]);
                 }
                 return retValue;
             }
@@ -126,7 +309,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     
     public boolean isToolSupported(String toolName) {
         // jwsdp support
-        if (WSCOMPILE.equals(toolName)) {
+        if (J2eePlatform.TOOL_WSCOMPILE.equals(toolName)) {
             File homeDir = tp.getCatalinaHome();
             for (int i = 0; i < WSCOMPILE_LIBS.length; i++) {
                 if (!new File(homeDir, WSCOMPILE_LIBS[i]).exists()) {
@@ -135,6 +318,110 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
             }
             return true;
         }
+        if (J2eePlatform.TOOL_WSGEN.equals(toolName)) {
+            File homeDir = tp.getCatalinaHome();
+            boolean wsit = isToolSupported(J2eePlatform.TOOL_WSIT);
+            if (wsit) {
+                for (int i = 0; i < WSIT_WSGEN_LIBS.length; i++) {
+                    if (!new File(homeDir, WSIT_WSGEN_LIBS[i]).exists()) {
+                        return false;
+                    }
+                }
+            } else {
+                for (int i = 0; i < JWSDP_WSGEN_LIBS.length; i++) {
+                    if (!new File(homeDir, JWSDP_WSGEN_LIBS[i]).exists()) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        if (J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
+            File homeDir = tp.getCatalinaHome();
+            boolean wsit = isToolSupported(J2eePlatform.TOOL_WSIT);
+            if (wsit) {
+                for (int i = 0; i < WSIT_WSIMPORT_LIBS.length; i++) {
+                    if (!new File(homeDir, WSIT_WSIMPORT_LIBS[i]).exists()) {
+                        return false;
+                    }
+                }
+            } else {
+                for (int i = 0; i < JWSDP_WSIMPORT_LIBS.length; i++) {
+                    if (!new File(homeDir, JWSDP_WSIMPORT_LIBS[i]).exists()) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        if (J2eePlatform.TOOL_JWSDP.equals(toolName)) {
+            
+            if (isToolSupported(J2eePlatform.TOOL_WSIT)) {
+                return true;
+            }
+            
+            File homeDir = tp.getCatalinaHome();
+            for (int i = 0; i < JWSDP_LIBS.length; i++) {
+                if (!new File(homeDir, JWSDP_LIBS[i]).exists()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (J2eePlatform.TOOL_KEYSTORE.equals(toolName)) {
+            File homeDir = tp.getCatalinaHome();
+            for (int i = 0; i < KEYSTORE_LOCATION.length; i++) {
+                if (!new File(homeDir, KEYSTORE_LOCATION[i]).exists()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (J2eePlatform.TOOL_TRUSTSTORE.equals(toolName)) {
+            File homeDir = tp.getCatalinaHome();
+            for (int i = 0; i < TRUSTSTORE_LOCATION.length; i++) {
+                if (!new File(homeDir, TRUSTSTORE_LOCATION[i]).exists()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (J2eePlatform.TOOL_KEYSTORE_CLIENT.equals(toolName)) {
+            File homeDir = tp.getCatalinaHome();
+            for (int i = 0; i < KEYSTORE_CLIENT_LOCATION.length; i++) {
+                if (!new File(homeDir, KEYSTORE_CLIENT_LOCATION[i]).exists()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (J2eePlatform.TOOL_TRUSTSTORE_CLIENT.equals(toolName)) {
+            File homeDir = tp.getCatalinaHome();
+            for (int i = 0; i < TRUSTSTORE_CLIENT_LOCATION.length; i++) {
+                if (!new File(homeDir, TRUSTSTORE_CLIENT_LOCATION[i]).exists()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (J2eePlatform.TOOL_WSIT.equals(toolName)) {
+            File homeDir = tp.getCatalinaHome();
+            for (int i = 0; i < WSIT_LIBS.length; i++) {
+                if (!new File(homeDir, WSIT_LIBS[i]).exists()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (J2eePlatform.TOOL_JSR109.equals(toolName)) {
+            return false;
+        }
+        
+        // Test if server has the JAX-WS Tester capability
+        if ("jaxws-tester".equals(toolName)) { //NOI18N
+            return true;
+        }
+        
         return false;
     }
         

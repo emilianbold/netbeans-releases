@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -52,6 +53,9 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
     private TemplateWizard templateWizard;
     private String j2eeVersion;
     
+    //TODO how to add [,] to the regular expression?
+    private static final Pattern INVALID_FILENAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+\\|{};:'\",<>/?]"); // NOI18N
+
     TargetChooserPanel(Project project, SourceGroup[] folders, FileType fileType) {
         this.folders = folders;
         this.project = project;
@@ -115,6 +119,12 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             }
         }
         
+        String filename = gui.getTargetName();
+        if (INVALID_FILENAME_CHARACTERS.matcher(filename).find()) {
+            templateWizard.putProperty ("WizardPanel_errorMessage", NbBundle.getMessage(TargetChooserPanel.class, "MSG_invalid_filename", filename)); // NOI18N
+            return false;
+        }
+
         //  check if the TLD info is correct
         if (FileType.TAGLIBRARY.equals(fileType)) {
             // XX precisely we should check for 'tokens composed of characters, 
@@ -126,8 +136,7 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
                 templateWizard.putProperty ("WizardPanel_errorMessage", NbBundle.getMessage(TargetChooserPanel.class,"TXT_wrongTagLibName",tldName)); // NOI18N
                 return false;
             }
-        }
-        
+        }        
         // check if the file name can be created
         String targetName=gui.getTargetName();
         java.io.File file = gui.getTargetFile();
@@ -198,6 +207,9 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             else if (FileType.HTML.equals(fileType))
                 templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
                     NbBundle.getMessage(TargetChooserPanel.class, "TITLE_HTML"));
+            else if (FileType.XHTML.equals(fileType))
+                templateWizard.putProperty ("NewFileWizard_Title", // NOI18N
+                    NbBundle.getMessage(TargetChooserPanel.class, "TITLE_XHTML"));
         }
     }
 
@@ -209,24 +221,15 @@ final class TargetChooserPanel implements WizardDescriptor.Panel {
             return;
         }
         if( isValid() ) {
-            // XXX Better test for canWrite
-            String folderName = gui.getTargetFolder();
-            File f = new File( folderName );
-            try {
-                if ( !f.exists() ) {
-                    // XXX add deletion of the file in uninitalize ow the wizard
-                    WebModule wm = gui.getWebModule();
-                    String relativeFolder = gui.getRelativeTargetFolder();
-                    FileObject prjDir = (wm==null?gui.getLocationRoot():wm.getDocumentBase());
-                    FileUtil.createFolder( prjDir, relativeFolder );
-                }
-                FileObject folder = FileUtil.toFileObject( f );            
-                Templates.setTargetFolder( (WizardDescriptor)settings, folder );
-                Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
+            File f = new File(gui.getCreatedFilePath());
+            File ff = new File(f.getParentFile().getPath());
+            if ( !ff.exists() ) {
+                ff.mkdir();
             }
-            catch( java.io.IOException e ) {
-                org.openide.ErrorManager.getDefault().notify( org.openide.ErrorManager.INFORMATIONAL, e );
-            }
+            FileObject folder = FileUtil.toFileObject(ff);                
+
+            Templates.setTargetFolder( (WizardDescriptor)settings, folder );
+            Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
         }
         ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
     }

@@ -276,6 +276,14 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	//PENDING ...
 	controller.checkServer(false);
     }
+    
+    /**
+     * Returns true if the monitor is already initialized - the old transactions 
+     * were loaded from disk, false otherwise.
+     */
+    public boolean isInitialized() {
+        return openedOnceAlready;
+    }
 
     protected void updateTitle() {
 	setName(NbBundle.getBundle(TransactionView.class).getString("MON_Title"));	
@@ -414,29 +422,38 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 	jtp.setPreferredSize(tabD);
 	jtp.setMaximumSize(tabD);
 
+        // compute scrolling unit increment
+        FontMetrics metrics = getFontMetrics(jtp.getFont());
+        int scrollingUnitIncrement = metrics.getHeight();
+        
 	requestDisplay = new RequestDisplay(); 
 	JScrollPane p = new JScrollPane(requestDisplay);
+        p.getVerticalScrollBar().setUnitIncrement(scrollingUnitIncrement);
 	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Request_19"), p);
-
 
 	cookieDisplay = new CookieDisplay(); 
 	p = new JScrollPane(cookieDisplay);
+        p.getVerticalScrollBar().setUnitIncrement(scrollingUnitIncrement);
 	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Cookies_4"), p);
 
 	sessionDisplay = new SessionDisplay(); 
 	p = new JScrollPane(sessionDisplay);
+        p.getVerticalScrollBar().setUnitIncrement(scrollingUnitIncrement);
 	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Session_24"), p); 
 
 	contextDisplay = new ContextDisplay(); 
 	p = new JScrollPane(contextDisplay);
+        p.getVerticalScrollBar().setUnitIncrement(scrollingUnitIncrement);
 	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Context_23"), p);
 
 	clientDisplay = new ClientDisplay(); 
 	p = new JScrollPane(clientDisplay);
+        p.getVerticalScrollBar().setUnitIncrement(scrollingUnitIncrement);
 	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Client_Server"), p);
 
 	headerDisplay = new HeaderDisplay(); 
 	p = new JScrollPane(headerDisplay);
+        p.getVerticalScrollBar().setUnitIncrement(scrollingUnitIncrement);
 	jtp.addTab(NbBundle.getBundle(TransactionView.class).getString("MON_Header_19"), p);
 
 	jtp.addChangeListener(this);

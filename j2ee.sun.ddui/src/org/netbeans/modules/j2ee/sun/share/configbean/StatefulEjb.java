@@ -73,6 +73,7 @@ public class StatefulEjb extends SessionEjb {
     protected class StatefulEjbSnippet extends BaseEjb.BaseEjbSnippet {
         public CommonDDBean getDDSnippet() {
             Ejb ejb = (Ejb) super.getDDSnippet();
+            String version = getAppServerVersion().getEjbJarVersionAsString();
 
             if(availabilityEnabled != null){
                 try{
@@ -88,7 +89,7 @@ public class StatefulEjb extends SessionEjb {
 
             if(null != checkpointAtEndOfMethod){
                 try{
-                    ejb.setCheckpointAtEndOfMethod((CheckpointAtEndOfMethod)checkpointAtEndOfMethod.clone());
+                    ejb.setCheckpointAtEndOfMethod((CheckpointAtEndOfMethod)checkpointAtEndOfMethod.cloneVersion(version));
                 }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
                     //System.out.println("Not Supported Version");      //NOI18N
                 }
@@ -177,7 +178,7 @@ public class StatefulEjb extends SessionEjb {
 
     public void addMethod(Method method){
         if(null == checkpointAtEndOfMethod){
-            checkpointAtEndOfMethod = StorageBeanFactory.getDefault().createCheckpointAtEndOfMethod();
+            checkpointAtEndOfMethod = getConfig().getStorageFactory().createCheckpointAtEndOfMethod();
         }
         checkpointAtEndOfMethod.addMethod(method);
     }

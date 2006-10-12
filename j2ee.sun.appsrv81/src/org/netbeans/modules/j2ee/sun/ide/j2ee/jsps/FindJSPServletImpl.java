@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.jsps;
 import java.io.File;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
+import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 
@@ -43,13 +44,19 @@ public class FindJSPServletImpl implements FindJSPServlet {
         DeploymentManagerProperties dmProps = new DeploymentManagerProperties(tm);
         String domain = dmProps.getDomainName();
         if (domain==null){
-            domain="domain1";
+            domain="domain1";// NOI18N
             dmProps.setDomainName(domain);
         }
 	String domainDir = dmProps.getLocation();
-        File hostBase = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-modules".replace('/', File.separatorChar));
-        File workDir = new File(hostBase, getContextRootString(moduleContextPath));
-      //  System.out.println("returning servlet root " + workDir);
+        SunDeploymentManager sunDM = (SunDeploymentManager)tm;
+        String modName = sunDM.getManagement().getWebModuleName(moduleContextPath);
+        //modName may be null, but this does not impact to following logic: in this case, the file will not exist as well.
+        File workDir = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-modules/" +modName);// NOI18N
+        if (!workDir.exists()){ //check for ear file gen area:
+         workDir = new File(domainDir, "/"+domain+"/generated/jsp/j2ee-apps/" +modName);// NOI18N
+            
+        }
+       // System.out.println("returning servlet root " + workDir);
         return workDir;
     }
     
@@ -57,7 +64,7 @@ public class FindJSPServletImpl implements FindJSPServlet {
     
     private String getContextRootString(String moduleContextPath) {
         String contextRootPath = moduleContextPath;
-        if (contextRootPath.startsWith("/")) {
+        if (contextRootPath.startsWith("/")) {// NOI18N
             contextRootPath = contextRootPath.substring(1);
         }
 
@@ -68,7 +75,7 @@ public class FindJSPServletImpl implements FindJSPServlet {
     public String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
         //String path = module.getWebURL();
         String s= getServletPackageName(jspResourcePath).replace('.', '/') + '/' +
-            getServletClassName(jspResourcePath) + ".java";
+            getServletClassName(jspResourcePath) + ".java";// NOI18N
     //    System.out.println("in jsp  "+s);
         return s;
         //int lastDot = jspResourcePath.lastIndexOf('.');
@@ -87,7 +94,7 @@ public class FindJSPServletImpl implements FindJSPServlet {
     // copied from org.apache.jasper.JspCompilationContext
     private String getDerivedPackageName(String jspUri) {
         int iSep = jspUri.lastIndexOf('/');
-        return (iSep > 0) ? JspNameUtil.makeJavaPackage(jspUri.substring(0,iSep)) : "";
+        return (iSep > 0) ? JspNameUtil.makeJavaPackage(jspUri.substring(0,iSep)) : "";// NOI18N
     }
     
     // copied from org.apache.jasper.JspCompilationContext

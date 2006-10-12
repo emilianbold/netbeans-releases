@@ -42,6 +42,8 @@ public class JdbcCP extends BaseResource implements java.io.Serializable{
     private String connValidMethod;
     private String validationTableName;
     private String failAllConns;
+    private String nontranxconns;
+    private String allowNonComponentCallers;
     
     /** Creates a new instance of JdbcCP */
     public JdbcCP() {
@@ -175,6 +177,28 @@ public class JdbcCP extends BaseResource implements java.io.Serializable{
         this.failAllConns = value;
         initPropertyChangeSupport();
         propertySupport.firePropertyChange ("failAllConns", oldValue, failAllConns);//NOI18N
+    }
+
+    public String getNontranxconns() {
+        return nontranxconns;
+    }
+
+    public void setNontranxconns(String value) {
+        String oldValue = nontranxconns;
+        this.nontranxconns = value;
+        initPropertyChangeSupport();
+        propertySupport.firePropertyChange ("nontranxconns", oldValue, nontranxconns); //NOI18N
+    }
+
+    public String getAllowNonComponentCallers() {
+        return allowNonComponentCallers;
+    }
+
+    public void setAllowNonComponentCallers(String value) {
+        String oldValue = allowNonComponentCallers;
+        this.allowNonComponentCallers = value;
+        initPropertyChangeSupport();
+        propertySupport.firePropertyChange ("allowNonComponentCallers", oldValue, allowNonComponentCallers); //NOI18N
     }
     
  }

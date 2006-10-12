@@ -59,8 +59,8 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 		
 	private static final int NUM_SERVLET24_PANELS = 1;
 	private static final int NUM_AS81_PANELS = 1;
-	private static final int PROPERTIES_TAB_INDEX = 1;
-	private static final int MESSAGE_TAB_INDEX = 3;
+	private static final int PROPERTIES_TAB_INDEX = 2;
+	private static final int MESSAGE_TAB_INDEX = 4;
 	
 	private WebAppRoot theBean;
 	private boolean servlet24FeaturesVisible;
@@ -115,6 +115,7 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
     // End of variables declaration//GEN-END:variables
 
 	private WebAppGeneralPanel generalPanel;
+	private WebAppClassloaderPanel classloaderPanel;
     private WebAppPropertiesPanel propertiesPanel;
 	private WebAppSessionConfigPanel sessionConfigPanel;
 	private WebAppMessagesPanel messagesPanel;
@@ -133,6 +134,11 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 		generalPanel = new WebAppGeneralPanel(this);
 		webAppTabbedPanel.addTab(webappBundle.getString("GENERAL_TAB"), generalPanel);	// NOI18N
 
+		// Add classloader panel
+        // TODO - Ideally, this is a tab for AS 8.1, 9.0, but merely a subpanel on general for AS 7.0
+		classloaderPanel = new WebAppClassloaderPanel(this);
+		webAppTabbedPanel.addTab(webappBundle.getString("CLASSLOADER_TAB"), classloaderPanel);	// NOI18N
+        
 		// Add session configuration panel
 		propertiesPanel = new WebAppPropertiesPanel(this);
 		webAppTabbedPanel.addTab(webappBundle.getString("PROPERTIES_TAB"), propertiesPanel);	// NOI18N
@@ -160,6 +166,7 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 	
 	protected void initFields() {
 		generalPanel.initFields(theBean);
+        classloaderPanel.initFields(theBean);
 		
         if(ASDDVersion.SUN_APPSERVER_8_1.compareTo(theBean.getAppServerVersion()) <= 0) {
             showAS81Panels();
@@ -215,6 +222,7 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 		super.addListeners();
 		
 		generalPanel.addListeners();
+        classloaderPanel.addListeners();
         propertiesPanel.addListeners();
 		sessionConfigPanel.addListeners();
 		messagesPanel.addListeners();
@@ -232,6 +240,7 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 		messagesPanel.removeListeners();
 		sessionConfigPanel.removeListeners();
         propertiesPanel.removeListeners();
+        classloaderPanel.removeListeners();
 		generalPanel.removeListeners();
 		
 		theBean.removePropertyChangeListener(this);
@@ -302,20 +311,23 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 		
 		// Determine which tab has focus and return help context for that tab.
 		switch(getAdjustedTabIndex()) {
-			case 5:
+			case 6:
 				result = cachePanel.getHelpId();
 				break;
-			case 4:
+			case 5:
 				result = "AS_CFG_WebAppLocale"; // NOI18N
 				break;
-			case 3:
+			case 4:
 				result = "AS_CFG_WebAppMessages"; // NOI18N
 				break;
-			case 2:
+			case 3:
 				result = sessionConfigPanel.getHelpId();
 				break;
-			case 1:
+			case 2:
 				result = "AS_CFG_WebAppProperties"; // NOI18N
+				break;
+			case 1:
+				result = "AS_CFG_WebAppClassloader"; // NOI18N
 				break;
 		}
 		
@@ -329,16 +341,18 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
 	 */
 	public ValidationError.Partition getPartition() {
 		switch(getAdjustedTabIndex()) {
-			case 5:
+			case 6:
 				return cachePanel.getPartition();
-			case 4:
+			case 5:
 				return ValidationError.PARTITION_WEB_LOCALE;
-			case 3:
+			case 4:
 				return ValidationError.PARTITION_WEB_MESSAGES;
-			case 2:
+			case 3:
 				return sessionConfigPanel.getPartition();
-			case 1:
+			case 2:
 				return ValidationError.PARTITION_WEB_PROPERTIES;
+			case 1:
+				return ValidationError.PARTITION_WEB_CLASSLOADER;
 			default:
 				return ValidationError.PARTITION_WEB_GENERAL;
 		}
@@ -361,8 +375,8 @@ public class WebAppRootCustomizer extends BaseCustomizer implements PropertyChan
     // is package-protected and used by several subpanels as well.
 	static GenericTableModel.ParentPropertyFactory webPropertyFactory =
         new GenericTableModel.ParentPropertyFactory() {
-            public CommonDDBean newParentProperty() {
-                return StorageBeanFactory.getDefault().createWebProperty();
+            public CommonDDBean newParentProperty(ASDDVersion asVersion) {
+                return StorageBeanFactory.getStorageBeanFactory(asVersion).createWebProperty();
             }
         };
 }

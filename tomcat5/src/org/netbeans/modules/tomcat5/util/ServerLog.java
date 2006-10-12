@@ -28,6 +28,7 @@ package org.netbeans.modules.tomcat5.util;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.BufferedReader;
+import org.netbeans.modules.tomcat5.TomcatManager;
 import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -49,7 +50,6 @@ class ServerLog extends Thread {
     private final boolean takeFocus;
     private volatile boolean done = false;
     private ServerLogSupport logSupport;
-    private String displayName;
 
     /**
      * Tomcat server log reads from the Tomcat standard and error output and 
@@ -64,13 +64,12 @@ class ServerLog extends Thread {
      */
     public ServerLog(String url, String displayName, Reader in, Reader err, boolean autoFlush,
             boolean takeFocus) {
-        super("Tomcat ServerLog - Thread"); // NOI18N
+        super(displayName + " ServerLog - Thread"); // NOI18N
         setDaemon(true);
         inReader = new BufferedReader(in);
         errReader = new BufferedReader(err);
         this.autoFlush = autoFlush;
         this.takeFocus = takeFocus;
-        this.displayName = displayName;
         io = UISupport.getServerIO(url);
         try {
             io.getOut().reset();
@@ -112,18 +111,24 @@ class ServerLog extends Thread {
                 // even if log file is growing fast
                 while (((isInReaderReady = inReader.ready()) || (isErrReaderReady = errReader.ready())) 
                         && count++ < 1024) {
-                    if (done) return;
+                    if (done) {
+                        return;
+                    }
                     updated = true;
                     if (isInReaderReady) {
                         String line = inReader.readLine();
                         // finish, if we have reached the end of the stream
-                        if (line == null) return;
+                        if (line == null) {
+                            return;
+                        }
                         processLine(line);
                     }
                     if (isErrReaderReady) {
                         String line = errReader.readLine();
                         // finish, if we have reached the end of the stream
-                        if (line == null) return;
+                        if (line == null) {
+                            return;
+                        }
                         processLine(line);
                     }
                 }
@@ -139,7 +144,9 @@ class ServerLog extends Thread {
                 sleep(100); // take a nap
             }
         } catch (IOException ex) {
+            TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, ex);
         } catch (InterruptedException e) {
+            // no op - the thread was interrupted 
         } finally {
             logSupport.detachAnnotation();
         }
@@ -198,7 +205,9 @@ class ServerLog extends Thread {
                             String lineNum = logLine.substring(colonIdx + 1, nextColonIdx);
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
-                            } catch(NumberFormatException nfe) { // ignore it
+                            } catch(NumberFormatException nfe) { 
+                                // ignore it
+                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
                             }
                             if (lineLenght > nextColonIdx) {
                                 message = logLine.substring(nextColonIdx + 1, lineLenght); 
@@ -221,7 +230,9 @@ class ServerLog extends Thread {
                             String lineNum = logLine.substring(secondColonIdx + 1, thirdColonIdx);
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
-                            } catch(NumberFormatException nfe) { // ignore it
+                            } catch(NumberFormatException nfe) { 
+                                // ignore it
+                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
                             }
                             if (lineLenght > thirdColonIdx) {
                                 message = logLine.substring(thirdColonIdx + 1, lineLenght);
@@ -245,7 +256,9 @@ class ServerLog extends Thread {
                             String lineNum = logLine.substring(lastColonIdx + 1, lastParenthIdx);
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
-                            } catch(NumberFormatException nfe) { // ignore it
+                            } catch(NumberFormatException nfe) {
+                                // ignore it
+                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
                             }
                             message = prevMessage;
                         }

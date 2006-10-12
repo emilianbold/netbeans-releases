@@ -83,13 +83,30 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     PathResourceImplementation res = ClassPathSupport.createResource(roots[i]);
                     result.add (res);
                 }
-                // adds build/generated/wsclient to resources to be available for code completion
+                // adds build/generated/wsclient and build/generated/wsimport to resources to be available for code completion
                 if (projectHelper!=null) {
                     try {
                         String buildDir = projectHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.BUILD_DIR);
                         if (buildDir!=null) {
-                            File f =  new File (new File (projectHelper.resolveFile(buildDir),"generated"),"wsclient");
+                            // generated/wsclient
+                            File f = new File (projectHelper.resolveFile(buildDir),"generated/wsclient"); //NOI18N
                             URL url = f.toURI().toURL();
+                            if (!f.exists()) {  //NOI18N
+                                assert !url.toExternalForm().endsWith("/");  //NOI18N
+                                url = new URL (url.toExternalForm()+'/');   //NOI18N
+                            }
+                            result.add(ClassPathSupport.createResource(url));
+                            // generated/wsimport/client
+                            f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N
+                            url = f.toURI().toURL();
+                            if (!f.exists()) {  //NOI18N
+                                assert !url.toExternalForm().endsWith("/");  //NOI18N
+                                url = new URL (url.toExternalForm()+'/');   //NOI18N
+                            }
+                            result.add(ClassPathSupport.createResource(url));
+                            // generated/wsimport/service
+                            f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/service"); //NOI18N
+                            url = f.toURI().toURL();
                             if (!f.exists()) {  //NOI18N
                                 assert !url.toExternalForm().endsWith("/");  //NOI18N
                                 url = new URL (url.toExternalForm()+'/');   //NOI18N

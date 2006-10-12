@@ -31,9 +31,8 @@ import java.util.ResourceBundle;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.event.EventListenerList;
 
-import org.netbeans.modules.j2ee.sun.share.Constants;
-
 import org.netbeans.modules.j2ee.sun.dd.api.web.CacheMapping;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 
@@ -69,6 +68,9 @@ public class CacheMappingTableModel extends AbstractTableModel {
 
 	/** List of CacheMapping objects */
 	private List rows;
+    
+	/** Application Server version for selected data */
+	private ASDDVersion appServerVersion;
 
 	public CacheMappingTableModel() {
 		rows = new ArrayList();
@@ -78,7 +80,7 @@ public class CacheMappingTableModel extends AbstractTableModel {
 	 *  Data manipulation
 	 */
 	public int addRow() {
-		rows.add(StorageBeanFactory.getDefault().createCacheMapping_NoDefaults());
+		rows.add(StorageBeanFactory.getStorageBeanFactory(appServerVersion).createCacheMapping_NoDefaults());
 		int newIndex = rows.size()-1;
 		fireTableRowsInserted(newIndex, newIndex);
 		return newIndex;
@@ -95,7 +97,9 @@ public class CacheMappingTableModel extends AbstractTableModel {
 		return removedMapping;
 	}
 	
-	public void setData(List data) {
+	public void setData(List data, ASDDVersion asVersion) {
+		appServerVersion = asVersion;
+        
 		if(data != null && data.size() > 0) {
 			rows = new ArrayList(data);
 		} else {

@@ -24,18 +24,15 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 /**
  *
@@ -136,8 +133,8 @@ public class GenericTablePanel extends BeanTablePanel {
 		jLblTableHeading.setDisplayedMnemonic(mnemonic);
 	}
 	
-	public void setModel(CommonDDBean parent) {
-		getTableModel().setData(parent);
+	public void setModel(CommonDDBean parent, ASDDVersion asVersion) {
+		getTableModel().setData(parent, asVersion);
 		
 /* !PW tinkering with table colunn widths... hasn't really worked well though.
 		JTableHeader header = table.getTableHeader();
@@ -155,12 +152,17 @@ public class GenericTablePanel extends BeanTablePanel {
  */
 	}
 	
-	public void setModel(List rows) {
-		getTableModel().setData(rows);
+	public void setModel(List rows, ASDDVersion asVersion) {
+		getTableModel().setData(rows, asVersion);
 	}
+    
+	public void setModel(CommonDDBean [] rows, ASDDVersion asVersion) {
+		getTableModel().setData(rows, asVersion);
+	}
+    
 	
-	public void setModelBaseBean(CommonDDBean parent) {
-		getTableModel().setDataBaseBean(parent);
+	public void setModelBaseBean(CommonDDBean parent, ASDDVersion asVersion) {
+		getTableModel().setDataBaseBean(parent, asVersion);
 	}
 	
 	public BeanInputDialog getInputDialog(Object[] values) {
@@ -237,7 +239,8 @@ public class GenericTablePanel extends BeanTablePanel {
 			
 			try {
 				subPanel = (GenericTableDialogPanelAccessor) entryPanelClass.newInstance();
-				subPanel.init(GenericTablePanel.this.getWidth()*3/4, entryList, extraData);
+				subPanel.init(getTableModel().getAppServerVersion(), 
+                        GenericTablePanel.this.getWidth()*3/4, entryList, extraData);
 				
 				((JPanel) subPanel).getAccessibleContext().setAccessibleName(
 					resourceBundle.getString("ACSN_POPUP_" + resourceBase));	// NOI18N

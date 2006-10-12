@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:tns="http://duke.org"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             targetNamespace="http://duke.org"
+             name="AddNumbersService">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://duke.org"
+                  schemaLocation="AddNumbersService2_schema1.xsd"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    </xsd:schema>
+
+  </types>
+  <message name="addNumbers">
+    <part name="parameters" element="tns:addNumbers"/>
+  </message>
+  <message name="addNumbersResponse">
+    <part name="parameters" element="tns:addNumbersResponse"/>
+  </message>
+  <message name="AddNumbersException">
+    <part name="AddNumbersException" element="tns:AddNumbersException"/>
+  </message>
+  <portType name="AddNumbersImpl">
+    <operation name="addNumbers">
+      <input message="tns:addNumbers"/>
+
+      <output message="tns:addNumbersResponse"/>
+      <fault name="AddNumbersException" message="tns:AddNumbersException"/>
+    </operation>
+  </portType>
+  <binding name="AddNumbersImplPortBinding" type="tns:AddNumbersImpl">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="addNumbers">
+      <soap:operation soapAction=""/>
+      <input>
+
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+      <fault name="AddNumbersException">
+        <soap:fault name="AddNumbersException" use="literal"/>
+      </fault>
+    </operation>
+
+  </binding>
+  <service name="AddNumbersService">
+    <port name="AddNumbersImplPort" binding="tns:AddNumbersImplPortBinding">
+      <soap:address location="http://localhost:8080/WebApplication9/AddNumbersService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/>
+    </port>
+  </service>
+</definitions>

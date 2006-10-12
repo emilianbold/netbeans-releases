@@ -24,20 +24,24 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
+import org.netbeans.modules.j2ee.deployment.plugins.api.AntDeploymentProvider;
 import org.openide.WizardDescriptor;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DatasourceManager;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.api.TargetModuleIDResolver;
+import org.netbeans.modules.j2ee.sun.ide.dm.SunDatasourceManager;
+import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.jsps.FindJSPServletImpl;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeploymentFacade;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
 //import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.TargetServerData;
-
+//import org.netbeans.modules.tomcat5.AntDeploymentProviderImpl;
 
 /**
  *
@@ -60,7 +64,7 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
     }
     
     public StartServer getStartServer (DeploymentManager dm) {
-        return new StartSunServer (dm);
+        return StartSunServer.get(dm);
     }
     
     /** Create AutoUndeploySupport for the given DeploymentManager.
@@ -74,5 +78,17 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
         WizardDescriptor.InstantiatingIterator retVal = 
                 new AddDomainWizardIterator();
         return retVal;
+    }
+    
+    public AntDeploymentProvider getAntDeploymentProvider(DeploymentManager dm) {
+        return new AntDeploymentProviderImpl(dm);
+    }
+    
+    public DatasourceManager getDatasourceManager(DeploymentManager dm) {
+        if (!(dm instanceof SunDeploymentManager))
+            throw new IllegalArgumentException("");
+
+        SunDatasourceManager dsMgr = new SunDatasourceManager(dm);
+        return dsMgr;
     }
 }

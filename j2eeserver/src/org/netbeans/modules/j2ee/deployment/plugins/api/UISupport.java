@@ -19,13 +19,18 @@
 
 package org.netbeans.modules.j2ee.deployment.plugins.api;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.util.WeakHashMap;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -39,8 +44,62 @@ public final class UISupport {
     
     private static final WeakHashMap ioWeakMap = new WeakHashMap();
     
+    /**
+     * Server icon constants.
+     *
+     * @since 1.19
+     */
+    public enum ServerIcon { 
+        EJB_ARCHIVE, WAR_ARCHIVE, EAR_ARCHIVE,     
+        EJB_FOLDER, EAR_FOLDER, WAR_FOLDER,
+        EJB_OPENED_FOLDER, EAR_OPENED_FOLDER, WAR_OPENED_FOLDER
+    };
+    
     /** Do not allow to create instances of this class */
     private UISupport() {
+    }
+    
+    /**
+     * Returns the specified icon.
+     *
+     * @return The specified icon.
+     *
+     * @since 1.19
+     */
+    public static Image getIcon(ServerIcon serverIcon) {
+        switch (serverIcon) {
+            case EJB_ARCHIVE :
+                return Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/ejb.png"); // NOI18N
+            case WAR_ARCHIVE :
+                return Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/war.png"); // NOI18N
+            case EAR_ARCHIVE :
+                return Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/ear.png"); // NOI18N
+            default :
+                return computeIcon(serverIcon);
+        }
+    }
+    
+    private static Image computeIcon(ServerIcon serverIcon) {
+        // get the default folder icon
+        Node folderNode = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        Image folder;
+        if (serverIcon == ServerIcon.EJB_OPENED_FOLDER || serverIcon == ServerIcon.WAR_OPENED_FOLDER 
+                || serverIcon == ServerIcon.EAR_OPENED_FOLDER) {
+            folder = folderNode.getOpenedIcon(BeanInfo.ICON_COLOR_16x16);
+        } else {
+            folder = folderNode.getIcon(BeanInfo.ICON_COLOR_16x16);
+        }
+        Image badge;
+        if (serverIcon == ServerIcon.EJB_FOLDER || serverIcon == ServerIcon.EJB_OPENED_FOLDER) {
+            badge = Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/ejbBadge.png"); // NOI18N
+        } else if (serverIcon == ServerIcon.WAR_FOLDER || serverIcon == ServerIcon.WAR_OPENED_FOLDER) {
+            badge = Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/warBadge.png"); // NOI18N
+        } else if (serverIcon == ServerIcon.EAR_FOLDER || serverIcon == ServerIcon.EAR_OPENED_FOLDER) {
+            badge = Utilities.loadImage("org/netbeans/modules/j2ee/deployment/impl/ui/resources/earBadge.png" ); // NOI18N
+        } else {
+            return null;
+        }
+        return Utilities.mergeImages(folder, badge, 7, 7);
     }
     
     /**

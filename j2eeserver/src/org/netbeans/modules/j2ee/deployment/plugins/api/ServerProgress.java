@@ -102,9 +102,18 @@ public class ServerProgress implements ProgressObject {
             public CommandType getCommand() { return comtype; }
             public String getMessage() { return msg; }
             public StateType getState() { return state; }
-            public boolean isCompleted() { return false; }
-            public boolean isFailed() { return true; }
-            public boolean isRunning() { return false; }
+
+            public boolean isCompleted () {
+                return StateType.COMPLETED.equals(state);
+            }
+
+            public boolean isFailed () {
+                return StateType.FAILED.equals(state);
+            }
+
+            public boolean isRunning () {
+                return StateType.RUNNING.equals(state);
+            }
         };
     }        
     protected ProgressEvent createCompletedProgressEvent(CommandType command, String message) {

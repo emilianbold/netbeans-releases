@@ -20,9 +20,8 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,31 +30,32 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 /**
  */
-public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeListener {
+public class PlatformImpl extends J2eePlatformImpl {
     
     private static final Set/*<Object>*/ MODULE_TYPES = new HashSet();
     private static final Set/*<String>*/ SPEC_VERSIONS = new HashSet();
     private static final Set/*<String>*/ SPEC_VERSIONS_WITH_5 = new HashSet();
-    // Appserver version strings.  
+    // Appserver version strings.
     private static final String APPSERVER_VERSION_9 = "9.0"; // NOI18N
     private static final String APPSERVER_VERSION_8_1 = "8.1"; // NOI18N
+    private static final String APPSERVER_VERSION_8_2 = "8.2"; // NOI18N
     private static final String APPSERVER_VERSION_UNKNOWN = "unknown"; // NOI18N
-    private static String version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
+    private  String version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
     private static final String J2EE_14_JAR = "lib/j2ee.jar"; //NOI18N
     private static final String JAVA_EE_JAR = "lib/javaee.jar"; //NOI18N
     private static final String JSF_API_JAR = "lib/jsf-api.jar"; //NOI18N
-////    private static final String JSF_IMPL_JAR = "lib/jsf-impl.jar"; //NOI18N
+    private static final String JSF_IMPL_JAR = "lib/jsf-impl.jar"; //NOI18N
 ////    private static final String COMMON_LOGGING_JAR = "lib/commons-logging.jar"; //NOI18N
     private static final String JAX_QNAME_JAR = "lib/jax-qname.jar"; //NOI18N
     private static final String JAXRPC_API_JAR = "lib/jaxrpc-api.jar"; //NOI18N
@@ -69,10 +69,40 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
     private static final String TAGS_JAR = "lib/appserv-tags.jar"; //NOI18N
     private static final String MAIL_JAR =  "lib/mail.jar"; //NOI18N
     private static final String JSTL_JAR =  "lib/appserv-jstl.jar"; //NOI18N
-          
-          
-    private List/*<LibraryImpl>*/ libraries  = new ArrayList();
     
+    // appserver jars
+    private static final String APPSERV_WS_JAR = "lib/appserv-ws.jar"; //NOI18N
+    private static final String TOOLS_JAR = "lib/tools.jar"; //NOI18N
+    
+    // jwsdp jars
+    private static final String JWSDP_JAR = "lib/appserv-ws-update.jar"; //NOI18N
+    private static final String JAXWSA_API_JAR = "lib/jaxwsa-api.jar"; //NOI18N
+    private static final String JAXWSA_RI_JAR = "lib/jaxwsa-ri.jar"; //NOI18N
+    
+    // wsit jars
+    private static final String WEBSERVICES_JAR = "lib/webservices.jar"; //NOI18N
+    private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
+    private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
+                
+    private static final String[] KEYSTORE_LOCATION = new String[] {
+        "config/keystore.jks"  //NOI18N
+    };
+    
+    private static final String[] TRUSTSTORE_LOCATION = new String[] {
+        "config/cacerts.jks"  //NOI18N
+    };
+    
+    private static final String[] KEYSTORE_CLIENT_LOCATION = new String[] {
+        "config/keystore.jks"  //NOI18N
+    };
+    
+    private static final String[] TRUSTSTORE_CLIENT_LOCATION = new String[] {
+        "config/cacerts.jks"  //NOI18N
+    };    
+    
+    private static final String PERSISTENCE_PROV_TOPLINK = "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider"; //NOI18N
+    private static final String PERSISTENCE_PROV_TOPLINK_DEFAULT = "toplinkPersistenceProviderIsDefault"; //NOI18N
+            
     static {
         MODULE_TYPES.add(J2eeModule.WAR);
         MODULE_TYPES.add(J2eeModule.EAR);
@@ -81,53 +111,45 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
         MODULE_TYPES.add(J2eeModule.CLIENT);
         SPEC_VERSIONS.add(J2eeModule.J2EE_14);
         SPEC_VERSIONS.add(J2eeModule.J2EE_13);
-        SPEC_VERSIONS_WITH_5.add(J2eeModule.J2EE_15);
+        SPEC_VERSIONS_WITH_5.add(J2eeModule.JAVA_EE_5);
         SPEC_VERSIONS_WITH_5.add(J2eeModule.J2EE_14);
         SPEC_VERSIONS_WITH_5.add(J2eeModule.J2EE_13);
     }
     
-    private File root;
-    private String displayName;
+    private final File root;
+    private final DeploymentManagerProperties dmProps;
+    private LibraryImplementation[] libraries;
     
     /** Creates a new instance of PlatformImpl */
-    public PlatformImpl(final File rootLocation, String aDisplayName, InstanceProperties instanceProperties) {
-        displayName = aDisplayName;
-        init (rootLocation);
-        if (instanceProperties != null) {
-            instanceProperties.addPropertyChangeListener (this);
-        }
-////        SwingUtilities.invokeLater(new Runnable() {
-////            public void run() {
-////                RegisterPointbase.getDefault().register(rootLocation);
-////                RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
-////            }
-////        });
+    public PlatformImpl(File root, DeploymentManagerProperties dmProps) {
+        this.dmProps = dmProps;
+        this.root = root;
     }
-
+    
     /** Returns error message for an invalid platform or an empty string
      * for a valid platform.
      */
-    public static String isValidPlatformRoot (File platformRoot) {
+    public  String isValidPlatformRoot(File platformRoot) {
         String result = "";
         if(platformRoot == null || "".equals(platformRoot.getPath())) {
-                result = "Install directory cannot be empty.";
+            result = "Install directory cannot be empty.";
         } else if(!platformRoot.exists()) {
-                result = "Directory '" + platformRoot.getAbsolutePath() + "' does not exist.";
+            result = "Directory '" + platformRoot.getAbsolutePath() + "' does not exist.";
         } else {
-                version = getAppServerVersion(platformRoot);
-                File testF = new File(platformRoot, "bin"); // NOI18N
-                if(!testF.exists()) {
-                        result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
-                } //else if(APPSERVER_VERSION_8_0.equals(PlatformImpl.getAppServerVersion(platformRoot))) {
-                   //     result = "<html>SJSAS 8.0 or 8.0 update 1 cannot be used. Please use SJSAS 8.1.</html>";
-                //} //else {
-                        // passed all tests
-                //}
-
-		testF = new File(platformRoot, "lib"); // NOI18N
-                if(!testF.exists()) {
-                        result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
-                }
+            version = getAppServerVersion(platformRoot);
+            File testF = new File(platformRoot, "bin"); // NOI18N
+            if(!testF.exists()) {
+                result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
+            } //else if(APPSERVER_VERSION_8_0.equals(PlatformImpl.getAppServerVersion(platformRoot))) {
+            //     result = "<html>SJSAS 8.0 or 8.0 update 1 cannot be used. Please use SJSAS 8.1.</html>";
+            //} //else {
+            // passed all tests
+            //}
+            
+            testF = new File(platformRoot, "lib"); // NOI18N
+            if(!testF.exists()) {
+                result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
+            }
         }
         
         return result;
@@ -139,121 +161,151 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
      * 8.1 uses sun-domain_1_1.dtd (also includes the 1_0 version for backwards compatibility)
      *
      */
-    public static String getAppServerVersion(File asInstallRoot) {
-            version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
-
-            if(asInstallRoot != null && asInstallRoot.exists()) {
-                    File sunDomain11Dtd = new File(asInstallRoot, "lib/dtds/sun-domain_1_1.dtd"); // NOI18N
-                    //now test for AS 9 (J2EE 5.0) which should work for this plugin
-                    File as9 = new File((asInstallRoot)+"/lib/dtds/sun-web-app_2_5-0.dtd");
-                    if(as9.exists()){
-                        version = APPSERVER_VERSION_9;
-                        
-                    } else    if(sunDomain11Dtd.exists()) {
-                        version = APPSERVER_VERSION_8_1;
-                    }
-            }
-            return version;
-    }
+    public  String getAppServerVersion(File asInstallRoot) {
+        version = APPSERVER_VERSION_UNKNOWN;	// NOI18N
         
-
-    
-    private void init (File rootLocation) {
-        libraries.clear();
-        root = null;
-        if (isValidPlatformRoot (rootLocation).equals("")) {
-            root = rootLocation;
-            try {
-                J2eeLibraryTypeProvider lp = new J2eeLibraryTypeProvider();
-                lp.createLibrary().setName ("a");
-                LibraryImplementation lib = lp.createLibrary();
-
-                lib.setName(NbBundle.getMessage(PlatformFactory.class, "j2ee14")); // NOI18N
-
-                List l = new ArrayList();
-                l.add(fileToUrl(new File(root, J2EE_14_JAR)));
-                l.add(fileToUrl(new File(root, JAVA_EE_JAR)));//In case we would have a glassfish for now
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-                File doc = InstalledFileLocator.getDefault().locate("docs/j2eeri-1_4-doc-api.zip", null, false); // NOI18N
-                if (getAppServerVersion(root).equals(APPSERVER_VERSION_9)){
-                    
-                    File docJavaEE5 = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
-                    if (docJavaEE5!=null){
-                        doc =docJavaEE5;
-                    }
-                }
+        if(asInstallRoot != null && asInstallRoot.exists()) {
+            File sunDomain11Dtd = new File(asInstallRoot, "lib/dtds/sun-domain_1_1.dtd"); // NOI18N
+            //now test for AS 9 (J2EE 5.0) which should work for this plugin
+            File as9 = new File((asInstallRoot)+"/lib/dtds/sun-web-app_2_5-0.dtd");
+            if(as9.exists()){
+                version = APPSERVER_VERSION_9;
                 
-                if (doc != null) {
-                    l = new ArrayList();
-                    l.add(fileToUrl(doc));
-                    lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, l);
+            } else    if(sunDomain11Dtd.exists()) {
+                version = APPSERVER_VERSION_8_1;
+            }
+        }
+        return version;
+    }
+    
+    private void initLibraries() {
+        List<LibraryImplementation> libs = new ArrayList<LibraryImplementation>();
+        if ("".equals(isValidPlatformRoot(root))) { // NOI18N
+            try {
+                List<URL> sources = dmProps.getSources();
+                List<URL> javadoc = dmProps.getJavadocs();
+                J2eeLibraryTypeProvider lp = new J2eeLibraryTypeProvider();
+                LibraryImplementation lib = lp.createLibrary();
+                lib.setName(NbBundle.getMessage(PlatformFactory.class, "j2ee14")); // NOI18N
+                List l = new ArrayList();
+                File ff = (new File(root, JAVA_EE_JAR));
+                if (!ff.exists()){
+                    l.add(fileToUrl(new File(root, J2EE_14_JAR)));
+                } else{
+                    l.add(fileToUrl(ff));//In case we would have a glassfish for now
                 }
-                libraries.add(lib);
-
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
+                libs.add(lib);
+                
                 lib = lp.createLibrary();
                 lib.setName(NbBundle.getMessage(PlatformImpl.class, "jsf11")); // NOI18N
-
+                
                 l = new ArrayList();
                 l.add(fileToUrl(new File(root, JSF_API_JAR)));
-           //     l.add(fileToUrl(new File(root, JSF_IMPL_JAR)));
-           //     l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
+                l.add(fileToUrl(new File(root, JSF_IMPL_JAR)));
+                //     l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
                 l.add(fileToUrl(new File(root, ACTIVATION_JAR)));
                 l.add(fileToUrl(new File(root, TAGS_JAR)));
                 l.add(fileToUrl(new File(root, MAIL_JAR)));
                 l.add(fileToUrl(new File(root, JSTL_JAR)));
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-                libraries.add(lib);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
+                libs.add(lib);
+                
+                // JWSDP
+                lib = lp.createLibrary();
+                lib.setName(NbBundle.getMessage(PlatformImpl.class, "jwsdp")); // NOI18N
+                l = new ArrayList();
+                l.add(fileToUrl(new File(root, JWSDP_JAR)));
+                l.add(fileToUrl(new File(root, JAXWSA_API_JAR)));
+                l.add(fileToUrl(new File(root, JAXWSA_RI_JAR)));
+                
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
+                libs.add(lib);
 
+                // WSIT - just add additional libraries to the above
+                lib = lp.createLibrary();
+                lib.setName(NbBundle.getMessage(PlatformImpl.class, "wsit")); // NOI18N
+                l.add(fileToUrl(new File(root, WEBSERVICES_TOOLS_JAR)));
+                l.add(fileToUrl(new File(root, WEBSERVICES_RT_JAR)));
+                l.add(fileToUrl(new File(root, WEBSERVICES_JAR)));
+
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
+                libs.add(lib);
+                
                 lib = lp.createLibrary();
                 lib.setName(NbBundle.getMessage(PlatformImpl.class, "jaxqname")); // NOI18N
-
+                
                 l = new ArrayList();
                 l.add(fileToUrl(new File(root, JAX_QNAME_JAR)));
                 l.add(fileToUrl(new File(root, "lib/endorsed/jaxp-api.jar")));
                 
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-                libraries.add(lib);
-
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
+                libs.add(lib);
+                
                 lib = lp.createLibrary();
                 lib.setName(NbBundle.getMessage(PlatformImpl.class, "jaxrpc11")); // NOI18N
-
+                
                 l = new ArrayList();
                 l.add(fileToUrl(new File(root, "lib/appserv-ws.jar")));
                 l.add(fileToUrl(new File(root, JAXRPC_API_JAR)));
                 l.add(fileToUrl(new File(root, JAXRPC_IMPL_JAR)));
-      //          l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
+                //          l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-                libraries.add(lib);
-
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
+                libs.add(lib);
+                
                 lib = lp.createLibrary();
                 lib.setName(NbBundle.getMessage(PlatformImpl.class, "jaxr10")); // NOI18N
-
+                
                 l = new ArrayList();
                 l.add(fileToUrl(new File(root, JAXR_API_JAR)));
                 l.add(fileToUrl(new File(root, JAXR_IMPL_JAR)));
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-                libraries.add(lib);
-
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
+                libs.add(lib);
+                
                 lib = lp.createLibrary();
                 lib.setName(NbBundle.getMessage(PlatformImpl.class, "saaj12")); // NOI18N
-
+                
                 l = new ArrayList();
                 l.add(fileToUrl(new File(root, SAAJ_API_JAR)));
                 l.add(fileToUrl(new File(root, SAAJ_IMPL_JAR)));
                 lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-                libraries.add(lib);
-            } catch(Exception e) {
-                e.printStackTrace();
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, sources);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, javadoc);
+                libs.add(lib);
+            } catch(IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
+        libraries = (LibraryImplementation[])libs.toArray(new LibraryImplementation[libs.size()]);
     }
+    
     /**
      * Return platform's libraries.
      *
      * @return platform's libraries.
      */
     public LibraryImplementation[] getLibraries() {
-        return (LibraryImplementation[])libraries.toArray(new LibraryImplementation[libraries.size()]);
+        if (libraries == null) {
+            initLibraries();
+        }
+        return libraries;
+    }
+    
+    public void notifyLibrariesChanged() {
+        initLibraries();
+        firePropertyChange(PROP_LIBRARIES, null, libraries);
     }
     
     /**
@@ -262,7 +314,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
      * @return platform's display name.
      */
     public String getDisplayName() {
-        return displayName;
+        return dmProps.getDisplayName();
     }
     
     /**
@@ -291,17 +343,117 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
      * @return classpath for the specified tool.
      */
     public File[] getToolClasspathEntries(String toolName) {
-        if ("wscompile".equals(toolName)) { // TODO this will be removed - just for testing
-            if (isValidPlatformRoot (root).equals("")) {
+        if (J2eePlatform.TOOL_WSCOMPILE.equals(toolName)) {
+            if (isValidPlatformRoot(root).equals("")) {
                 return new File[] {
-                    new File(root, "lib/j2ee.jar"),
-                    new File(root, "lib/saaj-api.jar"),
-                    new File(root, "lib/saaj-impl.jar"),
-                    new File(root, "lib/jaxrpc-api.jar"),
-                    new File(root, "lib/jaxrpc-impl.jar"),
-                    new File(root, "lib/endorsed/jaxp-api.jar"),
-                    new File(root, "lib/appserv-ws.jar")// possibly for AS 9
+                    new File(root, "lib/j2ee.jar"),             //NOI18N
+                    new File(root, "lib/saaj-api.jar"),         //NOI18N
+                    new File(root, "lib/saaj-impl.jar"),        //NOI18N
+                    new File(root, "lib/jaxrpc-api.jar"),       //NOI18N
+                    new File(root, "lib/jaxrpc-impl.jar"),      //NOI18N
+                    new File(root, "lib/endorsed/jaxp-api.jar"),//NOI18N
+                    new File(root, "lib/appserv-ws.jar")        //NOI18N  possibly for AS 9
                 };
+            }
+        }
+        if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {    //NOI18N
+            if (isValidPlatformRoot(root).equals("")) {
+                return new File[] {
+                    new File(root, "lib/appserv-admin.jar"),    //NOI18N
+                    new File(root, "lib/appserv-cmp.jar"),      //NOI18N
+                    new File(root, "lib/appserv-ext.jar"),      //NOI18N
+                    new File(root, "lib/appserv-rt.jar"),       //NOI18N
+                    new File(root, "lib/appserv-ws.jar"),       //NOI18N
+                    new File(root, "lib/dbschema.jar"),         //NOI18N
+                    new File(root, "lib/fscontext.jar"),        //NOI18N
+                    new File(root, "lib/j2ee.jar"),             //NOI18N
+                    new File(root, "lib/xalan.jar"),            //NOI18N
+                    new File(root, "lib/xercesImpl.jar"),       //NOI18N
+                    new File(root, "lib/install/applications/jmsra/imqjmsra.jar"), //NOI18N, standalone JMS
+                    new File(root, "lib/dtds"),                 //NOI18N
+                    new File(root, "lib/schemas")               //NOI18N
+                };
+            }
+        }
+        if (J2eePlatform.TOOL_KEYSTORE.equals(toolName)) {
+            if (isValidPlatformRoot(root).equals("")) {        //NOI18N
+                File keyStoreLoc = new File(new File(dmProps.getInstanceProperties().getProperty("LOCATION")),      //NOI18N
+                        dmProps.getInstanceProperties().getProperty("DOMAIN") + File.separator + KEYSTORE_CLIENT_LOCATION[0]);  //NOI18N
+                return new File[] {
+                    keyStoreLoc
+                };
+            }
+        }
+        if (J2eePlatform.TOOL_KEYSTORE_CLIENT.equals(toolName)) {
+            if (isValidPlatformRoot(root).equals("")) {        //NOI18N
+                File keyStoreClientLoc = new File(new File(dmProps.getInstanceProperties().getProperty("LOCATION")),            //NOI18N
+                        dmProps.getInstanceProperties().getProperty("DOMAIN") + File.separator + KEYSTORE_CLIENT_LOCATION[0]);  //NOI18N
+                return new File[] {
+                    keyStoreClientLoc
+                };
+            }
+        }
+        if (J2eePlatform.TOOL_TRUSTSTORE.equals(toolName)) {
+            if (isValidPlatformRoot(root).equals("")) {        //NOI18N
+                File trustStoreLoc = new File(new File(dmProps.getInstanceProperties().getProperty("LOCATION")),            //NOI18N
+                        dmProps.getInstanceProperties().getProperty("DOMAIN") + File.separator + TRUSTSTORE_LOCATION[0]);   //NOI18N
+                return new File[] {
+                    trustStoreLoc
+                };
+            }
+        }
+        if (J2eePlatform.TOOL_TRUSTSTORE_CLIENT.equals(toolName)) {
+            if (isValidPlatformRoot(root).equals("")) {        //NOI18N
+                File trustStoreClientLoc = new File(new File(dmProps.getInstanceProperties().getProperty("LOCATION")),              //NOI18N
+                        dmProps.getInstanceProperties().getProperty("DOMAIN") + File.separator + TRUSTSTORE_CLIENT_LOCATION[0]);    //NOI18N
+                return new File[] {
+                    trustStoreClientLoc
+                };
+            }
+        }
+        if (J2eePlatform.TOOL_WSGEN.equals(toolName) || J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
+            File jwsdpJar = new File(root, JWSDP_JAR);  //NOI18N
+            File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);  //NOI18N
+
+            if ((wsToolsJar != null) && (wsToolsJar.exists())) {          // WSIT installed on top
+                if (isValidPlatformRoot(root).equals("")) {
+                    return new File[] {
+                        new File(root, WEBSERVICES_TOOLS_JAR),     // NOI18N
+                        new File(root, WEBSERVICES_RT_JAR),           // NOI18N
+                        new File(root, WEBSERVICES_JAR),           // NOI18N
+                        new File(root, TOOLS_JAR),      //NOI18N
+                        new File(root, JSTL_JAR),       //NOI18N
+                        new File(root, JAVA_EE_JAR),    //NOI18N
+                        new File(root, APPSERV_WS_JAR), //NOI18N
+                        new File(root, MAIL_JAR),       //NOI18N
+                        new File(root, ACTIVATION_JAR)  //NOI18N
+                    };
+                }
+            } else if ((jwsdpJar != null) && (jwsdpJar.exists())) { // JWSDP installed on top
+                if (isValidPlatformRoot (root).equals("")) {
+                    return new File[] {
+                        new File(root, JWSDP_JAR),      //NOI18N
+                        new File(root, JAXWSA_API_JAR), //NOI18N
+                        new File(root, JAXWSA_RI_JAR),  //NOI18N
+                        new File(root, TOOLS_JAR),      //NOI18N
+                        new File(root, JSTL_JAR),       //NOI18N
+                        new File(root, JAVA_EE_JAR),    //NOI18N
+                        new File(root, APPSERV_WS_JAR), //NOI18N
+                        new File(root, MAIL_JAR),       //NOI18N
+                        new File(root, ACTIVATION_JAR)  //NOI18N
+                    };
+                }
+            } else {                                                // regular appserver
+                if (isValidPlatformRoot (root).equals("")) {
+                    return new File[] {
+                        new File(root, TOOLS_JAR),        //NOI18N
+                        new File(root, JSTL_JAR),         //NOI18N
+                        new File(root, JAVA_EE_JAR),      //NOI18N
+                        new File(root, APPSERV_WS_JAR),   //NOI18N
+                        new File(root, MAIL_JAR),         //NOI18N
+                        new File(root, ACTIVATION_JAR)    //NOI18N
+                    };
+                }
             }
         }
         return null;
@@ -311,34 +463,82 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
      * Specifies whether a tool of the given name is supported by this platform.
      *
      * @param  toolName tool's name e.g. "wscompile".
-     * @return <code>true</code> if platform supports tool of the given name, 
+     * @return <code>true</code> if platform supports tool of the given name,
      *         <code>false</code> otherwise.
      */
     public boolean isToolSupported(String toolName) {
-        if ("wscompile".equals(toolName)) { // TODO this will be removed - just for testing
+        if (J2eePlatform.TOOL_WSCOMPILE.equals(toolName)
+        || J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {
             return true;
+        }
+        if (!APPSERVER_VERSION_8_1.equals(version) &&
+                !APPSERVER_VERSION_8_2.equals(version)) { // we want this to work for 9.1 as well
+            if (J2eePlatform.TOOL_WSGEN.equals(toolName)) {
+                return true;
+            }
+            if (J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
+                return true;
+            }
+            if (J2eePlatform.TOOL_JSR109.equals(toolName)) {
+                return true;
+            }
+            if (J2eePlatform.TOOL_JWSDP.equals(toolName) && (new File(root, JWSDP_JAR).exists())) {
+                return true;
+            }
+            if (J2eePlatform.TOOL_WSIT.equals(toolName) && (new File(root, WEBSERVICES_TOOLS_JAR).exists())) {
+                return true;
+            }
+            if (J2eePlatform.TOOL_KEYSTORE.equals(toolName)) {
+                return true;
+            }
+            if (J2eePlatform.TOOL_KEYSTORE_CLIENT.equals(toolName)) {
+                return true;
+            }
+            if (J2eePlatform.TOOL_TRUSTSTORE.equals(toolName)) {
+                return true;
+            }
+            if (J2eePlatform.TOOL_TRUSTSTORE_CLIENT.equals(toolName)) {
+                return true;
+            }
+            // Test if server has the JAX-WS Tester capability
+            if ("jaxws-tester".equals(toolName)) { //NOI18N
+                return true;
+            }
+
+            //Persistence Provoiders
+            if(PERSISTENCE_PROV_TOPLINK.equals(toolName)){
+                return true;
+            }
+            if (PERSISTENCE_PROV_TOPLINK_DEFAULT.equals(toolName)) {
+                return true;
+            }
+            
+            if ("org.hibernate.ejb.HibernatePersistence".equals(toolName) ||      //NOI18N          
+                "kodo.persistence.PersistenceProviderImpl".equals(toolName)) {    //NOI18N
+                return true;
+            }
+            
         }
         return false;
     }
     
     /**
-     * Return a list of supported J2EE specification versions. Use J2EE specification 
+     * Return a list of supported J2EE specification versions. Use J2EE specification
      * versions defined in the {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
      * class.
      *
      * @return list of supported J2EE specification versions.
      */
     public Set/*<String>*/ getSupportedSpecVersions() {
-
+        
         if(APPSERVER_VERSION_9.equals(version)){
             return SPEC_VERSIONS_WITH_5;
-        }
-        else
+        } else
             return SPEC_VERSIONS;
     }
     
     /**
-     * Return a list of supported J2EE module types. Use module types defined in the 
+     * Return a list of supported J2EE module types. Use module types defined in the
      * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
      * class.
      *
@@ -354,7 +554,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
         versions.add("1.5"); // NOI18N
         return versions;
     }
-        
+    
     public JavaPlatform getJavaPlatform() {
         // TODO
         return null;
@@ -368,14 +568,39 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
         return url;
     }
     
-    public void propertyChange (PropertyChangeEvent e) {
-     /*   if (e.getPropertyName().equals(DeploymentManagerProperties.LOCATION_ATTR)) {
-            root = new File ((String) e.getNewValue());
-            init(root);
-            firePropertyChange (PROP_LIBRARIES, null, null);
-            firePropertyChange (J2eePlatform.PROP_CLASSPATH, null, null);
-            firePropertyChange (PROP_PLATFORM_ROOTS, null, null);
-        }*/
+    /* return the string within quotes
+     **/
+    private String quotedString(String s){
+        return "\""+s+"\"";
+    }
+    public String getToolProperty(String toolName, String propertyName) {
+        if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {
+            if (J2eePlatform.TOOL_PROP_MAIN_CLASS.equals(propertyName)) {
+                return "com.sun.enterprise.appclient.Main"; // NOI18N
+            }
+            if (J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS.equals(propertyName)) {
+                return "-client ${dist.jar} ${j2ee.appclient.tool.args}"; // NOI18N
+            }
+            if (J2eePlatform.TOOL_PROP_JVM_OPTS.equals(propertyName)) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("-Dcom.sun.aas.configRoot=").append(quotedString(new File(root, "config").getAbsolutePath())); // NOI18N
+                sb.append(" -Dcom.sun.aas.installRoot=").append(quotedString(root.getAbsolutePath())); // NOI18N
+                sb.append(" -Dcom.sun.aas.imqLib=").append(quotedString(new File(root, "imq/lib").getAbsolutePath())); // NOI18N
+                sb.append(" -Djava.security.policy=").append(quotedString(new File(root, "lib/appclient/client.policy").getAbsolutePath())); // NOI18N
+                sb.append(" -Djava.security.auth.login.config=").append(quotedString(new File(root, "lib/appclient/appclientlogin.conf").getAbsolutePath())); // NOI18N
+                sb.append(" -Djava.endorsed.dirs=").append(quotedString(new File(root, "lib/endorsed").getAbsolutePath())); // NOI18N
+                sb.append(" -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"); // NOI18N
+                sb.append(" -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl"); // NOI18N
+                sb.append(" -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl"); // NOI18N
+                sb.append(" -Dorg.xml.sax.parser=org.xml.sax.helpers.XMLReaderAdapter"); // NOI18N
+                sb.append(" -Dorg.xml.sax.driver=com.sun.org.apache.xerces.internal.parsers.SAXParser"); // NOI18N
+                sb.append(" -Djava.util.logging.manager=com.sun.enterprise.server.logging.ACCLogManager"); // NOI18N
+                return sb.toString();
+            }
+            if ("j2ee.appclient.args".equals(propertyName)) { // NOI18N
+                return "-configxml " + quotedString(new File(dmProps.getLocation(), dmProps.getDomainName() + "/config/sun-acc.xml").getAbsolutePath()); // NOI18N
+            }
+        }
+        return null;
     }
 }
-

@@ -71,10 +71,10 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpCon
 public class CachePolicyPanel extends JPanel implements TableModelListener {
 	
 	/** resource bundle */
-    private static final ResourceBundle commonBundle = ResourceBundle.getBundle(
+	private static final ResourceBundle commonBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
 	
-    private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
+	private static final ResourceBundle webappBundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp.Bundle");	// NOI18N
 
 	private static final TextMapping [] scopeTypes = ScopeMapping.getScopeMappings();
@@ -107,8 +107,11 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	private GenericTableModel constraintFieldsModel;
 	private GenericTablePanel constraintFieldsPanel;
 
-    // true if AS 8.1+ fields are visible.
-    private boolean as81FeaturesVisible;
+	// true if AS 8.1+ fields are visible.
+	private boolean as81FeaturesVisible;
+
+    // disable listeners during field initialization.
+    private boolean initializingFields;
     
 	/** Creates new form CachePolicyPanel */
 	public CachePolicyPanel(ASDDVersion asVersion, CacheMapping mapping) {
@@ -124,6 +127,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 		constraints = Utils.arrayToList(newCacheMapping.getConstraintField());
 		
 		dataChanged = false;
+        initializingFields = false;
 		
 		initComponents();
 		initUserComponents();
@@ -166,18 +170,18 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 5, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jLblCachePolicy, gridBagConstraints);
 
         jPnlTimeout.setLayout(new java.awt.GridBagLayout());
 
-        jPnlTimeout.setBorder(new javax.swing.border.EtchedBorder());
+        jPnlTimeout.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jLblTimeoutName.setDisplayedMnemonic(webappBundle.getString("MNE_TimeoutName").charAt(0));
         jLblTimeoutName.setLabelFor(jTxtTimeoutName);
         jLblTimeoutName.setText(webappBundle.getString("LBL_TimeoutName_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPnlTimeout.add(jLblTimeoutName, gridBagConstraints);
 
         jTxtTimeoutName.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -190,7 +194,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         jPnlTimeout.add(jTxtTimeoutName, gridBagConstraints);
         jTxtTimeoutName.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_TimeoutName"));
         jTxtTimeoutName.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_TimeoutName"));
@@ -200,7 +204,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         jLblTimeoutValue.setText(webappBundle.getString("LBL_Timeout_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         jPnlTimeout.add(jLblTimeoutValue, gridBagConstraints);
 
         jTxtTimeoutValue.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -212,7 +216,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         jPnlTimeout.add(jTxtTimeoutValue, gridBagConstraints);
         jTxtTimeoutValue.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_Timeout"));
         jTxtTimeoutValue.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_Timeout"));
@@ -222,7 +226,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         jLblTimeoutScope.setText(webappBundle.getString("LBL_TimeoutScope_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         jPnlTimeout.add(jLblTimeoutScope, gridBagConstraints);
 
         jCbxTimeoutScope.setPrototypeDisplayValue("");
@@ -235,7 +239,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPnlTimeout.add(jCbxTimeoutScope, gridBagConstraints);
         jCbxTimeoutScope.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_TimeoutScope"));
         jCbxTimeoutScope.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_TimeoutScope"));
@@ -244,18 +248,18 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
         add(jPnlTimeout, gridBagConstraints);
 
         jPnlRefresh.setLayout(new java.awt.GridBagLayout());
 
-        jPnlRefresh.setBorder(new javax.swing.border.EtchedBorder());
+        jPnlRefresh.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jLblRefreshFieldName.setDisplayedMnemonic(webappBundle.getString("MNE_RefreshFieldName").charAt(0));
         jLblRefreshFieldName.setLabelFor(jTxtRefreshFieldName);
         jLblRefreshFieldName.setText(webappBundle.getString("LBL_RefreshFieldName_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPnlRefresh.add(jLblRefreshFieldName, gridBagConstraints);
 
         jTxtRefreshFieldName.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -268,7 +272,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         jPnlRefresh.add(jTxtRefreshFieldName, gridBagConstraints);
         jTxtRefreshFieldName.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_RefreshFieldName"));
         jTxtRefreshFieldName.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_RefreshFieldName"));
@@ -278,7 +282,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         jLblRefreshScope.setText(webappBundle.getString("LBL_RefreshScope_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         jPnlRefresh.add(jLblRefreshScope, gridBagConstraints);
 
         jCbxRefreshScope.setPrototypeDisplayValue("");
@@ -291,7 +295,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPnlRefresh.add(jCbxRefreshScope, gridBagConstraints);
         jCbxRefreshScope.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_RefreshScope"));
         jCbxRefreshScope.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_RefreshScope"));
@@ -300,18 +304,18 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jPnlRefresh, gridBagConstraints);
 
         jPnlHttpMethods.setLayout(new java.awt.GridBagLayout());
 
-        jPnlHttpMethods.setBorder(new javax.swing.border.EtchedBorder());
+        jPnlHttpMethods.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jLblHttpMethods.setText(webappBundle.getString("LBL_HttpMethods_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPnlHttpMethods.add(jLblHttpMethods, gridBagConstraints);
 
         jChkHttpGet.setMnemonic(webappBundle.getString("MNE_HttpGet").charAt(0));
@@ -326,6 +330,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 0, 5);
         jPnlHttpMethods.add(jChkHttpGet, gridBagConstraints);
         jChkHttpGet.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_HttpGet"));
         jChkHttpGet.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_HttpGet"));
@@ -342,6 +347,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 5);
         jPnlHttpMethods.add(jChkHttpPost, gridBagConstraints);
         jChkHttpPost.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_HttpPost"));
         jChkHttpPost.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_HttpPost"));
@@ -350,11 +356,10 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         add(jPnlHttpMethods, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
 	private void jChkHttpPostItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jChkHttpPostItemStateChanged
 		handleHttpMethodSelection(evt, "POST");	// NOI18N
@@ -365,9 +370,11 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	}//GEN-LAST:event_jChkHttpGetItemStateChanged
 
 	private void jCbxRefreshScopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCbxRefreshScopeActionPerformed
-		TextMapping scope = (TextMapping) refreshFieldScopeModel.getSelectedItem();
-		newCacheMapping.setRefreshFieldScope(scope.getXMLString());
-		setDataChanged(true);
+        if(!initializingFields) {
+    		TextMapping scope = (TextMapping) refreshFieldScopeModel.getSelectedItem();
+        	newCacheMapping.setRefreshFieldScope(normalizeBlank(scope.getXMLString()));
+            setDataChanged(true);
+        }
 	}//GEN-LAST:event_jCbxRefreshScopeActionPerformed
 
 	private void jTxtRefreshFieldNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtRefreshFieldNameKeyReleased
@@ -382,9 +389,11 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	}//GEN-LAST:event_jTxtRefreshFieldNameKeyReleased
 
 	private void jCbxTimeoutScopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCbxTimeoutScopeActionPerformed
-		TextMapping scope = (TextMapping) timeoutScopeModel.getSelectedItem();
-		newCacheMapping.setTimeoutScope(scope.getXMLString());
-		setDataChanged(true);
+        if(!initializingFields) {
+            TextMapping scope = (TextMapping) timeoutScopeModel.getSelectedItem();
+    		newCacheMapping.setTimeoutScope(normalizeBlank(scope.getXMLString()));
+        	setDataChanged(true);
+        }
 	}//GEN-LAST:event_jCbxTimeoutScopeActionPerformed
 
 	private void jTxtTimeoutValueKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtTimeoutValueKeyReleased
@@ -468,7 +477,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(0, 6, 0, 5);
         add(dispatcherPanel, gridBagConstraints);
         
 		/** Add key fields table panel :
@@ -493,7 +502,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(0, 6, 0, 5);
 		add(keyFieldsPanel, gridBagConstraints);
 		
 		/** Add constraint fields table panel :
@@ -524,7 +533,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(0, 6, 0, 5);
 		add(constraintFieldsPanel, gridBagConstraints);
 	}
 	
@@ -532,23 +541,28 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	 *  was passed in.
 	 */
 	public void initFields(ASDDVersion asVersion) {
-		jTxtTimeoutName.setText(newCacheMapping.getTimeoutName());
-		enableTimeout(Utils.notEmpty(newCacheMapping.getTimeoutName()));
+        try {
+            initializingFields = true;
+            jTxtTimeoutName.setText(newCacheMapping.getTimeoutName());
+            enableTimeout(Utils.notEmpty(newCacheMapping.getTimeoutName()));
 
-		jTxtRefreshFieldName.setText(newCacheMapping.getRefreshFieldName());
-		enableRefreshField(Utils.notEmpty(newCacheMapping.getRefreshFieldName()));
-		
-		jChkHttpGet.setSelected(httpMethods.contains("GET"));	// NOI18N
-		jChkHttpPost.setSelected(httpMethods.contains("POST"));	// NOI18N
-		
-		keyFieldsPanel.setModelBaseBean(newCacheMapping);
-		constraintFieldsPanel.setModel(constraints);
-        
-        if(ASDDVersion.SUN_APPSERVER_8_1.compareTo(asVersion) <= 0) {
-            showAS81Fields();
-    		dispatcherPanel.setModelBaseBean(newCacheMapping);
-        } else {
-            hideAS81Fields();
+            jTxtRefreshFieldName.setText(newCacheMapping.getRefreshFieldName());
+            enableRefreshField(Utils.notEmpty(newCacheMapping.getRefreshFieldName()));
+
+            jChkHttpGet.setSelected(httpMethods.contains("GET"));	// NOI18N
+            jChkHttpPost.setSelected(httpMethods.contains("POST"));	// NOI18N
+
+            keyFieldsPanel.setModelBaseBean(newCacheMapping, asVersion);
+            constraintFieldsPanel.setModel(constraints, asVersion);
+
+            if(ASDDVersion.SUN_APPSERVER_8_1.compareTo(asVersion) <= 0) {
+                showAS81Fields();
+                dispatcherPanel.setModelBaseBean(newCacheMapping, asVersion);
+            } else {
+                hideAS81Fields();
+            }
+        } finally {
+            initializingFields = false;
         }
 	}
     
@@ -561,7 +575,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
             gridBagConstraints.fill = GridBagConstraints.BOTH;
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 1.0;
-            gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+            gridBagConstraints.insets = new Insets(0, 6, 5, 5);
             
             int keyFieldsIndex = BaseCustomizer.getComponentIndex(this, keyFieldsPanel);
             if(keyFieldsIndex != -1) {
@@ -626,17 +640,19 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 	}
 	
 	private void handleHttpMethodSelection(ItemEvent evt, String method) {
-		if(evt.getStateChange() == ItemEvent.SELECTED) {
-			if(!httpMethods.contains(method)) {
-				httpMethods.add(method);
-			}
-		} else if(evt.getStateChange() == ItemEvent.DESELECTED) {
-			if(httpMethods.contains(method)) {
-				httpMethods.remove(method);
-			}
-		}
-		
-		setDataChanged(true);
+        if(!initializingFields) {
+            if(evt.getStateChange() == ItemEvent.SELECTED) {
+                if(!httpMethods.contains(method)) {
+                    httpMethods.add(method);
+                }
+            } else if(evt.getStateChange() == ItemEvent.DESELECTED) {
+                if(httpMethods.contains(method)) {
+                    httpMethods.remove(method);
+                }
+            }
+
+            setDataChanged(true);
+        }            
 	}
 	
 	private TextMapping getScopeMapping(String xmlKey, final TextMapping [] scopeMap) {
@@ -661,7 +677,11 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
 		dataChanged = changed;
 		firePropertyChange(Constants.USER_DATA_CHANGED, null, null);		
 	}
-	
+
+    private String normalizeBlank(String value) {
+        return (value != "") ? value : null;
+    }
+    
 	/** ----------------------------------------------------------------------- 
 	 *  Implementation of javax.swing.event.TableModelListener
 	 */
@@ -842,7 +862,7 @@ public class CachePolicyPanel extends JPanel implements TableModelListener {
     // to allow it to create constraintField beans.
 	static GenericTableModel.ParentPropertyFactory constraintFieldFactory =
         new GenericTableModel.ParentPropertyFactory() {
-            public CommonDDBean newParentProperty() {
-                return StorageBeanFactory.getDefault().createConstraintField();
+            public CommonDDBean newParentProperty(ASDDVersion asVersion) {
+                return StorageBeanFactory.getStorageBeanFactory(asVersion).createConstraintField();
             }
         };}

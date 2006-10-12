@@ -63,7 +63,7 @@ public class MasterPasswordInputPanel extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(310, 157));
         jTextArea1.setBackground(java.awt.Color.lightGray);
         jTextArea1.setEditable(false);
-        jTextArea1.setFont(new java.awt.Font("Dialog", 1, 12));
+        jTextArea1.setFont(new java.awt.Font("Dialog", 0, 12));
         jTextArea1.setLineWrap(true);
         jTextArea1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("MasterPasswordInputDialog_longtext"));
         jTextArea1.setWrapStyleWord(true);

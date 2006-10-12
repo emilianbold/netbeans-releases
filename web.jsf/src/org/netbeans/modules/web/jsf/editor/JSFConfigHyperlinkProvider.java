@@ -207,6 +207,16 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
     }
     
     private void findResourcePath(String path, BaseDocument doc){
+        //normalize path
+        int qmIndex = path.indexOf('?');
+        if(qmIndex == 0) {
+            return ; //filter sg. like '?id=val'
+        }
+        if(qmIndex != -1) {
+            //trim the path
+            path = path.substring(0, qmIndex);
+        }
+        
         WebModule wm = WebModule.getWebModule(NbEditorUtilities.getFileObject(doc));
         if (wm != null){
             FileObject docBase= wm.getDocumentBase();

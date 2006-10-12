@@ -123,10 +123,9 @@ public abstract class MethodTablePanel extends JPanel {
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         javax.swing.JPanel panel = getPanel();
         if(panel != null){
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
+            gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+            gridBagConstraints.insets = new java.awt.Insets(6,6,0,5);
             add(panel, gridBagConstraints);
         }
 
@@ -135,9 +134,7 @@ public abstract class MethodTablePanel extends JPanel {
         tablePane = new javax.swing.JScrollPane(methodTable);
         tablePane.setOpaque(true);
         tablePane.setToolTipText(getTablePaneToolTip());
-
-        gridBagConstraints = getTableGridBagConstraints();
-        add(tablePane, gridBagConstraints); 
+        add(tablePane, getTableGridBagConstraints()); 
         tablePane.getAccessibleContext().setAccessibleName(getTablePaneAcsblName());
         tablePane.getAccessibleContext().setAccessibleDescription(getTablePaneAcsblDesc());
      }    
@@ -148,13 +145,11 @@ public abstract class MethodTablePanel extends JPanel {
 
     protected GridBagConstraints getTableGridBagConstraints(){
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6,6,5,5);
         return gridBagConstraints;
     }
 
@@ -448,7 +443,7 @@ public abstract class MethodTablePanel extends JPanel {
     }
 
 
-    protected class TableWithToolTips extends JTable {
+    protected class TableWithToolTips extends FixedHeightJTable {
        public Component prepareRenderer(TableCellRenderer renderer,
                                          int rowIndex, int vColIndex) {
             Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);

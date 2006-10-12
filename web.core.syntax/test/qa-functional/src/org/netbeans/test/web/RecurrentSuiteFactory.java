@@ -39,7 +39,7 @@ import org.openide.filesystems.FileUtil;
  * @author ms113234
  */
 public class RecurrentSuiteFactory {
-    private static boolean debug = false;
+    private static boolean debug = true;
     
     public static Test createSuite(Class clazz, File projectsDir, FileObjectFilter filter) {
         String clazzName = clazz.getName();
@@ -72,8 +72,7 @@ public class RecurrentSuiteFactory {
                     // System.setProperty("webproject.transparentUpdate",  "true");
                     
                     FileObject prjDir = project.getProjectDirectory();
-                    FileObject webDir = prjDir.getFileObject("web");
-                    Enumeration fileObjs = webDir.getChildren(true);
+                    Enumeration fileObjs = prjDir.getChildren(true);
                     
                     while (fileObjs.hasMoreElements()) {
                         FileObject fo = (FileObject) fileObjs.nextElement();

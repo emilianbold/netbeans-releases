@@ -23,6 +23,7 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
+import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ResourceBundle;
@@ -65,17 +66,6 @@ public abstract class EjbCustomizer extends BeanCustomizer
         createPanels();
     }
 	
-    //temporary constructor; will be removed later once the setObject() is
-    //called  by the Studio, immediately after instantiation of this object.
-    //Currently Studio calls this Constructor, instead.
-    //As per  JSR88 tools should use the default constructor to instantiate
-    // Customizer and use setObject() to pass the corresponding ConfigBean.
-    public EjbCustomizer(DConfigBean bean){
-        initComponents();
-        createPanels();
-        setObject(bean);
-    }
-
     public void setObject(Object bean) {
                 super.setObject(bean);
 		// Only do this if the bean is actually changing.
@@ -239,21 +229,20 @@ public abstract class EjbCustomizer extends BeanCustomizer
 
         java.awt.GridBagConstraints gridBagConstraints = 
             new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
-        add(titlePanel, gridBagConstraints);
+        add(titlePanel, gridBagConstraints, 0);
 
         javax.swing.JPanel beanSpecificPanel = getBeanPanel();
         if(beanSpecificPanel != null){
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 2;
+            beanSpecificPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+            gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
-            add(beanSpecificPanel, gridBagConstraints);
+            gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
+            add(beanSpecificPanel, gridBagConstraints, 2);
         }
 
         iorSecCfgPanel = new IorSecurityConfigPanel(this);
@@ -318,7 +307,7 @@ public abstract class EjbCustomizer extends BeanCustomizer
         IorSecurityConfig iorSecCnfg = getIorSecurityConfig();
         TransportConfig transportCfg = iorSecCnfg.getTransportConfig();
         if(transportCfg == null){
-            transportCfg = StorageBeanFactory.getDefault().createTransportConfig();
+            transportCfg = theBean.getConfig().getStorageFactory().createTransportConfig();
             iorSecCnfg.setTransportConfig(transportCfg);
         }
         return transportCfg;
@@ -329,7 +318,7 @@ public abstract class EjbCustomizer extends BeanCustomizer
         IorSecurityConfig iorSecCnfg = getIorSecurityConfig();
         AsContext asContext = iorSecCnfg.getAsContext();
         if(asContext == null){
-            asContext = StorageBeanFactory.getDefault().createAsContext();
+            asContext = theBean.getConfig().getStorageFactory().createAsContext();
             iorSecCnfg.setAsContext(asContext);
         }
         return asContext;
@@ -340,7 +329,7 @@ public abstract class EjbCustomizer extends BeanCustomizer
         IorSecurityConfig iorSecCnfg = getIorSecurityConfig();
         SasContext sasContext = iorSecCnfg.getSasContext();
         if(sasContext == null){
-            sasContext = StorageBeanFactory.getDefault().createSasContext();
+            sasContext = theBean.getConfig().getStorageFactory().createSasContext();
             iorSecCnfg.setSasContext(sasContext);
         }
         return sasContext;
@@ -350,7 +339,7 @@ public abstract class EjbCustomizer extends BeanCustomizer
     private IorSecurityConfig getIorSecurityConfig(){
         IorSecurityConfig iorSecCnfg = theBean.getIorSecurityConfig();
         if(iorSecCnfg == null){
-            iorSecCnfg = StorageBeanFactory.getDefault().createIorSecurityConfig();
+            iorSecCnfg = theBean.getConfig().getStorageFactory().createIorSecurityConfig();
             try{
                 theBean.setIorSecurityConfig(iorSecCnfg);
             }catch(java.beans.PropertyVetoException exception){
@@ -485,7 +474,7 @@ public abstract class EjbCustomizer extends BeanCustomizer
     private BeanPool getBeanPool(){
         BeanPool beanPool = theBean.getBeanPool();
         if(beanPool == null){
-            beanPool = StorageBeanFactory.getDefault().createBeanPool();
+            beanPool = theBean.getConfig().getStorageFactory().createBeanPool();
             try{
                 theBean.setBeanPool(beanPool);
             }catch(java.beans.PropertyVetoException exception){
@@ -498,7 +487,7 @@ public abstract class EjbCustomizer extends BeanCustomizer
     private BeanCache getBeanCache(){
         BeanCache beanCache = theBean.getBeanCache();
         if(beanCache == null){
-            beanCache = StorageBeanFactory.getDefault().createBeanCache();
+            beanCache = theBean.getConfig().getStorageFactory().createBeanCache();
             try{
                 theBean.setBeanCache(beanCache);
             }catch(java.beans.PropertyVetoException exception){
@@ -514,7 +503,7 @@ public abstract class EjbCustomizer extends BeanCustomizer
 
 
     private String getCustomizerTitle(){
-	  String title = bundle.getString("EJB_TITLE");
+        String title = bundle.getString("EJB_TITLE"); // NOI18N
         return title;
     }        
 
@@ -609,8 +598,6 @@ public abstract class EjbCustomizer extends BeanCustomizer
 
         setLayout(new java.awt.GridBagLayout());
 
-        setMinimumSize(new java.awt.Dimension(271, 169));
-        setPreferredSize(new java.awt.Dimension(271, 169));
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 formFocusGained(evt);
@@ -619,7 +606,7 @@ public abstract class EjbCustomizer extends BeanCustomizer
 
         generalPanel.setLayout(new java.awt.GridBagLayout());
 
-        generalPanel.setBorder(new javax.swing.border.EtchedBorder());
+        generalPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         generalPanel.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 generalPanelFocusGained(evt);
@@ -629,10 +616,8 @@ public abstract class EjbCustomizer extends BeanCustomizer
         nameLabel.setLabelFor(nameTextField);
         nameLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Name_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         generalPanel.add(nameLabel, gridBagConstraints);
         nameLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Name_Acsbl_Name"));
         nameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Ejb_Name_Acsbl_Desc"));
@@ -646,13 +631,11 @@ public abstract class EjbCustomizer extends BeanCustomizer
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         generalPanel.add(nameTextField, gridBagConstraints);
         nameTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Name_Acsbl_Name"));
         nameTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Ejb_Name_Acsbl_Desc"));
@@ -661,10 +644,8 @@ public abstract class EjbCustomizer extends BeanCustomizer
         jndiNameLabel.setLabelFor(jndiNameTextField);
         jndiNameLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Jndi_Name_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         generalPanel.add(jndiNameLabel, gridBagConstraints);
         jndiNameLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Jndi_Name_Acsbl_Name"));
         jndiNameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Ejb_Jndi_Name_Acsbl_Desc"));
@@ -687,12 +668,10 @@ public abstract class EjbCustomizer extends BeanCustomizer
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        gridBagConstraints.weightx = 0.9;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         generalPanel.add(jndiNameTextField, gridBagConstraints);
         jndiNameTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Jndi_Name_Acsbl_Name"));
         jndiNameTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Ejb_Jndi_Name_Acsbl_Desc"));
@@ -701,10 +680,8 @@ public abstract class EjbCustomizer extends BeanCustomizer
         passByRefLabel.setLabelFor(passByRefComboBox);
         passByRefLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Pass_By_Reference_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 15, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 18, 5, 0);
         generalPanel.add(passByRefLabel, gridBagConstraints);
         passByRefLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pass_By_Reference_Acsbl_Name"));
         passByRefLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pass_By_Reference_Acsbl_Desc"));
@@ -718,33 +695,30 @@ public abstract class EjbCustomizer extends BeanCustomizer
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         generalPanel.add(passByRefComboBox, gridBagConstraints);
         passByRefComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pass_By_Reference_Acsbl_Name"));
         passByRefComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pass_By_Reference_Acsbl_Desc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
         add(generalPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(tabbedPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jndiNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jndiNameActionPerformed
         // Add your handling code here:
@@ -779,10 +753,10 @@ public abstract class EjbCustomizer extends BeanCustomizer
     }//GEN-LAST:event_passByRefItemStateChanged
 
     private void jndiNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jndiNameKeyReleased
-		// Add your handling code here:
-		updateJndiName(jndiNameTextField.getText());
-                notifyChange();
-                validateEntries();
+        // Add your handling code here:
+        updateJndiName(jndiNameTextField.getText());
+        notifyChange();
+        validateEntries();
     }//GEN-LAST:event_jndiNameKeyReleased
 
 

@@ -20,10 +20,9 @@
 package org.netbeans.modules.tomcat5.nodes;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory;
-import org.openide.nodes.*;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.actions.*;
-import org.openide.actions.DeleteAction;
 
 /**
  * @author Petr Pisl

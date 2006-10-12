@@ -38,7 +38,7 @@ import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost;
 import org.netbeans.modules.java.j2seproject.wsclient.NoWebServiceClientsPanel;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;

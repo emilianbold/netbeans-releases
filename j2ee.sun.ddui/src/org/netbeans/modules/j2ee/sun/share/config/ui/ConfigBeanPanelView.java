@@ -40,6 +40,7 @@ import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeMemberEvent;
 
 import org.netbeans.modules.j2ee.sun.share.config.Utils;
+import org.openide.util.Mutex;
 
 
 /**
@@ -114,7 +115,7 @@ public class ConfigBeanPanelView extends PanelView {
         // nodeListener will clean up when the node goes away
         node.addNodeListener(new NodeAdapter() {
             public void childrenRemoved(final NodeMemberEvent ev) {
-                Utils.runInEventDispatchThread(new Runnable() {
+                Mutex.EVENT.readAccess(new Runnable() {
                     public void run() {
                         Children children = selNode.getChildren();
                         Node[] nodes = children.getNodes();

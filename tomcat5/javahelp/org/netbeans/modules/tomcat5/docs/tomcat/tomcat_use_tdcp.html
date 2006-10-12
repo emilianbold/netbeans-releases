@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 -->
 
@@ -11,7 +11,7 @@
 
 <title>Accessing a Connection Pool from a JSP Page</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
@@ -21,18 +21,18 @@
 </small></p> 
 
 <p>There are many ways of using a 
-<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/server_aboutdbconnect.html">JDBC resource</a> (also known as a data source) in an application. The simplest 
+<a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_aboutdbconnect.html">JDBC resource</a> (also known as a data source) in an application. The simplest 
 way is to access your JDBC resource directly from a JSP file using the JSTL 1.1 tag library. You are recommended
  to use this method for
  testing purposes and in small web applications only.</p>
 <p><b>To set up a JSP file to use the JSTL 1.1 tag library to access a data source:</b></p>
 <ol>
-	<li> Set up a <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">Sun Java System Application Server connection pool</a>, a <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss.html">JBoss Application Server connection pool</a>, or a <a href="tomcat_setup_tdcp.html">Tomcat connection pool</a>.</li>
+	<li> Set up a <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">Sun Java System Application Server connection pool</a>, a <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss.html">JBoss Application Server connection pool</a>, or a <a href="tomcat_setup_tdcp.html">Tomcat connection pool</a>.</li>
 	<li>Right-click the web application project's Libraries node, click Add Library, and choose JSTL 1.1.
 <li>Expand the project node and the Web Pages node 
 and double-click the default index.jsp node. (Instead of using the
  default <tt>index.jsp</tt> file, you can 
- <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/create/jsp/jsp_create.html">create</a> your own JSP file.)
+ <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/web/create/jsp/jsp_create.html">create</a> your own JSP file.)
  The JSP file opens in the Source Editor.
 Now modify the JSP file to do the following:</p>
 <ul><li>Let the server know that the JSP page uses tags from JSTL's <tt>CORE</tt> 
@@ -43,7 +43,7 @@ Now modify the JSP file to do the following:</p>
    &lt;%@ taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %&gt;</pre></li>
   <li>Query the database. 
   Make sure to specify the same JNDI name as specified in the JDBC resource that you defined when
-  setting up the connection pool on the <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">Sun Java System Application Server</a>, <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss.html">JBoss Application Server</a>, or <a href="tomcat_setup_tdcp.html">Tomcat Web Server</a>. 
+  setting up the connection pool on the <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/def_connpool.html">Sun Java System Application Server</a>, <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/jboss/datasource_app_server_jboss.html">JBoss Application Server</a>, or <a href="tomcat_setup_tdcp.html">Tomcat Web Server</a>. 
 To do so, paste or type code similar to the following below the taglib directives in a JSP file:
 
 <pre>   &lt;sql:query var="queryresults" dataSource="jdbc/poolDB"&gt;
@@ -84,33 +84,18 @@ driver's JAR file, so that the server can load the JAR file.
    </tr>
 </table></li>
 <li>Start the database server.
-<li><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/web/create/jsp/jsp_run.html">Run the JSP file</a> or the application
+<li><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/web/create/jsp/jsp_run.html">Run the JSP file</a> or the application
  that contains it.</li>
 </ol>
-<table>
-
-  <tr> 
-
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-
-  </tr>
-
-  <tr> 
-
-<td width="23"></td>
-	  
-<td>
-<a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About the Sun Java System Application Server</a><br>
-<a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/jboss/about_jboss.html">About the JBoss Application Server</a><br>
-<a href="tomcat_plugintro.html">About the Tomcat Web Server</a><br>
-</tr>
-
-</table>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About the Sun Java System Application Server</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/jboss/about_jboss.html">About the JBoss Application Server</a></dd>
+<dd><a href="tomcat_plugintro.html">About the Tomcat Web Server</a></dd>
+</dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
+<table cellpadding="50" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
 

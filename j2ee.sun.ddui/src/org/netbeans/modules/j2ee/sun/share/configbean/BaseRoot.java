@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
@@ -39,7 +41,7 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 	private DDBean uri;
 	private DDBean displayNameDD;
 
-	protected SunONEDeploymentConfiguration getConfig() {
+	public SunONEDeploymentConfiguration getConfig() {
 		if(null == getParent()) {
 			return this.dc;
 		} else {
@@ -63,7 +65,47 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 		findRefDCB(dDBeanRoot);
 	}
 	
+    /** IZ 78686, 84549 - cache all security-role-mapping definitions in the
+     *  loaded graph, then remove them when matching SecurityRoleMapping DConfigBeans
+     *  are created.  Any remaining mappings should be rolled back into the graph
+     *  on save, as they reflect unbounded mappings that would otherwise be lost.
+     */
+    /** List of security-role-mappings read from sun-[application|ejb-jar|web-app].xml */
+    protected Map savedRoleMappings;
+    
+    public org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping removeSavedRoleMapping(String name) {
+        org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping result = null;
+        if(savedRoleMappings != null && savedRoleMappings.size() > 0 && Utils.notEmpty(name)) {
+            result = (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) savedRoleMappings.remove(name);
+        }
+        return result;
+    }
+    
+    /** IZ 78686, 84549 - save any security-role-mappings in graph.
+     */
+    protected void saveMappingsToCache(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping[] mappings) {
+        if(mappings != null && mappings.length > 0) {
+            savedRoleMappings = new HashMap(mappings.length*3);
+            for(int i = 0; i < mappings.length; i++) {
+                String roleName = mappings[i].getRoleName();
+                if(Utils.notEmpty(roleName)) {
+                    savedRoleMappings.put(roleName, mappings[i]);
+                }
+            }
+        }    
+    }
+	
+    /** Retrieve a DConfigBeanRoot bound to a secondary descriptor file, e.g. 
+     *  webservices.xml.  This method is overloaded in EjbJarRoot and WebAppRoot
+     *  to handle creating the WebServices DConfigBeanRoot.  No other secondary
+     *  descriptors are supported (or even exist).
+     *
+     */
 	public DConfigBean getDConfigBean(DDBeanRoot dDBeanRoot) {
+        return null;
+	}
+    
+    protected BaseRoot createWebServicesRoot(DDBeanRoot dDBeanRoot) {
         if(null == dDBeanRoot) {
             throw new IllegalArgumentException(bundle.getString("ERR_DDBeanIsNull"));
         }
@@ -71,7 +113,7 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
         if(null == dDBeanRoot.getXpath()) {
             throw new IllegalArgumentException(bundle.getString("ERR_DDBeanHasNullXpath"));
         }
-        
+
         BaseRoot rootDCBean = null;
         
         if(dDBeanRoot.getXpath().equals("/webservices")) {
@@ -100,7 +142,7 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
         }
         
         return rootDCBean;
-	}
+    }
 
 	public String getComponentName() {
 		String name = getUriText();
@@ -126,7 +168,7 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 		return ""; // NOI18N
 	}
 	
-	/** Get the J2EE version of this module.  The derived class must implement
+    /** Get the J2EE version of this module.  The derived class must implement
 	 *  this method and return the correct J2EEBaseVersion derivative representing
 	 *  the version of the module, e.g. ServletVersion.SERVLET_X_Y for web-apps,
 	 *
@@ -165,7 +207,25 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 	public void setAppServerVersion(ASDDVersion asVersion) {
 		getConfig().setAppServerVersion(asVersion);
 	}
+    
+    /** Generate a DOCTYPE string for the specified version (which may be different
+     *  than the current version of the tree
+     */
+    public abstract String generateDocType(ASDDVersion version);
 
+    protected String generateDocType(String docroot, String publicId, String systemId) {
+        StringBuffer buffer = new StringBuffer(192);
+        buffer.append("<DOCTYPE "); // NOI18N
+        buffer.append(docroot);
+        buffer.append(" PUBLIC \n\t\""); // NOI18N
+        buffer.append(publicId);
+        buffer.append("\" \n\t\""); // NOI18N
+        buffer.append(systemId);
+        buffer.append("\">"); // NOI18N
+        return buffer.toString();
+    }
+    
+    
 	/** -----------------------------------------------------------------------
 	 * Properties
 	 */
@@ -221,59 +281,54 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 /* !PW not currently used.  I didn't like the additional runtime issues that
  *     using introspection added to the code.
  *
-	public static class SimpleRootParser implements ConfigParser {
-		private Class rootBaseBeanClass;
-		private Method createGraphMethod;
-		private Method createGraphFromStreamMethod;
-		
-		public SimpleRootParser(Class rootTargetClass) {
-			rootBaseBeanClass = rootTargetClass;
-			
-			try {
-				createGraphMethod = rootBaseBeanClass.getMethod("createGraph", null); // NOI18N
+    public static class SimpleRootParser implements ConfigParser {
+        private Class rootBaseBeanClass;
+        private Method createGraphMethod;
+        private Method createGraphFromStreamMethod;
 
-				Class [] paramTypes = new Class[1];
-				paramTypes[0] = java.io.InputStream.class;
-				createGraphFromStreamMethod = rootBaseBeanClass.getMethod("createGraph", paramTypes); // NOI18N
-			} catch(NoSuchMethodException ex) {
-//				System.out.println("Exception: " + ex.getClass().getName());
-//				ex.printStackTrace(System.out);
-			} catch(SecurityException ex) {
-//				System.out.println("Exception: " + ex.getClass().getName());
-//				ex.printStackTrace(System.out);
-			}
-		}		
-		
-		public Object parse(java.io.InputStream stream) {
-			Object result = null;
-			
-			try {
-				if(null == stream) {
-					// call <createGraph>();
-					result = createGraphMethod.invoke(null, null);
-				} else {
-					try {
-						// call <createGraph>(stream);
-						Object [] params = new Object[1];
-						params[0] = stream;
-						createGraphFromStreamMethod.invoke(null, params);
-					}
-					catch(Throwable t) {
-						jsr88Logger.severe("invalid stream for " + rootBaseBeanClass.getName());
-						// call <createGraph>();
-						result = createGraphMethod.invoke(null, null);
-					}
-				}
-			} catch(Exception ex) {
-				// must invocation exception
-//				System.out.println("Exception: " + ex.getClass().getName());
-//				ex.printStackTrace(System.out);
-			}
-			
-			return result;
-		}
-	}
- */
+        public SimpleRootParser(Class rootTargetClass) {
+            rootBaseBeanClass = rootTargetClass;
+
+            try {
+                createGraphMethod = rootBaseBeanClass.getMethod("createGraph", null); // NOI18N
+
+                Class [] paramTypes = new Class[1];
+                paramTypes[0] = java.io.InputStream.class;
+                createGraphFromStreamMethod = rootBaseBeanClass.getMethod("createGraph", paramTypes); // NOI18N
+            } catch(NoSuchMethodException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            } catch(SecurityException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }		
+
+        public Object parse(java.io.InputStream stream) {
+            Object result = null;
+
+            try {
+                if(null == stream) {
+                    // call <createGraph>();
+                    result = createGraphMethod.invoke(null, null);
+                } else {
+                    try {
+                        // call <createGraph>(stream);
+                        Object [] params = new Object[1];
+                        params[0] = stream;
+                        createGraphFromStreamMethod.invoke(null, params);
+                    } catch(Exception ex) {
+                        jsr88Logger.severe("invalid stream for " + rootBaseBeanClass.getName());
+                        // call <createGraph>();
+                        result = createGraphMethod.invoke(null, null);
+                    }
+                }
+            } catch(Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+
+            return result;
+        }
+    }
+*/
 	
 	public static class SimpleRootFinder implements ConfigFinder {
 		private Class rootBaseBeanClass;

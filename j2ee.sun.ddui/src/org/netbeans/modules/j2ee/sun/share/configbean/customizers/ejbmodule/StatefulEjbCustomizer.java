@@ -56,15 +56,6 @@ public class StatefulEjbCustomizer extends SessionEjbCustomizer
 	public StatefulEjbCustomizer() {
 	}
 	
-    public StatefulEjbCustomizer(DConfigBean bean) {
-        if(!(bean instanceof StatefulEjb)){
-            assert(false);
-        }
-        
-        setObject(bean);
-    }
-
-
     public void setObject(Object bean) {
         super.setObject(bean);
 		

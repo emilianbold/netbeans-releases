@@ -20,27 +20,33 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
 import java.io.File;
+import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 /**
  */
 public final class PlatformFactory extends J2eePlatformFactory {
-
+    
+    private static final WeakHashMap<InstanceProperties,PlatformImpl> instanceCache = new WeakHashMap<InstanceProperties,PlatformImpl>();
+    
     /** Creates a new instance of PlatformFactory */
     public PlatformFactory() {
     }
-
-    public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        DeploymentManagerProperties dmProps = new DeploymentManagerProperties (dm);
-//        String location = dmProps.getLocation();
-        File irf = ((SunDeploymentManagerInterface)dm).getPlatformRoot();
-        if (null == irf || !irf.exists()) {
-            return null;
-        }
-        return new PlatformImpl (irf, dmProps.getDisplayName (), dmProps.getInstanceProperties ());
-    }
     
+    public synchronized J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
+        // Ensure that for each server instance will be always used the same instance of the J2eePlatformImpl
+        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(dm);
+        InstanceProperties ip = dmProps.getInstanceProperties();
+        File rootDir = ((SunDeploymentManagerInterface)dm).getPlatformRoot();
+        PlatformImpl platform = instanceCache.get(ip);
+        if (platform == null) {
+            platform = new PlatformImpl(rootDir, dmProps);
+            instanceCache.put(ip, platform);
+        }
+        return platform;
+    }
 }

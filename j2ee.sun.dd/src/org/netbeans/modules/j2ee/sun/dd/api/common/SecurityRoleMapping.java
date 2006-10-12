@@ -24,14 +24,18 @@
 
 package org.netbeans.modules.j2ee.sun.dd.api.common;
 
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+
 /**
  *
  * @author  Nitya Doraisamy
  */
 public interface SecurityRoleMapping extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
-
+    public static final String VERSION_SERVER_8_0 = "Server 8.0"; 
+    
     public static final String ROLE_NAME = "RoleName";	// NOI18N
     public static final String PRINCIPAL_NAME = "PrincipalName";	// NOI18N
+    public static final String PRINCIPALNAMECLASSNAME = "PrincipalNameClassName";	// NOI18N
     public static final String GROUP_NAME = "GroupName";	// NOI18N
 
     public void setRoleName(java.lang.String value);
@@ -44,6 +48,10 @@ public interface SecurityRoleMapping extends org.netbeans.modules.j2ee.sun.dd.ap
     public int addPrincipalName(String value);
     public int removePrincipalName(String value);
     public int sizePrincipalName();
+    
+	public void setPrincipalNameClassName(int index, String value) throws VersionNotSupportedException;
+	public String getPrincipalNameClassName(int index) throws VersionNotSupportedException;
+	public int sizePrincipalNameClassName() throws VersionNotSupportedException;
     
     public String[] getGroupName();
     public String getGroupName(int index);

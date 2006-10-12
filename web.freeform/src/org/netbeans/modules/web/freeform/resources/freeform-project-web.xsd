@@ -46,6 +46,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                     <xsd:restriction base="xsd:NMTOKEN">
                         <xsd:enumeration value="1.3"/>
                         <xsd:enumeration value="1.4"/>
+                        <xsd:enumeration value="1.5"/>
                     </xsd:restriction>
                 </xsd:simpleType>
             </xsd:element>

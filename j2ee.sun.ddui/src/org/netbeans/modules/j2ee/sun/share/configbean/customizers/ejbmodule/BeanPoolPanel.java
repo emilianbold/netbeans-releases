@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanPool;
 
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BeanCustomizer;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupport;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupportClient;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
@@ -76,24 +76,11 @@ public class BeanPoolPanel extends javax.swing.JPanel
 
 
     public java.awt.GridBagConstraints getErrorPanelConstraints(){
-        java.awt.GridBagConstraints gridBagConstraints = 
-            new java.awt.GridBagConstraints();
-        
-        gridBagConstraints.anchor = gridBagConstraints.SOUTH;
-        gridBagConstraints.fill = gridBagConstraints.HORIZONTAL;
-        gridBagConstraints.gridheight = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.insets.top = 20;
-        gridBagConstraints.insets.left = 0;
-        gridBagConstraints.insets.bottom = 0;
-        gridBagConstraints.insets.right = 0;
-        gridBagConstraints.ipadx = 0;
-        gridBagConstraints.ipady = 0;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.0;
-
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(6,12,11,11);
         return gridBagConstraints;
     }
 
@@ -127,7 +114,7 @@ public class BeanPoolPanel extends javax.swing.JPanel
     }
 	
 	public java.awt.Color getMessageForegroundColor() {
-		return BeanCustomizer.ErrorTextForegroundColor;
+		return BaseCustomizer.getErrorForegroundColor();
 	}
 
     private void validateEntries(){
@@ -149,8 +136,8 @@ public class BeanPoolPanel extends javax.swing.JPanel
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        steadyPoolSizeTextField = new javax.swing.JTextField();
         steadyPoolSizeLabel = new javax.swing.JLabel();
+        steadyPoolSizeTextField = new javax.swing.JTextField();
         resizeQuantityLabel = new javax.swing.JLabel();
         resizeQuantityTextField = new javax.swing.JTextField();
         maxPoolSizeLabel = new javax.swing.JLabel();
@@ -160,6 +147,16 @@ public class BeanPoolPanel extends javax.swing.JPanel
         fillerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
+
+        steadyPoolSizeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Steady_Pool_Size").charAt(0));
+        steadyPoolSizeLabel.setLabelFor(steadyPoolSizeTextField);
+        steadyPoolSizeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Steady_Pool_Size_1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
+        add(steadyPoolSizeLabel, gridBagConstraints);
+        steadyPoolSizeLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Steady_Pool_Size_Acsbl_Name"));
+        steadyPoolSizeLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Steady_Pool_Size_Acsbl_Desc"));
 
         steadyPoolSizeTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -173,36 +170,20 @@ public class BeanPoolPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(steadyPoolSizeTextField, gridBagConstraints);
         steadyPoolSizeTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Steady_Pool_Size_Acsbl_Name"));
         steadyPoolSizeTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Steady_Pool_Size_Acsbl_Desc"));
-
-        steadyPoolSizeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Steady_Pool_Size").charAt(0));
-        steadyPoolSizeLabel.setLabelFor(steadyPoolSizeTextField);
-        steadyPoolSizeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Steady_Pool_Size_1"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
-        add(steadyPoolSizeLabel, gridBagConstraints);
-        steadyPoolSizeLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Steady_Pool_Size_Acsbl_Name"));
-        steadyPoolSizeLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Steady_Pool_Size_Acsbl_Desc"));
 
         resizeQuantityLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Resize_Quantity").charAt(0));
         resizeQuantityLabel.setLabelFor(resizeQuantityTextField);
         resizeQuantityLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Resize_Quantity_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(resizeQuantityLabel, gridBagConstraints);
         resizeQuantityLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Resize_Quantity_Acsbl_Name"));
         resizeQuantityLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Bean_Pool_Resize_Quantity_Acsbl_Desc"));
@@ -225,12 +206,10 @@ public class BeanPoolPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(resizeQuantityTextField, gridBagConstraints);
         resizeQuantityTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Resize_Quantity_Acsbl_Name"));
         resizeQuantityTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Bean_Pool_Resize_Quantity_Acsbl_Desc"));
@@ -239,10 +218,8 @@ public class BeanPoolPanel extends javax.swing.JPanel
         maxPoolSizeLabel.setLabelFor(maxPoolSizeTextField);
         maxPoolSizeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Max_Pool_Size_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(maxPoolSizeLabel, gridBagConstraints);
         maxPoolSizeLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Pool_Size_Acsbl_Name"));
         maxPoolSizeLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Pool_Size_Acsbl_Desc"));
@@ -265,12 +242,10 @@ public class BeanPoolPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(maxPoolSizeTextField, gridBagConstraints);
         maxPoolSizeTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Pool_Size_Acsbl_Name"));
         maxPoolSizeTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Pool_Size_Acsbl_Desc"));
@@ -279,10 +254,8 @@ public class BeanPoolPanel extends javax.swing.JPanel
         poolIdleTimeoutInSecondsLabel.setLabelFor(poolIdleTimeoutInSecondsTextField);
         poolIdleTimeoutInSecondsLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Pool_Idle_Timeout_In_Seconds_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(poolIdleTimeoutInSecondsLabel, gridBagConstraints);
         poolIdleTimeoutInSecondsLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pool_Idle_Timeout_In_Seconds_Acsbl_Name"));
         poolIdleTimeoutInSecondsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pool_Idle_Timeout_In_Seconds_Acsbl_Desc"));
@@ -305,26 +278,22 @@ public class BeanPoolPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(poolIdleTimeoutInSecondsTextField, gridBagConstraints);
         poolIdleTimeoutInSecondsTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pool_Idle_Timeout_In_Seconds_Acsbl_Name"));
         poolIdleTimeoutInSecondsTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Pool_Idle_Timeout_In_Seconds_Acsbl_Desc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(fillerPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void poolIdleTimeoutInSecondsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_poolIdleTimeoutInSecondsActionPerformed
         // Add your handling code here:

@@ -31,6 +31,7 @@ import org.openide.util.Lookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.project.test.TestBase;
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -54,7 +55,7 @@ public class SourceRootsTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        TestUtil.setLookup(new Object[] {
+        TestBase.setLookup(new Object[] {
             new org.netbeans.modules.web.project.WebProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         });

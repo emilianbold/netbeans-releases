@@ -24,11 +24,9 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.ResourceBundle;
-
-import javax.swing.table.AbstractTableModel;
+import javax.accessibility.AccessibleContext;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionListener;
@@ -44,7 +42,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
  */
 
 public abstract class BeanTablePanel extends javax.swing.JPanel {
-	protected javax.swing.JTable table;
+    
+	protected JTable table;
 	protected JButton moveUpButton, moveDownButton, sourceButton;
 	private boolean reordable;
 	protected BeanTableModel model;
@@ -83,12 +82,15 @@ public abstract class BeanTablePanel extends javax.swing.JPanel {
 		this.model=model;
 		this.reordable=reordable;
 		this.isSource=isSource;
-		initComponents();
-		table = new javax.swing.JTable();
-                table.getAccessibleContext().setAccessibleName(getAccessibleName());
-                table.getAccessibleContext().setAccessibleDescription(getAccessibleDesc());
-                getAccessibleContext().setAccessibleName(getAccessibleName());
-                getAccessibleContext().setAccessibleDescription(getAccessibleDesc());
+
+        initComponents();
+
+        table = new FixedHeightJTable();
+        
+        table.getAccessibleContext().setAccessibleName(getAccessibleName());
+        table.getAccessibleContext().setAccessibleDescription(getAccessibleDesc());
+        getAccessibleContext().setAccessibleName(getAccessibleName());
+        getAccessibleContext().setAccessibleDescription(getAccessibleDesc());
         
 		//table = new SortableTable(new SortableTableModel(model));
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -236,43 +238,50 @@ public abstract class BeanTablePanel extends javax.swing.JPanel {
 		rightPanel = new javax.swing.JPanel();
 
 		setLayout(new java.awt.BorderLayout());
-
 		add(jScrollPane1, java.awt.BorderLayout.CENTER);
-
 		southPanel.setLayout(new java.awt.BorderLayout());
 
-		addButton.setText(bundle.getString("LBL_New")); //NOI18N
-                int index = bundle.getString("LBL_New").indexOf('w');  //NOI18N
-                if(index < 0) index = 0;
-                addButton.setDisplayedMnemonicIndex(index);
-		addButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_New"));	// NOI18N
-		addButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_New"));	// NOI18N
+        String buttonText = bundle.getString("LBL_New");
+        int mnemonicIndex = buttonText.indexOf(bundle.getString("MNC_New").charAt(0));
+        if(mnemonicIndex < 0) {
+            mnemonicIndex = 0;
+        }
+        addButton.setText(buttonText); //NOI18N
+        addButton.setDisplayedMnemonicIndex(mnemonicIndex);
+        AccessibleContext accessibleContext = addButton.getAccessibleContext();
+		accessibleContext.setAccessibleName(bundle.getString("ACSN_New"));	// NOI18N
+		accessibleContext.setAccessibleDescription(bundle.getString("ACSD_New"));	// NOI18N
 		buttonPanel.add(addButton);
 
-		editButton.setText(bundle.getString("LBL_Edit")); //NOI18N
-                index = bundle.getString("LBL_Edit").indexOf('e');  //NOI18N
-                if(index < 0) index = 0;
-                editButton.setDisplayedMnemonicIndex(index);
+        buttonText = bundle.getString("LBL_Edit");
+        mnemonicIndex = buttonText.indexOf(bundle.getString("MNC_Edit").charAt(0));
+        if(mnemonicIndex < 0) {
+            mnemonicIndex = 0;
+        }
+        editButton.setText(buttonText); //NOI18N
+        editButton.setDisplayedMnemonicIndex(mnemonicIndex);
 		editButton.setEnabled(false);
-		editButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Edit"));	// NOI18N
-		editButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Edit"));	// NOI18N
+		accessibleContext = editButton.getAccessibleContext();
+		accessibleContext.setAccessibleName(bundle.getString("ACSN_Edit"));	// NOI18N
+		accessibleContext.setAccessibleDescription(bundle.getString("ACSD_Edit"));	// NOI18N
 		buttonPanel.add(editButton);
 
-		removeButton.setText(bundle.getString("LBL_Delete")); //NOI18N
-                index = bundle.getString("LBL_Delete").indexOf('l');  //NOI18N
-                if(index < 0) index = 0;
-                removeButton.setDisplayedMnemonicIndex(index);
+        buttonText = bundle.getString("LBL_Delete");
+        mnemonicIndex = buttonText.indexOf(bundle.getString("MNC_Delete").charAt(0));
+        if(mnemonicIndex < 0) {
+            mnemonicIndex = 0;
+        }
+        removeButton.setText(buttonText); //NOI18N
+        removeButton.setDisplayedMnemonicIndex(mnemonicIndex);
 		removeButton.setEnabled(false);
-		removeButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Delete"));	// NOI18N
-		removeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Delete"));	// NOI18N
+		accessibleContext = removeButton.getAccessibleContext();
+		accessibleContext.setAccessibleName(bundle.getString("ACSN_Delete"));	// NOI18N
+		accessibleContext.setAccessibleDescription(bundle.getString("ACSD_Delete"));	// NOI18N
 		buttonPanel.add(removeButton);
 
 		southPanel.add(buttonPanel, java.awt.BorderLayout.CENTER);
-
 		southPanel.add(rightPanel, java.awt.BorderLayout.EAST);
-
 		add(southPanel, java.awt.BorderLayout.SOUTH);
-
 	}
 
 	private javax.swing.JPanel southPanel;
@@ -304,7 +313,6 @@ public abstract class BeanTablePanel extends javax.swing.JPanel {
 
 	public void setTitle(String title) {
 		javax.swing.JLabel label = new javax.swing.JLabel(title);
-		label.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
 		label.setBorder(new javax.swing.border.EmptyBorder(5,5,5,0));
 		add(label, java.awt.BorderLayout.NORTH);
 	}

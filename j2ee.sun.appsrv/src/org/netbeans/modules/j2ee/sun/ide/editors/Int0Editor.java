@@ -35,10 +35,11 @@ public class Int0Editor extends PropertyEditorSupport implements EnhancedPropert
     }
 
     public String getAsText () {
-        if (curValue==null || curValue.equals("")) // NOI18N
+        if (curValue==null || curValue.equals("")) {// NOI18N
             curValue = prev;
+        }
         if (errorMessage != null) {
-            String title = NbBundle.getMessage(Int0Editor.class, "TTL_Input_Error");
+           // String title = NbBundle.getMessage(Int0Editor.class, "TTL_Input_Error");
             errorMessage = null;
         }
         return curValue;
@@ -53,8 +54,9 @@ public class Int0Editor extends PropertyEditorSupport implements EnhancedPropert
     
     public void setAsText (String string) throws IllegalArgumentException {
         prev = curValue;
-        if((string==null)||(string.equals(""))) // NOI18N
+        if((string==null)||(string.equals(""))) {// NOI18N
            return;
+        }
 
         errorMessage = checkValid(string);
         if (errorMessage == null) {

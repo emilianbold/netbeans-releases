@@ -44,6 +44,8 @@ public interface JdbcConnectionPool {
 	public static final String FAILALLCONNECTIONS = "FailAllConnections";	// NOI18N
 	public static final String DESCRIPTION = "Description";	// NOI18N
 	public static final String PROPERTY = "PropertyElement";	// NOI18N
+        public static final String NONTRANSACTIONALCONNECTIONS = "NonTransactionalConnections";	// NOI18N
+	public static final String ALLOWNONCOMPONENTCALLERS = "AllowNonComponentCallers";	// NOI18N
         
 	public void setName(java.lang.String value);
 
@@ -113,5 +115,14 @@ public interface JdbcConnectionPool {
 	public int addPropertyElement(PropertyElement value);
 	public int removePropertyElement(PropertyElement value);
 	public PropertyElement newPropertyElement();
+        
+        //Resource 1.2
+        public void setNonTransactionalConnections(java.lang.String value);
+
+	public java.lang.String getNonTransactionalConnections();
+        
+        public void setAllowNonComponentCallers(java.lang.String value);
+
+	public java.lang.String getAllowNonComponentCallers();
 
 }

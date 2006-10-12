@@ -173,7 +173,6 @@ public class SetPropertyCustomizer extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SetPropertyCustomizer.class, "ACSD_SetProperty_Class"));
 
         jComboBox1.setEditable(true);
-        jComboBox1.setFont(new java.awt.Font("Dialog", 0, 12));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox1ActionPerformed(evt);
@@ -229,8 +228,7 @@ public class SetPropertyCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jTextField3, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
         setClassName();

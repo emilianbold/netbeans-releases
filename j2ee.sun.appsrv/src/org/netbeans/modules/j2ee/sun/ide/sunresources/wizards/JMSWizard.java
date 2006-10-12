@@ -27,7 +27,6 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 import java.awt.Component;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.io.InputStream;
 
@@ -41,6 +40,7 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -52,7 +52,7 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
     
     /** An array of all wizard panels */
     private WizardDescriptor.Panel panels[];
-    private transient WizardDescriptor wiz;
+//    private transient WizardDescriptor wiz;
     private transient String[] steps;
     private transient int index;
     
@@ -76,7 +76,7 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
     
     private String[] createSteps() {
         return new String[] {
-            __FirstStepChoose,
+            NbBundle.getMessage(JMSWizard.class, __FirstStepChoose),
             NbBundle.getMessage(JMSWizard.class, "LBL_GeneralAttributes_JMS"),   //NOI18N
             NbBundle.getMessage(JMSWizard.class, "LBL_AddProperty") //NOI18N
         };
@@ -86,7 +86,8 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
         try{
             ResourceUtils.saveJMSResourceDatatoXml(this.helper.getData());
         }catch (Exception ex){
-            //System.out.println("Error in instantiate ");
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         return java.util.Collections.EMPTY_SET;
     }
@@ -95,7 +96,7 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
         this.wizardInfo = getWizardInfo();
         this.helper = new ResourceConfigHelperHolder().getJMSHelper();
         
-        this.wiz = wiz;
+        //this.wiz = wiz;
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(JMSWizard.class, "Templates/SunResources/JMS_Resource")); //NOI18N
         index = 0;
         project = Templates.getProject(wiz);
@@ -111,7 +112,8 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
                 this.helper.getData().setTargetFileObject(pkgLocation);
             }
         }catch (Exception ex){
-            //Unable to get project location
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         
         for (int i = 0; i < panels.length; i++) {
@@ -127,7 +129,7 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
     }
     
     public void uninitialize(WizardDescriptor wiz){
-        this.wiz = null;
+        //this.wiz = null;
         panels = null;
     }
     
@@ -136,7 +138,8 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
             InputStream in = Wizard.class.getClassLoader().getResourceAsStream(DATAFILE);
             this.wizardInfo = Wizard.createGraph(in);
         }catch(Exception ex){
-            //System.out.println("Unable to get Wiz Info");
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         return this.wizardInfo;
     }
@@ -154,8 +157,9 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
     }
     
     public synchronized void nextPanel(){
-        if (index + 1 == panels.length)
+        if (index + 1 == panels.length) {
             throw new java.util.NoSuchElementException();
+        }
         
         if (index == 0){
             ((JmsPropertyPanel) panels[1]).refreshFields();
@@ -165,8 +169,9 @@ public class JMSWizard implements WizardDescriptor.InstantiatingIterator, Wizard
     }
     
     public synchronized void previousPanel(){
-        if (index == 0)
+        if (index == 0) {
             throw new java.util.NoSuchElementException();
+        }
         
         index--;
     }

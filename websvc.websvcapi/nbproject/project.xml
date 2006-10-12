@@ -24,11 +24,28 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.java</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10.21</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.dd.webservice</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0.21</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -81,12 +98,17 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.identity.profile.ui</friend>
+                <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbfreeform</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
+                <friend>org.netbeans.modules.j2ee.verification</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.websvc.dev</friend>
+                <friend>com.sun.rave.project.jsfproject</friend>
                 <package>org.netbeans.modules.websvc.api.webservices</package>
                 <package>org.netbeans.modules.websvc.spi.webservices</package>
             </friend-packages>

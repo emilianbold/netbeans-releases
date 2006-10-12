@@ -24,7 +24,6 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.data;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -53,6 +52,7 @@ import javax.swing.JTextField;
 import javax.swing.DefaultComboBoxModel;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableDialogPanelAccessor;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
@@ -162,7 +162,7 @@ public class DynamicPropertyPanel extends JPanel
 		nameRequiredMark.setLabelFor(propertiesCombo);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new Insets(4, 4, 4, 0);
+        gridBagConstraints.insets = new Insets(12, 12, 0, 0);
 		nameRequiredMark.getAccessibleContext().setAccessibleName(localBundle.getString("ACSN_RequiredMark"));	// NOI18N
 		nameRequiredMark.getAccessibleContext().setAccessibleDescription(localBundle.getString("ACSD_RequiredMark"));	// NOI18N
         add(nameRequiredMark, gridBagConstraints);
@@ -172,14 +172,14 @@ public class DynamicPropertyPanel extends JPanel
 		nameLabel.setLabelFor(propertiesCombo);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(12, 6, 0, 0);
         add(nameLabel, gridBagConstraints);
 		
 		propertiesCombo.setEditable(isEditable);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(12, 6, 0, 11);
         gridBagConstraints.weightx = 1.0;
 		propertiesCombo.getAccessibleContext().setAccessibleName(localBundle.getString("ACSN_Name"));	// NOI18N
 		propertiesCombo.getAccessibleContext().setAccessibleDescription(localBundle.getString("ACSD_Name"));	// NOI18N
@@ -191,11 +191,13 @@ public class DynamicPropertyPanel extends JPanel
             }
         });
 		
+        int valueBelow = (hasDescription ? 0 : 11);
+        
         valueRequiredMark.setText(localBundle.getString("LBL_RequiredMark"));	// NOI18N
 		valueRequiredMark.setLabelFor(customEditor);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new Insets(4, 4, 4, 0);
+        gridBagConstraints.insets = new Insets(6, 12, valueBelow, 0);
 		valueRequiredMark.getAccessibleContext().setAccessibleName(localBundle.getString("ACSN_RequiredMark"));	// NOI18N
 		valueRequiredMark.getAccessibleContext().setAccessibleDescription(localBundle.getString("ACSD_RequiredMark"));	// NOI18N
         add(valueRequiredMark, gridBagConstraints);
@@ -205,7 +207,7 @@ public class DynamicPropertyPanel extends JPanel
 		valueLabel.setLabelFor(customEditor);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(6, 6, valueBelow, 0);
         add(valueLabel, gridBagConstraints);
 		
 		int extraHeight = normalizedHeight - textFieldHeight;
@@ -215,7 +217,7 @@ public class DynamicPropertyPanel extends JPanel
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new Insets(extraAbove+4, 4, extraBelow+4, 4);
+        gridBagConstraints.insets = new Insets(extraAbove+6, 6, extraBelow + valueBelow, 11);
         gridBagConstraints.weightx = 1.0;
 		customTextField.getAccessibleContext().setAccessibleName(localBundle.getString("ACSN_Value"));	// NOI18N
 		customTextField.getAccessibleContext().setAccessibleDescription(localBundle.getString("ACSD_Value"));	// NOI18N
@@ -234,7 +236,7 @@ public class DynamicPropertyPanel extends JPanel
 			// required.  But we need it to make the layout look nice.
 			gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-			gridBagConstraints.insets = new Insets(4, 4, 4, 0);
+			gridBagConstraints.insets = new Insets(6, 12, 11, 0);
 			add(descRequiredMark, gridBagConstraints);
 		
 			descLabel.setText(localBundle.getString("LBL_Description_1"));	// NOI18N
@@ -242,13 +244,13 @@ public class DynamicPropertyPanel extends JPanel
 			descLabel.setLabelFor(descriptionField);
 			gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-			gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints.insets = new Insets(6, 6, 11, 0);
 			add(descLabel, gridBagConstraints);
 
 			gridBagConstraints = new GridBagConstraints();
 			gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
 			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-			gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints.insets = new Insets(6, 6, 11, 11);
 			gridBagConstraints.weightx = 1.0;
 			descriptionField.getAccessibleContext().setAccessibleName(localBundle.getString("ACSN_Description"));	// NOI18N
 			descriptionField.getAccessibleContext().setAccessibleDescription(localBundle.getString("ACSD_Description"));	// NOI18N
@@ -299,7 +301,7 @@ public class DynamicPropertyPanel extends JPanel
 
 	private void handleCustomCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {
 		if(customEditor == customCheckBox) {
-			value = interpretCheckboxState(evt) ? TEXT_TRUE : TEXT_FALSE;
+			value = Utils.interpretCheckboxState(evt) ? TEXT_TRUE : TEXT_FALSE;
 			firePropertyChange(Constants.USER_DATA_CHANGED, null, null);
 		}	
 	}
@@ -448,18 +450,6 @@ public class DynamicPropertyPanel extends JPanel
 		}
 	}
 	
-	private boolean interpretCheckboxState(java.awt.event.ItemEvent e) {
-		boolean state = false;
-		
-		if(e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-			state = true;
-		} else if(e.getStateChange() == java.awt.event.ItemEvent.DESELECTED) {
-			state = false;
-		}
-		
-		return state;
-	}
-	
 	private void buildMappings() {
 		List properties = theList.fetchPropertyParamList();
 		paramMappings = new ArrayList(properties.size()+1);
@@ -480,13 +470,14 @@ public class DynamicPropertyPanel extends JPanel
 			int extraHeight = normalizedHeight - newCustomEditor.getPreferredSize().height;
 			int extraBelow = extraHeight/2;
 			int extraAbove = extraHeight-extraBelow;
+            int valueBelow = (hasDescription ? 0 : 11);
 			
 			GridBagConstraints constraints = new GridBagConstraints();
 			constraints.gridwidth = GridBagConstraints.REMAINDER;
 			constraints.fill = GridBagConstraints.HORIZONTAL;
-			constraints.insets = new Insets(extraAbove+4, 4, extraBelow+4, 4);
+			constraints.insets = new Insets(extraAbove+6, 6, extraBelow + valueBelow, 11);
 			constraints.weightx = 1.0;
-
+            
 			// Reset labels
 			valueRequiredMark.setLabelFor(newCustomEditor);
 			valueLabel.setLabelFor(newCustomEditor);	
@@ -568,7 +559,7 @@ public class DynamicPropertyPanel extends JPanel
 	private static final int NUM_FIELDS_NO_DESCRIPTION = 2;		// Number of objects expected in get/setValue methods.
 	private static final int NUM_FIELDS_WITH_DESCRIPTION = 3;	// Number of objects expected in get/setValue methods.
 	
-	public void init(int preferredWidth, List entries, Object data) {
+	public void init(ASDDVersion asVersion, int preferredWidth, List entries, Object data) {
 		theList = (PropertyList) data;
 		hasDescription = theList.getDescription().equals(TEXT_TRUE);
 		isEditable = theList.getEditable().equals(TEXT_TRUE);

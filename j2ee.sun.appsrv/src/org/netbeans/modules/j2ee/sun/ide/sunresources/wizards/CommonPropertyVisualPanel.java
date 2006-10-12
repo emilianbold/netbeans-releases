@@ -203,7 +203,7 @@ public class CommonPropertyVisualPanel extends javax.swing.JPanel implements Wiz
 
     public void tableChanged(TableModelEvent evt) {
         setPropTableCellEditor();
-        this.panel.fireChangeEvent();
+        this.panel.fireChange(evt.getSource());
     }
     
     public void setPropTableCellEditor() {

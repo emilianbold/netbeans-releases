@@ -124,22 +124,24 @@ public class AddInstanceIterator implements WizardDescriptor.InstantiatingIterat
     }
 
     public WizardDescriptor.Panel current() {
-        if (panel == null)
+        if (panel == null) {
             panel = new InstallPanel(tomcatVersion);
-
+        }
         setContentData((JComponent)panel.getComponent());
         setContentSelectedIndex((JComponent)panel.getComponent());
         return panel;
     }
 
     private void setContentData(JComponent component) {
-        if (component.getClientProperty(PROP_CONTENT_DATA) == null)
+        if (component.getClientProperty(PROP_CONTENT_DATA) == null) {
             component.putClientProperty(PROP_CONTENT_DATA, CONTENT_DATA);
+        }
     }
 
     private void setContentSelectedIndex(JComponent component) {
-        if (component.getClientProperty(PROP_CONTENT_SELECTED_INDEX) == null)
+        if (component.getClientProperty(PROP_CONTENT_SELECTED_INDEX) == null) {
             component.putClientProperty(PROP_CONTENT_SELECTED_INDEX, new Integer(0));
+        }
     }
 
     private String getDisplayName() {

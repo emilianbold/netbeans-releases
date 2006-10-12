@@ -23,8 +23,6 @@ import java.io.File;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
 import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.util.TomcatProperties;
-import org.openide.modules.InstalledFileLocator;
 
 /**
  *

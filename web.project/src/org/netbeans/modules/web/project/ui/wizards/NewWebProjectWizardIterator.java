@@ -45,6 +45,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 
@@ -79,25 +80,25 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     public Set instantiate() throws IOException {
         Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
-        String name = (String) wiz.getProperty(WizardProperties.NAME);
         String servInstID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
-        String sourceStructure = (String)wiz.getProperty(WizardProperties.SOURCE_STRUCTURE);
-        String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
-        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         
-        AntProjectHelper h = WebProjectUtilities.createProject(dirF, name, servInstID, sourceStructure, j2eeLevel, contextPath);
-        try {
-            FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
-            FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N
-            assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
-            // Returning FileObject of main class, will be called its preferred action
-            resultSet.add (indexJSPFo);
-        } catch (Exception x) {
-            //PENDING
-        }
+        WebProjectCreateData createData = new WebProjectCreateData();
+        createData.setProjectDir(dirF);
+        createData.setName((String) wiz.getProperty(WizardProperties.NAME));
+        createData.setServerInstanceID(servInstID);
+        createData.setSourceStructure((String)wiz.getProperty(WizardProperties.SOURCE_STRUCTURE));
+        createData.setJavaEEVersion((String) wiz.getProperty(WizardProperties.J2EE_LEVEL));
+        createData.setContextPath((String) wiz.getProperty(WizardProperties.CONTEXT_PATH));
+        createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
+        createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
+        AntProjectHelper h = WebProjectUtilities.createProject(createData);
+        FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
+        FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N
+        assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
+        // Returning FileObject of main class, will be called its preferred action
+        resultSet.add (indexJSPFo);
         
         FileObject dir = FileUtil.toFileObject(dirF);
-        Project p = ProjectManager.getDefault().findProject(dir);
 
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         if(index != null) {
@@ -117,13 +118,6 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
 	//remember last used server
 	FoldersListSettings.getDefault().setLastUsedServer(servInstID);
 	
-        // downgrade the Java platform or src level to 1.4
-        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
-        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
-        if (platformName != null || sourceLevel != null) {
-            WebProjectUtilities.setPlatform(h, platformName, sourceLevel);
-        }
-        
         // save last project location
         dirF = (dirF != null) ? dirF.getParentFile() : null;
         if (dirF != null && dirF.exists()) {
@@ -192,7 +186,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     }
     
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_WizardStepsCount"), new String[] {(new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
+        return MessageFormat.format(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_WizardStepsCount"), new String[] {Integer.toString(index + 1), Integer.toString(panels.length)}); //NOI18N
     }
     
     public boolean hasNext() {

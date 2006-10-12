@@ -36,7 +36,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatFactory55;
 import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.config.Server;
+import org.netbeans.modules.tomcat5.config.gen.Server;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.openide.ErrorManager;

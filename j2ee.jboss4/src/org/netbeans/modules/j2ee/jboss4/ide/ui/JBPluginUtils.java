@@ -55,7 +55,7 @@ public class JBPluginUtils {
         //  String domainListFile = File.separator+"common"+File.separator+"nodemanager"+File.separator+"nodemanager.domains";  // NOI18N
         
         if (isGoodJBServerLocation(new File(serverLocation))){
-            File file = new File(serverLocation + File.separator + "server");  // NOI18N
+           File file = new File(serverLocation + File.separator + "server");  // NOI18N
             
             String[] files = file.list(new FilenameFilter(){
                 public boolean accept(File dir, String name){
@@ -83,6 +83,15 @@ public class JBPluginUtils {
         serverFileColl.add("deploy");               // NOI18N
         serverFileColl.add("lib");    // NOI18N
         serverFileColl.add("conf/jboss-service.xml");      // NOI18N
+        serverFileColl.add("lib/jboss-j2ee.jar");   // NOI18N
+        serverFileColl.add("lib/jboss.jar");   // NOI18N
+        serverFileColl.add("lib/jbosssx.jar");   // NOI18N
+        serverFileColl.add("lib/jboss-transaction.jar");   // NOI18N
+        serverFileColl.add("lib/jmx-adaptor-plugin.jar");   // NOI18N
+        serverFileColl.add("lib/jnpserver.jar");   // NOI18N
+        serverFileColl.add("lib/log4j.jar");   // NOI18N
+        serverFileColl.add("lib/xmlentitymgr.jar");   // NOI18N
+        serverFileColl.add("deploy/jmx-invoker-service.xml");   // NOI18N
     }
     
     public static boolean isGoodJBInstanceLocation(File candidate){
@@ -106,7 +115,7 @@ public class JBPluginUtils {
         fileColl.add("server");    // NOI18N
         fileColl.add("lib/jboss-common.jar"); // NOI18N
         fileColl.add("lib/endorsed/resolver.jar"); // NOI18N
-    }
+    }  
     
     public static boolean isGoodJBServerLocation(File candidate){
         if (null == candidate ||

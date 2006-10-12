@@ -117,7 +117,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     if (config == null){
                         return;
                     }
-                    ManagedBean bean = new ManagedBean();
+                    ManagedBean bean = config.newManagedBean();
                     bean.setManagedBeanName(dialogPanel.getName());
                     bean.setManagedBeanClass(dialogPanel.getBeanClass());
                     bean.setManagedBeanScope(dialogPanel.getScope());
@@ -125,7 +125,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                         bean.setDescription(new String[]{END_LINE + dialogPanel.getDescription() + END_LINE});
                     config.addManagedBean(bean);    
                     
-                    target.setCaretPosition(JSFEditorUtilities.writeBean(doc, bean, "managed-bean"));             //NOI18N
+                    target.setCaretPosition(JSFEditorUtilities.writeBean(doc, (BaseBean) bean, "managed-bean"));             //NOI18N
                 } 
                 catch (java.io.IOException ex) {
                     ErrorManager.getDefault().notify(ex);
@@ -156,12 +156,12 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     if (config == null){
                         return;
                     }
-                    NavigationRule rule = new NavigationRule();
+                    NavigationRule rule = config.newNavigationRule();
                     rule.setDescription(new String[]{END_LINE + dialogPanel.getDescription() + END_LINE});
                     rule.setFromViewId(dialogPanel.getFromView());
                     config.addNavigationRule(rule);
                     
-                    target.setCaretPosition(JSFEditorUtilities.writeBean(doc, rule, "navigation-rule"));    //NOI18N
+                    target.setCaretPosition(JSFEditorUtilities.writeBean(doc, (BaseBean) rule, "navigation-rule"));    //NOI18N
                 } 
                 catch (java.io.IOException ex) {
                     ErrorManager.getDefault().notify(ex);
@@ -195,23 +195,23 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     boolean newRule = false;
                     NavigationRule rule = JSFConfigUtilities.findNavigationRule(config, dialogPanel.getRule());
                     if (rule == null){
-                        rule = new NavigationRule();
+                        rule = config.newNavigationRule();
                         rule.setFromViewId(dialogPanel.getRule());
                         config.addNavigationRule(rule);
                         newRule = true;
                     }
-                    NavigationCase nCase = new NavigationCase();
+                    NavigationCase nCase = rule.newNavigationCase();
                     if(dialogPanel.getFromAction() != null && !dialogPanel.getFromAction().equals(""))      //NOI18N
                         nCase.setFromAction(dialogPanel.getFromAction());
                     if(dialogPanel.getFromOutcome() != null && !dialogPanel.getFromOutcome().equals(""))    //NOI18N
                         nCase.setFromOutcome(dialogPanel.getFromOutcome());
-                    nCase.setRedirect(dialogPanel.isRedirect());
+                    nCase.setRedirected(dialogPanel.isRedirect());
                     nCase.setToViewId(dialogPanel.getToView());
                     if(dialogPanel.getDescription() != null && !dialogPanel.getDescription().equals(""))    //NOI18N
                         nCase.setDescription(new String[]{END_LINE + dialogPanel.getDescription() + END_LINE});
                     rule.addNavigationCase(nCase);
                     if (newRule)
-                        target.setCaretPosition(JSFEditorUtilities.writeBean(doc, rule, "navigation-rule"));    //NOI18N
+                        target.setCaretPosition(JSFEditorUtilities.writeBean(doc, (BaseBean) rule, "navigation-rule"));    //NOI18N
                     else
                         target.setCaretPosition(JSFEditorUtilities.writeCaseIntoRule(doc, rule.getFromViewId(), nCase ));
                 } 

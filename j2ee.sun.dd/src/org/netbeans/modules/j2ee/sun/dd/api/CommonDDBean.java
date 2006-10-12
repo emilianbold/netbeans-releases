@@ -123,8 +123,14 @@ if (lock!=null) {
 
     public void write(java.io.Writer w) throws java.io.IOException, org.netbeans.modules.j2ee.sun.dd.api.DDException;
         
+    /** Clone this bean.
+     */
     public Object clone();
   
+    /** Clone this bean, but as an instance from the model tree of a different version.
+     */
+    public CommonDDBean cloneVersion(String version);
+        
     /**
      * Used to convert an graph to the corresponding XML in String form.
      */

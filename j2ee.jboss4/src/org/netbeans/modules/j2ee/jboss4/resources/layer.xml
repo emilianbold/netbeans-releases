@@ -42,6 +42,9 @@
                     <folder name="EJB">
 			<file name="META-INF\jboss.xml"/>
                     </folder>
+                    <folder name="CAR">
+			<file name="META-INF\jboss-client.xml"/>
+                    </folder>
 		    <folder name="EAR">
 			<file name="META-INF\jboss-app.xml"/>
                     </folder>

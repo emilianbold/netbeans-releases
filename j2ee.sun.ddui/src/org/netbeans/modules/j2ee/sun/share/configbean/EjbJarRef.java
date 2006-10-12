@@ -37,26 +37,33 @@ import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
  */
 public class EjbJarRef extends BaseModuleRef {
 
-	/** -----------------------------------------------------------------------
-	 * Initialization
-	 */
-	
-	/** Creates new EjbJarRef
-	 */
-	public EjbJarRef() {
-	}
+    /** -----------------------------------------------------------------------
+     * Initialization
+     */
 
-        public String getHelpId() {
-            return "AS_CFG_ModuleRef";                                  //NOI18N
-        }
+    /** Creates new EjbJarRef 
+     */
+    public EjbJarRef() {
+    }
 
-	Collection getSnippets() {
-		// FIXME - create & initialize S2B representative here - may be nothing to do
-		return new ArrayList();
-	}
-	
-	boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
-		return false;
-	}
-	
+    public String getHelpId() {
+        return "AS_CFG_ModuleRef";                                  //NOI18N
+    }
+
+    Collection getSnippets() {
+        // FIXME - create & initialize S2B representative here - may be nothing to do
+        return new ArrayList();
+    }
+
+    boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
+        return false;
+    }
+
+    /** Getter for customizer title fragment property
+     * @return String fragment for use in customizer title
+     *
+     */
+    public String getTitleFragment() {
+        return bundle.getString("LBL_EjbTitleFragment"); // NOI18N
+    }
 }

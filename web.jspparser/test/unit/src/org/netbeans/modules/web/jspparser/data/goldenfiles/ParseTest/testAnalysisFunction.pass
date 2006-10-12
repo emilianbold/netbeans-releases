@@ -221,7 +221,7 @@
 <![CDATA[
 <input type="text" name="foo" value="]]>
 </jsp:text>
-<jsp:text jsp:id="20">${param[&apos;foo&apos;]}</jsp:text>
+<jsp:text jsp:id="20">${${param[&apos;foo&apos;]}}</jsp:text>
 <jsp:text
   jsp:id="21"
 >
@@ -354,7 +354,7 @@
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="41">${param[&quot;foo&quot;]}</jsp:text>
+<jsp:text jsp:id="41">${${param[&quot;foo&quot;]}}</jsp:text>
 <jsp:text
   jsp:id="42"
 >
@@ -401,7 +401,7 @@
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="49">${my:reverse(param[&quot;foo&quot;])}</jsp:text>
+<jsp:text jsp:id="49">${${my:reverse(param[&quot;foo&quot;])}}</jsp:text>
 <jsp:text
   jsp:id="50"
 >
@@ -448,7 +448,7 @@
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="57">${my:reverse(my:reverse(param[&quot;foo&quot;]))}</jsp:text>
+<jsp:text jsp:id="57">${${my:reverse(my:reverse(param[&quot;foo&quot;]))}}</jsp:text>
 <jsp:text
   jsp:id="58"
 >
@@ -495,7 +495,7 @@
 <![CDATA[
 <td>]]>
 </jsp:text>
-<jsp:text jsp:id="65">${my:countVowels(param[&quot;foo&quot;])}</jsp:text>
+<jsp:text jsp:id="65">${${my:countVowels(param[&quot;foo&quot;])}}</jsp:text>
 <jsp:text
   jsp:id="66"
 >

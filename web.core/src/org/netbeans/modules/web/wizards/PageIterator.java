@@ -30,8 +30,6 @@ import org.openide.cookies.SaveCookie;
 
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.OpenCookie;
-import org.openide.cookies.EditorCookie;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 
@@ -42,6 +40,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.web.core.Util;
 
 import org.netbeans.modules.web.taglib.TLDDataObject;
 import org.netbeans.modules.web.taglib.model.Taglib;
@@ -80,6 +79,10 @@ public class PageIterator implements TemplateWizard.Iterator {
 	return new PageIterator(FileType.HTML); 
     }
     
+    public static PageIterator createXHtmlIterator() { 
+	return new PageIterator(FileType.XHTML); 
+    }
+    
     private PageIterator(FileType fileType) { 
 	this.fileType = fileType; 
     } 
@@ -96,8 +99,14 @@ public class PageIterator implements TemplateWizard.Iterator {
                 folderPanel
             };
         }
-        else if (fileType.equals(FileType.HTML)) {
-            sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        else if (fileType.equals(FileType.HTML) || fileType.equals(FileType.XHTML)) {
+            SourceGroup[] docRoot = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+            SourceGroup[] srcRoots = Util.getJavaSourceGroups(project);
+            if (docRoot != null && srcRoots != null) {
+                sourceGroups = new SourceGroup[docRoot.length + srcRoots.length];
+                System.arraycopy(docRoot, 0, sourceGroups, 0, docRoot.length);
+                System.arraycopy(srcRoots, 0, sourceGroups, docRoot.length, srcRoots.length);
+            }
             if (sourceGroups==null || sourceGroups.length==0)
                 sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             folderPanel=new TargetChooserPanel(project,sourceGroups,fileType);

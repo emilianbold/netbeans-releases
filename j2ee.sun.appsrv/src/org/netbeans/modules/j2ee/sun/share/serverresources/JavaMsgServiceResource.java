@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
- * JMSResource.java
+ * JavaMsgServiceResource.java
  *
  * Created on November 13, 2003, 3:01 PM
  */
@@ -33,8 +33,10 @@ public class JavaMsgServiceResource extends BaseResource implements java.io.Seri
     private String jndiName;
     private String resType;
     private String isEnabled;
-
-    /** Creates a new instance of JMSResource */
+    private String resAdapter = "jmsra";  //NOI18N
+    private String poolName;  
+    
+    /** Creates a new instance of JavaMsgServiceResource */
     public JavaMsgServiceResource() {
     }
 
@@ -66,6 +68,28 @@ public class JavaMsgServiceResource extends BaseResource implements java.io.Seri
         this.isEnabled = value;
         initPropertyChangeSupport();
         propertySupport.firePropertyChange ("isEnabled", oldValue, isEnabled);//NOI18N
+    }
+
+    public String getResAdapter() {
+        return resAdapter;
+    }
+
+    public void setResAdapter(String value) {
+        String oldValue = resAdapter;
+        this.resAdapter = value;
+        initPropertyChangeSupport();
+        propertySupport.firePropertyChange ("resAdapter", oldValue, isEnabled);//NOI18N
+    }
+
+    public String getPoolName() {
+        return poolName;
+    }
+
+    public void setPoolName(String value) {
+        String oldValue = poolName;
+        this.poolName = value;
+        initPropertyChangeSupport();
+        propertySupport.firePropertyChange ("poolName", oldValue, poolName);//NOI18N
     }
     
 }

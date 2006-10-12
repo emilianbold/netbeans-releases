@@ -2,7 +2,7 @@
 <metaDD>
         <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.SecurityRoleMapping</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_3_0_0.SecurityRoleMapping</import>
 		<dtd-name>sun-application</dtd-name>
 		<bean-name>SunApplication</bean-name>
                 <implements>org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication</implements>
@@ -30,6 +30,7 @@
 		<wrapper-class>String</wrapper-class>
 	</meta-element>
 	<meta-element>
+                <skip-generation/>
 		<dtd-name>security-role-mapping</dtd-name>
 		<bean-name>SecurityRoleMapping</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping</implements>

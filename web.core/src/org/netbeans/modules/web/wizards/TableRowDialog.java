@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 public class TableRowDialog extends javax.swing.JPanel {
 
     private final static boolean debug = false;    
-    private static final Dimension valueSize = new Dimension(300, 50);
 
     // Do we need this to close it?
     private Dialog dialog = null;
@@ -197,7 +196,6 @@ public class TableRowDialog extends javax.swing.JPanel {
 	valueText.setWrapStyleWord(false); 
 	
 	JScrollPane scrollpane = new JScrollPane(valueText);
-	scrollpane.setPreferredSize(valueSize);
 	//scrollpane.setViewportBorder(BorderFactory.createLoweredBevelBorder());
 	this.add(scrollpane, taC); 
 

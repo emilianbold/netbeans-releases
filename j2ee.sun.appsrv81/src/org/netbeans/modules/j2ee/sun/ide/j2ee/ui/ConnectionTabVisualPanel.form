@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="Step_ChooseUserDefinedLocalServer" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -11,13 +11,85 @@
   </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
-    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,-112"/>
   </AuxValues>
 
-  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="msgLabel" alignment="1" pref="446" max="32767" attributes="0"/>
+                  <Component id="enableHttpMonitor" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="syncHttpProxies" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="userNameLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="2"/>
+                          <Component id="userPasswordLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="domainLocLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="domainLabel" alignment="0" max="32767" attributes="1"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="domainField" alignment="0" pref="367" max="32767" attributes="0"/>
+                          <Component id="domainLocField" alignment="1" pref="367" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="socketField" pref="367" max="32767" attributes="1"/>
+                          </Group>
+                          <Component id="passwordField" alignment="0" pref="367" max="32767" attributes="2"/>
+                          <Component id="userNameField" alignment="0" pref="367" max="32767" attributes="1"/>
+                      </Group>
+                  </Group>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" max="-2" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="socketField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="portLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="userNameField" linkSize="2" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="userNameLabel" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="passwordField" linkSize="2" alignment="3" min="-2" pref="14" max="-2" attributes="0"/>
+                  <Component id="userPasswordLabel" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="domainLocLabel" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
+                  <Component id="domainLocField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="domainField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Component id="domainLabel" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="enableHttpMonitor" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="syncHttpProxies" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="msgLabel" pref="36" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
   <SubComponents>
     <Component class="javax.swing.JTextField" name="socketField">
       <Properties>
@@ -32,17 +104,9 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="ACSD_AdminPort" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Events>
-        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="socketFieldKeyReleased"/>
-      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTextField();"/>
       </AuxValues>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="0" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="1" insetsTop="10" insetsLeft="5" insetsBottom="5" insetsRight="3" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="userNameField">
       <Properties>
@@ -59,11 +123,6 @@
       <Events>
         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="userNameFieldKeyReleased"/>
       </Events>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="1" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="1" insetsTop="5" insetsLeft="5" insetsBottom="5" insetsRight="3" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JPasswordField" name="passwordField">
       <Properties>
@@ -80,11 +139,6 @@
       <Events>
         <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="passwordFieldKeyReleased"/>
       </Events>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="1" gridY="2" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="1" insetsTop="0" insetsLeft="5" insetsBottom="5" insetsRight="3" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="domainField">
       <Properties>
@@ -99,14 +153,6 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="ACSD_Domain" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Events>
-        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="domainFieldKeyReleased"/>
-      </Events>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="2" gridY="4" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="1" insetsTop="0" insetsLeft="5" insetsBottom="5" insetsRight="3" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="domainLocField">
       <Properties>
@@ -121,14 +167,6 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="ACSD_InstallRoot" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Events>
-        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="domainLocFieldKeyReleased"/>
-      </Events>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="2" gridY="3" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="1" insetsTop="5" insetsLeft="5" insetsBottom="5" insetsRight="3" anchor="10" weightX="0.2" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="portLabel">
       <Properties>
@@ -150,11 +188,6 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="ASCD_AdminSocket" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="0" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="5" insetsTop="10" insetsLeft="3" insetsBottom="5" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="userNameLabel">
       <Properties>
@@ -176,11 +209,6 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="ACSD_Username" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="5" insetsTop="5" insetsLeft="3" insetsBottom="5" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="userPasswordLabel">
       <Properties>
@@ -202,11 +230,6 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="ACSD_Pw" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="2" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="5" insetsTop="0" insetsLeft="3" insetsBottom="5" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="domainLabel">
       <Properties>
@@ -228,11 +251,6 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="ACSD_Domain" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="4" gridWidth="2" gridHeight="1" fill="2" ipadX="0" ipadY="5" insetsTop="0" insetsLeft="3" insetsBottom="6" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="domainLocLabel">
       <Properties>
@@ -254,11 +272,6 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="ACSD_InstallRoot" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="3" gridWidth="2" gridHeight="1" fill="2" ipadX="0" ipadY="5" insetsTop="5" insetsLeft="3" insetsBottom="5" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="msgLabel">
       <Properties>
@@ -266,11 +279,6 @@
           <Color blue="bf" green="4f" red="59" type="rgb"/>
         </Property>
       </Properties>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="6" gridWidth="0" gridHeight="0" fill="1" ipadX="0" ipadY="0" insetsTop="5" insetsLeft="3" insetsBottom="0" insetsRight="0" anchor="10" weightX="0.0" weightY="0.3"/>
-        </Constraint>
-      </Constraints>
     </Component>
     <Component class="javax.swing.JCheckBox" name="enableHttpMonitor">
       <Properties>
@@ -289,11 +297,16 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="enableHttpMonitorActionPerformed"/>
       </Events>
-      <Constraints>
-        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints gridX="0" gridY="5" gridWidth="0" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="5" insetsLeft="3" insetsBottom="5" insetsRight="0" anchor="18" weightX="0.0" weightY="0.0"/>
-        </Constraint>
-      </Constraints>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="syncHttpProxies">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle.properties" key="LBL_SyncHttpProxy" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="syncHttpProxiesActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

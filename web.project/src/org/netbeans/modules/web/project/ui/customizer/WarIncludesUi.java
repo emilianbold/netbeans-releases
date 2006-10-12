@@ -25,9 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -47,7 +44,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 
 import org.openide.DialogDescriptor;
@@ -62,6 +58,7 @@ import org.openide.util.Utilities;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
@@ -176,7 +173,10 @@ public class WarIncludesUi {
                 };
                 ((JButton)options[0]).setEnabled(false);
                 ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WebClassPathUi.class,"AD_AddLibrary"));
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], includedLibraries);
+
+                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+                String j2eeVersion = wm.getJ2eePlatformVersion();
+                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
                 DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( WebClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
                 Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);

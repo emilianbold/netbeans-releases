@@ -26,6 +26,10 @@
 package org.netbeans.modules.tomcat5.util;
 
 import java.io.*;
+import org.netbeans.modules.tomcat5.config.gen.Engine;
+import org.netbeans.modules.tomcat5.config.gen.Host;
+import org.netbeans.modules.tomcat5.config.gen.Server;
+import org.netbeans.modules.tomcat5.config.gen.Service;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
@@ -33,7 +37,6 @@ import org.openide.loaders.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 
-import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 
 import org.w3c.dom.Document;
@@ -146,7 +149,9 @@ public class TomcatInstallUtil {
         format.setPreserveSpace (true);
         StringWriter sw = new StringWriter();
         org.w3c.dom.Element rootElement = doc.getDocumentElement();
-        if (rootElement==null) return null;
+        if (rootElement==null) {
+            return null;
+        }
         try {
             XMLSerializer ser = new XMLSerializer (sw, format);
             ser.serialize (rootElement);
@@ -180,9 +185,10 @@ public class TomcatInstallUtil {
             else {
                 prefixInd=0;
             }
-            int prefixIndNewDoc=newDoc.indexOf(prefixMark);
-            if (prefixIndNewDoc>0)
+            int prefixIndNewDoc = newDoc.indexOf(prefixMark);
+            if (prefixIndNewDoc > 0) {
                 newDoc=newDoc.substring(prefixIndNewDoc);
+            }
         }
         
         if (origDoc.equals(newDoc)) {
@@ -287,6 +293,8 @@ public class TomcatInstallUtil {
             server.write(serverXml);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (RuntimeException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
     }
     
@@ -317,7 +325,9 @@ public class TomcatInstallUtil {
         throws javax.swing.text.BadLocationException, java.io.IOException {
         org.openide.cookies.EditorCookie editor = (EditorCookie)dobj.getCookie(EditorCookie.class);
         javax.swing.text.Document textDoc = editor.getDocument();
-        if (textDoc==null) textDoc = editor.openDocument();
+        if (textDoc == null) {
+            textDoc = editor.openDocument();
+        }
         TomcatInstallUtil.updateDocument(textDoc,TomcatInstallUtil.getDocumentText(doc),"<Server"); //NOI18N
         SaveCookie savec = (SaveCookie) dobj.getCookie(SaveCookie.class);
         if (savec!=null) savec.save();

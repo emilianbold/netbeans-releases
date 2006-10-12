@@ -9,6 +9,7 @@
             <tocitem text="Sun Java System Application Server Tasks: Quick Reference"  target="sjs_quickref"/>
             <tocitem text="Registering a Sun Java System Application Server Instance"  target="register_appserver"/>
 	    <tocitem text="Viewing the Sun Java System Application Server in the IDE"  target="viewing_appserver"/>
+            <tocitem text="Viewing the Sun Java System Application Server Log File"  target="viewing_logfile"/>
             <tocitem text="Accessing the Sun Java System Application Server Admin Console"  target="adminconsole"/>
             <tocitem text="Modifying JVM Properties of the Sun Java System Application Server"  target="sjs_jvm"/>
             <tocitem text="Setting up a Connection Pool on the Sun Java System Application Server"  target="def_connpool"/>
@@ -18,14 +19,14 @@
             <tocitem text="Setting up a JavaMail Resource on the Sun Java System Application Server"  target="def_javamail"/>
             <tocitem text="Setting up a Persistence Manager Resource on the Sun Java System Application Server"  target="def_persistence"/>
             <tocitem text="Registering a Resource with the Sun Java System Application Server"  target="register_resource"/>
+            <tocitem text="Managing Users for the Sun Java System Application Server"  target="sjs_manageuser"/>
+            <tocitem text="Configuring Security Roles for the Sun Java System Application Server"  target="sjs_security"/>
         </tocitem>
     </tocitem>
 </tocitem>
 <tocitem text="Enterprise Applications" >
     <tocitem text="Developing Enterprise Beans" >
-        <tocitem text="CMP Mapping for Entity Beans" >
-            <tocitem text="About CMP Mappings" target="about_cmp" />
-            <tocitem text="CMP Mapping: Quick Reference" target="cmp_quickref" />
+        <tocitem text="Developing EJB 2.1 Entity Beans" >
             <tocitem text="Configuring CMP Mappings" target="map_bean_to_db" />
             <tocitem text="Generating Database Tables at Deployment" target="gen_tables" />
             <tocitem text="Specifying Primary and Secondary Tables" target="prim_sec_tables" />

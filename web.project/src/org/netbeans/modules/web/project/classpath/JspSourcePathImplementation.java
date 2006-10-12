@@ -159,7 +159,7 @@ final class JspSourcePathImplementation implements ClassPathImplementation, Prop
 
         private String getOldFileName(FileRenameEvent fe) {
             String result = fe.getName();
-            if (fe.getExt() != "") { // NOI18N
+            if (!(fe.getExt()).equals("")) { // NOI18N
                 result = result + "." + fe.getExt(); // NOI18N
             }
             return result;

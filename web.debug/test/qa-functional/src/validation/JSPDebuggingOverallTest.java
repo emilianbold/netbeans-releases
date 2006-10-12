@@ -26,10 +26,8 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.QuestionDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.AttachDialogOperator;
@@ -277,15 +275,10 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
      * - start to debug main project from main menu
      * - wait until debugger stops at previously set breakpoint
      * - try to start debugger again
-     * - cancel dialog with warning message
-     * - try to start debugger again
-     * - click OK in dialog with warning message
-     * - wait until debugger stops at breakpoint
+     * - wait until message informing that server is in suspended state appears
      * - try to run project
-     * - cancel dialog with warning message
-     * - try to run project again
-     * - click OK in dialog with warning message
-     * - wait until target run finishes
+     * - wait until message informing that server is in suspended state appears
+     * - finish debugger
      * - wait for page in browser and close it
      */
     public void testStartAnotherSession() {
@@ -296,32 +289,21 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         int line = eo.getLineNumber();
         stt.waitText("index.jsp:"+line);
-        stt.clear();
         
-        ActionNoBlock debugNoBlockAction = new ActionNoBlock(new DebugProjectAction().getMenuPath(), null);
-        debugNoBlockAction.perform();
-        new QuestionDialogOperator().cancel();
-        debugNoBlockAction.perform();
-        new QuestionDialogOperator().ok();
-        
-        stt.waitText("index.jsp:"+line); // NOI18N
-        
+        new DebugProjectAction().perform();
+        OutputTabOperator outputOper = new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME);
+        // "Cannot perform required operation, since the server is currently in suspended state and thus cannot handle any requests."
+        String suspendedMessage = Bundle.getString("org.netbeans.modules.j2ee.deployment.impl.Bundle", "MSG_ServerSuspended");
+        outputOper.waitText(suspendedMessage);
+        outputOper.close();
+
         String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
-        ActionNoBlock runProjectNoBlockAction = new ActionNoBlock(null, runProjectItem);
-        runProjectNoBlockAction.perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
-        new QuestionDialogOperator().cancel();
-        runProjectNoBlockAction.perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
-        new QuestionDialogOperator().ok();
-        
-        // "SampleWebProject (run)"
-        String outputTarget = Bundle.getString(
-                "org.apache.tools.ant.module.run.Bundle", "TITLE_output_target", 
-                new Object[] {SAMPLE_WEB_PROJECT_NAME, null, "run"});  // NOI18N
-        // "Finished building SampleWebProject (run)"
-        String finishedMessage = Bundle.getString(
-                "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status", 
-                new Object[] {outputTarget});
-        stt.waitText(finishedMessage);
+        Action runProjectAction = new Action(null, runProjectItem);
+        runProjectAction.perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
+        outputOper = new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME);
+        outputOper.waitText(suspendedMessage);
+        outputOper.close();
+        Utils.finishDebugger();
         new TopComponentOperator("Test JSP Page").close(); // NOI18N
     }
     

@@ -101,9 +101,9 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         jLabelAddContent = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTableAddContent = new javax.swing.JTable();
-        jButtonAddJar = new javax.swing.JButton();
-        jButtonAddLib = new javax.swing.JButton();
         jButtonAddProject = new javax.swing.JButton();
+        jButtonAddLib = new javax.swing.JButton();
+        jButtonAddJar = new javax.swing.JButton();
         jButtonRemove = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
@@ -165,7 +165,7 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
 
         jCheckBoxCompress.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_Commpres_LabelMnemonic").charAt(0));
         jCheckBoxCompress.setText(org.openide.util.NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_Commpres_JCheckBox"));
-        jCheckBoxCompress.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jCheckBoxCompress.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBoxCompress.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -179,7 +179,7 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         jCheckBoxCreateWAR.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_CreateWAR_LabelMnemonic").charAt(0));
         jCheckBoxCreateWAR.setSelected(true);
         jCheckBoxCreateWAR.setText(org.openide.util.NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_CreateWAR_JCheckBox"));
-        jCheckBoxCreateWAR.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jCheckBoxCreateWAR.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBoxCreateWAR.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -222,16 +222,16 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
         add(jScrollPane2, gridBagConstraints);
 
-        jButtonAddJar.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddJar_LabelMnemonic").charAt(0));
-        jButtonAddJar.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddJar_JButton"));
+        jButtonAddProject.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddProject_LabelMnemonic").charAt(0));
+        jButtonAddProject.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddProject_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jButtonAddJar, gridBagConstraints);
-        jButtonAddJar.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddJar_A11YDesc"));
+        add(jButtonAddProject, gridBagConstraints);
+        jButtonAddProject.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddProject_A11YDesc"));
 
         jButtonAddLib.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddLib_LabelMnemonic").charAt(0));
         jButtonAddLib.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddLib_JButton"));
@@ -244,16 +244,16 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         add(jButtonAddLib, gridBagConstraints);
         jButtonAddLib.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddLib_A11YDesc"));
 
-        jButtonAddProject.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddProject_LabelMnemonic").charAt(0));
-        jButtonAddProject.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddProject_JButton"));
+        jButtonAddJar.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddJar_LabelMnemonic").charAt(0));
+        jButtonAddJar.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddJar_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jButtonAddProject, gridBagConstraints);
-        jButtonAddProject.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddProject_A11YDesc"));
+        add(jButtonAddJar, gridBagConstraints);
+        jButtonAddJar.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddJar_A11YDesc"));
 
         jButtonRemove.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AdditionalRemove_LabelMnemonic").charAt(0));
         jButtonRemove.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_Remove_JButton"));
@@ -267,8 +267,7 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         add(jButtonRemove, gridBagConstraints);
         jButtonRemove.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AdditionalRemove_A11YDesc"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel excludeMessage;

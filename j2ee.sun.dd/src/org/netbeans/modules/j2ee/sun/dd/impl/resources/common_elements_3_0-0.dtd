@@ -2,9 +2,20 @@
 <!ELEMENT dummy #PCDATA>
 
 <!--
+For mapping security roles.  class-name attribute is new in AS 9.0
+-->
+<!ELEMENT security-role-mapping (role-name, (principal-name | group-name)+)>
+<!ELEMENT role-name (#PCDATA)>
+
+<!ELEMENT principal-name (#PCDATA)>
+<!ATTLIST principal-name class-name CDATA #IMPLIED>
+<!ELEMENT group-name (#PCDATA)>
+
+<!--
 Information about a web service endpoint.
 -->
-<!ELEMENT webservice-endpoint ( port-component-name, endpoint-address-uri?, (login-config | message-security-binding)?, transport-guarantee?, service-qname?, tie-class?, servlet-impl-class?, debugging-enabled?, property* )>
+<!ELEMENT webservice-endpoint ( port-component-name, endpoint-address-uri?, (login-config | message-security-binding)?, 
+        transport-guarantee?, service-qname?, tie-class?, servlet-impl-class?, debugging-enabled?)>
 
 <!--
 Unique name of a port component within a module
@@ -50,7 +61,13 @@ Optional authentication configuration for an EJB web service endpoint.
 Not needed for servet web service endpoints.  Their security configuration
 is contained in the standard web application descriptor.
 -->
-<!ELEMENT login-config ( auth-method )>
+<!ELEMENT login-config ( auth-method, realm? )>
+
+<!--
+realm element describes the realm in which the user is authenticated. Must be 
+a valid realm that is registered in server configuration.
+-->  
+<!ELEMENT realm ( #PCDATA )> 
 
 <!--
 Name of application-written servlet impl class contained in deployed war.
@@ -303,12 +320,3 @@ specify a message-destination-link to a logical message-destination.
 name of a message-destination reference.
 -->
 <!ELEMENT message-destination-ref-name (#PCDATA)>
-
-<!-- 
-Syntax for supplying properties as name value pairs 
--->
-<!ELEMENT property (description?)>
-<!ATTLIST property name  CDATA  #REQUIRED
-                   value CDATA  #REQUIRED>
-
-<!ELEMENT description (#PCDATA)>

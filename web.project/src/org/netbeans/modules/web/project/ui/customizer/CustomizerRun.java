@@ -19,20 +19,14 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.*;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.WizardValidationException;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
-import org.netbeans.modules.web.project.Utils;
 
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
@@ -47,11 +41,20 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jTextFieldContextPath.setEnabled(wm.getDeploymentDescriptor() != null);             
 
         jTextFieldJ2EE.setDocument( uiProperties.J2EE_PLATFORM_MODEL );
+        jTextFieldJ2EE.setVisible(false);
         jTextFieldContextPath.setDocument( uiProperties.CONTEXT_PATH_MODEL );
         jTextFieldRelativeURL.setDocument( uiProperties.LAUNCH_URL_RELATIVE_MODEL );
         uiProperties.DISPLAY_BROWSER_MODEL.setMnemonic( jCheckBoxDisplayBrowser.getMnemonic() );
         jCheckBoxDisplayBrowser.setModel( uiProperties.DISPLAY_BROWSER_MODEL ); 
         jComboBoxServer.setModel( uiProperties.J2EE_SERVER_INSTANCE_MODEL );
+        
+        String j2eeVersion = jTextFieldJ2EE.getText().trim();
+        if (j2eeVersion.equalsIgnoreCase(WebModule.J2EE_13_LEVEL))
+            jTextFieldJ2EE_Display.setText(NbBundle.getMessage(CustomizerRun.class, "J2EESpecLevel_13")); //NOI18N;
+        else if (j2eeVersion.equalsIgnoreCase(WebModule.J2EE_14_LEVEL))
+            jTextFieldJ2EE_Display.setText(NbBundle.getMessage(CustomizerRun.class, "J2EESpecLevel_14")); //NOI18N;
+        else if (j2eeVersion.equalsIgnoreCase(WebModule.JAVA_EE_5_LEVEL))
+            jTextFieldJ2EE_Display.setText(NbBundle.getMessage(CustomizerRun.class, "JavaEESpecLevel_50")); //NOI18N;
     }
 
     /** This method is called from within the constructor to
@@ -67,6 +70,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jComboBoxServer = new javax.swing.JComboBox();
         jLabelJ2EE = new javax.swing.JLabel();
         jTextFieldJ2EE = new javax.swing.JTextField();
+        jTextFieldJ2EE_Display = new javax.swing.JTextField();
         jLabelContextPath = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
         jCheckBoxDisplayBrowser = new javax.swing.JCheckBox();
@@ -114,6 +118,15 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jTextFieldJ2EE, gridBagConstraints);
+
+        jTextFieldJ2EE_Display.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(jTextFieldJ2EE_Display, gridBagConstraints);
 
         jLabelContextPath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_ContextPath_LabelMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
@@ -211,8 +224,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         add(errorLabel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
         checkContextPath();
@@ -238,6 +250,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel jLabelURLExample;
     private javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JTextField jTextFieldJ2EE;
+    private javax.swing.JTextField jTextFieldJ2EE_Display;
     private javax.swing.JTextField jTextFieldRelativeURL;
     // End of variables declaration//GEN-END:variables
 
@@ -259,16 +272,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         String message = null;
         if (contextPath.length() > 0) {
             if (!contextPath.startsWith("/")) {
-                message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_DOES_NOT_START_WITH_SLASH");
+                message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_DOES_NOT_START_WITH_SLASH"); //NOI18N
             } else if (contextPath.indexOf("//") >= 0) {
-                message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_CONTAINS_DOUBLE_SLASH");
-                message = "Context path should not contain \"//\"";
+                message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_CONTAINS_DOUBLE_SLASH"); //NOI18N
             } else if (contextPath.endsWith("/")) {
-                message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_ENDS_WITH_SLASH");
-                message = "Context path should not end with \"/\"";
+                message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_ENDS_WITH_SLASH"); //NOI18N
             }
         }
         return message;
     }
-
 }

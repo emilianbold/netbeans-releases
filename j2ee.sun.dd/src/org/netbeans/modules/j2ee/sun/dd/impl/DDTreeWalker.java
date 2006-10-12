@@ -1,4 +1,22 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+/*
  * File:           DDTreeWalker.java
  * Date:           August 2, 2005  10:33 AM
  *
@@ -10,6 +28,7 @@ package org.netbeans.modules.j2ee.sun.dd.impl;
 import org.netbeans.modules.j2ee.sun.dd.impl.transform.*;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
+import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 
 import java.util.Vector;
 import java.util.Arrays;
@@ -92,6 +111,27 @@ public class DDTreeWalker {
         }
     }
     
+    public void downgradeSunClientDocument(){
+        this.transInfo = getTransformInfo();
+        if(transInfo != null) {
+            Vector modElementsList = new Vector();
+            Xmltype type = null;
+            if(currentVersion.equals(SunApplicationClient.VERSION_5_0_0)){
+                type = getXmlType(transInfo, "sunClient41");
+                modElementsList = updateModElementsList(modElementsList, type);
+            }
+            if(this.downgradeVersion.equals(SunApplicationClient.VERSION_1_4_0) || this.downgradeVersion.equals(SunApplicationClient.VERSION_1_3_0)){
+                type = getXmlType(transInfo, "sunClient40");
+                modElementsList = updateModElementsList(modElementsList, type);
+            }
+            if(this.downgradeVersion.equals(SunApplicationClient.VERSION_1_3_0)){
+                type = getXmlType(transInfo, "sunClient30");
+                modElementsList = updateModElementsList(modElementsList, type);
+            }
+            processDocument(modElementsList);
+        }
+    }
+    
     private Vector updateModElementsList(Vector modElementsList, Xmltype type){
         if(type != null){
             ModElement[] elementsList = type.getModElement();
@@ -104,43 +144,7 @@ public class DDTreeWalker {
         Element element = document.getDocumentElement();
         visitElement(element, elements);
     }
-    /*void createXML(){
-        try{
-            Transform trans = Transform.createGraph();
-            Xmltypee sunWebApp40 = trans.newType();
-            sunWebApp40.setName("sunWebApp40");
-            org.netbeans.modules.j2ee.sun.dd.impl.transform.Element sunwebapp = sunWebApp40.newElement();
-            sunwebapp.setName("sun-web-app");
-            org.netbeans.modules.j2ee.sun.dd.impl.transform.Attribute errUrl = sunwebapp.newAttribute();
-            errUrl.setName("error-url");
-            org.netbeans.modules.j2ee.sun.dd.impl.transform.SubElement idempotent = sunwebapp.newSubElement();
-            idempotent.setName("idempotent-url-pattern");
-            org.netbeans.modules.j2ee.sun.dd.impl.transform.SubElement parameter = sunwebapp.newSubElement();
-            parameter.setName("parameter-encoding");
-            sunwebapp.addSubElement(idempotent);
-            sunwebapp.addSubElement(parameter);
-            sunwebapp.addAttribute(errUrl);
-            sunWebApp40.addElement(sunwebapp);
-            
-            org.netbeans.modules.j2ee.sun.dd.impl.transform.Element classloader = sunWebApp40.newElement();
-            classloader.setName("class-loader");
-            sunWebApp40.addElement(classloader);
-            trans.addType(sunWebApp40);
-            
-            org.netbeans.modules.j2ee.sun.dd.impl.transform.Type sunWebApp41 = trans.newType();
-            sunWebApp41.setName("sunWebApp41");
-            trans.addType(sunWebApp41);
-            
-            System.out.println("sunWebApp40.dumpXml()");
-            sunWebApp40.dumpXml();
-            System.out.println(sunWebApp40.toString());
-            java.io.File f = new java.io.File("C://test.xml");
-            sunWebApp40.write(f);
-            
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }
-    }*/
+    
     private void visitElement(Element element, Vector elements) {
         walkElement(element, elements);
         NodeList nodes = element.getChildNodes();

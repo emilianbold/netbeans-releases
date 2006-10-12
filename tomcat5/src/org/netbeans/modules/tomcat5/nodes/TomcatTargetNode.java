@@ -19,12 +19,12 @@
 
 package org.netbeans.modules.tomcat5.nodes;
 import java.awt.Image;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.openide.nodes.*;
 import org.openide.util.Lookup;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesCookie;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -43,21 +43,18 @@ public class TomcatTargetNode extends AbstractNode {
  
     public class WebModuleHolderNode extends AbstractNode {
         
-        private Node iconDelegate;
-        
         public WebModuleHolderNode (Lookup lookup){
             super(new TomcatWebModuleChildren(lookup));
             setDisplayName(NbBundle.getMessage(TomcatTargetNode.class, "LBL_WebApps"));  // NOI18N
             getCookieSet().add(new RefreshWebModuleChildren ((TomcatWebModuleChildren)getChildren()));
-            iconDelegate = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
         }
         
         public Image getIcon(int type) {
-            return iconDelegate.getIcon(type);
-        }        
+            return UISupport.getIcon(ServerIcon.WAR_FOLDER);
+        }
 
         public Image getOpenedIcon(int type) {
-            return iconDelegate.getOpenedIcon(type);
+            return UISupport.getIcon(ServerIcon.WAR_OPENED_FOLDER);
         }
         
         public javax.swing.Action[] getActions(boolean context) {

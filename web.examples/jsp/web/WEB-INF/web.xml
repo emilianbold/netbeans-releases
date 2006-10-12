@@ -153,6 +153,10 @@
 	    <include-prelude>/jsp2/misc/prelude.jspf</include-prelude>
 	    <include-coda>/jsp2/misc/coda.jspf</include-coda>
 	</jsp-property-group>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <page-encoding>UTF-8</page-encoding>
+        </jsp-property-group>
     </jsp-config>
     
    <security-constraint>

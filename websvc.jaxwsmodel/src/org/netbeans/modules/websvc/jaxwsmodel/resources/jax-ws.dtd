@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT jax-ws (services,clients, jsr109?)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT services (service)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT service (implementation-class, wsdl-url?, local-wsdl-file?, service-name?, port-name?, package-name?, catalog-file?, (binding)*, handler-binding-file?)>
+<!ATTLIST service
+    name CDATA #REQUIRED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT implementation-class (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT wsdl-url (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT local-wsdl-file (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT package-name (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT port-name (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT binding (file-name, original-file-url)>
+<!ELEMENT file-name (#PCDATA)>
+<!ELEMENT original-file-url (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT handler-binding-file (#PCDATA)>
+
+<!ELEMENT jsr109 (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT clients (client)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT client (wsdl-url,local-wsdl-file,package-name?,catalog-file?,(binding)*, handler-binding-file?)>
+<!ATTLIST client
+    name CDATA #REQUIRED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT catalog-file (#PCDATA)>
+
+<!ATTLIST package-name
+    forceReplace (true) #IMPLIED
+  >

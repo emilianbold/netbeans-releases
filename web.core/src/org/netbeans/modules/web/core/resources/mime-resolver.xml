@@ -44,28 +44,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <file>
         <ext name="tld"/>
-        <resolver mime="text/x-tld1.2">
+        <resolver mime="text/x-tld">
             <xml-rule>
-            	<doctype public-id="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN"/>
+                <element name="taglib"/>
             </xml-rule>
         </resolver>
     </file>
-    <file>
-        <ext name="tld"/>
-        <resolver mime="text/x-tld1.1">
-            <xml-rule>
-            	<doctype public-id="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN"/>
-            </xml-rule>
-        </resolver>
-    </file>
-    <file>
-        <ext name="tld"/>
-        <resolver mime="text/x-tld2.0">
-            <xml-rule>
-            	<element name="taglib" ns="http://java.sun.com/xml/ns/j2ee">
-                    <attr name="version" text="2.0"/>
-                </element>
-            </xml-rule>
-        </resolver>
-    </file>  
+    
 </MIME-resolver>

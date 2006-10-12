@@ -23,7 +23,8 @@ This node holds all the runtime bindings of a resource reference.
 <!--
 Information about a web service endpoint.
 -->
-<!ELEMENT webservice-endpoint ( port-component-name, endpoint-address-uri?, (login-config | message-security-binding)?, transport-guarantee?, service-qname?, tie-class?, servlet-impl-class? )>
+<!ELEMENT webservice-endpoint ( port-component-name, endpoint-address-uri?, (login-config | message-security-binding)?, 
+        transport-guarantee?, service-qname?, tie-class?, servlet-impl-class? )>
 
 <!--
 Optional authentication configuration for an EJB web service endpoint.
@@ -73,6 +74,12 @@ more than one port-info entry within the same service-ref.
 If a particular service-endpoint-interface is using container-managed port
 selection, it must not appear in more than one port-info entry
 within the same service-ref.
+
+The optional message-security-binding element is used to customize the
+port to provider binding; either by binding the port to a specific provider
+or by providing a definition of the message security requirements to be
+enforced by the provider.
+
 -->
 <!ELEMENT port-info ( service-endpoint-interface?, wsdl-port?, stub-property*, call-property*, message-security-binding? )>
 

@@ -60,26 +60,30 @@ public class CharsetDisplayPreferenceEditor extends LogLevelEditor{
             throw new IllegalArgumentException();
         else
             intVal = java.util.Arrays.binarySearch(choices,string); 
-        if (intVal < 0) 
+        if (intVal < 0) {
             intVal = 1;
-        if (intVal > 2)
+        }
+        if (intVal > 2){
             intVal = 1;
+        }
         String valS = String.valueOf(intVal);
         val = Integer.valueOf(valS);
         this.firePropertyChange();
     }
     
     public void setValue(Object val) {
-        if (val==null)
+        if (val==null){
             val=DEFAULT_PREF_VAL;
+        }
         if (! (val instanceof Integer)) {
             throw new IllegalArgumentException();
         }
         
         this.val = (Integer) val;
         int ival = this.val.intValue();
-        if (ival < 0 || ival > 2)
+        if (ival < 0 || ival > 2){
             this.val = DEFAULT_PREF_VAL;
+        }
 //        super.setValue(this.val);
     }
     

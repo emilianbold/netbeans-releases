@@ -234,23 +234,13 @@ class WebActionProvider implements ActionProvider {
                     return null;
                 }
                 if (isDebugged()) {
-                    files = ActionUtils.findSelectedFiles(context, null, null, false);
-                    String text = (files == null) ? "?" : files[0].getNameExt(); // NOI18N
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                                NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning", text),
-                                NotifyDescriptor.OK_CANCEL_OPTION);
-                    Object o = DialogDisplayer.getDefault().notify(nd);
-                    if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                        DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                    } else {
-                        return null;
-                    }
+                    p.setProperty("is.debugged", "true");
                 }
                 // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
                 if (isEjbRefAndNoJ2eeApp(project)) {
                     NotifyDescriptor nd;                
                     nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    DialogDisplayer.getDefault().notify(nd);
                     return null;
                 }
                 if (command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
@@ -349,28 +339,13 @@ class WebActionProvider implements ActionProvider {
                     return null;
                 }
                 if (isDebugged()) {
-                    ProjectInformation pi = ProjectUtils.getInformation(project);
-                    String text = pi.getDisplayName();
-                    String msgKey = "";
-                    if (command.equals(COMMAND_RUN))
-                        msgKey = "MSG_SessionRunning";
-                    else //if (command.equals(COMMAND_REDEPLOY))
-                        msgKey = "MSG_CantDeployWhenSessionRunning";
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                                NbBundle.getMessage(WebActionProvider.class, msgKey, text),
-                                NotifyDescriptor.OK_CANCEL_OPTION);
-                    Object o = DialogDisplayer.getDefault().notify(nd);
-                    if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                        DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                    } else {
-                        return null;
-                    }
+                    p.setProperty("is.debugged", "true");
                 }
                 // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
                 if (isEjbRefAndNoJ2eeApp(project)) {
                     NotifyDescriptor nd;                
                     nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    DialogDisplayer.getDefault().notify(nd);
                     return null;
                 }
                 if (command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
@@ -390,22 +365,13 @@ class WebActionProvider implements ActionProvider {
                     return null;
                 }
                 if (isDebugged()) {
-                    NotifyDescriptor nd;
-                    nd = new NotifyDescriptor.Confirmation(
-                                NbBundle.getMessage(WebActionProvider.class, "MSG_FinishSession"),
-                                NotifyDescriptor.OK_CANCEL_OPTION);
-                    Object o = DialogDisplayer.getDefault().notify(nd);
-                    if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                        DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                    } else {
-                        return null;
-                    }
+                    p.setProperty("is.debugged", "true");
                 }
                 // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
                 if (isEjbRefAndNoJ2eeApp(project)) {
                     NotifyDescriptor nd;                
                     nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    DialogDisplayer.getDefault().notify(nd);
                     return null;
                 }
 
@@ -497,22 +463,13 @@ class WebActionProvider implements ActionProvider {
                 return null;
             }
             if (isDebugged()) {
-                NotifyDescriptor nd;
-                nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(WebActionProvider.class, "MSG_FinishSession"),
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
-                    return null;
-                }
+                p.setProperty("is.debugged", "true");
             }
             // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
             if (isEjbRefAndNoJ2eeApp(project)) {
                 NotifyDescriptor nd;                
                 nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                Object o = DialogDisplayer.getDefault().notify(nd);
+                DialogDisplayer.getDefault().notify(nd);
                 return null;
             }
             
@@ -560,12 +517,9 @@ class WebActionProvider implements ActionProvider {
                                 if (dcp != null) {
                                     String[] pathTokens = PropertyUtils.tokenizePath(dcp);
                                     for (int i = 0; i < pathTokens.length; i++) {
-                                        try {
-                                            File f = new File(pathTokens[i]);
-                                            if (!f.isAbsolute()) 
-                                                pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
-                                        }
-                                        catch (Exception e) {/*no action should be taken*/}
+                                        File f = new File(pathTokens[i]);
+                                        if (!f.isAbsolute()) 
+                                            pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
                                         clientDCP.append(pathTokens[i] + ":");
                                     }
                                 }
@@ -574,12 +528,9 @@ class WebActionProvider implements ActionProvider {
                                 if (wdd != null) {
                                     String[] pathTokens = PropertyUtils.tokenizePath(wdd);
                                     for (int i = 0; i < pathTokens.length; i++) {
-                                        try {
-                                            File f = new File(pathTokens[i]);
-                                            if (!f.isAbsolute()) 
-                                                pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
-                                        }
-                                        catch (Exception e) {/*no action should be taken*/}
+                                        File f = new File(pathTokens[i]);
+                                        if (!f.isAbsolute()) 
+                                            pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
                                         clientWDD.append(pathTokens[i] + ":");
                                     }
                                 }
@@ -718,12 +669,10 @@ class WebActionProvider implements ActionProvider {
                     String filename = (String)includes.get(i);
                     filename = FileUtil.toFile(wm.getDocumentBase()).getPath() + filename;
                     File f = new File(filename);
-                    if (f != null) {
-                        long incTS = f.lastModified();
-                        if (incTS > jspTS) {
-                            modified = true;
-                            break;
-                        }
+                    long incTS = f.lastModified();
+                    if (incTS > jspTS) {
+                        modified = true;
+                        break;
                     }
                 }
             }
@@ -1021,14 +970,16 @@ class WebActionProvider implements ActionProvider {
             try {
                 FileObject webXmlFo = wmod.getDeploymentDescriptor();
                 if (webXmlFo==null) return false;
-                webXml = DDProvider.getDefault().getDDRoot(webXmlFo);
+                webXml = DDProvider.getDefault().getMergedDDRoot(webXmlFo);
             } catch (IOException ioe) {
                 // ignore
             }
-            EjbLocalRef[] ejbLocalRefs = webXml.getEjbLocalRef();
-            if ((ejbLocalRefs != null) && (ejbLocalRefs.length > 0)) { // there's an ejb reference in this module                
-                if (!isInJ2eeApp(p)) {
-                    return true;
+            if (webXml != null) {
+                EjbLocalRef[] ejbLocalRefs = webXml.getEjbLocalRef();
+                if ((ejbLocalRefs != null) && (ejbLocalRefs.length > 0)) { // there's an ejb reference in this module                
+                    if (!isInJ2eeApp(p)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -1073,23 +1024,25 @@ class WebActionProvider implements ActionProvider {
                 return false;
         }
         
-        for (int i=0; i < sessions.length; i++) {
-            Session s = sessions[i];
-            if (s != null) {
-                Object o = s.lookupFirst(null, AttachingDICookie.class);
-                if (o != null) {
-                    AttachingDICookie attCookie = (AttachingDICookie)o;
-                    if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                        String shmem = attCookie.getSharedMemoryName();
-                        if (shmem == null) continue;
-                        if (shmem.equalsIgnoreCase(sdi.getShmemName()))
-                            return true;
-                    } else {
-                        String hostname = attCookie.getHostName();
-                        if (hostname == null) continue;
-                        if (hostname.equalsIgnoreCase(sdi.getHost()))
-                            if (attCookie.getPortNumber() == sdi.getPort())
+        if (sessions != null) {
+            for (int i=0; i < sessions.length; i++) {
+                Session s = sessions[i];
+                if (s != null) {
+                    Object o = s.lookupFirst(null, AttachingDICookie.class);
+                    if (o != null) {
+                        AttachingDICookie attCookie = (AttachingDICookie)o;
+                        if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                            String shmem = attCookie.getSharedMemoryName();
+                            if (shmem == null) continue;
+                            if (shmem.equalsIgnoreCase(sdi.getShmemName()))
                                 return true;
+                        } else {
+                            String hostname = attCookie.getHostName();
+                            if (hostname == null) continue;
+                            if (hostname.equalsIgnoreCase(sdi.getHost()))
+                                if (attCookie.getPortNumber() == sdi.getPort())
+                                    return true;
+                        }
                     }
                 }
             }

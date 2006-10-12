@@ -24,20 +24,28 @@
 
 package org.netbeans.modules.j2ee.sun.dd.api.common;
 
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+
 /**
  *
  * @author  Nitya Doraisamy
  */
 public interface LoginConfig extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
-
+    
+    public static final String VERSION_SERVER_8_1 = "Server 8.1";
+    public static final String VERSION_SERVER_9_0 = "Server 9.0";
+    
     public static final String AUTH_METHOD = "AuthMethod";	// NOI18N
-
+    public static final String REALM = "Realm";	// NOI18N
+    
     /** Setter for auth-method property
      * @param value property value
      */
     public void setAuthMethod(java.lang.String value);
-    /** Getter for auth-method property.
-     * @return property value
-     */
     public java.lang.String getAuthMethod();
+    
+    // This property supported for AS 9.0+ EJB hosted endpoints only.
+    public void setRealm(java.lang.String value) throws VersionNotSupportedException;
+    public java.lang.String getRealm() throws VersionNotSupportedException;
+    
 }

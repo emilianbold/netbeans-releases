@@ -19,9 +19,9 @@
 
 package org.netbeans.modules.j2ee.sun.api;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.rmi.ServerException;
-import java.rmi.RemoteException;
+import java.util.HashMap;
 import org.openide.nodes.Node;
 
 ///import org.netbeans.modules.j2ee.sun.share.management.ServerMEJB;
@@ -100,4 +100,15 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
     
     */
    File  getPlatformRoot();
+   
+   HashMap getSunDatasourcesFromXml();
+   
+   HashMap getConnPoolsFromXml();
+
+   
+       /** Registers new listener. */
+    void addPropertyChangeListener(PropertyChangeListener l);
+    
+    /** Unregister the listener. */
+    void removePropertyChangeListener(PropertyChangeListener l);
 }

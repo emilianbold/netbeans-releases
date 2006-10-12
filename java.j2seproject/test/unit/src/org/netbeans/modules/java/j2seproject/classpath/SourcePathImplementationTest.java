@@ -104,7 +104,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         ClassPath cp = cps[0];
         List entries = cp.entries();
         assertNotNull ("Entries can not be null", entries);
-        assertEquals ("There must be 2 src entries",2, entries.size());
+        assertEquals ("There must be 3 src entries",3, entries.size());
         assertEquals("There must be src root",((ClassPath.Entry)entries.get(0)).getRoot(),sources);
         String buildDir = (String) J2SEProjectUtil.getEvaluatedProperty(pp,"${build.dir}");
         assertNotNull ("There is no build.dir property", buildDir);
@@ -113,7 +113,15 @@ public class SourcePathImplementationTest extends NbTestCase {
         if (!f.exists()) {
             url = new URL (url.toExternalForm() + "/");
         }
-        assertEquals("There must be WSClient entry",((ClassPath.Entry)entries.get(1)).getURL(),url);                
+        assertEquals("There must be WSClient entry",((ClassPath.Entry)entries.get(1)).getURL(),url);
+        
+        f = new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated/wsimport/client");
+        url = f.toURI().toURL();
+        if (!f.exists()) {
+            url = new URL (url.toExternalForm() + "/");
+        }
+        assertEquals("There must be WSImportClient entry",((ClassPath.Entry)entries.get(2)).getURL(),url);
+        
         ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
             public Object run () throws Exception {
                 EditableProperties ep = pp.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -125,7 +133,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         });                
         entries = cp.entries();
         assertNotNull ("Entries can not be null", entries);
-        assertEquals ("There must be 2 src entries",2, entries.size());
+        assertEquals ("There must be 3 src entries",3, entries.size());
         assertEquals("There must be src root",((ClassPath.Entry)entries.get(0)).getRoot(),sources);
         buildDir = (String) J2SEProjectUtil.getEvaluatedProperty(pp,"${build.dir}");
         assertNotNull ("There is no build.dir property", buildDir);
@@ -135,6 +143,13 @@ public class SourcePathImplementationTest extends NbTestCase {
             url = new URL (url.toExternalForm() + "/");
         }
         assertEquals("There must be WSClient entry",((ClassPath.Entry)entries.get(1)).getURL(),url);
+        
+        f = new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated/wsimport/client");
+        url = f.toURI().toURL();
+        if (!f.exists()) {
+            url = new URL (url.toExternalForm() + "/");
+        }
+        assertEquals("There must be WSImportClient entry",((ClassPath.Entry)entries.get(2)).getURL(),url);
     }
 
     private static class TestListener implements PropertyChangeListener {

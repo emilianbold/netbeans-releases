@@ -112,9 +112,7 @@ public class ParserServletContext implements ServletContext {
      * @param name Name of the requested attribute
      */
     public Object getAttribute(String name) {
-
         return (myAttributes.get(name));
-
     }
 
 
@@ -464,5 +462,8 @@ public class ParserServletContext implements ServletContext {
     }
 
 
+    public String getContextPath(){
+        return "";
+    }
 
 }

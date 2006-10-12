@@ -24,16 +24,9 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.openide.util.NbBundle;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-
-import javax.swing.JFileChooser;
-import java.awt.event.ActionEvent;
-
-import java.io.File;
-import java.util.Collection;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -48,39 +41,33 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
      * If you need to fire state changes or something similar, you can
      * use this handle to do so.
      */
-    //private final AddUserDefLocalServerPanel panel;
+    
     private final DeploymentManagerProperties targetData;
+    private final SunDeploymentManagerInterface dm;
     
     /** Create the wizard panel and set up some basic properties. */
-    public ConnectionTabVisualPanel(/*AddUserDefLocalServerPanel panel,*/ DeploymentManagerProperties data) {
-        //this.panel = panel;
-        this.targetData = data;
+    public ConnectionTabVisualPanel( DeploymentManager dm) {
+        
+        this.dm = (SunDeploymentManagerInterface)dm;
+        targetData = new DeploymentManagerProperties(dm);
+
         initComponents();
-        InstanceProperties ips = data.getInstanceProperties();
+        InstanceProperties ips = targetData.getInstanceProperties();
         String url = (String) ips.getProperty("url"); // NOI18N
         int dex = url.indexOf("::");
-        if (dex > -1)
+        if (dex > -1){
             url = url.substring(dex+2);
+        }
         socketField.setText(url);
-    userNameField.setText(data.getUserName());
-    passwordField.setText(data.getPassword());
-    domainField.setText(data.getDomainName());
-    domainLocField.setText(data.getLocation());
-    enableHttpMonitor.setSelected(Boolean.valueOf(data.getHttpMonitorOn()).booleanValue());
+        userNameField.setText(targetData.getUserName());
+        passwordField.setText(targetData.getPassword());
+        domainField.setText(targetData.getDomainName());
+        domainLocField.setText(targetData.getLocation());
+        enableHttpMonitor.setSelected(Boolean.valueOf(targetData.getHttpMonitorOn()).booleanValue());
+        syncHttpProxies.setSelected(targetData.isSyncHttpProxyOn());
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConnectionTabVisualPanel.class, "TITLE_AddUserDefinedLocalServerPanel"));
-//        msgLabel.setText(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "Msg_ValidPort"));
-        /*
-        // Optional: provide a special description for this pane.
-        // You must have turned on WizardDescriptor.WizardPanel_helpDisplayed
-        // (see descriptor in standard iterator template for an example of this).
-        try {
-            putClientProperty("WizardPanel_helpURL", // NOI18N
-                new URL("nbresloc:/org/netbeans/modules/j2ee/sun/ide/j2ee/AddUserDefLocalServerVisualHelp.html")); // NOI18N
-        } catch (MalformedURLException mfue) {
-            throw new IllegalStateException(mfue.toString());
-        }
-         */
+        
     }
     
     /** This method is called from within the constructor to
@@ -90,8 +77,6 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
-
         socketField = new javax.swing.JTextField();
         userNameField = new javax.swing.JTextField();
         passwordField = new javax.swing.JPasswordField();
@@ -104,27 +89,12 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         domainLocLabel = new javax.swing.JLabel();
         msgLabel = new javax.swing.JLabel();
         enableHttpMonitor = new javax.swing.JCheckBox();
-
-        setLayout(new java.awt.GridBagLayout());
+        syncHttpProxies = new javax.swing.JCheckBox();
 
         getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("Step_ChooseUserDefinedLocalServer"));
         getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("AddUserDefinedLocalServerPanel_Desc"));
         socketField.setColumns(30);
         socketField.setEditable(false);
-        socketField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                socketFieldKeyReleased(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 1;
-        gridBagConstraints.insets = new java.awt.Insets(10, 5, 5, 3);
-        add(socketField, gridBagConstraints);
         socketField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_AdminPort"));
         socketField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_AdminPort"));
 
@@ -135,14 +105,6 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 1;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 3);
-        add(userNameField, gridBagConstraints);
         userNameField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Username"));
         userNameField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Username"));
 
@@ -153,133 +115,50 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 3);
-        add(passwordField, gridBagConstraints);
         passwordField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Pw"));
         passwordField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Pw"));
 
         domainField.setColumns(30);
         domainField.setEditable(false);
-        domainField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                domainFieldKeyReleased(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 3);
-        add(domainField, gridBagConstraints);
         domainField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Domain"));
         domainField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Domain"));
 
         domainLocField.setColumns(30);
         domainLocField.setEditable(false);
-        domainLocField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                domainLocFieldKeyReleased(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 1;
-        gridBagConstraints.weightx = 0.2;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 3);
-        add(domainLocField, gridBagConstraints);
         domainLocField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_InstallRoot"));
         domainLocField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_InstallRoot"));
 
         portLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_AdminSocket_Mnemonic").charAt(0));
         portLabel.setLabelFor(socketField);
         portLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_AdminSocket"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 5;
-        gridBagConstraints.insets = new java.awt.Insets(10, 3, 5, 0);
-        add(portLabel, gridBagConstraints);
         portLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_AdminSocket"));
         portLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ASCD_AdminSocket"));
 
         userNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Username_Mnemonic").charAt(0));
         userNameLabel.setLabelFor(userNameField);
         userNameLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Username"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 5;
-        gridBagConstraints.insets = new java.awt.Insets(5, 3, 5, 0);
-        add(userNameLabel, gridBagConstraints);
         userNameLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Username"));
         userNameLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Username"));
 
         userPasswordLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Pw_Mnemonic").charAt(0));
         userPasswordLabel.setLabelFor(passwordField);
         userPasswordLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Pw"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 5, 0);
-        add(userPasswordLabel, gridBagConstraints);
         userPasswordLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Pw"));
         userPasswordLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Pw"));
 
         domainLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Domain_Mnemonic").charAt(0));
         domainLabel.setLabelFor(domainField);
         domainLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Domain"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 6, 0);
-        add(domainLabel, gridBagConstraints);
         domainLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_Domain"));
         domainLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_Domain"));
 
         domainLocLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_InstallRoot_Mnemonic").charAt(0));
         domainLocLabel.setLabelFor(domainLocField);
         domainLocLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_DomainRoot"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = 5;
-        gridBagConstraints.insets = new java.awt.Insets(5, 3, 5, 0);
-        add(domainLocLabel, gridBagConstraints);
         domainLocLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("LBL_InstallRoot"));
         domainLocLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_InstallRoot"));
 
         msgLabel.setForeground(new java.awt.Color(89, 79, 191));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 0.3;
-        gridBagConstraints.insets = new java.awt.Insets(5, 3, 0, 0);
-        add(msgLabel, gridBagConstraints);
 
         enableHttpMonitor.setMnemonic(org.openide.util.NbBundle.getBundle(ConnectionTabVisualPanel.class).getString("MNE_Connection").charAt(0));
         enableHttpMonitor.setText(org.openide.util.NbBundle.getBundle(ConnectionTabVisualPanel.class).getString("LBL_EnableHttpMonitor"));
@@ -289,166 +168,135 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 3, 5, 0);
-        add(enableHttpMonitor, gridBagConstraints);
         enableHttpMonitor.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/ui/Bundle").getString("ACSD_EnableHttpMonitor"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        syncHttpProxies.setText(org.openide.util.NbBundle.getBundle(ConnectionTabVisualPanel.class).getString("LBL_SyncHttpProxy"));
+        syncHttpProxies.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                syncHttpProxiesActionPerformed(evt);
+            }
+        });
 
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, msgLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+                    .add(enableHttpMonitor)
+                    .add(syncHttpProxies)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(userNameLabel)
+                            .add(portLabel)
+                            .add(userPasswordLabel)
+                            .add(domainLocLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(domainLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(domainField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, domainLocField)
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(socketField))
+                            .add(passwordField)
+                            .add(userNameField))))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(socketField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(portLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(userNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(userNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(userPasswordLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(domainLocLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(domainLocField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(domainField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(domainLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(enableHttpMonitor)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(syncHttpProxies)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(msgLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        layout.linkSize(new java.awt.Component[] {passwordField, userNameField}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+    }// </editor-fold>//GEN-END:initComponents
+    
+    private void syncHttpProxiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncHttpProxiesActionPerformed
+        targetData.setSyncHttpProxyOn(syncHttpProxies.isSelected());
+        if(syncHttpProxies.isSelected()) {
+            msgLabel.setText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Msg_httpProxyStatusChangedAtRestart"));
+        }
+    }//GEN-LAST:event_syncHttpProxiesActionPerformed
+    
     private void enableHttpMonitorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableHttpMonitorActionPerformed
         targetData.setHttpMonitorOn(""+enableHttpMonitor.isSelected());
         msgLabel.setText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Msg_httpMonitorStatusChangedAtRestart"));
-//        if (null != panel)
-//            panel.fireChangeEvent();
+        
     }//GEN-LAST:event_enableHttpMonitorActionPerformed
-
-    private void domainLocFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_domainLocFieldKeyReleased
-        String installLoc = domainLocField.getText();
-        //targetData.setInstallLocation(installLoc);
-        //panel.fireChangeEvent();
-    }//GEN-LAST:event_domainLocFieldKeyReleased
-
-    private void domainFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_domainFieldKeyReleased
-        String domainName = domainField.getText();
-        //targetData.setDomain(domainName);
-       
-        //panel.fireChangeEvent();
-    }//GEN-LAST:event_domainFieldKeyReleased
-
+    
     private void passwordFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordFieldKeyReleased
+//        char[] passWd = passwordField.getPassword();
+//        String adminPassword = new String(passWd);
+//        targetData.setPassword(adminPassword);
+//        dm.setPassword(adminPassword);
+        
+    }//GEN-LAST:event_passwordFieldKeyReleased
+    
+    private void userNameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_userNameFieldKeyReleased
+//        String userName = userNameField.getText();
+//        targetData.setUserName(userName);
+//        dm.setUserName(userName);
+        
+    }//GEN-LAST:event_userNameFieldKeyReleased
+    /* store username and passord in the model
+     * called when the tab is gone
+     **/
+    public void syncUpWithModel(){
+        String userName = userNameField.getText();
+        targetData.setUserName(userName);
+        dm.setUserName(userName);        
         char[] passWd = passwordField.getPassword();
         String adminPassword = new String(passWd);
         targetData.setPassword(adminPassword);
-//        if (null != panel)
-//            panel.fireChangeEvent();
-    }//GEN-LAST:event_passwordFieldKeyReleased
-
-    private void userNameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_userNameFieldKeyReleased
-        String userName = userNameField.getText();
-        targetData.setUserName(userName);
-//        if (null != panel)
-//            panel.fireChangeEvent();
-    }//GEN-LAST:event_userNameFieldKeyReleased
-
-    private void socketFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_socketFieldKeyReleased
-        //String portNo = portField.getText();
-        //targetData.setPort(portNo);
-        //panel.fireChangeEvent();
-    }//GEN-LAST:event_socketFieldKeyReleased
+        dm.setPassword(adminPassword);
+    }
     
     public boolean isValid(){
-//        if((portField.getText() == null) || (portField.getText().trim().equals(""))) {//NOI18N
-//            msgLabel.setText(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "Msg_ValidPort"));
-//            return false;
-//        }
+        boolean retVal = true;
         if((userNameField.getText() == null) || (userNameField.getText().trim().equals(""))) {//NOI18N
             msgLabel.setText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Msg_ValidUser"));
-            return false;
-        }
+            retVal = false;
+        } //else {
         
-        char[] passWd = passwordField.getPassword();
-        String userPassword = new String(passWd);
-     /*   if((userPassword == null) || (userPassword.trim().equals(""))) { //NOI18N
-            msgLabel.setText(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "Msg_ValidPassword"));
-            return false;
-        }*/
-        
-//        if((domainField.getText() == null) || (domainField.getText().trim().equals(""))) { //NOI18N
-//            msgLabel.setText(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "Msg_ValidDomain"));
-//            return false;
-//        }
-//        if((domainLocField.getText() == null) || (domainLocField.getText().trim().equals(""))) {  //NOI18N
-//            msgLabel.setText(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "Msg_ValidDomainDir"));
-//            return false;
-//        }
-//        if((domainLocField.getText() != null) || (!domainLocField.getText().trim().equals(""))) { //NOI18N
-//            File f = new File(domainLocField.getText()+domainField.getText());
-//            if(!f.exists() || !f.canRead() || !f.isDirectory()  || !hasRequiredChildren(f, fileColl)) {
-//                msgLabel.setText(NbBundle.getMessage(AddUserDefLocalServerVisualPanel.class, "Msg_InValidDomainDir",
-//                        f.getAbsolutePath()));
-//                return false;
-//            }
-//        }
-//        
-//        msgLabel.setText(""); //NOI18N
-        return true;
+//        char[] passWd = passwordField.getPassword();
+//        String userPassword = new String(passWd);
+        return retVal;
     }
     
-    private String getInstallLocation(){
-        String insLocation = null;
-        JFileChooser chooser = getJFileChooser();
-        int returnValue = chooser.showDialog(this, NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Choose_Button")); //NOI18N
-        
-        if(returnValue == JFileChooser.APPROVE_OPTION){
-            insLocation = chooser.getSelectedFile().getAbsolutePath();
-        }
-        return insLocation;
-    }
     
-    private JFileChooser getJFileChooser(){
-        JFileChooser chooser = new JFileChooser();
-        
-        chooser.setDialogTitle(NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
-        chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
-        
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setApproveButtonMnemonic(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Choose_Button_Mnemonic").charAt(0)); //NOI18N
-        chooser.setMultiSelectionEnabled(false);
-        chooser.addChoosableFileFilter(new dirFilter());
-        chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setApproveButtonToolTipText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
-        
-        chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
-        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_Chooser_Name")); //NOI18N
-        
-        return chooser;
-    }
     
-    static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
-        if (null == candidate)
-            return false;
-        String[] children = candidate.list();
-        if (null == children)
-            return false;
-        if (null == requiredChildren)
-            return true;
-        java.util.List kidsList = java.util.Arrays.asList(children);
-        return kidsList.containsAll(requiredChildren);
-    }
     
-    private static Collection fileColl = new java.util.ArrayList();
     
-    static {
-        fileColl.add("bin"); //NOI18N
-        fileColl.add("lib"); //NOI18N 
-//        fileColl.add("appserv_uninstall.class"); //NOI18N
-        fileColl.add("applications"); //NOI18N
-        fileColl.add("config"); //NOI18N
-        fileColl.add("docroot"); //NOI18N
-        fileColl.add("generated"); //NOI18N
-    }
-    
-    private static class dirFilter extends javax.swing.filechooser.FileFilter {
-        
-        public boolean accept(File f) {
-            if(!f.exists() || !f.canRead() || !f.isDirectory() ) {
-                return false;
-            }else{
-                return true;
-            }
-        }
-        
-        public String getDescription() {
-            return NbBundle.getMessage(ConnectionTabVisualPanel.class, "LBL_DirType");
-        }
-        
-    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField domainField;
@@ -460,9 +308,10 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel portLabel;
     private javax.swing.JTextField socketField;
+    private javax.swing.JCheckBox syncHttpProxies;
     private javax.swing.JTextField userNameField;
     private javax.swing.JLabel userNameLabel;
     private javax.swing.JLabel userPasswordLabel;
     // End of variables declaration//GEN-END:variables
-        
+    
 }

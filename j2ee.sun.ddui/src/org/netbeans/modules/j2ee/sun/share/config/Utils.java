@@ -59,17 +59,4 @@ public final class Utils {
         }
         return result;
     }
-    
-    /**
-     * Ensure that the specified ruannable task will run only in the event dispatch 
-     * thread.
-     */
-    public static void runInEventDispatchThread(Runnable runnable) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            runnable.run();
-        } else {
-            SwingUtilities.invokeLater(runnable);
-        }
-    }
-    
 }

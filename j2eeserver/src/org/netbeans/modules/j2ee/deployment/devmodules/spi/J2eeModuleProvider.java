@@ -21,8 +21,15 @@ package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
+import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.config.*;
@@ -33,12 +40,16 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.api.VerifierSupport;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 import java.io.File;
 import java.util.ArrayList;
@@ -52,7 +63,7 @@ import java.util.List;
 public abstract class J2eeModuleProvider {
     
     private InstanceListener il;
-    private ConfigSupportImpl confSupp;
+    private ConfigSupportImpl configSupportImpl;
     List listeners = new ArrayList();
     private ConfigFilesListener configFilesListener = null;
     
@@ -77,8 +88,15 @@ public abstract class J2eeModuleProvider {
     public abstract ModuleChangeReporter getModuleChangeReporter ();
     
     public final ConfigSupport getConfigSupport () {
+        ConfigSupportImpl confSupp;
+        synchronized (this) {
+            confSupp = configSupportImpl;
+        }
         if (confSupp == null) {
-            confSupp = new ConfigSupportImpl (this);
+            confSupp = new ConfigSupportImpl(this);
+            synchronized (this) {
+                configSupportImpl = confSupp;
+            }
         }
 	return confSupp;
     }
@@ -121,6 +139,111 @@ public abstract class J2eeModuleProvider {
         }
         return null;
     }
+    
+    /**
+     * Gets the data sources deployed on the target server instance.
+     *
+     * @return set of data sources
+     *
+     * @since 1.15 
+     */
+    public Set<Datasource> getServerDatasources() {
+        ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());
+        Set<Datasource> deployedDS = Collections.<Datasource>emptySet();
+        if (si != null) {
+            deployedDS = si.getDatasources();
+        }
+        else {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                    "The server data sources cannot be retrieved because the server instance cannot be found.");
+        }
+        return deployedDS;
+    }
+    
+    /**
+     * Gets the data sources saved in the module.
+     *
+     * @return set of data sources
+     *
+     * @since 1.15 
+     */
+    public Set<Datasource> getModuleDatasources() {
+        Set<Datasource> projectDS = getConfigSupport().getDatasources();
+        return projectDS;
+    }
+
+    /**
+     * Tests whether data source creation is supported.
+     *
+     * @return true if data source creation is supported, false otherwise.
+     *
+     * @since 1.15 
+     */
+    public boolean isDatasourceCreationSupported() {
+        return getConfigSupport().isDatasourceCreationSupported();
+    }
+    
+    
+    /**
+     * Creates and saves data source in the module if it does not exist yet on the target server or in the module.
+     * Data source is considered to be existing when JNDI name of the found data source and the one
+     * just created equal.
+     *
+     * @param jndiName name of data source
+     * @param url database URL
+     * @param username database user
+     * @param password user's password
+     * @param driver fully qualified name of database driver class
+     * @return created data source
+     * @exception DatasourceAlreadyExistsException if conflicting data source is found
+     *
+     * @since 1.15 
+     */
+    public final Datasource createDatasource(String jndiName, String  url, String username, String password, String driver) 
+    throws DatasourceAlreadyExistsException {
+
+        //check whether the ds is not already on the server
+        Set<Datasource> deployedDS = getServerDatasources();
+        if (deployedDS != null) {
+            for (Iterator it = deployedDS.iterator(); it.hasNext();) {
+                Datasource ds = (Datasource) it.next();
+                if (jndiName.equals(ds.getJndiName())) // ds with the same JNDI name already exists on the server, do not create new one
+                    throw new DatasourceAlreadyExistsException(ds);
+            }
+        }
+        
+        Datasource ds = null;
+        try {
+            //btw, ds existence in a project is verified directly in the deployment configuration
+            ds = getConfigSupport().createDatasource(jndiName, url, username, password, driver);
+        } catch (OperationUnsupportedException oue) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, oue);
+        }
+        
+        return ds;
+    }
+    
+    /**
+     * Deploys data sources saved in the module.
+     *
+     * @exception ConfigurationException if there is some problem with data source configuration
+     * @exception DatasourceAlreadyExistsException if module data source(s) are conflicting
+     * with data source(s) already deployed on the server
+     *
+     * @since 1.15 
+     */
+    public void deployDatasources() throws ConfigurationException, DatasourceAlreadyExistsException {
+        ServerInstance si = ServerRegistry.getInstance ().getServerInstance (getServerInstanceID ());
+        if (si != null) {
+            Set<Datasource> moduleDS = getModuleDatasources();
+            si.deployDatasources(moduleDS);
+        }
+        else {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                    "The data sources cannot be deployed because the server instance cannot be found.");
+        }
+    }
+    
     
     /**
      * Register a listener which will be notified when some of the properties
@@ -210,8 +333,56 @@ public abstract class J2eeModuleProvider {
          * represented by given DDBean.
          * @param ejbname the ejb name
          * @param ejbtype dtd name for type of ejb: 'message-drive', 'entity', 'session'.
+         * @deprecated replaced with ensureResourceDefinedForEjb with JNDI name attribute
          */
+        @Deprecated
         public void ensureResourceDefinedForEjb(String ejbname, String ejbtype);
+        
+        /**
+         * Ensure needed resources are automatically defined for the entity
+         * represented by given DDBean.
+         * @param ejbName   the EJB name
+         * @param ejbType   the DTD name for type of EJB: 'message-drive', 'entity', 'session'.
+         * @param jndiName  the JNDI name of the resource where the EJB is stored
+         */
+        public void ensureResourceDefinedForEjb(String ejbName, String ejbType, String jndiName);
+        
+        /**
+         * Tests whether data source creation is supported.
+         *
+         * @return true if data source creation is supported, false otherwise.
+         *
+         * @since 1.15 
+         */
+        public boolean isDatasourceCreationSupported();
+                
+        /**
+         * Gets the data sources saved in the module.
+         *
+         * @return set of data sources
+         *
+         * @since 1.15 
+         */
+        public Set<Datasource> getDatasources();
+        
+        /**
+         * Creates and saves data source in the module if it does not exist yet in the module.
+         * Data source is considered to be existing when JNDI name of the found data source and the one
+         * just created equal.
+         *
+         * @param jndiName name of data source
+         * @param url database URL
+         * @param username database user
+         * @param password user's password
+         * @param driver fully qualified name of database driver class
+         * @return created data source
+         * @exception OperationUnsupportedException if operation is not supported
+         * @exception DatasourceAlreadyExistsException if conflicting data source is found
+         *
+         * @since 1.15 
+         */
+        public Datasource createDatasource(String jndiName, String  url, String username, String password, String driver)
+        throws OperationUnsupportedException, DatasourceAlreadyExistsException;
     }
     
     /**
@@ -345,8 +516,11 @@ public abstract class J2eeModuleProvider {
 
             if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                 String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
-                ConfigSupportImpl oldConSupp = confSupp;
-                confSupp = null;
+                ConfigSupportImpl oldConSupp;
+                synchronized (this) {
+                    oldConSupp = configSupportImpl;
+                    configSupportImpl = null;
+                }
                 getConfigSupportImpl().ensureConfigurationReady();
                 if (oldCtxPath == null || oldCtxPath.equals("")) { //NOI18N
                     oldCtxPath = getDeploymentName().replace(' ', '_'); //NOI18N
@@ -364,8 +538,11 @@ public abstract class J2eeModuleProvider {
                     oldConSupp.dispose();
                 }
             } else {
-                ConfigSupportImpl oldConSupp = confSupp;
-                confSupp = null;
+                ConfigSupportImpl oldConSupp;
+                synchronized (this) {
+                    oldConSupp = configSupportImpl;
+                    configSupportImpl = null;
+                }
                 getConfigSupportImpl().ensureConfigurationReady();
                 if (oldConSupp != null) {
                     oldConSupp.dispose();
@@ -442,16 +619,28 @@ public abstract class J2eeModuleProvider {
                 if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                     String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
                     oldCtxPath = "/"+J2eeModuleProvider.this.getDeploymentName(); //NOI18N
-                    confSupp.dispose();
-                    J2eeModuleProvider.this.confSupp = null;
+                    ConfigSupportImpl oldConSupp;
+                    synchronized (J2eeModuleProvider.this) {
+                        oldConSupp = configSupportImpl;
+                        configSupportImpl = null;
+                    }
+                    if (oldConSupp != null) {
+                        oldConSupp.dispose();
+                    }
                     getConfigSupportImpl().ensureConfigurationReady();
                     String ctx = getConfigSupportImpl().getWebContextRoot ();
                     if (ctx == null || ctx.equals ("")) { //NOI18N
                         getConfigSupportImpl().setWebContextRoot(oldCtxPath);
                     }
                 } else {
-                    confSupp.dispose();
-                    J2eeModuleProvider.this.confSupp = null;
+                    ConfigSupportImpl oldConSupp;
+                    synchronized (J2eeModuleProvider.this) {
+                        oldConSupp = configSupportImpl;
+                        configSupportImpl = null;
+                    }
+                    if (oldConSupp != null) {
+                        oldConSupp.dispose();
+                    }
                     getConfigSupportImpl().ensureConfigurationReady();
                 }
             }

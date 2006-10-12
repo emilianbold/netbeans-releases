@@ -157,7 +157,7 @@ public class FastOpenInfoParser {
     private static final String PAGE = "page";
     private static final String ENCODING = "pageEncoding";
     private static final String CONTENTYPE = "contentType";
-    private static final String CHARSET = "char-set=";
+    private static final String CHARSET = "charset=";
     
     private static final int P_INIT = 0;
     private static final int P_LT = 1; //after <

@@ -120,7 +120,6 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(500, 340));
         setRequestFocusEnabled(false);
         locationContainer.setLayout(new java.awt.BorderLayout());
 

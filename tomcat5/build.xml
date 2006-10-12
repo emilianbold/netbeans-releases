@@ -39,13 +39,14 @@ Microsystems, Inc. All Rights Reserved.
       <echo message="generating bean graph for Tomcat 5 Server configuration file" />
 	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_server.dtd"
 	  mddFile="tomcat5_server.mdd"
-	  package="org.netbeans.modules.tomcat5.config"
+          attrProp="true"
+	  package="org.netbeans.modules.tomcat5.config.gen"
 	  rootDir="src"/>
       <echo message="generating bean graph for Tomcat 5 Context configuration file" />
 	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_context.dtd"
 	  mddFile="tomcat5.mdd"
           attrProp="true"
-	  package="org.netbeans.modules.tomcat5.config"
+	  package="org.netbeans.modules.tomcat5.config.gen"
 	  rootDir="src"/>
   </target>
   
@@ -54,16 +55,16 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
 
   <target name="clean-ddgen-check">
-    <available property="have-config" file="${tomcat5_dir}/config"/>
+    <available property="have-config" file="${tomcat5_dir}/config/gen"/>
   </target>
 
   <target name="clean-ddgen-src" if="have-config" depends="clean-ddgen-check">
         <delete>
-            <fileset dir="${tomcat5_dir}/config">
+            <fileset dir="${tomcat5_dir}/config/gen">
                 <include name="*.java"/>
             </fileset>
         </delete>
-        <delete dir="${tomcat5_dir}/config"/>
+        <delete dir="${tomcat5_dir}/config/gen"/>
   </target>
   
 </project>

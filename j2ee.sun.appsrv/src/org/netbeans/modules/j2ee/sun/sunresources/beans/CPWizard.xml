@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE wizard>
 <wizard>
     <name>jdbc-connection-pool</name>
@@ -14,6 +32,10 @@
                 <tag-item>sun_msftsql</tag-item>
                 <tag-item>sun_oracle</tag-item>
                 <tag-item>sun_sybase</tag-item>
+                <tag-item>post-gre-sql</tag-item>
+                <tag-item>microsoft_sql</tag-item>
+                <tag-item>jtds_sql</tag-item>
+                <tag-item>jtds_sybase</tag-item>
                 <tag-item>derby_net</tag-item> 
                 <tag-item>oracle-thin</tag-item>
                 <tag-item>oracle</tag-item>
@@ -94,12 +116,28 @@
                     <conditional-value>com.sun.sql.jdbcx.sybase.SybaseDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
+                     <option-name>post-gre-sql</option-name>
+                    <conditional-value>org.postgresql.ds.PGSimpleDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>microsoft_sql</option-name>
+                    <conditional-value>com.microsoft.sqlserver.jdbc.SQLServerDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sql</option-name>
+                    <conditional-value>net.sourceforge.jtds.jdbcx.JtdsDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sybase</option-name>
+                    <conditional-value>net.sourceforge.jtds.jdbcx.JtdsDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
                     <option-name>oracle</option-name>
                     <conditional-value>oracle.jdbc.pool.OracleDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>db2</option-name>
-                    <conditional-value>com.ibm.db2.jdbc.DB2DataSource</conditional-value>
+                    <conditional-value>com.ibm.db2.jcc.DB2DataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>datadirect_sql</option-name>
@@ -180,12 +218,28 @@
                     <conditional-value>com.sun.sql.jdbcx.sybase.SybaseDataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
+                     <option-name>post-gre-sql</option-name>
+                    <conditional-value>org.postgresql.xa.PGXADataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>microsoft_sql</option-name>
+                    <conditional-value>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sql</option-name>
+                    <conditional-value>net.sourceforge.jtds.jdbcx.JtdsDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sybase</option-name>
+                    <conditional-value>net.sourceforge.jtds.jdbcx.JtdsDataSource</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
                     <option-name>oracle</option-name>
                     <conditional-value>oracle.jdbc.xa.client.OracleXADataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>db2</option-name>
-                    <conditional-value>com.ibm.db2.jdbc.DB2XADataSource</conditional-value>
+                    <conditional-value>com.ibm.db2.jcc.DB2XADataSource</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>datadirect_sql</option-name>
@@ -246,7 +300,7 @@
                 </option-value-pair>
                 <option-value-pair>
                      <option-name>sun_msftsql</option-name>
-                    <conditional-value>jdbc:sun:sqlserver://server_name[:portNumber]</conditional-value>
+                    <conditional-value>jdbc:sun:sqlserver://server_name[:portNumber];databaseName=database;selectMethod=cursor</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                      <option-name>sun_oracle</option-name>
@@ -255,6 +309,22 @@
                 <option-value-pair>
                      <option-name>sun_sybase</option-name>
                     <conditional-value>jdbc:sun:sybase://server_name[:portNumber]</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>post-gre-sql</option-name>
+                    <conditional-value>jdbc:postgresql://@#HOST$:@#PORT$/@#DB$</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>microsoft_sql</option-name>
+                    <conditional-value>jdbc:sqlserver://[serverName][\instanceName][:portNumber][;property=value]</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sql</option-name>
+                    <conditional-value>jdbc:jtds:sqlserver://@#HOST$:@#PORT$/@#DB$</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sybase</option-name>
+                    <conditional-value>jdbc:jtds:sybase://@#HOST$:@#PORT$/@#DB$</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>oracle</option-name>
@@ -495,6 +565,26 @@
                 <tag-item>false</tag-item>
             </tag>
         </field>
+        <field field-type="list">
+            <name>non-transactional-connections</name>
+            <field-value>
+                <default-field-value>false</default-field-value>
+            </field-value>
+            <tag>
+                <tag-item>true</tag-item>
+                <tag-item>false</tag-item>
+            </tag>
+        </field>
+        <field field-type="list">
+            <name>allow-non-component-callers</name>
+            <field-value>
+                <default-field-value>false</default-field-value>
+            </field-value>
+            <tag>
+                <tag-item>true</tag-item>
+                <tag-item>false</tag-item>
+            </tag>
+        </field>
     </field-group>
     <field-group>
         <name>propertiesUrl</name>
@@ -529,6 +619,22 @@
                 <option-value-pair>
                      <option-name>sun_sybase</option-name>
                     <conditional-value>jdbc:sun:sybase:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>post-gre-sql</option-name>
+                    <conditional-value>jdbc:postgresql:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>microsoft_sql</option-name>
+                    <conditional-value>jdbc:sqlserver:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sql</option-name>
+                    <conditional-value>jdbc:jtds:sqlserver:</conditional-value>
+                </option-value-pair>
+                <option-value-pair>
+                     <option-name>jtds_sybase</option-name>
+                    <conditional-value>jdbc:jtds:sybase:</conditional-value>
                 </option-value-pair>
                 <option-value-pair>
                     <option-name>oracle</option-name>

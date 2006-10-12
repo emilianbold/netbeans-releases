@@ -32,7 +32,8 @@ public interface ResourceAdapterConfig {
 	public static final String THREADPOOLIDS = "ThreadPoolIds";	// NOI18N
 	public static final String RESOURCEADAPTERNAME = "ResourceAdapterName";	// NOI18N
 	public static final String PROPERTY = "PropertyElement";	// NOI18N
-
+        public static final String OBJECTTYPE = "ObjectType";	// NOI18N
+        
         /** Setter for name property
         * @param value property value
         */
@@ -67,4 +68,14 @@ public interface ResourceAdapterConfig {
 	public int removePropertyElement(PropertyElement value);
 	public PropertyElement newPropertyElement();
 
+        //Resource 1.2
+        /** Setter for object-type property
+        * @param value property value
+        */
+        public void setObjectType(java.lang.String value);
+        /** Getter for object-type attribute.
+        * @return attribute value
+        */
+	public java.lang.String getObjectType();
+        
 }

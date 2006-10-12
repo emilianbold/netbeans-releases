@@ -25,12 +25,10 @@
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.ItemEvent;
 import java.beans.PropertyVetoException;
 
 import javax.swing.event.TableModelEvent;
@@ -38,6 +36,8 @@ import javax.swing.event.TableModelListener;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
+import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
@@ -60,8 +60,14 @@ public class WebAppMessagesPanel extends javax.swing.JPanel implements TableMode
 	private GenericTableModel messageDestinationModel;
 	private GenericTablePanel messageDestinationPanel;
 
+	// Table for editing MessageDestinationRef entries
+//	private GenericTableModel messageDestinationRefModel;
+//	private GenericTablePanel messageDestinationRefPanel;
 	
-	/** Creates new form WebAppGeneralPanel */
+    // true if AS 9.0+ fields are visible.
+    private boolean as90FeaturesVisible;
+    
+	/** Creates new form WebAppMessagesPanel */
 	public WebAppMessagesPanel(WebAppRootCustomizer src) {
 		masterPanel = src;
 		
@@ -87,6 +93,9 @@ public class WebAppMessagesPanel extends javax.swing.JPanel implements TableMode
     // End of variables declaration//GEN-END:variables
 
 	private void initUserComponents() {
+        
+		as90FeaturesVisible = true;
+        
 		/* Add message destination table panel :
 		 * TableEntry list has two properties: destination name, jndi name
 		 */
@@ -106,15 +115,39 @@ public class WebAppMessagesPanel extends javax.swing.JPanel implements TableMode
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(6, 6, 0, 5);
 		add(messageDestinationPanel, gridBagConstraints);		
+        
+		/* Add message destination ref table panel :
+		 * TableEntry list has two properties: destination ref name, jndi name
+		 */
+//		tableColumns = new ArrayList(2);
+//		tableColumns.add(new GenericTableModel.ValueEntry(null, MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME, 
+//			webappBundle, "MessageDestinationRefName", true, true));	// NOI18N - property name
+//		tableColumns.add(new GenericTableModel.ValueEntry(null, MessageDestinationRef.JNDI_NAME,
+//			webappBundle, "JNDIName", true, false));	// NOI18N - property name
+//		
+//		messageDestinationRefModel = new GenericTableModel(messageDestinationRefFactory, tableColumns);
+//		messageDestinationRefPanel = new GenericTablePanel(messageDestinationRefModel, 
+//			webappBundle, "MessageDestinationRef",	// NOI18N - property name
+//			HelpContext.HELP_WEBAPP_MESSAGE_DESTINATION_REF_POPUP);
+//		
+//        gridBagConstraints = new GridBagConstraints();
+//        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+//        gridBagConstraints.fill = GridBagConstraints.BOTH;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.weighty = 1.0;
+//        gridBagConstraints.insets = new Insets(0, 6, 0, 5);
+//		add(messageDestinationRefPanel, gridBagConstraints);		
 	}
 	
 	public void addListeners() {
 		messageDestinationModel.addTableModelListener(this);
+//		messageDestinationRefModel.addTableModelListener(this);
 	}
 	
 	public void removeListeners() {
+//		messageDestinationRefModel.removeTableModelListener(this);
 		messageDestinationModel.removeTableModelListener(this);
 	}
 	
@@ -122,9 +155,28 @@ public class WebAppMessagesPanel extends javax.swing.JPanel implements TableMode
 	 *  was passed in.
 	 */
 	public void initFields(WebAppRoot bean) {
-		messageDestinationPanel.setModel(bean.getMessageDestinations());		
+		messageDestinationPanel.setModel(bean.getMessageDestinations(), bean.getAppServerVersion());		
+        
+        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(bean.getAppServerVersion()) <= 0) {
+            showAS90Fields();
+//    		messageDestinationRefPanel.setModel(bean.getMessageDestinationRefs(), bean.getAppServerVersion());		
+        }
 	}
 	
+    private void showAS90Fields() {
+        if(!as90FeaturesVisible) {
+            as90FeaturesVisible = true;
+//            messageDestinationRefPanel.setVisible(true);
+        }
+    }
+    
+    private void hideAS90Fields() {
+        if(as90FeaturesVisible) {
+            as90FeaturesVisible = false;
+//            messageDestinationRefPanel.setVisible(false);
+        }
+    }
+    
 	/** ----------------------------------------------------------------------- 
 	 *  Implementation of javax.swing.event.TableModelListener
 	 */
@@ -135,10 +187,9 @@ public class WebAppMessagesPanel extends javax.swing.JPanel implements TableMode
 				Object eventSource = e.getSource();
 				if(eventSource == messageDestinationModel) {
 					bean.setMessageDestinations(messageDestinationModel.getData());
+//				} else if(eventSource == messageDestinationRefModel) {
+//					bean.setMessageDestinationRefs(messageDestinationRefModel.getData());
 				}
-				
-				// Force property change to be issued by the bean
-				bean.setDirty();
 			} catch(PropertyVetoException ex) {
 				// FIXME undo whatever changed... how?
 			}
@@ -149,8 +200,15 @@ public class WebAppMessagesPanel extends javax.swing.JPanel implements TableMode
     // to allow it to create messageDestination beans.
 	static GenericTableModel.ParentPropertyFactory messageDestinationFactory =
         new GenericTableModel.ParentPropertyFactory() {
-            public CommonDDBean newParentProperty() {
-                return StorageBeanFactory.getDefault().createMessageDestination();
+            public CommonDDBean newParentProperty(ASDDVersion asVersion) {
+                return StorageBeanFactory.getStorageBeanFactory(asVersion).createMessageDestination();
             }
         };
+        
+//	static GenericTableModel.ParentPropertyFactory messageDestinationRefFactory =
+//        new GenericTableModel.ParentPropertyFactory() {
+//            public CommonDDBean newParentProperty(ASDDVersion asVersion) {
+//                return StorageBeanFactory.getStorageBeanFactory(asVersion).createMessageDestinationRef();
+//            }
+//        };
 }

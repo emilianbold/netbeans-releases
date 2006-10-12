@@ -74,7 +74,6 @@ class InitParamPanel extends JPanel implements ActionListener,
 
 	// Layout description
 	setLayout(new java.awt.GridBagLayout());
-	setPreferredSize(new java.awt.Dimension(400, 150));
 
 	// Entity covers entire row
 	GridBagConstraints fullRowC = new GridBagConstraints();
@@ -144,7 +143,6 @@ class InitParamPanel extends JPanel implements ActionListener,
 	    }}); 
 
 	scrollP = new JScrollPane(table); 
-	table.setPreferredScrollableViewportSize(new Dimension(300, 200));
 	this.add(scrollP, tableC); 
 
 	jBnew = new JButton(); 

@@ -141,13 +141,15 @@ public class CheckpointAtEndOfMethodModel extends MultiMethodTableModel{
 
     //convert the given Method object into the schama2beans DD (Method) object
     protected Object getDDMethod(Object object, String selection){
+        StorageBeanFactory storageFactory = statefulEjb.getConfig().getStorageFactory();
+        
         //System.out.println("CheckpointAtEndOfMethodModel getDDMethod");
         //System.out.println("CheckpointAtEndOfMethodModel getDDMethod method :" + object );
         //System.out.println("CheckpointAtEndOfMethodModel getDDMethod selection :" + selection );
         //XXX implemented for DummyMethod replace with real *Method*
         DummyMethod method = (DummyMethod)object;
         //Method ddMethod = new Method();
-        Method ddMethod = StorageBeanFactory.getDefault().createMethod();
+        Method ddMethod = storageFactory.createMethod();
         //ddMethod.setDescription(method.toString());
         ddMethod.setMethodName(method.getName());
         ddMethod.setMethodIntf(selection);
@@ -155,7 +157,7 @@ public class CheckpointAtEndOfMethodModel extends MultiMethodTableModel{
 
         String[] params = method.getParameterTypes();
         //MethodParams ddParams = new MethodParams();
-        MethodParams ddParams = StorageBeanFactory.getDefault().createMethodParams();
+        MethodParams ddParams = storageFactory.createMethodParams();
         for(int i=0; i<params.length; i++){
             ddParams.addMethodParam(params[i]);
         }

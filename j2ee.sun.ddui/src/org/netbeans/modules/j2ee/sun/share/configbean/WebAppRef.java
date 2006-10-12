@@ -68,6 +68,14 @@ public class WebAppRef extends BaseModuleRef {
 		}
 	}
 	
+    /** Getter for customizer title fragment property
+     * @return String fragment for use in customizer title
+     *
+     */
+    public String getTitleFragment() {
+        return bundle.getString("LBL_WebTitleFragment"); // NOI18N
+    }
+    
 	/** -----------------------------------------------------------------------
 	 * JSR-88 Interface support
 	 */
@@ -155,7 +163,7 @@ public class WebAppRef extends BaseModuleRef {
 		Snippet snipOne = new DefaultSnippet() {
 			
 			public CommonDDBean getDDSnippet() {
-				Web web = StorageBeanFactory.getDefault().createWeb();
+				Web web = getConfig().getStorageFactory().createWeb();
 				
 				web.setWebUri(getWebUri());
 				web.setContextRoot(getContextRoot());

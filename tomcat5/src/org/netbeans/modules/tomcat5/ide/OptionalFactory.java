@@ -19,10 +19,18 @@
 
 package org.netbeans.modules.tomcat5.ide;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.AntDeploymentProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DatasourceManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.api.TargetModuleIDResolver;
+import org.netbeans.modules.tomcat5.AntDeploymentProviderImpl;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.config.TomcatDatasourceManager;
 import org.netbeans.modules.tomcat5.jsps.FindJSPServletImpl;
-
 import org.openide.WizardDescriptor;
 import org.netbeans.modules.tomcat5.wizard.AddInstanceIterator;
 
@@ -54,5 +62,13 @@ public class OptionalFactory extends OptionalDeploymentManagerFactory {
 
     public WizardDescriptor.InstantiatingIterator getAddInstanceIterator() {
         return new AddInstanceIterator(TomcatManager.TOMCAT_50);
+    }
+    
+    public DatasourceManager getDatasourceManager(DeploymentManager dm) {
+        return new TomcatDatasourceManager(dm);
+    }
+    
+    public AntDeploymentProvider getAntDeploymentProvider(DeploymentManager dm) {
+        return new AntDeploymentProviderImpl(dm);
     }
 }

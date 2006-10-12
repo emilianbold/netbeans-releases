@@ -24,11 +24,12 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
-import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication;
 import org.netbeans.modules.j2ee.sun.dd.api.app.Web;
+import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Cmp;
@@ -74,6 +75,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.DefaultResourcePrincipal;
 import org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.LoginConfig;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
+import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.PortInfo;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WsdlPort;
 import org.netbeans.modules.j2ee.sun.dd.api.common.CallProperty;
@@ -95,6 +97,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.FlushAtEndOfMethod;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Method;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.PrefetchDisabled;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.QueryMethod;
+import org.openide.ErrorManager;
 
 /** Factory to create beans via the DDAPI, outside any existing graph.  These
  *  are primarily used for internal data storage by the DConfigBeans and used
@@ -107,30 +110,71 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.QueryMethod;
  */
 public class StorageBeanFactory {
 
-    // default factory to use.
-//    private static StorageBeanFactory defaultFactory = new StorageBeanFactory();
-    private static StorageBeanFactory defaultFactory;
+    private static StorageBeanFactory ASDD_7_0_FACTORY;
+    private static StorageBeanFactory ASDD_8_0_FACTORY;
+    private static StorageBeanFactory ASDD_8_1_FACTORY;
+    private static StorageBeanFactory ASDD_9_0_FACTORY;
     
     static {
         try {
-            defaultFactory = new StorageBeanFactory();
+            ASDD_7_0_FACTORY = new StorageBeanFactory(ASDDVersion.SUN_APPSERVER_7_0);
         } catch(Exception ex) {
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
+        try {
+            ASDD_8_0_FACTORY = new StorageBeanFactory(ASDDVersion.SUN_APPSERVER_8_0);
+        } catch(Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        try {
+            ASDD_8_1_FACTORY = new StorageBeanFactory(ASDDVersion.SUN_APPSERVER_8_1);
+        } catch(Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        try {
+            ASDD_9_0_FACTORY = new StorageBeanFactory(ASDDVersion.SUN_APPSERVER_9_0);
+        } catch(Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+    }
+
+    /** Retrieve a storage factory by appserver version
+     */
+    public static StorageBeanFactory getStorageBeanFactory(ASDDVersion asVersion) {
+        StorageBeanFactory result = ASDD_9_0_FACTORY; // Default to 9.0
+        
+        if(ASDDVersion.SUN_APPSERVER_9_0.equals(asVersion)) {
+            result = ASDD_9_0_FACTORY;
+        } else if(ASDDVersion.SUN_APPSERVER_8_1.equals(asVersion)) {
+            result = ASDD_8_1_FACTORY;
+        } else if(ASDDVersion.SUN_APPSERVER_8_0.equals(asVersion)) {
+            result = ASDD_8_0_FACTORY;
+        } else if(ASDDVersion.SUN_APPSERVER_7_0.equals(asVersion)) {
+            result = ASDD_7_0_FACTORY;
+        }
+        
+        return result;
     }
     
     // DDAPI provider
     private DDProvider provider;
+
+    // Application server version for this factory instance
+    private ASDDVersion appServerVersion;
     
     // -- Cache of known parent beans --
     //
     // sun-application graph
     private SunApplication sunApplication;
     
+    // sun-application-client graph
+    private SunApplicationClient sunAppClient;
+    
     // sun-ejb-jar graph
     private SunEjbJar sunEjbJar;
     private EnterpriseBeans enterpriseBeans;
     private Ejb ejb;
+    private WebserviceEndpoint ejbHostedWebserviceEndpoint;
     private MdbResourceAdapter mdbResourceAdapter;
     private ActivationConfig activationConfig;
     private IorSecurityConfig iorSecurityConfig;
@@ -141,17 +185,18 @@ public class StorageBeanFactory {
     
     // sun-web-app graph
     private SunWebApp sunWebApp;
+    private Servlet servlet;
     private Cache webAppCache;
     private CacheMapping cacheMapping;
     private SessionConfig sessionConfig;
     private SessionManager sessionManager;
     private LocaleCharsetInfo localeCharsetInfo;
+    private WebserviceEndpoint webHostedWebserviceEndpoint;
     
     // common graph
     private ResourceRef resourceRef;
     private ServiceRef serviceRef;
     private PortInfo portInfo;
-    private WebserviceEndpoint webserviceEndpoint;
     
     private MessageSecurityBinding messageSecurityBinding;
     private MessageSecurity messageSecurity;
@@ -160,61 +205,85 @@ public class StorageBeanFactory {
     private Method method;
     private PrefetchDisabled prefetchDisabled;
 
-    public StorageBeanFactory() {
+    private StorageBeanFactory(ASDDVersion asVersion) {
+        appServerVersion = asVersion;
         provider = DDProvider.getDefault();
         
-        sunApplication = (SunApplication) provider.newGraph(SunApplication.class);
+        sunApplication = (SunApplication) provider.newGraph(SunApplication.class, asVersion.getApplicationVersionAsString());
+        sunEjbJar = (SunEjbJar) provider.newGraph(SunEjbJar.class, asVersion.getEjbJarVersionAsString());
+        sunWebApp = (SunWebApp) provider.newGraph(SunWebApp.class, asVersion.getWebAppVersionAsString());
+        sunAppClient = (SunApplicationClient) provider.newGraph(SunApplicationClient.class, asVersion.getAppClientVersionAsString());
         
-        sunEjbJar = (SunEjbJar) provider.newGraph(SunEjbJar.class);
+        initSubFields();
+    }
+    
+    private void initSubFields() {
         enterpriseBeans = sunEjbJar.newEnterpriseBeans();
         ejb = enterpriseBeans.newEjb();
         mdbResourceAdapter = ejb.newMdbResourceAdapter();
-        activationConfig = mdbResourceAdapter.newActivationConfig();
+        if(mdbResourceAdapter != null) {
+            activationConfig = mdbResourceAdapter.newActivationConfig();
+        }
         iorSecurityConfig = ejb.newIorSecurityConfig();
         pmDescriptors = enterpriseBeans.newPmDescriptors();
         cmpResource = enterpriseBeans.newCmpResource();
         cmp = ejb.newCmp();
         oneOneFinders = cmp.newOneOneFinders();
     
-        try{
+        try {
             prefetchDisabled = cmp.newPrefetchDisabled();
-        }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
-            //System.out.println("Not Supported Version");      //NOI18N
+        } catch(VersionNotSupportedException e){
         }
 
-        sunWebApp = (SunWebApp) provider.newGraph(SunWebApp.class);
+        servlet = sunWebApp.newServlet();
         webAppCache = sunWebApp.newCache();
         cacheMapping = webAppCache.newCacheMapping();
         sessionConfig = sunWebApp.newSessionConfig();
         sessionManager = sessionConfig.newSessionManager();
         localeCharsetInfo = sunWebApp.newLocaleCharsetInfo();
+        webHostedWebserviceEndpoint = servlet.newWebserviceEndpoint();
 
         resourceRef = sunWebApp.newResourceRef();
         serviceRef = sunWebApp.newServiceRef();
-        portInfo = serviceRef.newPortInfo();
-        webserviceEndpoint = ejb.newWebserviceEndpoint();
+        if(serviceRef != null) {
+            portInfo = serviceRef.newPortInfo();
+        }
+        ejbHostedWebserviceEndpoint = ejb.newWebserviceEndpoint();
  
-        try{
-            messageSecurityBinding = webserviceEndpoint.newMessageSecurityBinding();
-            messageSecurity = messageSecurityBinding.newMessageSecurity();
-            message = messageSecurity.newMessage();
+        try {
+            if(ejbHostedWebserviceEndpoint != null) {
+                messageSecurityBinding = ejbHostedWebserviceEndpoint.newMessageSecurityBinding();
+                messageSecurity = messageSecurityBinding.newMessageSecurity();
+                message = messageSecurity.newMessage();
+            }
             flushAtEndOfMethod = ejb.newFlushAtEndOfMethod();
             method = flushAtEndOfMethod.newMethod();
-        }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
-            //System.out.println("Not Supported Version");      //NOI18N
+        } catch(VersionNotSupportedException e){
         }
     }
     
-    public static StorageBeanFactory getDefault() {
-        return defaultFactory;
+    // Sun Application Client beans
+    public SunApplicationClient createSunApplicationClient() {
+        return (SunApplicationClient) provider.newGraph(
+            SunApplicationClient.class, appServerVersion.getAppClientVersionAsString());
+    }
+
+    // Sun Application beans
+    public SunApplication createSunApplication() {
+        return (SunApplication) provider.newGraph(
+            SunApplication.class, appServerVersion.getApplicationVersionAsString());
     }
     
-    // Sun Application beans
     public Web createWeb() {
         return sunApplication.newWeb();
     }
     
     // Sun Ejb Jar beans
+    public SunEjbJar createSunEjbJar() {
+        return (SunEjbJar) provider.newGraph(
+            SunEjbJar.class, appServerVersion.getEjbJarVersionAsString());
+    }
+    
     public EnterpriseBeans createEnterpriseBeans() {
         return sunEjbJar.newEnterpriseBeans();
     }
@@ -296,6 +365,11 @@ public class StorageBeanFactory {
     }
     
     // Sun Web App beans
+    public SunWebApp createSunWebApp() {
+        return (SunWebApp) provider.newGraph(
+            SunWebApp.class, appServerVersion.getWebAppVersionAsString());
+    }
+    
     public Servlet createServlet() {
         return sunWebApp.newServlet();
     }
@@ -396,6 +470,14 @@ public class StorageBeanFactory {
         return sunWebApp.newMessageDestination();
     }
     
+    public MessageDestinationRef createMessageDestinationRef() {
+        try {
+            return sunWebApp.newMessageDestinationRef();
+        } catch (VersionNotSupportedException ex) {
+        }
+        return null;
+    }
+    
     public PortInfo createPortInfo() {
         return serviceRef.newPortInfo();
     }
@@ -428,12 +510,28 @@ public class StorageBeanFactory {
         return sunWebApp.newWebserviceDescription();
     }
     
-    public WebserviceEndpoint createWebserviceEndpoint() {
-        return ejb.newWebserviceEndpoint();
+    public WebserviceEndpoint createWebHostedWebserviceEndpoint() {
+//        return servlet.newWebserviceEndpoint();
+        WebserviceEndpoint endpoint = servlet.newWebserviceEndpoint();
+//        System.out.println("New WebserviceEndpoint(WEB): " + endpoint.getClass().getSimpleName());
+//        Thread.currentThread().dumpStack();
+        return endpoint;
     }
     
-    public LoginConfig createLoginConfig() {
-        return webserviceEndpoint.newLoginConfig();
+    public WebserviceEndpoint createEjbHostedWebserviceEndpoint() {
+//        return ejb.newWebserviceEndpoint();
+        WebserviceEndpoint endpoint = servlet.newWebserviceEndpoint();
+//        System.out.println("New WebserviceEndpoint(EJB-JAR): " + endpoint.getClass().getSimpleName());
+//        Thread.currentThread().dumpStack();
+        return endpoint;
+    }
+    
+    public LoginConfig createWebHostedLoginConfig() {
+        return webHostedWebserviceEndpoint.newLoginConfig();
+    }
+    
+    public LoginConfig createEjbHostedLoginConfig() {
+        return ejbHostedWebserviceEndpoint.newLoginConfig();
     }
     
     public WsdlPort createWsdlPort() {
@@ -450,9 +548,9 @@ public class StorageBeanFactory {
 
 
     public MessageSecurityBinding createMessageSecurityBinding() {
-        try{
-            return webserviceEndpoint.newMessageSecurityBinding();
-        }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException ex){
+        try {
+            return ejbHostedWebserviceEndpoint.newMessageSecurityBinding();
+        } catch(VersionNotSupportedException ex){
         }
         return null;
     }
@@ -467,20 +565,18 @@ public class StorageBeanFactory {
 
 
     public FlushAtEndOfMethod createFlushAtEndOfMethod() {
-        try{
+        try {
             return ejb.newFlushAtEndOfMethod();
-        }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException ex){
-            //System.out.println("Not Supported Version");      //NOI18N
+        } catch(VersionNotSupportedException ex){
         }
         return null;
     }
 
 
     public CheckpointAtEndOfMethod createCheckpointAtEndOfMethod() {
-        try{
+        try {
             return ejb.newCheckpointAtEndOfMethod();
-        }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException ex){
-            //System.out.println("Not Supported Version");      //NOI18N
+        } catch(VersionNotSupportedException ex){
         }
         return null;
     }
@@ -492,10 +588,9 @@ public class StorageBeanFactory {
 
 
     public PrefetchDisabled createPrefetchDisabled() {
-        try{
+        try {
             return cmp.newPrefetchDisabled();
-        }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
-            //System.out.println("Not Supported Version");      //NOI18N
+        } catch(VersionNotSupportedException e){
         }
         return null;
     }

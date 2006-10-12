@@ -123,7 +123,7 @@ public class JarUtil {
         return null;
     }
     
-    public void addDirectory(File fromDir){
+    public void addDirectory(File fromDir){  
         try {
 			// !PW IZ 48680  Make sure the directory for this jar file exists or this operation 
 			// will fail.  Note the jar file does not need (and is not likely) to exist.
@@ -148,31 +148,32 @@ public class JarUtil {
         }
     }
     
-    public void addDirectory(File dir, String parent, JarOutputStream jarout) {
+    public void addDirectory(File dir, final String parentIn, JarOutputStream jarout) {
+        String parent = parentIn;
         try {
             File files[] = dir.listFiles();
             for(int i = 0; i < files.length; i++) {
                 if(files[i].isDirectory()) {
                     String name;
-                    if(!parent.equals("")){
-                        name = parent + "/" + files[i].getName() + "/";
-                        parent = parent + "/" + files[i].getName();
+                    String parentName = parent;
+                    if(!parentName.equals("")){
+                        name = parentName + "/" + files[i].getName() + "/";
+                        parentName = parentName + "/" + files[i].getName();
                     }else{
                         name = files[i].getName() + "/";
-                        parent = files[i].getName();
+                        parentName = files[i].getName();
                     }
-                    //System.out.println(name);
                     JarEntry directory = new JarEntry(name);
                     jarout.putNextEntry(directory);
-                    addDirectory(files[i], parent, jarout);
+                    addDirectory(files[i], parentName, jarout);
                 }else {
                     String name;
-                    if(!parent.equals("")){
-                        name = parent + "/" + files[i].getName();
+                    String parentName = parent;
+                    if(!parentName.equals("")){
+                        name = parentName + "/" + files[i].getName();
                     }else{
                         name = files[i].getName();
                     }
-                    //System.out.println(name);
                     addFile(files[i], name, jarout);
                 }
             }

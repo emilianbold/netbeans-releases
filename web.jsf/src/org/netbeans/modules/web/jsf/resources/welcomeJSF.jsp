@@ -14,7 +14,7 @@
     </head>
     <body>
         <f:view>
-            <h1><h:outputText value="Java Server Faces" /></h1>
+            <h1><h:outputText value="JavaServer Faces" /></h1>
         </f:view>
     </body>
 </html>

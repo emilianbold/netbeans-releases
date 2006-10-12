@@ -48,9 +48,9 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
@@ -296,13 +296,15 @@ public class J2SEProjectProperties {
         try {                        
             // Store properties 
             Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
                 public Object run() throws IOException {
                     if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        J2SEProject.class.getResource("resources/build-impl.xsl")) & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
+                        J2SEProject.class.getResource("resources/build-impl.xsl"), //NOI18N
+                        findJaxWsFileObject(projectDir))
+                        & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
                         if (showModifiedMessage (NbBundle.getMessage(J2SEProjectProperties.class,"TXT_ModifiedTitle"))) {
                             //Delete user modified build-impl.xml
-                            FileObject fo = updateHelper.getAntProjectHelper().getProjectDirectory().
-                                getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                            FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
                             if (fo != null) {
                                 fo.delete();
                             }
@@ -651,6 +653,10 @@ public class J2SEProjectProperties {
             // Make sure the definition file is always created, even if it is empty.
             updateHelper.putProperties(sharedPath, updateHelper.getProperties(sharedPath));
         }
+    }
+    
+    private FileObject findJaxWsFileObject(FileObject projectDir) {
+        return projectDir.getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
     }
     
 }

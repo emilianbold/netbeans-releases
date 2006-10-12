@@ -5,6 +5,28 @@
 		<dtd-name>resources</dtd-name>
 		<bean-name>Resources</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources</implements>
+                <user-code>
+                    public void setJmsResource(int index, org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value){}
+                    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource getJmsResource(int index){
+                        return null;
+                    }
+                    public int sizeJmsResource(){
+                        return -1;
+                    }
+                    public void setJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource[] value){}
+                    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource[] getJmsResource(){
+                        return null;
+                    }
+                    public int addJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value){
+                        return -1;
+                    }
+                    public int removeJmsResource(org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource value){
+                        return -1;
+                    }
+                    public org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource newJmsResource(){
+                        return null;
+                    }
+                </user-code>
 	</meta-element>
 	<meta-element>
 		<dtd-name>custom-resource</dtd-name>
@@ -57,29 +79,19 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorConnectionPool</implements>
 	</meta-element>
 	<meta-element>
-		<dtd-name>jms-resource</dtd-name>
-		<bean-name>JmsResource</bean-name>
-		<implements>org.netbeans.modules.j2ee.sun.dd.api.serverresources.JmsResource</implements>
-	</meta-element>
-	<meta-element>
 		<dtd-name>description</dtd-name>
 		<bean-name>Description</bean-name>
-		<wrapper-class>String</wrapper-class>
-	</meta-element>
-	<meta-element>
-		<dtd-name>property</dtd-name>
-		<bean-name>PropertyElement</bean-name>
-		<implements>org.netbeans.modules.j2ee.sun.dd.api.serverresources.PropertyElement</implements>
-	</meta-element>
-	<meta-element>
-		<dtd-name>#PCDATA</dtd-name>
-		<bean-name>Pcdata</bean-name>
 		<wrapper-class>String</wrapper-class>
 	</meta-element>
 	<meta-element>
 		<dtd-name>security-map</dtd-name>
 		<bean-name>SecurityMap</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.serverresources.SecurityMap</implements>
+	</meta-element>
+	<meta-element>
+		<dtd-name>property</dtd-name>
+		<bean-name>PropertyElement</bean-name>
+		<implements>org.netbeans.modules.j2ee.sun.dd.api.serverresources.PropertyElement</implements>
 	</meta-element>
 	<meta-element>
 		<dtd-name>backend-principal</dtd-name>
@@ -99,6 +111,11 @@
 	<meta-element>
 		<dtd-name>user-group</dtd-name>
 		<bean-name>UserGroup</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>#PCDATA</dtd-name>
+		<bean-name>Pcdata</bean-name>
 		<wrapper-class>String</wrapper-class>
 	</meta-element>
 </metaDD>

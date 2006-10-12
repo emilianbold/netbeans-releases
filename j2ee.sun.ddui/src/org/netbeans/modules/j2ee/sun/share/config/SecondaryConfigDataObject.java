@@ -64,13 +64,7 @@ public class SecondaryConfigDataObject extends ConfigDataObject {
     }
     
     private ConfigDataObject getPrimaryDataObject() {
-        if (primary == null) {
-//            ConfigSupportImpl csi = (ConfigSupportImpl)  getProvider().getConfigSupport();
-//            ConfigurationStorage storage = csi.getStorage();
-//            if (storage != null) {
-//                primary = storage.getPrimaryDataObject();
-//                primary.addSecondary(this);
-//            }
+        if (primary == null || !primary.isValid()) {
             // The only JSR-88 secondary configuration file supported by SJSAS 8.x 
             // or 9.x is sun-cmp-mappings.xml which is secondary for sun-ejb-jar.xml
             // AND that they will always reside in the same directory.  So we can find
@@ -139,14 +133,15 @@ public class SecondaryConfigDataObject extends ConfigDataObject {
         return cdo == null ? null : cdo.findOpenedConfigEditor();
     }
     
+    public boolean closeConfigEditors() {
+        ConfigDataObject cdo = getPrimaryDataObject();
+        return cdo == null ? false : cdo.closeConfigEditors();
+    }
+    
     public void fileDeleted(org.openide.filesystems.FileEvent fe) {
-        if (fe.getFile().equals(this.getPrimaryFile()) && primary != null) {
+        if (fe.getFile().equals(this.getPrimaryFile()) && getPrimaryDataObject() != null) {
             primary.removeSecondary(this);
         }
-    }
-
-    public synchronized void resetStorage() {
-        // should override parent to do nothing
     }
 
     protected void fireCookieChange() {

@@ -38,23 +38,25 @@ public class PluginOptions extends SystemOption {
         return null; // new HelpCtx ("AS_RTT_Plugin"); //NOI18N
     } 
     
-    public String[] getUserList() {
-        return PluginProperties.getDefault().getUserList();
-    }
-    
-    public void setUserList(String [] list) {
-        PluginProperties.getDefault().setUserList(list);
-       firePropertyChange("displayPreference",null, list);
-    }
-    
-    public String[] getGroupList() {
-        return PluginProperties.getDefault().getGroupList();
-    }
-    
-    public void setGroupList(String [] list) {
-        PluginProperties.getDefault().setGroupList(list);
-       firePropertyChange("groupList",null, list);
-    }
+    // !PW Disable visibility of these properties for now.  Edit them via the
+    // security-role-mapping customizer in any project.
+//    public String[] getUserList() {
+//        return PluginProperties.getDefault().getUserList();
+//    }
+//    
+//    public void setUserList(String [] list) {
+//        PluginProperties.getDefault().setUserList(list);
+//       firePropertyChange("displayPreference",null, list);
+//    }
+//    
+//    public String[] getGroupList() {
+//        return PluginProperties.getDefault().getGroupList();
+//    }
+//    
+//    public void setGroupList(String [] list) {
+//        PluginProperties.getDefault().setGroupList(list);
+//       firePropertyChange("groupList",null, list);
+//    }
     
     public String getLogLevel() {
         return PluginProperties.getDefault().getLogLevel();

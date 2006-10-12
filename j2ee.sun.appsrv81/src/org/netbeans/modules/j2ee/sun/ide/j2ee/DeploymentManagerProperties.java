@@ -24,12 +24,23 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.CustomizerSupport;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -42,10 +53,19 @@ public class DeploymentManagerProperties {
     public static final String DOMAIN_ATTR = "DOMAIN"; //NOI18N
     
     /**
-     * Username property, its value is used by the deployment manager.
+     * HTTP Monitor on or off property, its value is jsut before starting the server with the correct setting.
      */
     public static final String HTTP_MONITOR_ATTR = "HttpMonitorOn"; //NOI18N
     
+    /**
+     * HTTP Proxy sync up with IDE setting: on or off property, its value is just before starting the server with the correct setting.
+     */
+    public static final String HTTP_PROXY_SYNCHED_ATTR = "HttpProxySynced"; //NOI18N
+    
+    /**
+     * directory deployment possible on or off property, .
+     */
+    public static final String DIRDEPLOYMENT_POSSIBLE_ATTR = "DirectoryDeploymentPossible"; //NOI18N
     /**
      * Password property, its value is used by the deployment manager.
      */
@@ -70,6 +90,9 @@ public class DeploymentManagerProperties {
      *
      **/
     public static final String AVK_INSTRUMENTED_ATTR = "AVKTurnedOn";
+    
+    private static final String PROP_SOURCES       = "sources";         // NOI18N
+    private static final String PROP_JAVADOCS      = "javadocs";        // NOI18N
     
     private InstanceProperties instanceProperties;
     private SunDeploymentManagerInterface SunDM;
@@ -110,8 +133,9 @@ public class DeploymentManagerProperties {
      */
     public java.lang.String getDomainName() {
         String retVal = ""; //NOI18N
-        if (instanceProperties==null)
+        if (instanceProperties==null){
             return retVal;
+        }
         retVal = instanceProperties.getProperty(DOMAIN_ATTR) ;
         if (null == retVal || (retVal.trim().length() == 0)) {
             retVal = ""; //NOI18N
@@ -134,10 +158,12 @@ public class DeploymentManagerProperties {
     public java.lang.String getLocation() {
         java.io.File irf = SunDM.getPlatformRoot();
         String installRoot = null;
-        if (null != irf && irf.exists())
-            installRoot = irf.getAbsolutePath(); // System.getProperty("com.sun.aas.installRoot");
-        if (instanceProperties==null)
+        if (null != irf && irf.exists()){
+            installRoot = irf.getAbsolutePath();
+        }
+        if (instanceProperties==null){
             return installRoot;
+        }
         String ret= instanceProperties.getProperty(LOCATION_ATTR) ;
         if (ret==null){
             return installRoot;
@@ -145,7 +171,12 @@ public class DeploymentManagerProperties {
         if (ret.equals( installRoot )){
             //upgrade from previous semantic of this field in EA2: it was the app server location
             //not the domain location...
-            ret = ret +File.separator+"domains";
+            String ext = (File.separatorChar == '/' ? "conf" : "bat");          // NOI18N
+            File asenv = new File(installRoot,"config/asenv."+ext);            // NOI18N
+            Asenv asenvContent = new Asenv(asenv);
+            String defDomainsDirName = asenvContent.get(Asenv.AS_DEF_DOMAINS_PATH);
+            ret = defDomainsDirName;
+//            ret = ret +File.separator+"domains";
             instanceProperties.setProperty(LOCATION_ATTR, ret);
             
         }
@@ -157,8 +188,9 @@ public class DeploymentManagerProperties {
      * @param location New value of property location.
      */
     public void setLocation(java.lang.String location) {
-        if (instanceProperties==null)
+        if (instanceProperties==null){
             return;
+        }
         instanceProperties.setProperty(LOCATION_ATTR, location);
     }
     
@@ -167,8 +199,9 @@ public class DeploymentManagerProperties {
      * @return Value of property password.
      */
     public java.lang.String getPassword() {
-        if (instanceProperties==null)
+        if (instanceProperties==null){
             return null;
+        }
         return instanceProperties.getProperty(InstanceProperties.PASSWORD_ATTR) ;
     }
     
@@ -201,8 +234,9 @@ public class DeploymentManagerProperties {
      * @return Value of property UserName.
      */
     public java.lang.String getUserName() {
-        if (instanceProperties==null)
+        if (instanceProperties==null){
             return null;
+        }
         return instanceProperties.getProperty(InstanceProperties.USERNAME_ATTR) ;
     }
     
@@ -214,21 +248,15 @@ public class DeploymentManagerProperties {
         instanceProperties.setProperty(InstanceProperties.USERNAME_ATTR, UserName);
         
     }
-    /**
-     * Ask the server instance to reset cached deployment manager, J2EE
-     * management objects and refresh it UI elements.
-     */
-    public  void refreshServerInstance(){
-        instanceProperties.refreshServerInstance();
-    }
-    
     
     public String getHttpMonitorOn() {
-        if (instanceProperties==null)
+        if (instanceProperties==null){
             return "false";
+        }
         String s = instanceProperties.getProperty(HTTP_MONITOR_ATTR);
-        if (s==null)
+        if (s==null){
             return "false";
+        }
         
         return s;
     }
@@ -237,8 +265,9 @@ public class DeploymentManagerProperties {
         instanceProperties.setProperty(HTTP_MONITOR_ATTR, HttpMonitorOn);
     }
     public String getHttpPortNumber() {
-        if (instanceProperties==null)
+        if (instanceProperties==null){
             return "8080";
+        }
         return instanceProperties.getProperty(HTTP_PORT_NUMBER_ATTR) ;
     }
     
@@ -266,15 +295,109 @@ public class DeploymentManagerProperties {
     
     
     public boolean getAVKOn() {
-        if (instanceProperties == null)
+        if (instanceProperties == null){
             return false;
+        }
         String s = instanceProperties.getProperty(AVK_INSTRUMENTED_ATTR);
-        if (s == null)
+        if (s == null){
             return false;
+        }
         return Boolean.valueOf(s).booleanValue();
     }
     
     public void setAVKOn(boolean AVKOn) {
         instanceProperties.setProperty(AVK_INSTRUMENTED_ATTR, Boolean.toString(AVKOn));
     }
-}
+
+    public void setJavadocs(List<URL> path) {
+        instanceProperties.setProperty(PROP_JAVADOCS, CustomizerSupport.buildPath(path));
+        PlatformImpl platform = (PlatformImpl) new PlatformFactory().getJ2eePlatformImpl((DeploymentManager) SunDM); 
+        platform.notifyLibrariesChanged();
+    }
+
+    public void setSources(List<URL> path) {
+        instanceProperties.setProperty(PROP_SOURCES, CustomizerSupport.buildPath(path));
+        PlatformImpl platform = (PlatformImpl) new PlatformFactory().getJ2eePlatformImpl((DeploymentManager) SunDM); 
+        platform.notifyLibrariesChanged();
+    }
+
+    public List<URL> getClasses() {
+        List data = new ArrayList();
+        PlatformImpl platform = (PlatformImpl) new PlatformFactory().getJ2eePlatformImpl((DeploymentManager) SunDM); 
+        for (LibraryImplementation libImpl : platform.getLibraries()) {
+            data.addAll(libImpl.getContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH));
+        }
+        return data;
+    }
+
+    public List<URL> getSources() {
+        String path = instanceProperties.getProperty(PROP_SOURCES);
+        if (path == null) {
+            return new ArrayList();
+        }
+        return CustomizerSupport.tokenizePath(path);
+    }
+
+    public List<URL> getJavadocs() {
+        String path = instanceProperties.getProperty(PROP_JAVADOCS);
+        if (path == null) {                
+            ArrayList<URL> list = new ArrayList<URL>();
+            try {                
+                File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
+                if (j2eeDoc != null) {
+                    list.add(fileToUrl(j2eeDoc));
+                }
+            } catch (MalformedURLException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            return list;
+        }
+        return CustomizerSupport.tokenizePath(path);
+    }
+    
+    /** Return URL representation of the specified file. */
+    private static URL fileToUrl(File file) throws MalformedURLException {
+        URL url = file.toURI().toURL();
+        if (FileUtil.isArchiveFile(url)) {
+            url = FileUtil.getArchiveRoot(url);
+        }
+        return url;
+    }
+    
+    /*
+     * return true is the IDE needs to sync up this instance with the same proxies as the IDE
+     * true by default
+     **/
+        public boolean isSyncHttpProxyOn() {
+        if (instanceProperties == null){
+            return true;//true by default
+        }
+        String s = instanceProperties.getProperty(HTTP_PROXY_SYNCHED_ATTR);
+        if (s == null){
+            return true;//true by default
+        }
+        return Boolean.valueOf(s).booleanValue();
+    }
+    
+    public void setSyncHttpProxyOn(boolean syncHttpProxyOn) {
+        instanceProperties.setProperty(HTTP_PROXY_SYNCHED_ATTR, Boolean.toString(syncHttpProxyOn));
+    }
+    
+    /*
+     * return true is this instance can utilized directory deployment for Web Apps (for now)
+     * true by default
+     **/
+        public boolean isDirectoryDeploymentPossible() {
+        if (instanceProperties == null){
+            return true;//true by default
+        }
+        String s = instanceProperties.getProperty(DIRDEPLOYMENT_POSSIBLE_ATTR);
+        if (s == null){
+            return true;//true by default
+        }
+        return Boolean.valueOf(s).booleanValue();
+    }
+    
+    public void setDirectoryDeploymentPossible(boolean dirpossible) {
+        instanceProperties.setProperty(DIRDEPLOYMENT_POSSIBLE_ATTR, Boolean.toString(dirpossible));
+    }}

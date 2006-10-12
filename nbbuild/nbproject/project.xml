@@ -202,6 +202,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/windows</project>
                 <project>../db</project>
                 <project>../db/core</project>
+                <project>../db/dbapi</project>
                 <project>../db/derby</project>
                 <project>../db/model</project>
                 <project>../db/sqleditor</project>
@@ -247,7 +248,9 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../ide/updatecenters</project>
                 <project>../ide/welcome</project>
                 <project>../image</project>
+                <project>../j2ee/archiveproject</project>
                 <project>../j2ee/blueprints</project>
+                <project>../j2ee/clientproject</project>
                 <project>../j2ee/ddapi</project>
                 <project>../j2ee/ddloaders</project>
                 <project>../j2ee/debug</project>
@@ -257,9 +260,15 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../j2ee/ejbfreeform</project>
                 <project>../j2ee/ejbjarproject</project>
                 <project>../j2ee/genericserver</project>
+                <project>../j2ee/metadata</project>
+                <project>../j2ee/persistence</project>
+                <project>../j2ee/persistenceapi</project>
                 <project>../j2ee/platform</project>
                 <project>../j2ee/refactoring</project>
+                <project>../j2ee/samples</project>
+                <project>../j2ee/toplinklib</project>
                 <project>../j2ee/utilities</project>
+                <project>../j2ee/verification</project>
                 <project>../j2eeserver</project>
                 <project>../j2eeserver/ant</project>
                 <project>../j2eeserver/j2eeapis</project>
@@ -287,6 +296,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../lexer/nbbridge</project>
                 <project>../libs/commons_logging</project>
                 <project>../libs/jsch</project>
+                <project>../libs/resolver</project>
                 <project>../libs/swing-layout</project>
                 <project>../libs/xerces</project>
                 <project>../mdr/jmi</project>
@@ -323,7 +333,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../refactoring</project>
                 <project>../schema2beans/rt</project>
                 <project>../serverplugins/jboss4</project>
-                <project>../serverplugins/jmxri</project>
                 <project>../serverplugins/sun/appsrv</project>
                 <project>../serverplugins/sun/appsrv81</project>
                 <project>../serverplugins/sun/sunddapi</project>
@@ -344,7 +353,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../utilities/project</project>
                 <project>../versioncontrol</project>
                 <project>../web/core</project>
-                <project>../web/ddapi</project>
                 <project>../web/examples</project>
                 <project>../web/freeform</project>
                 <project>../web/jsf</project>
@@ -352,14 +360,19 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../web/jspparser</project>
                 <project>../web/jspsyntax</project>
                 <project>../web/jstl11</project>
+                <project>../web/libs/glassfish_logging</project>
                 <project>../web/project</project>
-                <project>../web/servletapi24</project>
+                <project>../web/servletjspapi</project>
                 <project>../web/struts</project>
                 <project>../web/webapi</project>
                 <project>../websvc/clientapi</project>
                 <project>../websvc/core</project>
+                <project>../websvc/customization</project>
                 <project>../websvc/dev</project>
                 <project>../websvc/jaxrpc16</project>
+                <project>../websvc/jaxws20</project>
+                <project>../websvc/jaxwsapi</project>
+                <project>../websvc/jaxwsmodel</project>
                 <project>../websvc/registry</project>
                 <project>../websvc/websvcapi</project>
                 <project>../websvc/websvcddapi</project>
@@ -368,11 +381,16 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/core</project>
                 <project>../xml/css</project>
                 <project>../xml/multiview</project>
+                <project>../xml/retriever</project>
                 <project>../xml/schema</project>
+                <project>../xml/schema/api</project>
                 <project>../xml/tageditorsupport</project>
                 <project>../xml/tax</project>
                 <project>../xml/text-edit</project>
                 <project>../xml/tools</project>
+                <project>../xml/wsdl/api</project>
+                <project>../xml/xam</project>
+                <project>../xml/xdm</project>
                 <project>../xml/xsl</project>
             </subprojects>
         </general-data>

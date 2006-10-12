@@ -190,6 +190,11 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
                 NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));  
           return false;  
         }
+        if (getAppResource() == null || getAppResource().trim().length() == 0) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
+                NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_ApplicationResourceNotValid"));  
+            return false;
+        }
         if (wizardDescriptor != null)
             wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
         return true;

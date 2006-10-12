@@ -39,12 +39,11 @@ public class Installer extends ModuleInstall {
     /** Factory method to create DeploymentFactory for s1as.
      */
     public static synchronized Object create() {
-        if (facadeDF != null)
-            return facadeDF;
+        if (facadeDF == null){                  
         //this is our JSR88 factory lazy init, only when needed via layer.      
          PluginProperties.configureDefaultServerInstance();
          facadeDF =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory();
-        
+        }
         return facadeDF;
     }
        

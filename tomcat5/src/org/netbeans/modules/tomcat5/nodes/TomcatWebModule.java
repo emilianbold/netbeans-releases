@@ -37,18 +37,13 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import java.io.*;
-import org.netbeans.modules.tomcat5.*;
-
+import org.netbeans.modules.tomcat5.TomcatManager;
 
 /**
  *
  * @author  Petr Pisl
  */
 public class TomcatWebModule implements TomcatWebModuleCookie {
-    
-    /** path to context.xml */
-    private static final String CONTEXT_XML_PATH = File.separator + "META-INF" + File.separator + "context.xml";  // NOI18N
  
     private final TomcatModule tomcatModule;
     private final TomcatManager manager;

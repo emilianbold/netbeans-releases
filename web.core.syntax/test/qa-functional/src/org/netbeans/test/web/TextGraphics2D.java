@@ -52,6 +52,7 @@ import java.util.Map;
 public class TextGraphics2D extends Graphics2D {
     StringBuffer buf = new StringBuffer();
     Component dummy;
+    Font font;
     
     /**
      * Creates a new instance of TextGraphics2D
@@ -176,18 +177,19 @@ public class TextGraphics2D extends Graphics2D {
     }
     
     public Shape getClip() {
-        return null;
+        return new Rectangle();
     }
     
     public Rectangle getClipBounds() {
-        return null;
+        return new Rectangle();
     }
     
     public Color getColor() {
-        return null;
+        return Color.WHITE;
     }
     
     public Font getFont() {
+        if(font != null) return font;
         if (dummy == null) return null;
         return dummy.getFont();
     }
@@ -207,6 +209,7 @@ public class TextGraphics2D extends Graphics2D {
     }
     
     public void setFont(Font font) {
+        this.font=font;
     }
     
     public void setPaintMode() {
@@ -282,7 +285,8 @@ public class TextGraphics2D extends Graphics2D {
     }
     
     public FontRenderContext getFontRenderContext() {
-        return null;
+        if (dummy == null) return null;
+        return ((Graphics2D) dummy.getGraphics()).getFontRenderContext();
     }
     
     public Paint getPaint() {

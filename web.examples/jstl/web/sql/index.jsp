@@ -49,13 +49,13 @@
     <tr> 
       <td>Driver:</td>
       <td> 
-        <input type="text" size="40" name="dbDriver" value="RmiJdbc.RJDriver">
+        <input type="text" size="40" name="dbDriver" value="org.apache.derby.jdbc.ClientDriver">
       </td>
     </tr>
     <tr> 
       <td>URL:</td>
       <td> 
-        <input type="text" size="40" name="dbUrl" value="jdbc:rmi://localhost:1099/jdbc:cloudscape:CloudscapeDB;create=true">
+        <input type="text" size="40" name="dbUrl" value="jdbc:derby://localhost:1527/sample;create=true">
       </td>
     </tr>
     <tr> 

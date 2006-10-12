@@ -22,6 +22,12 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.web.project</code-name-base>
+            <extra-compilation-unit>
+                <package-root>antsrc</package-root>
+                <classpath>${module.classpath}:${ant.jar}</classpath>
+                <built-to>build/antclasses</built-to>
+                <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
+            </extra-compilation-unit>
             <module-dependencies>
                 <dependency>
                     <code-name-base>javax.jmi.reflect</code-name-base>
@@ -109,12 +115,20 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.7.20</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -126,12 +140,29 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.persistenceapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>4</release-version>
-                        <specification-version>1.10</specification-version>
+                        <specification-version>1.17</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -227,6 +258,23 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxwsapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxwsmodel</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -350,14 +398,11 @@ Microsystems, Inc. All Rights Reserved.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.earproject</friend>
+                <friend>org.netbeans.modules.j2ee.archive</friend>
+                <friend>com.sun.rave.project.jsfproject</friend>
                 <package>org.netbeans.modules.web.project.api</package>
+                <package>org.netbeans.modules.web.project.spi</package>
             </friend-packages>
-            <extra-compilation-unit>
-                <package-root>antsrc</package-root>
-                <classpath>${module.classpath}:${ant.jar}</classpath>
-                <built-to>build/antclasses</built-to>
-                <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
-            </extra-compilation-unit>
         </data>
     </configuration>
 </project>

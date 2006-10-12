@@ -27,14 +27,15 @@ import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.openide.*;
 import org.openide.nodes.*;
+
 import org.netbeans.modules.j2ee.sun.share.config.ui.ConfigBeanNode;
+import org.netbeans.modules.j2ee.sun.share.configbean.Base;
 import org.netbeans.modules.j2ee.sun.share.configbean.DConfigBeanProperties;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
-
 /**
  */
-public class ConfigBeanStorage implements PropertyChangeListener {
+public class ConfigBeanStorage implements PropertyChangeListener, Comparable {
     
     private ConfigurationStorage storage;
     DConfigBean bean;
@@ -123,7 +124,15 @@ public class ConfigBeanStorage implements PropertyChangeListener {
         } 
         HashSet targetSet = new HashSet();
         for (int i=0; targetDDs == null && i < xpaths.length; i++) {
-            if (xpaths[i].startsWith(relPath)) {
+            // IZ 73849 - Make sure that relative path is a true xpath prefix which means
+            // that if xpath[i] starts with, but is longer than the relative path, then the
+            // character immediately following the prefix must be a slash.  i.e.
+            // 
+            //   xpath == relpath   OR
+            //   xpath == relpath + "/" + remainder of xpath
+            //
+            if(xpaths[i].startsWith(relPath) && 
+                    (xpaths[i].length() == relPath.length() || xpaths[i].charAt(relPath.length()) == '/')) {
                 String targetPath = DDCommon.getRelativePath(xpaths[i], relPath);
                 DDBean[] dds = eventDD.getChildBean(targetPath);
                 if (dds == null)
@@ -167,7 +176,7 @@ public class ConfigBeanStorage implements PropertyChangeListener {
         ConfigBeanStorage cbs = new ConfigBeanStorage(cb, this, storage);
         Collection c = (Collection) childMap.get(dd.getXpath());
         if(c == null) {
-            c = new HashSet();
+            c = new TreeSet();
             childMap.put(dd.getXpath(), c);
         }
         c.add(cbs);
@@ -187,6 +196,35 @@ public class ConfigBeanStorage implements PropertyChangeListener {
                 fireChildBeanRemovedEvent(cbs);
             }
         }
+    }
+
+    /** Ordering for ConfigBeanStorage intances.  This is so we can use TreeSet or
+     *  some other ordered set to store these objects and offer a reasonable ordering
+     *  in the Configuration Editor UI.
+     */
+    public int compareTo(Object o) {
+        if(o == null) {
+            throw new NullPointerException("Null argument passed to ConfigBeanStorage.compareTo()"); // NOI18N
+        }
+        
+        ConfigBeanStorage target = (ConfigBeanStorage) o;
+        int result = -1;
+        if(this == o) {
+            result = 0;
+        } else if(bean instanceof Base && target.bean instanceof Base) {
+            Base sourceBean = (Base) bean;
+            Base targetBean = (Base) target.bean;
+            
+            result = sourceBean.getDisplayName().compareTo(targetBean.getDisplayName());
+
+            if(result == 0) {
+                result = sourceBean.getIdentity().compareTo(targetBean.getIdentity());
+            }
+        } else {
+            throw new IllegalStateException("Source or target bean is null or not derived from Base."); // NOI18N
+        }
+        
+        return result;
     }
     
     public DConfigBean getConfigBean() {
@@ -217,4 +255,5 @@ public class ConfigBeanStorage implements PropertyChangeListener {
             l.childBeanRemoved(childBeanStorage);
         }
     }
+
 }

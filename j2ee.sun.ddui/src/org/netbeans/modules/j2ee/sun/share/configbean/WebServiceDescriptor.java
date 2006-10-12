@@ -18,6 +18,10 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.beans.PropertyVetoException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,6 +34,8 @@ import javax.enterprise.deploy.model.XpathEvent;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.sun.dd.api.common.MessageSecurityBinding;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
@@ -47,18 +53,52 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
  *		webservice-description : WebserviceDescription
  *			webservice-description-name : String
  *			wsdl-publish-location : String?
- *		webservice-endpoint : WebserviceEndpoint[0,n]
- *			port-component-name : String
- *			endpoint-address-uri : String?
- *			login-config : LoginConfig?
- *				auth-method : String
- *			transport-guarantee : String?
- *			service-qname : ServiceQname?	[not used - set by server]
- *				namespaceURI : String		[not used - set by server]
- *				localpart : String			[not used - set by server]
- *			tie-class : String?				[not used - set by server]
- *			servlet-impl-class : String?	[not used - set by server]
+ *			webserviceEndpoint <webservice-endpoint> : WebserviceEndpoint[0,n]
+ *				portComponentName <port-component-name> : String
+ *				endpointAddressUri <endpoint-address-uri> : String[0,1]
+ *				(
+ *				  | loginConfig <login-config> : LoginConfig
+ *				  | 	authMethod <auth-method> : String
+ *          // *** EJB JAR version has realm field.
+ *				  | 	realm <realm> : String[0,1]
+ *				  |
+ *				  | messageSecurityBinding <message-security-binding> : MessageSecurityBinding
+ *				  | 	[attr: auth-layer ENUM #REQUIRED ( SOAP ) ]
+ *				  | 	[attr: provider-id CDATA #IMPLIED ]
+ *				  | 	messageSecurity <message-security> : MessageSecurity[0,n]
+ *				  | 		message <message> : Message[1,n]
+ *				  | 			| javaMethod <java-method> : JavaMethod[0,1]
+ *				  | 			| 	methodName <method-name> : String
+ *				  | 			| 	methodParams <method-params> : MethodParams[0,1]
+ *				  | 			| 		methodParam <method-param> : String[0,n]
+ *				  | 			| operationName <operation-name> : String[0,1]
+ *				  | 		requestProtection <request-protection> : boolean[0,1]
+ *				  | 			[attr: auth-source ENUM #IMPLIED ( sender content ) ]
+ *				  | 			[attr: auth-recipient ENUM #IMPLIED ( before-content after-content ) ]
+ *				  | 			EMPTY : String
+ *				  | 		responseProtection <response-protection> : boolean[0,1]
+ *				  | 			[attr: auth-source ENUM #IMPLIED ( sender content ) ]
+ *				  | 			[attr: auth-recipient ENUM #IMPLIED ( before-content after-content ) ]
+ *				  | 			EMPTY : String
+ *				)[0,1]
+ *				transportGuarantee <transport-guarantee> : String[0,1]
+ *				serviceQname <service-qname> : ServiceQname[0,1]        [not used - set by server]
+ *					namespaceURI <namespaceURI> : String                [not used - set by server]
+ *					localpart <localpart> : String                      [not used - set by server]
+ *				tieClass <tie-class> : String[0,1]                      [not used - set by server]
+ *				servletImplClass <servlet-impl-class> : String[0,1]     [not used - set by server]
+ *				debuggingEnabled <debugging-enabled> : String[0,1]
  *
+ *          // *** WEB APPLICATION version of property field
+ *				webProperty <property> : WebProperty[0,n]
+ *					[attr: name CDATA #REQUIRED ]
+ *					[attr: value CDATA #REQUIRED ]
+ *					description <description> : String[0,1]
+ *
+ *          // *** EJB JAR version of property field
+ *				propertyElement <property> : PropertyElement[0,n]
+ *					name <name> : String
+ *					value <value> : String
  *
  * @author  Peter Williams
  */
@@ -68,6 +108,7 @@ public class WebServiceDescriptor extends Base {
 	 */
 	public static final String WEBSERVICE_DESCRIPTION_NAME = "webserviceDescriptionName"; // NOI18N
 	public static final String WEBSERVICE_ENDPOINT = "webserviceEndpoint"; // NOI18N
+	public static final String ENDPOINT_SECURITY_BINDING = "endpointSecurityBinding"; // NOI18N
 	public static final String COMPONENT_LINK_NAME = "componentLinkName"; // NOI18N
 
 
@@ -83,7 +124,11 @@ public class WebServiceDescriptor extends Base {
     /** Differentiates Servlet vs Ejb webservice support */
     private EndpointHelper helper;
 
-
+    /** EJB modules for J2EE 1.4 and earlier require this field.  This boolean
+      * controls whether we provide a default value and keep it up to date as needed. 
+      */
+    private boolean requiresDefaultEndpointUri;
+    
     /** Creates a new instance of WebServiceDescriptor */
 	public WebServiceDescriptor() {
 		setDescriptorElement(bundle.getString("BDN_WebServiceDescriptor")); // NOI18N
@@ -103,12 +148,14 @@ public class WebServiceDescriptor extends Base {
         BaseRoot masterRoot = getConfig().getMasterDCBRoot();
         if(masterRoot instanceof WebAppRoot) {
             helper = servletHelper;
+            requiresDefaultEndpointUri = false;
         } else if(masterRoot instanceof EjbJarRoot) {
             helper = ejbHelper;
+            requiresDefaultEndpointUri = (getJ2EEModuleVersion().compareSpecification(J2EEVersion.JAVAEE_5_0) < 0);
         } else {
             throw new ConfigurationException("Unexpected master DConfigBean type: " + masterRoot); // NOI18N
         }
-
+        
         dDBean.addXpathListener(dDBean.getXpath(), this);
 		webServiceDescriptionNameDD = getNameDD("webservice-description-name"); // NOI18N
 
@@ -118,7 +165,52 @@ public class WebServiceDescriptor extends Base {
 	protected String getComponentName() {
 		return getWebServiceDescriptionName();
 	}
+    
+	/** -----------------------------------------------------------------------
+	 *  Validation implementation
+	 */
+	
+	// relative xpaths (double as field id's)
+	public static final String FIELD_WSDL_PUBLISH_LOCATION = "wsdl-publish-location";
 
+	protected void updateValidationFieldList() {
+		super.updateValidationFieldList();
+		validationFieldList.add(FIELD_WSDL_PUBLISH_LOCATION);
+	}
+	
+	public boolean validateField(String fieldId) {
+		ValidationError error = null;
+		
+		// !PW use visitor pattern to get rid of switch/if statement for validation
+		//     field -- data member mapping.
+		//
+		if(fieldId.equals(FIELD_WSDL_PUBLISH_LOCATION)) {
+			String absoluteFieldXpath = getAbsoluteXpath(fieldId);
+			
+			if(Utils.notEmpty(wsdlPublishLocation)) {
+                try {
+                    URL testUrl = new URL(wsdlPublishLocation);
+                } catch(MalformedURLException ex) {
+                    Object [] args = new Object[1];
+                    args[0] = wsdlPublishLocation; // NOI18N
+                    String message = MessageFormat.format(bundle.getString("ERR_InvalidUrl"), args); // NOI18N
+                    error = ValidationError.getValidationError(ValidationError.PARTITION_GLOBAL, absoluteFieldXpath, message);
+                }
+			}
+			
+			if(error == null) {
+				error = ValidationError.getValidationErrorMask(ValidationError.PARTITION_GLOBAL, absoluteFieldXpath);
+			}
+		}
+		
+		if(error != null) {
+			getMessageDB().updateError(error);
+		}
+		
+		// return true if there was no error added
+		return (error == null || !Utils.notEmpty(error.getMessage()));
+	}
+	
 	/** Getter for helpId property
 	 * @return Help context ID for this DConfigBean
 	 */
@@ -133,6 +225,18 @@ public class WebServiceDescriptor extends Base {
 	public String getWebServiceDescriptionName() {
 		return cleanDDBeanText(webServiceDescriptionNameDD);
 	}
+    
+    /** For the customizer to determine the host type of the endpoint.
+     */
+    public boolean isWarModule() {
+        // FIXME need a better implementation but this will do for now.
+        return helper instanceof ServletHelper;
+    }
+    
+    public boolean isEjbModule() {
+        // FIXME need a better implementation but this will do for now.
+        return helper instanceof EjbHelper;
+    }
 
     /* ------------------------------------------------------------------------
      * Persistence support.  Loads DConfigBeans from previously saved Deployment
@@ -144,7 +248,7 @@ public class WebServiceDescriptor extends Base {
         Snippet snipOne = new DefaultSnippet() {
             public CommonDDBean getDDSnippet() {
                 // Add web service description entry.
-                WebserviceDescription wsDesc = StorageBeanFactory.getDefault().createWebserviceDescription();
+                WebserviceDescription wsDesc = getConfig().getStorageFactory().createWebserviceDescription();
                 wsDesc.setWebserviceDescriptionName(getWebServiceDescriptionName());
                 wsDesc.setWsdlPublishLocation(getWsdlPublishLocation());
                 return wsDesc;
@@ -197,6 +301,7 @@ public class WebServiceDescriptor extends Base {
                 // For each endpoint, locate the host (servlet or ejb) it is bound
                 // to and add it to that host's endpoint table.
                 RootInterface root = (RootInterface) ddParent;
+                String version = root.getVersion().toString();
                 Iterator iter = webServiceEndpointMap.entrySet().iterator();
 
                 while(iter.hasNext()) {
@@ -205,31 +310,66 @@ public class WebServiceDescriptor extends Base {
                     String linkName = getComponentLinkName(portComponent);
                     WebserviceEndpoint endpoint = (WebserviceEndpoint) entry.getValue();
 
-                    boolean endpointAdded = false;
-                    CommonDDBean [] hosts = helper.getEndpointHosts(root);
-                    for(int i = 0; i < hosts.length; i++) {
-                        String hostName = (String) hosts[i].getValue(helper.getHostNameProperty());
-                        if(hostName != null && hostName.equals(linkName)) {
-                            hosts[i].addValue(helper.getEndpointProperty(), endpoint.clone());
-                            endpointAdded = true;
-                            break;
+                    // We only add the endpoint data if there is something to save.
+                    if(hasContent(endpoint)) {
+                        boolean endpointAdded = false;
+                        CommonDDBean [] hosts = helper.getEndpointHosts(root);
+                        for(int i = 0; i < hosts.length; i++) {
+                            String hostName = (String) hosts[i].getValue(helper.getHostNameProperty());
+                            if(hostName != null && hostName.equals(linkName)) {
+                                hosts[i].addValue(helper.getEndpointProperty(), endpoint.cloneVersion(version));
+                                endpointAdded = true;
+                                break;
+                            }
                         }
-                    }
 
-                    if(!endpointAdded) {
-                        CommonDDBean newBean = helper.createNewHost();
-                        newBean.setValue(helper.getHostNameProperty(), linkName);
-                        newBean.addValue(helper.getEndpointProperty(), endpoint.clone());
-                        helper.addEndpointHost(root, newBean);
+                        if(!endpointAdded) {
+                            CommonDDBean newBean = helper.createNewHost();
+                            newBean.setValue(helper.getHostNameProperty(), linkName);
+                            newBean.addValue(helper.getEndpointProperty(), endpoint.cloneVersion(version));
+                            helper.addEndpointHost(root, newBean);
+                        }
                     }
                 }
 
                 return ddParent;
             }
-
+            
             public String getPropertyName() {
                 return helper.getEndpointProperty();
             }
+            
+            private boolean hasContent(WebserviceEndpoint endpoint) {
+                if(Utils.notEmpty(endpoint.getEndpointAddressUri())) {
+                    return true;
+                }
+                
+                if(Utils.notEmpty(endpoint.getTransportGuarantee())) {
+                    return true;
+                }
+                
+                if(endpoint.getLoginConfig() != null) {
+                    return true;
+                }
+                
+                try {
+                    if(Utils.notEmpty(endpoint.getDebuggingEnabled())) {
+                        return true;
+                    }
+                } catch (VersionNotSupportedException ex) {
+                    // ignore.
+                }
+                
+                try {
+                    if(endpoint.getMessageSecurityBinding() != null) {
+                        return true;
+                    }
+                } catch(VersionNotSupportedException ex) {
+                    // ignore.
+                }
+                
+                return false;
+            }            
         };
 
         snippets.add(snipOne);
@@ -273,7 +413,7 @@ public class WebServiceDescriptor extends Base {
 			return result;
 		}
 	}
-
+    
 	boolean loadFromPlanFile(SunONEDeploymentConfiguration config) {
 		String uriText = getUriText();
 
@@ -286,7 +426,7 @@ public class WebServiceDescriptor extends Base {
         clearProperties();
 
         // Default endpoint URI's are set in this call.
-        Map tmpEndpointMap = getEndpointMap();
+        Map tmpEndpointMap = getEndpointMap(requiresDefaultEndpointUri);
 
 		if(descGraph != null) {
             wsdlPublishLocation = descGraph.getWsdlPublishLocation();
@@ -301,17 +441,22 @@ public class WebServiceDescriptor extends Base {
                     WebserviceEndpoint [] definedEndpoints = (WebserviceEndpoint []) hosts[i].getValues(helper.getEndpointProperty());
 
                     for(int j = 0; j < definedEndpoints.length; j++) {
-                        DDBean key = findEndpointInMap(hostName, definedEndpoints[j].getPortComponentName(), tmpEndpointMap);
+                        String portComponentName = definedEndpoints[j].getPortComponentName();
+                        DDBean key = findEndpointInMap(hostName, portComponentName, tmpEndpointMap);
                         if(key != null) {
                             // This end point is still valid and has data that has been previously saved.
                             tmpEndpointMap.remove(key);
                             webServiceEndpointMap.put(key, definedEndpoints[j].clone());
+                            
+                            // Remove this endpoint from the saved endpoint list managed by
+                            // the WebServices root DConfigBean.
+                            ((WebServices) getParent()).removeEndpoint(hostName, portComponentName);
                         }
                     }
                 }
             }
         }
-        
+
         // This is section is the equivalent of setDefaultProperties() in other
         // DConfigBean implementations.
         // Default URI's for any new, or otherwise undefined endpoints were initially
@@ -326,11 +471,14 @@ public class WebServiceDescriptor extends Base {
             }
             
             // Mark master DConfigBean as dirty so we force a save of the new default
-            // values.  We can't just mark this bean dirty because it is still being
-            // constructed and doesn't have any listeners attached yet.
-            config.getMasterDCBRoot().setDirty();
+            // values, if any were generated.  We can't simply mark this bean dirty
+            // because it is still being constructed and doesn't have any listeners 
+            // attached yet.
+            //
+            if(requiresDefaultEndpointUri) {
+                config.getMasterDCBRoot().setDirty();
+            }
         }
-        
         
         // Do we want to do anything special for default values, or simply fill in
         // the entries + port component name all the time?
@@ -366,19 +514,21 @@ public class WebServiceDescriptor extends Base {
     /** Returns a map between servlet/port pairs and endpoints, with the port
      *  name in each endpoint pre-filled.
      */
-    private Map getEndpointMap() {
+    private Map getEndpointMap(boolean requiresDefaultEndpointUri) {
         HashMap endpointMap = new HashMap();
 
         // The list of ports in this service
         DDBean [] portComponents = getDDBean().getChildBean("port-component"); // NOI18N
         for(int i = 0; i < portComponents.length; i++) {
             String portComponentName = getPortComponentName(portComponents[i]);
-            WebserviceEndpoint endpoint = StorageBeanFactory.getDefault().createWebserviceEndpoint();
+            WebserviceEndpoint endpoint = helper.createWebServiceEndpoint(getConfig().getStorageFactory());
 
             if(Utils.notEmpty(portComponentName)) {
                 endpoint.setPortComponentName(portComponentName);
-                 // This where default endpoints get set.
-                endpoint.setEndpointAddressUri(helper.getUriPrefix() + portComponentName);
+                // This where default endpoints get set, if required for this service & module type
+                if(requiresDefaultEndpointUri) {
+                    endpoint.setEndpointAddressUri(helper.getUriPrefix() + portComponentName);
+                }
             }
 
             endpointMap.put(portComponents[i], endpoint);
@@ -474,10 +624,12 @@ public class WebServiceDescriptor extends Base {
 
         endpoint.setPortComponentName(newPortComponentName);
 
-        String oldEndpointUri = endpoint.getEndpointAddressUri();
-        if((oldPortComponentName != null && oldPortComponentName.equals(oldEndpointUri)) ||
-                (oldPortComponentName == null && oldEndpointUri == null)) {
-            endpoint.setEndpointAddressUri(newPortComponentName);
+        if(requiresDefaultEndpointUri) {
+            String oldEndpointUri = endpoint.getEndpointAddressUri();
+            if((oldPortComponentName != null && oldPortComponentName.equals(oldEndpointUri)) ||
+                    (oldPortComponentName == null && oldEndpointUri == null)) {
+                endpoint.setEndpointAddressUri(newPortComponentName);
+            }
         }
     }
 
@@ -494,7 +646,7 @@ public class WebServiceDescriptor extends Base {
         if(xpath.endsWith("port-component")) {
             if(xpathEvent.isAddEvent()) {
                 try {
-                    addWebServiceEndpoint(eventBean);
+                    addWebServiceEndpoint(eventBean, true);
                 } catch(java.beans.PropertyVetoException ex) {
                     // suppress for now.
                 }
@@ -523,34 +675,34 @@ public class WebServiceDescriptor extends Base {
         }
     }
 
-	/* ------------------------------------------------------------------------
-	 * Property support
-	 */
+    /* ------------------------------------------------------------------------
+     * Property support
+     */
 
     /** Getter for property wsdlPublishLocation.
-	 * @return Value of property wsdlPublishLocation.
-	 */
-	public String getWsdlPublishLocation() {
-		return this.wsdlPublishLocation;
-	}
+     * @return Value of property wsdlPublishLocation.
+     */
+    public String getWsdlPublishLocation() {
+        return this.wsdlPublishLocation;
+    }
 
-	/** Setter for property wsdlPublishLocation.
-	 * @param newWsdlPublishLocation New value of property wsdlPublishLocation.
-	 *
-	 * @throws PropertyVetoException
-	 */
-	public void setWsdlPublishLocation(String newWsdlPublishLocation) throws java.beans.PropertyVetoException {
-		String oldWsdlPublishLocation = this.wsdlPublishLocation;
-		getVCS().fireVetoableChange("wsdlPublishLocation", oldWsdlPublishLocation, newWsdlPublishLocation);
-		this.wsdlPublishLocation = newWsdlPublishLocation;
-		getPCS().firePropertyChange("wsdlPublishLocation", oldWsdlPublishLocation, wsdlPublishLocation);
-	}
+    /** Setter for property wsdlPublishLocation.
+     * @param newWsdlPublishLocation New value of property wsdlPublishLocation.
+     *
+     * @throws PropertyVetoException
+     */
+    public void setWsdlPublishLocation(String newWsdlPublishLocation) throws java.beans.PropertyVetoException {
+        String oldWsdlPublishLocation = this.wsdlPublishLocation;
+        getVCS().fireVetoableChange("wsdlPublishLocation", oldWsdlPublishLocation, newWsdlPublishLocation);
+        this.wsdlPublishLocation = newWsdlPublishLocation;
+        getPCS().firePropertyChange("wsdlPublishLocation", oldWsdlPublishLocation, wsdlPublishLocation);
+    }
 
-	/** Getter for property webServiceEndpoint.
-	 * @return Value of property webServiceEndpoint.
-	 *
-	 */
-	public List getWebServiceEndpoints() {
+    /** Getter for property webServiceEndpoint.
+     * @return Value of property webServiceEndpoint.
+     *
+     */
+    public List getWebServiceEndpoints() {
         List result = new ArrayList(webServiceEndpointMap.size());
         Iterator iter = webServiceEndpointMap.entrySet().iterator();
         while(iter.hasNext()) {
@@ -558,19 +710,28 @@ public class WebServiceDescriptor extends Base {
             result.add(entry.getValue());
         }
         return result;
-	}
+    }
 
-	public WebserviceEndpoint getWebServiceEndpoint(int index) {
+    public WebserviceEndpoint getWebServiceEndpoint(int index) {
         List endpoints = getWebServiceEndpoints();
         return (WebserviceEndpoint) endpoints.get(index);
-	}
+    }
 
-	/** Setter for property webServiceEndpoint.
-	 * @param webServiceEndpoint New value of property webServiceEndpoint.
-	 *
-	 * @throws PropertyVetoException
-	 *
-	 */
+    public WebserviceEndpoint getWebServiceEndpoint(String portName) {
+        WebserviceEndpoint result = null;
+        DDBean key = createKey(portName);
+        if(key != null) {
+            result = (WebserviceEndpoint) webServiceEndpointMap.get(key);
+        }
+        return result;
+    }
+
+    /** Setter for property webServiceEndpoint.
+     * @param webServiceEndpoint New value of property webServiceEndpoint.
+     *
+     * @throws PropertyVetoException
+     *
+     */
     public void setWebServiceEndpoints(List newWebServiceEndpoints) throws java.beans.PropertyVetoException {
         Map oldWebServiceEndpointMap = webServiceEndpointMap;
         getVCS().fireVetoableChange("webServiceEndpointMap", oldWebServiceEndpointMap, newWebServiceEndpoints);	// NOI18N
@@ -590,39 +751,63 @@ public class WebServiceDescriptor extends Base {
         getPCS().firePropertyChange("webServiceEndpointMap", oldWebServiceEndpointMap, webServiceEndpointMap);	// NOI18N
     }
 
-	public void addWebServiceEndpoint(WebserviceEndpoint newWebServiceEndpoint) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange(WEBSERVICE_ENDPOINT, null, newWebServiceEndpoint);
-		if(webServiceEndpointMap == null) {
-			webServiceEndpointMap = new HashMap();
-		}
+    public void addWebServiceEndpoint(WebserviceEndpoint newWebServiceEndpoint) throws java.beans.PropertyVetoException {
+        getVCS().fireVetoableChange(WEBSERVICE_ENDPOINT, null, newWebServiceEndpoint);
+        if(webServiceEndpointMap == null) {
+            webServiceEndpointMap = new HashMap();
+        }
         DDBean key = createKey(newWebServiceEndpoint.getPortComponentName());
         if(key != null) {
             webServiceEndpointMap.put(key, newWebServiceEndpoint);
             getPCS().firePropertyChange(WEBSERVICE_ENDPOINT, null, newWebServiceEndpoint );
         }
-	}
+    }
 
-	public void removeWebServiceEndpoint(WebserviceEndpoint oldWebServiceEndpoint) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange(WEBSERVICE_ENDPOINT, oldWebServiceEndpoint, null);
+    public void removeWebServiceEndpoint(WebserviceEndpoint oldWebServiceEndpoint) throws java.beans.PropertyVetoException {
+        getVCS().fireVetoableChange(WEBSERVICE_ENDPOINT, oldWebServiceEndpoint, null);
         DDBean key = createKey(oldWebServiceEndpoint.getPortComponentName());
         if(key != null && webServiceEndpointMap.get(key) != null) {
             webServiceEndpointMap.remove(key);
             getPCS().firePropertyChange(WEBSERVICE_ENDPOINT, oldWebServiceEndpoint, null );
         }
-	}
+    }
 
-    public void addWebServiceEndpoint(DDBean portComponentDD) throws java.beans.PropertyVetoException {
-        WebserviceEndpoint newWebserviceEndpoint = StorageBeanFactory.getDefault().createWebserviceEndpoint();
+    public void addWebServiceEndpoint(DDBean portComponentDD, boolean load) throws java.beans.PropertyVetoException {
+        WebserviceEndpoint newWebserviceEndpoint = helper.createWebServiceEndpoint(getConfig().getStorageFactory());
         String portComponentName = getChildBeanText(portComponentDD, "port-component-name"); // NOI81N
         newWebserviceEndpoint.setPortComponentName(portComponentName);
-        newWebserviceEndpoint.setEndpointAddressUri(portComponentName);
+        
+        // If specified, try to load any saved mappings this endpoint might have
+        if(load) {
+            Base parent = getParent();
+            if(parent instanceof WebServices) {
+                WebServices wsParent = (WebServices) parent;
+                String linkName = getChildBeanText(portComponentDD, "service-impl-bean/" + helper.getLinkXpath());
+                WebserviceEndpoint savedEndpoint = wsParent.removeEndpoint(linkName, portComponentName);
+                
+                if(savedEndpoint != null) {
+                    newWebserviceEndpoint = (WebserviceEndpoint) savedEndpoint.clone();
+                } else {
+                    // set load to false so that we create a default endpoint uri, if required.
+                    load = false;
+                }
+            }
+        }
+        
+        // Only fire vetoable/property changes if we set a default value on this endpoint.
+        if(!load && requiresDefaultEndpointUri) {
+            newWebserviceEndpoint.setEndpointAddressUri(portComponentName);
+            getVCS().fireVetoableChange(WEBSERVICE_ENDPOINT, null, newWebserviceEndpoint);
+        }
 
-        getVCS().fireVetoableChange(WEBSERVICE_ENDPOINT, null, newWebserviceEndpoint);
-		if(webServiceEndpointMap == null) {
-			webServiceEndpointMap = new HashMap();
-		}
+        if(webServiceEndpointMap == null) {
+            webServiceEndpointMap = new HashMap();
+        }
         webServiceEndpointMap.put(portComponentDD, newWebserviceEndpoint);
-        getPCS().firePropertyChange(WEBSERVICE_ENDPOINT, null, newWebserviceEndpoint);
+        
+        if(!load && requiresDefaultEndpointUri) {
+            getPCS().firePropertyChange(WEBSERVICE_ENDPOINT, null, newWebserviceEndpoint);
+        }
     }
 
     public void removeWebServiceEndpoint(DDBean portComponentDD) throws java.beans.PropertyVetoException {
@@ -631,6 +816,23 @@ public class WebServiceDescriptor extends Base {
             getVCS().fireVetoableChange(WEBSERVICE_ENDPOINT, oldWebserviceEndpoint, null);
             webServiceEndpointMap.remove(portComponentDD);
             getPCS().firePropertyChange(WEBSERVICE_ENDPOINT, oldWebserviceEndpoint, null );
+        }
+    }
+
+    /** Setter for message security binding for specific endpoint.
+     *
+     * @param portName port to locate binding for.
+     * @param binding instance of MessageSecurityBinding to set on this port
+     */
+    public void setMessageSecurityBinding(String portName, MessageSecurityBinding newBinding) throws java.beans.PropertyVetoException, VersionNotSupportedException {
+        WebserviceEndpoint endpoint = getWebServiceEndpoint(portName);
+        if(endpoint != null) {
+            MessageSecurityBinding oldBinding = endpoint.getMessageSecurityBinding();
+            getVCS().fireVetoableChange(ENDPOINT_SECURITY_BINDING, oldBinding, newBinding);
+            endpoint.setMessageSecurityBinding((newBinding != null) ? (MessageSecurityBinding) newBinding.clone() : null);
+            getPCS().firePropertyChange(ENDPOINT_SECURITY_BINDING, oldBinding, newBinding);
+        } else {
+            throw new IllegalArgumentException(MessageFormat.format(bundle.getString("ERR_InvalidPortName"), new Object [] { portName }));
         }
     }
 
@@ -658,11 +860,11 @@ public class WebServiceDescriptor extends Base {
 
     private static final String WEB_URI_PREFIX = ""; // NOI18N
     private static final String EJB_URI_PREFIX = "webservice/"; // NOI18N
-    
-    private static final EndpointHelper servletHelper = new ServletHelper();
-    private static final EndpointHelper ejbHelper = new EjbHelper();
 
-    private static abstract class EndpointHelper {
+    private final EndpointHelper servletHelper = new ServletHelper();
+    private final EndpointHelper ejbHelper = new EjbHelper();
+
+    private abstract class EndpointHelper {
 
         private final String linkXpath;
         private final String hostNameProperty;
@@ -696,6 +898,8 @@ public class WebServiceDescriptor extends Base {
 
         public abstract void addWebServiceDescription(CommonDDBean ddParent, CommonDDBean wsDescBean);
 
+        public abstract WebserviceEndpoint createWebServiceEndpoint(StorageBeanFactory factory);
+
         public abstract CommonDDBean [] getEndpointHosts(RootInterface root);
 
         public abstract void addEndpointHost(RootInterface root, CommonDDBean bean);
@@ -703,7 +907,7 @@ public class WebServiceDescriptor extends Base {
         public abstract CommonDDBean createNewHost();
     }
 
-    private static class ServletHelper extends EndpointHelper {
+    private class ServletHelper extends EndpointHelper {
         public ServletHelper() {
             super("servlet-link", Servlet.SERVLET_NAME, Servlet.WEBSERVICE_ENDPOINT, WEB_URI_PREFIX);
         }
@@ -717,6 +921,10 @@ public class WebServiceDescriptor extends Base {
             ddParent.addValue(SunWebApp.WEBSERVICE_DESCRIPTION, wsDescBean);
         }
 
+        public WebserviceEndpoint createWebServiceEndpoint(StorageBeanFactory factory) {
+            return factory.createWebHostedWebserviceEndpoint();
+        }
+
         public CommonDDBean [] getEndpointHosts(RootInterface root) {
             CommonDDBean [] result = (CommonDDBean []) root.getValues(SunWebApp.SERVLET);
             return result;
@@ -727,11 +935,11 @@ public class WebServiceDescriptor extends Base {
         }
 
         public CommonDDBean createNewHost() {
-            return StorageBeanFactory.getDefault().createServlet();
+            return getConfig().getStorageFactory().createServlet();
         }
     }
 
-    private static class EjbHelper extends EndpointHelper {
+    private class EjbHelper extends EndpointHelper {
         public EjbHelper() {
             super("ejb-link", Ejb.EJB_NAME, Ejb.WEBSERVICE_ENDPOINT, EJB_URI_PREFIX);
         }
@@ -749,6 +957,10 @@ public class WebServiceDescriptor extends Base {
             CommonDDBean enterpriseBeans = getEnterpriseBeans(ddParent);
             enterpriseBeans.addValue(EnterpriseBeans.WEBSERVICE_DESCRIPTION, wsDescBean);
         }
+        
+        public WebserviceEndpoint createWebServiceEndpoint(StorageBeanFactory factory) {
+            return factory.createEjbHostedWebserviceEndpoint();
+        }
 
         public CommonDDBean [] getEndpointHosts(RootInterface root) {
             CommonDDBean [] result = null;
@@ -765,14 +977,14 @@ public class WebServiceDescriptor extends Base {
         }
 
         public CommonDDBean createNewHost() {
-            return StorageBeanFactory.getDefault().createEjb();
+            return getConfig().getStorageFactory().createEjb();
         }
 
         private CommonDDBean getEnterpriseBeans(CommonDDBean ddParent) {
             assert ddParent instanceof SunEjbJar;
             CommonDDBean enterpriseBeans = (CommonDDBean) ddParent.getValue(SunEjbJar.ENTERPRISE_BEANS);
             if(enterpriseBeans == null) {
-                enterpriseBeans = StorageBeanFactory.getDefault().createEnterpriseBeans();
+                enterpriseBeans = getConfig().getStorageFactory().createEnterpriseBeans();
                 ddParent.addValue(SunEjbJar.ENTERPRISE_BEANS, enterpriseBeans);
             }
             return enterpriseBeans;

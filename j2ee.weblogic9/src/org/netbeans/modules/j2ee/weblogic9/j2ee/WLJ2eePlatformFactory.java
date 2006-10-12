@@ -52,14 +52,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     
     private static class J2eePlatformImplImpl extends J2eePlatformImpl {
         
-        private static final String J2EE_API_DOC    = "docs/j2eeri-1_4-doc-api.zip";    // NOI18N
+        private static final String J2EE_API_DOC    = "docs/javaee5-doc-api.zip";    // NOI18N
         private static final Set MODULE_TYPES = new HashSet();
         static {
             MODULE_TYPES.add(J2eeModule.EAR);
             MODULE_TYPES.add(J2eeModule.WAR);
             MODULE_TYPES.add(J2eeModule.EJB);
-            MODULE_TYPES.add(J2eeModule.CONN);
-            MODULE_TYPES.add(J2eeModule.CLIENT);
+//            MODULE_TYPES.add(J2eeModule.CONN);
+//            MODULE_TYPES.add(J2eeModule.CLIENT);
         }
 
         private static final Set SPEC_VERSIONS = new HashSet();
@@ -89,11 +89,21 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         public boolean isToolSupported(String toolName) {
+            if (J2eePlatform.TOOL_WSGEN.equals(toolName) || J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
+                return true;
+            }
+            if (J2eePlatform.TOOL_JSR109.equals(toolName)) {
+                return false; // to explicitelly emphasise that JSR 109 is not supported
+            }
             return false;
         }
         
         public File[] getToolClasspathEntries(String toolName) {
-            return new File[0];
+            File[] cp = new File[0];
+            if (J2eePlatform.TOOL_WSGEN.equals(toolName) || J2eePlatform.TOOL_WSIMPORT.equals(toolName)) {
+                cp = new File[] { new File(getPlatformRoot(), "server/lib/weblogic.jar") }; // NOI18N
+            }
+            return cp;
         }
         
         public Set getSupportedSpecVersions() {

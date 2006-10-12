@@ -171,7 +171,6 @@ public class IfCustomizer extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IfCustomizer.class, "ACSN_If_Variable"));
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IfCustomizer.class, "ACSD_If_Variable"));
 
-        jComboBox2.setFont(new java.awt.Font("Dialog", 0, 12));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -200,8 +199,7 @@ public class IfCustomizer extends javax.swing.JPanel {
         jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IfCustomizer.class, "ACSN_If_VariableHelp"));
         jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IfCustomizer.class, "ACSD_If_VariableHelp"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

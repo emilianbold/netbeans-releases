@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Resolve according to root element: -->
     <file>
         <ext name="xml"/>
-        <resolver mime="text/struts-config1.0">
+        <resolver mime="text/x-struts+xml">
             <xml-rule>
             	<doctype public-id="-//Apache Software Foundation//DTD Struts Configuration 1.0//EN"/>
             </xml-rule>
@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
     </file>
     <file>
         <ext name="xml"/>
-            <resolver mime="text/struts-config1.1">
+            <resolver mime="text/x-struts+xml">
             <xml-rule>
                 <doctype public-id="-//Apache Software Foundation//DTD Struts Configuration 1.1//EN"/>
             </xml-rule>
@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
     </file>    
     <file>
         <ext name="xml"/>
-            <resolver mime="text/struts-config1.2">
+            <resolver mime="text/x-struts+xml">
             <xml-rule>
                 <doctype public-id="-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"/>
             </xml-rule>

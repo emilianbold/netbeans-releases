@@ -19,15 +19,10 @@
 
 package org.netbeans.modules.tomcat5;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.StringTokenizer;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -39,13 +34,17 @@ import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.tomcat5.config.Context;
+import org.netbeans.modules.tomcat5.config.gen.Context;
+import org.netbeans.modules.tomcat5.config.gen.Engine;
+import org.netbeans.modules.tomcat5.config.gen.Host;
+import org.netbeans.modules.tomcat5.config.gen.SContext;
+import org.netbeans.modules.tomcat5.config.gen.Server;
+import org.netbeans.modules.tomcat5.config.gen.Service;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.tomcat5.config.*;
 import java.io.*;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 
@@ -99,13 +98,20 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     }
 
     public void deploy (Target t, InputStream is, InputStream deplPlan) {
-        Context ctx = Context.createGraph (deplPlan);
+        Context ctx;
+        try {
+            ctx = Context.createGraph(deplPlan);
+        } catch (RuntimeException e) {
+            String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeployBrokenContextXml");
+            pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, cmdType, msg, StateType.FAILED));
+            return;
+        }
         String ctxPath = ctx.getAttributeValue ("path");   // NOI18N
         tmId = new TomcatModule (t, ctxPath);
-        
-        command = "deploy?path="+ctxPath; // NOI18N
+        command = "deploy?path=" + encodePath(tmId.getPath()); // NOI18N
         cmdType = CommandType.DISTRIBUTE;
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeploymentInProgress");
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.RUNNING));
         istream = is;
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
@@ -134,11 +140,18 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     ctxPath = "/"+wmfile.getName ().substring (0, wmfile.getName ().lastIndexOf ('.'));    // NOI18N
                 }
                 tmId = new TomcatModule (t, ctxPath); // NOI18N
-                command = "deploy?update=true&path="+ctxPath+"&war="+docBase; // NOI18N
+                command = "deploy?update=true&path="+encodePath(ctxPath)+"&war="+docBase; // NOI18N
             }
             else {
                 FileInputStream in = new FileInputStream (deplPlan);
-                Context ctx = Context.createGraph (in);
+                Context ctx;
+                try {
+                    ctx = Context.createGraph(in);
+                } catch (RuntimeException e) {
+                    String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeployBrokenContextXml");
+                    pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, cmdType, msg, StateType.FAILED));
+                    return;
+                }
                 //PENDING #37763
 //                tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); // NOI18N
 //                command = "install?update=true&config="+deplPlan.toURI ()+ // NOI18N
@@ -151,12 +164,13 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 }
                 ctxPath = ctx.getAttributeValue ("path");
                 tmId = new TomcatModule (t, ctxPath); // NOI18N
-                command = "deploy?update=true&path="+ctxPath+"&war="+docBase; // NOI18N
+                command = "deploy?update=true&path="+encodePath(tmId.getPath())+"&war="+docBase; // NOI18N
             }
             
             // call the command
             cmdType = CommandType.DISTRIBUTE;
-            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+            String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeploymentInProgress");
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.RUNNING));
             
             rp ().post (this, 0, Thread.NORM_PRIORITY);
         }
@@ -176,15 +190,19 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             this.tmId = new TomcatModule (t, ctxPath, docBase); //NOI18N
             tmpContextXml = createTempContextXml(docBase, ctx);
             if (tm.isTomcat55()) {
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + tmId.getPath(); // NOI18N
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + encodePath(tmId.getPath()); // NOI18N   
             } else {
                 command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
             }
             cmdType = CommandType.DISTRIBUTE;
-            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+            String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeploymentInProgress");
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.RUNNING));
             rp ().post (this, 0, Thread.NORM_PRIORITY);
         } catch (java.io.IOException ioex) {
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, ioex.getLocalizedMessage (), StateType.FAILED));
+        } catch (RuntimeException e) {
+            String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeployBrokenContextXml");
+            pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, cmdType, msg, StateType.FAILED));
         }
     }
 
@@ -206,9 +224,10 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             }
         }
         this.tmId = tmId;
-        command = "undeploy?path="+tmId.getPath (); // NOI18N
+        command = "undeploy?path="+encodePath(tmId.getPath()); // NOI18N
         cmdType = CommandType.UNDEPLOY;
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_UndeploymentInProgress");
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);        
     }
     
@@ -242,27 +261,30 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     /** Starts web module. */
     public void start (TomcatModule tmId) {
         this.tmId = tmId;
-        command = "start?path="+tmId.getPath (); // NOI18N
+        command = "start?path="+encodePath(tmId.getPath()); // NOI18N
         cmdType = CommandType.START;
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_StartInProgress");
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
     /** Stops web module. */
     public void stop (TomcatModule tmId) {
         this.tmId = tmId;
-        command = "stop?path="+tmId.getPath (); // NOI18N
+        command = "stop?path="+encodePath(tmId.getPath()); // NOI18N
         cmdType = CommandType.STOP;
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_StopInProgress");
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
     /** Reloads web module. */
     public void reload (TomcatModule tmId) {
         this.tmId = tmId;
-        command = "reload?path="+tmId.getPath (); // NOI18N
+        command = "reload?path="+encodePath(tmId.getPath()); // NOI18N
         cmdType = CommandType.REDEPLOY;
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_ReloadInProgress");
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
@@ -277,15 +299,39 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             Context ctx = Context.createGraph (in);
             tmpContextXml = createTempContextXml(docBase, ctx);
             if (tm.isTomcat55()) {
-                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + tmId.getPath(); // NOI18N
+                command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&path=" + encodePath(tmId.getPath()); // NOI18N
             } else {
                 command = "deploy?config=" + tmpContextXml.toURI ().toASCIIString () + "&war=" + docBaseURI; // NOI18N
             }
             cmdType = CommandType.DISTRIBUTE;
-            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+            String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeployInProgress");
+            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, msg, StateType.RUNNING));
             rp ().post (this, 0, Thread.NORM_PRIORITY);
         } catch (java.io.IOException ioex) {
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, ioex.getLocalizedMessage (), StateType.FAILED));
+        } catch (RuntimeException e) {
+            String msg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_DeployBrokenContextXml");
+            pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE, cmdType, msg, StateType.FAILED));
+            return;
+        }
+    }
+    
+    /**
+     * Translates a context path string into <code>application/x-www-form-urlencoded</code> format.
+     */
+    private static String encodePath(String str) {
+        try {
+            StringTokenizer st = new StringTokenizer(str, "/"); // NOI18N
+            if (!st.hasMoreTokens()) {
+                return str;
+            }
+            StringBuilder result = new StringBuilder();
+            while (st.hasMoreTokens()) {
+                result.append("/").append(URLEncoder.encode(st.nextToken(), "UTF-8")); // NOI18N
+            }
+            return result.toString();
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e); // this should never happen
         }
     }
     
@@ -541,10 +587,6 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                             }
                             first = false;
                         }
-                        pes.fireHandleProgressEvent (
-                            tmId, 
-                            new Status (ActionType.EXECUTE, cmdType, line, StateType.RUNNING)
-                        );
                         output += line+"\n";    // NOI18N
                     } else {
                         buff.append((char) ch);

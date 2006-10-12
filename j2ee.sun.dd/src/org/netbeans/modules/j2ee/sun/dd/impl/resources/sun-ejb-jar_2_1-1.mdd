@@ -2,7 +2,7 @@
 <metaDD>
         <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.SecurityRoleMapping</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.SecurityRoleMapping</import>
 		<dtd-name>sun-ejb-jar</dtd-name>
 		<bean-name>SunEjbJar</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar</implements>
@@ -39,9 +39,9 @@
 		<wrapper-class>String</wrapper-class>
 	</meta-element>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ResourceRef</import>
-		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.EjbRef</import>
-		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ResourceEnvRef</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceRef</import>
+		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.EjbRef</import>
+		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceEnvRef</import>
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ServiceRef</import>
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceEndpoint</import>
 		<dtd-name>ejb</dtd-name>
@@ -80,12 +80,13 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.PmDescriptors</implements>
 	</meta-element>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.DefaultResourcePrincipal</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.DefaultResourcePrincipal</import>
 		<dtd-name>cmp-resource</dtd-name>
 		<bean-name>CmpResource</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.CmpResource</implements>
 	</meta-element>
 	<meta-element>
+                <skip-generation/>
 		<dtd-name>message-destination</dtd-name>
 		<bean-name>MessageDestination</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination</implements>
@@ -241,7 +242,7 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.Principal</implements>
 	</meta-element>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.DefaultResourcePrincipal</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.DefaultResourcePrincipal</import>
 		<dtd-name>mdb-connection-factory</dtd-name>
 		<bean-name>MdbConnectionFactory</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.MdbConnectionFactory</implements>

@@ -25,22 +25,18 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
 import java.awt.Component;
-import javax.swing.event.ChangeListener;
 import java.util.Vector;
-
-import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 
 /** A single panel descriptor for a wizard.
  * You probably want to make a wizard iterator to hold it.
  *
  * @author nityad
  */
-public class CPPropertiesPanelPanel extends ResourceWizardPanel implements WizardConstants, WizardDescriptor.FinishPanel  {
+public class CPPropertiesPanelPanel extends ResourceWizardPanel {
     
     /** The visual component that displays this panel.
      * If you need to access the component from this class,
@@ -80,66 +76,22 @@ public class CPPropertiesPanelPanel extends ResourceWizardPanel implements Wizar
     
     public boolean isValid() {
         // If it is always OK to press Next or Finish, then:
+        setErrorMsg(bundle.getString("Empty_String"));
         ResourceConfigData data = helper.getData();
-        /*if((data.get(__DatasourceClassname) == null) || (data.get(__DatasourceClassname).toString().trim().equals("")) )
-            return false;*/
-        
         Vector vec = data.getProperties(); 
         for (int i = 0; i < vec.size(); i++) {
             NameValuePair pair = (NameValuePair)vec.elementAt(i);
-            //why was this there at all?
-            /*if (pair.getParamName() !=  null && pair.getParamName().equals(WizardConstants.__Password)) {
-                continue;
-            }*/
-            
             if (pair.getParamName() == null || pair.getParamValue() == null ||
                     pair.getParamName().length() == 0 || pair.getParamValue().length() == 0){
+                setErrorMsg(bundle.getString("Err_InvalidNameValue"));
                 return false;
             }  
         }
         return true;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent();
-        // and uncomment the complicated stuff below.
     }
     
     protected final void fireChangeEvent (Object source) {
        super.fireChange(this);
-    }
-    
-    /*
-    private final Set listeners = new HashSet(1); // Set<ChangeListener>
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
-    }
-     */
-    
-    // You can use a settings object to keep track of state.
-    // Normally the settings object will be the WizardDescriptor,
-    // so you can use WizardDescriptor.getProperty & putProperty
-    // to store information entered by the user.
-    public void readSettings(Object settings) {
-    }
-    public void storeSettings(Object settings) {
     }
     
     public boolean isFinishPanel() {

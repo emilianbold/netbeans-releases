@@ -59,6 +59,14 @@ public interface JspParserAPI {
          */
         public abstract FileObject getDocumentBase();
         
+        
+        /** This method returns the entries, which are needed for parsing jsp files, but are
+         *  not directly included in the project (as library). For example there are taglibraries
+         *  which are offered by the target server(J2EE Platform), so the project has these entries
+         *  on the classpath, but they are not defined by the project. It can return null.   
+         */
+        public abstract File[] getExtraClasspathEntries();
+        
         /** Returns InputStream for the file open in editor or null
          * if the file is not open.
          */

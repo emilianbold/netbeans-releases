@@ -33,101 +33,113 @@ public class ConnPoolBeanBeanInfo extends SimpleBeanInfo {
     // Bean descriptor//GEN-FIRST:BeanDescriptor
     /*lazy BeanDescriptor*/
     private static BeanDescriptor getBdescriptor(){
-        BeanDescriptor beanDescriptor = new BeanDescriptor  ( ConnPoolBean.class , null );//GEN-HEADEREND:BeanDescriptor
+        BeanDescriptor beanDescriptor = new BeanDescriptor  ( org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class , null ); // NOI18N//GEN-HEADEREND:BeanDescriptor
         
         // Here you can add code for customizing the BeanDescriptor.
         
-        return beanDescriptor;         }//GEN-LAST:BeanDescriptor
+        return beanDescriptor;     }//GEN-LAST:BeanDescriptor
     
     static private String getLabel(String key){
         return NbBundle.getMessage(ConnPoolBean.class, key);
     }
 
     // Property identifiers//GEN-FIRST:Properties
-    private static final int PROPERTY_connValidMethod = 0;
-    private static final int PROPERTY_description = 1;
-    private static final int PROPERTY_dsClass = 2;
-    private static final int PROPERTY_failAllConns = 3;
-    private static final int PROPERTY_idleIimeoutSecond = 4;
-    private static final int PROPERTY_isConnValidReq = 5;
-    private static final int PROPERTY_isIsoLevGuaranteed = 6;
-    private static final int PROPERTY_maxPoolSize = 7;
-    private static final int PROPERTY_maxWaitTimeMilli = 8;
-    private static final int PROPERTY_name = 9;
-    private static final int PROPERTY_poolResizeQty = 10;
-    private static final int PROPERTY_resType = 11;
-    private static final int PROPERTY_steadyPoolSize = 12;
-    private static final int PROPERTY_tranxIsoLevel = 13;
-    private static final int PROPERTY_validationTableName = 14;
+    private static final int PROPERTY_allowNonComponentCallers = 0;
+    private static final int PROPERTY_connValidMethod = 1;
+    private static final int PROPERTY_description = 2;
+    private static final int PROPERTY_dsClass = 3;
+    private static final int PROPERTY_failAllConns = 4;
+    private static final int PROPERTY_idleIimeoutSecond = 5;
+    private static final int PROPERTY_isConnValidReq = 6;
+    private static final int PROPERTY_isIsoLevGuaranteed = 7;
+    private static final int PROPERTY_maxPoolSize = 8;
+    private static final int PROPERTY_maxWaitTimeMilli = 9;
+    private static final int PROPERTY_name = 10;
+    private static final int PROPERTY_nontranxconns = 11;
+    private static final int PROPERTY_poolResizeQty = 12;
+    private static final int PROPERTY_resType = 13;
+    private static final int PROPERTY_steadyPoolSize = 14;
+    private static final int PROPERTY_tranxIsoLevel = 15;
+    private static final int PROPERTY_validationTableName = 16;
 
     // Property array 
     /*lazy PropertyDescriptor*/
     private static PropertyDescriptor[] getPdescriptor(){
-        PropertyDescriptor[] properties = new PropertyDescriptor[15];
+        PropertyDescriptor[] properties = new PropertyDescriptor[17];
     
         try {
-            properties[PROPERTY_connValidMethod] = new PropertyDescriptor ( "connValidMethod", ConnPoolBean.class, "getConnValidMethod", "setConnValidMethod" );
+            properties[PROPERTY_allowNonComponentCallers] = new PropertyDescriptor ( "allowNonComponentCallers", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getAllowNonComponentCallers", "setAllowNonComponentCallers" ); // NOI18N
+            properties[PROPERTY_allowNonComponentCallers].setDisplayName ( getLabel("LBL_allow_non_comp_callers") );
+            properties[PROPERTY_allowNonComponentCallers].setShortDescription ( getLabel("LBL_allow_non_comp_callers") );
+            properties[PROPERTY_allowNonComponentCallers].setPropertyEditorClass ( BooleanEditor.class  );
+            properties[PROPERTY_connValidMethod] = new PropertyDescriptor ( "connValidMethod", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getConnValidMethod", "setConnValidMethod" ); // NOI18N
             properties[PROPERTY_connValidMethod].setDisplayName ( getLabel("LBL_conn_valid_method") );
             properties[PROPERTY_connValidMethod].setShortDescription ( getLabel("DSC_conn_valid_method") );
             properties[PROPERTY_connValidMethod].setPropertyEditorClass ( ValidationMethodEditor.class );
-            properties[PROPERTY_description] = new PropertyDescriptor ( "description", ConnPoolBean.class, "getDescription", "setDescription" );
+            properties[PROPERTY_description] = new PropertyDescriptor ( "description", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getDescription", "setDescription" ); // NOI18N
             properties[PROPERTY_description].setDisplayName ( getLabel("LBL_Description") );
             properties[PROPERTY_description].setShortDescription ( getLabel("DSC_Description") );
-            properties[PROPERTY_dsClass] = new PropertyDescriptor ( "dsClass", ConnPoolBean.class, "getDsClass", "setDsClass" );
+            properties[PROPERTY_dsClass] = new PropertyDescriptor ( "dsClass", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getDsClass", "setDsClass" ); // NOI18N
             properties[PROPERTY_dsClass].setDisplayName ( getLabel("LBL_DSClassName") );
             properties[PROPERTY_dsClass].setShortDescription ( getLabel("DSC_DSClassName") );
-            properties[PROPERTY_failAllConns] = new PropertyDescriptor ( "failAllConns", ConnPoolBean.class, "getFailAllConns", "setFailAllConns" );
+            properties[PROPERTY_failAllConns] = new PropertyDescriptor ( "failAllConns", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getFailAllConns", "setFailAllConns" ); // NOI18N
             properties[PROPERTY_failAllConns].setDisplayName ( getLabel("LBL_fail_all_connections") );
             properties[PROPERTY_failAllConns].setShortDescription ( getLabel("DSC_fail_all_connections") );
             properties[PROPERTY_failAllConns].setPropertyEditorClass ( BooleanEditor.class );
-            properties[PROPERTY_idleIimeoutSecond] = new PropertyDescriptor ( "idleIimeoutSecond", ConnPoolBean.class, "getIdleIimeoutSecond", "setIdleIimeoutSecond" );
+            properties[PROPERTY_idleIimeoutSecond] = new PropertyDescriptor ( "idleIimeoutSecond", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getIdleIimeoutSecond", "setIdleIimeoutSecond" ); // NOI18N
             properties[PROPERTY_idleIimeoutSecond].setDisplayName ( getLabel("LBL_connection_idle_timeout_in_seconds") );
             properties[PROPERTY_idleIimeoutSecond].setShortDescription ( getLabel("DSC_connection_idle_timeout_in_seconds") );
             properties[PROPERTY_idleIimeoutSecond].setPropertyEditorClass ( LongEditor.class );
-            properties[PROPERTY_isConnValidReq] = new PropertyDescriptor ( "isConnValidReq", ConnPoolBean.class, "getIsConnValidReq", "setIsConnValidReq" );
+            properties[PROPERTY_isConnValidReq] = new PropertyDescriptor ( "isConnValidReq", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getIsConnValidReq", "setIsConnValidReq" ); // NOI18N
             properties[PROPERTY_isConnValidReq].setDisplayName ( getLabel("LBL_is_connection_validation_required") );
             properties[PROPERTY_isConnValidReq].setShortDescription ( getLabel("DSC_is_connection_validation_required") );
             properties[PROPERTY_isConnValidReq].setPropertyEditorClass ( BooleanEditor.class );
-            properties[PROPERTY_isIsoLevGuaranteed] = new PropertyDescriptor ( "isIsoLevGuaranteed", ConnPoolBean.class, "getIsIsoLevGuaranteed", "setIsIsoLevGuaranteed" );
+            properties[PROPERTY_isIsoLevGuaranteed] = new PropertyDescriptor ( "isIsoLevGuaranteed", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getIsIsoLevGuaranteed", "setIsIsoLevGuaranteed" ); // NOI18N
             properties[PROPERTY_isIsoLevGuaranteed].setDisplayName ( getLabel("LBL_is_isolation_level_guaranteed") );
             properties[PROPERTY_isIsoLevGuaranteed].setShortDescription ( getLabel("DSC_is_isolation_level_guaranteed") );
             properties[PROPERTY_isIsoLevGuaranteed].setPropertyEditorClass ( BooleanEditor.class );
-            properties[PROPERTY_maxPoolSize] = new PropertyDescriptor ( "maxPoolSize", ConnPoolBean.class, "getMaxPoolSize", "setMaxPoolSize" );
+            properties[PROPERTY_maxPoolSize] = new PropertyDescriptor ( "maxPoolSize", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getMaxPoolSize", "setMaxPoolSize" ); // NOI18N
             properties[PROPERTY_maxPoolSize].setDisplayName ( getLabel("LBL_max_pool_size") );
             properties[PROPERTY_maxPoolSize].setShortDescription ( getLabel("DSC_max_pool_size") );
             properties[PROPERTY_maxPoolSize].setPropertyEditorClass ( Int0Editor.class );
-            properties[PROPERTY_maxWaitTimeMilli] = new PropertyDescriptor ( "maxWaitTimeMilli", ConnPoolBean.class, "getMaxWaitTimeMilli", "setMaxWaitTimeMilli" );
+            properties[PROPERTY_maxWaitTimeMilli] = new PropertyDescriptor ( "maxWaitTimeMilli", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getMaxWaitTimeMilli", "setMaxWaitTimeMilli" ); // NOI18N
             properties[PROPERTY_maxWaitTimeMilli].setDisplayName ( getLabel("LBL_max_connection_wait_time_in_millis") );
             properties[PROPERTY_maxWaitTimeMilli].setShortDescription ( getLabel("DSC_max_connection_wait_time_in_millis") );
             properties[PROPERTY_maxWaitTimeMilli].setPropertyEditorClass ( LongEditor.class );
-            properties[PROPERTY_name] = new PropertyDescriptor ( "name", ConnPoolBean.class, "getName", "setName" );
+            properties[PROPERTY_name] = new PropertyDescriptor ( "name", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getName", "setName" ); // NOI18N
             properties[PROPERTY_name].setDisplayName ( getLabel("LBL_pool_name") );
             properties[PROPERTY_name].setShortDescription ( getLabel("DSC_pool_name") );
-            properties[PROPERTY_poolResizeQty] = new PropertyDescriptor ( "poolResizeQty", ConnPoolBean.class, "getPoolResizeQty", "setPoolResizeQty" );
+            properties[PROPERTY_nontranxconns] = new PropertyDescriptor ( "nontranxconns", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getNontranxconns", "setNontranxconns" ); // NOI18N
+            properties[PROPERTY_nontranxconns].setDisplayName ( getLabel("LBL_non_tranx_conns")  );
+            properties[PROPERTY_nontranxconns].setShortDescription ( getLabel("DSC_non_tranx_conns")  );
+            properties[PROPERTY_nontranxconns].setPropertyEditorClass ( BooleanEditor.class  );
+            properties[PROPERTY_poolResizeQty] = new PropertyDescriptor ( "poolResizeQty", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getPoolResizeQty", "setPoolResizeQty" ); // NOI18N
             properties[PROPERTY_poolResizeQty].setDisplayName ( getLabel("LBL_pool_resize_qty") );
             properties[PROPERTY_poolResizeQty].setShortDescription ( getLabel("DSC_pool_resize_qty") );
             properties[PROPERTY_poolResizeQty].setPropertyEditorClass ( Int0Editor.class );
-            properties[PROPERTY_resType] = new PropertyDescriptor ( "resType", ConnPoolBean.class, "getResType", "setResType" );
+            properties[PROPERTY_resType] = new PropertyDescriptor ( "resType", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getResType", "setResType" ); // NOI18N
             properties[PROPERTY_resType].setDisplayName ( getLabel("LBL_res_type") );
             properties[PROPERTY_resType].setShortDescription ( getLabel("DSC_res_type") );
             properties[PROPERTY_resType].setPropertyEditorClass ( DataSourceTypeEditor.class );
-            properties[PROPERTY_steadyPoolSize] = new PropertyDescriptor ( "steadyPoolSize", ConnPoolBean.class, "getSteadyPoolSize", "setSteadyPoolSize" );
+            properties[PROPERTY_steadyPoolSize] = new PropertyDescriptor ( "steadyPoolSize", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getSteadyPoolSize", "setSteadyPoolSize" ); // NOI18N
             properties[PROPERTY_steadyPoolSize].setDisplayName ( getLabel("LBL_steady_pool_size") );
             properties[PROPERTY_steadyPoolSize].setShortDescription ( getLabel("DSC_steady_pool_size") );
             properties[PROPERTY_steadyPoolSize].setPropertyEditorClass ( Int0Editor.class );
-            properties[PROPERTY_tranxIsoLevel] = new PropertyDescriptor ( "tranxIsoLevel", ConnPoolBean.class, "getTranxIsoLevel", "setTranxIsoLevel" );
+            properties[PROPERTY_tranxIsoLevel] = new PropertyDescriptor ( "tranxIsoLevel", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getTranxIsoLevel", "setTranxIsoLevel" ); // NOI18N
             properties[PROPERTY_tranxIsoLevel].setDisplayName ( getLabel("LBL_transaction_isolation_level") );
             properties[PROPERTY_tranxIsoLevel].setShortDescription ( getLabel("DSC_transaction_isolation_level") );
             properties[PROPERTY_tranxIsoLevel].setPropertyEditorClass ( IsolationLevelEditor.class );
-            properties[PROPERTY_validationTableName] = new PropertyDescriptor ( "validationTableName", ConnPoolBean.class, "getValidationTableName", "setValidationTableName" );
+            properties[PROPERTY_validationTableName] = new PropertyDescriptor ( "validationTableName", org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "getValidationTableName", "setValidationTableName" ); // NOI18N
             properties[PROPERTY_validationTableName].setDisplayName ( getLabel("LBL_validation_table_name") );
             properties[PROPERTY_validationTableName].setShortDescription ( getLabel("DSC_validation_table_name") );
         }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
+        catch(IntrospectionException e) {
+            e.printStackTrace();
+        }//GEN-HEADEREND:Properties
         
         // Here you can add code for customizing the properties array.
         
-        return properties;         }//GEN-LAST:Properties
+        return properties;     }//GEN-LAST:Properties
     
     // EventSet identifiers//GEN-FIRST:Events
     private static final int EVENT_propertyChangeListener = 0;
@@ -137,14 +149,16 @@ public class ConnPoolBeanBeanInfo extends SimpleBeanInfo {
     private static EventSetDescriptor[] getEdescriptor(){
         EventSetDescriptor[] eventSets = new EventSetDescriptor[1];
     
-            try {
-            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[] {"propertyChange"}, "addPropertyChangeListener", "removePropertyChangeListener" );
+        try {
+            eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[] {"propertyChange"}, "addPropertyChangeListener", "removePropertyChangeListener" ); // NOI18N
         }
-        catch( IntrospectionException e) {}//GEN-HEADEREND:Events
+        catch(IntrospectionException e) {
+            e.printStackTrace();
+        }//GEN-HEADEREND:Events
         
         // Here you can add code for customizing the event sets array.
         
-        return eventSets;         }//GEN-LAST:Events
+        return eventSets;     }//GEN-LAST:Events
     
     // Method identifiers//GEN-FIRST:Methods
 
@@ -155,7 +169,7 @@ public class ConnPoolBeanBeanInfo extends SimpleBeanInfo {
         
         // Here you can add code for customizing the methods array.
         
-        return methods;         }//GEN-LAST:Methods
+        return methods;     }//GEN-LAST:Methods
     
     
     private static final int defaultPropertyIndex = -1;//GEN-BEGIN:Idx

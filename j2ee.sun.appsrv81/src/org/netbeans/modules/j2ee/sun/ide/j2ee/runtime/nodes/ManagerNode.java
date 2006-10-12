@@ -24,26 +24,27 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes;
 
-import org.openide.nodes.*;
+import java.util.Collection;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ShowAdminToolAction;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Customizer;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.filesystems.*;
-import org.openide.util.Lookup;
-import org.openide.loaders.*;
-import org.openide.cookies.InstanceCookie;
-import javax.enterprise.deploy.spi.DeploymentManager;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
-import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ShowAdminToolAction;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformFactory;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Customizer;
-//import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.TargetServerData;
 
-import java.util.Collection;
 
 /**
  *
@@ -62,7 +63,7 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
         setDisplayName(sdm.getHost()+":"+sdm.getPort());
         
         setIconBaseWithExtension("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png");//NOI18N
-        setShortDescription(NbBundle.getMessage(ManagerNode.class, "HINT_node")+" "+sdm.getHost()+":"+sdm.getPort());
+        setShortDescription(NbBundle.getMessage(ManagerNode.class, "HINT_node")+" "+sdm.getHost()+":"+sdm.getPort() + " "+sdm.getPlatformRoot().getAbsolutePath());//NOI18N
         getCookieSet().add(this);
         getCookieSet().add(sdm);
     }
@@ -82,11 +83,7 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
     }
     
     public java.awt.Component getCustomizer() {
-        PlatformFactory fact = new PlatformFactory();
-        J2eePlatformImpl platform = fact.getJ2eePlatformImpl(manager);
-//        TargetServerData foo = new TargetServerData();
-        DeploymentManagerProperties dmp = new DeploymentManagerProperties(manager);
-        return new Customizer(platform, dmp);
+        return new Customizer(manager);
     }
     
     public javax.swing.Action[] getActions(boolean context) {
@@ -103,17 +100,26 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
         newActions[a++]=(null);        
         newActions[a++]= (SystemAction.get(ShowAdminToolAction.class));
         newActions[a++]=(SystemAction.get(ViewLogAction.class));
-        
+        boolean isGlassFish = ServerLocationManager.isGlassFish(sdm.getPlatformRoot());
         for(int i = 0; i < nbextraoptions; i++) {
             try{
                 DataObject dobj = DataObject.find(ch[i]);
                 InstanceCookie cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
-                if(cookie == null) {
-                    System.out.println("error: null cookie for " +ch[i]);
-                } else{
+                    newActions[a+i]=null;
+
+                if(cookie != null){
                     Class theActionClass = cookie.instanceClass();
-                    newActions[a+i]=(SystemAction.get(theActionClass));
+                    String attr = (String) ch[i].getAttribute("8.x");//NOI18N
+                    if (attr==null ){ //not extra attr defined: add the action
+                        newActions[a+i]=(SystemAction.get(theActionClass));
+                        
+                    } else if (!isGlassFish){// add the action only if we are 8.x
+                        newActions[a+i]=(SystemAction.get(theActionClass));
+                        
+                    }
+
                 }
+                
             } catch (Exception e){
                 e.printStackTrace();
             }

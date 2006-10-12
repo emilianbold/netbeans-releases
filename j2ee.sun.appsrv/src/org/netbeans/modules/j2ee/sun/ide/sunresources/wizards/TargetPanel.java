@@ -104,6 +104,5 @@ public class TargetPanel extends ResourceWizardPanel implements WizardConstants{
     
     public void storeSettings(Object settings) {
         panel.storeSettings(settings);
-        
     }
 }

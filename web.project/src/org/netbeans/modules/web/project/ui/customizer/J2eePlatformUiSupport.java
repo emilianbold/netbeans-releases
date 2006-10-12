@@ -37,9 +37,9 @@ public class J2eePlatformUiSupport {
 
     private J2eePlatformUiSupport() {
     }
-
-    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId) {
-        return new J2eePlatformComboBoxModel(serverInstanceId);
+    
+    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, String j2eeLevel) {
+        return new J2eePlatformComboBoxModel(serverInstanceId, j2eeLevel);
     }
     
     public static String getServerInstanceID(Object j2eePlatformModelObject) {
@@ -72,9 +72,11 @@ public class J2eePlatformUiSupport {
         private J2eePlatformAdapter[] j2eePlatforms;
         private String initialJ2eePlatform;
         private J2eePlatformAdapter selectedJ2eePlatform;
+        private String j2eeLevel;
         
-        public J2eePlatformComboBoxModel(String serverInstanceID) {
+        public J2eePlatformComboBoxModel(String serverInstanceID, String j2eeLevel) {
             initialJ2eePlatform = serverInstanceID;
+            this.j2eeLevel = j2eeLevel;
             getJ2eePlatforms();
         }
         
@@ -112,7 +114,8 @@ public class J2eePlatformUiSupport {
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
                     if (j2eePlatform != null) {
-                        if (j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.WAR)) {
+                        if (j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.WAR) 
+                                && j2eePlatform.getSupportedSpecVersions(J2eeModule.WAR).contains(j2eeLevel)) {
                             J2eePlatformAdapter adapter = new J2eePlatformAdapter(j2eePlatform, serverInstanceIDs[i]);
                             orderedNames.add(adapter);
                         

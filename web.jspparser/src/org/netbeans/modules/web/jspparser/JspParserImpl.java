@@ -64,14 +64,12 @@ public class JspParserImpl implements JspParserAPI {
     
     private static void initReflection() {
         if (webAppParserImplConstructor == null) {
-// ext/jasper-runtime-5.0.19.jar ext/jasper-compiler-5.0.19.jar ext/commons-logging-api.jar ext/commons-el.jar
-            File files[] = new File[6];
+            File files[] = new File[4];
             files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false);
-            files[1] = InstalledFileLocator.getDefault().locate("modules/ext/jasper-runtime-5.5.9.jar", null, false);
-            files[2] = InstalledFileLocator.getDefault().locate("modules/ext/jasper-compiler-5.5.9.jar", null, false);
-            files[3] = InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false);
-            files[4] = InstalledFileLocator.getDefault().locate("modules/ext/commons-el.jar", null, false);
-            files[5] = InstalledFileLocator.getDefault().locate("modules/ext/jsp-parser-ext.jar", null, false);
+            files[1] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser.jar", null, false);
+            //files[2] = InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false);
+            files[2] = InstalledFileLocator.getDefault().locate("modules/ext/jsp-parser-ext.jar", null, false);
+            files[3] = InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false);
             
             try {
                 URL urls[] = new URL[files.length];
@@ -157,7 +155,7 @@ public class JspParserImpl implements JspParserAPI {
             throw new IOException();
         }
         WebAppParseProxy pp = getParseProxy(wm);
-        return pp.getTaglibMap(true);
+                return pp.getTaglibMap(true);
     }
     
     private synchronized WebAppParseProxy getParseProxy(WebModule wm) {

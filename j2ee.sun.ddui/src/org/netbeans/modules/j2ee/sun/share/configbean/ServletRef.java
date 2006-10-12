@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
@@ -27,6 +28,7 @@ import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.XpathEvent;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
@@ -36,10 +38,10 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
  *
  * Property structure of ServletRef from sun-web-app DTD:
  *
- *		servlet : Servlet[0,n]
- *			servlet-name : String
- *			principal-name : String?
- *
+ *	servlet <servlet> : Servlet[0,n]
+ *		servletName <servlet-name> : String
+ *		principalName <principal-name> : String[0,1]
+ *			[attr: class-name CDATA #IMPLIED ] *
  *
  * @author  Peter Williams
  */
@@ -57,7 +59,10 @@ public class ServletRef extends Base {
 	/** Holds value of property principalName. */
 	private String principalName;
 	
-    /** Creates a new instance of ServletRef */
+	/** Holds value of property className. */
+	private String className;
+	
+	/** Creates a new instance of ServletRef */
 	public ServletRef() {
 		setDescriptorElement(bundle.getString("BDN_Servlet"));	// NOI18N	
 	}
@@ -80,6 +85,46 @@ public class ServletRef extends Base {
 
 	protected String getComponentName() {
 		return getServletName();
+	}
+	
+	/** -----------------------------------------------------------------------
+	 *  Validation implementation
+	 */
+	
+	// relative xpaths (double as field id's)
+	public static final String FIELD_PRINCIPAL_CLASS_NAME=":class-name";
+	
+	protected void updateValidationFieldList() {
+		super.updateValidationFieldList();
+		validationFieldList.add(FIELD_PRINCIPAL_CLASS_NAME);
+	}
+	
+	public boolean validateField(String fieldId) {
+		ValidationError error = null;
+		boolean result = true;
+
+		if(fieldId.equals(FIELD_PRINCIPAL_CLASS_NAME)) {
+			// validation version will be:
+			//   expand relative field id to full xpath id based on current context
+			//   lookup validator for this field in field validator DB
+			//   execute validator
+			String absoluteFieldXpath = getAbsoluteXpath("principal-name/" + fieldId);
+			if(Utils.notEmpty(className) && !Utils.isJavaClass(className)) {
+				Object [] args = new Object[1];
+				args[0] = FIELD_PRINCIPAL_CLASS_NAME;
+				String message = MessageFormat.format(bundle.getString("ERR_InvalidJavaClass"), args); // NOI18N
+				error = ValidationError.getValidationError(absoluteFieldXpath, message);
+			} else {
+				error = ValidationError.getValidationErrorMask(absoluteFieldXpath);
+			}
+		}
+		
+		if(error != null) {
+			getMessageDB().updateError(error);
+		}
+		
+		// return true if there was no error added
+		return (error == null || !Utils.notEmpty(error.getMessage()));
 	}
 	
 	/** Getter for helpId property
@@ -133,20 +178,41 @@ public class ServletRef extends Base {
 	 *
 	 */
 	public String getPrincipalName() {
-		return this.principalName;
+		return principalName;
 	}
 	
 	/** Setter for property principalName.
-	 * @param jndiName New value of property principalName.
+	 * @param newPrincipalName New value of property principalName.
 	 *
 	 * @throws PropertyVetoException
 	 *
 	 */
 	public void setPrincipalName(String newPrincipalName) throws java.beans.PropertyVetoException {
-		String oldPrincipalName = this.principalName;
-		getVCS().fireVetoableChange("principalName", oldPrincipalName, principalName);
-		this.principalName = newPrincipalName;
+		String oldPrincipalName = principalName;
+		getVCS().fireVetoableChange("principalName", oldPrincipalName, newPrincipalName);
+		principalName = newPrincipalName;
 		getPCS().firePropertyChange("principalName", oldPrincipalName, principalName);
+	}
+	
+	/** Getter for property className.
+	 * @return Value of property className.
+	 *
+	 */
+	public String getClassName() {
+		return className;
+	}
+	
+	/** Setter for property className.
+	 * @param newClassName New value of property className.
+	 *
+	 * @throws PropertyVetoException
+	 *
+	 */
+	public void setClassName(String newClassName) throws java.beans.PropertyVetoException {
+		String oldClassName = className;
+		getVCS().fireVetoableChange("className", oldClassName, newClassName);
+		className = newClassName;
+		getPCS().firePropertyChange("className", oldClassName, className);
 	}
 	
 	/* ------------------------------------------------------------------------
@@ -157,7 +223,7 @@ public class ServletRef extends Base {
 		Collection snippets = new ArrayList();
 		Snippet snipOne = new DefaultSnippet() {
 			public CommonDDBean getDDSnippet() {
-				Servlet sg = StorageBeanFactory.getDefault().createServlet();
+				Servlet sg = getConfig().getStorageFactory().createServlet();
 
 				// write properties into Servlet bean
 				String sn = getServletName();
@@ -165,14 +231,22 @@ public class ServletRef extends Base {
 					sg.setServletName(sn);
 				}
 
-				if(principalName != null && principalName.length() > 0) {
+				if(Utils.notEmpty(principalName)) {
 					sg.setPrincipalName(principalName);
+                    if(Utils.notEmpty(className)) {
+                        try {
+                            sg.setPrincipalNameClassName(className);
+                        } catch (VersionNotSupportedException ex) {
+                            // Should not happen at runtime.
+                        }
+                    }
 				}
 				
 				return sg;
 			}
 			
 			public boolean hasDDSnippet() {
+                // No need to check className, as principal name must be filled in that case.
 				if(principalName != null && principalName.length() > 0) {
 					return true;
 				}
@@ -222,6 +296,11 @@ public class ServletRef extends Base {
 		
 		if(beanGraph != null) {
 			principalName = beanGraph.getPrincipalName();
+            try {
+                className = beanGraph.getPrincipalNameClassName();
+            } catch(VersionNotSupportedException ex) {
+                // Should not happen at runtime.
+            }
 		} else {
 			setDefaultProperties();
 		}
@@ -231,6 +310,7 @@ public class ServletRef extends Base {
 	
 	protected void clearProperties() {
 		principalName = null;
+        className = null;
 	}
 	
 	protected void setDefaultProperties() {

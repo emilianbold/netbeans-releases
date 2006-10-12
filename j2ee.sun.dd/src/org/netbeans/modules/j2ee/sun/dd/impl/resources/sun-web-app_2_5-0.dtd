@@ -1,27 +1,15 @@
+
 <!--
- The contents of this file are subject to the terms 
- of the Common Development and Distribution License 
- (the "License").  You may not use this file except 
- in compliance with the License.
- 
- You can obtain a copy of the license at 
- glassfish/bootstrap/legal/CDDLv1.0.txt or 
- https://glassfish.dev.java.net/public/CDDLv1.0.html. 
- See the License for the specific language governing 
- permissions and limitations under the License.
- 
- When distributing Covered Code, include this CDDL 
- HEADER in each file and include the License file at 
- glassfish/bootstrap/legal/CDDLv1.0.txt.  If applicable, 
- add the following below this CDDL HEADER, with the 
- fields enclosed by brackets "[]" replaced with your 
- own identifying information: Portions Copyright [yyyy] 
- [name of copyright owner]
+  XML DTD for Sun Application Server specific Java EE web
+  deployment descriptor. This is a companion DTD to web-app_2_5.xsd
+
+  It must include a DOCTYPE of the following form:
+
+  <!DOCTYPE sun-web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Servlet 2.5//EN" "http://www.sun.com/software/appserver/dtds/sun-web-app_2_5-0.dtd">
+
 -->
 
-<!-- The PUBLIC ID (defined in DOCTYPE) associated with this dtd is:
-     "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Servlet 2.5//EN"
--->
+<!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
 
 <!-- root element for vendor specific web application (module) configuration -->
 <!ELEMENT sun-web-app (context-root?, security-role-mapping*, servlet*, idempotent-url-pattern*, session-config?,
@@ -29,7 +17,8 @@
                        message-destination-ref*, cache?, class-loader?,
                        jsp-config?, locale-charset-info?, parameter-encoding?,
                        property*, message-destination*, webservice-description*)>
-<!ATTLIST sun-web-app error-url CDATA "">
+<!ATTLIST sun-web-app error-url CDATA ""
+                      httpservlet-security-provider CDATA #IMPLIED>
 
 <!--
   Idempotent URL Patterns
@@ -42,7 +31,7 @@
 
 <!-- 
  Context Root for the web application when the war file is a standalone module.
- When the war module is part of the J2EE Application, use the application.xml
+ When the war module is part of the Java EE Application, use the application.xml
 -->
 <!ELEMENT context-root (#PCDATA)>
 
@@ -50,14 +39,17 @@
 <!ELEMENT role-name (#PCDATA)>
 
 <!ELEMENT principal-name (#PCDATA)>
+<!ATTLIST principal-name class-name CDATA #IMPLIED>
 <!ELEMENT group-name (#PCDATA)>
 
 <!ELEMENT servlet (servlet-name, principal-name?, webservice-endpoint*)>
 
 <!ELEMENT session-config (session-manager?, session-properties?, cookie-properties?)>
 
+<!ENTITY % persistence-type "(memory | file | custom | ha | s1ws60 | mmap | replicated)">
+
 <!ELEMENT session-manager (manager-properties?, store-properties?)>
-<!ATTLIST session-manager persistence-type CDATA "memory">
+<!ATTLIST session-manager persistence-type %persistence-type; "memory">
 
 <!ELEMENT manager-properties (property*)>
 <!ELEMENT store-properties (property*)>
@@ -111,6 +103,12 @@ This element holds password text.
 <!ELEMENT ejb-ref (ejb-ref-name, jndi-name)>
 <!ELEMENT ejb-ref-name (#PCDATA)>
 
+<!ENTITY % scope "(context.attribute | request.header  | request.parameter | 
+                   request.cookie  | request.attribute | session.attribute)">
+<!ENTITY % key-scope "(context.attribute | request.header | request.parameter | 
+                       request.cookie | session.id | session.attribute)">
+<!ENTITY % expr "(equals | greater | lesser | not-equals | in-range)">
+
 <!-- cache element configures the cache for web application. iAS 7.0 web container    
      supports one such cache object per application: i.e. <cache> is a sub element    
      of <ias-web-app>. A cache can have zero or more cache-mapping elements and
@@ -123,7 +121,7 @@ This element holds password text.
 <!ELEMENT cache (cache-helper*, default-helper?, property*, cache-mapping*)>
 <!ATTLIST cache  max-entries         CDATA     "4096"
                  timeout-in-seconds  CDATA     "30"
-                 enabled             CDATA "true">
+                 enabled             %boolean; "true">
 
 <!-- cache-helper specifies customizable class which implements CacheHelper interface. 
 
@@ -187,7 +185,7 @@ ere (e.g. <timeout> 60 </timeout> or dynamically via fields in the relevant scop
 -->
 <!ELEMENT timeout (#PCDATA)>
 <!ATTLIST timeout  name  CDATA  #IMPLIED
-                   scope CDATA 'request.attribute'>
+                   scope %scope; 'request.attribute'>
 
 <!-- 
 http-method specifies HTTP method eligible for caching default is GET. 
@@ -205,7 +203,7 @@ example:
 -->
 <!ELEMENT refresh-field EMPTY>
 <!ATTLIST refresh-field name  CDATA       #REQUIRED
-                        scope CDATA 'request.parameter'>
+                        scope %key-scope; 'request.parameter'>
 <!-- 
 key-field specifies a component of the key; container looks for the named 
 field in the given scope to access the cached entry. Default is to use
@@ -218,7 +216,7 @@ on Servlet Path.
 -->
 <!ELEMENT key-field EMPTY>
 <!ATTLIST key-field name  CDATA       #REQUIRED
-                    scope CDATA 'request.parameter'>
+                    scope %key-scope; 'request.parameter'>
 
 <!-- 
 constraint-field specifies a field whose value is used as a cacheability constraint.
@@ -245,9 +243,9 @@ constraint-field specifies a field whose value is used as a cacheability constra
 -->
 <!ELEMENT constraint-field (constraint-field-value*)>
 <!ATTLIST constraint-field  name                    CDATA      #REQUIRED
-                            scope                   CDATA    'request.parameter'
-                            cache-on-match          CDATA  'true'
-                            cache-on-match-failure  CDATA  'false'>
+                            scope                   %scope;    'request.parameter'
+                            cache-on-match          %boolean;  'true'
+                            cache-on-match-failure  %boolean;  'false'>
 
 <!-- 
 value element specifies the applicable value and a matching expression for a constraint-field
@@ -261,13 +259,37 @@ value element specifies the applicable value and a matching expression for a con
   </constraint-field>
 -->
 <!ELEMENT constraint-field-value (#PCDATA)>
-<!ATTLIST constraint-field-value 	match-expr              CDATA    'equals'
-                			cache-on-match          CDATA  'true'
-                			cache-on-match-failure  CDATA  'false'>
+<!ATTLIST constraint-field-value 	match-expr              %expr;    'equals'
+                			cache-on-match          %boolean;  'true'
+                			cache-on-match-failure  %boolean;  'false'>
 
+<!--
+  The class-loader element allows developers to customize the behaviour
+  of their web application's classloader.
+
+  attributes
+    extra-class-path          List of comma-separated JAR files to be
+                              added to the web application's class path
+    delegate                  If set to false, the delegation behavior
+                              of the web application's classloader complies
+                              with the Servlet 2.3 specification,
+                              section 9.7.2, and gives preference to classes
+                              and resources within the WAR file or the
+                              extra-class-path over those higher up in the
+                              classloader hierarchy, unless those classes or
+                              resources are part of the Java EE platform.
+                              If set to its default value of true, classes
+                              and resources residing in container-wide library
+                              JAR files are loaded in preference to classes
+                              and resources packaged within the WAR file or
+                              specified on the extra-class-path.
+    dynamic-reload-interval   Not supported. Included for backward
+                              compatibility with previous Sun Java System
+                              Web Server versions
+-->
 <!ELEMENT class-loader (property*)>
 <!ATTLIST class-loader extra-class-path CDATA  #IMPLIED
-                       delegate CDATA 'true'
+                       delegate %boolean; 'true'
                        dynamic-reload-interval CDATA #IMPLIED >
 
 <!ELEMENT jsp-config (property*)>
@@ -442,7 +464,7 @@ provider.
 When login-config is specified, a default message-security provider
 is not applied to the endpoint.
 -->
-<!ELEMENT webservice-endpoint ( port-component-name, endpoint-address-uri?, (login-config | message-security-binding)?, transport-guarantee?, service-qname?, tie-class?, servlet-impl-class?, debugging-enabled?, property* )>
+<!ELEMENT webservice-endpoint ( port-component-name, endpoint-address-uri?, (login-config | message-security-binding)?, transport-guarantee?, service-qname?, tie-class?, servlet-impl-class?, debugging-enabled? )>
 
 <!--
 Unique name of a port component within a module
@@ -538,9 +560,9 @@ The message-layer entity is used to define the value of the
 auth-layer attribute of message-security-binding elements.
 
 Used in: message-security-binding
-
-<!ENTITY % message-layer    "(SOAP)">
 -->
+<!ENTITY % message-layer    "(SOAP)">
+
 <!--
 The message-security-binding element is used to customize the
 webservice-endpoint or port to provider binding; either by binding the
@@ -576,7 +598,7 @@ Used in: webservice-endpoint, port-info
 -->
 <!ELEMENT message-security-binding ( message-security* )>
 <!ATTLIST message-security-binding
-          auth-layer  CDATA #REQUIRED
+          auth-layer  %message-layer; #REQUIRED
           provider-id CDATA           #IMPLIED >
 
 <!--

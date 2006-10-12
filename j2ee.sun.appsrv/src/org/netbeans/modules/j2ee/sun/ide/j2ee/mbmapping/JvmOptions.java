@@ -29,18 +29,15 @@ import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 import javax.management.AttributeList;
 import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanOperationInfo;
-import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
-import javax.management.IntrospectionException;
 import javax.management.InstanceNotFoundException;
 import javax.management.AttributeNotFoundException;
 import javax.management.InvalidAttributeValueException;
 
 import java.rmi.RemoteException;
-import java.util.ResourceBundle;
+
 
 
 
@@ -54,7 +51,6 @@ public class JvmOptions extends ModuleMBean implements Constants{
     
     private ObjectName configObjName = null;
     private boolean isServerEightOne = true;
-    private ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/j2ee/mbmapping/Bundle");
     /** Creates a new instance of JvmOptions */
     public JvmOptions(MBeanServerConnection in_conn) {
         super(in_conn);
@@ -77,10 +73,15 @@ public class JvmOptions extends ModuleMBean implements Constants{
        ObjectName configName = null;
        try{
            configName = new ObjectName(this.MAP_JVMOptions);
-       }catch(Exception ex){} 
+       }catch(Exception ex){
+           return null;
+       } 
        return configName;
     }
     
+    public ObjectName getConfigObjectName(){
+        return configObjName;
+    }
     public AttributeList getAttributes(String[] attributes){
         AttributeList attList = null;
         try{
@@ -104,6 +105,7 @@ public class JvmOptions extends ModuleMBean implements Constants{
             attList = this.conn.getAttributes(this.configObjName, attributes);
             attList.add(jpdaAttr);
         }catch(Exception ex){
+            return attList;
             //Attribute list is empty
         }
         return attList;
@@ -134,6 +136,7 @@ public class JvmOptions extends ModuleMBean implements Constants{
             
         }catch(Exception ex){
             //System.out.println("Error in getMBeanInfo of JVMOptions " + ex.getMessage());
+            return updatedInfo;
         }
         return updatedInfo;
     }
@@ -141,18 +144,21 @@ public class JvmOptions extends ModuleMBean implements Constants{
     public void setAttribute(Attribute attribute) throws RemoteException, InstanceNotFoundException, AttributeNotFoundException,
      InvalidAttributeValueException, MBeanException, ReflectionException, java.io.IOException{
         if(attribute.getName().equals(this.JPDA_PORT)){
-            if(attribute.getValue() != null)
+            if(attribute.getValue() != null){
                 setAddressValue(attribute.getValue().toString());
+            }
         }else if(attribute.getName().equals(this.SHARED_MEM)){
-            if(attribute.getValue() != null)
+            if(attribute.getValue() != null){
                     setAddressValue(attribute.getValue().toString());
+            }
         }else if(attribute.getName().equals(this.DEBUG_OPTIONS)){
             //Fix for bug# 4989322 - solaris does not support shmem
             if((attribute.getValue() != null) && (attribute.getValue().toString().indexOf(ISMEM) == -1)){
                 this.conn.setAttribute(this.configObjName, attribute);
             }else{
-                if(isWindows())
+                if(isWindows()){
                     this.conn.setAttribute(this.configObjName, attribute);
+                }
               //ludo  else
               //ludo      Util.setStatusBar(bundle.getString("Msg_SolarisShmem"));
             }
@@ -164,8 +170,9 @@ public class JvmOptions extends ModuleMBean implements Constants{
     private String getDebugOptions(){
         Object debugOptionsAttr = getConfigAttributeValue(DEBUG_OPTIONS); 
         String debugOptionsVal = null;
-        if(debugOptionsAttr != null)
+        if(debugOptionsAttr != null){
             debugOptionsVal = debugOptionsAttr.toString().trim();
+        }
         return debugOptionsVal;
     }
     
@@ -246,16 +253,18 @@ public class JvmOptions extends ModuleMBean implements Constants{
                     setAddressValue("1044"); //NOI18N
                 }    
             }
-        }else if (debugOpt.indexOf(ISMEM) != -1)
+        }else if (debugOpt.indexOf(ISMEM) != -1){
             return true;
+        }
         return isShared;
     }
     
     //Fix for bug# 4989322 - solaris does not support shmem
    public boolean isWindows(){
         Object javaHome = getConfigAttributeValue(JAVA_HOME);
-        if (javaHome==null)//scary... assume not windoes.
+        if (javaHome==null){//scary... assume not windows.
             return false;
+        }
         try{
             //FIXME -- temporary workaround till plugin can map the env keys returned by appserver
             //to actual values
@@ -293,12 +302,14 @@ public class JvmOptions extends ModuleMBean implements Constants{
                value = value + "defaultAddress"; //NOI18N
            newAttr = new Attribute(DEBUG_OPTIONS, value);
         }else{
-            if((getAddressValue().equals("1044")) || (getAddressValue().equals("9009"))) //NOI18N
+            if((getAddressValue().equals("1044")) || (getAddressValue().equals("9009"))) {//NOI18N
                 newAttr = new Attribute(DEBUG_OPTIONS, DEF_DEUG_OPTIONS_SOCKET);
+            }
         }    
         try{
-            if(newAttr != null)
+            if(newAttr != null){
                 this.setAttribute(newAttr);
+            }
         }catch(Exception ex){}    
     }
 

@@ -19,22 +19,29 @@
 
 package org.netbeans.modules.tomcat5.util;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.tomcat5.TomcatFactory;
+import org.netbeans.modules.tomcat5.TomcatFactory55;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.customizer.CustomizerSupport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -62,6 +69,7 @@ public class TomcatProperties {
     private static final String PROP_DISPLAY_NAME  = InstanceProperties.DISPLAY_NAME_ATTR;
     public  static final String PROP_SHUTDOWN      = "admin_port";      //NOI18N
     public  static final String PROP_MONITOR       = "monitor_enabled"; // NOI18N   
+    public  static final String PROP_PROXY_ENABLED = "proxy_enabled";   // NOI18N   
     private static final String PROP_CUSTOM_SCRIPT = "custom_script_enabled"; // NOI18N
     private static final String PROP_SCRIPT_PATH   = "script_path";     // NOI18N
     private static final String PROP_FORCE_STOP    = "forceStopOption"; // NOI18N    
@@ -78,6 +86,8 @@ public class TomcatProperties {
     private static final String PROP_TIMESTAMP     = "timestamp";       // NOI18N
     private static final String PROP_HOST          = "host";            // NOI18N
     public  static final String PROP_RUNNING_CHECK_TIMEOUT = "runningCheckTimeout"; // NOI18N
+    private static final String PROP_INSTANCE_ID   = "instance_id";     // NOI18N
+    
     
     // default values
     private static final boolean DEF_VALUE_SEC_MANAGER   = false;
@@ -88,7 +98,9 @@ public class TomcatProperties {
     private static final String  DEF_VALUE_DEBUG_TYPE = Utilities.isWindows() ? DEBUG_TYPE_SHARED 
                                                                               : DEBUG_TYPE_SOCKET;
     private static final boolean DEF_VALUE_MONITOR       = true;
+    private static final boolean DEF_VALUE_PROXY_ENABLED = true;
     private static final int     DEF_VALUE_DEBUG_PORT    = 11555;
+    private static final int     DEF_VALUE_SERVER_PORT   = 8080;
     public  static final int     DEF_VALUE_SHUTDOWN_PORT = 8005;
     
     public static final int      DEF_VALUE_BUNDLED_SERVER_PORT   = 8084;
@@ -181,6 +193,98 @@ public class TomcatProperties {
 //                org.openide.ErrorManager.getDefault ().log (nef.getLocalizedMessage ());
 //            }
 //        }
+        ip.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String name = evt.getPropertyName();
+                if (PROP_SERVER_PORT.equals(name) || PROP_USERNAME.equals(name) 
+                    || PROP_PASSWORD.equals(name)) {
+                    // update Ant deployment properties file if it exists
+                    try {
+                        storeAntDeploymentProperties(getAntDeploymentPropertiesFile(), false);
+                    } catch(IOException ioe) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                    }
+                }
+            }
+        });
+    }
+    
+    /** 
+     * Stores the Ant deployment properties in the specified file.
+     * @param create if false the deployment properties file won't be created if
+     *               it does not exist.
+     * @throws IOException if a problem occurs.
+     */
+    public void storeAntDeploymentProperties(File file, boolean create) throws IOException {
+        if (!create && !file.exists()) {
+            return;
+        }
+        EditableProperties antProps = new EditableProperties();
+        antProps.setProperty("tomcat.home", homeDir.getAbsolutePath()); // NOI18N
+        antProps.setProperty("tomcat.url", getWebUrl());                // NOI18N
+        antProps.setProperty("tomcat.username", getUsername());         // NOI18N
+        antProps.setProperty("tomcat.password", getPassword());         // NOI18N
+        file.createNewFile();
+        FileObject fo = FileUtil.toFileObject(file);
+        FileLock lock = fo.lock();
+        try {
+            OutputStream os = fo.getOutputStream(lock);
+            try {
+                antProps.store(os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    /** Returns file the Ant deployment properties are stored in. */
+    public File getAntDeploymentPropertiesFile() {
+        return new File(System.getProperty("netbeans.user"), getInstanceID() + ".properties"); // NOI18N
+    }
+    
+    /** 
+     * Unique instance identifier used to differentiate different Tomcat instances 
+     * in a human-readable form, unlike InstanceProperties.URL_ATTR.
+     */
+    private String getInstanceID() {
+        String name = ip.getProperty(PROP_INSTANCE_ID);
+        if (name != null) {
+            return name;
+        }
+        // generate unique tomcat instance identifier (e.g. tomcat55, tomcat55_1, ...
+        // for Tomcat 5.5.x and tomcat50, tomcat50_1... for Tomcat 5.0.x)
+        boolean tm50 = tm.isTomcat50();
+        String prefix = tm50 ? "tomcat50" : "tomcat55"; // NOI18N
+        String[] instanceURLs = Deployment.getDefault().getInstancesOfServer(
+                tm50 ? TomcatFactory.SERVER_ID : TomcatFactory55.SERVER_ID); // NOI18N
+        for (int i = 0; name == null; i++) {
+            if (i == 0) {
+                name = prefix;
+            } else {
+                name = prefix + "_" + i; // NOI18N
+            }
+            for (String url: instanceURLs) {
+                if (!tm.getUri().equals(url)) {
+                    InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
+                    if (ip != null) {
+                        String anotherName = ip.getProperty(PROP_INSTANCE_ID);
+                        if (name.equals(anotherName)) {
+                            name = null;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        ip.setProperty(PROP_INSTANCE_ID, name);
+        return name;
+    }
+    
+    /** Returns server web url e.g. http://localhost:8080 */
+    public String getWebUrl() {
+        return "http://" + getHost() + ":" + getServerPort(); // NOI18N
     }
     
     /** Return CATALINA_HOME directory.*/
@@ -311,6 +415,16 @@ public class TomcatProperties {
         ip.setProperty(PROP_MONITOR, Boolean.toString(enabled));
     }
     
+    public boolean getProxyEnabled() {
+        String val = ip.getProperty(PROP_PROXY_ENABLED);
+        return val != null ? Boolean.valueOf(val).booleanValue()
+                           : DEF_VALUE_PROXY_ENABLED;
+    }
+    
+    public void setProxyEnabled(boolean enabled) {
+        ip.setProperty(PROP_PROXY_ENABLED, Boolean.toString(enabled));
+    }
+    
     public int getDebugPort() {
         String val = ip.getProperty(PROP_DEBUG_PORT);
                 
@@ -318,6 +432,7 @@ public class TomcatProperties {
             try {
                 return Integer.parseInt(val);
             } catch (NumberFormatException nfe) {
+                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
             }
         }
         return DEF_VALUE_DEBUG_PORT;
@@ -330,14 +445,17 @@ public class TomcatProperties {
     
     public int getServerPort() {
         String val = ip.getProperty(PROP_SERVER_PORT);
-        
         if (val != null) {
             try {
-                return Integer.parseInt(val);
+                int port = Integer.parseInt(val);
+                if (port >= 0 && port <= 65535) {
+                    return port;
+                }
             } catch (NumberFormatException nfe) {
+                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
             }
         }
-        return -1;
+        return tm.isBundledTomcat() ? DEF_VALUE_BUNDLED_SERVER_PORT : DEF_VALUE_SERVER_PORT;
     }
     
     /** this needs to be kept in sync with value in the server.xml conf file */
@@ -347,14 +465,17 @@ public class TomcatProperties {
     
     public int getShutdownPort() {
         String val = ip.getProperty(PROP_SHUTDOWN);
-        
         if (val != null) {
             try {
-                return Integer.parseInt(val);
+                int port = Integer.parseInt(val);
+                if (port >= 0 && port <= 65535) {
+                    return port;
+                }
             } catch (NumberFormatException nfe) {
+                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
             }
         }
-        return DEF_VALUE_SHUTDOWN_PORT;
+        return tm.isBundledTomcat() ? DEF_VALUE_BUNDLED_SHUTDOWN_PORT : DEF_VALUE_SHUTDOWN_PORT;
     }
     
     /** this needs to be kept in sync with value in the server.xml conf file */
@@ -380,16 +501,24 @@ public class TomcatProperties {
         String[] implFilter = new String[] {
             "-impl.jar"
         };
-        // tomcat and jwsdp libs
+        // tomcat libs
         List retValue = listUrls(new File(homeDir, "common/lib"),  nbFilter);    // NOI18N
+
+        // jwsdp libs
+        retValue.addAll(listUrls(new File(homeDir, "jaxws/lib"),    implFilter)); // NOI18N
         retValue.addAll(listUrls(new File(homeDir, "jaxb/lib"),    implFilter)); // NOI18N
-        retValue.addAll(listUrls(new File(homeDir, "jaxp/lib"),    implFilter)); // NOI18N
-        retValue.addAll(listUrls(new File(homeDir, "jaxr/lib"),    implFilter)); // NOI18N
-        retValue.addAll(listUrls(new File(homeDir, "jaxrpc/lib"),  implFilter)); // NOI18N
-        retValue.addAll(listUrls(new File(homeDir, "jstl/lib"),    implFilter)); // NOI18N
         retValue.addAll(listUrls(new File(homeDir, "jwsdp-shared/lib"), implFilter)); // NOI18N
+        retValue.addAll(listUrls(new File(homeDir, "jaxp/lib"),    implFilter)); // NOI18N
+        retValue.addAll(listUrls(new File(homeDir, "jaxrpc/lib"),  implFilter)); // NOI18N
+        retValue.addAll(listUrls(new File(homeDir, "jaxr/lib"),    implFilter)); // NOI18N
         retValue.addAll(listUrls(new File(homeDir, "saaj/lib"),    implFilter)); // NOI18N
-        retValue.addAll(listUrls(new File(homeDir, "xmldsig/lib"), implFilter)); // NOI18N
+        retValue.addAll(listUrls(new File(homeDir, "sjsxp/lib"),   implFilter)); // NOI18N
+
+        // wsit
+        retValue.addAll(listUrls(new File(homeDir, "shared/lib"),  implFilter)); // NOI18N
+
+        // other
+        retValue.addAll(listUrls(new File(homeDir, "jstl/lib"),    implFilter)); // NOI18N
         retValue.addAll(listUrls(new File(baseDir, "shared/lib"),  nbFilter));   // NOI18N
         return retValue;
     }
@@ -399,11 +528,11 @@ public class TomcatProperties {
         if (path == null) {
             return new ArrayList();
         }
-        return tokenizePath(path);
+        return CustomizerSupport.tokenizePath(path);
     }
                                                                                                                                                                            
     public void setSources(List/*<URL>*/ path) {
-        ip.setProperty(PROP_SOURCES, buildPath(path));
+        ip.setProperty(PROP_SOURCES, CustomizerSupport.buildPath(path));
         tm.getTomcatPlatform().notifyLibrariesChanged();
     }
     
@@ -419,7 +548,7 @@ public class TomcatProperties {
                     list.add(Utils.fileToUrl(jspApiDoc));
                     list.add(Utils.fileToUrl(servletApiDoc));
                 } else {
-                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/j2eeri-1_4-doc-api.zip", null, false); // NOI18N
+                    File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee5-doc-api.zip", null, false); // NOI18N
                     if (j2eeDoc != null) {
                         list.add(Utils.fileToUrl(j2eeDoc));
                     }
@@ -434,11 +563,11 @@ public class TomcatProperties {
             }
             return list;
         }
-        return tokenizePath(path);
+        return CustomizerSupport.tokenizePath(path);
     }
                                                                                                                                                                            
     public void setJavadocs(List/*<URL>*/ path) {
-        ip.setProperty(PROP_JAVADOCS, buildPath(path));
+        ip.setProperty(PROP_JAVADOCS, CustomizerSupport.buildPath(path));
         tm.getTomcatPlatform().notifyLibrariesChanged();
     }
     
@@ -466,6 +595,7 @@ public class TomcatProperties {
             try {
                 return Long.parseLong(val);
             } catch (NumberFormatException nfe) {
+                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
             }
         }
         return -1;
@@ -502,6 +632,7 @@ public class TomcatProperties {
             try {
                 return Integer.parseInt(val);
             } catch (NumberFormatException nfe) {
+                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
             }
         }
         return DEF_VALUE_RUNNING_CHECK_TIMEOUT;
@@ -514,87 +645,6 @@ public class TomcatProperties {
     }
     
     // private helper methods -------------------------------------------------
-    
-    private static String buildPath(List/*<URL>*/ path) {
-        String PATH_SEPARATOR = System.getProperty("path.separator"); // NOI18N
-        StringBuffer sb = new StringBuffer(path.size() * 16);
-        for (Iterator i = path.iterator(); i.hasNext(); ) {
-            sb.append(Utils.urlToString((URL)i.next()));
-            if (i.hasNext()) {
-                sb.append(PATH_SEPARATOR);
-            }
-        }
-        return sb.toString();
-    }
-    
-    /**
-     * Split an Ant-style path specification into components.
-     * Tokenizes on <code>:</code> and <code>;</code>, paying
-     * attention to DOS-style components such as <samp>C:\FOO</samp>.
-     * Also removes any empty components.
-     * @param path an Ant-style path (elements arbitrary) using DOS or Unix separators
-     * @return a tokenization of that path into components
-     */
-    private static List/*<URL>*/ tokenizePath(String path) {
-        try {
-            List/*<URL>*/ l = new ArrayList();
-            StringTokenizer tok = new StringTokenizer(path, ":;", true); // NOI18N
-            char dosHack = '\0';
-            char lastDelim = '\0';
-            int delimCount = 0;
-            while (tok.hasMoreTokens()) {
-                String s = tok.nextToken();
-                if (s.length() == 0) {
-                    // Strip empty components.
-                    continue;
-                }
-                if (s.length() == 1) {
-                    char c = s.charAt(0);
-                    if (c == ':' || c == ';') {
-                        // Just a delimiter.
-                        lastDelim = c;
-                        delimCount++;
-                        continue;
-                    }
-                }
-                if (dosHack != '\0') {
-                    // #50679 - "C:/something" is also accepted as DOS path
-                    if (lastDelim == ':' && delimCount == 1 && (s.charAt(0) == '\\' || s.charAt(0) == '/')) {
-                        // We had a single letter followed by ':' now followed by \something or /something
-                        s = "" + dosHack + ':' + s;
-                        // and use the new token with the drive prefix...
-                    } else {
-                        // Something else, leave alone.
-                        l.add(Utils.fileToUrl(new File(Character.toString(dosHack))));
-                        // and continue with this token too...
-                    }
-                    dosHack = '\0';
-                }
-                // Reset count of # of delimiters in a row.
-                delimCount = 0;
-                if (s.length() == 1) {
-                    char c = s.charAt(0);
-                    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
-                        // Probably a DOS drive letter. Leave it with the next component.
-                        dosHack = c;
-                        continue;
-                    }
-                }
-                l.add(Utils.fileToUrl(new File(s)));
-            }
-            if (dosHack != '\0') {
-                //the dosHack was the last letter in the input string (not followed by the ':')
-                //so obviously not a drive letter.
-                //Fix for issue #57304
-                l.add(Utils.fileToUrl(new File(Character.toString(dosHack))));
-            }
-            return l;
-        } catch (MalformedURLException e) {
-            ErrorManager.getDefault().notify(e);
-            return new ArrayList();
-        }
-    }
-    
     
     private static List/*<URL>*/ listUrls(final File folder, final String[] filter) {
         File[] jars = folder.listFiles(new FilenameFilter() {

@@ -18,12 +18,14 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
     <folder name="Services">
         <!-- Recognize text/x-jsf+xml: -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-web-jsf-resources-mime-resolver.xml" url="mime-resolver.xml"/>
+            <file name="org-netbeans-modules-web-jsf-resources-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png" />
+            </file>
         </folder>
     </folder>
 
@@ -45,12 +47,15 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="XML">
             <folder name="UserCatalogs">
                 <file name="org-netbeans-modules-web-jsf-JSFCatalog.instance">
-                    <attr name="instanceCreate" 
-                    newvalue="org.netbeans.modules.web.jsf.JSFCatalog"/>
-                    <attr name="instanceOf" 
-                    stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.web.jsf.JSFCatalog"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
                 </file>
             </folder>
+            <folder name="GrammarQueryManagers">
+                <!-- register semantics grammar for faces-config.xml(1.2) due to code completion -->
+                <file name="org-netbeans-modules-web-jsf-JSFGrammarQueryManager.instance"/>
+                <attr name="org-netbeans-modules-web-jsf-JSFGrammarQueryManager.instance/semantics-grammar-to-generic-grammar-separator" boolvalue="true"/>
+            </folder> <!-- GrammarQueryManagers -->
         </folder>
     </folder>
     <folder name="Editors">
@@ -65,12 +70,23 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="x-jsf+xml">
                 <folder name="Popup"> 
-                    <file name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance" />
+                    <file name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance"/>
                     <attr name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance/Separator0.instance" boolvalue="true"/>
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
                     <attr name="Separator0.instance/org-netbeans-modules-xml-text-syntax-XMLViewActions.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+            <folder name="x-jsp">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-web-jsf-editor-jspel-JSFELCompletionProvider.instance"/>
+                </folder>
+                <folder name="HyperlinkProviders">
+                    <file name="JSFJSPHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.jspel.JSFJSPHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
@@ -79,10 +95,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
-                <folder name="jsf-config1.0">
-                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
-                </folder>
-                <folder name="jsf-config1.1">
+                <folder name="x-jsf+xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
             </folder>
@@ -94,10 +107,24 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="Html.html/JSFManagedBean.java" boolvalue="true"/>
             <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateCategory" stringvalue="web-types"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFManagedBean.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"  />          
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"/>          
+            </file>
+        </folder>
+        <folder name="Persistence">
+            <attr name="Entity/JsfFromDB" boolvalue="true"/>
+            <attr name="RelatedCMP/JsfFromDB" boolvalue="true"/>
+            <attr name="JsfFromDB/PersistenceUnit" boolvalue="true"/>
+            <file name="JsfFromDB" url="templates/dummy.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.wizards.Bundle"/>
+                <attr name="templateCategory" stringvalue="web-types-server"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JsfFromDB.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator"/>
+                <attr name="SystemFileSystem.icon"
+                          urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
             </file>
         </folder>
     </folder>
@@ -110,9 +137,22 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="org-netbeans-modules-web-jsf">
         <file name="faces-config.xml" url="faces-config.xml"/>
+        <file name="faces-config_1_2.xml" url="faces-config_1_2.xml"/>
         <file name="welcomeJSF.jsp" url="welcomeJSF.jsp"/>
     </folder>
 
+    <folder name="JSPPalette">
+        <folder name="JSF">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.palette.Bundle"/>
+            <file name="JsfForm.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfForm.xml"/>
+            <file name="JsfTable.xml" url="nbresloc:/org/netbeans/modules/web/jsf/palette/items/resources/JsfTable.xml"/>
+        </folder>
+        <attr name="HTML/JSF" boolvalue="true"/>
+        <attr name="HTML_Forms/JSF" boolvalue="true"/>
+        <attr name="JSP/JSF" boolvalue="true"/>
+        <attr name="JSF/Database" boolvalue="true"/>
+    </folder>
+    
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-jsf+xml">
@@ -128,9 +168,9 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-openide-actions-CutAction.instance"/>
                     <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-CopyAction.instance"/>
-                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true" />
+                    <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
                     <file name="org-openide-actions-PasteAction.instance"/>
-                    <attr name="org-openide-actions-PasteAction.instance/sep-2.instance" boolvalue="true" />
+                    <attr name="org-openide-actions-PasteAction.instance/sep-2.instance" boolvalue="true"/>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>

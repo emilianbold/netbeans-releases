@@ -225,7 +225,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                     cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots,helper));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots, helper));
                     break;
                 case 5:
                     cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
@@ -282,6 +282,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             l[1] = getSourcepath(5);
             l[2] = getSourcepath(1);
             return l;
+        }
+        assert false;
+        return null;
+    }
+    
+    /**
+     * Returns the given type of the classpath for the project sources
+     * (i.e., excluding tests roots). Valid types are SOURCE and COMPILE.
+     */
+    public ClassPath getProjectSourcesClassPath(String type) {
+        if (ClassPath.SOURCE.equals(type)) {
+            return getSourcepath(0);
+        }
+        if (ClassPath.COMPILE.equals(type)) {
+            return getCompileTimeClasspath(0);
         }
         assert false;
         return null;

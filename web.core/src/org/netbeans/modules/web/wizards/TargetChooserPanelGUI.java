@@ -127,7 +127,10 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             optionsPanel.add(optionLabel, gridBagConstraints);
 
             jspSyntaxButton.setSelected(true);
-            jspSyntaxButton.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_JspStandard_mnem").charAt(0));
+            if (FileType.JSP.equals(fileType))
+                jspSyntaxButton.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_JspStandard_mnem").charAt(0));
+            else
+                jspSyntaxButton.setMnemonic(NbBundle.getMessage(TargetChooserPanelGUI.class, "A11Y_TagStandard_mnem").charAt(0));
             buttonGroup1.add(jspSyntaxButton);
             jspSyntaxButton.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -438,6 +441,20 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
             nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_TldName"));
         } else if (fileType.equals(FileType.HTML)) {
             nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_HtmlName"));
+            //listener to update fileTextField
+            locationCB.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    changedUpdate(null);
+                }
+            });
+        } else if (fileType.equals(FileType.XHTML)) {
+            nameLabel.setText(NbBundle.getMessage(TargetChooserPanelGUI.class, "LBL_XHtmlName"));
+            //listener to update fileTextField
+            locationCB.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    changedUpdate(null);
+                }
+            });
         }
     }
 
@@ -497,15 +514,21 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         for (int i=0;i<folders.length;i++) loc[i] = new LocationItem(folders[i]);
         return loc;
     }
+    
     private String getRelativeSourcesFolder() {
         String sourceDir="";
         if (wm!=null) {
             FileObject docBase = wm.getDocumentBase();
             FileObject sourcesBase = ((LocationItem)locationCB.getModel().getSelectedItem()).getFileObject();
             sourceDir = FileUtil.getRelativePath( docBase, sourcesBase );
+            
+            //just for source roots
+            if (sourceDir == null)
+                sourceDir = "";
         }
         return sourceDir.length()==0?"":sourceDir+"/";        
     }
+    
     public String getRelativeTargetFolder() {
         return getRelativeSourcesFolder()+getNormalizedFolder();
     }
@@ -1038,6 +1061,10 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
     boolean tagNameExists(String name) {
         if (tagValues!=null && tagValues.contains(name)) return true; 
         else return false;
+    }
+    
+    public String getCreatedFilePath() {
+        return fileTextField.getText();
     }
 
 }

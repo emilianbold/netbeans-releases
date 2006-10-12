@@ -257,7 +257,10 @@ public class ServerChooserVisual extends javax.swing.JPanel {
     }//GEN-END:initComponents
 
     private void displayNameEditFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_displayNameEditFieldKeyReleased
-        displayNames.put(((ServerAdapter)serverComboBox.getSelectedItem()).getServer(), displayNameEditField.getText());
+        ServerAdapter serverAdapter = (ServerAdapter) serverComboBox.getSelectedItem();
+        if (serverAdapter != null) {
+            displayNames.put(serverAdapter.getServer(), displayNameEditField.getText());
+        }
     }//GEN-LAST:event_displayNameEditFieldKeyReleased
 
     private void serverComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_serverComboBoxItemStateChanged

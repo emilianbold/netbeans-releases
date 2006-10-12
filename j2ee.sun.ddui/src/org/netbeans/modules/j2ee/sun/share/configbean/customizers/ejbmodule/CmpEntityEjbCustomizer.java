@@ -25,25 +25,21 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
-//DEPLOYMENT API
-import javax.enterprise.deploy.spi.DConfigBean;
-
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.Cmp;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.Finder;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.FlushAtEndOfMethod;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.Method;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.OneOneFinders;
-import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
-import org.netbeans.modules.j2ee.sun.share.configbean.CmpEntityEjb;
-import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
+import java.awt.GridBagConstraints;
 
 import com.sun.jdo.api.persistence.model.Model;
 import com.sun.jdo.modules.persistence.mapping.core.util.MappingContext;
 import com.sun.jdo.modules.persistence.mapping.core.util.MappingContextFactory;
 import com.sun.jdo.modules.persistence.mapping.ejb.ui.panels.BeanMappingPanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot;
+
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.Cmp;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.Finder;
+import org.netbeans.modules.j2ee.sun.dd.api.ejb.OneOneFinders;
+
 import org.netbeans.modules.j2ee.sun.share.configbean.Base;
+import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.CmpEntityEjb;
+import org.netbeans.modules.j2ee.sun.share.configbean.EjbJarRoot;
 
 /**
  *
@@ -65,16 +61,6 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
     }
 
 
-    /** Creates a new instance of CmpEntityEjbCustomizer */
-    public CmpEntityEjbCustomizer(DConfigBean theBean) {
-        super(theBean);
-        if(!(theBean instanceof CmpEntityEjb)){
-            assert(false);
-        }
-        this.theBean = (CmpEntityEjb)theBean;
-    }
-
-
     public void setObject(Object bean) {
         super.setObject(bean);
         // Only do this if the bean is actually changing.
@@ -89,22 +75,22 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
     //get the bean specific panel
     protected javax.swing.JPanel getBeanPanel(){
         cmpPanel = new CmpPanel();
-        java.awt.GridBagConstraints gridBagConstraints = 
-           new java.awt.GridBagConstraints();
 
         EntityEjbPanel entityEjbPanel = (EntityEjbPanel)super.getBeanPanel();
         if(entityEjbPanel != null){
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+            gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
             gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
             cmpPanel.add(entityEjbPanel, gridBagConstraints);
         }
 
         cmpEntityEjbPanel = new CmpEntityEjbPanel(this);
         if(cmpEntityEjbPanel != null){
-            gridBagConstraints.gridy = 1;
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+            gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.weightx = 1.0;
             cmpPanel.add(cmpEntityEjbPanel, gridBagConstraints);
         }
 
@@ -254,7 +240,7 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer{
     private Cmp getCmp(){
         Cmp cmp = theBean.getCmp();
         if(cmp == null){
-            cmp = StorageBeanFactory.getDefault().createCmp();
+            cmp = theBean.getConfig().getStorageFactory().createCmp();
             try {
                 theBean.setCmp(cmp);
             }catch(java.beans.PropertyVetoException exception){

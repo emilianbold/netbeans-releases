@@ -81,9 +81,10 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public javax.swing.Action[] getActions(boolean context) {
-        javax.swing.Action[]  newActions = new javax.swing.Action[2] ;
+        javax.swing.Action[]  newActions = new javax.swing.Action[3];
         newActions[0]=(null);        
         newActions[1]= (SystemAction.get(ShowAdminToolAction.class));
+        newActions[2]= (SystemAction.get(OpenServerLogAction.class));
         return newActions;
     }
     
@@ -276,6 +277,10 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     
     public Component getCustomizer() {
         return new Customizer(new WLJ2eePlatformFactory().getJ2eePlatformImpl(deploymentManager));
+    }
+    
+    public WLDeploymentManager getDeploymentManager() {
+        return deploymentManager;
     }
     
 }

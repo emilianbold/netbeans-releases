@@ -40,14 +40,11 @@ public class ExecSupport {
      * Redirect the standard output and error streams of the child
      * process to an output window.
      */
-    public void displayProcessOutputs(final Process child, String displayName)
+    public void displayProcessOutputs(final Process child, String displayName, String initialMessage)
     throws IOException, InterruptedException {
         // Get a tab on the output window.  If this client has been
         // executed before, the same tab will be returned.
-        InputOutput io = org.openide.windows.IOProvider.getDefault().getIO(
-        /*MessageFormat.format(
-        NbBundle.getMessage(ExecSupport.class, "IASI_RunningClient"), //NOI18L
-        new Object[] { displayName })*/displayName, false);
+        InputOutput io = org.openide.windows.IOProvider.getDefault().getIO( displayName, false);
         OutputWriter ow = io.getOut();
         try {
             io.getOut().reset();
@@ -57,14 +54,15 @@ public class ExecSupport {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         io.select();
+        ow.println(initialMessage);
         final Thread[] copyMakers = new Thread[3];
-        (copyMakers[01] = new OutputCopier(new InputStreamReader(child.getInputStream()), io.getOut(), true)).start();
+        (copyMakers[0] = new OutputCopier(new InputStreamReader(child.getInputStream()), ow, true)).start();
         (copyMakers[1] = new OutputCopier(new InputStreamReader(child.getErrorStream()), io.getErr(), true)).start();
         (copyMakers[2] = new OutputCopier(io.getIn(), new OutputStreamWriter(child.getOutputStream()), true)).start();
         new Thread() {
             public void run() {
                 try {
-                    int ret = child.waitFor();
+                    child.waitFor();
                     Thread.sleep(2000);  // time for copymakers
                 } catch (InterruptedException e) {
                 } finally {
@@ -74,6 +72,7 @@ public class ExecSupport {
                         copyMakers[2].interrupt();
                     }
                     catch (Exception e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }
                 }
             }
@@ -103,10 +102,12 @@ public class ExecSupport {
             int read;
             char[] buff = new char [256];
             try {
-                while ((read = read(is, buff, 0, 256)) > 0x0) {
+                 while ((read = read(is, buff, 0, 256)) > 0x0) {
                     if (os!=null){
                         os.write(buff,0,read);
-                        if (autoflush) os.flush();
+                        if (autoflush) {
+                            os.flush();
+                        }
                     }
                 }
             } catch (IOException ex) {

@@ -98,10 +98,8 @@ public class EntityEjbPanel extends javax.swing.JPanel {
         isReadOnlyBeanLabel.setLabelFor(isReadOnlyBeanComboBox);
         isReadOnlyBeanLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Is_Read_Only_Bean_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(isReadOnlyBeanLabel, gridBagConstraints);
         isReadOnlyBeanLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Read_Only_Bean_Acsbl_Name"));
         isReadOnlyBeanLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Read_Only_Bean_Acsbl_Desc"));
@@ -115,12 +113,10 @@ public class EntityEjbPanel extends javax.swing.JPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(isReadOnlyBeanComboBox, gridBagConstraints);
         isReadOnlyBeanComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Read_Only_Bean_Acsbl_Name"));
         isReadOnlyBeanComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Read_Only_Bean_Acsbl_Desc"));
@@ -129,10 +125,8 @@ public class EntityEjbPanel extends javax.swing.JPanel {
         refreshPeriodInSecondsLabel.setLabelFor(refreshPeriodInSecondsTextField);
         refreshPeriodInSecondsLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Refresh_Period_In_Seconds_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(refreshPeriodInSecondsLabel, gridBagConstraints);
         refreshPeriodInSecondsLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Refresh_Period_In_Seconds_Acsbl_Name"));
         refreshPeriodInSecondsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Refresh_Period_In_Seconds_Acsbl_Desc"));
@@ -155,12 +149,10 @@ public class EntityEjbPanel extends javax.swing.JPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(refreshPeriodInSecondsTextField, gridBagConstraints);
         refreshPeriodInSecondsTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Refresh_Period_In_Seconds_Acsbl_Name"));
         refreshPeriodInSecondsTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Refresh_Period_In_Seconds_Acsbl_Desc"));
@@ -169,10 +161,8 @@ public class EntityEjbPanel extends javax.swing.JPanel {
         commitOptionLabel.setLabelFor(commitOptionComboBox);
         commitOptionLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Commit_Option_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         add(commitOptionLabel, gridBagConstraints);
         commitOptionLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Commit_Option_Acsbl_Name"));
         commitOptionLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Commit_Option_Acsbl_Desc"));
@@ -186,18 +176,15 @@ public class EntityEjbPanel extends javax.swing.JPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(commitOptionComboBox, gridBagConstraints);
         commitOptionComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Commit_Option_Acsbl_Name"));
         commitOptionComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Commit_Option_Acsbl_Desc"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void refreshPeriodInSecondsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshPeriodInSecondsActionPerformed
         // Add your handling code here:

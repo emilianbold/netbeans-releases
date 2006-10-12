@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--element and attribute declarations-->
+<!--
+
+	The application-client element is the root element of an
+	application client deployment descriptor.  The application
+	client deployment descriptor describes the EJB components
+	and external resources referenced by the application
+	client.
+
+      -->
+<!ELEMENT application-client (description*, display-name*, icon*, env-entry*, ejb-ref*, service-ref*, resource-ref*, resource-env-ref*, message-destination-ref*, persistence-unit-ref*, post-construct*, pre-destroy*, callback-handler?, message-destination*)>
+<!ATTLIST application-client
+	version CDATA #FIXED "5"
+	metadata-complete NMTOKEN #IMPLIED
+	id ID #IMPLIED
+	documentElementAttributes 
+>
+<!ELEMENT env-entry (description*, env-entry-name, env-entry-type?, env-entry-value?, ((mapped-name)?, (injection-target)*))>
+<!ATTLIST env-entry
+	id ID #IMPLIED
+>
+<!ELEMENT ejb-ref (description*, ejb-ref-name, ejb-ref-type?, home?, remote?, ejb-link?, mapped-name?, injection-target*))>
+<!ATTLIST ejb-ref
+	id ID #IMPLIED
+>
+<!ELEMENT resource-ref (description*, res-ref-name, res-type?, res-auth?, res-sharing-scope?, mapped-name?, injection-target*)>
+<!ATTLIST resource-ref
+	id ID #IMPLIED
+>
+<!ELEMENT resource-env-ref (description*, resource-env-ref-name, resource-env-ref-type?, mapped-name?, injection-target*)>
+<!ATTLIST resource-env-ref
+	id ID #IMPLIED
+>
+<!ELEMENT message-destination-ref (description*, message-destination-ref-name, message-destination-type?, message-destination-usage?, message-destination-link?, mapped-name?, injection-target*)>
+<!ATTLIST message-destination-ref
+	id ID #IMPLIED
+>
+<!ELEMENT persistence-unit-ref (description*, persistence-unit-ref-name, persistence-unit-name?, mapped-name?, injection-target*)>
+<!ATTLIST persistence-unit-ref
+	id ID #IMPLIED
+>
+<!ELEMENT post-construct (lifecycle-callback-class?, lifecycle-callback-method)>
+<!ELEMENT pre-destroy (lifecycle-callback-class?, lifecycle-callback-method)>
+<!--
+
+	    The callback-handler element names a class provided by
+	    the application.  The class must have a no args
+	    constructor and must implement the
+	    javax.security.auth.callback.CallbackHandler
+	    interface.  The class will be instantiated by the
+	    application client container and used by the container
+	    to collect authentication information from the user.
+
+	  -->
+<!ELEMENT callback-handler (#PCDATA)>
+<!ATTLIST callback-handler
+	id ID #IMPLIED
+>
+<!ELEMENT message-destination (description*, display-name*, icon*, message-destination-name, mapped-name?)>
+<!ATTLIST message-destination
+	id ID #IMPLIED
+>

@@ -20,8 +20,6 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
 import java.util.*;
 import java.io.*;
-import java.net.*;
-import javax.swing.*;
 import javax.swing.event.*;
 
 import org.openide.*;
@@ -281,18 +279,14 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     /**
      * The wizard's panels
      */
-    private Vector panels = new Vector();
-    private ServerLocationPanel serverLocationPanel = new ServerLocationPanel((String[]) steps.toArray(new String[steps.size()]), 0, new IteratorListener(), this);
-    private ServerPropertiesPanel serverPropertiesPanel = new ServerPropertiesPanel((String[]) steps.toArray(new String[steps.size()]), 1, new IteratorListener(), this);
-    {
-        panels.add(serverLocationPanel);
-        panels.add(serverPropertiesPanel);
-    }
+    private WizardDescriptor.Panel[] panels;
+    private ServerLocationPanel serverLocationPanel;
+    private ServerPropertiesPanel serverPropertiesPanel;
     
     /**
      * Index of the currently shown panel
      */
-    private int index;
+    private int index = 0;
     
     /**
      * Tells whether the wizard has previous panels. Basically controls the 
@@ -319,7 +313,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * Next button
      */
     public boolean hasNext() {
-        return index < panels.size() - 1;
+        return index < panels.length - 1;
     }
 
     /**
@@ -340,8 +334,25 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * @return current panel of the wizard
      */
     public WizardDescriptor.Panel current() {
-        return (WizardDescriptor.Panel) panels.get(index);
+        getPanels();
+        return panels[index];
     }
+    
+    protected final WizardDescriptor.Panel[] getPanels() {
+        if (panels == null) {
+            panels = createPanels();
+        }
+        return panels;
+    }
+    
+    protected WizardDescriptor.Panel[] createPanels() {
+
+        serverLocationPanel = new ServerLocationPanel((String[]) steps.toArray(new String[steps.size()]), 0, new IteratorListener(), this);
+        serverPropertiesPanel = new ServerPropertiesPanel((String[]) steps.toArray(new String[steps.size()]), 1, new IteratorListener(), this);
+
+        return new WizardDescriptor.Panel[] { serverLocationPanel, serverPropertiesPanel };
+    }
+    
     
     ////////////////////////////////////////////////////////////////////////////
     // Listeners section

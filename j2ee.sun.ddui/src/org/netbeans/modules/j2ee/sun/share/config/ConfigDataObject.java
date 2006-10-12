@@ -23,12 +23,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.xml.sax.InputSource;
@@ -56,8 +58,10 @@ import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.TopComponent;
 
@@ -68,12 +72,9 @@ import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
-
 import org.netbeans.modules.xml.api.EncodingUtil;
-
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
-
 import org.netbeans.modules.j2ee.sun.share.config.ui.*;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
@@ -88,19 +89,27 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     //PENDING: create serialVersionUID
     //    private static final long serialVersionUID = -1073885636989804140L;
     
-    public static final String J2EE_MODULE_PROVIDER = "module_provider"; //NOI18N
+    public static final String SERVER_ID = "J2EE"; //NOI18N
+
+    private final File configKey;
     private HashSet secondaries = null; //SecondaryConfigDataObject
-    private ConfigurationStorage storage;
     private boolean isEdited = false;
     private boolean isEditedChecked = false;
-    private ConfigBeanTopComponent openTc = null;
     private ValidateXMLCookie validateCookie = null;
     private CheckXMLCookie checkCookie = null;
     private XMLEditorSupport xmlEditorSupport = null;
     private XMLOpenSupport xmlOpenSupport = null;
 
+    /** Whether the reload dialog is currently opened. Prevents poping of multiple
+     * reload dialogs if there is more external saves.
+     */
+    private boolean reloadDialogOpened;
+    
+    
     public ConfigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
+        configKey = FileUtil.toFile(pf);
+//        System.out.println("Configuration Key: " + configKey.getPath());
         pf.addFileChangeListener((FileChangeListener) WeakListeners.create(FileChangeListener.class, this, pf));
         initCookies();
     }
@@ -151,20 +160,18 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
 
     public SunONEDeploymentConfiguration getDeploymentConfiguration() throws ConfigurationException {
         // Look up configuration bound to this object.
-        FileObject fo = getPrimaryFile();
-        File fileKey = FileUtil.toFile(fo);
-        SunONEDeploymentConfiguration config = SunONEDeploymentConfiguration.getConfiguration(fileKey);
+        SunONEDeploymentConfiguration config = SunONEDeploymentConfiguration.getConfiguration(configKey);
 
         if(config == null) {
             // Request deployment configuration for SJSAS from j2eeserver module
-            String serverId = getProvider().getServerID();
-            ConfigurationSupport.requestCreateConfiguration(fo, serverId);
-            config = SunONEDeploymentConfiguration.getConfiguration(fileKey);
+            FileObject configFO = FileUtil.toFileObject(configKey);
+            ConfigurationSupport.requestCreateConfiguration(configFO, SERVER_ID); // NOI18N
+            config = SunONEDeploymentConfiguration.getConfiguration(configKey);
             if(config == null) {
                 // If config is still null here, there is some kind of initialization
                 // problem (or bug).
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
-                        "Unable to initialize DeploymentConfiguration for " + fileKey.getPath() + " on server " + serverId));
+                        "Unable to initialize DeploymentConfiguration for " + configKey.getPath() + " on server " + SERVER_ID));
             }
         }
 
@@ -209,8 +216,14 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     }
     
     protected boolean isConfigEditorOpened() {
-        ConfigBeanTopComponent configEditor = findOpenedConfigEditor();
-        return configEditor != null && configEditor.isOpened();
+        Boolean result = (Boolean) Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+                ConfigBeanTopComponent configEditor = findOpenedConfigEditor();
+                boolean isOpen = (configEditor != null) ? configEditor.isOpened() : false;
+                return isOpen ? Boolean.TRUE : Boolean.FALSE;
+            }
+        });
+        return result.booleanValue();
     }
     
     private OpenCookie _getOpenCookie() {
@@ -304,14 +317,12 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         return false;
     }
     
-    public void editorClosed() {
+    public void editorClosed(ConfigBeanTopComponent tc) {
         if (xmlOpenSupport != null) {
             xmlOpenSupport.reset();
         }
-        if (openTc != null) {
-            openTc.reset();
-        }
-        openTc = null;
+        
+        tc.reset();
         fireCookieChange();
     }
     
@@ -329,37 +340,16 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     }
     
     protected ConfigurationStorage getStorage() {
-        ConfigurationStorage result = null;
+        ConfigurationStorage storage = null;
         
         try {
-            J2eeModuleProvider provider = getProvider();
-            getPrimaryFile().refresh(); //check for external changes
-            
-            synchronized (this) {
-                if (storage == null) {
-                    SunONEDeploymentConfiguration config = getDeploymentConfiguration();
-                    storage = new ConfigurationStorage(provider, config);
-                    storage.setSaver(this);
-                }
-                result = storage;
-            }
-        } catch (Exception ex) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getLocalizedMessage());
-        }
-        return result;
-    }
-    
-    public void resetStorage() {
-        synchronized (this) {
-            if (storage != null) {
-                storage.cleanup();
-                storage = null;
-            }
+            SunONEDeploymentConfiguration config = getDeploymentConfiguration();
+            storage = config.getStorage();
+        } catch (ConfigurationException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         
-        if (openTc != null && openTc.isOpened()) {
-            openTc.close();
-        }
+        return storage;
     }
     
     public static FileObject getRelative(FileObject from, String path) throws IOException {
@@ -445,6 +435,61 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         return super.isModified();
     }
     
+    private void handleReload(FileObject fo) throws IOException, InvalidModuleException, ConfigurationException {
+        ConfigurationStorage cs = getStorage();
+        if (cs != null && !cs.saveInProgress()) {
+            // check for reload
+            boolean doReload = true;
+            boolean doReopen = false;
+
+            if(isConfigEditorOpened()) {
+                if(isModified()) {
+                    doReload = false;
+                    if(!reloadDialogOpened) {
+                        String message = NbBundle.getMessage(ConfigDataObject.class, "MSG_ExternalChange", fo.getName());
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message, NotifyDescriptor.YES_NO_OPTION);
+                        reloadDialogOpened = true;
+
+                        try {
+                            Object ret = DialogDisplayer.getDefault().notify(nd);
+                            if(NotifyDescriptor.YES_OPTION.equals(ret)) {
+                                resetChanged();
+                                closeConfigEditors();
+                                doReload = true;
+                                doReopen = true;
+                            } else {
+                                doReload = false;
+                            }
+                        } finally {
+                            reloadDialogOpened = false;
+                        }
+                    }
+                } else {
+                    closeConfigEditors();
+                    doReopen = true;
+                }
+            }
+
+            // reload configuration
+            if(doReload) {
+                cs.load();
+            }
+
+            // restart config editor if necessary
+            if(doReopen) {
+                Mutex.EVENT.readAccess(new Runnable() {
+                    public void run() {
+                        // reopen editor
+                        OpenCookie opener = (OpenCookie) ConfigDataObject.this.getCookie(OpenCookie.class);
+                        if(opener != null) {
+                            opener.open();
+                        } 
+                    }
+                });
+            }
+        }
+    }
+    
     public void fileAttributeChanged(org.openide.filesystems.FileAttributeEvent fe) {
 //        System.out.println("ConfigDataObject.fileAttributeChanged: " + fe);
     }
@@ -452,11 +497,8 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     public void fileChanged(org.openide.filesystems.FileEvent fe) {
 //        System.out.println("ConfigDataObject.fileChanged: " + fe);
         try {
-            if (fe.getFile().equals(getPrimaryFile())) {
-                ConfigurationStorage cs = getStorage();
-                if (cs != null) {
-                    cs.load();
-                }
+            if(isValid() && fe.getFile().equals(getPrimaryFile())) {
+                handleReload(fe.getFile());
             }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -519,9 +561,12 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     
     private static class XMLOpenSupport extends DataEditorSupport implements OpenCookie, PropertyChangeListener  {
         
-        public XMLOpenSupport(XMLDataObject obj) {
-            super(obj, new XMLEditorEnv(obj));
+        public XMLOpenSupport(ConfigDataObject obj) {
+            super(obj, new XMLEditorEnv(obj, OpenCookie.class));
             setMIMEType("text/xml"); // NOI18N
+            
+//            System.out.println("SunCfg GUI Open Support @ " + System.currentTimeMillis());
+//            Thread.currentThread().dumpStack();
         }
         
         public void open() {
@@ -531,23 +576,52 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
             ConfigurationStorage configStorage = (ConfigurationStorage) cdo.getCookie(ConfigurationStorage.class);
             if (configStorage == null) {
                 EditCookie editor = (EditCookie) cdo.getCookie(EditCookie.class);
-                if (editor != null)
+                if (editor != null) {
                     editor.edit();
+                }
                 return;
             }
+            
+// calling super.open() causes the correct data structures to be created by the underlying
+// DataEditorSupport & lower subclasses which fixes some bugs related to how the editor behaves
+// when the underlying file/dataobject is deleted while the editor is open.  However, it also
+// creates some other more obnoxious bugs related to the fact that this code doesn't want
+// DataEditorSupport performing some of the things it would otherwise do if these data structures
+// are updated.  Stay with old system for now while I investigate options.           
+//            super.open();
             cdo.openConfigEditor();
+        }
+        
+        protected CloneableTopComponent createCloneableTopComponent() {
+            ConfigDataObject cdo = (ConfigDataObject) getDataObject();
+            ConfigurationStorage storage = (ConfigurationStorage) 
+                    cdo.getCookie(ConfigurationStorage.class);
+            return new ConfigBeanTopComponent(storage);
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
             if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
                 // mark/unmark editor as modified
-                final ConfigBeanTopComponent topCmp = ((ConfigDataObject)getDataObject()).findOpenedConfigEditor();
-                if (topCmp != null) {
-                    Utils.runInEventDispatchThread(new Runnable() {
+                final ConfigDataObject cdo = (ConfigDataObject) getDataObject();
+                if(cdo.isValid()) {
+                    final ConfigurationStorage storage = cdo.getStorage();
+                    final String newDisplayName = messageName();
+                    Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {
-                            topCmp.setDisplayName(messageName());
+                            Iterator it  = TopComponent.getRegistry().getOpened().iterator();
+                            while (it.hasNext()) {
+                                TopComponent tc = (TopComponent) it.next();
+                                if (tc instanceof ConfigBeanTopComponent) {
+                                    ConfigBeanTopComponent configEditor = (ConfigBeanTopComponent) tc;
+                                    if (configEditor.isFor(storage)) {
+                                        configEditor.setDisplayName(newDisplayName);
+                                    }
+                                }
+                            }
                         }
                     });
+                } else {
+//                    System.out.println("Display name change for editor w/ invalid dataobject.");
                 }
             }
         }
@@ -558,43 +632,120 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     }
 
     protected void openConfigEditor() {
-        openTc = findOpenedConfigEditor(this);
-        if (openTc == null) {
-            openTc = new ConfigBeanTopComponent(this);
+        ConfigurationStorage storage = getStorage();
+        ConfigBeanTopComponent tc = findOpenedConfigEditor(storage);
+        if (tc == null) {
+            tc = new ConfigBeanTopComponent(storage);
         }
         
-        openTc.open();
-        openTc.requestActive();
+        tc.open();
+        tc.requestActive();
         fireCookieChange();
     }
     
     /** will not open new one, can return null */
     protected ConfigBeanTopComponent findOpenedConfigEditor() {
-        if (openTc == null) {
-            openTc = findOpenedConfigEditor(this);
-        }
-        return openTc;
+        return findOpenedConfigEditor(getStorage());
     }
     
-    public static ConfigBeanTopComponent findOpenedConfigEditor(ConfigDataObject cdo) {
-        Iterator it  = TopComponent.getRegistry().getOpened().iterator();
-        while (it.hasNext()) {
-            TopComponent tc = (TopComponent) it.next();
-            if (tc instanceof ConfigBeanTopComponent) {
-                ConfigBeanTopComponent beanTC = (ConfigBeanTopComponent) tc;
-                if (beanTC.isFor(cdo)) {
-                    return beanTC;
+    public static ConfigBeanTopComponent findOpenedConfigEditor(final ConfigurationStorage storage) {
+        // This code must run synchronously on the AWT thread, so issue blocking call.
+        // If this causes a deadlock, find a way not to call this method from a background
+        // thread or reimplement (which probably would involve cacheing the list of open
+        // editors and clones and clearing the cache as they are closed.
+        ConfigBeanTopComponent result = (ConfigBeanTopComponent) Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+                Iterator it  = TopComponent.getRegistry().getOpened().iterator();
+                while (it.hasNext()) {
+                    TopComponent tc = (TopComponent) it.next();
+                    if (tc instanceof ConfigBeanTopComponent) {
+                        ConfigBeanTopComponent beanTC = (ConfigBeanTopComponent) tc;
+                        if (beanTC.isFor(storage)) {
+                            return beanTC;
+                        }
+                    }
                 }
+                return null;
+            }
+        });
+        
+        return result;
+    }
+    
+//    private static class OpenEditorFinder implements Runnable {
+//        
+//        private ConfigurationStorage storage;
+//        private ConfigBeanTopComponent openEditor;
+//        
+//        public OpenEditorFinder(ConfigurationStorage storage) {
+//            this.storage = storage;
+//            this.openEditor = null;
+//        }
+//        
+//        public void run() {
+//            Iterator it  = TopComponent.getRegistry().getOpened().iterator();
+//            while (it.hasNext()) {
+//                TopComponent tc = (TopComponent) it.next();
+//                if (tc instanceof ConfigBeanTopComponent) {
+//                    ConfigBeanTopComponent beanTC = (ConfigBeanTopComponent) tc;
+//                    if (beanTC.isFor(storage)) {
+//                        openEditor = beanTC;
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        
+//        public ConfigBeanTopComponent getOpenEditor() {
+//            return openEditor;
+//        }
+//    }
+    
+    /** Closes all open config editors on this dataobject.
+     *
+     * @result true if the editors were all closed (or none were open).  false if
+     *  there was an open editor that failed to close.
+     */
+    public boolean closeConfigEditors() {
+        final ArrayList editorList = new ArrayList();
+        ConfigurationStorage storage = getStorage();
+        
+        // Can't close the editors as we find them or we'll get a ConcurrentModificationException.
+        Iterator iter = TopComponent.getRegistry().getOpened().iterator();
+        while(iter.hasNext()) {
+            Object tc = iter.next();
+            if(tc instanceof ConfigBeanTopComponent && ((ConfigBeanTopComponent) tc).isFor(storage)) {
+                editorList.add(tc);
             }
         }
-        return null;
+        
+        Boolean result = (Boolean) Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+                Boolean result = Boolean.TRUE;
+                Iterator iter = editorList.iterator();
+                while(iter.hasNext()) {
+                    ConfigBeanTopComponent configTC = (ConfigBeanTopComponent) iter.next();
+                    result = (configTC.close() && result.booleanValue()) ? Boolean.TRUE : Boolean.FALSE;
+                }
+                return result;
+            }
+        });
+        
+        return result.booleanValue();
     }
 
     private static class XMLEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie {
         
-        public XMLEditorSupport(XMLDataObject obj) {
-            super(obj, new XMLEditorEnv(obj));
+        public XMLEditorSupport(ConfigDataObject obj) {
+            super(obj, new XMLEditorEnv(obj, EditCookie.class));
             setMIMEType("text/xml"); // NOI18N
+//            System.out.println("SunCfg XML Open Support @ " + System.currentTimeMillis());
+//            Thread.currentThread().dumpStack();
+        }
+        
+        protected boolean canClose() {
+            boolean result = super.canClose();
+            return result;
         }
         
         class Save implements SaveCookie {
@@ -607,37 +758,67 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
          * at UTF-8 (in such case it updates the prolog).
          */
         public void saveDocument() throws java.io.IOException {
+            final String defaultEncoding = "UTF8"; // NOI18N
             final StyledDocument doc = getDocument();
             String enc = EncodingUtil.detectEncoding(doc); // api in xml/core
             
             if (enc == null) {
-                enc = "UTF8"; // NOI18N
+                enc = defaultEncoding;
             }
 
             try {
                 //test encoding on dummy stream
                 new java.io.OutputStreamWriter(new java.io.ByteArrayOutputStream(1), enc);
-                super.saveDocument();
-                getDataObject().setModified(false);
+                if(queryCanEncode(doc, enc)) {
+                    super.saveDocument();
+                    getDataObject().setModified(false);
+                }
             } catch(java.io.UnsupportedEncodingException ex) {
-                if(queryUpdateProlog(doc, enc)) {
+                if(queryUpdateProlog(doc, enc, defaultEncoding)) {
                     super.saveDocument();
                     getDataObject().setModified(false);
                 }
             }
         }
         
-        private boolean queryUpdateProlog(final StyledDocument doc, final String enc) {
+        private boolean queryCanEncode(final StyledDocument doc, final String enc) {
+            boolean result = true;
+            // is it possible to save the document in the encoding?
+            try {
+                java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(enc).newEncoder();
+                if(!coder.canEncode(doc.getText(0, doc.getLength()))){
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage (XMLEditorSupport.class, "MSG_BadCharConversion", //NOI18N
+                                    new Object [] { getDataObject().getPrimaryFile().getNameExt(), enc}),
+                            NotifyDescriptor.YES_NO_OPTION,
+                            NotifyDescriptor.WARNING_MESSAGE);
+                    nd.setValue(NotifyDescriptor.NO_OPTION);
+                    DialogDisplayer.getDefault().notify(nd);
+                    
+                    if(nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                        result = false;
+                    }
+                }
+            } catch (javax.swing.text.BadLocationException e){
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);            
+            }
+            return result;
+        }
+        
+        private boolean queryUpdateProlog(final StyledDocument doc, final String enc, final String defaultEncoding) {
             boolean needsSave = false;
             
             // ask user what next?
-            String message = NbBundle.getMessage(XMLEditorSupport.class, 
-                    "ERR_UnsupportedEncodingSaveAsUTF8", enc);
-            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
-            Object res = DialogDisplayer.getDefault().notify(descriptor);
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(XMLEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
+                            new Object [] { getDataObject().getPrimaryFile().getNameExt(), enc, defaultEncoding}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
+            nd.setValue(NotifyDescriptor.NO_OPTION);
+            DialogDisplayer.getDefault().notify(nd);
 
-            if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                
+            if(nd.getValue() == NotifyDescriptor.YES_OPTION) {
+
                 // update prolog to new valid encoding
                 try {
                     final int MAX_PROLOG = 1000;
@@ -663,7 +844,7 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
                          public void run() {
                              try {
                                 doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
-                                doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
+                                doc.insertString(0, "<?xml version='1.0' encoding='" + defaultEncoding + "' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
                              } catch (BadLocationException e) {
                                  if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
                                      e.printStackTrace();
@@ -683,7 +864,19 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
 
             return needsSave;
         }
-        
+
+// In case we want to rely on java.io.UnsupportedEncodingException in saveDocument(), above.
+//        
+//        private boolean isSupportedEncoding(String encoding){
+//            boolean supported;
+//            try {
+//                supported = java.nio.charset.Charset.isSupported(encoding);
+//            } catch (java.nio.charset.IllegalCharsetNameException e){
+//                supported = false;
+//            }
+//            return supported;
+//        }
+
         protected boolean notifyModified() {
             if (! super.notifyModified()) {
                 return false;
@@ -705,6 +898,7 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         }
         
         protected void notifyClosed() {
+            super.notifyClosed();
             ConfigDataObject cdo = (ConfigDataObject) getDataObject();
             cdo.isEdited = false;
             cdo.fireCookieChange();
@@ -720,8 +914,11 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
     private static class XMLEditorEnv extends DataEditorSupport.Env {
         private static final long serialVersionUID = 6593415381104273008L;
         
-        public XMLEditorEnv(DataObject obj) {
-            super(obj);
+        private final Class openSupportCookieClass;
+        
+        public XMLEditorEnv(ConfigDataObject dobj, Class cookieClass) {
+            super(dobj);
+            openSupportCookieClass = cookieClass;
         }
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
@@ -732,7 +929,7 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         public CloneableOpenSupport findCloneableOpenSupport() {
             // must be sync with cookies.add(EditorCookie.class, factory);
             // #12938 XML files do not persist in Source editor
-            return (CloneableOpenSupport) getDataObject().getCookie(EditCookie.class);
+            return (CloneableOpenSupport) getDataObject().getCookie(openSupportCookieClass);
         }
     }
 }

@@ -70,6 +70,7 @@ public final class Deployment {
     }
     
     public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
+        
         DeploymentTargetImpl target = new DeploymentTargetImpl(jmp, clientModuleUrl);
         TargetModule[] modules = null;
         final J2eeModule module = target.getModule();
@@ -99,6 +100,9 @@ public final class Deployment {
             } else { //PENDING: how do we know whether target does not need to start when deploy only
                 server.getServerInstance().start(progress);
             }
+
+            jmp.deployDatasources();
+
             modules = targetserver.deploy(progress, forceRedeploy);
             // inform the plugin about the deploy action, even if there was
             // really nothing needed to be deployed

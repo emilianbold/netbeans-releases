@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 -->
 
@@ -11,7 +11,7 @@
 
 <title>Writing Ant Targets for Web Services on the Tomcat Web Server</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
@@ -30,12 +30,12 @@ the JWSDP-compliant Tomcat Web Server is based on Tomcat Web Server 5.0.19. Ther
 
 <ol>
 
-	<li>Copy all JAR files from <i>$NB_HOME</i><tt>/ide6/modules/ext/jaxrpc16</tt> to
-	<i>$NB_HOME</i><tt>/enterprise2/jakarta-tomcat-5.5.9/common/lib</tt>.
+	<li>Copy all JAR files from <i>$NB_HOME</i><tt>/ide7/modules/ext/jaxrpc16</tt> to
+	<i>$NB_HOME</i><tt>/enterprise2/apache-tomcat-5.5.17/common/lib</tt>.
 
-	<li>Make sure that the Sun Java System Application Server is <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">registered</a> in the IDE.
+	<li>Make sure that the Sun Java System Application Server is <a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/register_appserver.html">registered</a> in the IDE.
 	<li>In the Runtime window (Ctrl-5), expand the Servers node, right-click the Tomcat Web Server node,
-	and choose Start. Doing this creates the <i>full_path_to_$NB_USER_DIR/</i><tt>5.0/jakarta-tomcat-5.5.9_base</tt> folder.	
+	and choose Start. Doing this creates the <i>full_path_to_$NB_USER_DIR/</i><tt>5.0/apache-tomcat-5.5.17_base</tt> folder.	
 	In this folder, enable the Tomcat Web Server's auto deploy functionality by switching <tt>autoDeploy="false"</tt>
 	to <tt>autoDeploy="true"</tt> in the <tt>conf/server.xml</tt> folder. Right-click the Tomcat Web Server node and
 	 choose restart so that the server can load your change.
@@ -49,10 +49,10 @@ the JWSDP-compliant Tomcat Web Server is based on Tomcat Web Server 5.0.19. Ther
 	as your target server.
 
 	<li>Do one of the following:
-	<ul><li>If you want to deploy a web service, <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/create/about_implement_ws.html">create the web service</a>. For deployment, follow the instructions in 'To write Ant targets to deploy a web service on the Tomcat Web Server' below.
-		<li>If you want to consume a web service, <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_create.html">create the web service client</a>. Make sure
+	<ul><li>If you want to deploy a web service, <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/create/about_implement_ws.html">create the web service</a>. For deployment, follow the instructions in 'To write Ant targets to deploy a web service on the Tomcat Web Server' below.
+		<li>If you want to consume a web service, <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_create.html">create the web service client</a>. Make sure
 		that you select IDE-generated static stub in the Specify Web Service Client information page. If you accidentally
-		select the J2EE-generated static stub, you can <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_change.html">change</a> the client type afterwards in the IDE. Now add 
+		select the J2EE-generated static stub, you can <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_change.html">change</a> the client type afterwards in the IDE. Now add 
 		the following target to the <tt>build.xml</tt> file and then follow the instructions in 'To deploy a web service 
 		or web service client on the Tomcat Web Server' below:
 
@@ -70,10 +70,10 @@ the JWSDP-compliant Tomcat Web Server is based on Tomcat Web Server 5.0.19. Ther
 
 <pre>&lt;target name="-pre-init"&gt;
   &lt;property name="j2ee.platform.wscompile.classpath" value="${libs.jaxrpc16.classpath}"/&gt;
-  &lt;property name="tomcat.home" value="<i>full_path_to_$NB_USER_DIR/</i><tt>5.0/jakarta-tomcat-5.5.9_base</tt>"/&gt;
+  &lt;property name="tomcat.home" value="<i>full_path_to_$NB_USER_DIR/</i><tt>5.0/apache-tomcat-5.5.17_base</tt>"/&gt;
 &lt;/target&gt;</pre>
 
-	<p>The <tt>jakarta-tomcat-5.5.9_base</tt> folder is created only once the Tomcat Web Server has been started.
+	<p>The <tt>apache-tomcat-5.5.17_base</tt> folder is created only once the Tomcat Web Server has been started.
 
 	<li>Add the following target to the <tt>build.xml</tt> file:
 
@@ -141,7 +141,7 @@ the JWSDP-compliant Tomcat Web Server is based on Tomcat Web Server 5.0.19. Ther
 		  
 	<li>For web services, you must start the server manually.
 	In the Runtime window (Ctrl-5), right-click the Tomcat Web Server instance node and choose Start.</ul>
-<li>If you are behind a corporate firwall, <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_proxy.html">set the proxy host and port number</a>.
+<li>If you are behind a corporate firwall, <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_proxy.html">set the proxy host and port number</a>.
 	 <li>In the Projects window, right-click the project and choose Run Project.
  </ol>
 
@@ -150,28 +150,15 @@ specified in the <tt>&lt;run-display-browser&gt;</tt> target.
 
 
 
-<table>
-
-  <tr> 
-
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-
-  </tr>
-
-  <tr> 
-
-    <td width="23"></td>
-<td><a href="tomcat_plugintro.html">About the Tomcat Web Server</a><br>
-	<a href="tomcat_edit_tomcatuser.html">Authenticating the Tomcat Web Server</a><br></a>
-<a href="tomcat_setup_tdcp.html">Setting Up a Tomcat Database Connection Pool</a><br></a>
-  </tr>
-
-</table>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="tomcat_plugintro.html">About the Tomcat Web Server</a></dd>
+<dd><a href="tomcat_edit_tomcatuser.html">Authenticating the Tomcat Web Server</a></dd>
+<dd><a href="tomcat_setup_tdcp.html">Setting Up a Tomcat Database Connection Pool</a></dd>
+</dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
+<table cellpadding="50" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
 

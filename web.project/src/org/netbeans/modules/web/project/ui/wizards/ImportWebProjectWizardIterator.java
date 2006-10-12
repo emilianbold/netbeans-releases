@@ -21,13 +21,10 @@ package org.netbeans.modules.web.project.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -40,11 +37,9 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -60,6 +55,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
@@ -139,7 +135,20 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
         String buildfile = getBuildfile();
         
-        AntProjectHelper h = WebProjectUtilities.importProject (dirF, name, wmFO, sourceFolders, testFolders, docBase, libFolder, j2eeLevel, serverInstanceID, buildfile);
+        WebProjectCreateData createData = new WebProjectCreateData();
+        createData.setProjectDir(dirF);
+        createData.setName(name);
+        createData.setWebModuleFO(wmFO);
+        createData.setSourceFolders(sourceFolders);
+        createData.setTestFolders(testFolders);
+        createData.setDocBase(docBase);
+        createData.setLibFolder(libFolder);
+        createData.setJavaEEVersion(j2eeLevel);
+        createData.setServerInstanceID(serverInstanceID);
+        createData.setBuildfile(buildfile);
+        createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
+        createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
+        WebProjectUtilities.importProject(createData);       
         
         FileObject dir = FileUtil.toFileObject(dirF);
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
@@ -165,13 +174,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 	//remember last used server
 	FoldersListSettings.getDefault().setLastUsedServer(serverInstanceID);
 
-        // downgrade the Java platform or src level to 1.4        
-        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
-        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
-        if (platformName != null || sourceLevel != null) {
-            WebProjectUtilities.setPlatform(h, platformName, sourceLevel);
-        }
-        
         return Collections.singleton(DataObject.find(dir));
     }
     
@@ -214,7 +216,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     }
     
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_WizardStepsCount"), new String[] {(new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
+        return MessageFormat.format(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_WizardStepsCount"), new String[] {Integer.toString(index + 1), Integer.toString(panels.length)}); //NOI18N
     }
     
     public boolean hasNext() {

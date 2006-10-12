@@ -55,7 +55,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class JBoss4TestSuite extends NbTestCase {
     
-    private static final String DISPLAY_NAME = "JBoss Application Server 4.0.3";
+    private static final String DISPLAY_NAME = "JBoss Application Server 4";
     private static final String EJB_PROJECT_NAME = "JBoss4EjbTest";
     private static final String WEB_PROJECT_NAME = "JBoss4WebTest";
     private static final String EJB_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + EJB_PROJECT_NAME;
@@ -338,7 +338,7 @@ public class JBoss4TestSuite extends NbTestCase {
     
     private boolean isProjectDeployed(ModuleType mt, String name, InstanceProperties ip) {
         try {
-            URLClassLoader loader = ((JBDeploymentFactory)JBDeploymentFactory.create()).getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
+            URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
             Thread.currentThread().setContextClassLoader(loader);
             
             Hashtable env = new Hashtable();

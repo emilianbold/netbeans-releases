@@ -321,14 +321,14 @@ public class CommonGeneralFinishVisualPanel extends javax.swing.JPanel implement
         String jLabel = (String)this.jLabels[index].getText();
         //if (!item.equals(val) && !jLabel.equals(bundle.getString("LBL_" + __JndiName)) ) {  // don't save jndi name here or it will break 'duplicate jndi name validation' in edit mode
         if (!item.equals(val) && jLabel.equals(bundle.getString("LBL_" + __JndiName)) ) {  
-            item = item + data.getTargetFile();
+//            item = item + data.getTargetFile();
             data.setString(fieldName, item);
         }
         if (!item.equals(val)){
             data.setString(fieldName, item);
             //panel.fireChangeEvent();
         }
-        panel.fireChangeEvent();
+        panel.fireChange(evt.getSource());
     }
     
     public CommonGeneralFinishVisualPanel setFirstTime(boolean first) {

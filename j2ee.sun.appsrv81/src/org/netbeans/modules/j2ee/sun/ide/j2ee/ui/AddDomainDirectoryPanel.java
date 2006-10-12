@@ -88,11 +88,19 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
                         NbBundle.getMessage(AddDomainDirectoryPanel.class,
                         "Msg_InValidDomainDir",                                 //NOI18N
                         component.getInstanceDirectory()));
-                component.setAdminPort("");
+                component.setAdminPort("");                                     // NOI18N
                 return false;
             }
             Util.fillDescriptorFromDomainXml(wiz, domainDir);
-            component.setAdminPort((String)wiz.getProperty(AddDomainWizardIterator.PORT));
+            String port = (String)wiz.getProperty(AddDomainWizardIterator.PORT);
+            component.setAdminPort(port);
+            if ("".equals(port)) {                                              // NOI18N
+                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
+                        "Msg_UnsupportedDomain",                                 //NOI18N
+                        component.getInstanceDirectory()));   
+                return false;
+            }
             return true;
         } else {
             File parent = domainDir.getParentFile();

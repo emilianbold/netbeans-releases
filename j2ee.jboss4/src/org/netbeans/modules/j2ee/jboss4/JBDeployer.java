@@ -18,23 +18,21 @@
  */
 package org.netbeans.modules.j2ee.jboss4;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.MissingResourceException;
+import javax.management.ObjectName;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.jboss4.config.gen.JbossWeb;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import java.util.Vector;
 import java.io.File;
-import javax.enterprise.deploy.spi.DeploymentManager;
+import java.util.Set;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -43,6 +41,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import org.netbeans.modules.j2ee.jboss4.nodes.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.RequestProcessor;
@@ -52,6 +51,7 @@ import org.netbeans.modules.j2ee.jboss4.ide.JBDeploymentStatus;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
+import javax.management.QueryExp;
 
 import org.openide.util.NbBundle;
 
@@ -63,12 +63,15 @@ public class JBDeployer implements ProgressObject, Runnable {
     /** timeout for waiting for URL connection */
     private static final int TIMEOUT = 60000;
     
+    JBDeploymentManager dm;
+    
     File file;
     String uri;
     JBTargetModuleID module_id;
     /** Creates a new instance of JBDeployer */
-    public JBDeployer(String serverUri) {
+    public JBDeployer(String serverUri, JBDeploymentManager dm) {
         uri = serverUri;
+        this.dm = dm;
     }
     
     
@@ -144,7 +147,7 @@ public class JBDeployer implements ProgressObject, Runnable {
         
         try{
             org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
-            System.out.println("Copying 1 file:" + fileName + " to: " + foDestDir.getPath());
+            TargetModuleID moduleID = module_id;
             String webUrl = module_id.getWebURL();
             if (webUrl == null) {
                 TargetModuleID ch [] = module_id.getChildTargetModuleID();
@@ -152,6 +155,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                     for (int i = 0; i < ch.length; i++) {
                         webUrl = ch [i].getWebURL();
                         if (webUrl != null) {
+                            moduleID = ch[i];
                             break;
                         }
                     }
@@ -171,12 +175,7 @@ public class JBDeployer implements ProgressObject, Runnable {
                     }
                 }
                 //wait until the url becomes active
-                long start = System.currentTimeMillis();
-                while (System.currentTimeMillis() - start < TIMEOUT) {
-                    if (URLWait.waitForUrlReady(url, 1000)) {
-                        break;
-                    }
-                }
+                checkUrlReady(moduleID);
             }
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -192,6 +191,20 @@ public class JBDeployer implements ProgressObject, Runnable {
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, "Applicaton Deployed"));
     }
     
+    private void checkUrlReady(TargetModuleID moduleID) {
+        try {
+            String warName = moduleID.getModuleID();
+            ObjectName searchPattern = new ObjectName("jboss.web.deployment:war=" + warName + ",*"); // NOI18N
+            Object server = Util.getRMIServer(dm);
+            long start = System.currentTimeMillis();
+            Set managedObj = Collections.emptySet();
+            while (managedObj.size() == 0 && System.currentTimeMillis() - start < TIMEOUT) {
+                managedObj = (Set) server.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class}).invoke(server, new Object[]  {searchPattern, null});
+            }
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+    }
     
     // ----------  Implementation of ProgressObject interface
     private Vector listeners = new Vector();

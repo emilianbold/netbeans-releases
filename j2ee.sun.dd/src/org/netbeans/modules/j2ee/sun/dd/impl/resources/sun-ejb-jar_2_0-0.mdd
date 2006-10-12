@@ -21,8 +21,8 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping</implements>
 	</meta-element>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.WebserviceDescription</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.MessageDestination</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceDescription</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.MessageDestination</import>
 		<dtd-name>enterprise-beans</dtd-name>
 		<bean-name>EnterpriseBeans</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans</implements>
@@ -87,8 +87,8 @@
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceRef</import>
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.EjbRef</import>
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceEnvRef</import>
-		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ServiceRef</import>
-		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.WebserviceEndpoint</import>
+		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ServiceRef</import>
+		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceEndpoint</import>
 		<dtd-name>ejb</dtd-name>
 		<bean-name>Ejb</bean-name>
                 <implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb</implements>

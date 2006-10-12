@@ -12,8 +12,8 @@
 <pre>
 &lt;sql:setDataSource
   var="example"
-  driver="RmiJdbc.RJDriver"
-  url="jdbc:rmi://localhost:1099/jdbc:cloudscape:CloudscapeDB;create=true"
+  driver="org.apache.derby.jdbc.ClientDriver"
+  url="jdbc:derby://localhost:1527/sample;create=true"
 /&gt;
 </pre>
 </code>

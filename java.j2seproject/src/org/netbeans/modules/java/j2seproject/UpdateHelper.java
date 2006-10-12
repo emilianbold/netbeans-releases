@@ -22,6 +22,7 @@ package org.netbeans.modules.java.j2seproject;
 import java.io.IOException;
 import javax.swing.JButton;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,7 +40,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 
 /**

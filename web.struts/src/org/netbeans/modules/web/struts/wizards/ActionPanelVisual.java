@@ -119,7 +119,7 @@ public class ActionPanelVisual extends javax.swing.JPanel implements HelpCtx.Pro
         add(jComboBoxConfigFile, gridBagConstraints);
         jComboBoxConfigFile.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/wizards/Bundle").getString("ACSD_jComboBoxConfigFile"));
 
-        jLabelPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ActionPanelVisual.class, "LBL_ActionPath").charAt(0));
+        jLabelPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ActionPanelVisual.class, "LBL_ActionPath_mnem").charAt(0));
         jLabelPath.setLabelFor(jTextFieldPath);
         jLabelPath.setText(org.openide.util.NbBundle.getMessage(ActionPanelVisual.class, "LBL_ActionPath"));
         gridBagConstraints = new java.awt.GridBagConstraints();

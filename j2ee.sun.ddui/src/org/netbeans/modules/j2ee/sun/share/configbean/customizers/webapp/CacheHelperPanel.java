@@ -30,7 +30,6 @@ import java.util.ResourceBundle;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.ItemEvent;
 import java.beans.PropertyVetoException;
 
 import javax.swing.event.TableModelEvent;
@@ -40,9 +39,9 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.web.CacheHelper;
 import org.netbeans.modules.j2ee.sun.dd.api.web.DefaultHelper;
 import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
-import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppCache;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
@@ -125,7 +124,7 @@ public class CacheHelperPanel extends javax.swing.JPanel implements TableModelLi
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(6, 6, 0, 5);
 		add(defaultHelperPropertiesPanel, gridBagConstraints);
 		
 		/** Cache helper classes table panel :
@@ -149,7 +148,7 @@ public class CacheHelperPanel extends javax.swing.JPanel implements TableModelLi
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(0, 6, 0, 5);
 		add(cacheHelperClassesPanel, gridBagConstraints);		
 	}
 	
@@ -167,8 +166,9 @@ public class CacheHelperPanel extends javax.swing.JPanel implements TableModelLi
 	 *  was passed in.
 	 */
 	public void initFields(WebAppCache cacheBean) {
-		defaultHelperPropertiesPanel.setModel(cacheBean.getDefaultHelper());
-		cacheHelperClassesPanel.setModel(cacheBean.getCacheHelpers());		
+		ASDDVersion asVersion = cacheBean.getParent().getAppServerVersion();
+		defaultHelperPropertiesPanel.setModel(cacheBean.getDefaultHelper(), asVersion);
+		cacheHelperClassesPanel.setModel(cacheBean.getCacheHelpers(), asVersion);		
 	}
 	
 	/** ----------------------------------------------------------------------- 
@@ -205,8 +205,8 @@ public class CacheHelperPanel extends javax.swing.JPanel implements TableModelLi
     // to allow it to create cacheHelper beans.
 	static GenericTableModel.ParentPropertyFactory cacheHelperFactory =
         new GenericTableModel.ParentPropertyFactory() {
-            public CommonDDBean newParentProperty() {
-                return StorageBeanFactory.getDefault().createCacheHelper();
+            public CommonDDBean newParentProperty(ASDDVersion asVersion) {
+                return StorageBeanFactory.getStorageBeanFactory(asVersion).createCacheHelper();
             }
         };
 }

@@ -24,7 +24,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public class ProjectWebModuleProvider implements WebModuleProvider {
 
@@ -34,28 +33,7 @@ public class ProjectWebModuleProvider implements WebModuleProvider {
     public WebModule findWebModule (FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof WebProject) {
-            WebProject wp = (WebProject) project;
-            FileObject src [] = wp.getSourceRoots().getRoots();
-            for (int i = 0; i < src.length; i++) {
-                if (src[i].equals (file) || FileUtil.isParentOf (src[i], file)) {
-                    return wp.getAPIWebModule();
-                }
-            }
-
-            FileObject web = wp.getWebModule ().getDocumentBase ();
-            if (web != null && (web.equals (file) || FileUtil.isParentOf (web, file))) {
-                return wp.getAPIWebModule();
-            }
-
-            FileObject build = wp.getWebModule().getBuildDirectory();
-            if (build != null && (build.equals (file) || FileUtil.isParentOf (build, file))) {
-                return wp.getAPIWebModule();
-            }
-
-            FileObject prjdir = wp.getProjectDirectory();
-            if (prjdir != null && (prjdir.equals (file) || FileUtil.isParentOf(prjdir, file))) {
-                return wp.getAPIWebModule();
-            }
+            return ((WebProject) project).getAPIWebModule();
         }
         return null;
     }

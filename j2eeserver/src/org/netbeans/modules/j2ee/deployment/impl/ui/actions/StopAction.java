@@ -27,6 +27,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -134,7 +135,7 @@ public class StopAction extends NodeAction {
         // ServerInstance.StateListener implementation --------------------------
         
         public void stateChanged(final int oldState, final int newState) {
-            Utils.runInEventDispatchThread(new Runnable() {
+            Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
                     firePropertyChange(
                         PROP_ENABLED, 

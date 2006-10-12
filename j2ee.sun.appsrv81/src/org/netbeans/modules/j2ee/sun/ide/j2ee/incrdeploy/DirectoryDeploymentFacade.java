@@ -34,6 +34,7 @@ import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
@@ -78,8 +79,9 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
      * @param manager
      */
     public void setDeploymentManager(DeploymentManager manager) {
-        if (null == manager)
+        if (null == manager){
             throw new IllegalArgumentException("invalid null argumment");
+        }
         
         if (manager instanceof SunDeploymentManagerInterface)
             this.dm = (SunDeploymentManagerInterface) manager;
@@ -90,14 +92,16 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         
     
     public java.io.File getDirectoryForModule(javax.enterprise.deploy.spi.TargetModuleID module) {
-        if (null == inner)
+        if (null == inner){
             return null;
+        }
         return ((IncrementalDeployment)inner).getDirectoryForModule(module);
     }
     
     public String getModuleUrl(javax.enterprise.deploy.spi.TargetModuleID module) {
-        if (null == inner)
+        if (null == inner){
             return null;
+        }
         return ((IncrementalDeployment)inner).getModuleUrl(module);
     }
     
@@ -109,10 +113,12 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
          //Initializing resourceDirs in canFileDeploy() method.
          //Relying on the assumption that canFileDeploy() is & *will* always get
          //called with appropriate DeployableObject before this method.
-         if((resourceDirs != null) && (dm != null))
+         if((resourceDirs != null) && (dm != null)){
             Utils.registerResources(resourceDirs, (ServerInterface)dm.getManagement());
-            if (null!=dm)
+         }
+            if (null!=dm){
                 ViewLogAction.viewLog(dm);
+            }
                 
          return ((IncrementalDeployment)inner).incrementalDeploy(module, changes);
     }
@@ -123,10 +129,12 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
     public ProgressObject initialDeploy(Target target, DeployableObject deployableObject, DeploymentConfiguration deploymentConfiguration, File file) {
        //Register resources if any
        File[] resourceDirs = Utils.getResourceDirs(deployableObject);
-       if((resourceDirs != null) && (dm != null)) 
+       if((resourceDirs != null) && (dm != null)) {
            Utils.registerResources(resourceDirs, (ServerInterface)dm.getManagement());
-       if (null != dm)
+       }
+       if (null != dm){
         ViewLogAction.viewLog(dm);
+       }
         return ((IncrementalDeployment)inner).initialDeploy(target,deployableObject,deploymentConfiguration, file);
     }
 
@@ -137,18 +145,25 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
      * @return true if it is possible to do file deployment
      */
     public boolean canFileDeploy(Target target, DeployableObject deployableObject) {
-        if (org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties.getDefault().isIncrementalDeploy()==false)
+        if (null == dm){
             return false;
+        }
+        if (null == deployableObject){
+            return false;
+        }        
+    if (org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties.getDefault().isIncrementalDeploy()==false){
+            return false;
+    }
+
         resourceDirs = Utils.getResourceDirs(deployableObject);
-        if (null == target)
+        if (null == target){
             return false;
-        if (null == deployableObject)
+        }
+
+        //so far only WAR are supported for Directory based deployment
+        if ((deployableObject.getType() != ModuleType.WAR)){
             return false;
-        if (null == dm)
-            return false;
-        if (deployableObject.getType() == ModuleType.EAR || 
-                    deployableObject.getType() == ModuleType.EJB)
-            return false;
+        }
         return dm.isLocal();
     }
     

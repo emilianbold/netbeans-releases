@@ -69,8 +69,8 @@ public class ModuleDDSupport implements PropertyChangeListener {
     private Map configMap = new IdentityHashMap(5); // DD object -> ConfigBeanStorage
     private Map beanMap = Collections.synchronizedMap(new IdentityHashMap()); // BaseBean -> StandardDDImpl
     private Map leafMap = Collections.synchronizedMap(new IdentityHashMap()); // BaseProp -> StandardDDImpl
+    private Map listenerMap = Collections.synchronizedMap(new IdentityHashMap(5)); // BaseBean -> weak listener instance; // 
     private Set xpathListeners = new HashSet();
-    private PropertyChangeListener weakListener;
     private J2eeModuleProvider provider;
     private DeploymentConfiguration config;
     
@@ -120,11 +120,12 @@ public class ModuleDDSupport implements PropertyChangeListener {
         }
         DDRoot root = new DDRoot(new DDNodeBean(null,bean,this));
         rootMap.put(ddLoc,root);
-
         beanMap.put(bean,root);
-        weakListener = WeakListeners.propertyChange(this,root.proxy.bean);
-        root.proxy.bean.addPropertyChangeListener(weakListener/* this*/);
 
+        PropertyChangeListener weakListener = WeakListeners.propertyChange(this,root.proxy.bean);
+        listenerMap.put(bean, weakListener);
+        bean.addPropertyChangeListener(weakListener);
+        
         return root;
     }
 
@@ -280,13 +281,15 @@ public class ModuleDDSupport implements PropertyChangeListener {
         }
         return (DDRoot) rootMap.get(ddLocs[0]);
     }
-    
+
     /* Called when the module/app is closed from the ide, clean up listeners and
      * references */
     public void cleanup() {
         // stop listening to DD changes
         for (Iterator i = rootMap.values().iterator(); i.hasNext();) {
             DDRoot root = (DDRoot)i.next();
+            
+            PropertyChangeListener weakListener = (PropertyChangeListener) listenerMap.get(root.proxy.bean);
             root.proxy.bean.removePropertyChangeListener(weakListener);
             
             // !PW Is this a good idea to add this here?  What are the repercussions?
@@ -300,6 +303,8 @@ public class ModuleDDSupport implements PropertyChangeListener {
                 ErrorManager.getDefault().log("BeanNotFoundException caught by ModuleDDSupport: " + bnfe.getMessage());
             }
         }
+        
+        listenerMap = null;
         rootMap = null; 
         configMap = null; 
         beanMap = null; 
@@ -537,7 +542,14 @@ public class ModuleDDSupport implements PropertyChangeListener {
         //        System.out.println("Processing ddbeans event " + name);
         //        System.out.println("From source " + event.getSource());
         //        System.out.println(event.getSource().getClass());
-
+        if(rootMap == null) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(
+                    "ModuleDDSupport: Unexpected change event (NAME=" + name + ", old=" + oldValue + 
+                    ", new=" + newValue + ") received on previously removed DDBean->DConfigBean graph.  See IZ 81332."));
+            // Do not process events if this support object has been destroyed.
+            return;
+        }
+        
         try {
             StandardDDImpl eventBean = null;
             if(newValue == null && oldValue instanceof BaseBean) {

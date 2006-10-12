@@ -22,7 +22,9 @@ package org.netbeans.modules.web.project.api;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -47,15 +49,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.*;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
+import java.util.Enumeration;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.project.ui.customizer.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.modules.SpecificationVersion;
 import org.w3c.dom.NodeList;
+
+import org.netbeans.modules.web.project.ui.wizards.FileSearchUtility;
 
 /**
  * Create a fresh WebProject from scratch or by importing and exisitng web module 
@@ -64,7 +66,15 @@ import org.w3c.dom.NodeList;
  * @author Pavel Buzek
  */
 public class WebProjectUtilities {
+    
+    /**
+     * BluePrints source structure
+     */    
     public static final String SRC_STRUCT_BLUEPRINTS = "BluePrints"; //NOI18N
+    
+    /**
+     * Jakarta source structure
+     */    
     public static final String SRC_STRUCT_JAKARTA = "Jakarta"; //NOI18N
     
     private static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18N
@@ -82,16 +92,49 @@ public class WebProjectUtilities {
     public static final String MINIMUM_ANT_VERSION = "1.6";
 
     private WebProjectUtilities() {}
-    
+
     /**
-     * Create a new empty J2SE project.
-     * @param dir the top-level directory (need not yet exist but if it does it must be empty)
-     * @param name the code name for the project
+     * Create a new empty web project.
+     *
+     * @deprecated Use {@link #createProject(WebProjectCreateData)}
+     *
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
+    @Deprecated
     public static AntProjectHelper createProject(File dir, String name, String serverInstanceID, String sourceStructure, String j2eeLevel, String contextPath)
             throws IOException {
+        WebProjectCreateData createData = new WebProjectCreateData();
+        createData.setProjectDir(dir);
+        createData.setName(name);
+        createData.setServerInstanceID(serverInstanceID);
+        createData.setSourceStructure(sourceStructure);
+        createData.setJavaEEVersion(j2eeLevel);
+        createData.setContextPath(contextPath);
+        return createProject(createData);
+    }
+        
+    /**
+     * Creates a new empty web project.
+     * @param createData the object encapsulating necessary data to create the project
+     * @return the helper object permitting it to be further customized
+     * @throws IOException in case something went wrong
+     */
+    public static AntProjectHelper createProject(final WebProjectCreateData createData) throws IOException {
+        File dir = createData.getProjectDir();
+        String name = createData.getName();
+        String serverInstanceID = createData.getServerInstanceID();
+        String sourceStructure = createData.getSourceStructure();
+        String j2eeLevel = createData.getJavaEEVersion();
+        String contextPath = createData.getContextPath();
+        String javaPlatformName = createData.getJavaPlatformName();
+        String sourceLevel = createData.getSourceLevel();
+        
+        assert dir != null: "Project folder can't be null"; //NOI18N
+        assert name != null: "Project name can't be null"; //NOI18N
+        assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
+        assert sourceStructure != null: "Source structure can't be null"; //NOI18N
+        assert j2eeLevel != null: "Java EE version can't be null"; //NOI18N
         
         final boolean createBluePrintsStruct = SRC_STRUCT_BLUEPRINTS.equals(sourceStructure);
         final boolean createJakartaStructure = SRC_STRUCT_JAKARTA.equals(sourceStructure);
@@ -124,7 +167,9 @@ public class WebProjectUtilities {
         // create web.xml
         // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
         String webXMLContent = null;
-        if (WebModule.J2EE_14_LEVEL.equals(j2eeLevel))
+        if (J2eeModule.JAVA_EE_5.equals(j2eeLevel)) 
+            webXMLContent = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.5.xml").getInputStream ()); //NOI18N
+        else if (WebModule.J2EE_14_LEVEL.equals(j2eeLevel))
             webXMLContent = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.4.xml").getInputStream ()); //NOI18N
         else if (WebModule.J2EE_13_LEVEL.equals(j2eeLevel))
             webXMLContent = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.3.xml").getInputStream ()); //NOI18N
@@ -135,12 +180,12 @@ public class WebProjectUtilities {
             public void run() throws IOException {
                 FileObject webXML = FileUtil.createData(webInfFO, "web.xml");//NOI18N
                 FileLock lock = webXML.lock();
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
                 try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(webXML.getOutputStream(lock)));
                     bw.write(webXmlText);
-                    bw.close();
                 }
                 finally {
+                    bw.close();
                     lock.releaseLock();
                 }
             }
@@ -188,9 +233,13 @@ public class WebProjectUtilities {
         
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
         ep.setProperty(WebProjectProperties.LIBRARIES_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/WEB-INF/lib"); //NOI18N
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory ());
+        UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();
+        PlatformUiSupport.storePlatform(ep, updateHelper, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
+        
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        
         ProjectManager.getDefault().saveProject(p);
 
         //create default index.jsp
@@ -199,16 +248,86 @@ public class WebProjectUtilities {
         ProjectWebModule pwm = (ProjectWebModule) p.getLookup ().lookup (ProjectWebModule.class);
         if (pwm != null) //should not be null
             pwm.setContextPath(contextPath);
-        
+
         return h;
     }
 
+    /**
+     * Creates a web project from esisting sources.
+     *
+     * @deprecated Use {@link #importProject(WebProjectCreateData)}
+     *
+     * @return the helper object permitting it to be further customized
+     * @throws IOException in case something went wrong
+     */
+    @Deprecated
     public static AntProjectHelper importProject(File dir, String name, FileObject wmFO, FileObject javaRoot, FileObject docBase, FileObject libFolder, String j2eeLevel, String serverInstanceID, String buildfile) throws IOException {    
-        return importProject(dir, name, wmFO, new File[] {FileUtil.toFile(javaRoot)}, null, docBase, libFolder, j2eeLevel, serverInstanceID, buildfile);
+        WebProjectCreateData createData = new WebProjectCreateData();
+        createData.setProjectDir(dir);
+        createData.setName(name);
+        createData.setWebModuleFO(wmFO);
+        createData.setSourceFolders(new File[] {FileUtil.toFile(javaRoot)});
+        createData.setTestFolders(null);
+        createData.setDocBase(docBase);
+        createData.setLibFolder(libFolder);
+        createData.setJavaEEVersion(j2eeLevel);
+        createData.setServerInstanceID(serverInstanceID);
+        createData.setBuildfile(buildfile);
+        return importProject(createData);
     }
     
+    /**
+     * Creates a web project from esisting sources.
+     *
+     * @deprecated Use {@link #importProject(WebProjectCreateData)}
+     *
+     * @return the helper object permitting it to be further customized
+     * @throws IOException in case something went wrong
+     */
+    @Deprecated
     public static AntProjectHelper importProject(final File dir, String name, FileObject wmFO, final File[] sourceFolders, File[] tstFolders, FileObject docBase, FileObject libFolder, String j2eeLevel, String serverInstanceID, String buildfile) throws IOException {
+        WebProjectCreateData createData = new WebProjectCreateData();
+        createData.setProjectDir(dir);
+        createData.setName(name);
+        createData.setWebModuleFO(wmFO);
+        createData.setSourceFolders(sourceFolders);
+        createData.setTestFolders(tstFolders);
+        createData.setDocBase(docBase);
+        createData.setLibFolder(libFolder);
+        createData.setJavaEEVersion(j2eeLevel);
+        createData.setServerInstanceID(serverInstanceID);
+        createData.setBuildfile(buildfile);
+        return importProject(createData);
+    }
+
+    /**
+     * Creates a web project from esisting sources.
+     * @param createData the object encapsulating necessary data to create the project
+     * @return the helper object permitting it to be further customized
+     * @throws IOException in case something went wrong
+     */
+    public static AntProjectHelper importProject(final WebProjectCreateData createData) throws IOException {
+        final File dir = createData.getProjectDir();
+        String name = createData.getName();
+        FileObject wmFO = createData.getWebModuleFO();
+        final File[] sourceFolders = createData.getSourceFolders();
+        File[] tstFolders = createData.getTestFolders();
+        FileObject docBase = createData.getDocBase();
+        FileObject libFolder = createData.getLibFolder();
+        String j2eeLevel = createData.getJavaEEVersion();
+        String serverInstanceID = createData.getServerInstanceID();
+        String buildfile = createData.getBuildfile();
+        String javaPlatformName = createData.getJavaPlatformName();
+        String sourceLevel = createData.getSourceLevel();
+        boolean javaSourceBased = createData.getJavaSourceBased();
+        
+        assert dir != null: "Project folder can't be null"; //NOI18N
+        assert name != null: "Project name can't be null"; //NOI18N
+        assert wmFO != null: "File object representation of the imported web project location can't be null";   //NOI18N
         assert sourceFolders != null: "Source package root can't be null";   //NOI18N
+        assert docBase != null: "Web Pages folder can't be null";   //NOI18N
+        assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
+        assert j2eeLevel != null: "Java EE version can't be null"; //NOI18N
         
         FileObject fo = Utils.getValidDir(dir);
         
@@ -244,14 +363,13 @@ public class WebProjectUtilities {
                 assert nl.getLength() == 1;
                 testRoots = (Element) nl.item(0);
                 for (int i=0; i<sourceFolders.length; i++) {
-                    EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     String propName = "src.dir" + (i == 0 ? "" : Integer.toString (i+1)); //NOI18N
                     String srcReference = referenceHelper.createForeignFileReference(sourceFolders[i], JavaProjectConstants.SOURCES_TYPE_JAVA);
                     Element root = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
                     root.setAttribute ("id",propName);   //NOI18N
                     root.setAttribute ("name",NbBundle.getMessage(WebProjectUtilities.class, "NAME_src.dir")); //NOI18N
                     sourceRoots.appendChild(root);
-                    props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    EditableProperties props = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     props.put(propName,srcReference);
                     antProjectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
                 }
@@ -301,10 +419,38 @@ public class WebProjectUtilities {
         if (!GeneratedFilesHelper.BUILD_XML_PATH.equals(buildfile)) {
             ep.setProperty(WebProjectProperties.BUILD_FILE, buildfile);
         }
+        
+        //creates conf.dir property and tries to simply guess it
+        //(it would be nice to have a possibily to set this property in the wizard)
+        Enumeration ch = FileSearchUtility.getChildrenToDepth(fo, 4, true);
+        String confDir = ""; //NOI18N
+        while (ch.hasMoreElements ()) {
+            FileObject f = (FileObject) ch.nextElement ();
+            if (f.isFolder() && f.getName().equalsIgnoreCase("conf")) { //NOI18N
+                confDir = FileUtil.getRelativePath(fo, f);
+                break;
+            }
+        }
+        if (confDir.equals("")) { //NOI18N
+            // if no conf directory was found, create default directory (#82147)
+            fo.createFolder(DEFAULT_CONF_FOLDER);
+            ep.setProperty(WebProjectProperties.CONF_DIR, DEFAULT_CONF_FOLDER);
+        } else
+            ep.setProperty(WebProjectProperties.CONF_DIR, confDir); //NOI18N
+        
+        //create resource.dir property, by default set to "setup"
+        //(it would be nice to have a possibily to set this property in the wizard)
+        ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
+        
+        ep.setProperty(WebProjectProperties.JAVA_SOURCE_BASED,javaSourceBased+"");
+
+        UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();
+        PlatformUiSupport.storePlatform(ep, updateHelper, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
+        
         // Utils.updateProperties() prevents problems caused by modification of properties in AntProjectHelper
         // (e.g. during createForeignFileReference()) when local copy of properties is concurrently modified
         Utils.updateProperties(antProjectHelper, AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-
+        
         ProjectManager.getDefault().saveProject(p);
 
         return antProjectHelper;
@@ -372,9 +518,6 @@ public class WebProjectUtilities {
         Deployment deployment = Deployment.getDefault ();
         ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
             
-        ep.setProperty(WebProjectProperties.JAVAC_SOURCE, "${default.javac.source}"); //NOI18N
-        ep.setProperty(WebProjectProperties.JAVAC_TARGET, "${default.javac.target}"); //NOI18N
-        
         ep.setProperty(WebProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
         ep.setProperty(WebProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
         ep.setProperty("javac.compilerargs", ""); // NOI18N
@@ -438,29 +581,55 @@ public class WebProjectUtilities {
         
         // set j2ee.platform.classpath
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+        if (!j2eePlatform.getSupportedSpecVersions(J2eeModule.WAR).contains(j2eeLevel)) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "J2EE level:" + j2eeLevel + " not supported by server " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID) + " for module type WAR");
+        }
         String classpath = Utils.toClasspathString(j2eePlatform.getClasspathEntries());
         ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
         
         // set j2ee.platform.wscompile.classpath
-        if (j2eePlatform.isToolSupported(WebServicesConstants.WSCOMPILE)) { 
-            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(WebServicesConstants.WSCOMPILE);
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) { 
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
             ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSCOMPILE_CLASSPATH, 
                     Utils.toClasspathString(wsClasspath));
         }
         
+        // set j2ee.platform.wsimport.classpath
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) { 
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT);
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSIMPORT_CLASSPATH, 
+                    Utils.toClasspathString(wsClasspath));
+        }
+
+        // set j2ee.platform.wsgen.classpath
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) { 
+            File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN);
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_WSGEN_CLASSPATH, 
+                    Utils.toClasspathString(wsClasspath));
+        }
+
+        // set j2ee.platform.jsr109 support
+        if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109)) { 
+            ep.setProperty(WebServicesConstants.J2EE_PLATFORM_JSR109_SUPPORT, 
+                    "true"); //NOI18N
+        }
+        
+        // ant deployment support
+        File projectFolder = FileUtil.toFile(dirFO);
+        try {
+            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, WebProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
+                    J2eeModule.WAR, serverInstanceID);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        }
+        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(serverInstanceID);
+        if (deployAntPropsFile != null) {
+            ep.setProperty(WebProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
+        }
+        
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-        Project p = ProjectManager.getDefault().findProject(dirFO);
-        ProjectManager.getDefault().saveProject(p);
         
         return h;
-    }
-
-    private static Element createLibraryElement(Document doc, String libraryName) {
-        Element servletLib = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
-        Element servletLibName = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file"); //NOI18N
-        servletLibName.appendChild (doc.createTextNode ("${libs." + libraryName + ".classpath}")); //NOI18N
-        servletLib.appendChild (servletLibName);
-        return servletLib;
     }
 
     private static void createIndexJSP(FileObject webFolder) throws IOException {
@@ -489,23 +658,4 @@ public class WebProjectUtilities {
         return sb.toString();
     }
     
-    // AB: this method is also called from the enterprise application, so we can't pass UpdateHelper here
-    // well, actually we can, but let's not expose too many classes
-    public static void setPlatform(final AntProjectHelper helper, final String platformName, final String sourceLevel) {
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            public void run() {
-                try {
-                    WebProject project = (WebProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
-                    UpdateHelper updateHelper = project.getUpdateHelper();
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    PlatformUiSupport.storePlatform(ep, updateHelper, platformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                    ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
-                }
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
-            }
-        });
-    }
 }

@@ -39,20 +39,30 @@ public final class J2EEVersion extends J2EEBaseVersion {
 
 	/** Represents J2EE version 1.3
 	 */
-	public static final J2EEVersion J2EE_1_3 = new J2EEVersion("1.3", 1300); // NOI18N
+	public static final J2EEVersion J2EE_1_3 = new J2EEVersion(
+            "1.3", 1300,    // NOI18N
+            "1.3", 1300);   // NOI18N
 	
 	/** Represents J2EE version 1.4
 	 */
-	public static final J2EEVersion J2EE_1_4 = new J2EEVersion("1.4", 1400); // NOI18N	
+	public static final J2EEVersion J2EE_1_4 = new J2EEVersion(
+            "1.4", 1400,    // NOI18N
+            "1.4", 1400);   // NOI18N	
 	
+	/** Represents JavaEE version 5.0
+	 */
+	public static final J2EEVersion JAVAEE_5_0 = new J2EEVersion(
+            "5.0", 5000,    // NOI18N
+            "5.0", 5000);   // NOI18N	
+    
 	/** -----------------------------------------------------------------------
 	 *  Implementation
 	 */
 	
 	/** Creates a new instance of J2EEVersion 
 	 */
-	private J2EEVersion(String version, int nv) {
-		super(version, nv, "", "");	// NOI18N
+	private J2EEVersion(String version, int nv, String specVersion, int nsv) {
+		super(version, nv, specVersion, nsv, "", "");	// NOI18N
 	}
 	
 	/** Comparator implementation that works only on J2EEVersion objects

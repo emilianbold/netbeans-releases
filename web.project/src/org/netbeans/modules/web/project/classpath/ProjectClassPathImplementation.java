@@ -100,7 +100,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
         }
         if (!isProperty) {
             String eval = evaluator.evaluate (expression);
-            if (eval == resolved) {
+            if (eval.equals(resolved)) {
                 return;
             } else {
                 resolved = eval;

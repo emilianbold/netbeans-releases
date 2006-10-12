@@ -18,7 +18,8 @@
  */
 
 /** This file is a copy of the corresponding server file
- *  com.sun.enterprise.deployment.xml.DTDRegistry.java
+ *      com.sun.enterprise.deployment.xml.DTDRegistry.java
+ *  in appserv-commons module of Glassfish (formerly Sun Application Server).
  *
  *  It is duplicated here rather than used directly so that the plugin may save
  *  files independent of the server version actually attached.
@@ -27,7 +28,6 @@
 // START OF IASRI 4661135
 
 package org.netbeans.modules.j2ee.sun.share.configbean;
-
 
 public final class DTDRegistryLink {
 
@@ -234,4 +234,3 @@ public final class DTDRegistryLink {
 }
 
 // END OF IASRI 4661135
-

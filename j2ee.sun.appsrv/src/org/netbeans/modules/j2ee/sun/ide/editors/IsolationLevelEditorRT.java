@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.j2ee.sun.ide.editors;
 
-import org.openide.util.NbBundle;
+
 
 public class IsolationLevelEditorRT extends BooleanEditor {
 

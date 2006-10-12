@@ -22,10 +22,11 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.ide.Installer;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.db.RegisterPointbase;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -47,7 +48,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.netbeans.modules.j2ee.sun.ide.editors.CharsetDisplayPreferenceEditor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
+
 /**
  *
  * @author  ludo
@@ -64,23 +65,27 @@ public class PluginProperties  {
     private  boolean incrementalDeployPossible = true; //now on by default
     
     private  FileObject propertiesFile = null;
+    /* for handling import issues between 5.0 and 5.5. Now we know which IDE the options are from in import.
+     **/
+    private static final String PLUGIN_PROPERTIES_VERSION = "version"; // NOI18N
     
+    /* this will need to be bumped for 6.0. Needed from import setting between versions, and pre-regsitered App Server(8.2, 9. or later 9.x)
+     *
+     **/
+    private static final String PLUGIN_CURRENT_VERSION = "5.5"; // NOI18N
     private static final String INCREMENTAL = "incrementalDeploy"; // NOI18N
     private static final String PRINCIPAL_PREFIX = "principalEntry."; // NOI18N
     private static final String GROUP_PREFIX = "groupEntry."; // NOI18N
     private static final String LOG_LEVEL_KEY = "logLevel";  // NOI18N
     private static final String CHARSET_DISP_PREF_KEY = "charsetDisplayPreference"; // NOI18N
-    private static final String INSTALL_ROOT_KEY = "installRoot"; // NOI18N
     public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
     
-    public static String COBUNDLE_DEFAULT_INSTALL_PATH ="AS8.1";  //NOI18N
+    public static String COBUNDLE_DEFAULT_INSTALL_PATH ="AS9.0";  //NOI18N
     public static String COBUNDLE_DEFAULT_INSTALL_PATH2 ="AS8.2";  //NOI18N
     
-    /** holds value of com.sun.aas.installRoot */
-//    private  File platformRoot = null;
+
     
     static private PluginProperties thePluginProperties=null;
-    static final private String IDEHOME = "${ide.home}";
     private String ideHomeLocation;
     
     private File rootInstallCandidate =null;
@@ -99,8 +104,9 @@ public class PluginProperties  {
         try {
             try {
                 propertiesFile = getPropertiesFile();
-                if (null != propertiesFile)
+                if (null != propertiesFile){
                     inStream = propertiesFile.getInputStream();
+                }
             } catch (java.io.FileNotFoundException fnfe) {
                 Constants.pluginLogger.info(NbBundle.getMessage(PluginProperties.class, "INFO_NO_PROPERTY_FILE")); //NOI18N
             } catch (java.io.IOException ioe) {
@@ -128,9 +134,7 @@ public class PluginProperties  {
             retVal = dir.getFileObject("platform","properties"); // NOI18N
             if (null == retVal) {
                 retVal = dir.createData("platform","properties"); //NOI18N
-                
-                rootInstallCandidate = new File(getDefaultInstallRoot());
-                
+                               
             }
         }
         return retVal;
@@ -146,66 +150,24 @@ public class PluginProperties  {
         setCharsetDisplayPreferenceStatic(Integer.valueOf(inProps.getProperty(CHARSET_DISP_PREF_KEY, "1")));
         String b= inProps.getProperty(INCREMENTAL,"true");//true by default
         incrementalDeployPossible = b.equals("true");
-        String loc = inProps.getProperty(INSTALL_ROOT_KEY);//old style 4.1: we need to import and refresh
-        if ((loc!=null)||(rootInstallCandidate!=null)){
+        String version = inProps.getProperty(PLUGIN_PROPERTIES_VERSION);//old style 5.0: we need to import and refresh
+        boolean needToRegisterDefaultServer = false;
+        rootInstallCandidate = new File(getDefaultInstallRoot());
+
+        if ((version==null)||(version!=PLUGIN_CURRENT_VERSION)){ //we are currently on a 5.5
+            needToRegisterDefaultServer = true;
+        }
+              
+        if (needToRegisterDefaultServer){
             final File platformRoot = new File(getDefaultInstallRoot());
             
             if (isGoodAppServerLocation(platformRoot)){
                 registerDefaultDomain(platformRoot);
-            saveProperties();
+                saveProperties();
             }
             
         }
     
-                        
-////////////////////	    if (loc.startsWith(IDEHOME)){
-////////////////////		loc = ideHomeLocation + loc.substring(IDEHOME.length(),loc.length());
-////////////////////	    }
-////////////////////	    platformRoot = new File(loc);
-        
-
-/*        String loc = inProps.getProperty(INSTALL_ROOT_KEY);
-
-        if (loc==null){// try to get the default value
-	    platformRoot = new File(getDefaultInstallRoot());
-            if (isGoodAppServerLocation(platformRoot)){
-		System.setProperty(INSTALL_ROOT_PROP_NAME, platformRoot.getAbsolutePath());	
-                javax.swing.SwingUtilities.invokeLater(new Runnable(){
-                    public void run(){
-                        registerDefaultDomain();
-                        saveProperties();
-                    }
-                    
-                });
-            } else {
-                platformRoot = null;
-            }
-        }
-	else{
-	    if (loc.startsWith(IDEHOME)){
-		loc = ideHomeLocation + loc.substring(IDEHOME.length(),loc.length());
-	    }
-	    platformRoot = new File(loc);
-            if (!isGoodAppServerLocation(platformRoot)){
-                System.out.println(platformRoot.getAbsolutePath()+ ":" +NbBundle.getMessage(PluginProperties.class, "MSG_WrongInstallDir"));
-                platformRoot = null;
-                //remove storage for old defined instances: they would cause errors furthers down, and should not be known.
-                File store = new File(System.getProperty("netbeans.user")+"/config/J2EE/InstalledServers/.nbattrs");
-                
-                try{store.delete();
-                }catch(Exception e){
-                }
-                
-                
-            } else{
-		System.setProperty(INSTALL_ROOT_PROP_NAME, platformRoot.getAbsolutePath());	
-                
-            }
-            
-            
-        }*/
-        
-
  
         
         // note these operations trigger a property change, so we probably want
@@ -229,27 +191,8 @@ public class PluginProperties  {
     }
     
     static public void configureDefaultServerInstance(){
-        PluginProperties.getDefault();//for init for this
-/*        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject props = fs.findResource("J2EE/platform.properties");
-        if (props==null){// try to get the default value
-            
-            final File platformRoot = new File(getDefaultInstallRoot());
+        PluginProperties.getDefault();//call needed for init for this
 
-            if (isGoodAppServerLocation(platformRoot)){
-//                javax.swing.SwingUtilities.invokeLater(new Runnable(){
-//                    public void run(){
-                        PluginProperties.getDefault().registerDefaultDomain(platformRoot);
-                        PluginProperties.getDefault().saveProperties();
-//                    }
-//                    
-//                });
-            } else {
-
-                PluginProperties.getDefault().saveProperties();
-            }
-        }
-        */
     }
     
     public void setIncrementalDeploy(Boolean b){
@@ -290,10 +233,10 @@ public class PluginProperties  {
     }
     
     private String[] masterListToStringArray(SecurityMasterListModel pModel) {
-        int len = pModel.getSize();
+        int len = pModel.getRowCount();
         String retVal[] = new String[len];
         for (int i = 0; i < len; i++) {
-            String foo = (String) pModel.getElementAt(i);
+            String foo = pModel.getRow(i).toString();
             retVal[i] = foo;
         }
         return retVal;
@@ -334,7 +277,7 @@ public class PluginProperties  {
     
     
     boolean containsSameElements(SecurityMasterListModel pModel, String[] list) {
-        int len = pModel.getSize();
+        int len = pModel.getRowCount();
         if (len != list.length)
             return false;
         else
@@ -349,7 +292,7 @@ public class PluginProperties  {
     
     private void fillMasterList(SecurityMasterListModel pModel, String[] values) {
         int len = values.length;
-        for (int i = pModel.getSize() - 1; i >= 0; i--) {
+        for (int i = pModel.getRowCount() - 1; i >= 0; i--) {
             pModel.removeElementAt(i);
         }
         for (int i = 0; i < len; i++) {
@@ -417,25 +360,22 @@ public class PluginProperties  {
     
     private void saveProperties(){
         Properties outProp = new Properties();
+      
+        // we store our current version
+        outProp.setProperty(PLUGIN_PROPERTIES_VERSION, PLUGIN_CURRENT_VERSION);
+        
         setArrayPropertyValue(outProp, PRINCIPAL_PREFIX, getUserList());
         
         setArrayPropertyValue(outProp, GROUP_PREFIX, getGroupList());
         outProp.setProperty(INCREMENTAL, ""+incrementalDeployPossible);
         
-        if (!logLevel.equals(Level.OFF.toString()))
+        if (!logLevel.equals(Level.OFF.toString())){
             outProp.setProperty(LOG_LEVEL_KEY, logLevel);
-        if (!getCharsetDisplayPreferenceStatic().equals(CharsetDisplayPreferenceEditor.DEFAULT_PREF_VAL))
+        }
+        if (!getCharsetDisplayPreferenceStatic().equals(CharsetDisplayPreferenceEditor.DEFAULT_PREF_VAL)){
 	    outProp.setProperty(CHARSET_DISP_PREF_KEY, getCharsetDisplayPreferenceStatic().toString());
-////	if (platformRoot != null){
-////	    String dirloc=platformRoot.getAbsolutePath();
-////	    if (dirloc.startsWith(ideHomeLocation)){
-////		dirloc = IDEHOME + dirloc.substring(ideHomeLocation.length(),dirloc.length());
-////		outProp.setProperty(INSTALL_ROOT_KEY,dirloc);
-////		
-////	    } else{
-////		outProp.setProperty(INSTALL_ROOT_KEY,dirloc);
-////	    }
-////	}
+        }
+
         FileLock l = null;
         java.io.OutputStream outStream = null;
         try {
@@ -443,8 +383,9 @@ public class PluginProperties  {
                 try {
                     l = propertiesFile.lock();
                     outStream = propertiesFile.getOutputStream(l);
-                    if (null != outStream)
+                    if (null != outStream){
                         outProp.store(outStream, "");
+                    }
                 } catch (java.io.IOException ioe) {
                     Constants.pluginLogger.severe(
                             NbBundle.getMessage(PluginProperties.class, "ERR_SAVING_PROPERTIES") // NOI18N
@@ -452,10 +393,12 @@ public class PluginProperties  {
                     Constants.pluginLogger.throwing(PluginProperties.class.toString(), "saveChange", //NOI18N
                             ioe);
                 } finally {
-                    if (null != outStream)
+                    if (null != outStream){
                         outStream.close();
-                    if (null != l)
+                    }
+                    if (null != l){
                         l.releaseLock();
+                    }
                 }
             }
         } catch (java.io.IOException ioe) {
@@ -513,16 +456,12 @@ public class PluginProperties  {
     private static Collection fileColl = new java.util.ArrayList();
     
     static {
-        fileColl.add("bin");
-        fileColl.add("lib");
-        fileColl.add("config");
+        fileColl.add("bin");//NOI18N
+        fileColl.add("lib");//NOI18N
+        fileColl.add("config");//NOI18N
     }
     
-    private static boolean isGlassFish(File candidate){
-        //now test for AS 9 (J2EE 5.0) which should work for this plugin
-        File as9 = new File(candidate.getAbsolutePath()+"/lib/dtds/sun-web-app_2_5-0.dtd");
-        return as9.exists();
-    }
+
     
     private static boolean isGoodAppServerLocation(File candidate){
         if (null == candidate || !candidate.exists() || !candidate.canRead() ||
@@ -531,7 +470,7 @@ public class PluginProperties  {
             return false;
         }
         //now test for AS 9 (J2EE 5.0) which should work for this plugin
-        if(isGlassFish(candidate)){
+        if(ServerLocationManager.isGlassFish(candidate)){
            return true;//we are as9
         }
         
@@ -569,7 +508,11 @@ public class PluginProperties  {
             //either the file does not exist or not available. No big deal, we continue ands NB will popup the request dialog.
         }
         // Go to the conf dir
-        File domains = new File(platformRoot.getAbsolutePath()+"/domains");
+        String ext = (File.separatorChar == '/' ? "conf" : "bat");          // NOI18N
+        File asenv = new File(platformRoot,"config/asenv."+ext);            // NOI18N
+        Asenv asenvContent = new Asenv(asenv);
+        String defDomainsDirName = asenvContent.get(Asenv.AS_DEF_DOMAINS_PATH);
+        File domains = new File(defDomainsDirName);//NOI18N
         if (domains.exists() && domains.isDirectory() ) {
             File[] domainsList= domains.listFiles();
             if(domainsList==null)
@@ -578,16 +521,19 @@ public class PluginProperties  {
                 
                 try {
                     
-                    File confDir = new File(domainsList[i].getAbsolutePath()+"/config");
+                    File confDir = new File(domainsList[i].getAbsolutePath()+"/config");//NOI18N
                     // if it is writable
                     if (confDir.exists() && confDir.isDirectory() && confDir.canWrite()) {
                         // try to get the host/port data
-                        String hp = getHostPort(platformRoot, new File(confDir,"domain.xml"));//NOI18N
+                        String hp = Util.getHostPort(domainsList[i],platformRoot);
                         if (hp!=null){
                             
                             
                             String dmUrl = "["+platformRoot.getAbsolutePath()+"]" +SunURIManager.SUNSERVERSURI+hp; //NOI18N
-                            String displayName = NbBundle.getMessage(PluginProperties.class, "OpenIDE-Module-Name");
+                            String displayName = NbBundle.getMessage(PluginProperties.class, "OpenIDE-Module-Name") ;//NOI18N
+                            if (ServerLocationManager.isGlassFish(platformRoot)){
+                                displayName+=" 9";//NOI18N for new name
+                            }
                             if (i!=0) {//not the first one, but other possible domains
                                 displayName = domainsList[i].getName();
                             }
@@ -610,7 +556,7 @@ public class PluginProperties  {
                             instanceFO.setAttribute(InstanceProperties.DISPLAY_NAME_ATTR, displayName);
                             instanceFO.setAttribute("DOMAIN", domainsList[i].getName()); // NOI18N
                             //  The LOCATION is the domains directory, not the install root now...
-                            instanceFO.setAttribute("LOCATION", platformRoot.getAbsolutePath()+File.separator+"domains"); // NOI18N
+                            instanceFO.setAttribute("LOCATION", asenvContent.get(Asenv.AS_DEF_DOMAINS_PATH)); // NOI18N
                         }
                     }
                 } catch (IOException ioe){
@@ -622,26 +568,7 @@ public class PluginProperties  {
             
             
         }
-    private static String getHostPort(File serverroot, File domainXml){
-        String adminHostPort = null;
-        try{
-            Class[] argClass = new Class[1];
-            argClass[0] = File.class;
-            Object[] argObject = new Object[1];
-            argObject[0] = domainXml;
-            
-	    ClassLoader loader = ServerLocationManager.getServerOnlyClassLoader(serverroot);
-            if(loader != null){
-                Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.AppServerBridge");
-                Method getHostPort = cc.getMethod("getHostPort", argClass);//NOI18N
-                adminHostPort = (String)getHostPort.invoke(null, argObject);
-            }
-        }catch(Exception ex){
-            //Suppressing exception while trying to obtain admin host port value
-            ex.printStackTrace();
-        }
-        return adminHostPort;
-    }
+
     /** Extract a String[] from a Properties
      *
      * The prefix identifies the root property name. Elements of
@@ -663,8 +590,9 @@ public class PluginProperties  {
             do {
                 entry = inProps.getProperty(prefix+index);
                 index++;
-                if (null != entry) 
+                if (null != entry) {
                     l.add(entry);
+                }
             }
             while (null != entry);
             Object [] retVal = l.toArray(prototype);

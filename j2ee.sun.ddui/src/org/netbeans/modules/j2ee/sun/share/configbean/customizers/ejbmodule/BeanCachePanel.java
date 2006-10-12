@@ -27,7 +27,8 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.BeanCache;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BeanCustomizer;
+
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupport;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupportClient;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
@@ -81,24 +82,11 @@ public class BeanCachePanel extends javax.swing.JPanel
 
 
     public java.awt.GridBagConstraints getErrorPanelConstraints(){
-        java.awt.GridBagConstraints gridBagConstraints = 
-            new java.awt.GridBagConstraints();
-
-        gridBagConstraints.anchor = gridBagConstraints.SOUTH;
-        gridBagConstraints.fill = gridBagConstraints.HORIZONTAL;
-        gridBagConstraints.gridheight = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.insets.top = 20;
-        gridBagConstraints.insets.left = 0;
-        gridBagConstraints.insets.bottom = 0;
-        gridBagConstraints.insets.right = 0;
-        gridBagConstraints.ipadx = 0;
-        gridBagConstraints.ipady = 0;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.0;
-
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(6,12,11,11);
         return gridBagConstraints;
     }
 
@@ -143,7 +131,7 @@ public class BeanCachePanel extends javax.swing.JPanel
     }
 	
 	public java.awt.Color getMessageForegroundColor() {
-		return BeanCustomizer.ErrorTextForegroundColor;
+		return BaseCustomizer.getErrorForegroundColor();
 	}
 	
     private void validateEntries(){
@@ -162,10 +150,10 @@ public class BeanCachePanel extends javax.swing.JPanel
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        maxCacheSizeLabel = new javax.swing.JLabel();
+        maxCacheSizeTextField = new javax.swing.JTextField();
         resizeQuantityLabel = new javax.swing.JLabel();
         resizeQuantityTextField = new javax.swing.JTextField();
-        maxCacheSizeTextField = new javax.swing.JTextField();
-        maxCacheSizeLabel = new javax.swing.JLabel();
         isCacheOverflowAllowedLabel = new javax.swing.JLabel();
         isCacheOverflowAllowedComboBox = new javax.swing.JComboBox();
         cacheIdleTimeoutInSecondsLabel = new javax.swing.JLabel();
@@ -178,14 +166,48 @@ public class BeanCachePanel extends javax.swing.JPanel
 
         setLayout(new java.awt.GridBagLayout());
 
+        maxCacheSizeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Max_Cache_Size").charAt(0));
+        maxCacheSizeLabel.setLabelFor(maxCacheSizeTextField);
+        maxCacheSizeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Max_Cache_Size_1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
+        add(maxCacheSizeLabel, gridBagConstraints);
+        maxCacheSizeLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Acsbl_Name"));
+        maxCacheSizeLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Acsbl_Desc"));
+
+        maxCacheSizeTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Tool_Tip"));
+        maxCacheSizeTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                maxCacheSizeActionPerformed(evt);
+            }
+        });
+        maxCacheSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                maxCacheSizeFocusGained(evt);
+            }
+        });
+        maxCacheSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                maxCacheSizeKeyReleased(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
+        add(maxCacheSizeTextField, gridBagConstraints);
+        maxCacheSizeTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Acsbl_Name"));
+        maxCacheSizeTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Acsbl_Desc"));
+
         resizeQuantityLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Resize_Quantity").charAt(0));
         resizeQuantityLabel.setLabelFor(resizeQuantityTextField);
         resizeQuantityLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Resize_Quantity_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(resizeQuantityLabel, gridBagConstraints);
         resizeQuantityLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Resize_Quantity_Acsbl_Name"));
         resizeQuantityLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Bean_Cache_Resize_Quantity_Acsbl_Desc"));
@@ -208,64 +230,20 @@ public class BeanCachePanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(resizeQuantityTextField, gridBagConstraints);
         resizeQuantityTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Resize_Quantity_Acsbl_Name"));
         resizeQuantityTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Bean_Cache_Resize_Quantity_Acsbl_Desc"));
-
-        maxCacheSizeTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Tool_Tip"));
-        maxCacheSizeTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                maxCacheSizeActionPerformed(evt);
-            }
-        });
-        maxCacheSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                maxCacheSizeFocusGained(evt);
-            }
-        });
-        maxCacheSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                maxCacheSizeKeyReleased(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
-        add(maxCacheSizeTextField, gridBagConstraints);
-        maxCacheSizeTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Acsbl_Name"));
-        maxCacheSizeTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Acsbl_Desc"));
-
-        maxCacheSizeLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Max_Cache_Size").charAt(0));
-        maxCacheSizeLabel.setLabelFor(maxCacheSizeTextField);
-        maxCacheSizeLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Max_Cache_Size_1"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
-        add(maxCacheSizeLabel, gridBagConstraints);
-        maxCacheSizeLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Acsbl_Name"));
-        maxCacheSizeLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Max_Cache_Size_Acsbl_Desc"));
 
         isCacheOverflowAllowedLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Is_Cache_Overflow_Allowed").charAt(0));
         isCacheOverflowAllowedLabel.setLabelFor(isCacheOverflowAllowedComboBox);
         isCacheOverflowAllowedLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Is_Cache_Overflow_Allowed_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(isCacheOverflowAllowedLabel, gridBagConstraints);
         isCacheOverflowAllowedLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Cache_Overflow_Allowed_Acsbl_Name"));
         isCacheOverflowAllowedLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Cache_Overflow_Allowed_Acsbl_Desc"));
@@ -279,12 +257,10 @@ public class BeanCachePanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(isCacheOverflowAllowedComboBox, gridBagConstraints);
         isCacheOverflowAllowedComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Cache_Overflow_Allowed_Acsbl_Name"));
         isCacheOverflowAllowedComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Is_Cache_Overflow_Allowed_Acsbl_Desc"));
@@ -293,10 +269,8 @@ public class BeanCachePanel extends javax.swing.JPanel
         cacheIdleTimeoutInSecondsLabel.setLabelFor(cacheIdleTimeoutInSecondsTextField);
         cacheIdleTimeoutInSecondsLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Cache_Idle_Timeout_In_Seconds_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(cacheIdleTimeoutInSecondsLabel, gridBagConstraints);
         cacheIdleTimeoutInSecondsLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Cache_Idle_Timeout_In_Seconds_Acsbl_Name"));
         cacheIdleTimeoutInSecondsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Cache_Idle_Timeout_In_Seconds_Acsbl_Desc"));
@@ -319,12 +293,10 @@ public class BeanCachePanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(cacheIdleTimeoutInSecondsTextField, gridBagConstraints);
         cacheIdleTimeoutInSecondsTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Cache_Idle_Timeout_In_Seconds_Acsbl_Name"));
         cacheIdleTimeoutInSecondsTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Cache_Idle_Timeout_In_Seconds_Acsbl_Desc"));
@@ -333,10 +305,8 @@ public class BeanCachePanel extends javax.swing.JPanel
         removalTimeoutInSecondsLabel.setLabelFor(removalTimeoutInSecondsTextField);
         removalTimeoutInSecondsLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Removal_Timeout_In_Seconds_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(removalTimeoutInSecondsLabel, gridBagConstraints);
         removalTimeoutInSecondsLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Removal_Timeout_In_Seconds_Acsbl_Name"));
         removalTimeoutInSecondsLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Removal_Timeout_In_Seconds_Acsbl_Desc"));
@@ -359,12 +329,10 @@ public class BeanCachePanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(removalTimeoutInSecondsTextField, gridBagConstraints);
         removalTimeoutInSecondsTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Removal_Timeout_In_Seconds_Acsbl_Name"));
         removalTimeoutInSecondsTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Removal_Timeout_In_Seconds_Acsbl_Desc"));
@@ -373,10 +341,8 @@ public class BeanCachePanel extends javax.swing.JPanel
         victimSelectionPolicyLabel.setLabelFor(victimSelectionPolicyComboBox);
         victimSelectionPolicyLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Victim_Selection_Policy_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(victimSelectionPolicyLabel, gridBagConstraints);
         victimSelectionPolicyLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Victim_Selection_Policy_Acsbl_Name"));
         victimSelectionPolicyLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Victim_Selection_Policy_Acsbl_Desc"));
@@ -390,26 +356,22 @@ public class BeanCachePanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(victimSelectionPolicyComboBox, gridBagConstraints);
         victimSelectionPolicyComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Victim_Selection_Policy_Acsbl_Name"));
         victimSelectionPolicyComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Victim_Selection_Policy_Acsbl_Desc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(fillerPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void removalTimeoutInSecondsFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_removalTimeoutInSecondsFocusGained
         // Add your handling code here:

@@ -80,6 +80,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Adding_getServletPath">
+            <api name="WebModuleAPI"/>
+            <summary>Adding getServletPath method for framework providers</summary>
+            <version major="1" minor="5"/>
+            <date day="8" month="3" year="2006"/>
+            <author login="ppisl@netbeans.org"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added method for obtaining servlet path for an jsp from the framework provider. 
+                </p>
+            </description>
+            <class package="org.netbeans.modules.web.api.webmodule" name="WebExtensionSupport" link="no" />
+            <class package="org.netbeans.modules.web.spi.webmodule" name="WebExtensionProvider" link="no" />
+        </change>
         <change id="Adding_Framework_Support">
             <api name="WebModuleAPI"/>
             <summary>Adding Web Extension support</summary>

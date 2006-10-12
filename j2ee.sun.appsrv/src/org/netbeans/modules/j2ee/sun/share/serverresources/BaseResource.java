@@ -52,8 +52,9 @@ public class BaseResource extends Object implements java.io.Serializable {
     }
     
     protected void initPropertyChangeSupport(){
-        if(propertySupport==null)
+        if(propertySupport==null){
             propertySupport = new PropertyChangeSupport ( this );
+        }
 
     }
     
@@ -88,8 +89,9 @@ public class BaseResource extends Object implements java.io.Serializable {
     }
     
     public NameValuePair[] getExtraParams() {
-        if(this.extraParams == null)
+        if(this.extraParams == null){
             this.extraParams = new NameValuePair[0];   
+        }
         return this.extraParams;
     }
     public void setExtraParams(Object[] value) {

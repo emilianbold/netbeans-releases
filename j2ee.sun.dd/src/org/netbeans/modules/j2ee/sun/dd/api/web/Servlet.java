@@ -27,28 +27,19 @@ package org.netbeans.modules.j2ee.sun.dd.api.web;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
 
 public interface Servlet extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
-
-        public static final String SERVLET_NAME = "ServletName";	// NOI18N
+        
+    public static final String SERVLET_NAME = "ServletName";	// NOI18N
 	public static final String PRINCIPAL_NAME = "PrincipalName";	// NOI18N
+	static public final String PRINCIPALNAMECLASSNAME = "PrincipalNameClassName";	// NOI18N
 	public static final String WEBSERVICE_ENDPOINT = "WebserviceEndpoint";	// NOI18N
 
-        /** Setter for servlet-name property
-         * @param value property value
-         */
 	public void setServletName(String value);
-        /** Getter for servlet-name property.
-         * @return property value
-         */
 	public String getServletName();
-        /** Setter for principal-name property
-         * @param value property value
-         */
 	public void setPrincipalName(String value);
-        /** Getter for principal-name property.
-         * @return property value
-         */
 	public String getPrincipalName();
-
+	public void setPrincipalNameClassName(String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+	public String getPrincipalNameClassName() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+    
 	public void setWebserviceEndpoint(int index, WebserviceEndpoint value);
 	public WebserviceEndpoint getWebserviceEndpoint(int index);
 	public int sizeWebserviceEndpoint();

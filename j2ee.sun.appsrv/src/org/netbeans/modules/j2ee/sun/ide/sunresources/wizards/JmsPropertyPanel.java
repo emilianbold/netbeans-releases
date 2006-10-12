@@ -25,16 +25,10 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.HashMap;
 import java.util.Vector;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 
@@ -48,7 +42,7 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroupHelper;
  *
  * @author  Jennifer Chou
  */
-public class JmsPropertyPanel implements WizardDescriptor.FinishPanel/* .FinishPanel */ {
+public class JmsPropertyPanel extends ResourceWizardPanel {
     
     /** The visual component that displays this panel.
      * If you need to access the component from this class,
@@ -57,7 +51,7 @@ public class JmsPropertyPanel implements WizardDescriptor.FinishPanel/* .FinishP
     private JmsPropertyVisualPanel component;
     private ResourceConfigHelper helper;
     private Wizard wiz;
-
+        
     /** Create the wizard panel descriptor. */
     public JmsPropertyPanel(ResourceConfigHelper helper, Wizard wiz) {
         this.helper = helper;
@@ -91,64 +85,40 @@ public class JmsPropertyPanel implements WizardDescriptor.FinishPanel/* .FinishP
     }
     
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
+        setErrorMsg(bundle.getString("Empty_String"));
         ResourceConfigData data = helper.getData();
         Vector vec = data.getProperties();
+        String resType = data.getString(__ResType);
+        if (resType.equals("javax.jms.Queue")||resType.equals("javax.jms.Topic")) {  //NO18N
+            HashMap map = getHashMap(vec);
+            if(! map.containsKey(WizardConstants.__AdminObjPropertyName)){
+                setErrorMsg(bundle.getString("Err_AOName"));
+                return false;
+            }
+        }
         for (int i = 0; i < vec.size(); i++) {
             NameValuePair pair = (NameValuePair)vec.elementAt(i);
             if (pair.getParamName() == null || pair.getParamValue() == null ||
-                    pair.getParamName().length() == 0 || pair.getParamValue().length() == 0)
+                    pair.getParamName().length() == 0 || pair.getParamValue().length() == 0){
+                setErrorMsg(bundle.getString("Err_InvalidNameValue"));
                 return false;
+            }
         }
         return true;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition ();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent ();
-        // and uncomment the complicated stuff below.
     }
     
     public ResourceConfigHelper getHelper() {
         return helper;
     }
-    /*
-    public final void addChangeListener(ChangeListener l) {}
-    public final void removeChangeListener(ChangeListener l) {}
-    */
-    private final Set listeners = new HashSet (1); // Set<ChangeListener>
-    public final void addChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
+       
+    private HashMap getHashMap(Vector vec){
+        HashMap map = new HashMap();
+        for (int i = 0; i < vec.size(); i++) {
+            NameValuePair pair = (NameValuePair)vec.elementAt(i);
+            String paramName = pair.getParamName();
+            if (paramName != null && paramName.length() != 0)
+                map.put(paramName, pair.getParamValue());
         }
+        return map;
     }
-    public final void removeChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
-        }
-    }
-    protected final void fireChangeEvent () {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
-        }
-        ChangeEvent ev = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
-        }
-    }
-    
-    // You can use a settings object to keep track of state.
-    // Normally the settings object will be the WizardDescriptor,
-    // so you can use WizardDescriptor.getProperty & putProperty
-    // to store information entered by the user.
-    public void readSettings(Object settings) {
-    }
-    public void storeSettings(Object settings) {
-    }
-/*    
-    public void initData() {
-        Reporter.info(helper);
-        this.component.initData();
-    }
- */
 }

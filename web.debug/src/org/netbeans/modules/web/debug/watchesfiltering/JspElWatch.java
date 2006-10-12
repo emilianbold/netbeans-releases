@@ -37,7 +37,7 @@ public class JspElWatch implements PropertyChangeListener {
 
     private final Watch     watch;
     
-    private boolean         evaluated;
+    private boolean         evaluated = false;
     private JPDADebugger    debugger;
     private Variable        variable;
     private Exception       exception;
@@ -53,18 +53,24 @@ public class JspElWatch implements PropertyChangeListener {
     }
 
     public String getType() {
-        if (!evaluated) evaluate();
+        if (!evaluated) {
+            evaluate();
+        }
         return variable == null ? "" : variable.getType();
     }
 
     public String getValue() {
-        if (!evaluated) evaluate();
+        if (!evaluated) {
+            evaluate();
+        }
         return variable == null ? "" : variable.getValue();
     }
 
     public String getExceptionDescription() {
-        if (!evaluated) evaluate();
-        return exception == null ? null : exception.toString();
+        if (!evaluated) {
+            evaluate();
+        }
+        return exception == null ? null : exception.getMessage();
     }
 
     public String getToStringValue() throws InvalidExpressionException {
@@ -76,13 +82,13 @@ public class JspElWatch implements PropertyChangeListener {
     }
     
     private synchronized void evaluate() {
-        if (evaluated) return;
         String text = watch.getExpression ();
         text = org.openide.util.Utilities.replaceString(text, "\"", "\\\"");
         text = "pageContext.getExpressionEvaluator().evaluate(\"" + text +
                             "\", java.lang.String.class, (javax.servlet.jsp.PageContext)pageContext, null)";
         try {
             variable = debugger.evaluate(text);
+            exception = null;
         } catch (Exception e) {
             exception = e;
         } finally {
@@ -91,6 +97,10 @@ public class JspElWatch implements PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
+        setUnevaluated();
+    }
+    
+    public void setUnevaluated() {
         evaluated = false;
     }
 }

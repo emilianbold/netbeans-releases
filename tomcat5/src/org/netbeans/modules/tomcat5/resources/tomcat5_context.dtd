@@ -7,7 +7,7 @@ to represent default configuration properties for Contexts that are automaticall
 <!ELEMENT Context (
     Loader?, Logger?, Valve*, 
     Realm?, Manager?, Ejb*, Parameter*, Environment*, 
-    Listener*, InstanceListener?, Resource*, ResourceParams*) >
+    Listener*, InstanceListener?, Resource*, ResourceLink*, ResourceParams*) >
 <!ATTLIST Context path CDATA #REQUIRED>
 <!ATTLIST Context docBase CDATA #REQUIRED>
 <!ATTLIST Context className CDATA #IMPLIED>
@@ -143,6 +143,15 @@ of the persistent data storage.
 <!ATTLIST Store sessionTable CDATA #IMPLIED>
 <!ATTLIST Store sessionValidCol CDATA #IMPLIED>
 <!ATTLIST Store debug CDATA #IMPLIED>
+
+<!--
+This element is used to create a link to a global JNDI resource. Doing a JNDI 
+lookup on the link name will then return the linked global resource.
+-->
+<!ELEMENT ResourceLink EMPTY >
+<!ATTLIST ResourceLink global CDATA #IMPLIED>
+<!ATTLIST ResourceLink name CDATA #IMPLIED>
+<!ATTLIST ResourceLink type CDATA #IMPLIED>
 
 <!--
 This element is used to configure the resource manager (or object factory) 

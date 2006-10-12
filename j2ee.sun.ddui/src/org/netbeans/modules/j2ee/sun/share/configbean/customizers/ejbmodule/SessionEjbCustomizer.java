@@ -44,9 +44,6 @@ public abstract class SessionEjbCustomizer extends EjbCustomizer
 	public SessionEjbCustomizer() {
 	}
 	
-    public SessionEjbCustomizer(DConfigBean bean) {
-    }
-
 
     protected void addTabbedBeanPanels() {
     }

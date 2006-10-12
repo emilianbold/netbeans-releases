@@ -349,7 +349,6 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         portField.setColumns(20);
         portField.setText(""); // NOI18N
         portField.addKeyListener(new KeyListener());
-        portField.setPreferredSize(new Dimension(50, 20));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -374,7 +373,6 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         usernameField.setColumns(20);
         usernameField.setText(""); // NOI18N
         usernameField.addKeyListener(new KeyListener());
-        usernameField.setPreferredSize(new Dimension(100, 20));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -396,7 +394,6 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         
         // add password field
         passwordField.setColumns(20);
-        passwordField.setPreferredSize(new Dimension(100, 20));
         passwordField.addKeyListener(new KeyListener());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;

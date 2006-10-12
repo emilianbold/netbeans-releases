@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Resolve according to root element: -->
     <file>
         <ext name="xml"/>
-        <resolver mime="text/jsf-config1.0">
+        <resolver mime="text/x-jsf+xml">
             <xml-rule>
             	<doctype public-id="-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.0//EN"/>
             </xml-rule>
@@ -34,9 +34,19 @@ Microsystems, Inc. All Rights Reserved.
     </file>
     <file>
         <ext name="xml"/>
-            <resolver mime="text/jsf-config1.1">
+            <resolver mime="text/x-jsf+xml">
             <xml-rule>
                 <doctype public-id="-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"/>
+            </xml-rule>
+        </resolver>       
+    </file>    
+    <file>
+        <ext name="xml"/>
+            <resolver mime="text/x-jsf+xml">
+            <xml-rule>
+            	<element name="faces-config" ns="http://java.sun.com/xml/ns/javaee">
+                    <attr name="version" text="1.2"/>
+                </element>
             </xml-rule>
         </resolver>       
     </file>    

@@ -91,13 +91,13 @@ public class NodeFactory implements org.netbeans.modules.j2ee.deployment.plugins
             Constructor constructor =pluginRootFactoryClass.getConstructor(new Class[] {DeploymentManager.class});
             Object pluginRootFactory =constructor.newInstance(new Object[] {deployMgr});
             Class factoryClazz = pluginRootFactory.getClass();
-            Method method =factoryClazz.getMethod("getPluginRootNode", null);
+            Method method =factoryClazz.getMethod("getPluginRootNode", (Class[])null);
             
             
             Thread.currentThread().setContextClassLoader( loader);
             
             
-            return (org.openide.nodes.Node)method.invoke(pluginRootFactory, null);
+            return (org.openide.nodes.Node)method.invoke(pluginRootFactory, (Object[]) null);
         } catch (Exception e){
             throw e;
         } finally {

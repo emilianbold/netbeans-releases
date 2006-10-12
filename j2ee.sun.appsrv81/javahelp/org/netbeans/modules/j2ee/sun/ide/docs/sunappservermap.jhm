@@ -6,6 +6,7 @@
     <mapID target="aboutplugin"      				url="general/aboutplugin.html" />
     <mapID target="register_appserver"                          url="general/register_appserver.html" />
     <mapID target="viewing_appserver"				url="general/viewing_SJS.html" />
+    <mapID target="viewing_logfile"				url="general/sjs_view_serverlog.html" />
     <mapID target="def_connpool"      				url="general/def_connpool.html" />
     <mapID target="def_jdbcresource"      			url="general/def_jdbcresource.html" />
     <mapID target="def_persistence"      			url="general/def_persistence.html" />
@@ -16,22 +17,37 @@
     <mapID target="sjs_quickref"                                url="general/sjs_quickref.html" />
     <mapID target="sjs_undeploy"                                url="general/sjs_undeploy.html" />
     <mapID target="sjs_jvm"                                     url="general/JVM.html" />
+    <mapID target="sjs_manageuser"                              url="general/sjs_manage_users.html" />
+    <mapID target="sjs_security"                                url="general/sjs_configure_security.html" />
     <mapID target="adminconsole"                                url="general/adminconsole.html" />
     <mapID target="jsp_connectionpool_tomcatmodule"             url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
     <!--<mapID target="lookup_jms"                              url="general/def_jms_lookup.html" />
     <mapID target="lookup_jdbc"                                 url="general/def_jdbcresource_lookup.html" />-->
-    <mapID target="tbd"                                         url="tbd.html" />
+
     
     <!-- CMP pages -->
-    <mapID target="about_cmp" url="cmp/about_cmp.html" />
-    <mapID target="cmp_quickref" url="cmp/cmp_quickref.html" />
     <mapID target="fields_mult_cols" url="cmp/fields_mult_cols.html" />
     <mapID target="gen_tables" url="cmp/gen_tables.html" />
     <mapID target="map_bean_to_db" url="cmp/map_bean_to_db.html" />
     <mapID target="map_rel_fields" url="cmp/map_rel_fields.html" />
     <mapID target="prim_sec_tables" url="cmp/prim_sec_tables.html" />
     
+    <!-- sun-???.xml dataobject mappings -->
+    <mapID target="sun-web_help"				url="configeditors/WebAppGeneral.html"  />
+    <mapID target="sun-ejb-jar_help"				url="ejbconfigeditors/sunconfig.html"  />
+    <mapID target="sun-application_help"			url="appconfigeditors/sunapplication.html"  />
+    <mapID target="sun-application-client_help"			url="clientconfigeditors/sunapplicationclient.html"  />
+    
+    <!-- sun-application-client.xml DD editor CSH -->
+    <mapID target="AS_CFG_AppClient"	url="appclientconfigeditors/sun-application-client.html"  />
+
     <!-- sun-web.xml DD editor CSH: -->
+    <mapID target="AS_CFG_SecurityRoleNewPrincipal"		url="configeditors/SecurityWebAddPrincipal.html"  />
+    <mapID target="AS_CFG_SecurityRoleEditPrincipal"		url="configeditors/SecurityWebEditPrincipal.html"  />
+    <mapID target="AS_CFG_SecurityRoleNewGroup"                 url="configeditors/SecurityWebAddGroup.html"  />
+    <mapID target="AS_CFG_SecurityRoleEditGroup"                url="configeditors/SecurityWebEditGroup.html"  />
+    <mapID target="AS_CFG_SecurityRoleAssignment"		url="configeditors/SecurityWebRoleMapping.html"  />
+    <mapID target="AS_CFG_SecurityRoleMapping"  		url="configeditors/SecurityWebRoleMapping.html"  />
     <mapID target="AS_CFG_WebAppGeneral"			url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppJspConfigProperty" 		url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppProperty" 			url="configeditors/WebAppGeneral.html"  />
@@ -48,6 +64,7 @@
     <mapID target="AS_CFG_WebAppCacheMappingKeyField" 		url="configeditors/WebAppCacheMappingPolicy.html"  />
     <mapID target="AS_CFG_WebAppCacheMappingConstraintField" 		url="configeditors/WebAppCacheMappingConstraintField.html"  />
     <mapID target="AS_CFG_WebAppCacheMappingConstraintFieldValue" 	url="configeditors/WebAppCacheMappingConstraintField.html"  />
+    <mapID target="AS_CFG_WebAppClassloader"           		url="configeditors/WebAppClassloader.html"  />
     <mapID target="AS_CFG_WebAppMessages"           		url="configeditors/WebAppMessages.html"  />
     <mapID target="AS_CFG_SessionConfigurationManager" 			url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationManagerProperty" 		url="configeditors/SessionConfigurationManager.html"  />
@@ -66,6 +83,7 @@
     <mapID target="AS_CFG_WebServices" 	url="configeditors/WebserviceDescriptor.html"  />
     <mapID target="AS_CFG_WebServiceDescriptor" 	url="configeditors/WebserviceDescriptor.html"  />
     <mapID target="AS_CFG_WebServiceEndpoint" 	url="configeditors/WebserviceDescriptor.html"  />
+    <mapID target="AS_CFG_ChangeDocTypePanelHelp" 	url="configeditors/ChangeDocType.html"  />
 
    <!-- Sun Resource New File wizard and property sheet CSH pages: -->
    <mapID target="AS_Wiz_ConnPool_chooseDB" 		url="resourcewizards/ConnPool_chooseDB.html"  />
@@ -87,17 +105,17 @@
     <mapID target="AS_RegServ_DefinePorts"      				url="runtimetab/RegServ_Create.html" />
   
     <!-- sun-ejb-jar.xml DD editor CSH: -->
-  <mapID target="AS_CFG_EjbJarRoot"                				url="ejbconfigeditors/sunconfig.html" />
+  <mapID target="AS_CFG_EjbJarCmpResource"              			url="ejbconfigeditors/sunconfig.html" />
   <mapID target="AS_CFG_StatefulEjb"            				url="ejbconfigeditors/sessionbean.html" />
   <mapID target="AS_CFG_StatelessEjb"            				url="ejbconfigeditors/sessionbean.html" />
   <mapID target="AS_CFG_EntityEjb"              				url="ejbconfigeditors/entitybean.html" />
   <mapID target="AS_CFG_CmpEntityEjb"            				url="ejbconfigeditors/entitybean.html" />
   <mapID target="AS_CFG_MDEjb"                  				url="ejbconfigeditors/messagebean.html" />
-  <mapID target="AS_CFG_MessageDestination"            				url="ejbconfigeditors/sun-msgdestination.html" />
+  <mapID target="AS_CFG_EjbJarMessages"            				url="ejbconfigeditors/sun-msgdestination.html" />
   <mapID target="AS_CFG_OneOneFinder"            				url="ejbconfigeditors/ent-finder.html" />
-  <mapID target="AS_CFG_PmDescriptor"            				url="ejbconfigeditors/sun-pmdescriptor.html" />
-  <mapID target="AS_CFG_Cmp_Resource_Property"            			url="ejbconfigeditors/sun-cmpproperty.html" />
-  <mapID target="AS_CFG_Schema_Generator_Property"            			url="ejbconfigeditors/sun-schemagen.html" />
+  <mapID target="AS_CFG_EjbJarPmDescriptors"            			url="ejbconfigeditors/sun-pmdescriptor.html" />
+  <mapID target="AS_CFG_EjbJarCmpProperty"                                      url="ejbconfigeditors/sun-cmpproperty.html" />
+  <mapID target="AS_CFG_EjbJarCmpSchemaProperty"            			url="ejbconfigeditors/sun-schemagen.html" />
   <mapID target="AS_CFG_Activation_Config_Property"            			url="ejbconfigeditors/mes_activate.html" />
 
   <!-- sun-application.xml DD editor CSH: -->

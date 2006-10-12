@@ -20,11 +20,29 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="Configuration of JBoss4 unit tests">
-
+    
     <testbag testattribs="dev-api" executor="ide" name="Sjsas API Validation tests">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/modules/j2ee/sun/test/SjsasTestSuite.class"/>
+               <include name="org/netbeans/modules/j2ee/sun/test/AddRemoveSjsasInstanceTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/StartStopServerTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/WebModuleTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/EjbModuleTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/JSFModuleTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/JDBCDefaultConnectionPoolTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/JDBCNewConnectionPoolTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/JDBCResourceNewCPTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/JDBCResourceTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/AdminObjectResourceTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/ConnectionFactoryResourceTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/MailResourceTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/PersistenceResourceTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/CustomerCMPSampleTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/DukeStatefulTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/WebServiceTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/MDBTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/SunConfigurationTest.class"/>
+                <include name="org/netbeans/modules/j2ee/sun/test/JSFModuleTest.class"/>
             </patternset>
         </testset>
     </testbag>

@@ -19,19 +19,12 @@
 
 package org.netbeans.modules.tomcat5.util;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collections;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.openide.ErrorManager;
-import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -202,19 +195,23 @@ public class LogSupport {
          */
         public void outputLineAction(OutputEvent ev) {
             FileObject sourceFile = GlobalPathRegistry.getDefault().findResource(path);
-            if (sourceFile == null) sourceFile = FileUtil.toFileObject(new File(path));
+            if (sourceFile == null) {
+                sourceFile = FileUtil.toFileObject(new File(path));
+            }
             DataObject dataObject = null;
             if (sourceFile != null) {
                 try {
                     dataObject = DataObject.find(sourceFile);
-                } catch(DataObjectNotFoundException ex) {// ignore it
+                } catch(DataObjectNotFoundException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
             if (dataObject != null) {
                 EditorCookie editorCookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
-                if (editorCookie == null) return;
+                if (editorCookie == null) {
+                    return;
+                }
                 editorCookie.open();
-                int errLineNum = 0;
                 Line errorLine = null;
                 try {
                     errorLine = editorCookie.getLineSet().getCurrent(line - 1);

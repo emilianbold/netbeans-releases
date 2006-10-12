@@ -19,9 +19,14 @@
 
 package org.netbeans.modules.tomcat5;
 
+import java.io.File;
+import java.io.IOException;
 import org.openide.ErrorManager;
-import java.io.*;
-import org.netbeans.modules.tomcat5.config.*;
+import org.netbeans.modules.tomcat5.config.gen.Engine;
+import org.netbeans.modules.tomcat5.config.gen.Host;
+import org.netbeans.modules.tomcat5.config.gen.SContext;
+import org.netbeans.modules.tomcat5.config.gen.Server;
+import org.netbeans.modules.tomcat5.config.gen.Service;
 
 /**
  * <code>TomcatManagerConfig</code> offers easy access to some server.xml settings.
@@ -103,6 +108,8 @@ public class TomcatManagerConfig {
             return Server.createGraph(serverXml);
         } catch (IOException ioe) {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+        } catch (RuntimeException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         return null;
     }

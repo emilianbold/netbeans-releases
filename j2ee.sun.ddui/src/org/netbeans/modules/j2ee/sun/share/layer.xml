@@ -47,4 +47,34 @@
             </folder>
         </folder>
     </folder>   
+    <folder name="Templates">
+        <folder name="J2EE">
+            <file name="sunDD">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/share/config/ui/resources/ConfigFile.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.share.configbean.templates.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.sun.share.configbean.templates.SunDDWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="j2ee-types,ear-types,sunresource-types,deployment-descriptor"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/share/configbean/templates/sunDD.html"/>
+            </file>
+        </folder>
+<!-- Adding this instance here causes this template to show up twice in the quick list, so disable for now.
+        <folder name="SunResources">
+            <file name="sunDD">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/share/config/ui/resources/ConfigFile.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.share.configbean.templates.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.sun.share.configbean.templates.SunDDWizardIterator"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="j2ee-types,ear-types,sunresource-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/share/configbean/templates/sunDD.html"/>
+            </file>
+        </folder>
+-->        
+    </folder>
+    <folder name="org-netbeans-modules-j2ee-sun-ddui">
+        <file name="sun-web.xml" url="configbean/templates/sun-web.xml"/>
+        <file name="sun-ejb-jar.xml" url="configbean/templates/sun-ejb-jar.xml"/>
+        <file name="sun-application.xml" url="configbean/templates/sun-application.xml"/>
+        <file name="sun-application-client.xml" url="configbean/templates/sun-application-client.xml"/>
+    </folder>
 </filesystem>

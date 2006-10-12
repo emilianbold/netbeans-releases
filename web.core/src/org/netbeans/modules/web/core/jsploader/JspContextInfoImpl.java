@@ -49,7 +49,7 @@ public class JspContextInfoImpl extends JspContextInfo {
     
     private static TagLibParseSupport getTagLibParseSupport(Document doc, FileObject fo){
         TagLibParseSupport tlps = null;
-        if (fo != null){
+        if (fo != null && fo.isValid()){
             try {
                 tlps = (TagLibParseSupport)DataObject.find(fo).getCookie(TagLibParseSupport.class);
             }

@@ -32,7 +32,6 @@ import java.awt.Component;
 import java.util.Set;
 import javax.swing.JComponent;
 import java.io.InputStream;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.util.NbBundle;
@@ -45,6 +44,7 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.ErrorManager;
 
 public final class MailWizard implements WizardDescriptor.InstantiatingIterator, WizardConstants{
     
@@ -53,7 +53,7 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
         
     /** An array of all wizard panels */
     private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
+//    private transient WizardDescriptor wiz;
     private transient String[] steps;
     private transient int index;
     
@@ -74,7 +74,7 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
     
     private String[] createSteps() {
         return new String[] {
-            __FirstStepChoose,
+            NbBundle.getMessage(MailWizard.class, __FirstStepChoose),
             NbBundle.getMessage(MailWizard.class, "LBL_GeneralAttributes_MAIL"), //NOI18N
             NbBundle.getMessage(MailWizard.class, "LBL_AddProperty") //NOI18N
         };
@@ -84,7 +84,8 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
         try{
             ResourceUtils.saveMailResourceDatatoXml(this.helper.getData());
         }catch (Exception ex){
-            //System.out.println("Error in instantiate ");
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         return java.util.Collections.EMPTY_SET;
     }
@@ -93,7 +94,7 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
         this.wizardInfo = getWizardInfo();
         this.helper = new ResourceConfigHelperHolder().getMailHelper();
         
-        this.wiz = wiz;
+        //this.wiz = wiz;
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(MailWizard.class, "Templates/SunResources/JavaMail_Resource")); //NOI18N
         index = 0;
                 
@@ -109,7 +110,8 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
                 this.helper.getData().setTargetFileObject(pkgLocation);
             }
         }catch (Exception ex){
-           //Unable to get project location
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         
         for (int i = 0; i < panels.length; i++) {
@@ -125,7 +127,7 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
     }
     
     public void uninitialize(WizardDescriptor wiz){
-        this.wiz = null;
+        //this.wiz = null;
         panels = null;
     }
     
@@ -134,7 +136,8 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
             InputStream in = Wizard.class.getClassLoader().getResourceAsStream(DATAFILE);
             this.wizardInfo = Wizard.createGraph(in);
         }catch(Exception ex){
-            //System.out.println("Unable to get Wiz Info");
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         return this.wizardInfo;
     }
@@ -152,8 +155,9 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
     }
     
     public synchronized void nextPanel(){
-        if (index + 1 == panels.length)
+        if (index + 1 == panels.length) {
             throw new java.util.NoSuchElementException();
+        }
         
         if (index == 0){
             ((MailPropertyPanel) panels[1]).refreshFields();
@@ -162,8 +166,9 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
     }
     
     public synchronized void previousPanel(){
-        if (index == 0)
+        if (index == 0) {
             throw new java.util.NoSuchElementException();
+        }
         
         index--;
     }

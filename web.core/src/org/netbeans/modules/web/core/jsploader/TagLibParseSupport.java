@@ -22,6 +22,7 @@ package org.netbeans.modules.web.core.jsploader;
 import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
 
 import org.openide.ErrorManager;
@@ -48,7 +49,7 @@ import org.openide.filesystems.FileUtil;
  * @author Petr Jiricka
  * @version 
  */
-public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
+public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLibParseCookie {
 
     private FileObject jspFile;
     
@@ -354,7 +355,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                         if (hasError){
                             //remove all errors
                             annotations.annotate(new ErrorAnnotation.ErrorInfo[] {});
-                            changeIcon(false);
                             hasError = false;
                         }
                     }
@@ -370,7 +370,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                         }
                         // set icon with error.
                         if (!hasError){
-                            changeIcon(true);
                             hasError = true;
                         }
                         
@@ -409,26 +408,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
             value = value.replaceAll("&gt;", ">");
             return value;
         }
-        
-        private void changeIcon (boolean error){
-            org.openide.loaders.DataObject dObject = null;
-            JspNode node = null;
-            try{
-                 dObject = org.openide.loaders.DataObject.find(jspFile);
-                 if (dObject != null){
-                     node = (JspNode)dObject.getNodeDelegate();
-                 }
-            }
-            catch (org.openide.loaders.DataObjectNotFoundException e){
-                // don't change icons
-                return;
-            }
-            
-            if (error)
-                node.setIconBase(node.getErrorIconBase());
-            else
-                node.setIconBase(node.getIconBase());
-        }
+
     }
 
 }

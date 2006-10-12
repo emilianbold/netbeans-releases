@@ -19,8 +19,11 @@
 
 package org.netbeans.modules.tomcat5.nodes;
 
+import java.awt.Image;
 import java.util.LinkedList;
 import javax.swing.Action;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.nodes.actions.*;
 import org.openide.nodes.AbstractNode;
@@ -45,7 +48,6 @@ public class TomcatWebModuleNode extends AbstractNode {
         setDisplayName(constructName());
         setShortDescription(module.getTomcatModule ().getWebURL());
         getCookieSet().add(module);
-        setIconBaseWithExtension("org/netbeans/modules/tomcat5/resources/WebModule.gif"); // NOI18N
     }
     
     public Action[] getActions(boolean context){
@@ -62,8 +64,16 @@ public class TomcatWebModuleNode extends AbstractNode {
         actions.add(SystemAction.get(UndeployAction.class));
         return (SystemAction[])actions.toArray(new SystemAction[actions.size()]);
     }
-   
     
+    
+    public Image getIcon(int type) {
+        return UISupport.getIcon(ServerIcon.WAR_ARCHIVE);
+    }
+
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+   
     private String constructName(){
         if (module.isRunning())
             return module.getTomcatModule ().getPath();

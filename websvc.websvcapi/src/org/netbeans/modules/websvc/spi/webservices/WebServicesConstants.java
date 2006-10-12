@@ -22,7 +22,7 @@ package org.netbeans.modules.websvc.spi.webservices;
 /**
  * @author  rico
  */
-public interface WebServicesConstants {
+public class WebServicesConstants {
     public static final String WEBSERVICES_DD = "webservices";//NOI18N
     public static final String WEB_SERVICES =     "web-services";//NOI18N
     public static final String WEB_SERVICE  =     "web-service";//NOI18N
@@ -36,7 +36,14 @@ public interface WebServicesConstants {
     public static final String WSDL_FOLDER = "wsdl"; // NOI18N
     public static final String WEB_SERVICE_STUB_TYPE = "web-service-stub-type"; //NOI18N
     public static final String CLIENT_SOURCE_URL = "client-source-url"; //NOI18N
-    public static final String WSCOMPILE="wscompile"; //NOI18N
+
+    // properties defined based on tools support above
+    public static final String J2EE_PLATFORM_JWSDP_CLASSPATH="j2ee.platform.jwsdp.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_WSIT_CLASSPATH="j2ee.platform.wsit.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_WSGEN_CLASSPATH="j2ee.platform.wsgen.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_WSIMPORT_CLASSPATH="j2ee.platform.wsimport.classpath"; //NOI18N
+    public static final String J2EE_PLATFORM_JSR109_SUPPORT = "j2ee.platform.is.jsr109"; //NOI18N
+    
     public static final String WSCOMPILE_CLASSPATH = "wscompile.classpath"; //NOI18N
     public static final String WSCOMPILE_TOOLS_CLASSPATH = "wscompile.tools.classpath"; //NOI18N
     public static final String WEBSVC_GENERATED_DIR = "websvc.generated.dir"; // NOI18N

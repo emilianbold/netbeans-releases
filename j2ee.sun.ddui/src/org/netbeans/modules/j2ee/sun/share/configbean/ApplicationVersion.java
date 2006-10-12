@@ -31,28 +31,38 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
  */
 public final class ApplicationVersion extends J2EEBaseVersion {
 	
-	/** Represents application version 2.3
+	/** Represents application version 1.3
 	 */
 	public static final ApplicationVersion APPLICATION_1_3 = new ApplicationVersion(
 		"1.3", 1300,	// NOI18N
-		DTDRegistryLink.SUN_APPLICATION_130_DTD_PUBLIC_ID,
+		"1.3", 1300,	// NOI18N
+		DTDRegistryLink.SUN_APPLICATION_130_DTD_PUBLIC_ID, 
 		DTDRegistryLink.SUN_APPLICATION_130_DTD_SYSTEM_ID);
 	
-	/** Represents application version 2.4
+	/** Represents application version 1.4
 	 */
 	public static final ApplicationVersion APPLICATION_1_4 = new ApplicationVersion(
 		"1.4", 1400,	// NOI18N
+		"1.4", 1400,	// NOI18N
 		DTDRegistryLink.SUN_APPLICATION_140_DTD_PUBLIC_ID, 
 		DTDRegistryLink.SUN_APPLICATION_140_DTD_SYSTEM_ID);
-	
+
+	/** Represents application version 5.0
+	 */
+	public static final ApplicationVersion APPLICATION_5_0 = new ApplicationVersion(
+		"5.0", 5000,	// NOI18N
+		"5.0", 5000,	// NOI18N
+		DTDRegistryLink.SUN_APPLICATION_500_DTD_PUBLIC_ID, 
+		DTDRegistryLink.SUN_APPLICATION_500_DTD_SYSTEM_ID);
+    
 	/** -----------------------------------------------------------------------
 	 *  Implementation
 	 */
 	
 	/** Creates a new instance of ApplicationVersion 
 	 */
-	private ApplicationVersion(String version, int nv, String pubId, String sysId) {
-		super(version, nv, pubId, sysId);
+	private ApplicationVersion(String version, int nv, String specVersion, int nsv, String pubId, String sysId) {
+		super(version, nv, specVersion, nsv, pubId, sysId);
 	}
 
 	/** Comparator implementation that works only on ApplicationVersion objects
@@ -74,6 +84,8 @@ public final class ApplicationVersion extends J2EEBaseVersion {
 			result = APPLICATION_1_3;
 		} else if(APPLICATION_1_4.toString().equals(version)) {
 			result = APPLICATION_1_4;
+		} else if(APPLICATION_5_0.toString().equals(version)) {
+			result = APPLICATION_5_0;
 		}
 		
 		return result;

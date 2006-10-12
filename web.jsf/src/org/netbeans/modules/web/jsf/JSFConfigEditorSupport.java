@@ -27,6 +27,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileLock;
@@ -121,74 +122,109 @@ public class JSFConfigEditorSupport extends DataEditorSupport
      */
     public void saveDocument () throws java.io.IOException {
         final javax.swing.text.StyledDocument doc = getDocument();
+        String defaultEncoding = "UTF-8"; // NOI18N
         // dependency on xml/core
         String enc = EncodingUtil.detectEncoding(doc);
-        if (enc == null) enc = "UTF8"; //!!! // NOI18N
+        boolean changeEncodingToDefault = false;
+        if (enc == null) enc = defaultEncoding;
         
-        try {
-            //test encoding on dummy stream
-            new java.io.OutputStreamWriter(new java.io.ByteArrayOutputStream(1), enc);
+        //test encoding
+        if (!isSupportedEncoding(enc)){
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+            NbBundle.getMessage (JSFConfigEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
+                new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                enc, 
+                                defaultEncoding} ), 
+                        NotifyDescriptor.YES_NO_OPTION,
+                        NotifyDescriptor.WARNING_MESSAGE);
+            nd.setValue(NotifyDescriptor.NO_OPTION);       
+            DialogDisplayer.getDefault().notify(nd);
+            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+            changeEncodingToDefault = true;
+        }
+        
+        if (!changeEncodingToDefault){
+            // is it possible to save the document in the encoding?
+            try {
+                java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(enc).newEncoder();
+                if (!coder.canEncode(doc.getText(0, doc.getLength()))){
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage (JSFConfigEditorSupport.class, "MSG_BadCharConversion", //NOI18N
+                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                    enc}),
+                            NotifyDescriptor.YES_NO_OPTION,
+                            NotifyDescriptor.WARNING_MESSAGE);
+                    nd.setValue(NotifyDescriptor.NO_OPTION);
+                    DialogDisplayer.getDefault().notify(nd);
+                    if(nd.getValue() != NotifyDescriptor.YES_OPTION) return;
+                }
+            }
+            catch (javax.swing.text.BadLocationException e){
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);            
+            }
             super.saveDocument();
             //moved from Env.save()
             getDataObject().setModified (false);
-        } catch (java.io.UnsupportedEncodingException ex) {
-            // ask user what next?
-            String message = NbBundle.getMessage(JSFConfigEditorSupport.class,"TEXT_SAVE_AS_UTF",enc);
-            NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
-            Object res = DialogDisplayer.getDefault().notify(descriptor);
-
-            if (res.equals(NotifyDescriptor.YES_OPTION)) {
-
+        }
+        else {
                 // update prolog to new valid encoding                
 
-                try {
-                    final int MAX_PROLOG = 1000;                
-                    int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());                
-                    final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
-                    int prologLen = 0;  // actual prolog length
+            try {
+                final int MAX_PROLOG = 1000;                
+                int maxPrologLen = Math.min(MAX_PROLOG, doc.getLength());                
+                final char prolog[] = doc.getText(0, maxPrologLen).toCharArray();
+                int prologLen = 0;  // actual prolog length
 
-                    //parse prolog and get prolog end                
-                    if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
+                //parse prolog and get prolog end                
+                if (prolog[0] == '<' && prolog[1] == '?' && prolog[2] == 'x') {
 
-                        // look for delimitting ?>
-                        for (int i = 3; i<maxPrologLen; i++) {
-                            if (prolog[i] == '?' && prolog[i+1] == '>') {
-                                prologLen = i + 1;
-                                break;
-                            }
-                        }                                        
-                    }
-
-                    final int passPrologLen = prologLen;
-
-                    Runnable edit = new Runnable() {
-                         public void run() {
-                             try {
-
-                                doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
-                                doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
-
-                             } catch (BadLocationException e) {
-                                 if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
-                                     e.printStackTrace();
-                             }
-                         }
-                    };
-
-                    NbDocument.runAtomic(doc, edit);
-
-                    super.saveDocument();
-                    //moved from Env.save()
-                    getDataObject().setModified (false);
-
-                } catch (BadLocationException lex) {
-                    org.openide.ErrorManager.getDefault().notify(lex);
+                    // look for delimitting ?>
+                    for (int i = 3; i<maxPrologLen; i++) {
+                        if (prolog[i] == '?' && prolog[i+1] == '>') {
+                            prologLen = i + 1;
+                            break;
+                        }
+                    }                                        
                 }
 
-            } else { // NotifyDescriptor != YES_OPTION
-                return;
+                final int passPrologLen = prologLen;
+
+                Runnable edit = new Runnable() {
+                     public void run() {
+                         try {
+
+                            doc.remove(0, passPrologLen + 1); // +1 it removes exclusive
+                            doc.insertString(0, "<?xml version='1.0' encoding='UTF-8' ?> \n<!-- was: " + new String(prolog, 0, passPrologLen + 1) + " -->", null); // NOI18N
+
+                         } catch (BadLocationException e) {
+                             if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
+                                 e.printStackTrace();
+                         }
+                     }
+                };
+
+                NbDocument.runAtomic(doc, edit);
+
+                super.saveDocument();
+                //moved from Env.save()
+                getDataObject().setModified (false);
+            }
+            catch (javax.swing.text.BadLocationException e){
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);            
             }
         }
+    }
+    
+    private boolean isSupportedEncoding(String encoding){
+        boolean supported;
+        try{
+            supported = java.nio.charset.Charset.isSupported(encoding);
+        }
+        catch (java.nio.charset.IllegalCharsetNameException e){
+            supported = false;
+        }
+        
+        return supported;
     }
    
     

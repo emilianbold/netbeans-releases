@@ -123,21 +123,8 @@ public class JspEditorWarmUpTask implements Runnable{
                     startTime = System.currentTimeMillis();
                 }
         
-                // Init of JSPKit and JSPOptions
-                jspKit = JEditorPane.createEditorKitForContentType("text/x-jsp"); //NOI18N
-        
-                //creating actions instances
-                jspKit.getActions();
-        
-
                 // Start of a code block that tries to force hotspot to compile
                 // the view hierarchy and related classes for faster performance
-                if (debug) {
-                    System.out.println("Kit instances initialized: " // NOI18N
-                        + (System.currentTimeMillis()-startTime));
-                    startTime = System.currentTimeMillis();
-                }
-
                 Iterator componentIterator = Registry.getComponentIterator();
                 if (!componentIterator.hasNext()) { // no components opened yet
                     status = STATUS_CREATE_PANE;
@@ -147,6 +134,12 @@ public class JspEditorWarmUpTask implements Runnable{
                 
             case STATUS_CREATE_PANE: // now create editor component and assign a kit to it
                 assert SwingUtilities.isEventDispatchThread(); // This part must run in AWT
+                
+                // Init of JSPKit and JSPOptions
+                jspKit = JEditorPane.createEditorKitForContentType("text/x-jsp"); //NOI18N
+        
+                //creating actions instances
+                jspKit.getActions();
 
                 pane = new JEditorPane();
                 pane.setEditorKit(jspKit);

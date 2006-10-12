@@ -1,5 +1,5 @@
 <netbeans-deployment>
-    <disconnected-string>jboss-deployer:http://localhost:8080</disconnected-string> 
+    <disconnected-string>jboss-deployer:http://localhost:8080&amp;</disconnected-string> 
 
     <web-context-root>
         <xpath>/</xpath>

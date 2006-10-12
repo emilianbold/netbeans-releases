@@ -28,10 +28,22 @@ import javax.servlet.jsp.tagext.TagAttributeInfo;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
+import org.netbeans.editor.ext.html.HTMLCompletionQuery;
+import org.netbeans.editor.ext.java.JCExpression;
+import org.netbeans.editor.ext.java.JavaCompletionQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.loaders.DataObject;
+
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
+import org.openide.loaders.DataObject;
+
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Method;
+
+
 
 /**
 * JSP completion support finder
@@ -104,6 +116,10 @@ public class JspCompletionQuery implements CompletionQuery {
                     return queryJspDirective(component, offset, sup, 
                         (SyntaxElement.Directive)elem, doc);
                     
+                // EXPRESSION LANGUAGE
+                case JspSyntaxSupport.EL_COMPLETION_CONTEXT:
+                    return queryEL(component, offset, sup, elem, doc);
+                    
                 // CONTENT LANGUAGE
                 case JspSyntaxSupport.CONTENTL_COMPLETION_CONTEXT :
                     // html results
@@ -138,10 +154,11 @@ public class JspCompletionQuery implements CompletionQuery {
                         }
                     }
                     
-                    //note: offset and removelength passed into the DefaultResult are not used anywhere
-                    CompletionQuery.Result result = new CompletionQuery.DefaultResult(component, 
+                    int htmlAnchorOffset = contentLResult == null || contentLResult.getData().isEmpty() ? - 1 : ((HTMLCompletionQuery.HTMLCompletionResult)contentLResult).getSubstituteOffset();
+                    
+                    CompletionQuery.Result result = new JspCompletionResult(component, 
                         NbBundle.getMessage (JSPKit.class, "CTL_JSP_Completion_Title"), all, 
-                        offset - jspData.removeLength, jspData.removeLength);
+                        offset, jspData.removeLength, htmlAnchorOffset);
                     
                     return result;
             }
@@ -234,6 +251,11 @@ public class JspCompletionQuery implements CompletionQuery {
                     }
                 }
             }
+            if(tokenPart.endsWith(">") && !tokenPart.endsWith("/>")) {
+                compItems = sup.getAutocompletedEndTag(offset);
+            }
+            
+            
         }
         
         // TAG
@@ -331,6 +353,64 @@ public class JspCompletionQuery implements CompletionQuery {
         return new CompletionData (sup.getPossibleEndTags (offset, tokenPart), removeLength);
     }
     
+    /** Gets a list of completion items for EL */
+    protected CompletionQuery.Result queryEL(JTextComponent component, int offset, JspSyntaxSupport sup, 
+        SyntaxElement elem, BaseDocument doc) throws BadLocationException {
+        ELExpression elExpr = new ELExpression (sup);
+        ArrayList complItems = new ArrayList();
+        
+        switch (elExpr.parse(offset)){
+            case ELExpression.EL_START:
+                // implicit objects
+                for (ELImplicitObjects.ELImplicitObject implOb : ELImplicitObjects.getELImplicitObjects(elExpr.getReplace())) {
+                    complItems.add(new JspCompletionItem.ELImplicitObject(implOb.getName(), implOb.getType()));
+                }
+                
+                // defined beans on the page
+                BeanData[] beans = sup.getBeanData();
+                if (beans != null){
+                    for (int i = 0; i < beans.length; i++) {
+                        if (beans[i].getId().startsWith(elExpr.getReplace()))
+                            complItems.add(new JspCompletionItem.ELBean(beans[i].getId(), beans[i].getClassName()));
+                    }
+                }
+                //Functions 
+                List functions = ELFunctions.getFunctions(sup, elExpr.getReplace());
+                Iterator iter = functions.iterator();
+                while (iter.hasNext()) {
+                    ELFunctions.Function fun = (ELFunctions.Function) iter.next();
+                    complItems.add(new JspCompletionItem.ELFunction(
+                            fun.getPrefix(), 
+                            fun.getName(), 
+                            fun.getReturnType(),
+                            fun.getParameters()));
+                }
+                break;
+            case ELExpression.EL_BEAN:
+                JavaClass bean = elExpr.getBean(elExpr.getExpression());
+                Iterator property = elExpr.getProperties(elExpr.getExpression(), bean).iterator();
+                while (property.hasNext()) {
+                    String name = (String)property.next();
+                    if (name.startsWith(elExpr.getReplace()))
+                        complItems.add(new JspCompletionItem.ELProperty(name, (String)property.next()));
+                }
+                break;
+            case ELExpression.EL_IMPLICIT:
+                ELImplicitObjects.ELImplicitObject implObj = ELImplicitObjects.getELImplicitObject(elExpr.getExpression());
+                if (implObj != null){
+                    List<ELImplicitObjects.Property> properties = implObj.getPossibbleValues(elExpr.getExpression(), sup);
+                    if (properties != null){
+                        for (ELImplicitObjects.Property prop : properties) {
+                            if (prop.getName().startsWith(elExpr.getReplace())){
+                                complItems.add(new JspCompletionItem.ELProperty(prop.getName(), prop.getType())); 
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+        return result(component, offset, new CompletionData(complItems, elExpr.getReplace().length()));
+    }
     
     /** Gets a list of JSP directives which can be completed just after <% in java scriptlet context */
     protected CompletionQuery.Result queryJspDirectiveInScriptlet(JTextComponent component, int offset, JspSyntaxSupport sup, 
@@ -434,7 +514,7 @@ public class JspCompletionQuery implements CompletionQuery {
                 if (list.size() == 1){
                     Object directive = list.get(0);
                     //is the cc invoce just after the directive?
-                    if (directive instanceof TagInfo && ((TagInfo)directive).getTagName().equals(tokenPart))
+                    if (directive instanceof TagInfo && ((TagInfo)directive).getTagName().equalsIgnoreCase(tokenPart))
                         add = false;
                 }
                 if (add){    
@@ -664,7 +744,7 @@ public class JspCompletionQuery implements CompletionQuery {
             else
                 attr = (String)item;
             boolean isThere = tagDir.getAttributes().keySet().contains(attr);
-            if (!isThere || attr.equals(currentAttr) || 
+            if (!isThere || attr.equalsIgnoreCase(currentAttr) || 
                 (currentAttr != null && attr.startsWith(currentAttr) && attr.length()>currentAttr.length() && !isThere)) {
                 if (item instanceof TagAttributeInfo)
                     //XXX This is hack for fixing issue #45302 - CC is to aggressive.
@@ -672,10 +752,10 @@ public class JspCompletionQuery implements CompletionQuery {
                     //define something like "prefix [uri | tagdir]". In the future
                     //it should be rewritten definition of declaration, which allow
                     //to do it.
-                    if ("taglib".equals(tagDir.getName())){ //NOI18N
-                        if (attr.equals("prefix")  //NOI18N
-                            || (attr.equals("uri") && !tagDir.getAttributes().keySet().contains("tagdir")) //NOI18N
-                            || (attr.equals("tagdir") && !tagDir.getAttributes().keySet().contains("uri"))) //NOI18N
+                    if ("taglib".equalsIgnoreCase(tagDir.getName())){ //NOI18N
+                        if (attr.equalsIgnoreCase("prefix")  //NOI18N
+                            || (attr.equalsIgnoreCase("uri") && !tagDir.getAttributes().keySet().contains("tagdir")) //NOI18N
+                            || (attr.equalsIgnoreCase("tagdir") && !tagDir.getAttributes().keySet().contains("uri"))) //NOI18N
                             compItemList.add(new JspCompletionItem.Attribute((TagAttributeInfo)item));
                     }
                     else {
@@ -689,9 +769,9 @@ public class JspCompletionQuery implements CompletionQuery {
     
     private CompletionQuery.Result result (JTextComponent component, int offset, CompletionData complData) {
         setResultItemsOffset(complData, offset);
-        return new CompletionQuery.DefaultResult(component, 
+        return new JspCompletionResult(component, 
                         NbBundle.getMessage (JSPKit.class, "CTL_JSP_Completion_Title"), complData.completionItems, 
-                        offset - complData.removeLength, complData.removeLength);
+                        offset, complData.removeLength, -1);
     }
     
     /** Class which encapsulates a list of completion items and length of 
@@ -720,5 +800,35 @@ public class JspCompletionQuery implements CompletionQuery {
 
         
     }
+    
+    static interface SubstituteOffsetProvider {
+        public int getSubstituteOffset();
+    }
 
+    public static class JspCompletionResult extends CompletionQuery.DefaultResult implements SubstituteOffsetProvider {
+        private int substituteOffset;
+        public JspCompletionResult(JTextComponent component, String title, List data, int offset, int len, int htmlAnchorOffset ) {
+            super(component, title, data, offset, len);
+            substituteOffset = htmlAnchorOffset == -1 ? offset - len : htmlAnchorOffset;
+        }
+        
+        public int getSubstituteOffset() {
+            return substituteOffset;
+        }
+    }
+    
+    public static class JspJavaCompletionResult extends JavaCompletionQuery.JavaResult implements SubstituteOffsetProvider {
+        private int substituteOffset;
+        public JspJavaCompletionResult(JTextComponent component, List data, String title,
+                   JCExpression substituteExp, int substituteOffset,
+                   int substituteLength, int classDisplayOffset) {
+            super(component, data, title, null, substituteOffset, substituteLength, 0);
+            this.substituteOffset = substituteOffset;
+        }
+        
+        public int getSubstituteOffset() {
+            return substituteOffset;
+        }
+    }
+    
 }

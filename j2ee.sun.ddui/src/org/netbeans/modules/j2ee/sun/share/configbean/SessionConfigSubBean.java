@@ -108,6 +108,10 @@ public class SessionConfigSubBean {
 //		loadFromPlanFile(getConfig());	// !PW handled by WebAppRoot
 	}
 	
+    public Base getParent() {
+        return webAppRoot;
+    }
+	
 	/** Getter for property persistenceType.
 	 * @return Value of property persistenceType.
 	 *
@@ -149,7 +153,7 @@ public class SessionConfigSubBean {
 	 */
 	public void setManagerProperties(ManagerProperties newManagerProperties) throws java.beans.PropertyVetoException {
 		if(newManagerProperties == null) {
-			newManagerProperties = StorageBeanFactory.getDefault().createManagerProperties();
+			newManagerProperties = webAppRoot.getConfig().getStorageFactory().createManagerProperties();
 		}
 		
 		ManagerProperties oldManagerProperties = this.managerProperties;
@@ -174,7 +178,7 @@ public class SessionConfigSubBean {
 	 */
 	public void setStoreProperties(StoreProperties newStoreProperties) throws java.beans.PropertyVetoException {
 		if(newStoreProperties == null) {
-			newStoreProperties = StorageBeanFactory.getDefault().createStoreProperties();
+			newStoreProperties = webAppRoot.getConfig().getStorageFactory().createStoreProperties();
 		}
 		
 		StoreProperties oldStoreProperties = this.storeProperties;
@@ -199,7 +203,7 @@ public class SessionConfigSubBean {
 	 */
 	public void setSessionProperties(SessionProperties newSessionProperties) throws java.beans.PropertyVetoException {
 		if(newSessionProperties == null) {
-			newSessionProperties = StorageBeanFactory.getDefault().createSessionProperties();
+			newSessionProperties = webAppRoot.getConfig().getStorageFactory().createSessionProperties();
 		}
 		
 		SessionProperties oldSessionProperties = this.sessionProperties;
@@ -224,7 +228,7 @@ public class SessionConfigSubBean {
 	 */
 	public void setCookieProperties(CookieProperties newCookieProperties) throws java.beans.PropertyVetoException {
 		if(newCookieProperties == null) {
-			newCookieProperties = StorageBeanFactory.getDefault().createCookieProperties();
+			newCookieProperties = webAppRoot.getConfig().getStorageFactory().createCookieProperties();
 		}
 		
 		CookieProperties oldCookieProperties = this.cookieProperties;
@@ -246,7 +250,9 @@ public class SessionConfigSubBean {
             }
 
 			public CommonDDBean getDDSnippet() {
-				SessionConfig sessionConfig = StorageBeanFactory.getDefault().createSessionConfig();
+				SessionConfig sessionConfig = webAppRoot.getConfig().getStorageFactory().createSessionConfig();
+                String version = webAppRoot.getAppServerVersion().getWebAppVersionAsString();
+                
 				SessionManager sessionManager = sessionConfig.newSessionManager();
 				boolean hasSessionManager = false;
 				
@@ -261,13 +267,13 @@ public class SessionConfigSubBean {
 
 				ManagerProperties mp = getManagerProperties();
 				if(mp.sizeWebProperty() > 0) {
-					sessionManager.setManagerProperties((ManagerProperties) mp.clone());
+					sessionManager.setManagerProperties((ManagerProperties) mp.cloneVersion(version));
 					hasSessionManager = true;
 				}
 
 				StoreProperties sp = getStoreProperties();
 				if(sp.sizeWebProperty() > 0) {
-					sessionManager.setStoreProperties((StoreProperties) sp.clone());
+					sessionManager.setStoreProperties((StoreProperties) sp.cloneVersion(version));
 					hasSessionManager = true;
 				}
 
@@ -277,12 +283,12 @@ public class SessionConfigSubBean {
 
 				SessionProperties ssp = getSessionProperties();
 				if(ssp.sizeWebProperty() > 0) {
-					sessionConfig.setSessionProperties((SessionProperties) ssp.clone());
+					sessionConfig.setSessionProperties((SessionProperties) ssp.cloneVersion(version));
 				}
 
 				CookieProperties cp = getCookieProperties();
 				if(cp.sizeWebProperty() > 0) {
-					sessionConfig.setCookieProperties((CookieProperties) cp.clone());
+					sessionConfig.setCookieProperties((CookieProperties) cp.cloneVersion(version));
 				}
 				
 				return sessionConfig;
@@ -409,7 +415,7 @@ public class SessionConfigSubBean {
 	}
 	
 	protected void clearProperties() {
-        StorageBeanFactory beanFactory = StorageBeanFactory.getDefault();
+        StorageBeanFactory beanFactory = webAppRoot.getConfig().getStorageFactory();
         
 		persistenceType = null;
 		managerProperties = beanFactory.createManagerProperties();

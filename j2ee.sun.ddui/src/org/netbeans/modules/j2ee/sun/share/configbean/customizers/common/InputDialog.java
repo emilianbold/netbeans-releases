@@ -24,17 +24,18 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
 // AWT
-import java.awt.Frame;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -48,9 +49,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JComponent;
-import javax.swing.JTextArea;
-import javax.swing.JScrollPane;
 
 // NetBeans
 import org.openide.util.HelpCtx;
@@ -83,20 +81,22 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 
 	private static final ResourceBundle bundle = ResourceBundle.getBundle(
 		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle"); //NOI18N
-	
+
+    
 	private int chosenOption;
 	private JPanel buttonPanel;
 	private JButton okButton;
 	private JButton helpButton;
-	private JTextArea errorTextArea;
+	private JPanel messagePanel;
 	private List errorList;
+    private List warningList;
 
 	/** Creates a new instance of modal InputDialog
 	 *  @param panel the panel from this dialog is opened
 	 *  @param title title for the dialog
 	 */
 	public InputDialog(JPanel panel, String title) {
-		this(panel, title, false);
+		this(panel, title, false, false);
 	}
 
 	/** Creates a new instance of modal InputDialog
@@ -106,6 +106,19 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 	 *   message in the lower left hand corner.
 	 */
 	public InputDialog(JPanel panel, String title, boolean showRequiredNote) {
+        this(panel, title, showRequiredNote, false);
+    }
+    
+	/** Creates a new instance of modal InputDialog
+	 *  @param panel the panel from this dialog is opened
+	 *  @param title title for the dialog
+	 *  @param showRequiredNote set this if you want a '* denotes required field'
+	 *   message in the lower left hand corner.
+     *  @param resizeMsg set this to true if you want the error message panel to
+     *   resize vertically if the user expands the dialog.  Useful for dialogs that
+     *   can have multiple warnings.
+	 */
+	public InputDialog(JPanel panel, String title, boolean showRequiredNote, boolean resizeMsg) {
 		super(getFrame(panel), title, true);
 
 		addWindowListener(new WindowAdapter(){
@@ -114,7 +127,22 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 			}
 		});
 
-		getContentPane().setLayout(new BorderLayout());
+        Object buttonPanelConstraints;
+        
+        if(!resizeMsg) {
+            // default to borderlayout...
+            getContentPane().setLayout(new BorderLayout());
+            buttonPanelConstraints = BorderLayout.SOUTH;
+        } else {
+            // for resizing button panels, we need gridbag.
+            getContentPane().setLayout(new GridBagLayout());
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.anchor = GridBagConstraints.SOUTH;
+            constraints.gridwidth = GridBagConstraints.REMAINDER;
+            constraints.fill = GridBagConstraints.HORIZONTAL;
+            constraints.weightx = 1.0;
+            buttonPanelConstraints = constraints;
+        }
 
 		// Create button panel -- using gridbaglayout now due to possible 
 		// message label on left hand side (in addition to buttons on right
@@ -122,38 +150,30 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 		buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridBagLayout());
 
-		errorTextArea = new JTextArea();
-		errorTextArea.setEditable(false);
-		errorTextArea.setOpaque(false);
-		errorTextArea.setForeground(BeanCustomizer.ErrorTextForegroundColor);
-		errorTextArea.setRows(2);	// Two lines, just because.
-		errorTextArea.setLineWrap(true);
-		errorTextArea.setWrapStyleWord(true);
-		errorTextArea.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ErrorTextArea"));	// NOI18N
-		errorTextArea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ErrorTextArea"));	// NOI18N
+        messagePanel = new JPanel();
+        messagePanel.setLayout(new GridBagLayout());
+		messagePanel.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ErrorTextArea")); // NOI18N
+		messagePanel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ErrorTextArea")); // NOI18N
 
-		JScrollPane errorScrollPane = new JScrollPane();
-		errorScrollPane.setBorder(null);
-		errorScrollPane.setViewportView(errorTextArea);
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.insets = new Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new Insets(6,12,5,11);
 		gridBagConstraints.weightx = 1.0;
-		buttonPanel.add(errorScrollPane, gridBagConstraints);
+		buttonPanel.add(messagePanel, gridBagConstraints);
 
 		if(showRequiredNote) {
 			JLabel requiredNote = new JLabel();
-			requiredNote.setText(bundle.getString("LBL_RequiredMessage"));	// NOI18N
+			requiredNote.setText(bundle.getString("LBL_RequiredMessage")); // NOI18N
 			gridBagConstraints = new GridBagConstraints();
-			gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints.insets = new Insets(6,12,11,5);
 			gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
 			buttonPanel.add(requiredNote, gridBagConstraints);
 		}
 
-		okButton = new JButton(bundle.getString("LBL_OK"));    // NOI18N
+		okButton = new JButton(bundle.getString("LBL_OK")); // NOI18N
 		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints.insets = new Insets(6,6,11,5);
 		gridBagConstraints.anchor = GridBagConstraints.EAST;
 		gridBagConstraints.weightx = 1.0;
 		okButton.addActionListener(new ActionListener(){
@@ -168,7 +188,7 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 
 		JButton cancelButton = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
 		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints.insets = new Insets(6,0,11,5);
 		gridBagConstraints.anchor = GridBagConstraints.EAST;
 		cancelButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
@@ -184,7 +204,7 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 		helpButton.setMnemonic(bundle.getString("MNE_Help").charAt(0));	// NOI18N
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints.insets = new Insets(6,0,11,11);
 		gridBagConstraints.anchor = GridBagConstraints.EAST;
 		helpButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
@@ -196,15 +216,16 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 		helpButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Help"));	// NOI18N
 		buttonPanel.add(helpButton, gridBagConstraints);
 
-		getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+		getContentPane().add(buttonPanel, buttonPanelConstraints);
 		getRootPane().setDefaultButton(okButton);
 	}
-	
+
+    
 	/** Displays the dialog.
 	 *  @return identifies whether the OK button or Cancel button was selected
 	 */        
 	public int display() {
-		super.show();
+        this.setVisible(true);
 		return chosenOption;
 	}
 
@@ -240,12 +261,12 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 		int width = rect.width;
 		int height = rect.height;
 		java.awt.Rectangle panelRect = panel.getBounds();
-		if (width> panelRect.width || height> panelRect.height) {
+		if (width > panelRect.width || height > panelRect.height) {
 			setLocationRelativeTo(panel);
 		} else {
 			java.awt.Point location = panel.getLocationOnScreen();
-			setLocation(location.x + (panelRect.width-width)/2, 
-				location.y + (panelRect.height-height)/2);
+			setLocation(location.x + (panelRect.width - width) / 2, 
+				location.y + (panelRect.height - height) / 2);
 		}
 	}
 
@@ -256,46 +277,106 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 	protected void setOkEnabled(boolean flag) {
 		okButton.setEnabled(flag);
 	}
-
-
+    
 	/** Shows the errors at the top of dialog panel.
 	 *  Set focus to the focused component.
 	 */    
 	public void showErrors() {
-		boolean hasErrors;
-		String errorString;
+		boolean hasErrors = false;
+        boolean hasWarnings = false;
+        
+        // clear existing errors first.
+        messagePanel.removeAll();
+        
+        if(warningList != null & warningList.size() > 0) {
+            hasWarnings = true;
+            
+            for(Iterator iter = warningList.iterator(); iter.hasNext();) {
+                String message = iter.next().toString();
+                
+                // Add warning message
+                JLabel label = new JLabel();
+                label.setIcon(BaseCustomizer.warningMessageIcon);
+                label.setText("<html>" + message + "</html>"); // NOI18N
+                label.getAccessibleContext().setAccessibleName(bundle.getString("ASCN_WarningMessage")); // NOI18N
+                label.getAccessibleContext().setAccessibleDescription(message);
+                label.setForeground(BaseCustomizer.getWarningForegroundColor());
 
-		if(errorList != null && errorList.size() > 0) {
-			StringBuffer errorBuf = new StringBuffer(100 * errorList.size());
-			for(Iterator iter = errorList.iterator(); iter.hasNext();) {
-				errorBuf.append(iter.next().toString());
-				if(iter.hasNext()) {
-					errorBuf.append("\n"); // NOI18N
-				}
-			}
-			
-			hasErrors = true;
-			errorString = errorBuf.toString();
-		} else {
-			hasErrors = false;
-			errorString = "";	// NOI18N
-		}
+                GridBagConstraints constraints = new GridBagConstraints();
+                constraints.gridwidth = GridBagConstraints.REMAINDER;
+                constraints.fill = GridBagConstraints.HORIZONTAL;
+                constraints.weightx = 1.0;
+                messagePanel.add(label, constraints);
+            }
+        }
+
+        if(errorList != null & errorList.size() > 0) {
+            hasErrors = true;
+            for(Iterator iter = errorList.iterator(); iter.hasNext();) {
+                String message = iter.next().toString();
+                
+                // Add error message
+                JLabel label = new JLabel();
+                label.setIcon(BaseCustomizer.errorMessageIcon);
+                label.setText("<html>" + message + "</html>"); // NOI18N
+                label.getAccessibleContext().setAccessibleName(bundle.getString("ASCN_ErrorMessage")); // NOI18N
+                label.getAccessibleContext().setAccessibleDescription(message);
+                label.setForeground(BaseCustomizer.getErrorForegroundColor());
+
+                GridBagConstraints constraints = new GridBagConstraints();
+                constraints.gridwidth = GridBagConstraints.REMAINDER;
+                constraints.fill = GridBagConstraints.HORIZONTAL;
+                constraints.weightx = 1.0;
+                messagePanel.add(label, constraints);
+            }
+        }
+       
+        // Layout the dialog again to account for new or removed messages.  validate()
+        // is not used here because the dialog may need to be resized to look nice.
+        pack();
 		
-		// Display errors (if any) and disable/enable the OkButton as appropriate
-		errorTextArea.setText(errorString);
+		// Display errors and warnings (if any) and disable/enable the OkButton as appropriate
 		setOkEnabled(!hasErrors);
 	}
 
+    protected void setErrors(Collection errors, Collection warnings) {
+        warningList = new ArrayList(warnings);
+		errorList = new ArrayList(errors);
+		showErrors();
+    }
 	
 	/** Sets the existing error list to the collection of errors passed in.
 	 *  @param errors Collection of error messages.
 	 */
 	protected void setErrors(Collection errors) {
-		errorList = new ArrayList(errors);
-		showErrors();
+        setErrors(errors, Collections.EMPTY_LIST);
 	}
 
+	/** Adds an warning string to the warning list.
+	 *  @param warning error message
+	 */
+	public void addWarning(String warning) {
+		if(warningList == null) {
+			warningList = new ArrayList();
+		}
+		
+		warningList.add(warning);
+		showErrors();
+	}
 	
+	/** Adds a collection of warnings to the warning list.
+	 *  @param warnings Collection of warning messages.
+	 */
+	protected void addWarnings(Collection warnings) {
+		if(warningList == null) {
+			warningList = new ArrayList(warnings);
+		} else {
+			warningList.addAll(warnings);
+		}
+		
+		showErrors();
+	}
+    
 	/** Adds an error string to the error list.
 	 *  @param error error message
 	 */
@@ -307,7 +388,6 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 		errorList.add(error);
 		showErrors();
 	}
-	
 	
 	/** Adds a collection of errors to the error list.
 	 *  @param errors Collection of error messages.
@@ -326,6 +406,7 @@ public abstract class InputDialog extends JDialog implements HelpCtx.Provider {
 	/** Clears out all error messages.
 	 */
 	protected void clearErrors() {
+        warningList = null;
 		errorList = null;
 		showErrors();
 	}

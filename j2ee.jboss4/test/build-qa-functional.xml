@@ -50,10 +50,10 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="${jboss.server.path}/server/default/deploy/JBoss4EjbTest.jar"/>
         <delete dir="${jboss.server.path}/server/default/tmp/*.*"/>
         <copy todir="${xtest.tmpdir}/JBoss4EjbTest">
-            <fileset dir="qa-functional/data/JBoss4EjbTest"/>
+            <fileset dir="${xtest.data}/JBoss4EjbTest"/>
         </copy>
         <copy todir="${xtest.tmpdir}/JBoss4WebTest">
-            <fileset dir="qa-functional/data/JBoss4WebTest"/>
+            <fileset dir="${xtest.data}/JBoss4WebTest"/>
         </copy>
         <executeTests pluginname="ide"/>
         <delete dir="${xtest.tmpdir}/JBoss4WebTest"/>

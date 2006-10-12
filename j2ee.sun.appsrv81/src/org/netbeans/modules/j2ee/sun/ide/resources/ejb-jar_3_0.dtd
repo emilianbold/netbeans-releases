@@ -1,0 +1,756 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+	This is the root of the ejb-jar deployment descriptor.
+
+      -->
+<!ELEMENT ejb-jar ((description*, display-name*, icon*), enterprise-beans?, interceptors?, relationships?, assembly-descriptor?, ejb-client-jar?)>
+<!ATTLIST ejb-jar
+	version CDATA #FIXED "3.0"
+	metadata-complete NMTOKEN #IMPLIED
+	id ID #IMPLIED
+>
+<!--
+
+	    The activation-config-property-name element contains
+	    the name for an activation configuration property of
+	    a message-driven bean.
+
+	    For JMS message-driven beans, the following property
+	    names are recognized: acknowledgeMode,
+	    messageSelector, destinationType, subscriptionDurability
+
+	  -->
+<!ELEMENT activation-config-property-name (#PCDATA)>
+<!ATTLIST activation-config-property-name
+	id ID #IMPLIED
+>
+<!--
+
+	    The activation-config-property-value element
+	    contains the value for an activation configuration
+	    property of a message-driven bean.
+
+	  -->
+<!ELEMENT activation-config-property-value (#PCDATA)>
+<!ATTLIST activation-config-property-value
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT activation-config-property (activation-config-property-name, activation-config-property-value)>
+<!ATTLIST activation-config-property
+	id ID #IMPLIED
+>
+<!ELEMENT exception-class (#PCDATA)>
+<!ATTLIST exception-class
+	id ID #IMPLIED
+>
+<!ELEMENT rollback (#PCDATA)>
+<!ATTLIST rollback
+	id ID #IMPLIED
+>
+<!ELEMENT class (#PCDATA)>
+<!ATTLIST class
+	id ID #IMPLIED
+>
+<!ELEMENT method-name (#PCDATA)>
+<!ATTLIST method-name
+	id ID #IMPLIED
+>
+<!ELEMENT security-role (description*, role-name)>
+<!ATTLIST security-role
+	id ID #IMPLIED
+>
+<!ELEMENT method-permission (description*, (role-name+ | unchecked), method+)>
+<!ATTLIST method-permission
+	id ID #IMPLIED
+>
+<!ELEMENT container-transaction (description*, method+, trans-attribute)>
+<!ATTLIST container-transaction
+	id ID #IMPLIED
+>
+<!ELEMENT interceptor-binding (description*, ejb-name, (interceptor-class* | interceptor-order), exclude-default-interceptors?, exclude-class-interceptors?, method?)>
+<!ATTLIST interceptor-binding
+	id ID #IMPLIED
+>
+<!ELEMENT message-destination ((description*, display-name*, icon*), message-destination-name, mapped-name?)>
+<!ATTLIST message-destination
+	id ID #IMPLIED
+>
+<!ELEMENT exclude-list (description*, method+)>
+<!ATTLIST exclude-list
+	id ID #IMPLIED
+>
+<!ELEMENT application-exception (exception-class, rollback?)>
+<!ATTLIST application-exception
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!--
+
+	    The field-name element specifies the name of a
+	    container managed field.
+
+	    The name of the cmp-field of an entity bean with
+	    cmp-version 2.x must begin with a lowercase
+	    letter. This field is accessed by methods whose
+	    names consists of the name of the field specified by
+	    field-name in which the first letter is uppercased,
+	    prefixed by &quotget&quot or &quotset&quot.
+
+	    The name of the cmp-field of an entity bean with
+	    cmp-version 1.x must denote a public field of the
+	    enterprise bean class or one of its superclasses.
+
+	  -->
+<!ELEMENT field-name (#PCDATA)>
+<!ATTLIST field-name
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!--
+
+	    The cmr-field-name element specifies the name of a
+	    logical relationship field in the entity bean
+	    class. The name of the cmr-field must begin with a
+	    lowercase letter. This field is accessed by methods
+	    whose names consist of the name of the field
+	    specified by cmr-field-name in which the first
+	    letter is uppercased, prefixed by &quotget&quot or &quotset&quot.
+
+	  -->
+<!ELEMENT cmr-field-name (#PCDATA)>
+<!ATTLIST cmr-field-name
+	id ID #IMPLIED
+>
+<!ELEMENT cmr-field-type (#PCDATA)>
+<!ATTLIST cmr-field-type
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT method (description*, ejb-name, method-intf?, method-name, method-params?)>
+<!ATTLIST method
+	id ID #IMPLIED
+>
+<!ELEMENT trans-attribute (#PCDATA)>
+<!ATTLIST trans-attribute
+	id ID #IMPLIED
+>
+<!ELEMENT enterprise-beans (session | entity | message-driven)+>
+<!ATTLIST enterprise-beans
+	id ID #IMPLIED
+>
+<!ELEMENT interceptors (description*, interceptor+)>
+<!ATTLIST interceptors
+	id ID #IMPLIED
+>
+<!ELEMENT relationships (description*, ejb-relation+)>
+<!ATTLIST relationships
+	id ID #IMPLIED
+>
+<!--
+
+	    Providing an assembly-descriptor in the deployment
+	    descriptor is optional for the ejb-jar file
+	    producer.
+
+	  -->
+<!ELEMENT assembly-descriptor (security-role*, method-permission*, container-transaction*, interceptor-binding*, message-destination*, 
+        exclude-list?, application-exception*)>
+<!ATTLIST assembly-descriptor
+	id ID #IMPLIED
+>
+<!--
+
+	      The optional ejb-client-jar element specifies a JAR
+	      file that contains the class files necessary for a
+	      client program to access the
+	      enterprise beans in the ejb-jar file.
+
+	      Example:
+
+		  &ltejb-client-jar&gtemployee_service_client.jar
+		  &lt/ejb-client-jar&gt
+
+	      -->
+<!ELEMENT ejb-client-jar (#PCDATA)>
+<!ATTLIST ejb-client-jar
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!--
+
+	    The ejb-relation-name element provides a unique name
+	    within the ejb-jar file for a relationship.
+
+	  -->
+<!ELEMENT ejb-relation-name (#PCDATA)>
+<!ATTLIST ejb-relation-name
+	id ID #IMPLIED
+>
+<!ELEMENT ejb-relationship-role (description*, ejb-relationship-role-name?, multiplicity, cascade-delete?, relationship-role-source, cmr-field?)>
+<!ATTLIST ejb-relationship-role
+	id ID #IMPLIED
+>
+
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!--
+
+	    The ejb-relationship-role-name element defines a
+	    name for a role that is unique within an
+	    ejb-relation. Different relationships can use the
+	    same name for a role.
+
+	  -->
+<!ELEMENT ejb-relationship-role-name (#PCDATA)>
+<!ATTLIST ejb-relationship-role-name
+	id ID #IMPLIED
+>
+<!ELEMENT multiplicity (#PCDATA)>
+<!ATTLIST multiplicity
+	id ID #IMPLIED
+>
+<!--
+
+	    The cascade-delete element specifies that, within a
+	    particular relationship, the lifetime of one or more
+	    entity beans is dependent upon the lifetime of
+	    another entity bean. The cascade-delete element can
+	    only be specified for an ejb-relationship-role
+	    element contained in an ejb-relation element in
+	    which the other ejb-relationship-role
+	    element specifies a multiplicity of One.
+
+	  -->
+<!ELEMENT cascade-delete EMPTY>
+<!ATTLIST cascade-delete
+	id ID #IMPLIED
+>
+<!ELEMENT relationship-role-source (description*, ejb-name)>
+<!ATTLIST relationship-role-source
+	id ID #IMPLIED
+>
+<!ELEMENT cmr-field (description*, cmr-field-name, (cmr-field-type)?)>
+<!ATTLIST cmr-field
+	id ID #IMPLIED
+>
+<!ELEMENT session ((description*, display-name*, icon*), ejb-name, mapped-name?, home?, remote?, local-home?, local?, 
+            business-local*, business-remote*, service-endpoint?, ejb-class?, session-type?, timeout-method?, init-method*, remove-method*, 
+            transaction-type?, around-invoke*, (env-entry*, ejb-ref*, ejb-local-ref*, service-ref*, resource-ref*, 
+            resource-env-ref*, message-destination-ref*, persistence-context-ref*, persistence-unit-ref*, post-construct*, 
+            pre-destroy*), post-activate*, pre-passivate*, security-role-ref*, security-identity?)>
+<!ATTLIST session
+	id ID #IMPLIED
+>
+<!ELEMENT entity ((description*, display-name*, icon*), ejb-name, mapped-name?, home?, remote?, local-home?, local?, 
+            ejb-class, persistence-type, prim-key-class, reentrant, cmp-version?, abstract-schema-name?, cmp-field*, primkey-field?,
+             (env-entry*, ejb-ref*, ejb-local-ref*, service-ref*, resource-ref*, resource-env-ref*, message-destination-ref*,
+              persistence-context-ref*, persistence-unit-ref*, post-construct*, pre-destroy*), security-role-ref*, security-identity?, query*)>
+<!ATTLIST entity
+	id ID #IMPLIED
+>
+<!ELEMENT message-driven ((description*, display-name*, icon*), ejb-name, mapped-name?, ejb-class?, messaging-type?, timeout-method?, 
+            transaction-type?, message-destination-type?, message-destination-link?, activation-config?, around-invoke*, 
+            (env-entry*, ejb-ref*, ejb-local-ref*, service-ref*, resource-ref*, resource-env-ref*, message-destination-ref*, 
+            persistence-context-ref*, persistence-unit-ref*, post-construct*, pre-destroy*), security-identity?)>
+<!ATTLIST message-driven
+	id ID #IMPLIED
+>
+<!ELEMENT ejb-name (#PCDATA)>
+<!ATTLIST ejb-name
+	id ID #IMPLIED
+>
+<!ELEMENT mapped-name (#PCDATA)>
+<!ATTLIST mapped-name
+	id ID #IMPLIED
+>
+<!ELEMENT home (#PCDATA)>
+<!ATTLIST home
+	id ID #IMPLIED
+>
+<!ELEMENT remote (#PCDATA)>
+<!ATTLIST remote
+	id ID #IMPLIED
+>
+<!ELEMENT local-home (#PCDATA)>
+<!ATTLIST local-home
+	id ID #IMPLIED
+>
+<!ELEMENT local (#PCDATA)>
+<!ATTLIST local
+	id ID #IMPLIED
+>
+<!ELEMENT ejb-class (#PCDATA)>
+<!ATTLIST ejb-class
+	id ID #IMPLIED
+>
+<!ELEMENT persistence-type (#PCDATA)>
+<!ATTLIST persistence-type
+	id ID #IMPLIED
+>
+<!--
+
+	    The prim-key-class element contains the
+	    fully-qualified name of an
+	    entity bean&aposs primary key class.
+
+	    If the definition of the primary key class is
+	    deferred to deployment time, the prim-key-class
+	    element should specify java.lang.Object.
+
+	  -->
+<!ELEMENT prim-key-class (#PCDATA)>
+<!ATTLIST prim-key-class
+	id ID #IMPLIED
+>
+<!--
+
+	    The reentrant element specifies whether an entity
+	    bean is reentrant or not.
+
+	    The reentrant element must be one of the two
+	    following: true or false
+
+	  -->
+<!ELEMENT reentrant (#PCDATA)>
+<!ATTLIST reentrant
+	id ID #IMPLIED
+>
+<!ELEMENT cmp-version (#PCDATA)>
+<!ATTLIST cmp-version
+	id ID #IMPLIED
+>
+<!--
+
+	    The abstract-schema-name element specifies the name
+	    of the abstract schema type of an entity bean with
+	    cmp-version 2.x. It is used in EJB QL queries.
+
+	    For example, the abstract-schema-name for an entity
+	    bean whose local interface is
+	    com.acme.commerce.Order might be Order.
+
+	  -->
+<!ELEMENT abstract-schema-name (#PCDATA)>
+<!ATTLIST abstract-schema-name
+	id ID #IMPLIED
+>
+<!ELEMENT cmp-field (description*, field-name)>
+<!ATTLIST cmp-field
+	id ID #IMPLIED
+>
+<!--
+
+	    The primkey-field element is used to specify the
+	    name of the primary key field for an entity with
+	    container-managed persistence.
+
+	    The primkey-field must be one of the fields declared
+	    in the cmp-field element, and the type of the field
+	    must be the same as the primary key type.
+
+	    The primkey-field element is not used if the primary
+	    key maps to multiple container-managed fields
+	    (i.e. the key is a compound key). In this case, the
+	    fields of the primary key class must be public, and
+	    their names must correspond to the field names of
+	    the entity bean class that comprise the key.
+
+	  -->
+<!ELEMENT primkey-field (#PCDATA)>
+<!ATTLIST primkey-field
+	id ID #IMPLIED
+>
+<!ELEMENT security-role-ref (description*, role-name, role-link?)>
+<!ATTLIST security-role-ref
+	id ID #IMPLIED
+>
+<!ELEMENT security-identity (description*, (use-caller-identity | run-as))>
+<!ATTLIST security-identity
+	id ID #IMPLIED
+>
+<!ELEMENT query (description?, query-method, result-type-mapping?, ejb-ql)>
+<!ATTLIST query
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT method (description*, ejb-name, method-intf?, method-name, method-params?)>
+<!ATTLIST method
+	id ID #IMPLIED
+>
+<!ELEMENT create-method (method-name, method-params?)>
+<!ATTLIST create-method
+	id ID #IMPLIED
+>
+<!ELEMENT bean-method (method-name, method-params?)>
+<!ATTLIST bean-method
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT ejb-name (#PCDATA)>
+<!ATTLIST ejb-name
+	id ID #IMPLIED
+>
+<!ELEMENT interceptor-class (#PCDATA)>
+<!ATTLIST interceptor-class
+	id ID #IMPLIED
+>
+<!ELEMENT interceptor-order (interceptor-class+)>
+<!ATTLIST interceptor-order
+	id ID #IMPLIED
+>
+<!ELEMENT exclude-default-interceptors (#PCDATA)>
+<!ATTLIST exclude-default-interceptors
+	id ID #IMPLIED
+>
+<!ELEMENT exclude-class-interceptors (#PCDATA)>
+<!ATTLIST exclude-class-interceptors
+	id ID #IMPLIED
+>
+<!ELEMENT method (method-name, method-params?)>
+<!ATTLIST method
+	id ID #IMPLIED
+>
+<!ELEMENT interceptor-class (#PCDATA)>
+<!ATTLIST interceptor-class
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT interceptor-class (#PCDATA)>
+<!ATTLIST interceptor-class
+	id ID #IMPLIED
+>
+<!ELEMENT around-invoke (class?, method-name)>
+<!ELEMENT post-activate (lifecycle-callback-class?, lifecycle-callback-method)>
+<!ELEMENT pre-passivate (lifecycle-callback-class?, lifecycle-callback-method)>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT interceptor (description*, interceptor-class, around-invoke*, (env-entry*, ejb-ref*, ejb-local-ref*, 
+        service-ref*, resource-ref*, resource-env-ref*, message-destination-ref*, 
+        (persistence-context-ref*, persistence-unit-ref*, post-construct*, pre-destroy*), 
+        post-activate*, pre-passivate*)>
+<!ATTLIST interceptor
+	id ID #IMPLIED
+>
+<!ELEMENT ejb-name (#PCDATA)>
+<!ATTLIST ejb-name
+	id ID #IMPLIED
+>
+<!ELEMENT mapped-name (#PCDATA)>
+<!ATTLIST mapped-name
+	id ID #IMPLIED
+>
+<!--
+
+             The ejb-class element specifies the fully qualified name
+             of the bean class for this ejb.  It is required unless
+             there is a component-defining annotation for the same
+             ejb-name.
+
+          -->
+<!ELEMENT ejb-class (#PCDATA)>
+<!ATTLIST ejb-class
+	id ID #IMPLIED
+>
+<!--
+
+	    The messaging-type element specifies the message
+	    listener interface of the message-driven bean.
+
+	  -->
+<!ELEMENT messaging-type (#PCDATA)>
+<!ATTLIST messaging-type
+	id ID #IMPLIED
+>
+<!ELEMENT timeout-method (method-name, method-params?)>
+<!ATTLIST timeout-method
+	id ID #IMPLIED
+>
+<!ELEMENT transaction-type (#PCDATA)>
+<!ATTLIST transaction-type
+	id ID #IMPLIED
+>
+<!ELEMENT message-destination-type (#PCDATA)>
+<!ATTLIST message-destination-type
+	id ID #IMPLIED
+>
+<!ELEMENT message-destination-link (#PCDATA)>
+<!ATTLIST message-destination-link
+	id ID #IMPLIED
+>
+<!ELEMENT activation-config (description*, activation-config-property+)>
+<!ATTLIST activation-config
+	id ID #IMPLIED
+>
+<!ELEMENT around-invoke (class?, method-name)>
+<!ELEMENT security-identity (description*, (use-caller-identity | run-as))>
+<!ATTLIST security-identity
+	id ID #IMPLIED
+>
+<!--
+
+	    The method-param element contains a primitive
+	    or a fully-qualified Java type name of a method
+	    parameter.
+
+	  -->
+<!ELEMENT method-param (#PCDATA)>
+<!ATTLIST method-param
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT role-name (#PCDATA)>
+<!ATTLIST role-name
+	id ID #IMPLIED
+>
+<!--
+
+	      The unchecked element specifies that a method is
+	      not checked for authorization by the container
+	      prior to invocation of the method.
+
+	    -->
+<!ELEMENT unchecked EMPTY>
+<!ATTLIST unchecked
+	id ID #IMPLIED
+>
+<!ELEMENT method (description*, ejb-name, method-intf?, method-name, method-params?)>
+<!ATTLIST method
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT ejb-name (#PCDATA)>
+<!ATTLIST ejb-name
+	id ID #IMPLIED
+>
+<!ELEMENT method-intf (#PCDATA)>
+<!ATTLIST method-intf
+	id ID #IMPLIED
+>
+<!ELEMENT method-name (#PCDATA)>
+<!ATTLIST method-name
+	id ID #IMPLIED
+>
+<!ELEMENT method-params (method-param*)>
+<!ATTLIST method-params
+	id ID #IMPLIED
+>
+
+
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT query-method (method-name, method-params)>
+<!ATTLIST query-method
+	id ID #IMPLIED
+>
+<!ELEMENT result-type-mapping (#PCDATA)>
+<!ATTLIST result-type-mapping
+	id ID #IMPLIED
+>
+<!ELEMENT ejb-ql (#PCDATA)>
+<!ATTLIST ejb-ql
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT ejb-name (#PCDATA)>
+<!ATTLIST ejb-name
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!ELEMENT ejb-relation (description*, ejb-relation-name?, ejb-relationship-role, ejb-relationship-role)>
+<!ATTLIST ejb-relation
+	id ID #IMPLIED
+>
+<!ELEMENT bean-method (method-name, method-params?)>
+<!ATTLIST bean-method
+	id ID #IMPLIED
+>
+<!ELEMENT retain-if-exception (#PCDATA)>
+<!ATTLIST retain-if-exception
+	id ID #IMPLIED
+>
+<!ELEMENT description (#PCDATA)>
+<!ATTLIST description
+	id ID #IMPLIED
+	default_NS_1_prefixlang CDATA #IMPLIED
+>
+<!--
+
+	      The use-caller-identity element specifies that
+	      the caller&aposs security identity be used as the
+	      security identity for the execution of the
+	      enterprise bean&aposs methods.
+
+	    -->
+<!ELEMENT use-caller-identity EMPTY>
+<!ATTLIST use-caller-identity
+	id ID #IMPLIED
+>
+<!ELEMENT run-as (description*, role-name)>
+<!ATTLIST run-as
+	id ID #IMPLIED
+>
+<!ELEMENT ejb-name (#PCDATA)>
+<!ATTLIST ejb-name
+	id ID #IMPLIED
+>
+<!ELEMENT mapped-name (#PCDATA)>
+<!ATTLIST mapped-name
+	id ID #IMPLIED
+>
+<!ELEMENT home (#PCDATA)>
+<!ATTLIST home
+	id ID #IMPLIED
+>
+<!ELEMENT remote (#PCDATA)>
+<!ATTLIST remote
+	id ID #IMPLIED
+>
+<!ELEMENT local-home (#PCDATA)>
+<!ATTLIST local-home
+	id ID #IMPLIED
+>
+<!ELEMENT local (#PCDATA)>
+<!ATTLIST local
+	id ID #IMPLIED
+>
+<!ELEMENT business-local (#PCDATA)>
+<!ATTLIST business-local
+	id ID #IMPLIED
+>
+<!ELEMENT business-remote (#PCDATA)>
+<!ATTLIST business-remote
+	id ID #IMPLIED
+>
+<!--
+
+	    The service-endpoint element contains the
+	    fully-qualified name of the enterprise bean&aposs web
+	    service endpoint interface. The service-endpoint
+	    element may only be specified for a stateless
+	    session bean. The specified interface must be a
+	    valid JAX-RPC service endpoint interface.
+
+	  -->
+<!ELEMENT service-endpoint (#PCDATA)>
+<!ATTLIST service-endpoint
+	id ID #IMPLIED
+>
+<!--
+
+             The ejb-class element specifies the fully qualified name
+             of the bean class for this ejb.  It is required unless
+             there is a component-defining annotation for the same
+             ejb-name.
+
+          -->
+<!ELEMENT ejb-class (#PCDATA)>
+<!ATTLIST ejb-class
+	id ID #IMPLIED
+>
+<!ELEMENT session-type (#PCDATA)>
+<!ATTLIST session-type
+	id ID #IMPLIED
+>
+<!ELEMENT timeout-method (method-name, method-params?)>
+<!ATTLIST timeout-method
+	id ID #IMPLIED
+>
+<!--
+
+	    The init-method element specifies the mappings for
+	    EJB 2.x style create methods for an EJB 3.0 bean.
+	    This element can only be specified for stateful
+            session beans.
+
+	  -->
+<!ELEMENT init-method (create-method, bean-method)>
+<!ATTLIST init-method
+	id ID #IMPLIED
+>
+<!--
+
+	    The remove-method element specifies the mappings for
+	    EJB 2.x style remove methods for an EJB 3.0 bean.
+	    This element can only be specified for stateful
+            session beans.
+
+	  -->
+<!ELEMENT remove-method (bean-method, retain-if-exception?)>
+<!ATTLIST remove-method
+	id ID #IMPLIED
+>
+<!ELEMENT transaction-type (#PCDATA)>
+<!ATTLIST transaction-type
+	id ID #IMPLIED
+>
+<!ELEMENT around-invoke (class?, method-name)>
+<!ELEMENT post-activate (lifecycle-callback-class?, lifecycle-callback-method)>
+<!ELEMENT pre-passivate (lifecycle-callback-class?, lifecycle-callback-method)>
+<!ELEMENT security-role-ref (description*, role-name, role-link?)>
+<!ATTLIST security-role-ref
+	id ID #IMPLIED
+>
+<!ELEMENT security-identity (description*, (use-caller-identity | run-as))>
+<!ATTLIST security-identity
+	id ID #IMPLIED
+>

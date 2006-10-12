@@ -20,9 +20,17 @@
 package org.netbeans.modules.web.project;
 
 import java.io.IOException;
+import java.util.Collection;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.project.spi.WebProjectImplementationFactory;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.Lookup.Template;
 
 public final class WebProjectType implements AntBasedProjectType {
 
@@ -45,6 +53,12 @@ public final class WebProjectType implements AntBasedProjectType {
     }
     
     public Project createProject(AntProjectHelper helper) throws IOException {
+        for(WebProjectImplementationFactory factory : getProjectFactories()) {
+            if (factory.acceptProject(helper)) {
+                //delegate project completely to another implementation
+                return factory.createProject(helper);
+            }
+        }
         return new WebProject(helper);
     }
 
@@ -55,5 +69,8 @@ public final class WebProjectType implements AntBasedProjectType {
     public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
         return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
     }
-    
+
+    private Collection<WebProjectImplementationFactory> getProjectFactories() {
+        return Lookup.getDefault().lookup(new Lookup.Template(WebProjectImplementationFactory.class)).allInstances();
+    }
 }

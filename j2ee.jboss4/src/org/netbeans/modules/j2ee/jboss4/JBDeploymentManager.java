@@ -20,12 +20,16 @@ package org.netbeans.modules.j2ee.jboss4;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.config.WarDeploymentConfiguration;
+import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
-import org.netbeans.modules.j2ee.jboss4.ide.JBLogWriter;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URLClassLoader;
+import java.util.Hashtable;
 import java.util.Locale;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
@@ -38,9 +42,13 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import org.netbeans.modules.j2ee.jboss4.config.CarDeploymentConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.EarDeploymentConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.EjbDeploymentConfiguration;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 
 /**
  *
@@ -50,15 +58,13 @@ public class JBDeploymentManager implements DeploymentManager {
     
     private DeploymentManager dm;
     private String realUri;
-
-    private int debuggingPort = 8787;
+    private Object rmiServer;
     
-    // ide specific data
-    private JBLogWriter logWriter;
+    private int debuggingPort = 8787;
     
     private InstanceProperties instanceProperties;
     
-    /** 
+    /**
      * Stores information about running instances. instance is represented by its InstanceProperties,
      *  running state by Boolean.TRUE, stopped state Boolean.FALSE.
      * WeakHashMap should guarantee erasing of an unregistered server instance bcs instance properties are also removed along with instance.
@@ -69,6 +75,7 @@ public class JBDeploymentManager implements DeploymentManager {
     public JBDeploymentManager(DeploymentManager dm, String uri, String username, String password) {
         realUri = uri;
         this.dm = dm;
+        rmiServer = null;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -76,13 +83,13 @@ public class JBDeploymentManager implements DeploymentManager {
     ////////////////////////////////////////////////////////////////////////////
     public String getHost() {
         String host = InstanceProperties.getInstanceProperties(realUri).
-                                    getProperty(JBPluginProperties.PROPERTY_HOST);
+                getProperty(JBPluginProperties.PROPERTY_HOST);
         return host;
     }
     
     public int getPort() {
         String port = InstanceProperties.getInstanceProperties(realUri).
-                                    getProperty(JBPluginProperties.PROPERTY_PORT);
+                getProperty(JBPluginProperties.PROPERTY_PORT);
         return new Integer(port).intValue();
     }
     
@@ -102,17 +109,38 @@ public class JBDeploymentManager implements DeploymentManager {
         return instanceProperties;
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // IDE data methods
-    ////////////////////////////////////////////////////////////////////////////
-    public JBLogWriter getLogWriter() {
-        return this.logWriter;
+    public synchronized Object getRMIServer() {
+        if(rmiServer == null) {
+            try {
+                InstanceProperties ip = this.getInstanceProperties();
+                URLClassLoader loader = JBDeploymentFactory.getJBClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
+                Thread.currentThread().setContextClassLoader(loader);
+                
+                Hashtable env = new Hashtable();
+                
+                // Sets the jboss naming environment
+                env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
+                env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR)));
+                env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
+                env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
+                env.put("jnp.disableDiscovery", Boolean.TRUE);
+                
+                // Gets naming context
+                InitialContext ctx = new InitialContext(env);
+                
+                // Lookup RMI Adaptor
+                rmiServer = ctx.lookup("/jmx/invoker/RMIAdaptor");
+            } catch (NameNotFoundException ex) {
+            } catch (NamingException ex) {} // Nothing to do
+        }
+        
+        return rmiServer;
     }
     
-    public void setLogWriter(JBLogWriter logWriter) {
-        this.logWriter = logWriter;
+    public synchronized Object refreshRMIServer() {
+        rmiServer = null;
+        return getRMIServer();
     }
-
     
     ////////////////////////////////////////////////////////////////////////////
     // Methods for retrieving server instance state
@@ -138,7 +166,7 @@ public class JBDeploymentManager implements DeploymentManager {
     // DeploymentManager Implementation
     ////////////////////////////////////////////////////////////////////////////
     public ProgressObject distribute(Target[] target, File file, File file2) throws IllegalStateException {
-        return new JBDeployer(realUri).deploy(target, file, file2, getHost(), getPort());
+        return new JBDeployer(realUri, this).deploy(target, file, file2, getHost(), getPort());
     }
     
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) throws InvalidModuleException {
@@ -149,6 +177,8 @@ public class JBDeploymentManager implements DeploymentManager {
             return new EarDeploymentConfiguration(deployableObject);
         } else if (type == ModuleType.EJB) {
             return new EjbDeploymentConfiguration(deployableObject);
+        } else if (type == ModuleType.CAR) {
+            return new CarDeploymentConfiguration(deployableObject);
         } else {
             throw new InvalidModuleException("Unsupported module type: " + type.toString()); // NOI18N
         }
@@ -197,7 +227,7 @@ public class JBDeploymentManager implements DeploymentManager {
     }
     
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
-        return new JBDeployer(realUri).redeploy(targetModuleID, file, file2);
+        return new JBDeployer(realUri, this).redeploy(targetModuleID, file, file2);
     }
     
     public void setDConfigBeanVersion(DConfigBeanVersionType dConfigBeanVersionType) throws DConfigBeanVersionUnsupportedException {
@@ -209,7 +239,9 @@ public class JBDeploymentManager implements DeploymentManager {
     }
     
     public void release() {
-        dm.release();
+        if (dm != null) {
+            dm.release();
+        }
     }
     
     public boolean isRedeploySupported() {
@@ -235,13 +267,17 @@ public class JBDeploymentManager implements DeploymentManager {
     public Target[] getTargets() throws IllegalStateException {
         return dm.getTargets();
     }
- 
+    
     private JBJ2eePlatformFactory.J2eePlatformImplImpl jbPlatform;
     
-    public JBJ2eePlatformFactory.J2eePlatformImplImpl getJBPlatform () {
+    public JBJ2eePlatformFactory.J2eePlatformImplImpl getJBPlatform() {
         if (jbPlatform == null) {
-            jbPlatform = new JBJ2eePlatformFactory.J2eePlatformImplImpl(this);
+            jbPlatform = (JBJ2eePlatformFactory.J2eePlatformImplImpl) new JBJ2eePlatformFactory().getJ2eePlatformImpl(this);
         }
         return jbPlatform;
+    }
+    
+    public JBProperties getProperties() {
+        return new JBProperties(this);
     }
 }

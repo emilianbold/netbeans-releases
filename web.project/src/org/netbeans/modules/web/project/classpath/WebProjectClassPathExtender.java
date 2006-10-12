@@ -47,6 +47,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.openide.util.RequestProcessor;
 
 
 public class WebProjectClassPathExtender implements ProjectClassPathExtender, PropertyChangeListener {
@@ -56,16 +57,16 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender, Pr
 
     private Project project;
     private UpdateHelper helper;
-    private ReferenceHelper refHelper;
     private PropertyEvaluator eval;
     
     private ClassPathSupport cs;
+    
+    private volatile boolean projectDeleted;
 
     public WebProjectClassPathExtender (Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper) {
         this.project = project;
         this.helper = helper;
         this.eval = eval;
-        this.refHelper = refHelper;
         
         this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
                                         WebProjectProperties.WELL_KNOWN_PATHS, 
@@ -244,6 +245,9 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender, Pr
     }
     
     public void propertyChange (PropertyChangeEvent e) {
+        if (projectDeleted) {
+            return;
+        }
         if (e.getSource().equals(eval) && (e.getPropertyName().equals(WebProjectProperties.JAVAC_CLASSPATH)
             || e.getPropertyName().equals(WebProjectProperties.WAR_CONTENT_ADDITIONAL))) {
                 EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH); //Reread the properties, PathParser changes them
@@ -274,14 +278,21 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender, Pr
                 WebProjectProperties.storeLibrariesLocations(set.iterator(), privateProps);
                 helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
 
-                try {
-                    ProjectManager.getDefault().saveProject(project);
-                }
-                catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            ProjectManager.getDefault().saveProject(project);
+                        } catch (IOException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
+                    }
+                });
             }
         });
     }
 
+    public void notifyDeleting() {
+        projectDeleted = true;
+        eval.removePropertyChangeListener(this);
+    }
 }

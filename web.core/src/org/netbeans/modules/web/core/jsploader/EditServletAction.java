@@ -21,6 +21,7 @@ package org.netbeans.modules.web.core.jsploader;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.cookies.EditorCookie;
@@ -38,6 +39,9 @@ public class EditServletAction extends CookieAction {
     /** serialVersionUID */
     private static final long serialVersionUID = 183706095337315796L;
 
+    /** File types extensions which cannot be run separately so they do not have their 'own' servlet.*/
+    private static final String[] UNSUPPORTED_EXTENSIONS = new String[]{"jspf", "tagf"};
+    
     /* Returns false - action should be disabled when a window with no
     * activated nodes is selected.
     *
@@ -67,23 +71,28 @@ public class EditServletAction extends CookieAction {
      * in case when JSP has not been compiled yet.
      */ 
     protected boolean enable(Node[] activatedNodes) {
-/*        
-        if (!super.enable(activatedNodes))
-            return false;
         for (int i = 0; i < activatedNodes.length; i++) {
             JspDataObject jspdo = (JspDataObject)activatedNodes[i].getCookie(JspDataObject.class);
-            if (jspdo != null) {
-                jspdo.refreshPlugin(true);
-                EditorCookie cook = jspdo.getServletEditor();
-                if (cook != null)
-                    return true;
+            if(jspdo != null) {
+                FileObject jspfo = jspdo.getPrimaryFile();
+                if(jspfo != null) {
+                    String fileExt = jspfo.getExt();
+                    if(fileExt != null && isUnsupportedExtension(fileExt)) {
+                        return false;
+                    }
+                }
             }
         }
-        return false;
-*/
         return true;
     }
 
+    private boolean isUnsupportedExtension(String ext) {
+        for(String uext : UNSUPPORTED_EXTENSIONS) {
+            if(uext.equals(ext)) return true;
+        }
+        return false;
+    }
+    
     /* @return the mode of action. */
     protected int mode() {
         return MODE_ANY;

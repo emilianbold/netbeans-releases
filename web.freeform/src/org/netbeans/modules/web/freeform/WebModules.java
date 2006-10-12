@@ -131,8 +131,8 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             String contextPathText = contextPathEl == null ? null : Util.findText (contextPathEl);
             String contextPath = contextPathText == null ? null : evaluator.evaluate (contextPathText);
             Element classpathEl = Util.findElement (webModulesEl, "classpath", WebProjectNature.NS_WEB);
-            ClassPath cp = classpathEl == null ? null : createClasspath (classpathEl);
             FileObject [] sources = getSources ();
+            ClassPath cp = classpathEl == null ? null : createClasspath (classpathEl, sources);
             modules.add (new FFWebModule (docRootFO, j2eeSpec, contextPath, sources, cp));
         }
     }
@@ -176,8 +176,8 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     /**
      * Create a classpath from a &lt;classpath&gt; element.
      */
-    private ClassPath createClasspath(Element classpathEl) {
-        System.out.println("creating classpath for " + classpathEl);
+    private ClassPath createClasspath(Element classpathEl, FileObject[] sources) {
+//        System.out.println("creating classpath for " + classpathEl);
         String cp = Util.findText(classpathEl);
         if (cp == null) {
             cp = "";
@@ -187,9 +187,21 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             return null;
         }
         String[] path = PropertyUtils.tokenizePath(cpEval);
-        URL[] pathURL = new URL[path.length];
+        Set entries = new HashSet();
         for (int i = 0; i < path.length; i++) {
-            File entryFile = helper.resolveFile(path[i]);
+            entries.add(helper.resolveFile(path[i]));
+        }
+        if (entries.size() == 0) {
+            // if the classpath element was empty then the classpath
+            // should contain all source roots
+            for (int i = 0; i < sources.length; i++) {
+                entries.add(FileUtil.toFile(sources[i]));
+            }
+        }
+        URL[] pathURL = new URL[entries.size()];
+        int i = 0;
+        for (Iterator it = entries.iterator(); it.hasNext();) {
+            File entryFile = (File)it.next();
             URL entry;
             try {
                 entry = entryFile.toURI().toURL();
@@ -205,7 +217,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             } catch (MalformedURLException x) {
                 throw new AssertionError(x);
             }
-            pathURL[i] = entry;
+            pathURL[i++] = entry;
         }
         return ClassPathSupport.createClassPath(pathURL);
     }
@@ -258,20 +270,32 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
            int fileType = getType(file);
             
            if (fileType == 0) {
-               if (type != ClassPath.SOURCE)
+               if (!type.equals(ClassPath.SOURCE))
                    return null;
                else
                    return javaSourcesClassPath;
             } else 
                 if (fileType == 1){
                     if (composedClassPath == null) {
-                        FileObject [] all = new FileObject [sourcesFOs.length+webClassPath.getRoots().length];
-                        for (int i = 0; i < sourcesFOs.length; i++)
-                            all[i] = sourcesFOs[i];
+                        HashSet all = new HashSet();
+                        FileObject[] javaRoots = null;
+                        for (int i = 0; i < sourcesFOs.length; i++){
+                            javaRoots = ClassPath.getClassPath(sourcesFOs[i], type).getRoots();
+                            for (int j = 0; j < javaRoots.length; j++)
+                                if (!all.contains(javaRoots[j]))
+                                    all.add(javaRoots[j]);
+                        }
+                                                
+                        for (int i = 0; i < webClassPath.getRoots().length; i++)
+                            if (!all.contains(webClassPath.getRoots()[i]))
+                                all.add(webClassPath.getRoots()[i]);
                         
-                        for (int i = sourcesFOs.length; i < sourcesFOs.length+ webClassPath.getRoots().length; i++)
-                            all [i] = webClassPath.getRoots()[i-sourcesFOs.length];
-                        composedClassPath = ClassPathSupport.createClassPath(all);
+                        FileObject[] roots = new FileObject[all.size()];
+                        int i = 0;
+                        for (Iterator it = all.iterator(); it.hasNext();) 
+                            roots[i++] = (FileObject)it.next();
+
+                        composedClassPath = ClassPathSupport.createClassPath(roots);
                     }
                     return composedClassPath;
                 }
@@ -309,6 +333,9 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             return getDocumentBase ().getFileObject (FOLDER_WEB_INF);
         }
         
+        public FileObject[] getJavaSources() {
+            return sourcesFOs;
+        }
         
         /**
          * Find what a given file represents.
@@ -320,16 +347,19 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
          *         </dl>
          */
         private int getType(FileObject file) {
+            //test if the file is under the web root
+            FileObject dir = getDocumentBase();
+            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
+                return 1;
+            }
+            //test java source roots
             for (int i=0; i < sourcesFOs.length; i++) {
                 FileObject root = sourcesFOs[i];
                 if (root.equals(file) || FileUtil.isParentOf(root, file)) {
                     return 0;
                 }
             } 
-            FileObject dir = getDocumentBase();
-            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-                return 1;
-            }
+            
             return -1;
         }
     }

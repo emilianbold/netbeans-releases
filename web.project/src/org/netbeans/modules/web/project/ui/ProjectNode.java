@@ -252,7 +252,6 @@ class ProjectNode extends AbstractNode {
     private static class Removable implements RemoveClassPathRootAction.Removable {
 
         private final UpdateHelper helper;
-//        private final PropertyEvaluator eval;
         private final ReferenceHelper refHelper;
         private final String classPathId;
         private final String entryId;
@@ -262,7 +261,6 @@ class ProjectNode extends AbstractNode {
 
         Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
             this.helper = helper;
-//            this.eval = eval;
             this.refHelper = refHelper;
             this.classPathId = classPathId;
             this.entryId = entryId;

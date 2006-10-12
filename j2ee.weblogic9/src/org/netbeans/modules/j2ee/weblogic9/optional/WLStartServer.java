@@ -43,10 +43,17 @@ import org.netbeans.modules.j2ee.weblogic9.util.*;
  */
 public class WLStartServer extends StartServer {
     
+    private static final int SERVER_CHECK_TIMEOUT = 2000;
+    
     /**
      * The server's deployment manager, to be exact the plugin's wrapper for it
      */
     private WLDeploymentManager dm;
+    
+    /**
+     * WL server process instance
+     */
+    private Process serverProcess;
     
     /**
      * Creates a new instance of WLStartServer
@@ -239,27 +246,89 @@ public class WLStartServer extends StartServer {
      * @return true is the server is running, false otherwise
      */
     public boolean isRunning() {
-        // try to get an open socket to the target host/port
-        try {
-            new Socket(dm.getHost(), new Integer(dm.getPort()).intValue());
+        return isRunning(true);
+    }
+    
+    /**
+     * Returns true if the server is running.
+     *
+     * @param checkResponse should be checked whether is the server responding - is really up?
+     * @return <code>true</code> if the server is running.
+     */
+    public boolean isRunning(boolean checkResponse) {
+        Process proc = dm.getServerProcess();
+        if (proc != null) {
             try {
-                //try getting connected DeploymentManager to test that the server is really running
-                DeploymentManager testDM = WLDeploymentFactory.getInstance().getDeploymentManager(dm.getURI(), dm.getUsername(), dm.getPassword());
-                // if we are successful, return true
-                return true;
-            } catch (DeploymentManagerCreationException ex) {
-                //error most likely means we are not connected
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "getting reponse from server but cannot create connected deployment manager");
+                proc.exitValue();
+                // process is stopped
+                return false;
+            } catch (IllegalThreadStateException e) {
+                // process is running
+                if (!checkResponse) {
+                    return true;
+                }
             }
-        } catch (UnknownHostException e) {
-            //#59189 - do nothing if the user entered an incorrect host name or is unreachable assume it is not running
-        } catch (IOException e) {
-            // do nothing this exception means that the server is 
-            // not started
         }
-        
-        // we failed to create a socket thus the server is not started
-        return false;
+        if (checkResponse) {
+            String host = dm.getHost();
+            int port = new Integer(dm.getPort()).intValue();
+            return ping(host, port, SERVER_CHECK_TIMEOUT); // is server responding?
+        } else {
+            return false; // cannot resolve the state
+        }
+    }
+
+    /** Return true if the server is stopped. If the server was started from within
+     * the IDE, determin the server state from the process exit code, otherwise try
+     * to ping it. 
+     */
+    private boolean isStopped() {
+        Process proc = dm.getServerProcess();
+        if (proc != null) {
+            try {
+                proc.exitValue();
+                // process is stopped
+                return true;
+            } catch (IllegalThreadStateException e) { 
+                // process is still running
+                return false;
+            }
+        } else {
+            String host = dm.getHost();
+            int port = new Integer(dm.getPort()).intValue();
+            return !ping(host, port, SERVER_CHECK_TIMEOUT); // is server responding?
+        }
+    }
+    
+    /** Return true if a WL server is running on the specifed host:port */
+    public static boolean ping(String host, int port, int timeout) {
+        // checking whether a socket can be created is not reliable enough, see #47048
+        Socket socket = new Socket();
+        try {
+            try {
+                socket.connect(new InetSocketAddress(host, port), timeout); // NOI18N
+                socket.setSoTimeout(timeout);
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    try {
+                        // request for the login form - we guess that OK response means pinging the WL server
+                        out.println("GET /console/login/LoginForm.jsp HTTP/1.1\nHost:\n"); // NOI18N
+
+                        // check response
+                        return "HTTP/1.1 200 OK".equals(in.readLine()); // NOI18N
+                    } finally {
+                        in.close();
+                    }
+                } finally {
+                    out.close();
+                }
+            } finally {
+                socket.close();
+            }
+        } catch (IOException ioe) {
+            return false;
+        }
     }
     
     /**
@@ -342,9 +411,11 @@ public class WLStartServer extends StartServer {
                 long start = System.currentTimeMillis();
                 
                 // create the startup process
-                Process serverProcess = Runtime.getRuntime().exec(
+                serverProcess = Runtime.getRuntime().exec(
                         domainHome + "/" + (Utilities.isWindows() ?    // NOI18N
                             STARTUP_BAT : STARTUP_SH)); 
+                
+                dm.setServerProcess(serverProcess);
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
@@ -372,9 +443,8 @@ public class WLStartServer extends StartServer {
                 }
 
                 // if the server did not start in the designated time limits
-                // we consider the startup as failed and kill the process
-                serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName)); // NOI18N
-                serverProcess.destroy();
+                // we consider the startup as failed and warn the user
+                serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_StartServerTimeout"));
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
             }
@@ -464,7 +534,9 @@ public class WLStartServer extends StartServer {
                 String envp[];
                 envp = new String[] {"JAVA_OPTIONS=-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=" + debuggerPort};    // NOI18N
                         
-                Process serverProcess = pd.exec(null, envp, true, cwd);
+                serverProcess = pd.exec(null, envp, true, cwd);
+                
+                dm.setServerProcess(serverProcess);
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
@@ -492,9 +564,8 @@ public class WLStartServer extends StartServer {
                 }
 
                 // if the server did not start in the designated time limits
-                // we consider the startup as failed and kill the process
-                serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_FAILED", serverName)); // NOI18N
-                serverProcess.destroy();
+                // we consider the startup as failed and warn the user
+                serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_StartServerTimeout"));
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
             }
@@ -579,7 +650,7 @@ public class WLStartServer extends StartServer {
                 String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
                 
                 while (System.currentTimeMillis() - start < TIMEOUT) {
-                    if (isRunning()) {
+                    if (!isStopped()) {
                         serverProgress.notifyStop(StateType.RUNNING, NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)); // NOI18N
                     } else {
                         try {
@@ -594,8 +665,7 @@ public class WLStartServer extends StartServer {
                         return;
                     }
 
-                    // sleep for a little so that we do not make our checks too
-                    // often
+                    // sleep for a while so that we do not make our checks too often
                     try {
                         Thread.sleep(DELAY);
                     } catch (InterruptedException e) {}
@@ -603,7 +673,7 @@ public class WLStartServer extends StartServer {
                     
                 // if the server did not stop in the designated time limits
                 // we consider the stop process as failed and kill the process
-                serverProgress.notifyStop(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_FAILED", serverName)); // NOI18N
+                serverProgress.notifyStop(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "MSG_StopServerTimeout"));
                 serverProcess.destroy();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);

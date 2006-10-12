@@ -1,10 +1,25 @@
 <!--
-  XML DTD for Sun Application Server specific Web Application 
-  deployment descriptor. This is a companion DTD for web-app_2_3.dtd
-
-  Copyright (c) 2002 by Sun Microsystems, Inc. All Rights Reserved.
-  $Revision$
+ The contents of this file are subject to the terms 
+ of the Common Development and Distribution License 
+ (the "License").  You may not use this file except 
+ in compliance with the License.
+ 
+ You can obtain a copy of the license at 
+ glassfish/bootstrap/legal/CDDLv1.0.txt or 
+ https://glassfish.dev.java.net/public/CDDLv1.0.html. 
+ See the License for the specific language governing 
+ permissions and limitations under the License.
+ 
+ When distributing Covered Code, include this CDDL 
+ HEADER in each file and include the License file at 
+ glassfish/bootstrap/legal/CDDLv1.0.txt.  If applicable, 
+ add the following below this CDDL HEADER, with the 
+ fields enclosed by brackets "[]" replaced with your 
+ own identifying information: Portions Copyright [yyyy] 
+ [name of copyright owner]
 -->
+
+<!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
 
 <!-- root element for vendor specific web application (module) configuration -->
 <!ELEMENT sun-web-app (security-role-mapping*, servlet*, session-config?,
@@ -22,8 +37,10 @@
 
 <!ELEMENT session-config (session-manager?, session-properties?, cookie-properties?)>
 
+<!ENTITY % persistence-type "(memory | file | custom)">
+
 <!ELEMENT session-manager (manager-properties?, store-properties?)>
-<!ATTLIST session-manager persistence-type CDATA "memory">
+<!ATTLIST session-manager persistence-type %persistence-type; "memory">
 
 <!ELEMENT manager-properties (property*)>
 <!ELEMENT store-properties (property*)>
@@ -54,6 +71,12 @@ This element holds password text.
 <!ELEMENT ejb-ref (ejb-ref-name, jndi-name)>
 <!ELEMENT ejb-ref-name (#PCDATA)>
 
+<!ENTITY % scope "(context.attribute | request.header  | request.parameter | 
+                   request.cookie  | request.attribute | session.attribute)">
+<!ENTITY % key-scope "(context.attribute | request.header | request.parameter | 
+                       request.cookie | session.id | session.attribute)">
+<!ENTITY % expr "(equals | greater | lesser | not-equals | in-range)">
+
 <!-- cache element configures the cache for web application. iAS 7.0 web container    
      supports one such cache object per application: i.e. <cache> is a sub element    
      of <ias-web-app>. A cache can have zero or more cache-mapping elements and
@@ -66,7 +89,7 @@ This element holds password text.
 <!ELEMENT cache (cache-helper*, default-helper?, property*, cache-mapping*)>
 <!ATTLIST cache  max-entries         CDATA     "4096"
                  timeout-in-seconds  CDATA     "30"
-                 enabled             CDATA "false">
+                 enabled             %boolean; "false">
 
 <!-- cache-helper specifies customizable class which implements CacheHelper interface. 
 
@@ -122,7 +145,7 @@ ere (e.g. <timeout> 60 </timeout> or dynamically via fields in the relevant scop
 -->
 <!ELEMENT timeout (#PCDATA)>
 <!ATTLIST timeout  name  CDATA   #REQUIRED
-                   scope CDATA 'request.attribute'>
+                   scope %scope; 'request.attribute'>
 
 <!-- 
 http-method specifies HTTP method eligible for caching default is GET. 
@@ -140,7 +163,7 @@ example:
 -->
 <!ELEMENT refresh-field EMPTY>
 <!ATTLIST refresh-field name  CDATA       #REQUIRED
-                        scope CDATA 'request.parameter'>
+                        scope %key-scope; 'request.parameter'>
 <!-- 
 key-field specifies a component of the key; container looks for the named 
 field in the given scope to access the cached entry. Default is to use
@@ -153,7 +176,7 @@ on Servlet Path.
 -->
 <!ELEMENT key-field EMPTY>
 <!ATTLIST key-field name  CDATA       #REQUIRED
-                    scope CDATA 'request.parameter'>
+                    scope %key-scope; 'request.parameter'>
 
 <!-- 
 constraint-field specifies a field whose value is used as a cacheability constraint.
@@ -180,9 +203,9 @@ constraint-field specifies a field whose value is used as a cacheability constra
 -->
 <!ELEMENT constraint-field (value*)>
 <!ATTLIST constraint-field  name                    CDATA      #REQUIRED
-                            scope                   CDATA    'request.parameter'
-                            cache-on-match          CDATA  'true'
-                            cache-on-match-failure  CDATA  'false'>
+                            scope                   %scope;    'request.parameter'
+                            cache-on-match          %boolean;  'true'
+                            cache-on-match-failure  %boolean;  'false'>
 
 <!-- 
 value element specifies the applicable value and a matching expression for a constraint-field
@@ -196,13 +219,13 @@ value element specifies the applicable value and a matching expression for a con
   </constraint-field>
 -->             
 <!ELEMENT value (#PCDATA)>
-<!ATTLIST value match-expr              CDATA    'equals'
-                cache-on-match          CDATA  'true'
-                cache-on-match-failure  CDATA  'false'>
+<!ATTLIST value match-expr              %expr;    'equals'
+                cache-on-match          %boolean;  'true'
+                cache-on-match-failure  %boolean;  'false'>
 
 <!ELEMENT class-loader EMPTY>
 <!ATTLIST class-loader extra-class-path CDATA  #IMPLIED
-                       delegate CDATA 'false'>
+                       delegate %boolean; 'false'>
 
 <!ELEMENT jsp-config (property*)>
 

@@ -37,13 +37,11 @@ import org.openide.util.actions.NodeAction;
 
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ListServerInstances;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 /**
  *
@@ -97,11 +95,7 @@ public class RegisterAction extends NodeAction implements WizardConstants{
         DataObject dob = (DataObject) node.getCookie(DataObject.class);
         if(dob!=null){
             FileObject fo = dob.getPrimaryFile();
-            Project holdingProj = FileOwnerQuery.getOwner(fo);
-            if (holdingProj != null){
-                J2eeModuleProvider modProvider = (J2eeModuleProvider) holdingProj.getLookup().lookup(J2eeModuleProvider.class);
-                serverName = modProvider.getInstanceProperties();
-            }
+            serverName = ResourceUtils.getTargetServer(fo);
         }
         return serverName;
     }

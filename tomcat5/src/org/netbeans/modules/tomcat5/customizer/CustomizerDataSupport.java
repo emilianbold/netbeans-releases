@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.tomcat5.customizer;
 
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Arrays;
@@ -67,11 +64,12 @@ public class CustomizerDataSupport {
     private ButtonModel             forceStopModel;    
     private ButtonModel             sharedMemModel;
     private ButtonModel             socketModel;    
-    private ButtonModel             monitorModel;    
+    private ButtonModel             monitorModel;
+    private ButtonModel             proxyModel;
     private Document                sharedMemNameModel;    
-    private PathModel               sourceModel;
-    private PathModel               classModel;
-    private PathModel               javadocModel;
+    private CustomizerSupport.PathModel sourceModel;
+    private CustomizerSupport.PathModel classModel;
+    private CustomizerSupport.PathModel javadocModel;
     private SpinnerNumberModel      serverPortModel;
     private SpinnerNumberModel      shutdownPortModel;
     private SpinnerNumberModel      debugPortModel;
@@ -88,6 +86,7 @@ public class CustomizerDataSupport {
     private boolean sharedMemModelFlag;
     private boolean socketModelFlag;
     private boolean monitorModelFlag;
+    private boolean proxyModelFlag;
     private boolean sharedMemNameModelFlag;
     private boolean sourceModelFlag;
     private boolean javadocModelFlag;
@@ -212,12 +211,21 @@ public class CustomizerDataSupport {
                 store(); // This is just temporary until the server manager has OK and Cancel buttons
             }
         });
+        
+        // proxyModel
+        proxyModel = createToggleButtonModel(tp.getProxyEnabled());
+        proxyModel.addItemListener(new ModelChangeAdapter() {
+            public void modelChanged() {
+                proxyModelFlag = true;
+                store(); // This is just temporary until the server manager has OK and Cancel buttons
+            }
+        });
 
         // classModel
-        classModel = new PathModel(tp.getClasses());
+        classModel = new CustomizerSupport.PathModel(tp.getClasses());
         
         // sourceModel
-        sourceModel = new PathModel(tp.getSources());
+        sourceModel = new CustomizerSupport.PathModel(tp.getSources());
         sourceModel.addListDataListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 sourceModelFlag = true;
@@ -226,7 +234,7 @@ public class CustomizerDataSupport {
         });
         
         // javadocModel
-        javadocModel = new PathModel(tp.getJavadocs());
+        javadocModel = new CustomizerSupport.PathModel(tp.getJavadocs());
         javadocModel.addListDataListener(new ModelChangeAdapter() {
             public void modelChanged() {
                 javadocModelFlag = true;
@@ -369,6 +377,10 @@ public class CustomizerDataSupport {
         return monitorModel;
     }
     
+    public ButtonModel getProxyModel() {
+        return proxyModel;
+    }
+    
     public ButtonModel getSecManagerModel() {
         return secManagerModel;
     }
@@ -377,15 +389,15 @@ public class CustomizerDataSupport {
         return sharedMemNameModel;
     }
     
-    public PathModel getClassModel() {
+    public CustomizerSupport.PathModel getClassModel() {
         return classModel;
     }
     
-    public PathModel getSourceModel() {
+    public CustomizerSupport.PathModel getSourceModel() {
         return sourceModel;
     }
     
-    public PathModel getJavadocsModel() {
+    public CustomizerSupport.PathModel getJavadocsModel() {
         return javadocModel;
     }
     
@@ -457,6 +469,11 @@ public class CustomizerDataSupport {
         if (monitorModelFlag) {
             tp.setMonitor(monitorModel.isSelected());
             monitorModelFlag = false;
+        }
+        
+        if (proxyModelFlag) {
+            tp.setProxyEnabled(proxyModel.isSelected());
+            proxyModelFlag = false;
         }
         
         if (sharedMemNameModelFlag) {

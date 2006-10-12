@@ -46,16 +46,11 @@ public class JspNode extends DataNode {
 
     private static final String EXECUTION_SET_NAME = "Execution"; // NOI18N
     private static final String SHEETNAME_TEXT_PROPERTIES = "textProperties"; // NOI18N
-   
 
     private static final String ICON_JSP = "org/netbeans/modules/web/core/resources/jsp16"; // NOI18N
-    private static final String ICON_JSP_ERROR = "org/netbeans/modules/web/core/resources/jsp16_error"; // NOI18N
     private static final String ICON_TAG = "org/netbeans/modules/web/core/resources/tag16"; // NOI18N
-    private static final String ICON_TAG_ERROR = "org/netbeans/modules/web/core/resources/tag16_error" ; // NOI18N
     private static final String ICON_JSP_XML = "org/netbeans/modules/web/core/resources/jsp-xml16"; // NOI18N
-    private static final String ICON_JSP_XML_ERROR = "org/netbeans/modules/web/core/resources/jsp-xml16_error"; // NOI18N
     private static final String ICON_JSP_FRAGMENT = "org/netbeans/modules/web/core/resources/jsp-fragment16"; // NOI18N
-    private static final String ICON_JSP_FRAGMENT_ERROR = "org/netbeans/modules/web/core/resources/jsp-fragment16_error"; // NOI18N
             
     public static final String PROP_FILE_ENCODING = "encoding"; //NOI18N
     public static final String PROP_REQUEST_PARAMS   = "requestparams"; // NOI18N
@@ -215,25 +210,6 @@ public class JspNode extends DataNode {
                 return ICON_JSP_XML;
         return ICON_JSP;
 
-    }
-    
-    /** Get the icon base, when there is an error on the page.
-    * This should be a resource path, e.g. <code>/some/path/</code>.
-    * @return the icon base
-    */
-    protected String getErrorIconBase(){
-        String ext = getDataObject().getPrimaryFile().getExt();
-        
-        if (ext.equals(JspLoader.TAGF_FILE_EXTENSION) 
-            || ext.equals(JspLoader.TAGX_FILE_EXTENSION)
-            || ext.equals(JspLoader.TAG_FILE_EXTENSION))
-                return ICON_TAG_ERROR;
-        if (ext.equals(JspLoader.JSF_EXTENSION )
-            || ext.equals(JspLoader.JSPF_EXTENSION))
-                return ICON_JSP_FRAGMENT_ERROR;
-        if (ext.equals(JspLoader.JSPX_EXTENSION))
-                return ICON_JSP_XML_ERROR;
-        return ICON_JSP_ERROR;
     }
 
 }

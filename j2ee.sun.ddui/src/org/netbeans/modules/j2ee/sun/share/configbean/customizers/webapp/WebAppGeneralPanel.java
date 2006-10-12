@@ -76,6 +76,9 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
     // true if AS 8.1+ fields are visible.
     private boolean as81FeaturesVisible;
     
+    // true if AS 9.0+ fields are visible.
+    private boolean as90FeaturesVisible;
+    
 	/** Creates new form WebAppGeneralPanel */
 	public WebAppGeneralPanel(WebAppRootCustomizer src) {
 		masterPanel = src;
@@ -97,11 +100,8 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         jTxtContextRoot = new javax.swing.JTextField();
         jLblErrorUrl = new javax.swing.JLabel();
         jTxtErrorUrl = new javax.swing.JTextField();
-        jPnlWebApp = new javax.swing.JPanel();
-        jChkClassLoader = new javax.swing.JCheckBox();
-        jLblExtraClassPath = new javax.swing.JLabel();
-        jTxtExtraClassPath = new javax.swing.JTextField();
-        jChkDelegate = new javax.swing.JCheckBox();
+        jLblHttpservletSecurityProvider = new javax.swing.JLabel();
+        jTxtHttpservletSecurityProvider = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -112,8 +112,8 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jLblContextRoot, gridBagConstraints);
 
         jTxtContextRoot.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -127,7 +127,7 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jTxtContextRoot, gridBagConstraints);
         jTxtContextRoot.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_ContextRoot"));
         jTxtContextRoot.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_ContextRoot"));
@@ -137,8 +137,8 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jLblErrorUrl, gridBagConstraints);
 
         jTxtErrorUrl.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -152,75 +152,42 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jTxtErrorUrl, gridBagConstraints);
 
-        jPnlWebApp.setLayout(new java.awt.GridBagLayout());
-
-        jChkClassLoader.setText(webappBundle.getString("LBL_ClassLoader"));
-        jChkClassLoader.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jChkClassLoaderItemStateChanged(evt);
-            }
-        });
-
+        jLblHttpservletSecurityProvider.setLabelFor(jTxtHttpservletSecurityProvider);
+        jLblHttpservletSecurityProvider.setText(webappBundle.getString("LBL_HttpservletSecurityProvider_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
-        jPnlWebApp.add(jChkClassLoader, gridBagConstraints);
-        jChkClassLoader.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_ClassLoader"));
-        jChkClassLoader.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_ClassLoader"));
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
+        add(jLblHttpservletSecurityProvider, gridBagConstraints);
 
-        jLblExtraClassPath.setLabelFor(jTxtExtraClassPath);
-        jLblExtraClassPath.setText(webappBundle.getString("LBL_ExtraClassPath_1"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.ipady = 4;
-        gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 4);
-        jPnlWebApp.add(jLblExtraClassPath, gridBagConstraints);
-
-        jTxtExtraClassPath.addKeyListener(new java.awt.event.KeyAdapter() {
+        jTxtHttpservletSecurityProvider.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                jTxtExtraClassPathKeyReleased(evt);
+                jTxtHttpservletSecurityProviderKeyReleased(evt);
             }
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPnlWebApp.add(jTxtExtraClassPath, gridBagConstraints);
-        jTxtExtraClassPath.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_ExtraClassPath"));
-        jTxtExtraClassPath.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_ExtraClassPath"));
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
+        add(jTxtHttpservletSecurityProvider, gridBagConstraints);
 
-        jChkDelegate.setText(webappBundle.getString("LBL_ClassLoaderDelegate_1"));
-        jChkDelegate.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                jChkDelegateItemStateChanged(evt);
-            }
-        });
+    }// </editor-fold>//GEN-END:initComponents
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 4);
-        jPnlWebApp.add(jChkDelegate, gridBagConstraints);
-        jChkDelegate.getAccessibleContext().setAccessibleName(webappBundle.getString("ACSN_ClassLoaderDelegate"));
-        jChkDelegate.getAccessibleContext().setAccessibleDescription(webappBundle.getString("ACSD_ClassLoaderDelegate"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        add(jPnlWebApp, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    private void jTxtHttpservletSecurityProviderKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtHttpservletSecurityProviderKeyReleased
+        WebAppRoot bean = masterPanel.getBean();
+		if(bean != null) {
+			try {
+				bean.setHttpservletSecurityProvider(jTxtHttpservletSecurityProvider.getText());
+//				masterPanel.validateField(WebAppRoot.FIELD_HTTP_SERVLET_SECURITY_PROVIDER);
+			} catch(java.beans.PropertyVetoException exception) {
+				jTxtHttpservletSecurityProvider.setText(bean.getHttpservletSecurityProvider());
+			}
+		}
+    }//GEN-LAST:event_jTxtHttpservletSecurityProviderKeyReleased
 
     private void jTxtErrorUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtErrorUrlKeyReleased
         WebAppRoot bean = masterPanel.getBean();
@@ -233,42 +200,6 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 			}
 		}
     }//GEN-LAST:event_jTxtErrorUrlKeyReleased
-
-	private void jChkDelegateItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jChkDelegateItemStateChanged
-        WebAppRoot bean = masterPanel.getBean();
-		boolean state = interpretCheckboxState(evt);
-		if(bean != null) {
-			try {
-				bean.setDelegate(state);
-			} catch(java.beans.PropertyVetoException exception) {
-				jChkDelegate.setSelected(bean.isDelegate());
-			}
-		}
-	}//GEN-LAST:event_jChkDelegateItemStateChanged
-
-	private void jChkClassLoaderItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jChkClassLoaderItemStateChanged
-        WebAppRoot bean = masterPanel.getBean();
-		boolean state = interpretCheckboxState(evt);
-		if(bean != null) {
-			try {
-				bean.setClassLoader(state);
-			} catch(java.beans.PropertyVetoException exception) {
-				jChkClassLoader.setSelected(bean.isClassLoader());
-			}
-		}
-		enableClassLoaderFields(state);
-	}//GEN-LAST:event_jChkClassLoaderItemStateChanged
-
-	private void jTxtExtraClassPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtExtraClassPathKeyReleased
-        WebAppRoot bean = masterPanel.getBean();
-		if(bean != null) {
-			try {
-				bean.setExtraClassPath(jTxtExtraClassPath.getText());
-			} catch(java.beans.PropertyVetoException exception) {
-				jTxtExtraClassPath.setText(bean.getExtraClassPath());
-			}
-		}		
-	}//GEN-LAST:event_jTxtExtraClassPathKeyReleased
 
 	private void jTxtContextRootKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtContextRootKeyReleased
         WebAppRoot bean = masterPanel.getBean();
@@ -284,20 +215,18 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 	
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox jChkClassLoader;
-    private javax.swing.JCheckBox jChkDelegate;
     private javax.swing.JLabel jLblContextRoot;
     private javax.swing.JLabel jLblErrorUrl;
-    private javax.swing.JLabel jLblExtraClassPath;
-    private javax.swing.JPanel jPnlWebApp;
+    private javax.swing.JLabel jLblHttpservletSecurityProvider;
     private javax.swing.JTextField jTxtContextRoot;
     private javax.swing.JTextField jTxtErrorUrl;
-    private javax.swing.JTextField jTxtExtraClassPath;
+    private javax.swing.JTextField jTxtHttpservletSecurityProvider;
     // End of variables declaration//GEN-END:variables
 	
 	private void initUserComponents() {
             
 		as81FeaturesVisible = true;
+		as90FeaturesVisible = true;
         
 		/** Add call properties table panel :
 		 *  TableEntry list has three properties: Name, Value, Description
@@ -322,7 +251,7 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(0, 6, 0, 5);
 		add(jspConfigPanel, gridBagConstraints);		
 		
 		// add Properties table
@@ -337,7 +266,7 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(0, 6, 0, 5);
 		add(propertiesPanel, gridBagConstraints);
 	}
 	
@@ -351,35 +280,14 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 		jspConfigModel.removeTableModelListener(this);
 	}
 	
-	private boolean interpretCheckboxState(ItemEvent e) {
-		boolean state = false;
-		
-		if(e.getStateChange() == ItemEvent.SELECTED) {
-			state = true;
-		} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-			state = false;
-		}
-		
-		return state;
-	}
-	
-	private void enableClassLoaderFields(boolean enabled) {
-		jLblExtraClassPath.setEnabled(enabled);
-		jTxtExtraClassPath.setEnabled(enabled);
-		jTxtExtraClassPath.setEditable(enabled);
-		jChkDelegate.setEnabled(enabled);
-	}
-	
 	/** Initialization of all the fields in this panel from the bean that
 	 *  was passed in.
 	 */
 	public void initFields(WebAppRoot bean) {
-		jChkClassLoader.setSelected(bean.isClassLoader());
-		jTxtExtraClassPath.setText(bean.getExtraClassPath());
-		jChkDelegate.setSelected(bean.isDelegate());
+        ASDDVersion asVersion = bean.getAppServerVersion();
 
-		jspConfigPanel.setModel(bean.getJspConfig());
-		propertiesPanel.setModel(bean.getProperties());
+		jspConfigPanel.setModel(bean.getJspConfig(), asVersion);
+		propertiesPanel.setModel(bean.getProperties(), asVersion);
 
         if(ASDDVersion.SUN_APPSERVER_8_1.compareTo(bean.getAppServerVersion()) <= 0) {
             showAS81Fields();
@@ -389,11 +297,23 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
             hideAS81Fields();
         }
         
-		enableClassLoaderFields(bean.isClassLoader());
+        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(bean.getAppServerVersion()) <= 0) {
+            showAS90Fields();
+    		jTxtHttpservletSecurityProvider.setText(bean.getHttpservletSecurityProvider());
+        } else {
+            hideAS90Fields();
+        }
+        
 	}	
         
     // TODO after 5.0, generalize version based field display for multiple (> 2)
-    // appserver versions.
+    // appserver versions.  (!PW note: this is the first panel to have changes across
+    // 3 revisions of the relevant DTD.)
+    //
+    // Generalization idea: Tag each control a "MinVersion" property whose value is the instance
+    // of AsDDVersion that corresponds with the needed appserver version.  Could later tag
+    // with "MaxVersion", or even "ExcludeVersion", if necessary.
+    //
     private void showAS81Fields() {
         if(!as81FeaturesVisible) {
             jLblContextRoot.setVisible(true);
@@ -416,7 +336,25 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         }
     }
 	
-	/** ----------------------------------------------------------------------- 
+    private void showAS90Fields() {
+        if(!as90FeaturesVisible) {
+            jLblHttpservletSecurityProvider.setVisible(true);
+            jTxtHttpservletSecurityProvider.setVisible(true);
+            
+            as90FeaturesVisible = true;
+        }
+    }
+    
+    private void hideAS90Fields() {
+        if(as90FeaturesVisible) {
+            jLblHttpservletSecurityProvider.setVisible(false);
+            jTxtHttpservletSecurityProvider.setVisible(false);
+            
+            as90FeaturesVisible = false;
+        }
+    }
+
+    /** ----------------------------------------------------------------------- 
 	 *  Implementation of javax.swing.event.TableModelListener
 	 */
 	public void tableChanged(TableModelEvent e) {

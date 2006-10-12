@@ -32,7 +32,6 @@ import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
-import javax.management.IntrospectionException;
 import javax.management.InstanceNotFoundException;
 import javax.management.AttributeNotFoundException;
 import javax.management.InvalidAttributeValueException;
@@ -84,7 +83,9 @@ public abstract class ModuleMBean implements Constants{
         Object retVal = null;
         try{
             retVal = this.conn.invoke(this.runtimeObjName, "start", null, null); //NOI18N
-        }catch(Exception ex){ }   
+        }catch(Exception ex){
+            return null;
+        }   
         return retVal;
     }
     
@@ -96,7 +97,7 @@ public abstract class ModuleMBean implements Constants{
     
     public void restart(){
         try{
-            Object retVal = this.conn.invoke(this.runtimeObjName, "start", null, null); //NOI18N
+            this.conn.invoke(this.runtimeObjName, "start", null, null); //NOI18N
             this.conn.invoke(this.runtimeObjName, "stop", null, null); //NOI18N
         }catch(Exception ex){ }  
     }
@@ -114,8 +115,9 @@ public abstract class ModuleMBean implements Constants{
     public String getResourceName(String key){
         String keyName = null;
         Object keyNameAttr = getAttribute(this.runtimeObjName, key); 
-        if(keyNameAttr != null)
+        if(keyNameAttr != null){
             keyName = keyNameAttr.toString();
+        }
         return keyName;
     }
     
@@ -123,8 +125,9 @@ public abstract class ModuleMBean implements Constants{
         String attrValue = null;
         try{
             Object attValue = this.conn.getAttribute(objName, attributeName);
-            if(attValue != null)
+            if(attValue != null){
                 attrValue = attValue.toString();
+            }
         }catch(Exception ex){
             //suppress Exception. Callers to any of the getters should handle null condition
         }

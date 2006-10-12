@@ -74,7 +74,7 @@
     <Component class="javax.swing.JLabel" name="jLabelPath">
       <Properties>
         <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/web/struts/wizards/Bundle.properties" key="LBL_ActionPath" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/struts/wizards/Bundle.properties" key="LBL_ActionPath_mnem" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jTextFieldPath"/>

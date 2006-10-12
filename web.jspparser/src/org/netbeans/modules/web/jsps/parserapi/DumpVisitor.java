@@ -209,7 +209,7 @@ class DumpVisitor extends Node.Visitor {
 
     public void visit(Node.ELExpression n) throws JspException {
         visitCommon(n);
-        printString( "${" + new String( n.getText() ) + "}" );
+        printString(n.getText());
     }
 
     public void visit(Node.CustomTag n) throws JspException {

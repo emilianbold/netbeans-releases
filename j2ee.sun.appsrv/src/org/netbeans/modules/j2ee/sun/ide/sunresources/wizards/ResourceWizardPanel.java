@@ -19,14 +19,18 @@
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
-public abstract class ResourceWizardPanel extends javax.swing.JPanel implements WizardDescriptor.FinishablePanel {
+public abstract class ResourceWizardPanel extends javax.swing.JPanel implements WizardDescriptor.FinishablePanel, WizardConstants {
 
     private ArrayList list;
 
@@ -34,7 +38,10 @@ public abstract class ResourceWizardPanel extends javax.swing.JPanel implements 
     private static final int DEFAULT_WIDTH = 600;
     /** Default preferred height of the panel - should be the same for all panels within one wizard */
     private static final int DEFAULT_HEIGHT = 390;
-      
+   
+    public WizardDescriptor wizDescriptor;
+    public ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
+    
     public ResourceWizardPanel() {
         list = new ArrayList();
     }
@@ -78,4 +85,23 @@ public abstract class ResourceWizardPanel extends javax.swing.JPanel implements 
     public boolean isFinishPanel() {
         return false;
     }
+    
+    public void setErrorMsg(String message) {
+        if (this.wizDescriptor != null) {
+            this.wizDescriptor.putProperty("WizardPanel_errorMessage", message);    //NOI18N
+        }
+    }
+    
+    public void setErrorMessage(String msg, String value){
+        String message = MessageFormat.format(msg, new Object[] {value});
+        setErrorMsg(message);
+    }
+    
+    public void readSettings(Object settings) {
+        this.wizDescriptor = (WizardDescriptor)settings;
+    }
+    
+    public void storeSettings(Object settings) {
+    }
+    
 }

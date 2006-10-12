@@ -118,7 +118,6 @@ public class ChooseCustomizer extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ChooseCustomizer.class, "ACSN_Choose_Whens"));
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseCustomizer.class, "ACSD_Choose_Whens"));
 
-        jSpinner1.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner1.setModel(new SpinnerNumberModel(Choose.DEFAULT_WHENS, 1, Integer.MAX_VALUE, 1));
         jSpinner1.setEditor(new JSpinner.NumberEditor(jSpinner1, "#"));
         jSpinner1.setValue(new Integer(Choose.DEFAULT_WHENS));
@@ -130,7 +129,7 @@ public class ChooseCustomizer extends javax.swing.JPanel {
 
         jCheckBox1.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ChooseCustomizer.class, "LBL_Choose_Otherwise"));
-        jCheckBox1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -145,8 +144,7 @@ public class ChooseCustomizer extends javax.swing.JPanel {
         jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ChooseCustomizer.class, "ACSN_Choose_Otherwise"));
         jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ChooseCustomizer.class, "ACSD_Choose_Otherwise"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

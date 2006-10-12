@@ -77,7 +77,8 @@ public class ActivationCfgPropertyModel extends BeanTableModel {
 
     //BeanTableModel Methods
     public Object addRow(Object[] values){
-        ActivationConfigProperty param = StorageBeanFactory.getDefault().createActivationConfigProperty();
+        StorageBeanFactory storageFactory = ((MDEjb) getParent()).getConfig().getStorageFactory();
+        ActivationConfigProperty param = storageFactory.createActivationConfigProperty();
         param.setActivationConfigPropertyName((String)values[0]);
         param.setActivationConfigPropertyValue((String)values[1]);
         ((MDEjb)getParent()).addActivationConfigProperty(param);

@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<metaDD>
+	<meta-element>
+		<dtd-name>handler-chains</dtd-name>
+		<bean-name>HandlerChains</bean-name>
+	</meta-element>
+	<meta-element>
+		<dtd-name>handler-chain</dtd-name>
+		<bean-name>HandlerChain</bean-name>
+	</meta-element>
+	<meta-element>
+		<dtd-name>handler-chain-name</dtd-name>
+		<bean-name>HandlerChainName</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>handler</dtd-name>
+		<bean-name>Handler</bean-name>
+	</meta-element>
+	<meta-element>
+		<dtd-name>handler-class</dtd-name>
+		<bean-name>HandlerClass</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+
+	<meta-element>
+		<dtd-name>#PCDATA</dtd-name>
+		<bean-name>Pcdata</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+</metaDD>

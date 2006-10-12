@@ -33,6 +33,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import java.util.Enumeration;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -240,7 +241,13 @@ class NotifyUtil  {
 		conn = url.openConnection();
 		conn.setRequestProperty("\tContent-type","text/xml");  //NOI18N
 		conn.setDoOutput(true);
-		out = new PrintWriter(conn.getOutputStream());
+                try {
+                    out = new PrintWriter(conn.getOutputStream());
+                } catch (IOException e) {
+                    String msg = ResourceBundle.getBundle("org.netbeans.modules.web.monitor.server.Bundle").getString("MON_Warning_httpserver_problem"); // NOI18N
+                    System.out.println(msg);
+                    return;
+                }
 		if(debug) log("\tGot output stream");  //NOI18N
 		monData.write(out);
 		out.flush();
@@ -251,8 +258,13 @@ class NotifyUtil  {
 		    log("Wrote replay data to " + file); // NOI18N
 		}
 
-		in = new BufferedReader(new
-		    InputStreamReader(conn.getInputStream()));
+                try {
+                    in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                } catch (IOException e) {
+                    String msg = ResourceBundle.getBundle("org.netbeans.modules.web.monitor.server.Bundle").getString("MON_Warning_disabled_monitor"); // NOI18N
+                    System.out.println(msg);
+                    return;
+                }
 
 		String inputLine = null;
 

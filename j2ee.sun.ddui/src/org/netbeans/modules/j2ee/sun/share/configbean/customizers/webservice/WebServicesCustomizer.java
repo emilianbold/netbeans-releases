@@ -66,7 +66,7 @@ public class WebServicesCustomizer extends BaseCustomizer {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 5);
         add(jLblWebServicesDescription, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -75,8 +75,7 @@ public class WebServicesCustomizer extends BaseCustomizer {
         gridBagConstraints.weighty = 1.0;
         add(jPnlFiller, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLblWebServicesDescription;

@@ -19,9 +19,19 @@
 
 package org.netbeans.modules.tomcat5;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Locale;
+import org.netbeans.modules.tomcat5.config.WebappConfiguration;
+import org.netbeans.modules.tomcat5.config.gen.Server;
 import org.openide.filesystems.*;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
@@ -36,8 +46,6 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import java.io.*;
-import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.ide.StartTomcat;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.api.debugger.*;
@@ -53,6 +61,8 @@ import org.openide.util.NbBundle;
  * @author  Radim Kubacki
  */
 public class TomcatManager implements DeploymentManager {
+    
+    public static ErrorManager ERR = ErrorManager.getDefault().getInstance("org.netbeans.modules.tomcat5"); // NOI18N
 
     /** Enum value for get*Modules methods. */
     static final int ENUM_AVAILABLE = 0;
@@ -257,12 +267,7 @@ public class TomcatManager implements DeploymentManager {
 
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
 
-        try {
-            sdi = getStartTomcat().getDebugInfo(null);
-        } catch (Exception e) {
-            // don't care - just a try
-        }
-
+        sdi = getStartTomcat().getDebugInfo(null);
         if (sdi == null) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
         }
@@ -297,15 +302,8 @@ public class TomcatManager implements DeploymentManager {
      */
     public boolean isSuspended() {
 
-        ServerDebugInfo sdi = null;
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-
-        try {
-            sdi = getStartTomcat().getDebugInfo(null);
-        } catch (Exception e) {
-            // don't care - just a try
-        }
-
+        ServerDebugInfo sdi = getStartTomcat().getDebugInfo(null);
         if (sdi == null) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
         }
@@ -520,7 +518,13 @@ public class TomcatManager implements DeploymentManager {
         ProgressObject po = new MultiProgressObjectWrapper(tmImpls);
         
         for (int i = 0; i < tmID.length; i++) {
-            tmImpls[i].remove((TomcatModule)tmID[i]);
+            TomcatModule tm = (TomcatModule) tmID[i];
+            // it should not be allowed to undeploy the /manager application
+            if ("/manager".equals(tm.getPath())) { // NOI18N
+                String msg = NbBundle.getMessage(TomcatModule.class, "MSG_CannotUndeployManager");
+                throw new IllegalStateException(msg);
+            }
+            tmImpls[i].remove(tm);
         }
         return po;
     }
@@ -663,6 +667,8 @@ public class TomcatManager implements DeploymentManager {
                     TomcatFactory.getEM().notify(ErrorManager.INFORMATIONAL, ioe);
                 } catch (NumberFormatException nfe) {
                     TomcatFactory.getEM().notify(ErrorManager.INFORMATIONAL, nfe);
+                } catch (RuntimeException e) {
+                    TomcatFactory.getEM().notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
         }
@@ -675,6 +681,9 @@ public class TomcatManager implements DeploymentManager {
             if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                 TomcatFactory.getEM ().log (e.toString());
             }
+            return null;
+        } catch (RuntimeException e) {
+            TomcatFactory.getEM().notify(ErrorManager.INFORMATIONAL, e);
             return null;
         }
     }
@@ -722,6 +731,7 @@ public class TomcatManager implements DeploymentManager {
             String [] files = new String [] { 
                 "conf/catalina.policy",   // NOI18N
                 "conf/catalina.properties",   // NOI18N
+                "conf/logging.properties", // NOI18N
                 "conf/server.xml",   // NOI18N
                 "conf/tomcat-users.xml",   // NOI18N
                 "conf/web.xml",   // NOI18N
@@ -732,6 +742,7 @@ public class TomcatManager implements DeploymentManager {
             String [] patternFrom = new String [] { 
                 null, 
                 null, 
+                null,
                 null,
                 "</tomcat-users>",   // NOI18N
                 null,
@@ -748,6 +759,7 @@ public class TomcatManager implements DeploymentManager {
                 null, 
                 null, 
                 null,
+                null,
                 passwd != null ? "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager,admin\"/>\n</tomcat-users>" : null,   // NOI18N
                 null, 
                 "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N For bundled tomcat 5.0.x
@@ -762,7 +774,13 @@ public class TomcatManager implements DeploymentManager {
                 File toDir = new File (baseDir, sfolder); // NOI18N
 
                 if (patternTo[i] == null) {
-                    FileInputStream is = new FileInputStream (new File (fromDir, files[i].substring (slash+1)));
+                    File fileToCopy = new File(homeDir, files[i]);
+                    if (!fileToCopy.exists()) {
+                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot copy file " 
+                                + fileToCopy.getAbsolutePath() + " to the Tomcat base dir, since it does not exist."); // NOI18N
+                        continue;
+                    }
+                    FileInputStream is = new FileInputStream(fileToCopy);
                     FileOutputStream os = new FileOutputStream (new File (toDir, files[i].substring (slash+1)));
                     try {
                         final byte[] BUFFER = new byte[4096];

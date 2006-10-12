@@ -90,7 +90,12 @@ abstract public class SessionEjb extends BaseEjb implements WebserviceOperationL
         if("/ejb-jar/enterprise-beans/session/remote".equals(xpath)) { // NOI18N
             try {
                 if(xpathEvent.isAddEvent()) {
-                    setJndiName(getDefaultJndiName());
+                    // Only set JNDI name automatically for pre-EJB 3.0 beans.  We don't use
+                    // requiresJndiName() here because that we only want to confirm the version
+                    // and that method has more logic.
+                    if(EjbJarVersion.EJBJAR_2_1.compareTo(getJ2EEModuleVersion()) >= 0 ) {
+                        setJndiName(getDefaultJndiName());
+                    }
                 } else if(xpathEvent.isRemoveEvent()) {
                     setJndiName(null);
                 }

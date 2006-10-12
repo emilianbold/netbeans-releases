@@ -28,10 +28,8 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="cp"/>
                 <pathelement location="${ant.jar}"/>
                 <pathelement location="${tools.jar}"/>
-                <pathelement location="../external/servlet-api-2.4.jar"/>
-                <pathelement location="../external/jsp-api-2.0.jar"/>
-                <pathelement location="../external/jasper-compiler-5.5.9.jar"/>
-                <pathelement location="../external/jasper-runtime-5.5.9.jar"/>
+                <pathelement location="../external/servlet2.5-jsp2.1-api.jar"/>
+                <pathelement location="../external/glassfish-jspparser.jar"/>
                 <pathelement location="../../libs/external/commons-logging-1.0.4.jar"/>
             </classpath>
         </javac>

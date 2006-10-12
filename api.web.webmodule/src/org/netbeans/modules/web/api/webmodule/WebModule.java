@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.web.api.webmodule;
 
+import java.util.Collections;
 import java.util.Iterator;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
+import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.web.webmodule.WebModuleAccessor;
 import org.netbeans.modules.web.spi.webmodule.*;
 import org.openide.filesystems.FileObject;
@@ -48,11 +52,12 @@ import org.openide.util.Lookup;
  *
  * @author  Pavel Buzek
  */
-public final class WebModule {
+public final class WebModule implements MetadataUnit {
     
     //TO-DO: the J2EE_13_LEVEL and J2EE_14_LEVEL constants should be got from org.netbeans.modules.j2ee.common.J2eeProjectConstants 
     public static final String J2EE_13_LEVEL = "1.3"; //NOI18N
     public static final String J2EE_14_LEVEL = "1.4"; //NOI18N
+    public static final String JAVA_EE_5_LEVEL = "1.5"; //NOI18N
     
     private WebModuleImplementation impl;
     private static final Lookup.Result implementations =
@@ -136,6 +141,16 @@ public final class WebModule {
         return impl.getJ2eePlatformVersion ();
     }
     
+    /** Source roots associated with the web module.
+     * <div class="nonnormative">
+     * Note that not all the java source roots in the project (e.g. in a freeform project)
+     * belong to the web module.
+     * </div>
+     */
+    public FileObject[] getJavaSources() {
+        return impl.getJavaSources();
+    }
+    
     /** Returns true if the object represents the same web module.
      */
     public boolean equals (Object obj) {
@@ -152,5 +167,18 @@ public final class WebModule {
     
     public int hashCode () {
         return getDocumentBase ().getPath ().length () + getContextPath ().length ();
+    }
+    
+    public ClassPath getClassPath() {
+        FileObject[] roots = getJavaSources();
+        if (roots.length > 0) {
+            FileObject fo = roots[0];
+            return ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                ClassPath.getClassPath(fo, ClassPath.SOURCE),
+                ClassPath.getClassPath(fo, ClassPath.COMPILE)
+            });
+        } else {
+            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(Collections.emptyList());
+        }
     }
 }

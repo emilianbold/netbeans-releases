@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT endpoints (endpoint)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT endpoint ()>
+<!ATTLIST endpoint
+    name CDATA #REQUIRED
+    implementation CDATA #REQUIRED
+    url-pattern CDATA #REQUIRED
+ >

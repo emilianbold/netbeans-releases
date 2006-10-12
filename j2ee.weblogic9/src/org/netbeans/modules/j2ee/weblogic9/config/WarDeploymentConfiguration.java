@@ -31,6 +31,7 @@ import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
+import org.netbeans.modules.schema2beans.AttrProp;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -244,6 +245,10 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
      */
     private WeblogicWebApp genereateWeblogicWebApp() {
         WeblogicWebApp webLogicWebApp = new WeblogicWebApp();
+        webLogicWebApp.createAttribute("xmlns:j2ee", "xmlns:j2ee", AttrProp.CDATA | AttrProp.IMPLIED, null, null);
+        webLogicWebApp.setAttributeValue("xmlns:j2ee", "http://java.sun.com/xml/ns/j2ee");
+        webLogicWebApp.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
+        webLogicWebApp.setAttributeValue("xsi:schemaLocation", "http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-web-app.xsd"); // NOI18N
         webLogicWebApp.setContextRoot(new String [] {""}); // NOI18N
         return webLogicWebApp;
     }

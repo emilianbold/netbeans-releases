@@ -40,7 +40,6 @@ class SortButton extends JButton {
     private Icon[] icon = new Icon[3];
     
     public SortButton(final DisplayTable dt) {    
-	
 	super();
 	icon[0] = new ImageIcon(TransactionView.class.getResource
 				("/org/netbeans/modules/web/monitor/client/icons/unsorted.gif")); // NOI18N)

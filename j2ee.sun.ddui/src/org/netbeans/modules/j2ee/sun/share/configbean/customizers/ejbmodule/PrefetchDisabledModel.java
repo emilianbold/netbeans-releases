@@ -119,8 +119,10 @@ public class PrefetchDisabledModel extends MethodTableModel {
 
     //convert the given Method object into the schama2beans DD (Method) object
     protected Object getDDMethod(Object object){
+        StorageBeanFactory storageFactory = cmpEntityEjb.getConfig().getStorageFactory();
+        
         ConfigQuery.MethodData method = (ConfigQuery.MethodData) object;
-        QueryMethod queryMethod = StorageBeanFactory.getDefault().createQueryMethod();
+        QueryMethod queryMethod = storageFactory.createQueryMethod();
 
         queryMethod.setMethodName(method.getOperationName());
         List params = method.getParameters();

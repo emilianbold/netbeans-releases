@@ -26,9 +26,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.text.MessageFormat;
+import java.util.Map;
 
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.DDBeanRoot;
+import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.xml.sax.SAXException;
@@ -53,31 +55,45 @@ import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
  *    by child DConfigBeans have been removed.):
  *
  *	sun-web-app : SunWebApp
- *		context-root : String?
- *		class-loader : Boolean?
- *			[attr: extra-class-path CDATA #IMPLIED ]
- *			[attr: delegate CDATA true]
+ *		[attr: error-url CDATA ]
+ *		[attr: httpservlet-security-provider CDATA #IMPLIED ]
+ *		contextRoot <context-root> : String[0,1]
+ *		idempotentUrlPattern <idempotent-url-pattern> : boolean[0,n]
+ *			[attr: url-pattern CDATA #REQUIRED ]
+ *			[attr: num-of-retries CDATA -1]
  *			EMPTY : String
- *		jsp-config : JspConfig?
- *			property : WebProperty[0,n]
+ *		classLoader <class-loader> : ClassLoader[0,1]
+ *			[attr: extra-class-path CDATA #IMPLIED ]
+ *			[attr: delegate ENUM ( yes no on off 1 0 true false ) true]
+ *			[attr: dynamic-reload-interval CDATA #IMPLIED ]
+ *			webProperty <property> : WebProperty[0,n]
  *				[attr: name CDATA #REQUIRED ]
  *				[attr: value CDATA #REQUIRED ]
- *				description : String?
- *		locale-charset-info : LocaleCharsetInfo?
- *			[attr: default-locale CDATA #REQUIRED ]
- *			locale-charset-map : LocaleCharsetMap[1,n]
+ *				description <description> : String[0,1]
+ *		jspConfig <jsp-config> : JspConfig[0,1]
+ *			property <property> : WebProperty[0,n]
+ *				[attr: name CDATA #REQUIRED ]
+ *				[attr: value CDATA #REQUIRED ]
+ *				description <description> : String[0,1]
+ *		localeCharsetInfo <locale-charset-info> : LocaleCharsetInfo[0,1]
+ *			[attr: default-locale CDATA #IMPLIED ]
+ *			localeCharsetMap <locale-charset-map> : LocaleCharsetMap[1,n]
  *				[attr: locale CDATA #REQUIRED ]
  *				[attr: agent CDATA #IMPLIED ]
  *				[attr: charset CDATA #REQUIRED ]
- *				description : String?
- *			parameter-encoding : Boolean?
+ *				description <description> : String[0,1]
+ *			parameterEncoding <parameter-encoding> : boolean[0,1]
  *				[attr: form-hint-field CDATA #IMPLIED ]
  *				[attr: default-charset CDATA #IMPLIED ]
  *				EMPTY : String
- *		property : WebProperty[0,n]
+ *		parameterEncoding <parameter-encoding> : boolean[0,1]
+ *			[attr: form-hint-field CDATA #IMPLIED ]
+ *			[attr: default-charset CDATA #IMPLIED ]
+ *			EMPTY : String
+ *		property <property> : WebProperty[0,n]
  *			[attr: name CDATA #REQUIRED ]
  *			[attr: value CDATA #REQUIRED ]
- *			description : String?
+ *			description <description> : String[0,1]
  *		message-destination : MessageDestination[0,n]
  *			message-destination-name : String
  *			jndi-name : String
@@ -184,6 +200,17 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		return "AS_CFG_WebAppGeneral";
 	}
 	
+	public DConfigBean getDConfigBean(DDBeanRoot dDBeanRoot) {
+        BaseRoot rootDCBean = null;
+        
+        J2EEBaseVersion moduleVersion = getJ2EEModuleVersion();
+        if(moduleVersion.compareTo(ServletVersion.SERVLET_2_4) >= 0) {
+            rootDCBean = createWebServicesRoot(dDBeanRoot);
+        }
+        
+        return rootDCBean;
+	}    
+    
 	/** Get the servlet version of this module.
 	 *
 	 * @return ServletVersion enum for the version of this module.
@@ -207,6 +234,13 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		return servletVersion;
 	}
 	
+    /** Generate a DOCTYPE string for the specified version (which may be different
+     *  than the current version of the tree
+     */
+    public String generateDocType(ASDDVersion version) {
+        return generateDocType("sun-web-app", version.getSunWebAppPublicId(), version.getSunWebAppSystemId()); // NOI18N
+    }
+     
 	/** !PW FIXME Workaround for broken XpathEvent.BEAN_ADDED not being sent.
 	 *  Override this method (see WebAppRoot) to be notified if a child bean
 	 *  is created.  See IZ 41214
@@ -236,8 +270,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	 */
 	public List getServlets() {
 		List servlets = new ArrayList();
-		Collection collection = getChildren();
-		for(Iterator iter = collection.iterator(); iter.hasNext(); ) {
+		for(Iterator iter = getChildren().iterator(); iter.hasNext(); ) {
 			Object child = iter.next();
 			if(child instanceof ServletRef) {
 				servlets.add(child);
@@ -254,12 +287,9 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		Collection snippets = new ArrayList();
 		Snippet snipOne = new DefaultSnippet() {
 			public CommonDDBean getDDSnippet() {
-				DDProvider provider = DDProvider.getDefault();
-				SunWebApp swa = (SunWebApp) provider.newGraph(SunWebApp.class);
-
-//				ServletVersion servletVersion = (ServletVersion) getJ2EEModuleVersion();
-//				swa.graphManager().setDoctype(servletVersion.getSunPublicId(), servletVersion.getSunSystemId());
-				
+                SunWebApp swa = getConfig().getStorageFactory().createSunWebApp();
+                String version = swa.getVersion().toString();
+                
 				if(contextRoot != null) {
 					swa.setContextRoot(contextRoot);
 				}
@@ -268,10 +298,16 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					try {
 						swa.setErrorUrl(errorUrl);
 					} catch(VersionNotSupportedException ex) {
-						// should not happen w/ 8.1 files.
 					}
 				}
 
+				if(httpservletSecurityProvider != null) {
+					try {
+						swa.setHttpservletSecurityProvider(httpservletSecurityProvider);
+					} catch(VersionNotSupportedException ex) {
+					}
+				}
+                
                 if(classLoader != null) {
                     if(classLoader.toString().equals("true")){       //NOI18N
                         try {
@@ -285,6 +321,16 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
                             if(Utils.notEmpty(getExtraClassPath())) {
                                 webClassLoader.setExtraClassPath(getExtraClassPath());
+                            }
+                            
+                            if(Utils.notEmpty(getDynamicReloadInterval())) {
+                                webClassLoader.setDynamicReloadInterval(getDynamicReloadInterval());
+                            }
+                            
+                            WebProperty [] classLoaderProps = (WebProperty []) 
+                                Utils.listToArray(getClassLoaderProperties(), WebProperty.class, version);
+                            if(classLoaderProps != null) {
+                                webClassLoader.setWebProperty(classLoaderProps);
                             }
 
                             swa.setMyClassLoader(webClassLoader);
@@ -315,17 +361,17 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
 				JspConfig jc = getJspConfig();
 				if(jc.sizeWebProperty() > 0) {
-					swa.setJspConfig((JspConfig) jc.clone());
+					swa.setJspConfig((JspConfig) jc.cloneVersion(version));
 				}
 
 				WebProperty [] webProps = (WebProperty []) 
-					Utils.listToArray(getProperties(), WebProperty.class);
+					Utils.listToArray(getProperties(), WebProperty.class, version);
 				if(webProps != null) {
 					swa.setWebProperty(webProps);
 				}
 				
 				MessageDestination [] msgDests = (MessageDestination []) 
-					Utils.listToArray(getMessageDestinations(), MessageDestination.class);
+					Utils.listToArray(getMessageDestinations(), MessageDestination.class, version);
 				if(msgDests != null) {
 					swa.setMessageDestination(msgDests);
 				}
@@ -335,7 +381,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					Utils.notEmpty(localeInfo.getParameterEncodingDefaultCharset()) ||
 					Utils.notEmpty(localeInfo.getParameterEncodingFormHintField())
 					) {
-					swa.setLocaleCharsetInfo((LocaleCharsetInfo) localeInfo.clone());
+					swa.setLocaleCharsetInfo((LocaleCharsetInfo) localeInfo.cloneVersion(version));
 				}
 				
 				// SessionConfig snippet is retrieved below and added to the snippet list
@@ -344,6 +390,18 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				// Cache snippet is retrieved below and added to the snippet list
 				// for WebAppRoot.
 				
+                /* IZ 84549 - add remaining saved role mappings here.  All entries that are represented
+                 * by real DConfigBeans should have been removed by now. */
+                if(savedRoleMappings != null && savedRoleMappings.size() > 0) {
+                    for (Iterator iter = savedRoleMappings.entrySet().iterator(); iter.hasNext();) {
+                        Map.Entry entry = (Map.Entry) iter.next();
+                        org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping mapping = 
+                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) entry.getValue();
+                        swa.addSecurityRoleMapping(
+                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) mapping.cloneVersion(version));
+                    }
+                }                
+                
 				return swa;
 			}
 		};
@@ -364,14 +422,13 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                 result = provider.getWebDDRoot(new org.xml.sax.InputSource(stream));
             } else {
                 // If we have a null stream, return a blank graph.
-                result = (SunWebApp) provider.newGraph(SunWebApp.class);
+                result = (SunWebApp) provider.newGraph(SunWebApp.class,
+                        getConfig().getAppServerVersion().getWebAppVersionAsString());
             }
 
             // First set our version to match that of this deployment descriptor.
             getConfig().internalSetAppServerVersion(ASDDVersion.getASDDVersionFromServletVersion(result.getVersion()));
             
-            // Now map graph to that of 8.1.
-            result.setVersion(ASDDVersion.SUN_APPSERVER_8_1.getNumericWebAppVersion());
             return result;
         }
     }
@@ -409,13 +466,22 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				errorUrl = "";
 			}
             
+ 			try {
+				httpservletSecurityProvider = beanGraph.getHttpservletSecurityProvider();
+			} catch(VersionNotSupportedException ex) {
+				httpservletSecurityProvider = "";
+			}
+            
             try {
                 // This block is separate from the rest because classloader exists for both 2.4.0 and 2.4.1
                 MyClassLoader myClassLoader = beanGraph.getMyClassLoader();
                 if(myClassLoader != null) {
                     delegate = Utils.booleanValueOf(myClassLoader.getDelegate()) ? Boolean.TRUE : Boolean.FALSE;
                     extraClassPath = myClassLoader.getExtraClassPath();
-                    if((delegate != null) || (extraClassPath != null)) {
+                    dynamicReloadInterval = myClassLoader.getDynamicReloadInterval();
+        			classLoaderProperties = Utils.arrayToList(myClassLoader.getWebProperty());
+                    if((delegate != null) || (extraClassPath != null) || (dynamicReloadInterval != null) || 
+                            (classLoaderProperties != null && classLoaderProperties.size() > 0)) {
                         classLoader = Boolean.TRUE;
                     }
                 }
@@ -462,6 +528,9 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					)) {
 				localeInfo = (LocaleCharsetInfo) info.clone();
 			}
+            
+            // For IZ 84549 - save any security-role-mappings in graph.
+            saveMappingsToCache(beanGraph.getSecurityRoleMapping());
 		} else {
 			setDefaultProperties();
 		}
@@ -476,15 +545,17 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	}	
 	
 	protected void clearProperties() {
-		DDProvider provider = DDProvider.getDefault();
-		StorageBeanFactory beanFactory = StorageBeanFactory.getDefault();
+		StorageBeanFactory beanFactory = getConfig().getStorageFactory();
         
 		contextRoot = null;
 		errorUrl = null;
+        httpservletSecurityProvider = null;
 		extraClassPath = null;
+        dynamicReloadInterval = null;
+        classLoaderProperties = null;
 		defaultCharset = null;
 		formHintField = null;
-		idempotentUrlPattern = (SunWebApp) provider.newGraph(SunWebApp.class);
+		idempotentUrlPattern = beanFactory.createSunWebApp();
 		jspConfig = beanFactory.createJspConfig();
 		properties = null;
 		messageDestinations = null;
@@ -495,7 +566,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	}
 	
 	protected void setDefaultProperties() {
-		StorageBeanFactory beanFactory = StorageBeanFactory.getDefault();
+		StorageBeanFactory beanFactory = getConfig().getStorageFactory();
         
 		// Add two properties to make developing and debugging JSP's easier by
 		// by default for new web applications.]
@@ -541,10 +612,16 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 // Removed as genuine DConfigBean due to issues with NetBeans DDEditor & web.xml			
 //			webAppRootFactoryMap.put("session-config", new DCBGenericFactory(SessionConfiguration.class));	// NOI18N
 			
-			if(getJ2EEModuleVersion().compareTo(ServletVersion.SERVLET_2_4) >= 0) {
+			J2EEBaseVersion moduleVersion = getJ2EEModuleVersion();
+			if(moduleVersion.compareTo(ServletVersion.SERVLET_2_4) >= 0) {
+//				webAppRootFactoryMap.put("message-destination", new DCBGenericFactory(MessageDestination.class)); // NOI18N
 				webAppRootFactoryMap.put("service-ref", new DCBGenericFactory(ServiceRef.class));			// NOI18N
+
+				if(moduleVersion.compareTo(ServletVersion.SERVLET_2_5) >= 0) {
+					webAppRootFactoryMap.put("message-destination-ref", new DCBGenericFactory(MessageDestinationRef.class)); // NOI18N
+				}
 			}
- 		}
+		}
 		
 		return webAppRootFactoryMap;
 	}	
@@ -559,6 +636,9 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	/** Holds value of property errorUrl. */
 	private String errorUrl;
     
+	/** Holds value of property httpservletSecurityProvider. */
+	private String httpservletSecurityProvider;
+    
 	/** Holds value of property classLoader. */
 	private Boolean classLoader;
 	
@@ -568,6 +648,12 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	/** Holds value of property delegate. */
 	private Boolean delegate;
 
+	/** Holds value of property dynamicReloadInterval. */
+	private String dynamicReloadInterval;
+	
+	/** Holds list of WebProperty classLoaderProperties. */
+	private List classLoaderProperties;
+    
 	/** Holds value of property parameterEncoding-defaultCharset. */
 	private String defaultCharset;
         
@@ -610,43 +696,13 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	 *
 	 */
 	public void setContextRoot(String newContextRoot) throws java.beans.PropertyVetoException {
-        newContextRoot = encodeUrlField(newContextRoot);
+        newContextRoot = Utils.encodeUrlField(newContextRoot);
 		String oldContextRoot = contextRoot;
 		getVCS().fireVetoableChange("contextRoot", oldContextRoot, newContextRoot);
 		contextRoot = newContextRoot;
 		getPCS().firePropertyChange("contextRoot", oldContextRoot, contextRoot);
 	}
     
-    private String encodeUrlField(String url) {
-        String encodedUrl = url;
-        
-        // Change spaces to underscores - this step might be redundant now, considering
-        // the UTF8 encoding being done now.
-        if(encodedUrl != null) {
-            encodedUrl = encodedUrl.replace (' ', '_'); //NOI18N
-        }
-        
-        // For each url element, do UTF encoding of that element.
-        if(encodedUrl != null) { // see bug 56280
-            try {
-                String result = ""; // NOI18N
-                String s[] = encodedUrl.split("/"); // NOI18N
-                for(int i = 0; i < s.length; i++) {
-                    result = result + java.net.URLEncoder.encode(s[i], "UTF-8"); // NOI18N
-                    if(i != s.length - 1) {
-                        result = result + "/"; // NOI18N
-                    }
-                }
-                encodedUrl = result;
-            } catch (Exception ex){
-                // log this
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-        }
-        
-        return encodedUrl;
-    }
-	
     /** Getter for property errorUrl.
      * @return Value of property errorUrl.
      *
@@ -662,13 +718,34 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
      *
      */
     public void setErrorUrl(String newErrorUrl) throws java.beans.PropertyVetoException {
-        newErrorUrl = encodeUrlField(newErrorUrl);
+        newErrorUrl = Utils.encodeUrlField(newErrorUrl);
         String oldErrorUrl = errorUrl;
         getVCS().fireVetoableChange("errorUrl", oldErrorUrl, newErrorUrl);
         errorUrl = newErrorUrl;
         getPCS().firePropertyChange("errorUrl", oldErrorUrl, errorUrl);
     }
 
+    /** Getter for property httpservletSecurityProvider.
+     * @return Value of property httpservletSecurityProvider.
+     *
+     */
+    public String getHttpservletSecurityProvider() {
+        return httpservletSecurityProvider;
+    }
+
+    /** Setter for property httpservletSecurityProvider.
+     * @param newHttpservletSecurityProvider New value of property httpservletSecurityProvider.
+     *
+     * @throws PropertyVetoException
+     *
+     */
+    public void setHttpservletSecurityProvider(String newHttpservletSecurityProvider) throws java.beans.PropertyVetoException {
+        String oldHttpservletSecurityProvider = httpservletSecurityProvider;
+        getVCS().fireVetoableChange("httpservletSecurityProvider", oldHttpservletSecurityProvider, newHttpservletSecurityProvider);
+        httpservletSecurityProvider = newHttpservletSecurityProvider;
+        getPCS().firePropertyChange("httpservletSecurityProvider", oldHttpservletSecurityProvider, httpservletSecurityProvider);
+    }
+    
 	/** Getter for property classLoader.
 	 * @return Value of property classLoader.
 	 *
@@ -691,16 +768,16 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		getPCS().firePropertyChange("classLoader", oldClassLoader, classLoader);
 	}
 	
-	/** Getter for property classLoaderExtraClassPath.
-	 * @return Value of property classLoaderExtraClassPath.
+	/** Getter for property extraClassPath.
+	 * @return Value of property extraClassPath.
 	 *
 	 */
 	public String getExtraClassPath() {
 		return extraClassPath;
 	}
 	
-	/** Setter for property classLoaderExtraClassPath.
-	 * @param classLoaderExtraClassPath New value of property classLoaderExtraClassPath.
+	/** Setter for property extraClassPath.
+	 * @param newExtraClassPath New value of property extraClassPath.
 	 *
 	 * @throws PropertyVetoException
 	 *
@@ -712,16 +789,16 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		getPCS().firePropertyChange("extraClassPath", oldExtraClassPath, extraClassPath);
 	}
 	
-	/** Getter for property classLoaderDelegate.
-	 * @return Value of property classLoaderDelegate.
+	/** Getter for property delegate.
+	 * @return Value of property delegate.
 	 *
 	 */
 	public boolean isDelegate() {
 		return delegate.booleanValue();
 	}
 	
-	/** Setter for property classLoaderDelegate.
-	 * @param classLoaderDelegate New value of property classLoaderDelegate.
+	/** Setter for property delegate.
+	 * @param newDelegate New value of property delegate.
 	 *
 	 * @throws PropertyVetoException
 	 *
@@ -733,7 +810,68 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		delegate = newDelegateAsBoolean;
 		getPCS().firePropertyChange("delegate", oldDelegate, delegate);		
 	}
-        
+
+	/** Getter for property dynamicReloadInterval.
+	 * @return Value of property dynamicReloadInterval.
+	 *
+	 */
+	public String getDynamicReloadInterval() {
+		return dynamicReloadInterval;
+	}
+	
+	/** Setter for property dynamicReloadInterval.
+	 * @param newDynamicReloadInterval New value of property dynamicReloadInterval.
+	 *
+	 * @throws PropertyVetoException
+	 *
+	 */
+	public void setDynamicReloadInterval(String newDynamicReloadInterval) throws java.beans.PropertyVetoException {
+		String oldDynamicReloadInterval = dynamicReloadInterval;
+		getVCS().fireVetoableChange("dynamicReloadInterval", oldDynamicReloadInterval, newDynamicReloadInterval);
+		dynamicReloadInterval = newDynamicReloadInterval;
+		getPCS().firePropertyChange("dynamicReloadInterval", oldDynamicReloadInterval, dynamicReloadInterval);
+	}
+	
+	/** Getter for property classLoaderProperties.
+	 * @return Value of property classLoaderProperties.
+	 *
+	 */
+	public List getClassLoaderProperties() {
+		return classLoaderProperties;
+	}
+	
+	public WebProperty getClassLoaderProperty(int index) {
+		return (WebProperty) classLoaderProperties.get(index);
+	}
+	
+	/** Setter for property classLoaderProperties.
+	 * @param newClassLoaderProperty New value of property classLoaderProperties.
+	 *
+	 * @throws PropertyVetoException
+	 *
+	 */
+    public void setClassLoaderProperties(List newClassLoaderProperties) throws java.beans.PropertyVetoException {
+        List oldClassLoaderProperties = classLoaderProperties;
+        getVCS().fireVetoableChange("classLoaderProperties", oldClassLoaderProperties, newClassLoaderProperties);	// NOI18N
+        classLoaderProperties = newClassLoaderProperties;
+        getPCS().firePropertyChange("classLoaderProperties", oldClassLoaderProperties, classLoaderProperties);	// NOI18N
+    }
+    
+	public void addClassLoaderProperty(WebProperty newClassLoaderProperty) throws java.beans.PropertyVetoException {
+		getVCS().fireVetoableChange("classLoaderProperty", null, newClassLoaderProperty);	// NOI18N
+		if(classLoaderProperties == null) {
+			classLoaderProperties = new ArrayList();
+		}
+		classLoaderProperties.add(newClassLoaderProperty);
+		getPCS().firePropertyChange("classLoaderProperty", null, newClassLoaderProperty );	// NOI18N
+	}
+	
+	public void removeClassLoaderProperty(WebProperty oldClassLoaderProperty) throws java.beans.PropertyVetoException {
+		getVCS().fireVetoableChange("classLoaderProperty", oldClassLoaderProperty, null);	// NOI18N
+		classLoaderProperties.remove(oldClassLoaderProperty);
+		getPCS().firePropertyChange("classLoaderProperty", oldClassLoaderProperty, null );	// NOI18N
+	}
+
 	/** Getter for property parameterEncodingDefaultCharset.
 	 * @return Value of property parameterEncodingDefaultCharset.
 	 *

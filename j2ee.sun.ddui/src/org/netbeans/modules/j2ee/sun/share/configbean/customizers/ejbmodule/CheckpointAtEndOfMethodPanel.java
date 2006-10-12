@@ -87,7 +87,7 @@ public class CheckpointAtEndOfMethodPanel extends MultiMethodTablePanel{
 
 
     protected String getSelectionLabelText(){
-        return bundle.getString("LBL_Interface");                       //NOI18N
+        return bundle.getString("LBL_Interface_1");                       //NOI18N
     }
 
 

@@ -22,11 +22,9 @@ package org.netbeans.modules.web.jspparser;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.StringTokenizer;
-
-import junit.framework.*;
+import java.util.Map;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
@@ -39,8 +37,9 @@ import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 
 /** JUnit test suite with Jemmy support
  *
@@ -79,28 +78,61 @@ public class ParseTest extends NbTestCase {
     public void testAnalysisFunction() throws Exception {
         parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/el/functions.jsp");
     }
-    
-    // The test has deferent result for 1.4 jdk and and other. 
-    public void testAnalysisXMLTextRotate4() throws Exception {
-        String javaVersion = System.getProperty("java.version");//NOI18N
-        if (javaVersion.startsWith("1.4")){ //NOI18N
-            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate4.jspx"); //NOI18N
+        
+    public void testAnalysisXMLTextRotate_1_6() throws Exception {
+        String javaVersion = System.getProperty("java.version"); //NOI18N
+        
+        if (javaVersion.startsWith("1.6")){ //NOI18N
+            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx"); //NOI18N
         }
     }
     
-    public void testAnalysisXMLTextRotate() throws Exception {
+    public void testAnalysisXMLTextRotate_1_5() throws Exception {
         String javaVersion = System.getProperty("java.version"); //NOI18N
-        if (!javaVersion.startsWith("1.4")){ //NOI18N
+        
+        if (javaVersion.startsWith("1.5")){ //NOI18N
             parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx"); //NOI18N
-        }        
+        }
+        
+    }
+    
+    public void testAnalysisXMLTextRotate_1_4() throws Exception {
+        String javaVersion = System.getProperty("java.version"); //NOI18N
+        
+        if (javaVersion.startsWith("1.4")){ //NOI18N
+            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx"); //NOI18N
+        }
     }
     
     public void testAnalysisTagLibFromTagFiles() throws Exception {
-        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/testTagLibs.jsp");
+        String javaVersion = System.getProperty("java.version"); //NOI18N
+        if (!javaVersion.startsWith("1.6")){ //NOI18N
+            parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/testTagLibs.jsp");
+        }
     }
 
-    public void testProjectAnalysisFunction() throws Exception {
-        parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/el/functions.jsp");
+    public void testAnalysisTagLibFromTagFiles_1_6() throws Exception {
+        String javaVersion = System.getProperty("java.version"); //NOI18N
+        if (javaVersion.startsWith("1.6")){ //NOI18N
+            parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/testTagLibs.jsp");
+        }
+    }
+    
+    // test for issue #70426
+    public void testGetTagLibMap70426() throws Exception{
+        Object o = ProjectSupport.openProject(Manager.getWorkDirPath()+"/emptyWebProject");
+        Project project = (Project)o;
+        File f = new File(Manager.getWorkDirPath() + "/emptyWebProject/web/index.jsp");
+        FileObject jspFo = FileUtil.fromFile(f)[0];
+        JspParserAPI.WebModule wm = TestUtil.getWebModule(jspFo);
+        Map library = JspParserFactory.getJspParser().getTaglibMap(wm);
+        System.out.println("map->" + library);
+        Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
+        ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
+        cpExtender.addLibrary(jstlLibrary);
+        library = JspParserFactory.getJspParser().getTaglibMap(wm);
+        System.out.println("map->" + library);
+        assertTrue("The JSTL/core library was not returned.", (library.get("http://java.sun.com/jsp/jstl/core")) != null);
     }
     
     public void parserTestInProject(String projectFolderName, String pagePath) throws Exception{
@@ -117,11 +149,12 @@ public class ParseTest extends NbTestCase {
         if (jspFo == null) 
             log (pagePath + " not found.");
         log("Parsing page " + pagePath);
+
         JspParserAPI.ParseResult result = JspParserFactory.getJspParser()
-                .analyzePage(jspFo, TestUtil.getWebModule(jspFo), JspParserAPI.ERROR_IGNORE);
-        
+                    .analyzePage(jspFo, TestUtil.getWebModule(jspFo), JspParserAPI.ERROR_IGNORE);        
         if (ProjectSupport.closeProject(ProjectUtils.getInformation(project).getName()))
             log ("Project closed.");
+        assertFalse("The result from the parser was not obtained.", result == null);
         File goldenF = null;
         File outFile = null;
         try {

@@ -78,6 +78,13 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
                     "MSG_EnterHost",h));                                     //NOI18N
             return false;            
         }
+        if (h.indexOf("://") > -1) {
+            // IZ 77187
+            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(AddDomainHostPortPanel.class, 
+                    "MSG_exclude_protocol",h));                                 //NOI18N
+            return false;                        
+        }
         int p = component.getPort();
         try {
             InetAddress ia = InetAddress.getByName(h);

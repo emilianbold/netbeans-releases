@@ -20,9 +20,13 @@
 
 package org.netbeans.modules.web.jsf;
 
+import org.netbeans.modules.web.jsf.config.model.FacesConfig;
 import org.netbeans.modules.xml.catalog.spi.*;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+
 /**
  *
  * @author  Petr Pisl
@@ -31,10 +35,16 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
 
     private static final String JSF_ID_1_0 = "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.0//EN"; // NOI18N
     private static final String JSF_ID_1_1 = "-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN"; // NOI18N
-
-    private static final String URL_JSF_1_0 ="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_0.dtd";
-    private static final String URL_JSF_1_1 ="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_1.dtd";
     
+    private static final String URL_JSF_1_0 ="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_0.dtd"; // NOI18N
+    private static final String URL_JSF_1_1 ="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_1.dtd"; // NOI18N
+    
+    public static final String JAVAEE_NS = "http://java.sun.com/xml/ns/javaee";  // NOI18N
+    private static final String JSF_1_2_XSD="web-facesconfig_1_2.xsd"; // NOI18N
+    private static final String JSF_1_2=JAVAEE_NS+"/"+JSF_1_2_XSD; // NOI18N
+    public static final String JSF_ID_1_2="SCHEMA:"+JSF_1_2; // NOI18N
+    private static final String URL_JSF_1_2="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_2.xsd"; // NOI18N
+    private static final String URL_JSF_1_2_DTD="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_2.dtd"; // NOI18N
     
     /** Creates a new instance of StrutsCatalog */
     public JSFCatalog() {
@@ -48,6 +58,7 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
         java.util.List list = new java.util.ArrayList();
         list.add(JSF_ID_1_0);
         list.add(JSF_ID_1_1);
+        list.add(JSF_ID_1_2);
         return list.listIterator();
     }
     
@@ -60,6 +71,8 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             return URL_JSF_1_0;
         else if (JSF_ID_1_1.equals(publicId))
             return URL_JSF_1_1;
+        else if (JSF_ID_1_2.equals(publicId))
+            return URL_JSF_1_2_DTD;
         else return null;
     }
     
@@ -125,6 +138,10 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
             return new org.xml.sax.InputSource(URL_JSF_1_0);
         } else if (JSF_ID_1_1.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_JSF_1_1);
+        } else if (JSF_1_2.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_JSF_1_2);
+        } else if (systemId!=null && systemId.endsWith(JSF_1_2_XSD)) {
+            return new org.xml.sax.InputSource(URL_JSF_1_2);    
         } else {
             return null;
         }
@@ -144,4 +161,24 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
     public String resolvePublic(String publicId) {
         return null;
     }
+    
+    public static String extractVersion(Document document) {
+        // first check the doc type to see if there is one
+        DocumentType dt = document.getDoctype();
+        // This is the default version
+        if (dt != null) {
+            if (JSF_ID_1_0.equals(dt.getPublicId())) {
+                return FacesConfig.VERSION_1_0;
+            }
+            if (JSF_ID_1_1.equals(dt.getPublicId())) {
+                return FacesConfig.VERSION_1_1;
+            }
+            if (JSF_ID_1_2.equals(dt.getPublicId())) {
+                return FacesConfig.VERSION_1_2;
+            }
+        }
+        return FacesConfig.VERSION_1_2;
+
+    }
+    
 }

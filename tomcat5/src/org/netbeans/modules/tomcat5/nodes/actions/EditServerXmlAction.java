@@ -24,13 +24,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode;
-import org.openide.filesystems.*;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.cookies.EditorCookie;
-import java.io.File;
 
 /**
  * Opens server.xml file in editor.

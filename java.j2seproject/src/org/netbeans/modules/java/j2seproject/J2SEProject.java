@@ -45,9 +45,16 @@ import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
+import org.netbeans.modules.java.j2seproject.jaxws.J2SEProjectJAXWSClientSupport;
 import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesSupportProvider;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModelProvider;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
+import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -58,7 +65,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -69,10 +75,13 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -101,7 +110,12 @@ public final class J2SEProject implements Project, AntProjectListener {
     
     // WS client support
     private J2SEProjectWebServicesClientSupport j2seProjectWebServicesClientSupport;
+    private J2SEProjectJAXWSClientSupport j2seJAXWSClientSupport;
     private WebServicesClientSupport apiWebServicesClientSupport;
+    private JAXWSClientSupport apiJaxwsClientSupport;
+    private JaxWsModel jaxWsModel;
+    private JaxWsListener jaxWsListener;
+    private FileObject jaxWsFo;
 
     J2SEProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -113,6 +127,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             UpdateHelper.createDefaultNotifier());
         j2seProjectWebServicesClientSupport = new J2SEProjectWebServicesClientSupport(this, helper, refHelper);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (j2seProjectWebServicesClientSupport);
+        j2seJAXWSClientSupport = new J2SEProjectJAXWSClientSupport(this, updateHelper);
+        apiJaxwsClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(j2seJAXWSClientSupport);
 
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
@@ -225,6 +241,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SEProjectOperations(this),
             new J2SEConfigurationProvider(this),
             new J2SEProjectWebServicesSupportProvider(),
+            new J2SEPersistenceProvider(this),
+            getJaxWsModel(),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger()
@@ -365,10 +383,12 @@ public final class J2SEProject implements Project, AntProjectListener {
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                     J2SEProject.class.getResource("resources/build-impl.xsl"),
+                    jaxWsFo,
                     false);
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_XML_PATH,
                     J2SEProject.class.getResource("resources/build.xsl"),
+                    jaxWsFo,
                     false);
             }
         }
@@ -387,10 +407,12 @@ public final class J2SEProject implements Project, AntProjectListener {
                     genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                         J2SEProject.class.getResource("resources/build-impl.xsl"),
+                        jaxWsFo,
                         true);
                     genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_XML_PATH,
                         J2SEProject.class.getResource("resources/build.xsl"),
+                        jaxWsFo,
                         true);
                 }                
             } catch (IOException e) {
@@ -447,13 +469,19 @@ public final class J2SEProject implements Project, AntProjectListener {
                 mainClassUpdater.unregister ();
                 mainClassUpdater = null;
             }
+            
+            if (jaxWsFo!=null) jaxWsFo.removeFileChangeListener(jaxWsListener);
         }
         
     }
     
     public WebServicesClientSupport getAPIWebServicesClientSupport () {
             return apiWebServicesClientSupport;
-    }    
+    }
+    
+    public JAXWSClientSupport getAPIJAXWSClientSupport () {
+            return apiJaxwsClientSupport;
+    }  
 
     /**
      * Exports the main JAR as an official build product for use from other scripts.
@@ -484,6 +512,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             "java-forms",           // NOI18N
             "gui-java-application", // NOI18N
             "java-beans",           // NOI18N
+            "persistence",          // NOI18N
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
             "ant-script",           // NOI18N
@@ -503,6 +532,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             "java-forms",           // NOI18N
             //"gui-java-application", // NOI18N
             "java-beans",           // NOI18N
+            "persistence",          // NOI18N
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
             "ant-script",           // NOI18N
@@ -522,6 +552,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             "Templates/Classes/Interface.java", // NOI18N
             "Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/GUIForms/JFrame.java", // NOI18N
+            "Templates/Persistence/Entity.java", // NOI18N
+            "Templates/Persistence/RelatedCMP", // NOI18N                    
             "Templates/WebServices/WebServiceClient"   // NOI18N                    
         };
         
@@ -537,6 +569,73 @@ public final class J2SEProject implements Project, AntProjectListener {
             return PRIVILEGED_NAMES;
         }
         
+    }
+    
+    private FileObject getJaxWsFileObject() throws IOException {
+        if (jaxWsFo==null) {
+            jaxWsFo = findJaxWsFileObject();
+            if (jaxWsFo!=null) {
+                jaxWsListener = new JaxWsListener();
+                jaxWsFo.addFileChangeListener(jaxWsListener);
+            }
+        }
+        return jaxWsFo;
+    }
+    
+    /** copy jax-ws.xml from default filesystem to nbproject directory,
+     *  generate JaxWsModel,
+     *  add FileChangeListener to jax-ws.xml file object
+     */
+    public void createJaxWsFileObject() throws IOException {
+        WSUtils.retrieveJaxWsFromResource(helper.getProjectDirectory());
+        jaxWsFo = findJaxWsFileObject();
+        assert jaxWsFo != null : "Cannot find jax-ws.xml in project's nbproject directory"; //NOI18N
+        if (jaxWsFo!=null) {
+            jaxWsListener = new JaxWsListener();
+            jaxWsFo.addFileChangeListener(jaxWsListener);
+            if (jaxWsModel!=null) jaxWsModel.setJaxWsFile(jaxWsFo);
+            else jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(jaxWsFo);
+        }
+    }
+    
+    public FileObject findJaxWsFileObject() {
+        return helper.getProjectDirectory().getFileObject(GeneratedFilesHelper.JAX_WS_XML_PATH);
+    }
+    
+    private JaxWsModel getJaxWsModel() {
+        if (jaxWsModel==null)
+            try {
+                FileObject fo = getJaxWsFileObject();
+                if (fo==null)
+                    jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(
+                            WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"));//NOI18N
+                else
+                    jaxWsModel = JaxWsModelProvider.getDefault().getJaxWsModel(fo);
+            } catch (IOException ex) {
+                
+            }
+        return jaxWsModel;
+    }
+    
+    private class JaxWsListener extends FileChangeAdapter {
+        public void fileChanged(FileEvent fe) {
+            try {
+                final JaxWsModel newModel = JaxWsModelProvider.getDefault().getJaxWsModel(fe.getFile());
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        if (jaxWsModel!=null && newModel!=null) jaxWsModel.merge(newModel);
+                        try {
+                            genFilesHelper.refreshBuildScript(
+                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                            J2SEProject.class.getResource("resources/build-impl.xsl"), // NOI18N
+                            jaxWsFo, false);
+                        } catch (IOException ex) {}
+                    }
+                    
+                });
+                
+            } catch (IOException ex) {}
+        }
     }
 
 }

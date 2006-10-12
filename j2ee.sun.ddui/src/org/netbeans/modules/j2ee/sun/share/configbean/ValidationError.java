@@ -171,26 +171,28 @@ public final class ValidationError implements Comparable {
 	// Partitions for sun-web-app
 	public static final Partition PARTITION_WEB_GENERAL = 
 		new Partition("WebGeneral", 0);	// NOI18N
+	public static final Partition PARTITION_WEB_CLASSLOADER = 
+		new Partition("WebClassLoader", 1);	// NOI18N
 	public static final Partition PARTITION_WEB_PROPERTIES = 
-		new Partition("WebProperties", 1);	// NOI18N
+		new Partition("WebProperties", 2);	// NOI18N
 	public static final Partition PARTITION_SESSION_MANAGER = 
-		new Partition("SessionManager", 2, 0);	// NOI18N
+		new Partition("SessionManager", 3, 0);	// NOI18N
 	public static final Partition PARTITION_SESSION_STORE = 
-		new Partition("SessionStore", 2, 1);	// NOI18N
+		new Partition("SessionStore", 3, 1);	// NOI18N
 	public static final Partition PARTITION_SESSION_SESSION = 
-		new Partition("SessionSession", 2, 2);	// NOI18N
+		new Partition("SessionSession", 3, 2);	// NOI18N
 	public static final Partition PARTITION_SESSION_COOKIE = 
-		new Partition("SessionCookie", 2, 3);	// NOI18N
+		new Partition("SessionCookie", 3, 3);	// NOI18N
 	public static final Partition PARTITION_WEB_MESSAGES = 
-		new Partition("WebMessages", 3);	// NOI18N
+		new Partition("WebMessages", 4);	// NOI18N
 	public static final Partition PARTITION_WEB_LOCALE = 
-		new Partition("WebLocale", 4);	// NOI18N
+		new Partition("WebLocale", 5);	// NOI18N
 	public static final Partition PARTITION_CACHE_GENERAL = 
-		new Partition("CacheGeneral", 5, 0);	// NOI18N
+		new Partition("CacheGeneral", 6, 0);	// NOI18N
 	public static final Partition PARTITION_CACHE_HELPERS = 
-		new Partition("CacheHelpers", 5, 1);	// NOI18N
+		new Partition("CacheHelpers", 6, 1);	// NOI18N
 	public static final Partition PARTITION_CACHE_CONSTRAINTS = 
-		new Partition("CacheConstraints", 5, 2);	// NOI18N
+		new Partition("CacheConstraints", 6, 2);	// NOI18N
 	
 	// Partitions for SecurityRoleMapping
 	public static final Partition PARTITION_SECURITY_ASSIGN = 
@@ -210,7 +212,15 @@ public final class ValidationError implements Comparable {
 	public static final Partition PARTITION_CONNECTOR_ROLES = 
 		new Partition("ConnectorRoles", 1);	// NOI18N
 
-	
+	// Partitions for sun-ejb-jar
+	public static final Partition PARTITION_EJBJAR_CMP_RESOURCE = 
+		new Partition("EjbJarCmpResource", 0);	// NOI18N
+	public static final Partition PARTITION_EJBJAR_PM_DESCRIPTORS = 
+		new Partition("EjbJarPmDescriptors", 1);	// NOI18N
+	public static final Partition PARTITION_EJBJAR_MESSAGES = 
+		new Partition("EjbJarMessages", 2);	// NOI18N
+
+    
 	public static final class Partition implements Comparable {
 		private final String partitionName;
 		private int tabIndex;

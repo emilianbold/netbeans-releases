@@ -25,11 +25,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.EventListener;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
 import org.openide.ErrorManager;
-import org.openide.windows.*;
-import java.util.*;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  * Thread which displays Tomcat log files in the output window. The output
@@ -88,8 +96,12 @@ public class LogViewer extends Thread {
             String className, String directory, String prefix, String suffix, 
             boolean isTimestamped, boolean takeFocus) throws UnsupportedLoggerException {
         super("LogViewer - Thread"); // NOI18N
-        if (catalinaDir == null) throw new NullPointerException();
-        if (catalinaWorkDir == null) throw new NullPointerException();
+        if (catalinaDir == null) {
+            throw new NullPointerException();
+        }
+        if (catalinaWorkDir == null) {
+            throw new NullPointerException();
+        }
         if (className != null && !"org.apache.catalina.logger.FileLogger".equals(className)) { // NOI18N
             throw new UnsupportedLoggerException(className);
         }        
@@ -167,7 +179,9 @@ public class LogViewer extends Thread {
      */
     public void takeFocus() {
         InputOutput io = inOut;
-        if (io != null) io.select();
+        if (io != null) {
+            io.select();
+        }
     }
     
     private File getLogFile(String timestamp) throws IOException {
@@ -203,7 +217,9 @@ public class LogViewer extends Thread {
             // cut off trailing dot
             displayName = this.prefix;
             int trailingDot = displayName.lastIndexOf('.');
-            if (trailingDot > -1) displayName = displayName.substring(0, trailingDot);
+            if (trailingDot > -1) {
+                displayName = displayName.substring(0, trailingDot);
+            }
         }
         inOut = IOProvider.getDefault().getIO(displayName, false);
         try {
@@ -218,56 +234,54 @@ public class LogViewer extends Thread {
         errorWriter = inOut.getErr();
         isStarted = true;
         
-        BufferedReader reader = null;
         String timestamp = getTimestamp();
         String oldTimestamp = timestamp;
         try {
             File logFile = getLogFile(timestamp);
-            reader = new BufferedReader(new FileReader(logFile));
-            while (!stop && !inOut.isClosed()) {
-                // check whether a log file has rotated
-                timestamp = getTimestamp();
-                if (!timestamp.equals(oldTimestamp)) {
-                    oldTimestamp = timestamp;
-                    reader.close();
-                    logFile = getLogFile(timestamp);
-                    reader = new BufferedReader(new FileReader(logFile));
-                }
-                int count = 0;
-                // take a nap after 1024 read cycles, this should ensure responsiveness
-                // even if log file is growing fast
-                boolean updated = false;
-                while (reader.ready() && count++ < 1024) {
-                    processLine(reader.readLine());
-                    updated = true;
-                }
-                if (updated) {
-                    writer.flush();
-                    errorWriter.flush();
-                    if (takeFocus) {
-                        inOut.select();
-                    }                    
-                }
-                // wait for the next attempt
-                try {
-                    synchronized(this) {
-                        if (!stop &&  !inOut.isClosed()) {
-                            wait(100);
-                        }
+            BufferedReader reader = new BufferedReader(new FileReader(logFile));
+            try {
+                while (!stop && !inOut.isClosed()) {
+                    // check whether a log file has rotated
+                    timestamp = getTimestamp();
+                    if (!timestamp.equals(oldTimestamp)) {
+                        oldTimestamp = timestamp;
+                        reader.close();
+                        logFile = getLogFile(timestamp);
+                        reader = new BufferedReader(new FileReader(logFile));
                     }
-                } catch(InterruptedException ex) {
-                    // ok to ignore
+                    int count = 0;
+                    // take a nap after 1024 read cycles, this should ensure responsiveness
+                    // even if log file is growing fast
+                    boolean updated = false;
+                    while (reader.ready() && count++ < 1024) {
+                        processLine(reader.readLine());
+                        updated = true;
+                    }
+                    if (updated) {
+                        writer.flush();
+                        errorWriter.flush();
+                        if (takeFocus) {
+                            inOut.select();
+                        }                    
+                    }
+                    // wait for the next attempt
+                    try {
+                        synchronized(this) {
+                            if (!stop &&  !inOut.isClosed()) {
+                                wait(100);
+                            }
+                        }
+                    } catch(InterruptedException ex) {
+                        // no op - the thread was interrupted 
+                    }
                 }
+            } finally {
+                reader.close();
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            TomcatManager.ERR.notify(ex);
         } finally {
             writer.close();
-            try {
-                reader.close();
-            } catch(IOException ioe) {
-                // ok to ignore
-            }
         }
         fireLogViewerStopListener();
         logSupport.detachAnnotation();
@@ -348,7 +362,9 @@ public class LogViewer extends Thread {
                             String lineNum = logLine.substring(colonIdx + 1, nextColonIdx);
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
-                            } catch(NumberFormatException nfe) { // ignore it
+                            } catch(NumberFormatException nfe) { 
+                                // ignore it
+                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
                             }
                             if (lineLenght > nextColonIdx) {
                                 message = logLine.substring(nextColonIdx + 1, lineLenght); 
@@ -372,6 +388,7 @@ public class LogViewer extends Thread {
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { // ignore it
+                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
                             }
                             if (lineLenght > thirdColonIdx) {
                                 message = logLine.substring(thirdColonIdx + 1, lineLenght);
@@ -396,6 +413,7 @@ public class LogViewer extends Thread {
                             try {
                                 line = Integer.valueOf(lineNum).intValue();
                             } catch(NumberFormatException nfe) { // ignore it
+                                TomcatManager.ERR.notify(ErrorManager.INFORMATIONAL, nfe);
                             }
                             message = prevMessage;
                         }

@@ -60,6 +60,9 @@ class FileType {
     
     public static final FileType HTML = 
 	new FileType("html", "html"); 
+    
+    public static final FileType XHTML = 
+	new FileType("xhtml", "xhtml"); 
 
 } 
 

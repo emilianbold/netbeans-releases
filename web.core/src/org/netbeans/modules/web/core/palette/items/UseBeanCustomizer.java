@@ -177,13 +177,11 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UseBeanCustomizer.class, "ACSD_UseBean_Class"));
 
         jComboBox1.setEditable(true);
-        jComboBox1.setFont(new java.awt.Font("Dialog", 0, 12));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jComboBox1, gridBagConstraints);
 
-        jComboBox2.setFont(new java.awt.Font("Dialog", 0, 12));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -194,8 +192,7 @@ public class UseBeanCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jComboBox2, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

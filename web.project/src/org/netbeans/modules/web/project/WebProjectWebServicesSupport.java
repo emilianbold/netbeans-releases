@@ -19,9 +19,9 @@
 
 package org.netbeans.modules.web.project;
 
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
+import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportImpl;
 import java.io.IOException;
@@ -55,8 +55,8 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
+import static org.netbeans.modules.websvc.spi.webservices.WebServicesConstants.*;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -66,10 +66,11 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
  * @author  rico
  * Implementation of WebServicesSupportImpl
  */
-public class WebProjectWebServicesSupport implements WebServicesSupportImpl, WebServicesConstants {
+public class WebProjectWebServicesSupport implements WebServicesSupportImpl {
     private WebProject project;
     private AntProjectHelper helper;
     private ReferenceHelper referenceHelper;
+    private ClassPath projectSourcesClassPath;
     
     /** Creates a new instance of WebProjectWebServicesSupport */
     public WebProjectWebServicesSupport(WebProject project, AntProjectHelper helper, ReferenceHelper referenceHelper) {
@@ -169,9 +170,15 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 
                 // This also saves server specific configuration, if necessary.
                 webApp.write(getDeploymentDescriptor());
-            }catch(Exception e){
-                e.printStackTrace();
-                throw new RuntimeException(e.getMessage());
+            } catch (ClassNotFoundException exc) {
+                exc.printStackTrace();
+                throw new RuntimeException(exc.getMessage());
+            } catch (NameAlreadyUsedException exc) {
+                exc.printStackTrace();
+                throw new RuntimeException(exc.getMessage());
+            } catch (IOException exc) {
+                exc.printStackTrace();
+                throw new RuntimeException(exc.getMessage());
             }
         }
     }
@@ -226,7 +233,6 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     
     public boolean isFromWSDL(String serviceName) {
         Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
         NodeList nodes = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
         WEB_SERVICES); //NOI18N
         Element webservices = null;
@@ -247,7 +253,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                         if(n.getNodeType() == Node.TEXT_NODE) {
                             if(serviceName.equals(n.getNodeValue())) {
                                 NodeList fromWSDLNodes = wsNode.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                                WebServicesConstants.WEB_SERVICE_FROM_WSDL); //NOI18N
+                                WEB_SERVICE_FROM_WSDL); //NOI18N
                                 if(fromWSDLNodes.getLength() == 1) {
                                     return true;
                                 }
@@ -286,7 +292,6 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         }
         //Remove entry in the project.xml file (we should move this to websvc)
         Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
         NodeList nodes = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
         WEB_SERVICES); //NOI18N
         Element webservices = null;
@@ -468,13 +473,13 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         List serviceList = new ArrayList();
         
         Element data = helper.getPrimaryConfigurationData(true);
-        NodeList nodes = data.getElementsByTagName(WebServicesConstants.WEB_SERVICES);
+        NodeList nodes = data.getElementsByTagName(WEB_SERVICES);
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         
         if(nodes.getLength() != 0) {
             Element serviceElements = (Element) nodes.item(0);
             NodeList serviceNameList = serviceElements.getElementsByTagNameNS(
-            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_NAME);
+            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_NAME);
             for(int i = 0; i < serviceNameList.getLength(); i++ ) {
                 Element serviceNameElement = (Element) serviceNameList.item(i);
                 NodeList nl = serviceNameElement.getChildNodes();
@@ -521,7 +526,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         if(parentNode instanceof Element) {
             Element parentElement = (Element) parentNode;
             NodeList fromWsdlList = parentElement.getElementsByTagNameNS(
-            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_FROM_WSDL);
+            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_FROM_WSDL);
             if(fromWsdlList.getLength() == 1) {
                 result = wsdlServiceStub;
             } else {
@@ -694,6 +699,19 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 return true;
         }
         return false;
+    }
+
+    public ClassPath getClassPath() {
+        synchronized (this) {
+            if (projectSourcesClassPath == null) {
+                ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
+                projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                    cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                });
+            }
+            return projectSourcesClassPath;
+        }
     }
         
     // Service stub descriptors

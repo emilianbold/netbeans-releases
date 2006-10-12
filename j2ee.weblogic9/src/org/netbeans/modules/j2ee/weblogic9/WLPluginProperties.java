@@ -18,25 +18,44 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
-import org.netbeans.api.java.platform.JavaPlatform;
+import java.util.StringTokenizer;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.ErrorManager;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * Plugin Properties Singleton class
  * @author Ivan Sidorkin
  */
 public class WLPluginProperties {
+    
+    private static final boolean verboseRegistration =
+            System.getProperty("netbeans.weblogic.registration") != null;
     
     // additional properties that are stored in the InstancePropeties object
     public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
@@ -180,6 +199,110 @@ public class WLPluginProperties {
         }
         return true;
     }
+
+    /**
+     * Checks whether license.bea file contains at least one occurence of version 9.0 or 9.1.
+     *
+     * The method is rather heurestic than exact way how to detect the version 
+     * because we are not able to decide which version belongs to the directory specified by the user
+     * in case of more than one license-group tag occurences (several WL servers in one BEA home).
+     */
+    public static boolean isSupportedVersion(File serverRoot) {
+        List<File> registryFiles = findRegistryFiles(serverRoot);
+        for (File registryFile : registryFiles) {
+            if (testRegistryFile(serverRoot, registryFile)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * @return registry.xml from all BEA homes
+     */
+    private static List<File> findRegistryFiles(File serverRoot) {
+        List<File> registryList = new LinkedList<File>();
+        
+        List<String> beaHomesList = findBeaHomes();
+        for (String beaHome : beaHomesList) {
+            File registryFile = new File(beaHome + File.separator + "registry.xml"); // NOI18N
+            registryList.add(registryFile);
+        }
+        
+        return registryList;
+    }
+    
+    /**
+     * @return true if the given registry contains server version 9.x on the given server root path
+     */
+    private static boolean testRegistryFile(File serverRoot, File registryFile) {
+        try {
+            InputSource input = new InputSource(new BufferedInputStream(new FileInputStream(registryFile)));
+            Document doc = XMLUtil.parse(input, false, false, null, null);
+            NodeList releaseNodes = doc.getElementsByTagName("release"); // NOI18N
+            for (int i = 0; i < releaseNodes.getLength(); i++) {
+                Node releaseNode = releaseNodes.item(i);
+                NamedNodeMap releaseNodeAttributes = releaseNode.getAttributes();
+                String level = releaseNodeAttributes.getNamedItem("level").getNodeValue(); // NOI18N
+                String installDir = releaseNodeAttributes.getNamedItem("InstallDir").getNodeValue(); // NOI18N
+                String installDirCanonical = new File(installDir).getCanonicalPath();
+                if (level != null && level.startsWith("9.") && installDirCanonical.equals(serverRoot.getCanonicalPath())) {
+                    return true;
+                }
+            }
+        } catch (Exception ex) {
+            if (verboseRegistration) {
+                String msg = NbBundle.getMessage(WLPluginProperties.class, "ERR_READING_REGISTRY_FILE", registryFile.getPath());
+                ErrorManager.getDefault().annotate(ex, msg);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        
+        return false;
+        
+    }
+    
+    private static List<String> findBeaHomes() {
+        List<String> beaHomesList = new LinkedList<String>();
+        String dir = "";
+        if (Utilities.isUnix()) {
+            dir = System.getProperty("user.home", ""); // NOI18N
+        }
+        else 
+        if (Utilities.isWindows()) {
+            String systemDrive = System.getenv("SystemDrive"); // NOI18N
+            if (systemDrive == null) {
+                systemDrive = "C:"; // NOI18N
+            }
+            dir = systemDrive;
+        }
+        File beaHomeList = new File(dir + File.separator + "bea" + File.separator + "beahomelist"); // NOI18N
+        try {
+            BufferedReader br = null;
+            try {
+                br = new BufferedReader(new FileReader(beaHomeList));
+                String list = br.readLine();
+                if (list != null) {
+                    StringTokenizer st = new StringTokenizer(list, ";"); // NOI18N
+                    while (st.hasMoreTokens()) {
+                        beaHomesList.add(st.nextToken());
+                    }
+                }
+            }
+            finally {
+                if (br != null) {
+                    br.close();
+                }
+            }
+        } catch (Exception ex) {
+            String msg = NbBundle.getMessage(WLPluginProperties.class, "ERR_READING_BEAHOMELIST", beaHomeList.getPath());
+            ErrorManager.getDefault().annotate(ex, msg);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        
+        return beaHomesList;
+    }
     
     private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
         if (null == candidate)
@@ -220,12 +343,14 @@ public class WLPluginProperties {
         return this.installLocation;
     }
     
-    private static final String J2SE_PLATFORM_VERSION = "1.5"; // NOI18N
+    private static final String J2SE_PLATFORM_VERSION_15 = "1.5"; // NOI18N
+    private static final String J2SE_PLATFORM_VERSION_16 = "1.6"; // NOI18N
     
     public static boolean runningOnCorrectJdk() {
         SpecificationVersion defPlatVersion = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion();
-        // test just JDK 1.5 for now, because WL 9.0 requires it. Future releases may come with another requirements.
-        if (J2SE_PLATFORM_VERSION.equals(defPlatVersion.toString()))
+        // test just JDK 1.5 and 1.6 for now, because WL 9.x requires it. Future releases may come with another requirements.
+        if (J2SE_PLATFORM_VERSION_15.equals(defPlatVersion.toString()) ||
+            J2SE_PLATFORM_VERSION_16.equals(defPlatVersion.toString()))
             return true;
         return false;
     }

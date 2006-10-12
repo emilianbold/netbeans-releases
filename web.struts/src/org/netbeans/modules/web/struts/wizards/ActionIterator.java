@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
@@ -49,9 +48,6 @@ import org.netbeans.editor.BaseDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
-//import org.netbeans.modules.web.core.Util;
-//import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
-
 
 /** A template wizard iterator for new struts action
  *
@@ -89,8 +85,13 @@ public class ActionIterator implements TemplateWizard.Iterator {
         
         WizardDescriptor.Panel secondPanel = new ActionPanel(project, wizard);
         WizardDescriptor.Panel thirdPanel = new ActionPanel1(project);
-        WizardDescriptor.Panel javaPanel = new FinishableProxyWizardPanel(
-                    JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel));
+        
+        WizardDescriptor.Panel javaPanel;
+        if (sourceGroups.length == 0)
+            javaPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, secondPanel));
+        else
+            javaPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel));
+        
         panels = new WizardDescriptor.Panel[] { javaPanel, thirdPanel };
         
         // Creating steps.

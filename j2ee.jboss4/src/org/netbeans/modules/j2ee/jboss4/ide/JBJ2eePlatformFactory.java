@@ -18,33 +18,36 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Iterator;
+import java.util.List;
+import java.util.WeakHashMap;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
-
-//****
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import java.io.FilenameFilter;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.modules.InstalledFileLocator;
+
  
 /**
  *
@@ -52,13 +55,26 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class JBJ2eePlatformFactory extends J2eePlatformFactory {
     
-    public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
+    private static final WeakHashMap<InstanceProperties,J2eePlatformImplImpl> instanceCache = new WeakHashMap<InstanceProperties,J2eePlatformImplImpl>();
+    
+    public synchronized J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         assert JBDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
-        return ((JBDeploymentManager)dm).getJBPlatform();
+        // Ensure that for each server instance will be always used the same instance of the J2eePlatformImpl
+        JBDeploymentManager manager  = (JBDeploymentManager) dm;
+        InstanceProperties ip = ((JBDeploymentManager) manager).getInstanceProperties();
+        if (ip == null) {
+            throw new RuntimeException("Cannot create J2eePlatformImpl instance for " + manager.getUrl()); // NOI18N
+        }
+        J2eePlatformImplImpl platform = instanceCache.get(ip);
+        if (platform == null) {
+            platform = new J2eePlatformImplImpl(manager.getProperties());
+            instanceCache.put(ip, platform);
+        }
+        return platform;
     }
     
-    public static class J2eePlatformImplImpl extends J2eePlatformImpl implements PropertyChangeListener {
-        private static final String J2EE_API_DOC    = "docs/j2eeri-1_4-doc-api.zip";    // NOI18N
+    public static class J2eePlatformImplImpl extends J2eePlatformImpl {
+        private static final String J2EE_API_DOC    = "docs/javaee5-doc-api.zip";    // NOI18N
         private static final Set MODULE_TYPES = new HashSet();
         static {
             MODULE_TYPES.add(J2eeModule.EAR);
@@ -69,30 +85,38 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         private static final Set SPEC_VERSIONS = new HashSet();
+        private static final Set SPEC_VERSIONS_5 = new HashSet();
         static {
             SPEC_VERSIONS.add(J2eeModule.J2EE_14);
+            SPEC_VERSIONS_5.add(J2eeModule.J2EE_14);
+            SPEC_VERSIONS_5.add(J2eeModule.JAVA_EE_5);
         }
 
-        private String platformRoot;
+        private LibraryImplementation[] libraries;
 
-        private LibraryImplementation[] libraries = null;
+        private final JBProperties properties;
 
-        private JBDeploymentManager dm;
-
-        public J2eePlatformImplImpl(JBDeploymentManager dm) {
-            this.dm = dm;
+        public J2eePlatformImplImpl(JBProperties properties) {
+            this.properties = properties;
         }
 
-        private String getPlatformRoot() {
-            if (platformRoot == null)
-                platformRoot = InstanceProperties.getInstanceProperties(dm.getUrl()).
-                                        getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-            return platformRoot;
-        }
-        
         public Set getSupportedSpecVersions() {
-            return SPEC_VERSIONS;
+            if (properties.isJavaEE5()) {
+                return SPEC_VERSIONS_5;
+            } else {
+                return SPEC_VERSIONS;
+            }
         }
+
+        public Set<String> getSupportedSpecVersions(Object moduleType) {
+            // JavaEE5 web and app client modules are not supported
+            if (properties.isJavaEE5() && !(J2eeModule.WAR.equals(moduleType) || J2eeModule.CLIENT.equals(moduleType))) {
+                return SPEC_VERSIONS_5;
+            } else {
+                return SPEC_VERSIONS;
+            }
+        }
+
 
         public Set getSupportedModuleTypes() {
             return MODULE_TYPES;
@@ -110,85 +134,14 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         }
 
         public File[] getPlatformRoots() {
-            return new File[]{new File(getPlatformRoot())};
-        }
-
-        private void initLibraries() {
-            InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
-            try {
-                LibraryImplementation libs[] = new LibraryImplementation[2];
-
-                J2eeLibraryTypeProvider libraryProvider = new J2eeLibraryTypeProvider();
-
-                LibraryImplementation library = libraryProvider.createLibrary();
-                library.setName(NbBundle.getMessage(JBJ2eePlatformFactory.class, "TITLE_JBOSS_LIBRARY")); //NOI18N
-
-                List list = new ArrayList();
-                list.add(fileToUrl(new File(getPlatformRoot(), "client/jboss-j2ee.jar")));  //NOI18N
-                library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, list);
-
-                File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
-                if (j2eeDoc != null) {
-                    list = new ArrayList();
-                    list.add(fileToUrl(j2eeDoc));
-                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
-                }
-                libs[0] = library;
-
-                list = new ArrayList();
-                library = libraryProvider.createLibrary();
-                addFiles(new File (getPlatformRoot(), "lib"), list); //NOI18N
-
-                String domain = null;
-                domain = ip.getProperty("server"); //NOI18N
-                if (domain != null) {
-                    addFiles(new File (getPlatformRoot(), "server/" + domain + "/lib"), list); //NOI18N
-                }
-                library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, list);
-                if (j2eeDoc != null) {
-                    list = new ArrayList();
-                    list.add(fileToUrl(j2eeDoc));
-                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
-                }
-                libs[1] = library;
-
-                libraries = libs;
-            } catch (MalformedURLException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-            ip.addPropertyChangeListener(this);
-        }
-
-
-        private void addFiles (File folder, List l) {
-            File files [] = folder.listFiles(new FF ());
-            if (files == null)
-                return;
-            for (int i = 0; i < files.length; i++) {
-                if (files [i].isDirectory()) {
-                    addFiles (files [i], l);
-                } else {
-                    try {
-                        l.add (fileToUrl(files [i]));
-                    } catch (MalformedURLException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                   }
-                }
-           }
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if ("server".equals(evt.getPropertyName())) {
-                LibraryImplementation old [] = libraries;
-                libraries = null;
-                initLibraries();
-                firePropertyChange(PROP_LIBRARIES, old, libraries);
-            }
+            return new File[] {
+                properties.getRootDir()
+            };
         }
         
         private static class FF implements FilenameFilter {
-            public boolean accept (File dir, String name) {
-                return name.endsWith(".jar") || new File (dir, name).isDirectory(); //NOI18N
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".jar") || new File(dir, name).isDirectory(); //NOI18N
             }
         }
 
@@ -196,36 +149,106 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             if (libraries == null) {
                 initLibraries();
             }
-
             return libraries;
         }
-
+    
+        public void notifyLibrariesChanged() {
+            initLibraries();
+            firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
+        }
+        
         public java.awt.Image getIcon() {
             return null;
-            //return Utilities.loadImage("org/netbeans/modules/j2ee/genericserver/resources/GSInstanceIcon.gif");
         }
 
         public String getDisplayName() {
-            return NbBundle.getMessage(JBJ2eePlatformFactory.class, "TITLE_JBOSS_FACTORY"); //NOI18N
+            return NbBundle.getMessage(JBJ2eePlatformFactory.class, "TITLE_JBOSS_FACTORY");
 
         }
 
         public boolean isToolSupported(String toolName) {
-            if ("wscompile".equals(toolName)) {
+            if (J2eePlatform.TOOL_WSCOMPILE.equals(toolName) 
+                    || J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName) ) {
                 return true;
+            }
+            if ("org.hibernate.ejb.HibernatePersistence".equals(toolName) ||
+                "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider".equals(toolName) ||
+                "kodo.persistence.PersistenceProviderImpl".equals(toolName))
+            {
+                return containsPersistenceProvider(toolName);
+            }
+            if ("hibernatePersistenceProviderIsDefault".equals(toolName)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        private boolean containsPersistenceProvider(String providerName) {
+            return containsService(libraries, "javax.persistence.spi.PersistenceProvider", providerName);
+        }
+        
+        private static boolean containsService(LibraryImplementation[] libraries, String serviceName, String serviceImplName) {
+            for (LibraryImplementation libImpl : libraries) {
+                if (containsService(libImpl, serviceName, serviceImplName)) { //NOI18N
+                    return true;
+                }
+            }
+            return false;
+        }
+                
+        private static boolean containsService(LibraryImplementation library, String serviceName, String serviceImplName) {
+            List roots = library.getContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+            for (Iterator it = roots.iterator(); it.hasNext();) {
+                URL rootUrl = (URL) it.next();
+                FileObject root = URLMapper.findFileObject(rootUrl);
+                if (root != null && "jar".equals(rootUrl.getProtocol())) {  //NOI18N
+                    FileObject archiveRoot = FileUtil.getArchiveRoot(FileUtil.getArchiveFile(root));
+                    String serviceRelativePath = "META-INF/services/" + serviceName; //NOI18N
+                    FileObject serviceFO = archiveRoot.getFileObject(serviceRelativePath);
+                    if (serviceFO != null && containsService(serviceFO, serviceName, serviceImplName)) {
+                        return true;
+                    }
+                }
             }
             return false;
         }
 
+        private static boolean containsService(FileObject serviceFO, String serviceName, String serviceImplName) {
+            try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(serviceFO.getInputStream()));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    int ci = line.indexOf('#');
+                    if (ci >= 0) line = line.substring(0, ci);
+                    if (line.trim().equals(serviceImplName)) {
+                        return true;
+                    }
+                }
+            } 
+            catch (Exception ex) {
+                try {
+                    ErrorManager.getDefault().annotate(ex, serviceFO.getURL().toString());
+                } catch (FileStateInvalidException fsie) { 
+                    //noop
+                }
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+            return false;
+        }
+        
         public File[] getToolClasspathEntries(String toolName) {
-            if ("wscompile".equals(toolName)) {
-                File root = InstalledFileLocator.getDefault().locate("modules/ext/jaxrpc16", null, false);
+            if (J2eePlatform.TOOL_WSCOMPILE.equals(toolName)) {
+                File root = InstalledFileLocator.getDefault().locate("modules/ext/jaxrpc16", null, false); // NOI18N
                 return new File[] {
-                    new File(root, "saaj-api.jar"),
-                    new File(root, "saaj-impl.jar"),
-                    new File(root, "jaxrpc-api.jar"),
-                    new File(root, "jaxrpc-impl.jar"),
+                    new File(root, "saaj-api.jar"),     // NOI18N
+                    new File(root, "saaj-impl.jar"),    // NOI18N
+                    new File(root, "jaxrpc-api.jar"),   // NOI18N
+                    new File(root, "jaxrpc-impl.jar"),  // NOI18N
                 };
+            }
+            if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {
+                return new File(properties.getRootDir(), "client").listFiles(new FF()); // NOI18N
             }
             return null;
         }
@@ -238,6 +261,39 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                 url = FileUtil.getArchiveRoot(url);
             }
             return url;
+        }
+        
+        public String getToolProperty(String toolName, String propertyName) {
+            if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {
+                if (J2eePlatform.TOOL_PROP_MAIN_CLASS.equals(propertyName)) {
+                    return ""; // NOI18N
+                }
+                if (J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS.equals(propertyName)) {
+                    return ""; // NOI18N
+                }
+                if ("j2ee.clientName".equals(propertyName)) { // NOI18N
+                    return "${jar.name}"; // NOI18N
+                }
+                if (J2eePlatform.TOOL_PROP_JVM_OPTS.equals(propertyName)) {
+                    return "-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory" // NOI18N
+                            + " -Djava.naming.provider.url=jnp://localhost:1099" // NOI18N
+                            + " -Djava.naming.factory.url.pkgs=org.jboss.naming.client"; // NOI18N
+                }
+            }
+            return null;
+        }
+        
+            
+        // private helper methods -------------------------------------------------
+
+        private void initLibraries() {
+            // create library
+            LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
+            lib.setName(NbBundle.getMessage(JBJ2eePlatformFactory.class, "TITLE_JBOSS_LIBRARY"));
+            lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, properties.getClasses());
+            lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, properties.getJavadocs());
+            lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, properties.getSources());
+            libraries = new LibraryImplementation[] {lib};
         }
     }
 }

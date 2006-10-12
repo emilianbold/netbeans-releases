@@ -53,8 +53,8 @@ import org.openide.util.Lookup;
                 public void run() throws IOException {
                     FileObject pointbaseFolder = ToolsFolder.createFolder("PointbaseMenu"); //NOI18N
                     pointbaseFolder.setAttribute("SystemFileSystem.localizingBundle","org.netbeans.modules.j2ee.sun.ide.j2ee.db.Bundle");//NOI18N
-                    FileObject start = pointbaseFolder.createData("org.netbeans.modules.j2ee.sun.ide.j2ee.db.StartAction","instance");//NOI18N
-                    FileObject stop  = pointbaseFolder.createData("org.netbeans.modules.j2ee.sun.ide.j2ee.db.StopAction" ,"instance");//NOI18N
+                    pointbaseFolder.createData("org.netbeans.modules.j2ee.sun.ide.j2ee.db.StartAction","instance");//NOI18N
+                    pointbaseFolder.createData("org.netbeans.modules.j2ee.sun.ide.j2ee.db.StopAction" ,"instance");//NOI18N
                     ToolsFolder.setAttribute("OpenIDE-Folder-Order","org.netbeans.modules.j2ee.sun.ide.j2ee.db.StartAction.instance/org.netbeans.modules.j2ee.sun.ide.j2ee.db.StopAction.instance");//NOI18N
 
 

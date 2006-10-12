@@ -24,25 +24,20 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JPanel;
 import javax.swing.ImageIcon;
+import javax.swing.UIManager;
+import org.openide.ErrorManager;
 
 import org.openide.util.HelpCtx;
 
@@ -83,7 +78,7 @@ public abstract class BaseCustomizer extends JPanel implements Customizer,
 	private static final String errorGlyphPath = 
 		"org/netbeans/modules/j2ee/sun/share/configbean/customizers/common/resources/errorGlyph.gif"; // NOI18N
 	
-	/** We only want to load this one.  It's only used here, but in case someone
+	/** We only want to load this once.  It's only used here, but in case someone
 	 *  decides to use it elsewhere, we'll make it public.
 	 */
 //	public static final ImageIcon panelErrorIcon = 
@@ -96,19 +91,81 @@ public abstract class BaseCustomizer extends JPanel implements Customizer,
 		try {
 			panelErrorIcon = new ImageIcon(Utils.getResourceURL(errorGlyphPath, BaseCustomizer.class));
 		} catch(NullPointerException ex) {
-			System.out.println("NPE loading icon");
-			ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 			panelErrorIcon = null;
 		}
 	}
 	
+	/** Error/warning message icons.
+	 */
+	private static final String errorIconPath = 
+		"org/netbeans/modules/j2ee/sun/share/configbean/customizers/common/resources/errorIcon.png"; // NOI18N
+	private static final String warningIconPath = 
+		"org/netbeans/modules/j2ee/sun/share/configbean/customizers/common/resources/warningIcon.png"; // NOI18N
+	
+	public static ImageIcon errorMessageIcon;
+	public static ImageIcon warningMessageIcon;
+
+	static {
+		// Diagnostic test code to try to get more information about a suspicious intermittant exception
+        // (This is circa NB 4.1, so it may not be necessary anymore).
+		try {
+			errorMessageIcon = new ImageIcon(Utils.getResourceURL(errorIconPath, InputDialog.class));
+		} catch(NullPointerException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+			errorMessageIcon = null;
+		}
+		try {
+			warningMessageIcon = new ImageIcon(Utils.getResourceURL(warningIconPath, InputDialog.class));
+		} catch(NullPointerException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+			warningMessageIcon = null;
+		}
+	}
+    
+    
 	/** !PW Foreground color for error message text when in the NetBeans IDE.
 	 *  See http://ui.netbeans.org/docs/inline_errors/index.html, about
-	 *  halfway down, for specification.
+	 *  halfway down, for specification. (Was light blue: [89, 79, 191])
 	 */
-	public static final Color ErrorTextForegroundColor = new Color(89, 79, 191);
+    private static final Object colorMonitor = new Object();
+    private static Color errorTextForegroundColor = null;
+    private static Color warningTextForegroundColor = null;
+    
+    public static Color getErrorForegroundColor() {
+        Color result = null;
+        
+        synchronized(colorMonitor) {
+            if(errorTextForegroundColor == null) {
+                errorTextForegroundColor = UIManager.getColor("nb.errorForeground");
+                if(errorTextForegroundColor == null) {
+                    errorTextForegroundColor = new Color(89, 79, 191); // See http://ui.netbeans.org/docs/inline_errors/index.html
+                }
+            }
+            
+            result = errorTextForegroundColor;
+        }
+        
+        return result;
+    }
 	
-	
+    public static Color getWarningForegroundColor() {
+        Color result = null;
+        
+        synchronized(colorMonitor) {
+            if(warningTextForegroundColor == null) {
+                warningTextForegroundColor = UIManager.getColor("Label.foreground");
+                if(warningTextForegroundColor == null) {
+                    warningTextForegroundColor = new Color(0,0,0); // black
+                }
+            }
+            
+            result = warningTextForegroundColor;
+        }
+        
+        return result;
+    }
+    
 	/** -----------------------------------------------------------------------
 	 *  State variables managed by BaseCustomizer
 	 */
@@ -220,7 +277,11 @@ public abstract class BaseCustomizer extends JPanel implements Customizer,
 		
 		return result;
 	}
-	
+    
+    // Currently used by getTitlePanel -- may change.
+    Base getBean() {
+        return theBaseBean;
+    }
 
 	/** Initialization method called when the bean referenced by the customizer
 	 *  changes.  Derived classes should implement this method and provide
@@ -363,8 +424,8 @@ public abstract class BaseCustomizer extends JPanel implements Customizer,
 	 *
 	 * @return Color object representing the desired foreground color.
 	 */
-	public Color getMessageForegroundColor() {
-		return ErrorTextForegroundColor;
+	public Color getErrorMessageForegroundColor() {
+		return BaseCustomizer.getErrorForegroundColor();
 	}
 	
 	

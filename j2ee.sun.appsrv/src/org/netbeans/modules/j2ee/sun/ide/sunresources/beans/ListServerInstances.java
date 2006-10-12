@@ -186,19 +186,9 @@ public class ListServerInstances extends JPanel implements WizardConstants{
             msgArea.setText(bundle.getString("Msg_RegDS")); //NOI18N
             setTopManagerStatus(bundle.getString( "Msg_RegDS"));//NOI18N
             Resources res = getResourceGraph(resourceObj);
-            ServerInterface mejb = getManagementObject(serverNm);
+            SunDeploymentManagerInterface sunDm = getSunDm(serverNm);
             if(res != null){
-                if(resType.equals(__JdbcConnectionPool)){
-                    ResourceUtils.register(res.getJdbcConnectionPool(0), mejb, false);  
-                }else if(resType.equals(__JdbcResource)){
-                    ResourceUtils.register(res.getJdbcResource(0), mejb, false); 
-                }else if(resType.equals(__PersistenceManagerFactoryResource)){
-                    ResourceUtils.register(res.getPersistenceManagerFactoryResource(0), mejb, false);
-                }else if(resType.equals(__MailResource)){
-                    ResourceUtils.register(res.getMailResource(0), mejb, false);
-                }else if(resType.equals(__JmsResource)){
-                    ResourceUtils.register(res.getJmsResource(0), mejb, false);
-                }
+                ResourceUtils.register(res, sunDm, false, resType);  
                 setTopManagerStatus(bundle.getString( "Msg_RegDone"));//NOI18N
                 msgArea.setText(bundle.getString( "Msg_RegDone")); //NOI18N
             }
@@ -218,10 +208,9 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         return resNode.getBeanGraph();
     }
        
-    private ServerInterface getManagementObject(String serverName){
+    private SunDeploymentManagerInterface getSunDm(String serverName){
         SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)servers.get(serverName);
-        ServerInterface mejb = eightDM.getManagement(); 
-        return mejb;
+        return eightDM;
     }
         
     private void showInvalidServerError(){

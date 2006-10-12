@@ -29,7 +29,7 @@ import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
-import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
+import static org.netbeans.modules.websvc.api.client.WebServicesClientConstants.*;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportImpl;
@@ -73,7 +73,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
  * @author  rico
  * Implementation of WebServicesSupportImpl and WebServicesClientSupportImpl
  */
-public class WebProjectWebServicesClientSupport implements WebServicesClientSupportImpl, WebServicesClientConstants {
+public class WebProjectWebServicesClientSupport implements WebServicesClientSupportImpl{
     private WebProject project;
     private AntProjectHelper helper;
     private ReferenceHelper referenceHelper;
@@ -486,7 +486,6 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         /** Locate root of web service client node structure in project,xml
          */
         Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
         NodeList nodes = data.getElementsByTagName(WEB_SERVICE_CLIENTS);
         Element clientElements = null;
         
@@ -649,8 +648,21 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
                             currentFeatures = "wsi, strict";
                         }
                         ClientStubDescriptor stubType = getClientStubDescriptor(clientNameElement.getParentNode());
+                        boolean propVerbose = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".verbose")); //NOI18N
+                        boolean propDebug = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".debug")); //NOI18N                
+                        boolean propPrintStackTrace = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".xPrintStackTrace")); //NOI18N
+                        boolean propExtensible = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".xSerializable")); //NOI18N
+                        boolean propOptimize = "true".equalsIgnoreCase( //NOI18N
+                                projectProperties.getProperty("wscompile.client." + serviceName + ".optimize")); //NOI18N
+                        boolean[] options = new boolean[] { //NOI18N
+                            propVerbose,propDebug,propPrintStackTrace,propExtensible,propOptimize
+                        };
                         WsCompileClientEditorSupport.ServiceSettings settings = new WsCompileClientEditorSupport.ServiceSettings(
-                        serviceName, stubType, currentFeatures, allClientFeatures, importantClientFeatures);
+                        serviceName, stubType, options, currentFeatures, allClientFeatures, importantClientFeatures);
                         serviceNames.add(settings);
                     } else {
                         // !PW FIXME node is wrong type?! - log message or trace?
@@ -693,7 +705,6 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
     
     public String getWsdlSource(String serviceName) {
         Element data = helper.getPrimaryConfigurationData(true);
-        Document doc = data.getOwnerDocument();
         String wsdlSource = null;
         
         Element clientElement = getWebServiceClientNode(data, serviceName);
@@ -864,6 +875,10 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
     public void setProxyJVMOptions(String proxyHost, String proxyPort) {
         this.proxyHost=proxyHost;
         this.proxyPort=proxyPort;
+    }
+
+    public String getServiceRefName(String serviceName) {
+        return "service/" + serviceName;
     }
     
     /** Stub descriptor for services and clients supported by this project type.

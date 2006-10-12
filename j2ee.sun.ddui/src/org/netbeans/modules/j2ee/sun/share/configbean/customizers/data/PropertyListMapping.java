@@ -46,6 +46,7 @@ public class PropertyListMapping implements Comparable {
 	 */
 	public static final String WEBAPP_JSPCONFIG_PROPERTIES = "WebAppJspConfigProperties";	// NOI18N
 	public static final String WEBAPP_PROPERTIES = "WebAppProperties";	// NOI18N
+	public static final String WEBAPP_CLASSLOADER_PROPERTIES = "WebAppClassloaderProperties";	// NOI18N
 	
 	public static final String CACHE_PROPERTIES = "CacheProperties";	// NOI18N
 	public static final String CACHE_DEFAULT_HELPER_PROPERTIES = "CacheDefaultHelperProperties";	// NOI18N
@@ -58,7 +59,11 @@ public class PropertyListMapping implements Comparable {
 
 	public static final String SERVICE_REF_CALL_PROPERTIES = "ServiceRefCallProperties";		// NOI18N
 	public static final String SERVICE_REF_STUB_PROPERTIES = "ServiceRefStubProperties";		// NOI18N
-	
+
+	public static final String EJBJAR_CMP_PROPERTIES = "EjbJarCmpProperties";	// NOI18N
+	public static final String EJBJAR_CMP_SCHEMA_PROPERTIES = "EjbJarCmpSchemaProperties";	// NOI18N
+    
+    
 	private final PropertyList propList;
 //	private String displayText;
 	

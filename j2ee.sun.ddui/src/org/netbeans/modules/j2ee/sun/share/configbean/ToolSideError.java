@@ -78,8 +78,13 @@ public class ToolSideError extends BaseRoot {
 	public String getDdbeanText() {
 		return getDDBean().getText(); // this.ddbeanText;
 	}
+    
+    public String generateDocType(ASDDVersion version) {
+        return "";
+    }
 
-        public String getHelpId() {
-            return "AS_CFG_ToolSideError";                              //NOI18N
-        }
+    public String getHelpId() {
+        return "AS_CFG_ToolSideError";                              //NOI18N
+    }
+
 }

@@ -2,7 +2,7 @@
 <jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
 
     <!-- to change the content type or response encoding change the following line -->
-    <jsp:directive.page contentType="text/xml;charset=UTF-8"/>
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
 
     <!-- any content can be specified here, e.g.: -->
     <jsp:element name="text">

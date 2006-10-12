@@ -19,22 +19,24 @@
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.jboss4.customizer.CustomizerDataSupport;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
+import org.netbeans.modules.j2ee.jboss4.nodes.actions.OpenServerLogAction;
+import org.netbeans.modules.j2ee.jboss4.nodes.actions.ShowAdminToolAction;
+import org.netbeans.modules.j2ee.jboss4.nodes.actions.ShowJMXConsoleAction;
 import org.openide.nodes.*;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.beans.BeanInfo;
 import java.net.URL;
-import org.netbeans.modules.j2ee.jboss4.ide.Customizer;
+import org.netbeans.modules.j2ee.jboss4.customizer.Customizer;
 import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
 import java.awt.Component;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-import javax.swing.ToolTipManager;
 
 /**
  *
@@ -42,13 +44,14 @@ import javax.swing.ToolTipManager;
  */
 public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
-    private JBDeploymentManager deploymentManager;
+    private Lookup lookup;
     private static final String ADMIN_URL = "/web-console/"; //NOI18N
+    private static final String JMX_CONSOLE_URL = "/jmx-console/"; //NOI18N
     private static final String HTTP_HEADER = "http://";
     
     public JBManagerNode(Children children, Lookup lookup) {
         super(children);
-        this.deploymentManager = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
+        this.lookup = lookup;
         getCookieSet().add(this);
     }
     
@@ -61,17 +64,24 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public Component getCustomizer() {
-        return new Customizer(new JBJ2eePlatformFactory().getJ2eePlatformImpl(deploymentManager));
+        CustomizerDataSupport dataSup = new CustomizerDataSupport(getDeploymentManager().getProperties());
+        return new Customizer(dataSup, new JBJ2eePlatformFactory().getJ2eePlatformImpl(getDeploymentManager()));
     }
     
     public String  getAdminURL() {
-         return "http://"+deploymentManager.getHost()+":"+deploymentManager.getPort()+ ADMIN_URL;
+        return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL;
+    }
+    
+    public String  getJMXConsoleURL() {
+        return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ JMX_CONSOLE_URL;
     }
     
     public javax.swing.Action[] getActions(boolean context) {
-        javax.swing.Action[]  newActions = new javax.swing.Action[2] ;
-        newActions[0]=(null);        
+        javax.swing.Action[]  newActions = new javax.swing.Action[4] ;
+        newActions[0]=(null);
         newActions[1]= (SystemAction.get(ShowAdminToolAction.class));
+        newActions[2]= (SystemAction.get(ShowJMXConsoleAction.class));
+        newActions[3]= (SystemAction.get(OpenServerLogAction.class));
         return newActions;
     }
     
@@ -82,7 +92,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
             properties = Sheet.createPropertiesSet();
             sheet.put(properties);
         }
-        final InstanceProperties ip = ((JBDeploymentManager)deploymentManager).getInstanceProperties();
+        final InstanceProperties ip = getDeploymentManager().getInstanceProperties();
         
         Node.Property property=null;
         
@@ -103,7 +113,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         };
         
         properties.put(property);
-
+        
         // servewr name
         property = new PropertySupport.ReadOnly(
                 NbBundle.getMessage(JBManagerNode.class, "LBL_SERVER_NAME"),    //NOI18N
@@ -161,8 +171,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            URL resource = getClass().getClassLoader().getResource("org/netbeans/modules/j2ee/jboss4/resources/16x16.gif");//NOI18N
-            return Toolkit.getDefaultToolkit().createImage(resource);
+            return Utilities.loadImage("org/netbeans/modules/j2ee/jboss4/resources/16x16.gif"); // NOI18N
         }
         return super.getIcon(type);
     }
@@ -172,15 +181,13 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public String getShortDescription() {
-        InstanceProperties ip = InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl());
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(getDeploymentManager().getUrl());
         String host = ip.getProperty(JBPluginProperties.PROPERTY_HOST);
         String port = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
         return  HTTP_HEADER + host + ":" + port + "/"; // NOI18N
-    }    
-    
-    public JBDeploymentManager getDeploymentManager() {
-        return deploymentManager;
     }
     
+    public JBDeploymentManager getDeploymentManager() {
+        return ((JBDeploymentManager) lookup.lookup(JBDeploymentManager.class));
+    }
 }
-

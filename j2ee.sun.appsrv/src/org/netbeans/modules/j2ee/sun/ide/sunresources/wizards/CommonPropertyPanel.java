@@ -25,29 +25,20 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
 import java.awt.Component;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Vector;
-import java.util.Iterator;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroupHelper;
 
 /**
  *
  * @author  nityad
  */
-public class CommonPropertyPanel implements WizardDescriptor.Panel, WizardConstants{
+public class CommonPropertyPanel extends ResourceWizardPanel {
     
     private CommonPropertyVisualPanel component;
     private ResourceConfigHelper helper;
@@ -96,53 +87,19 @@ public class CommonPropertyPanel implements WizardDescriptor.Panel, WizardConsta
     }
     
     public boolean isValid() {
+        setErrorMsg(bundle.getString("Empty_String"));
         ResourceConfigData data = helper.getData();
         Vector vec = data.getProperties();
         for (int i = 0; i < vec.size(); i++) {
             NameValuePair pair = (NameValuePair)vec.elementAt(i);
             if (pair.getParamName() == null || pair.getParamValue() == null ||
-            pair.getParamName().length() == 0 || pair.getParamValue().length() == 0)
+                pair.getParamName().length() == 0 || pair.getParamValue().length() == 0){
+                setErrorMsg(bundle.getString("Err_InvalidNameValue"));
                 return false;
+            }    
         }
         return true;
     }
     
-   private final Set listeners = new HashSet(1); 
-    
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        if(firstTime){
-            ChangeEvent ev = new ChangeEvent(this);
-            while (it.hasNext()) {
-                ((ChangeListener) it.next()).stateChanged(ev);
-            }
-        }else{
-            firstTime = true;
-        }    
-    }
-    
-     // You can use a settings object to keep track of state.
-    // Normally the settings object will be the WizardDescriptor,
-    // so you can use WizardDescriptor.getProperty & putProperty
-    // to store information entered by the user.
-    public void readSettings(Object settings) {
-    }
-    public void storeSettings(Object settings) {
-    }
     
 }

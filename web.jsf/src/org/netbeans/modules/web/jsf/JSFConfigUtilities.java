@@ -38,6 +38,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -50,8 +52,9 @@ public class JSFConfigUtilities {
         try{
             FacesConfig config = data.getFacesConfig();
             NavigationRule [] rules = config.getNavigationRule();
-            for (int i = 0; i < rules.length; i++)
-                list.add(rules[i]);
+            if (rules != null)
+                for (int i = 0; i < rules.length; i++)
+                    list.add(rules[i]);
         } catch (java.io.IOException e){
             ErrorManager.getDefault().notify(e);
         }
@@ -84,10 +87,12 @@ public class JSFConfigUtilities {
      * then returns null.
      */
     public static NavigationRule findNavigationRule(FacesConfig config, String fromView){
-        NavigationRule [] rules = config.getNavigationRule();
-        for (int i = 0; i < rules.length; i++)
-            if (rules[i].getFromViewId().equals(fromView))
-                return rules[i];
+        if (fromView != null){
+            NavigationRule [] rules = config.getNavigationRule();
+            for (int i = 0; i < rules.length; i++)
+                if (fromView.equals(rules[i].getFromViewId()))
+                    return rules[i];
+        }
         return null;
     }
     
@@ -121,19 +126,22 @@ public class JSFConfigUtilities {
     }
     
     public static Servlet getActionServlet(FileObject dd) {
-        // PENDING - must be more declarative.
         if (dd == null) {
             return null;
         }
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-            return (Servlet) webApp.findBeanByName("Servlet", "ServletName", "Faces Servlet"); //NOI18N;
+            
+            // Try to find according the servlet class name. The javax.faces.webapp.FacesServlet is final, so
+            // it can not be extended.
+            return (Servlet) webApp
+                    .findBeanByName("Servlet", "ServletClass", "javax.faces.webapp.FacesServlet"); //NOI18N;
         } catch (java.io.IOException e) {
             return null;
         }
     }
     
-    /** Returns the mapping for the Struts Action Servlet.
+    /** Returns the mapping for the Faces Servlet.
      */
     public static String getActionServletMapping(FileObject dd){
         Servlet servlet = getActionServlet(dd);
@@ -187,35 +195,36 @@ public class JSFConfigUtilities {
     }
     
     /** Returns relative path for all jsf configuration files in the web module. If there is no
-     *  configuration file, then returns String array with lenght = 0. 
+     *  configuration file, then returns String array with lenght = 0.
      */
     public static String[] getConfigFiles(FileObject dd){
-        InitParam param = null;
-        try{
-            WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-            if (webApp != null)
-                param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "javax.faces.CONFIG_FILES"); //NOI18N
-        } catch (java.io.IOException e) {
-          ErrorManager.getDefault().notify(e);  
-        }
-        
-        if (param != null){
-            // the configuration files are defined
-            String value = param.getParamValue().trim();
-            if (value != null){
-                String[] files = value.split(","); 
-                for (int i = 0; i < files.length; i++)
-                    files[i] = files[i].trim();
-                return  files;
+        if (dd != null){
+            InitParam param = null;
+            try{
+                WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
+                if (webApp != null)
+                    param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "javax.faces.CONFIG_FILES"); //NOI18N
+            } catch (java.io.IOException e) {
+                ErrorManager.getDefault().notify(e);
             }
-        }
-        else{
-            // the configguration files are not defined -> looking for WEB-INF/faces-config.xml
-            WebModule wm = WebModule.getWebModule(dd);
-            FileObject baseDir = wm.getDocumentBase();
-            FileObject fo = baseDir.getFileObject("WEB-INF/faces-config.xml");
-            if (fo != null)
-                return new String[]{"WEB-INF/faces-config.xml"};
+            
+            if (param != null){
+                // the configuration files are defined
+                String value = param.getParamValue().trim();
+                if (value != null){
+                    String[] files = value.split(",");
+                    for (int i = 0; i < files.length; i++)
+                        files[i] = files[i].trim();
+                    return  files;
+                }
+            } else{
+                // the configguration files are not defined -> looking for WEB-INF/faces-config.xml
+                WebModule wm = WebModule.getWebModule(dd);
+                FileObject baseDir = wm.getDocumentBase();
+                FileObject fo = baseDir.getFileObject("WEB-INF/faces-config.xml");
+                if (fo != null)
+                    return new String[]{"WEB-INF/faces-config.xml"};
+            }
         }
         return new String[]{};
     }
@@ -239,15 +248,51 @@ public class JSFConfigUtilities {
         return new FileObject [0];
     }
     
-    public static String getActionAsResource(String mapping, String action){
+    /**
+     * Translates an URI to be executed with faces serlvet with the given mapping. 
+     * For example, the servlet has mapping <i>*.jsf</i> then uri <i>/hello.jps</i> will be 
+     * translated to <i>/hello.jsf</i>. In the case where the mapping is <i>/faces/*</i>
+     * will be translated to <i>/faces/hello.js<i>.
+     *
+     * @param mapping The servlet mapping
+     * @param uri The original URI
+     * @return The translated URI
+     */
+    public static String translateURI(String mapping, String uri){
         String resource = "";
         if (mapping != null && mapping.length()>0){
-            if (mapping.startsWith("*."))
-                resource = action + mapping.substring(1);
+            if (mapping.startsWith("*.")){
+                if (uri.indexOf('.') > 0)
+                    resource = uri.substring(0, uri.lastIndexOf('.'))+mapping.substring(1);
+                else
+                    resource = uri + mapping.substring(1);
+            }
             else
                 if (mapping.endsWith("/*"))
-                    resource = mapping.substring(0,mapping.length()-2) + action;
+                    resource = mapping.substring(0,mapping.length()-2) + uri;
         }
         return resource;
+    }
+    
+    public static FileObject findFacesConfigForManagedBean(WebModule wm, String name){
+        FileObject[] configs = getConfiFilesFO(wm.getDeploymentDescriptor());
+        
+        try {
+            for (int i = 0; i < configs.length; i++) {
+                DataObject dObject = DataObject.find(configs[i]);
+                if (dObject instanceof JSFConfigDataObject){
+                    ManagedBean [] beans = ((JSFConfigDataObject)dObject).getFacesConfig().getManagedBean();
+                    for (int j = 0; j < beans.length; j++) {
+                        if (beans[j].getManagedBeanName().equals(name))
+                            return configs[i];
+                    }
+                }
+            }
+        } catch (DataObjectNotFoundException e) {
+            ErrorManager.getDefault().notify(e);
+        } catch (java.io.IOException e){
+            ErrorManager.getDefault().notify(e);
+        }
+        return null;
     }
 }

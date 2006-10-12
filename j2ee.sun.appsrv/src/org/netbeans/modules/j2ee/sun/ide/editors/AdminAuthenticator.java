@@ -40,39 +40,49 @@ import org.openide.util.NbBundle;
  */
 
 public class AdminAuthenticator extends java.net.Authenticator {
-    private static SunDeploymentManagerInterface preferredSunDeploymentManagerInterface=null;
+    private  SunDeploymentManagerInterface preferredSunDeploymentManagerInterface;
     
-    public static void setPreferredSunDeploymentManagerInterface(SunDeploymentManagerInterface dm) {
+    public AdminAuthenticator( ) {
+        preferredSunDeploymentManagerInterface=null ;
+    }
+    
+    public AdminAuthenticator(SunDeploymentManagerInterface dm) {
         preferredSunDeploymentManagerInterface=dm ;
     }
 
     protected java.net.PasswordAuthentication getPasswordAuthentication() {
-        String user="admin";
-        String password="adminadmin";
-        SunDeploymentManagerInterface sdm = null;
         java.net.InetAddress site = getRequestingSite();
         ResourceBundle bundle = NbBundle.getBundle( AdminAuthenticator.class );
         String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
         String title = getRequestingPrompt();
         InstanceProperties ip = null;
         String keyURI;
+        String name=""; // NOI18N
+        if (title.equals("admin-realm")){ // NOI18N so this is a request from the sun server
         if (preferredSunDeploymentManagerInterface!=null){
-            ip =SunURIManager.getInstanceProperties(
-                    preferredSunDeploymentManagerInterface.getPlatformRoot(),
-                    preferredSunDeploymentManagerInterface.getHost(),
-                    preferredSunDeploymentManagerInterface.getPort());
-        } else {
-            keyURI=SunURIManager.SUNSERVERSURI+site.getHostName()+":"+getRequestingPort();
-            ip= InstanceProperties.getInstanceProperties(keyURI);
-
+            //Make sure this is really the admin port and not the app port (see bug 85605
+            if ( preferredSunDeploymentManagerInterface.getPort()==getRequestingPort()){ 
+                ip =SunURIManager.getInstanceProperties(
+                        preferredSunDeploymentManagerInterface.getPlatformRoot(),
+                        preferredSunDeploymentManagerInterface.getHost(),
+                        preferredSunDeploymentManagerInterface.getPort());
+            }
+        }
+//            else {
+//            keyURI=SunURIManager.SUNSERVERSURI+site.getHostName()+":"+getRequestingPort();
+//            ip= InstanceProperties.getInstanceProperties(keyURI);
+//
+//        }
         }
         if (ip!=null){
             title =ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
+            name = ip.getProperty(InstanceProperties.USERNAME_ATTR);
+
         }
         
         
         
-        PasswordPanel passwordPanel = new PasswordPanel();
+        PasswordPanel passwordPanel = new PasswordPanel(name);
         
         DialogDescriptor dd = new DialogDescriptor( passwordPanel, host );
         passwordPanel.setPrompt(title  );
@@ -118,9 +128,11 @@ public class AdminAuthenticator extends java.net.Authenticator {
         ResourceBundle bundle = org.openide.util.NbBundle.getBundle(AdminAuthenticator.class);
         
         /** Creates new form PasswordPanel */
-        public PasswordPanel() {
+        public PasswordPanel(String userName) {
             initComponents();
-            
+            usernameField.setText(userName);
+            usernameField.setSelectionStart(0);
+            usernameField.setSelectionEnd(userName.length());
             usernameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_UserNameField"));
             passwordField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_PasswordField"));
         }

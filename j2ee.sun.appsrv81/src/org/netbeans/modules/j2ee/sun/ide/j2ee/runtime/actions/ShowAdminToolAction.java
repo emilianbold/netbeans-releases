@@ -20,7 +20,10 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions;
 
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.MissingResourceException;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -28,6 +31,7 @@ import org.openide.util.actions.CookieAction;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.ManagerNode;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 
 /** Action that can always be invoked and work procedurally.
  * This action will display the URL for the given admin server node in the runtime explorer
@@ -45,15 +49,29 @@ public class ShowAdminToolAction extends CookieAction {
     }
     
     protected void performAction(Node[] nodes) {
-         if( (nodes == null) || (nodes.length < 1) )
-             return ;
-        if(nodes[0].getLookup().lookup(ManagerNode.class) != null){
-            ManagerNode node = (ManagerNode)nodes[0].getCookie(ManagerNode.class);
-            try{
-                URLDisplayer.getDefault().showURL(new URL(node.getAdminURL()));//NOI18N
-            }
-            catch (Exception e){
-                return;//nothing much to do
+        if( (nodes != null) &&  (nodes.length == 1) ) {
+            if(nodes[0].getLookup().lookup(ManagerNode.class) != null){
+                ManagerNode node = (ManagerNode)nodes[0].getCookie(ManagerNode.class);
+                try {
+                    if (node.getDeploymentManager().isRunning()) {
+                        URLDisplayer.getDefault().showURL(new URL(node.getAdminURL()));
+                    } else {
+                        Util.showInformation(
+                                NbBundle.getMessage(ShowAdminToolAction.class,
+                                "MESS_START_INSTANCE"));
+                    }
+                } catch (MissingResourceException ex) {
+                    // this should not happen... If it does, we should find out.
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                            ex);
+                } catch (MalformedURLException ex) {
+                    // this should not happen... If it does, we should find out.
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                            ex);
+                } catch (Exception e){
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                            e);
+               }
             }
         }
     }
@@ -76,12 +94,12 @@ public class ShowAdminToolAction extends CookieAction {
     }
     
     protected boolean enable(Node[] nodes) {
-        return true;
+        return (nodes != null) && (nodes.length == 1); // true;
     }
     
     protected boolean asynchronous() {
         return false;
     }
-
+    
     
 }

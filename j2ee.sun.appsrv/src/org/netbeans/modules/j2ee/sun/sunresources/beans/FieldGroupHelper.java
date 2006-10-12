@@ -35,8 +35,9 @@ public class FieldGroupHelper {
     public static FieldGroup getFieldGroup(Wizard wiz, String groupName) {
         FieldGroup[] groups = wiz.getFieldGroup();
         for (int i = 0; i < groups.length; i++) {
-            if (groups[i].getName().equals(groupName))
+            if (groups[i].getName().equals(groupName)){
                 return groups[i];
+            }
         }
         return null;
     }

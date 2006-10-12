@@ -158,6 +158,10 @@ public class WebAppCache {
 		
 //		loadFromPlanFile(config); // !PW handled by WebAppRoot
 	}
+    
+    public Base getParent() {
+        return webAppRoot;
+    }
 	
 	/** -----------------------------------------------------------------------
 	 *  Validation support
@@ -418,7 +422,7 @@ public class WebAppCache {
 	 */
 	public void setDefaultHelper(DefaultHelper newDefaultHelper) throws java.beans.PropertyVetoException {
 		if(newDefaultHelper == null) {
-			newDefaultHelper = StorageBeanFactory.getDefault().createDefaultHelper();
+			newDefaultHelper = webAppRoot.getConfig().getStorageFactory().createDefaultHelper();
 		}
 		
 		DefaultHelper oldDefaultHelper = this.defaultHelper;
@@ -521,7 +525,8 @@ public class WebAppCache {
             }
 
 			public CommonDDBean getDDSnippet() {
-                Cache cache = StorageBeanFactory.getDefault().createCache_NoDefaults();
+                Cache cache = webAppRoot.getConfig().getStorageFactory().createCache_NoDefaults();
+                String version = webAppRoot.getAppServerVersion().getWebAppVersionAsString();
                 
 				// simple properties
 				if(cacheMaxEntries != null) {
@@ -538,7 +543,7 @@ public class WebAppCache {
 				
 				// cache helpers
 				CacheHelper [] helpers = (CacheHelper []) 
-					Utils.listToArray(getCacheHelpers(), CacheHelper.class);
+					Utils.listToArray(getCacheHelpers(), CacheHelper.class, version);
 				if(helpers != null) {
 					cache.setCacheHelper(helpers);
 				}
@@ -546,19 +551,19 @@ public class WebAppCache {
 				// default helper
 				DefaultHelper dh = getDefaultHelper();
 				if(dh.sizeWebProperty() > 0) {
-					cache.setDefaultHelper((DefaultHelper) dh.clone());
+					cache.setDefaultHelper((DefaultHelper) dh.cloneVersion(version));
 				}
 				
 				// properties
 				WebProperty [] webProps = (WebProperty []) 
-					Utils.listToArray(getProperties(), WebProperty.class);
+					Utils.listToArray(getProperties(), WebProperty.class, version);
 				if(webProps != null) {
 					cache.setWebProperty(webProps);
 				}
 				
 				// cache mappings
 				CacheMapping [] mappings = (CacheMapping []) 
-					Utils.listToArray(getCacheMappings(), CacheMapping.class);
+					Utils.listToArray(getCacheMappings(), CacheMapping.class, version);
 				if(mappings != null) {
 					cache.setCacheMapping(mappings);
 				}
@@ -686,7 +691,7 @@ public class WebAppCache {
 		timeoutInSeconds = null;
 		cacheEnabled = null;
 		cacheHelpers = null;
-		defaultHelper = StorageBeanFactory.getDefault().createDefaultHelper();
+		defaultHelper = webAppRoot.getConfig().getStorageFactory().createDefaultHelper();
 		properties = null;
 		cacheMappings = null;
 	}

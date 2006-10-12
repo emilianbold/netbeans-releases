@@ -36,6 +36,6 @@ Microsystems, Inc. All Rights Reserved.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.web.struts/docs/struts-javadoc.zip!/</resource>
+        <resource>jar:nbinst:///docs/struts-1.2.9-javadoc.zip!/</resource>
     </volume>
 </library>

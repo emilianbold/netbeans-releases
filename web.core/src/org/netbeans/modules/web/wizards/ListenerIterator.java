@@ -33,7 +33,6 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
@@ -46,12 +45,8 @@ import org.openide.src.SourceException;
 
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
-import org.netbeans.api.java.project.JavaProjectConstants;
-
 
 /** A template wizard iterator (sequence of panels).
  * Used to fill in the second and subsequent panels in the New wizard.
@@ -72,9 +67,16 @@ public class ListenerIterator implements TemplateWizard.Iterator {
         Project project = Templates.getProject( wiz );
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         panel = new ListenerPanel(wizard);
+        
+        WizardDescriptor.Panel packageChooserPanel;
+        if (sourceGroups.length == 0)
+            packageChooserPanel = Templates.createSimpleTargetChooser(project, sourceGroups, panel);
+        else
+            packageChooserPanel = JavaTemplates.createPackageChooser(project, sourceGroups, panel);
+
         return new WizardDescriptor.Panel[] {
             // Assuming you want to keep the default 2nd panel:
-            JavaTemplates.createPackageChooser(project,sourceGroups,panel)
+            packageChooserPanel
         };
     }
 

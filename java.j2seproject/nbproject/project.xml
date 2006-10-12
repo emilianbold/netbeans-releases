@@ -83,6 +83,23 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.persistenceapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.platform</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -169,6 +186,15 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxwsmodel</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -340,6 +366,12 @@ Microsystems, Inc. All Rights Reserved.
                   </test-dependency>
                   <test-dependency>
                       <code-name-base>org.netbeans.libs.xerces</code-name-base>
+                  </test-dependency>                  
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
+                  </test-dependency>                  
+                  <test-dependency>
+                      <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
                   </test-dependency>                  
                 </test-type>
                 <test-type>

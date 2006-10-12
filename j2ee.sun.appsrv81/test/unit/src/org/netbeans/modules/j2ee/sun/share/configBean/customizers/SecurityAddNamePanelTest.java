@@ -28,14 +28,15 @@ import junit.framework.TestCase;
 public class SecurityAddNamePanelTest extends TestCase {
 
     public void testCreate() {
-        SecurityAddNamePanel testPanel;
+        SecurityAddPrincipalPanel testPrincipalPanel;
+        SecurityAddGroupNamePanel testGroupPanel;
 		
 		// !PW null parameter should really be a valid model allowing for more
 		// extensive testing.
-		testPanel = new SecurityAddNamePanel(null, "EditPrincipalName");
-		testPanel = new SecurityAddNamePanel(null, "NewPrincipalName");
-		testPanel = new SecurityAddNamePanel(null, "EditGroupName");
-		testPanel = new SecurityAddNamePanel(null, "NewGroupName");
+		testPrincipalPanel = new SecurityAddPrincipalPanel(null, "EditPrincipalName");
+		testPrincipalPanel = new SecurityAddPrincipalPanel(null, "NewPrincipalName");
+		testGroupPanel = new SecurityAddGroupNamePanel(null, "EditGroupName");
+		testGroupPanel = new SecurityAddGroupNamePanel(null, "NewGroupName");
     }
 
     public SecurityAddNamePanelTest(String testName) {

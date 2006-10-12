@@ -35,8 +35,8 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
  */
 public class TextMapping {
 	
-	private String xmlText;
-	private String displayText;
+	private final String xmlText;
+	private final String displayText;
 
 	public TextMapping(final String xml, final String display) {
 		xmlText = xml;

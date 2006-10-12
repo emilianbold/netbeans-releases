@@ -19,13 +19,20 @@
 
 package org.netbeans.modules.j2ee.sun.dd.api;
 
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
+
+
 /**
- * Exception for cases when specific Servletx.x specification doesn't support the specific method.
+ * Exception for cases when specific DTD specification doesn't support a particular property or method.
  *
  * @author  Milan Kuchtiak
  */
 public class VersionNotSupportedException extends java.lang.Exception {
+
+    private static String exceptionMsg = 
+            ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/dd/api/Bundle").getString("MSG_versionNotSupported"); // NOI18N
+    
     private String version;
 
     /**
@@ -38,15 +45,17 @@ public class VersionNotSupportedException extends java.lang.Exception {
         super(message);
         this.version=version;
     }
+    
     /**
      * Constructor for VersionNotSupportedException
      * 
      * @param version specific version of Servlet Spec. e.g."2.4"
      */
     public VersionNotSupportedException(String version) {
-        super(ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/dd/api/Bundle").getString("MSG_versionNotSupported") + version );
+        super(MessageFormat.format(exceptionMsg, new Object [] { version } ));
         this.version=version;
     }
+    
     /**
      * Returns the version of deployment descriptor that caused this exception.
      * 

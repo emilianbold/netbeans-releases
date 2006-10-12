@@ -363,6 +363,10 @@ public class SunEjbJarProxy implements SunEjbJar {
         }
     }
         
+    public CommonDDBean cloneVersion(String version) {
+        return ejbJarRoot == null ? null : ejbJarRoot.cloneVersion(version);
+    }
+   
     /** Contract between friend modules that enables 
     * a specific handling of write(FileObject) method for targeted FileObject
     */

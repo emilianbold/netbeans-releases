@@ -100,7 +100,17 @@ abstract public class BaseModuleRef extends Base {
 		buf.append("]");
 		
 		return buf.toString();
-	}	
+    }
+    
+    /** Getter for customizer title fragment property
+     * @return String fragment for use in customizer title
+     *
+     */
+    public String getTitleFragment() {
+        return (J2EEVersion.J2EE_1_4.compareSpecification(getJ2EEModuleVersion()) >= 0) ? 
+            bundle.getString("LBL_J2EETitleFragment") : // NOI18N
+            bundle.getString("LBL_JavaEETitleFragment"); // NOI18N
+    }
 	
 	/** Getter for property name.
 	 * @return Value of property name.

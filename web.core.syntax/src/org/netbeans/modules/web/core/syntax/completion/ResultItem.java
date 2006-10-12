@@ -57,7 +57,7 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
         return substituteOffset;
     }
     
-    void setSubstituteOffset(int offset) {
+    public void setSubstituteOffset(int offset) {
         this.substituteOffset = offset;
     }
     

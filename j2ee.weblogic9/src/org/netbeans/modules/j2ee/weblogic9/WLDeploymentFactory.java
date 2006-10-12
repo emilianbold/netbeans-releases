@@ -27,6 +27,9 @@ import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.WeakHashMap;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
 import org.openide.ErrorManager;
@@ -55,6 +58,9 @@ public class WLDeploymentFactory implements DeploymentFactory {
     private static WLDeploymentFactory instance;
 
     private DeploymentFactory wlFactory = null;
+
+    private static final WeakHashMap<InstanceProperties, WLDeploymentManager> managerCache = 
+            new WeakHashMap<InstanceProperties, WLDeploymentManager>();
     
     /**
      * The singleton factory method
@@ -69,30 +75,35 @@ public class WLDeploymentFactory implements DeploymentFactory {
         return instance;
     }
     
-    static class Empty {
-    }
-    
-    public static class ExtendedClassLoader extends URLClassLoader {
+    public static class WLClassLoader extends URLClassLoader {
 
-        public ExtendedClassLoader( ClassLoader _loader) throws MalformedURLException, RuntimeException {
-            super(new URL[0], _loader);
+        public WLClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException, RuntimeException {
+            super(urls, parent);
         }
         
         public void addURL(File f) throws MalformedURLException, RuntimeException {
-                if (f.isFile()){
-                    addURL(f.toURL());
-                }
+            if (f.isFile()) {
+                addURL(f.toURL());
+            }
         }
 
-        protected PermissionCollection getPermissions(CodeSource _cs) {
+        protected PermissionCollection getPermissions(CodeSource codeSource) {
             Permissions p = new Permissions();
             p.add(new AllPermission());
             return p;
         }
         
+       public Enumeration<URL> getResources(String name) throws IOException {
+           // get rid of annoying warnings
+           if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
+               return Collections.enumeration(Collections.<URL>emptyList());
+           } 
+
+           return super.getResources(name);
+       }         
     }
     
-    private static ExtendedClassLoader loader = null;
+    private static WLClassLoader loader;
     
     public static ClassLoader getWLClassLoader (String serverRoot) {
         if (loader == null) {
@@ -101,11 +112,11 @@ public class WLDeploymentFactory implements DeploymentFactory {
         return loader;
     }
     
-    public static void resetWLClassLoader (String serverRoot) {
+    private static void resetWLClassLoader (String serverRoot) {
         loader = null;
         try {
-            loader = new ExtendedClassLoader(new Empty().getClass().getClassLoader());
-            loader.addURL(new File(serverRoot + "/server/lib/weblogic.jar"));
+            URL[] urls = new URL[] { new File(serverRoot + "/server/lib/weblogic.jar").toURI().toURL()}; // NOI18N
+            loader = new WLClassLoader(urls, WLDeploymentFactory.class.getClassLoader());
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
         }
@@ -189,10 +200,13 @@ public class WLDeploymentFactory implements DeploymentFactory {
         if (WLDebug.isEnabled()) {
             WLDebug.notify(WLDeploymentFactory.class, "getDeploymentManager, uri:" + uri+" username:" + username+" password:"+password);
         }
+        
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4];
-        return new WLDeploymentManager(getDM (uri, username, password, host, port), uri, username, password, host, port);
+        WLDeploymentManager dm = new WLDeploymentManager(getDM (uri, username, password, host, port), uri, username, password, host, port);
+        updateManagerCache(dm, uri);
+        return dm;
     }
     
     public DeploymentManager getDisconnectedDeploymentManager(String uri) 
@@ -203,7 +217,17 @@ public class WLDeploymentFactory implements DeploymentFactory {
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4];
-        return new WLDeploymentManager(getDiscoDM(uri), uri, host, port);
+        WLDeploymentManager dm = new WLDeploymentManager(getDiscoDM(uri), uri, host, port);
+        updateManagerCache(dm, uri);
+        return dm;
+    }
+    
+    private void updateManagerCache(WLDeploymentManager dm, String uri) {
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+        if (managerCache.get(ip) != null) {
+            dm.setServerProcess(managerCache.get(ip).getServerProcess());
+        }
+        managerCache.put(ip, dm);
     }
     
     public String getProductVersion() {

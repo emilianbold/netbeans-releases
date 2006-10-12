@@ -28,7 +28,6 @@ import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 
@@ -96,7 +95,7 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
         } else {
             final P p = new P (module);
             p.supp.fireHandleProgressEvent (module, new Status (ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.COMPLETED));
-            Task t = RequestProcessor.getDefault().post(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
                         p.supp.fireHandleProgressEvent (module, new Status (ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.COMPLETED));

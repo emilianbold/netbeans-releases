@@ -108,7 +108,7 @@ public final class DTDRegistry {
         "http://www.sun.com/software/appserver/dtds/sun-application_1_4-0.dtd";    
     
     public static final String SUN_APPLICATION_50_DTD_PUBLIC_ID =
-        "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 9.0 J2EE Application 5.0//EN";
+        "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Java EE Application 5.0//EN";
     public static final String SUN_APPLICATION_50_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-application_5_0-0.dtd";
     
@@ -161,7 +161,11 @@ public final class DTDRegistry {
         "-//Sun Microsystems, Inc.//DTD Application Server 8.1 Application Client 1.4//EN";
     public static final String SUN_APPCLIENT_141_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-application-client_1_4-1.dtd";
-
+    public static final String SUN_APPCLIENT_50_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Application Client 5.0//EN";
+    public static final String SUN_APPCLIENT_50_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-application-client_5_0-0.dtd";    
+    
     /**
      * Connectors: Sun ONE App Server specific dtd info.
      */

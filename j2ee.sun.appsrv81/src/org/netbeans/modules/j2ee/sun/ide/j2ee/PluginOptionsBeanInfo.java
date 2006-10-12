@@ -44,8 +44,8 @@ public class PluginOptionsBeanInfo extends SimpleBeanInfo {
 
         PropertyDescriptor[] retValue = new PropertyDescriptor[] {
             // TODO: from bundle
-            createPropertyDescriptor("userList", "LBL_UserList", "DSC_UserList"), //NOI18N
-            createPropertyDescriptor("groupList", "LBL_GroupList", "DSC_GroupList"),//NOI18N
+//            createPropertyDescriptor("userList", "LBL_UserList", "DSC_UserList"), //NOI18N
+//            createPropertyDescriptor("groupList", "LBL_GroupList", "DSC_GroupList"),//NOI18N
             createPropertyDescriptor("charsetDisplayPreference", "LBL_CharsetDispPref", "DSC_CharsetDispPref", CharsetDisplayPreferenceEditor.class),//NOI18N
             createPropertyDescriptor("logLevel", "LBL_PluginLogLevel", "DSC_PluginLogLevel", LoggingLevelEditor.class),//NOI18N
             createPropertyDescriptor("incrementalDeploy", "LBL_INCREMENTAL", "DSC_INCREMENTAL")//NOI18N

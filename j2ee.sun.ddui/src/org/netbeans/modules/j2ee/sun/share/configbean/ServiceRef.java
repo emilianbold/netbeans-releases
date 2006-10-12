@@ -22,6 +22,7 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
@@ -33,8 +34,11 @@ import javax.enterprise.deploy.model.XpathEvent;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.common.CallProperty;
+import org.netbeans.modules.j2ee.sun.dd.api.common.MessageSecurityBinding;
 import org.netbeans.modules.j2ee.sun.dd.api.common.PortInfo;
+import org.netbeans.modules.j2ee.sun.dd.api.common.WsdlPort;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
@@ -156,7 +160,8 @@ public class ServiceRef extends Base {
 		Snippet snipOne = new DefaultSnippet() {
 			public CommonDDBean getDDSnippet() {
 				org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef serviceRef = 
-                    StorageBeanFactory.getDefault().createServiceRef();
+                    getConfig().getStorageFactory().createServiceRef();
+                String version = getAppServerVersion().getEjbJarVersionAsString();
 
 				// write properties into Servlet bean
 				String sn = getServiceRefName();
@@ -169,13 +174,13 @@ public class ServiceRef extends Base {
 				}
 
 				PortInfo [] portInfos = (PortInfo []) 
-					Utils.listToArray(getPortInfos(), PortInfo.class);
+					Utils.listToArray(getPortInfos(), PortInfo.class, version);
 				if(portInfos != null) {
 					serviceRef.setPortInfo(portInfos);
 				}
 				
 				CallProperty [] callProps = (CallProperty []) 
-					Utils.listToArray(getCallProperties(), CallProperty.class);
+					Utils.listToArray(getCallProperties(), CallProperty.class, version);
 				if(callProps != null) {
 					serviceRef.setCallProperty(callProps);
 				}				
@@ -279,11 +284,13 @@ public class ServiceRef extends Base {
                         for(int j = 0; j < portComponentRefDDs.length; j++) {
                             DDBean[] serviceEndpointInterfaceDD = 
                                 portComponentRefDDs[j].getChildBean("service-endpoint-interface");  //NOI18N
-                            serviceEndpointInterface = serviceEndpointInterfaceDD[0].getText();
-                            if(serviceEndpointInterface != null){
-                                PortInfo portInfo = StorageBeanFactory.getDefault().createPortInfo();
-                                portInfo.setServiceEndpointInterface(serviceEndpointInterface);
-                                result.add(portInfo);
+                            if(serviceEndpointInterfaceDD != null && serviceEndpointInterfaceDD.length > 0) {
+                                serviceEndpointInterface = serviceEndpointInterfaceDD[0].getText();
+                                if(serviceEndpointInterface != null){
+                                    PortInfo portInfo = getConfig().getStorageFactory().createPortInfo();
+                                    portInfo.setServiceEndpointInterface(serviceEndpointInterface);
+                                    result.add(portInfo);
+                                }
                             }
                         }
                     }
@@ -302,29 +309,29 @@ public class ServiceRef extends Base {
         return result;
     }
 
-	/* ------------------------------------------------------------------------
-	 * Property getter/setter support
-	 */
-	
-	/** Getter for property wsdlOverride.
-	 * @return Value of property wsdlOverride.
-	 */
-	public String getWsdlOverride() {
-		return wsdlOverride;
-	}
-	
-	/** Setter for property wsdlOverride.
-	 * @param wsdlOverride New value of property wsdlOverride.
-	 *
-	 * @throws PropertyVetoException
-	 */
-	public void setWsdlOverride(String newWsdlOverride) throws java.beans.PropertyVetoException {
-		String oldWsdlOverride = wsdlOverride;
-		getVCS().fireVetoableChange("wsdlOverride", oldWsdlOverride, newWsdlOverride);
-		wsdlOverride = newWsdlOverride;
-		getPCS().firePropertyChange("wsdlOverride", oldWsdlOverride, wsdlOverride);
-	}
-	
+    /* ------------------------------------------------------------------------
+     * Property getter/setter support
+     */
+
+    /** Getter for property wsdlOverride.
+     * @return Value of property wsdlOverride.
+     */
+    public String getWsdlOverride() {
+        return wsdlOverride;
+    }
+
+    /** Setter for property wsdlOverride.
+     * @param wsdlOverride New value of property wsdlOverride.
+     *
+     * @throws PropertyVetoException
+     */
+    public void setWsdlOverride(String newWsdlOverride) throws java.beans.PropertyVetoException {
+        String oldWsdlOverride = wsdlOverride;
+        getVCS().fireVetoableChange("wsdlOverride", oldWsdlOverride, newWsdlOverride);
+        wsdlOverride = newWsdlOverride;
+        getPCS().firePropertyChange("wsdlOverride", oldWsdlOverride, wsdlOverride);
+    }
+
     /** Getter for property portInfos.
      * @return Value of property portInfos.
      *
@@ -332,11 +339,11 @@ public class ServiceRef extends Base {
     public List getPortInfos() {
         return ports;
     }
-    
-	public PortInfo getPortInfo(int index) {
-		return (PortInfo) ports.get(index);
-	}
-	
+
+    public PortInfo getPortInfo(int index) {
+        return (PortInfo) ports.get(index);
+    }
+
     /** Setter for property portInfos.
      * @param newPorts New value of property portInfos.
      *
@@ -349,22 +356,81 @@ public class ServiceRef extends Base {
         ports = newPorts;
         getPCS().firePropertyChange("portInfos", oldPorts, ports);	// NOI18N
     }
+
+    public void addPortInfo(PortInfo newPortInfo) throws java.beans.PropertyVetoException {
+        getVCS().fireVetoableChange("portInfo", null, newPortInfo);	// NOI18N
+        if(ports == null) {
+            ports = new ArrayList();
+        }
+        ports.add(newPortInfo);
+        getPCS().firePropertyChange("portInfo", null, newPortInfo );	// NOI18N
+    }
+
+    public void removePortInfo(PortInfo oldPortInfo) throws java.beans.PropertyVetoException {
+        getVCS().fireVetoableChange("portInfo", oldPortInfo, null);	// NOI18N
+        ports.remove(oldPortInfo);
+        getPCS().firePropertyChange("portInfo", oldPortInfo, null );	// NOI18N
+    }
+
+    /** Note: For now, this method applies a copy of the specified binding to each port
+     *  currently configured on this service reference, if any.
+     * 
+     * @deprecated
+     */
+    public void setMessageSecurityBinding(MessageSecurityBinding newBinding) throws java.beans.PropertyVetoException, VersionNotSupportedException {
+        if(ports != null && ports.size() > 0) {
+            MessageSecurityBinding oldBinding;
+            oldBinding = ((PortInfo) ports.get(0)).getMessageSecurityBinding();
+            getVCS().fireVetoableChange("messageSecurityBinding", oldBinding, newBinding);   // NOI18N
+            Iterator portIterator = ports.iterator();
+            while(portIterator.hasNext()) {
+                PortInfo portInfo = (PortInfo) portIterator.next();
+                portInfo.setMessageSecurityBinding((newBinding != null) ? (MessageSecurityBinding) newBinding.clone() : null);
+            }
+            getPCS().firePropertyChange("messageSecurityBinding", oldBinding, newBinding );  // NOI18N
+        }
+    }
+
+    /** Sets the MessageSecurityBinding for the specified port of this ServiceRef.  If the port
+     *  is not found, a new entry is created for it.
+     */
+    public void setMessageSecurityBinding(String namespaceURI, String localpart, MessageSecurityBinding newBinding) 
+    throws java.beans.PropertyVetoException, VersionNotSupportedException {
+        PortInfo thePortInfo = null;
+        
+        /// find the right port...
+        if(ports != null) {
+            Iterator iter = ports.iterator();
+            while(iter.hasNext()) {
+                PortInfo portInfo = (PortInfo) iter.next();
+                WsdlPort port = portInfo.getWsdlPort();
+                if(port != null && namespaceURI.equals(port.getNamespaceURI()) && localpart.equals(port.getLocalpart())) {
+                    thePortInfo = portInfo;
+                    break;
+                }
+            }
+        } else {
+            // No list of port-info entries yet, make one.
+            ports = new ArrayList();
+        }
+        
+        if(thePortInfo == null) {
+            // if we didn't find the port, make one.
+            thePortInfo = getConfig().getStorageFactory().createPortInfo();
+            WsdlPort wsdlPort = thePortInfo.newWsdlPort();
+            wsdlPort.setNamespaceURI(namespaceURI);
+            wsdlPort.setLocalpart(localpart);
+            thePortInfo.setWsdlPort(wsdlPort);
+            ports.add(thePortInfo);
+        }
+        
+        // finally set the binding.
+        MessageSecurityBinding oldBinding = thePortInfo.getMessageSecurityBinding();
+        getVCS().fireVetoableChange("messageSecurityBinding", oldBinding, newBinding);   // NOI18N
+        thePortInfo.setMessageSecurityBinding((newBinding != null) ? (MessageSecurityBinding) newBinding.clone() : null);
+        getPCS().firePropertyChange("messageSecurityBinding", oldBinding, newBinding );  // NOI18N
+    }
     
-	public void addPortInfo(PortInfo newPortInfo) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange("portInfo", null, newPortInfo);	// NOI18N
-		if(ports == null) {
-			ports = new ArrayList();
-		}
-		ports.add(newPortInfo);
-		getPCS().firePropertyChange("portInfo", null, newPortInfo );	// NOI18N
-	}
-	
-	public void removePortInfo(PortInfo oldPortInfo) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange("portInfo", oldPortInfo, null);	// NOI18N
-		ports.remove(oldPortInfo);
-		getPCS().firePropertyChange("portInfo", oldPortInfo, null );	// NOI18N
-	}
-		
     /** Getter for property callProperties.
      * @return Value of property callProperties.
      *
@@ -372,11 +438,11 @@ public class ServiceRef extends Base {
     public List getCallProperties() {
         return callProperties;
     }
-    
-	public CallProperty getCallProperty(int index) {
-		return (CallProperty) ports.get(index);
-	}
-	
+
+    public CallProperty getCallProperty(int index) {
+        return (CallProperty) ports.get(index);
+    }
+
     /** Setter for property callProperties.
      * @param newPorts New value of property callProperties.
      *
@@ -389,29 +455,29 @@ public class ServiceRef extends Base {
         callProperties = newCallProperties;
         getPCS().firePropertyChange("callProperties", oldCallProperties, callProperties);	// NOI18N
     }
-    
-	public void addCallProperty(CallProperty newCallProperty) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange("callProperty", null, newCallProperty);	// NOI18N
-		if(callProperties == null) {
-			callProperties = new ArrayList();
-		}		
-		callProperties.add(newCallProperty);
-		getPCS().firePropertyChange("callProperty", null, newCallProperty );	// NOI18N
-	}
-	
-	public void removeCallProperty(CallProperty oldCallProperty) throws java.beans.PropertyVetoException {
-		getVCS().fireVetoableChange("callProperty", oldCallProperty, null);	// NOI18N
-		callProperties.remove(oldCallProperty);
-		getPCS().firePropertyChange("callProperty", oldCallProperty, null );	// NOI18N
-	}
 
-	public void fireXpathEvent(XpathEvent xpathEvent) {
+    public void addCallProperty(CallProperty newCallProperty) throws java.beans.PropertyVetoException {
+        getVCS().fireVetoableChange("callProperty", null, newCallProperty);	// NOI18N
+        if(callProperties == null) {
+            callProperties = new ArrayList();
+        }		
+        callProperties.add(newCallProperty);
+        getPCS().firePropertyChange("callProperty", null, newCallProperty );	// NOI18N
+    }
+
+    public void removeCallProperty(CallProperty oldCallProperty) throws java.beans.PropertyVetoException {
+        getVCS().fireVetoableChange("callProperty", oldCallProperty, null);	// NOI18N
+        callProperties.remove(oldCallProperty);
+        getPCS().firePropertyChange("callProperty", oldCallProperty, null );	// NOI18N
+    }
+
+    public void fireXpathEvent(XpathEvent xpathEvent) {
         String xpath = xpathEvent.getBean().getXpath();
         if(xpath.equals("/web-app/service-ref/port-component-ref")){ //NOI18N
             setDefaultPorts();
         }
-	}
-    
+    }
+
     /** Api to retrieve the interface definitions for this bean.  Aids usability
      *  during configuration, as the editors can display the existing methds
      *  rather than have the user enter them manually.

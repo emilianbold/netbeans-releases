@@ -6,9 +6,9 @@
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceEnvRef</import>
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceRef</import>
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.EjbRef</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.WebserviceDescription</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.MessageDestination</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ServiceRef</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceDescription</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.MessageDestination</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ServiceRef</import>
 		<dtd-name>sun-web-app</dtd-name>
 		<bean-name>SunWebApp</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp</implements>
@@ -98,6 +98,12 @@
                     }
                     public void setErrorUrl(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
                          throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
+                    public java.lang.String getHttpservletSecurityProvider() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                            throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+                    }
+                    public void setHttpservletSecurityProvider(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                            throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
                     }
                     public org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription newWebserviceDescription() {
                         return null;
@@ -203,34 +209,44 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping</implements>
 	</meta-element>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceEndpoint</import>
+        <import>org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp</import>
+        <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceEndpoint</import>
 		<dtd-name>servlet</dtd-name>
 		<bean-name>Servlet</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.web.Servlet</implements>
                 <user-code>
-                    public void setWebserviceEndpoint(int index, org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint value) {
-                    }
-                    public org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint getWebserviceEndpoint(int index) {
-                           return null;
-                    }
-                    public int sizeWebserviceEndpoint() {
-                           return -1;
-                    }
-                    public void setWebserviceEndpoint(org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint[] value) {
-                    }    
-                    public org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint[] getWebserviceEndpoint() {
-                           return null;
-                    }
-                    public int addWebserviceEndpoint(org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint value) {
-                           return -1;
-                    }
-                    public int removeWebserviceEndpoint(org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint value) {
-                           return -1;
-                    }   
-                    public org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint newWebserviceEndpoint() {
-                           return null;
-                    }
-                </user-code>
+    // new in 2_4_0
+    public void setWebserviceEndpoint(int index, org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint value) {
+    }
+    public org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint getWebserviceEndpoint(int index) {
+       return null;
+    }
+    public int sizeWebserviceEndpoint() {
+       return -1;
+    }
+    public void setWebserviceEndpoint(org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint[] value) {
+    }    
+    public org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint[] getWebserviceEndpoint() {
+       return null;
+    }
+    public int addWebserviceEndpoint(org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint value) {
+       return -1;
+    }
+    public int removeWebserviceEndpoint(org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint value) {
+       return -1;
+    }   
+    public org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint newWebserviceEndpoint() {
+       return null;
+    }
+
+    // new in 2_5_0
+	public void setPrincipalNameClassName(String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+    }
+	public String getPrincipalNameClassName() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_3_0);
+    }
+        </user-code>
 	</meta-element>
 	<meta-element>
 		<dtd-name>session-config</dtd-name>

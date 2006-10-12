@@ -31,7 +31,6 @@ import org.netbeans.modules.web.core.Util;
 
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
@@ -46,7 +45,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 //import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
-import org.netbeans.api.java.project.JavaProjectConstants;
 
 import org.netbeans.modules.web.taglib.TLDDataObject;
 import org.netbeans.modules.web.taglib.model.Taglib;
@@ -73,7 +71,12 @@ public class TagHandlerIterator implements TemplateWizard.Iterator {
         Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         tagHandlerSelectionPanel = new TagHandlerSelection(wiz);
-        packageChooserPanel = JavaTemplates.createPackageChooser(project,sourceGroups,tagHandlerSelectionPanel);
+        
+        if (sourceGroups.length == 0)
+            packageChooserPanel = Templates.createSimpleTargetChooser(project, sourceGroups, tagHandlerSelectionPanel);
+        else
+            packageChooserPanel = JavaTemplates.createPackageChooser(project,sourceGroups,tagHandlerSelectionPanel);
+        
         sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
         if (sourceGroups==null || sourceGroups.length==0)
             sourceGroups = Util.getJavaSourceGroups(project);

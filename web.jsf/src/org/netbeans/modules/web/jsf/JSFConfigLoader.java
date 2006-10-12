@@ -33,8 +33,7 @@ import org.openide.util.actions.SystemAction;
  * @author Petr Pisl
  */
 public class JSFConfigLoader extends UniFileLoader {
-    private static final String REQUIRED_MIME_1_0 = "text/jsf-config1.0"; // NOI18N
-    private static final String REQUIRED_MIME_1_1 = "text/jsf-config1.1"; // NOI18N 
+    private static final String REQUIRED_MIME = "text/x-jsf+xml"; // NOI18N
    
     public JSFConfigLoader() {
         this("org.netbeans.modules.web.jsf.JSFConfigLoader");
@@ -52,8 +51,7 @@ public class JSFConfigLoader extends UniFileLoader {
     protected void initialize() {
         
         super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME_1_0);
-        getExtensions().addMimeType(REQUIRED_MIME_1_1);
+        getExtensions().addMimeType(REQUIRED_MIME);
     }
     
     protected String actionsContext() {

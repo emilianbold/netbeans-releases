@@ -31,17 +31,15 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.awt.Component;
 import java.io.InputStream;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -79,7 +77,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
     private Wizard cpWizardInfo;
   
     private boolean addSteps = false;
-    private boolean addStepsCP = false;
+//    private boolean addStepsCP = false;
     
     private transient String[] steps = null;
     private transient String[] moreSteps = null;
@@ -115,23 +113,25 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
         return tempPanels;
     }
     
+    static private String CONST_ADD_PROPERTY = "LBL_AddProperty"; // NOI18N
+    
     private String[] createSteps() {
         String[] tempSteps = null;
         if(stage == IN_PM){
             moreSteps = null;
             tempSteps = new String[] {
-                __FirstStepChoose,
+                NbBundle.getMessage(PMFWizard.class,__FirstStepChoose),
                 NbBundle.getMessage(PMFWizard.class, "LBL_GeneralAttributes_PM"), // NOI18N
-                NbBundle.getMessage(PMFWizard.class, "LBL_AddProperty"), // NOI18N
+                NbBundle.getMessage(PMFWizard.class, CONST_ADD_PROPERTY),
             };
         }else if(stage == IN_DS){
             moreCPSteps = null;
             tempSteps = new String[] {
-                __FirstStepChoose,
+                NbBundle.getMessage(PMFWizard.class,__FirstStepChoose),
                 NbBundle.getMessage(PMFWizard.class, "LBL_GeneralAttributes_PM"), // NOI18N
-                NbBundle.getMessage(PMFWizard.class, "LBL_AddProperty"), // NOI18N
+                NbBundle.getMessage(PMFWizard.class, CONST_ADD_PROPERTY),
                 NbBundle.getMessage(PMFWizard.class, "LBL_GeneralAttributes_DS"), // NOI18N
-                NbBundle.getMessage(PMFWizard.class, "LBL_AddProperty"), // NOI18N
+                NbBundle.getMessage(PMFWizard.class, CONST_ADD_PROPERTY),
             };
         }
         return tempSteps;
@@ -161,7 +161,8 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
                 ResourceUtils.savePMFResourceDatatoXml(this.helper.getData(), null, null);
             }
         }catch (Exception ex){
-            //System.out.println("Error in instantiate ");
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         return java.util.Collections.EMPTY_SET;
     }
@@ -186,7 +187,8 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
                 this.helper.getData().setTargetFileObject(pkgLocation);
             }
         }catch (Exception ex){
-           //Unable to get project location
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         this.helper.getData().setHolder(this.holder);
         
@@ -213,7 +215,8 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
             InputStream in = Wizard.class.getClassLoader().getResourceAsStream(filePath);
             wizInfo = Wizard.createGraph(in);
         }catch(Exception ex){
-            //System.out.println("Unable to get Wiz Info");
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         return wizInfo;
     }
@@ -223,10 +226,12 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
     }
     
     public boolean hasNext(){
+        boolean retVal = false;
         if (stage == IN_PM && index == 0 && addSteps)
-            return true;
+            retVal = true;
         else
-            return index < panels.length - 1;
+            retVal = index < panels.length - 1;
+        return retVal;
     }
     
     public boolean hasPrevious(){
@@ -234,8 +239,9 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
     }
 
     public synchronized void nextPanel(){
-        if (index + 1 == panels.length)
+        if (index + 1 == panels.length) {
             throw new java.util.NoSuchElementException();
+        }
         if (index == 0) {
             ((CommonPropertyPanel) panels[1]).setInitialFocus();
         }else if(index == 1){
@@ -260,16 +266,18 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
     }
     
     public synchronized void previousPanel(){
-        if (index == 0)
+        if (index == 0) {
             throw new java.util.NoSuchElementException();
+        }
         
         index--;
         //Required to refresh number of panels that need to be displayed
         if( (stage == IN_DS) && (index < 2)){
             stage = IN_PM;
         }else{
-            if((stage == IN_CP) && (index < 4))
+            if((stage == IN_CP) && (index < 4)) {
                 stage = IN_DS;
+            }
         }
     }
     
@@ -294,7 +302,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
         if( (e.getSource().getClass() == CommonAttributePanel.class) || (e.getSource().getClass() == CommonAttributeVisualPanel.class) ) {
             CommonAttributePanel commonPane = (CommonAttributePanel)this.current();
             CommonAttributeVisualPanel visPane = (CommonAttributeVisualPanel)commonPane.getComponent();
-            boolean oldVal = addSteps;
+//            boolean oldVal = addSteps;
             this.addSteps = visPane.isNewResourceSelected();
             
             WizardDescriptor.Panel[] tempPanels = null;
@@ -418,7 +426,7 @@ public final class PMFWizard implements WizardDescriptor.InstantiatingIterator, 
                     steps[1],
                     steps[2],
                     NbBundle.getMessage(PMFWizard.class, "LBL_GeneralAttributes_DS"), // NOI18N
-                    NbBundle.getMessage(PMFWizard.class, "LBL_AddProperty"), // NOI18N
+                    NbBundle.getMessage(PMFWizard.class, CONST_ADD_PROPERTY),
                 };
             }
             pmSteps = steps;

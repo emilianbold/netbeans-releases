@@ -19,171 +19,371 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import java.io.File;
-import java.util.*;
-import java.io.*;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
-import org.openide.windows.*;
-/** Connects the output stream of a file to the IDE output window.
- *
- * @author ludo
- */
-public class LogViewerSupport extends Thread {
-    boolean shouldStop = false;
-    FileInputStream  filestream=null;
-    BufferedReader    ins;
-    InputOutput io;
-    File fileName;
-    String url;
-    /** Connects a given process to the output window. Returns immediately, but threads are started that
-     * copy streams of the process to/from the output window.
-     * @param process process whose streams to connect to the output window
-     * @param url deployment manager URL
-     */
-    public LogViewerSupport(final File fileName, final String url) {
-        
-        this.fileName=fileName;
-        this.url = url;
-    }
+
+
+
+
+public final class LogViewerSupport extends Thread {
     
+    
+    private InputOutput io;
+    
+    private String url;
+    private static final HashMap logsMap = new HashMap();
     // known open logs
-    private static Set openLogs = new HashSet();
+    // private static Set openLogs = new HashSet();
+    /**
+     * frequency to check file changes
+     */
+    private long sampleInterval = 10000;
     
-    public void run() {
-        int MAX_LINES = 15000;
-        int LINES = 2000;
-        int OLD_LINES = 600;
-        int lines;
-        Ring ring = new Ring(OLD_LINES);
-        int c;
-        String line;
-        
-                                // Read the log file without
-                                // displaying everything
-        try {
-            while ((line = ins.readLine()) != null) {
-                ring.add(line);
-            } // end of while ((line = ins.readLine()) != null)
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        } // end of try-catch
-        
-                                // Now show the last OLD_LINES
-        lines = ring.output();
-        ring.setMaxCount(LINES);
-        
-        while (shouldStop ==false) {
-            try {
-                if (lines >= MAX_LINES) {
-                    io.getOut().reset();
-                    lines = ring.output();
-                } // end of if (lines >= MAX_LINES)
+    /**
+     * The log file to tail
+     */
+    private File logfile;
+    
+    /**
+     * Defines whether the log file tailer should include the entire contents
+     * of the exising log file or tail from the end of the file when the tailer starts
+     */
+    private boolean startAtBeginning = false;
+    
+    /**
+     * are we working, reading the log file?
+     */
+    private boolean working = false;
+    private LogHyperLinkSupport.AppServerLogSupport logSupport;
+    private BufferedReader reader = null;
+    
+    private boolean initRingerDone=false;
+    /* ring buffer constants:
+     */
+    static private  int OLD_LINES = 600;
+    static private  int MAX_LINES = 25000;
+    static private  int LINES = 2000;    
 
-                while ((line = ins.readLine()) != null) {
-                    if ((line = ring.add(line)) != null) {
-                        io.getOut().println(line);
-                        lines++;
-                    } // end of if ((line = ring.add(line)) != null)
-                }
-                
-            }catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-            try {
-                sleep(10000);
-                ////System.out.println("io close or not"+io.isClosed());
-                if (io.isClosed()){//tab is closed by the user
-                    shouldStop =true;
-                }
-                else{
-                                // it is possilbe in the case of only
-                                // 1 tab, that the tab is hidden, not
-                                // closed. In this case we need to
-                                // detect that and close our stream
-                                // anyway to unlock the log file
-                    shouldStop =true; //assume the tab is hidden
-                    TopComponent.Registry rr= TopComponent.getRegistry();
-                    Set ss = rr.getOpened();
-                    Iterator ttt = ss.iterator();
-                    while (ttt.hasNext()){
-                        Object o = ttt.next();
-                        String sss=""+o;
-                        if (sss.startsWith("org.netbeans.core.output2.OutputWindow")){
-                            // the tab is not hidden so we should not stopped!!!
-                            shouldStop =false;
-                        }
-                    }
-                }
-            }catch (Exception e){
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-            }
-        }
-        // This viewer thread is about to die. Forget that this log is displayed.
-        synchronized (openLogs) {
-            openLogs.remove(fileName);
-            stopUpdatingLogViewer();
-        }
-        
-    }
-    /* display the log viewer dialog
+    /**
+     * Creates a new log file tailer
      *
-     **/
-    
-    public void showLogViewer() throws IOException{
-        io = UISupport.getServerIO(url);
-        synchronized (openLogs) {
-            if (openLogs.contains(fileName)) {
-                // front the open log and return
-                io.select();
-                return;
-            }
-            // remember that this log is open.
-            openLogs.add(fileName);
-        }
+     * @param file         The file to tail
+     * @param sampleInterval    How often to check for updates to the log file (default = 10s)
+     * @param startAtBeginning   Should the tailer simply tail or should it process the entire
+     *               file and continue tailing (true) or simply start tailing from the
+     *               end of the file
+     */
 
-        try {
-            shouldStop = false;
-            io.getOut().reset();
-            io.select();
-            filestream = new FileInputStream(fileName);
-            // RAVE ins = new BufferedReader(new InputStreamReader(filestream,"UTF-8"));//NOI18N
-                                    // Use the default charset!
-            ins = new BufferedReader(new InputStreamReader(filestream));
-        } catch (IOException ioe) {
-            synchronized (openLogs) {
-                openLogs.remove(fileName);
+    public static LogViewerSupport getLogViewerSupport(final File file, final String url, final long sampleInterval, final boolean startAtBeginning ) {
+        synchronized (logsMap) {
+            LogViewerSupport logViewer = (LogViewerSupport)logsMap.get(url);
+            if (logViewer==null) {
+                logViewer = new LogViewerSupport( file, url,  sampleInterval, startAtBeginning );
+                logsMap.put(url,logViewer);
             }
-            throw ioe;
+
+            logViewer.sampleInterval = sampleInterval;
+            logViewer.startAtBeginning = startAtBeginning;
+            return logViewer;
         }
+    }
+
+    /**
+     * stop and remove the log viewer thread for the given server (url)
+     *  @param url: the server url
+     *  nop is there is no thread for this server
+     *  otherwise, stop the thread and close the log file, so that there is no lock on it anymore
+     */
+    public static void removeLogViewerSupport(final String url) {
+        synchronized (logsMap) {
+            LogViewerSupport logViewer = (LogViewerSupport)logsMap.get(url);
+            if (logViewer!=null) {
+                logsMap.remove(url);
+                logViewer.working =false;
+            }
+        }
+    }
+    
+    private LogViewerSupport(final File file, final String url, final long sampleInterval, final boolean startAtBeginning) {
+        this.logfile = file;
+        this.url = url;
+        this.sampleInterval = sampleInterval;
+        this.startAtBeginning = startAtBeginning;
+        io = UISupport.getServerIO(url);
         
-        // let ant process know that it doesn't have to wait for me.
+        logSupport = new LogHyperLinkSupport.AppServerLogSupport("", "/");
+        // let  process know that it doesn't have to wait for me.
         setDaemon(true);
         start();
     }
     
-    /* stop to update  the log viewer dialog
-     *
-     **/
     
-    public void stopUpdatingLogViewer()   {
-        shouldStop = true;
-        
-        try{
-            ins.close();
-            filestream.close();
-            io.closeInputOutput();
-            io.setOutputVisible(false);
-        }
-        catch (IOException e){
+    
+    protected void printLine( String line ) {
+        String s = filterLine(line);
+        if ((!s.equals(""))&&((!s.equals(" ")))){//NOI18N
+            
+            LogHyperLinkSupport.AppServerLogSupport.LineInfo lineInfo = logSupport.analyzeLine(s);
+            if (lineInfo.isError()) {
+                if (lineInfo.isAccessible()) {
+                    try {
+                        io.getOut().println(s, logSupport.getLink(lineInfo.message(), lineInfo.path(), lineInfo.line()));
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                } else {
+                    io.getOut().println(s);
+                }
+            } else {
+                io.getOut().println(s);
+            }
             
         }
+        
     }
     
+    public void stopTailing() {
+        this.working = false;
+    }
+    
+    
+    private void initRingBuffer(Ring ring){
 
+        try {            
+            // Start tailing
+            if (reader!=null){
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+                reader = null;
+            }
+            
+            if(logfile.exists()) {
+                reader = new BufferedReader(new FileReader(logfile));
+                int c;
+                String line;
+
+                // Read the log file without
+                // displaying everything
+                try {
+                    while ((line = reader.readLine()) != null) {
+                        ring.add(line);
+                    }
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+                // Now show the last OLD_LINES
+                if (startAtBeginning){
+                    ring.output();
+
+                }
+                ring.setMaxCount(LINES);
+            }
+        } catch (Exception e){
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        
+    }
+
+    public void run() {
+        // The file pointer keeps track of where we are in the file
+        long currentIndex = 0;
+        long currentNbofFileLogs = logfile.getParentFile().list().length;
+        boolean needTosleep=true;
+        boolean needToRotate=false;
+        boolean alreadyRotated=false;
+        working = true;
+        String line;
+        int lines =0;
+
+        Ring ring = new Ring(OLD_LINES);        
+        currentIndex = logfile.length();
+        try{
+            while( working  /*&& !io.isClosed()*/) {
+                needTosleep=true;
+                try {
+                    if (initRingerDone==false){
+                        //this init is initializing the reader
+                        initRingBuffer(ring);
+                        currentIndex = logfile.length();
+                        initRingerDone=true;
+                    }
+                    if (lines >= MAX_LINES) {
+                        io.getOut().reset();
+                        lines = ring.output();
+                    }
+                    // Compare the length of the file to the file pointer
+                    long fileLength = logfile.length();
+                    long newNbofFileLogs = logfile.getParentFile().list().length;
+                    
+                    if( fileLength < currentIndex ) {
+                        needToRotate =true;
+                    }
+                    
+                    if( currentNbofFileLogs < newNbofFileLogs ) {
+                        needToRotate =true;
+                        currentNbofFileLogs = newNbofFileLogs;
+                    }
+                    
+                    if (needToRotate ){
+                        // Log file must have been rotated or deleted;
+                        // reopen the file and reset the file pointer
+                        
+                        //flush where we are.
+                        try {
+                            line = (reader != null) ? reader.readLine() : null;
+                            if(line != null) {
+                                alreadyRotated = false;
+                            }
+                            while( line != null ) {
+                                printLine( line );
+                                ring.add(line);
+                                
+                                line = reader.readLine();
+                                lines++;
+                            }
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                            needToRotate =true;
+                        }
+                        
+                        //reopen the reader on the new log file:
+                        if(!alreadyRotated) {
+                            // only print this once until we get more messages.
+                            printLine("----Log File Rotated---");
+                            alreadyRotated = true;
+                        }
+                        
+                        try {
+                            if(reader != null) {
+                                reader.close();
+                            }
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        }
+                        
+                        if(logfile.exists()) {
+                            reader = new BufferedReader(new FileReader(logfile));
+                            currentIndex = 0;
+                            needToRotate = false;
+                        } else {
+                            reader = null;
+                        }
+                    }
+                    
+                    
+                    try {
+                        line = (reader != null) ? reader.readLine() : null;
+                        if(line != null) {
+                            alreadyRotated = false;
+                        }
+                        while( line != null ) {
+                            printLine( line );
+                            ring.add(line);
+                            line = reader.readLine();
+                            lines++;
+                        }
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        needTosleep=false; //try to catch up
+                        needToRotate =true;
+                    }
+                    //calculate the current log situation
+                    currentIndex = logfile.length();
+                    currentNbofFileLogs = logfile.getParentFile().list().length;
+                    
+                    
+                } catch(Exception ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    working = true;//we continue
+                } finally{
+                    try {
+                        synchronized(this) {                            
+                            if (needTosleep){
+                                wait(100);
+                            }
+                        }
+                    } catch(InterruptedException ex) {
+                        // PMD no op - the thread was interrupted
+                    }
+                }
+            }
+        } catch( Exception e ) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            working =false;//we continue
+        } finally{
+            //we close the reader
+            if (reader!=null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+        }
+    }
+
+    /*
+     * return the 6th element of a log line entry, or the line if this element does
+     * not exist, or if the line cannot be parsed correclty.
+     *
+     */
+    private String filterLine(String line){
+        if (!line.startsWith("[#")){ //NOI18N
+            if (line.endsWith("|#]")){//NOI18N
+                line = line.substring(0,line.length()-3); //remove the last 3 chars.
+            }
+            return line;
+        }
+        
+        String s[] = line.split("\\|");//NOI18N
+        if (s==null){
+            return line;
+        }
+        
+        
+        if (s.length<=6){
+            return "";//NOI18N
+        }
+        
+        return s[6];
+    }
+
+    /**
+     * display the log viewer dialog
+     * @param forced reset view if true, otherwise refresh
+     * @return The output window
+     * @throws java.io.IOException encountered issue while doing a reset on the stdout
+     */
+    public InputOutput showLogViewer(boolean forced) throws IOException{
+        io = UISupport.getServerIO(url);
+        
+        
+        // System.out.println("we retart the thread in showlogviewwer forced="+forced +"  Closed?="+io.isClosed());
+        
+        working = true;
+        if (forced &&(io.isClosed())){
+            initRingerDone=false;
+            io.getOut().reset();
+        }
+        
+        io.select();
+        
+        return io;
+        
+    }
+    
     private class Ring {
         private int maxCount;
         private int count;
@@ -194,23 +394,23 @@ public class LogViewerSupport extends Thread {
             count = 0;
             anchor = new LinkedList();
         }
-    
+        
         public String add(String line) {
             if (line == null || line.equals("")) { // NOI18N
                 return null;
-            } // end of if (line == null || line.equals(""))
+            }
             
             while (count >= maxCount) {
                 anchor.removeFirst();
                 count--;
-            } // end of while (count >= maxCount)
+            }
             
             anchor.addLast(line);
             count++;
             
             return line;
         }
-
+        
         public void setMaxCount(int newMax) {
             maxCount = newMax;
         }
@@ -220,10 +420,9 @@ public class LogViewerSupport extends Thread {
             Iterator it = anchor.iterator();
             
             while (it.hasNext()) {
-                io.getOut().println((String)it.next());
+                printLine((String)it.next());
                 i++;
-            } // end of while (it.hasNext())
-
+            }
             return i;
         }
         
@@ -231,5 +430,5 @@ public class LogViewerSupport extends Thread {
             anchor = new LinkedList();
         }
     }
+    
 }
-

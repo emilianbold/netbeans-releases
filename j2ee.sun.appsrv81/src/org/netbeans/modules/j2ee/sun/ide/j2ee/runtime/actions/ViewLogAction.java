@@ -26,12 +26,13 @@ import org.openide.util.actions.CookieAction;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 
-import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.*;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.LogViewerSupport;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.ManagerNode;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
+import org.openide.windows.InputOutput;
 /** Action to get the log viewer dialog to open
  *
  * @author ludo
@@ -51,33 +52,38 @@ public class ViewLogAction extends CookieAction {
         if(nodes[0].getLookup().lookup(ManagerNode.class) != null){
             ManagerNode node = (ManagerNode)nodes[0].getCookie(ManagerNode.class);
             SunDeploymentManagerInterface sdm = node.getDeploymentManager();
-            viewLog(sdm);
+            viewLog(sdm,true,true);//entire file and forced
         }
         
         
         
     }
     public static void viewLog(SunDeploymentManagerInterface sdm){
-            try{
-                if(sdm.isLocal()==false){
-                    return;
-                }
-
-                DeploymentManagerProperties dmProps = new DeploymentManagerProperties((DeploymentManager) sdm);
-                String domainRoot = dmProps.getLocation();
-                if (domainRoot == null) {
-                    return;
-                }
-                String domain = dmProps.getDomainName();
-                // XXX the dm props has the domain directory....
-                //File f = new File(installRoot+"/domains/"+domain+"/logs/server.log");
-                File f = new File(domainRoot+File.separator+domain+"/logs/server.log");
-                LogViewerSupport p = new LogViewerSupport(f , dmProps.getUrl());
-                p.showLogViewer();
+            viewLog(sdm,false,false);//not the entire file and no forced refresh, just a front view
+    
+    }
+    
+    public static InputOutput viewLog(SunDeploymentManagerInterface sdm, boolean entireFile, boolean forced){
+        try{
+            if(sdm.isLocal()==false){
+                return null;
             }
-            catch (Exception e){
-                Util.showInformation(e.getLocalizedMessage());
-            }    
+            
+            DeploymentManagerProperties dmProps = new DeploymentManagerProperties((DeploymentManager) sdm);
+            String domainRoot = dmProps.getLocation();
+            if (domainRoot == null) {
+                return null;
+            }
+            String domain = dmProps.getDomainName();
+            // XXX the dm props has the domain directory....
+            //File f = new File(installRoot+"/domains/"+domain+"/logs/server.log");
+            File f = new File(domainRoot+File.separator+domain+"/logs/server.log");
+            LogViewerSupport p = LogViewerSupport.getLogViewerSupport(f , dmProps.getUrl(),2000,entireFile);
+            return p.showLogViewer(forced);
+        } catch (Exception e){
+            Util.showInformation(e.getLocalizedMessage());
+        }
+        return null;
     }
     public String getName() {
         return NbBundle.getMessage(ViewLogAction.class, "LBL_ViewlogAction");
@@ -94,19 +100,22 @@ public class ViewLogAction extends CookieAction {
     }
     
     protected boolean enable(Node[] nodes) {
-         if( (nodes == null) || (nodes.length < 1) )
-             return false;
-
+        if( (nodes == null) || (nodes.length < 1) ) {
+            return false;
+        }
+        if (nodes.length > 1) {
+            return false;
+        }
         if(nodes[0].getLookup().lookup(ManagerNode.class) != null){
-             try{
-                 ManagerNode node = (ManagerNode)nodes[0].getLookup().lookup(ManagerNode.class);
-                 
-                 
-                 SunDeploymentManagerInterface sdm = node.getDeploymentManager();
-                 return sdm.isLocal();
-             } catch (Exception e){
-                 //nothing to do, the NetBeasn node system is wierd sometimes...
-             }
+            try{
+                ManagerNode node = (ManagerNode)nodes[0].getLookup().lookup(ManagerNode.class);
+                
+                
+                SunDeploymentManagerInterface sdm = node.getDeploymentManager();
+                return sdm.isLocal();
+            } catch (Exception e){
+                //nothing to do, the NetBeasn node system is wierd sometimes...
+            }
         }
         return false;
     }

@@ -24,11 +24,11 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 
 
 /** This is a messy class. My apologies, it should have been created on it's own,
@@ -64,6 +64,8 @@ public class GenericTableModel extends BeanTableModel {
 	private List properties;
 	private String [] columnNames;
 
+    private ASDDVersion appServerVersion;
+    
 	/** Use this constructor when there is not going to be a parent CommonDDBean for
 	 *  rows to be added to as they are created (and thus parent property name
 	 *  for the items stored in the table.)  For example, several BaseBeans store
@@ -139,7 +141,10 @@ public class GenericTableModel extends BeanTableModel {
 	 *   by the constructor parameter 'parentPropertyName' which means you must
 	 *   use that variant for this method to make sense.
 	 */
-	public void setData(CommonDDBean parent) {
+	public void setData(CommonDDBean parent, ASDDVersion asVersion) {
+        assert asVersion != null : "Application Server version cannot be null!!!";
+        appServerVersion = asVersion;
+        
 		if(parentPropertyName != null) {
 			CommonDDBean [] children = (CommonDDBean []) parent.getValues(parentPropertyName);
 			setData(parent, children);
@@ -155,11 +160,37 @@ public class GenericTableModel extends BeanTableModel {
 	 *   in the List are castable to the class type that is created by the factory
      *   method in the instance of ParentPropertyFactory passed in.
 	 */
-	public void setData(List rows) {
+	public void setData(List rows, ASDDVersion asVersion) {
+        assert asVersion != null : "Application Server version cannot be null!!!";
+        appServerVersion = asVersion;
+        
 		CommonDDBean [] children = null;
 
 		if(rows != null) {
 			children = (CommonDDBean []) rows.toArray(new CommonDDBean[0]);
+		}
+
+		setData(null, children);
+	}
+
+	/** Initialize the model from the array of CommonDDBeans passed in.  The items in
+	 *  the array are expected to be instances of the property class specified in
+	 *  the constructor.
+	 *
+	 * @param rows Generally this method is used when there is no parent CommonDDBean,
+	 *   though that is not required.  What is required is that all objects
+	 *   in the List are castable to the class type that is created by the factory
+     *   method in the instance of ParentPropertyFactory passed in.
+	 */
+	public void setData(CommonDDBean [] rows, ASDDVersion asVersion) {
+        assert asVersion != null : "Application Server version cannot be null!!!";
+        appServerVersion = asVersion;
+        
+		CommonDDBean [] children = null;
+
+		if(rows != null && rows.length > 0) {
+            children = new CommonDDBean [rows.length];
+            System.arraycopy(rows, 0, children, 0, rows.length);
 		}
 
 		setData(null, children);
@@ -172,8 +203,11 @@ public class GenericTableModel extends BeanTableModel {
 	 *  no parent property class, so by definition the children are stored
 	 *  as indexed properties of the bean instance passed in here.
 	 */
-	public void setDataBaseBean(CommonDDBean parent) {
-		setData(parent, null);
+	public void setDataBaseBean(CommonDDBean parent, ASDDVersion asVersion) {
+        assert asVersion != null : "Application Server version cannot be null!!!";
+        appServerVersion = asVersion;
+        
+		setData(parent, new CommonDDBean [0]);
 		fireTableDataChanged();
 	}
 
@@ -190,6 +224,10 @@ public class GenericTableModel extends BeanTableModel {
 		}
 
 		return bbParent;
+	}
+    
+	public ASDDVersion getAppServerVersion() {
+		return appServerVersion;
 	}
 
 	public int getRowCount() {
@@ -241,7 +279,7 @@ public class GenericTableModel extends BeanTableModel {
 		CommonDDBean param = null;
 
 		if(parentPropertyFactory != null) {
-			param = parentPropertyFactory.newParentProperty();
+			param = parentPropertyFactory.newParentProperty(appServerVersion);
 			for(int i = 0, max = properties.size(); i < max; i++) {
 				((TableEntry) properties.get(i)).setEntry(param, values[i]);
 			}
@@ -260,7 +298,7 @@ public class GenericTableModel extends BeanTableModel {
 			}
 		}
                 
-                int rowChanged = getRowCount() - 1;
+		int rowChanged = getRowCount() - 1;
 		fireTableRowsInserted(rowChanged, rowChanged);
 
 		return param;
@@ -358,7 +396,7 @@ public class GenericTableModel extends BeanTableModel {
 			TableEntry entry = (TableEntry) properties.get(keyIndex);
 			if(indexedChildren) {
 				CommonDDBean parent = (CommonDDBean) getParent();
-				String indexPropertyName = entry.getPropertyName();
+//				String indexPropertyName = entry.getPropertyName();
 
 				for(int i = 0, count = getRowCount(); i < count; i++) {
 //						if(keyPropertyValue.equals((String) parent.getAttributeValue(parentPropertyName, i, indexPropertyName))) {
@@ -588,7 +626,7 @@ public class GenericTableModel extends BeanTableModel {
         /* Implement this method to return a new blank instance of the correct
          * bean type, e.g. WebserviceEndpoint, etc.
          */
-        public CommonDDBean newParentProperty();
+        public CommonDDBean newParentProperty(ASDDVersion asVersion);
 
     }
 }

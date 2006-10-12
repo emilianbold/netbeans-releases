@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
+import java.awt.event.ItemEvent;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.ResourceBundle;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
+import java.util.Iterator;
 import javax.swing.SwingUtilities;
 
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
@@ -33,6 +35,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.openide.ErrorManager;
 
 
 /**
@@ -79,7 +82,43 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
     
     public static boolean notEmpty(String testedString) {
         return (testedString != null) && (testedString.length() > 0);
-    }	
+    }
+    
+    public static boolean strEquals(String one, String two) {
+        boolean result = false;
+        
+        if(one == null) {
+            result = (two == null);
+        } else {
+            if(two == null) {
+                result = false;
+            } else {
+                result = one.equals(two);
+            }
+        }
+        return result;
+    }
+    
+    public static int strCompareTo(String one, String two) {
+        int result;
+        
+        if(one == null) {
+            if(two == null) {
+                result = 0;
+            } else {
+                result = -1;
+            }
+        } else {
+            if(two == null) {
+                result = 1;
+            } else {
+                result = one.compareTo(two);
+            }
+        }
+        
+        return result;
+    }
+    
 
 	public static boolean hasTrailingSlash(String path) {
 		return (path.charAt(path.length()-1) == '/');
@@ -100,7 +139,7 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 		return result;
 	}
 	
-    public static boolean isJavaIdentifier(String id) {
+    public static boolean isJavaIdentifier(final String id) {
 		boolean result = true;
 		
         if(!notEmpty(id) || !Character.isJavaIdentifierStart(id.charAt(0))) {
@@ -117,7 +156,7 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 		return result;
     }
 
-    public static boolean isJavaPackage(String pkg) {
+    public static boolean isJavaPackage(final String pkg) {
 		boolean result = false;
 		
 		if(notEmpty(pkg)) {
@@ -148,6 +187,10 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 		
 		return result;
     }
+    
+    public static boolean isJavaClass(final String cls) {
+        return isJavaPackage(cls);
+    }
 
 	public static CommonDDBean [] listToArray(List list, Class targetClass) {
 		CommonDDBean [] result = null;
@@ -158,6 +201,21 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 				for(int i = 0; i < size; i++) {
 					CommonDDBean property = (CommonDDBean) list.get(i);
 					result[i] = (CommonDDBean) property.clone();
+				}
+			}
+		}
+		return result;
+	}
+
+	public static CommonDDBean [] listToArray(List list, Class targetClass, String newVersion) {
+		CommonDDBean [] result = null;
+		if(list != null) {
+			int size = list.size();
+			if(size != 0) {
+				result = (CommonDDBean []) Array.newInstance(targetClass, size);
+				for(int i = 0; i < size; i++) {
+					CommonDDBean property = (CommonDDBean) list.get(i);
+					result[i] = (CommonDDBean) property.cloneVersion(newVersion);
 				}
 			}
 		}
@@ -189,6 +247,7 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 		int valueIndex = -1;
 
 		if(val != null && val.length() > 0) {
+            val = val.trim();
 			for(int i = 0; i < booleanStrings.length; i++) {
 				if(val.compareToIgnoreCase(booleanStrings[i]) == 0) {
 					valueIndex = i;
@@ -206,6 +265,36 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 		return result;
 	}
     
+    public static String encodeUrlField(String url) {
+        String encodedUrl = url;
+        
+        // Change spaces to underscores - this step might be redundant now, considering
+        // the UTF8 encoding being done now.
+        if(encodedUrl != null) {
+            encodedUrl = encodedUrl.replace (' ', '_'); //NOI18N
+        }
+        
+        // For each url element, do UTF encoding of that element.
+        if(encodedUrl != null) { // see bug 56280
+            try {
+                StringBuffer result = new StringBuffer(encodedUrl.length() + 10);
+                String s[] = encodedUrl.split("/"); // NOI18N
+                for(int i = 0; i < s.length; i++) {
+                    result.append(java.net.URLEncoder.encode(s[i], "UTF-8")); // NOI18N
+                    if(i != s.length - 1) {
+                        result.append("/"); // NOI18N
+                    }
+                }
+                encodedUrl = result.toString();
+            } catch (Exception ex){
+                // log this
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+        
+        return encodedUrl;
+    }
+	
 	public static URL getResourceURL(String resource, Class relatedClass) {
 		URL result = null;
 		ClassLoader classLoader = relatedClass.getClassLoader();
@@ -214,9 +303,9 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 			URLClassLoader urlClassLoader = (java.net.URLClassLoader) classLoader;
 			result = urlClassLoader.findResource(resource);
 		}
-                else {
+		else {
 			result = classLoader.getResource(resource);
-                }
+		}
 
 		return result;
 	}
@@ -233,6 +322,18 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
 		});
 	}
 
+	public static boolean interpretCheckboxState(ItemEvent e) {
+		boolean state = false;
+		
+		if(e.getStateChange() == ItemEvent.SELECTED) {
+			state = true;
+		} else if(e.getStateChange() == ItemEvent.DESELECTED) {
+			state = false;
+		}
+		
+		return state;
+    }
+    
 	/** Select an appropriate default value for a cmp-resource
 	 * @reurns the value to place in the jndi-name element
 	 */
@@ -271,4 +372,50 @@ public class Utils implements org.netbeans.modules.j2ee.sun.share.Constants {
         return retVal;
     }
     
+    /** This method walks the DCB tree from the root of the DConfigBean tree looking
+     *  for the service ref of the specified name.  Used by MessageSecurityProviderImpl.
+     * 
+     * Optimize later... there is probably a nice OOP way to do this.  I didn't
+     * want to build the capability into the DCB tree directly because it's a bit
+     * specialized, and performing this search requires access to getChildren()
+     * which is package protected and probably should not be public (although getParent()
+     * is public, as required by JSR-88 -- go figure).
+     */
+    public static ServiceRef findServiceRef(SunONEDeploymentConfiguration config, String serviceRefName) {
+        ServiceRef result = null;
+        BaseRoot rootDCB = config.getMasterDCBRoot();
+        
+        if(rootDCB instanceof EjbJarRoot) {
+            Iterator childIter = rootDCB.getChildren().iterator();
+            while(childIter.hasNext() && result == null) {
+               Object child = childIter.next();
+               if(child instanceof BaseEjb) {
+                   Iterator subChildIter = ((BaseEjb) child).getChildren().iterator();
+                   while(subChildIter.hasNext() && result == null) {
+                       Object subChild = subChildIter.next();
+                       if(subChild instanceof ServiceRef) {
+                           ServiceRef serviceRef = (ServiceRef) subChild;
+                           if(serviceRefName.equals(serviceRef.getServiceRefName())) {
+                               result = serviceRef;
+                           }
+                       }
+                   }
+               }
+           }
+        } else {
+            Iterator childIter = rootDCB.getChildren().iterator();
+            while(childIter.hasNext()) {
+                Object child = childIter.next();
+                if(child instanceof ServiceRef) {
+                    ServiceRef serviceRef = (ServiceRef) child;
+                    if(serviceRefName.equals(serviceRef.getServiceRefName())) {
+                        result = serviceRef;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
 }

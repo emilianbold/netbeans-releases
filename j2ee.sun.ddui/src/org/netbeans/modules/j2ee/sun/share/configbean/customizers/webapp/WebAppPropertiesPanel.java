@@ -101,7 +101,7 @@ public class WebAppPropertiesPanel extends javax.swing.JPanel implements TableMo
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0;
-        gridBagConstraints.insets = new Insets(0,0,0,0); //new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(0, 0, 0, 0);
         add(parameterEncodingPanel, gridBagConstraints);		
 
         parameterEncodingChangeListener = new PropertyChangeListener() {
@@ -129,7 +129,7 @@ public class WebAppPropertiesPanel extends javax.swing.JPanel implements TableMo
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(0, 6, 0, 5);
         add(idempotentUrlPatternPanel, gridBagConstraints);		
 	}
 	
@@ -152,7 +152,7 @@ public class WebAppPropertiesPanel extends javax.swing.JPanel implements TableMo
 	 */
 	public void initFields(WebAppRoot bean) {
         parameterEncodingPanel.initFields(bean.getAppServerVersion(), bean.getDefaultCharset(), bean.getFormHintField(), true);
-        idempotentUrlPatternPanel.setModelBaseBean(bean.getIdempotentUrlPattern());
+        idempotentUrlPatternPanel.setModelBaseBean(bean.getIdempotentUrlPattern(), bean.getAppServerVersion());
 	}
 	
     private void updateParameterEncoding(String propName, String newValue) {

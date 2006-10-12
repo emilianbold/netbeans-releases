@@ -145,7 +145,7 @@
       doctypeName         : null
       doctypeSystem       : null
       doctypePublic       : null
-      hasJspRoot          : false
+      hasJspRoot          : true
       prefixes:
         xmlns
         jsp

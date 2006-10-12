@@ -44,7 +44,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 
-
 /** A template wizard iterator for new servlets, filters and
  * listeners. 
  *
@@ -142,10 +141,17 @@ public class ServletIterator implements TemplateWizard.Iterator {
     private WizardDescriptor.Panel createPackageChooserPanel(TemplateWizard wizard, WizardDescriptor.Panel customPanel) {
         Project project = Templates.getProject(wizard);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
-        if (customPanel==null)
-            return JavaTemplates.createPackageChooser(project,sourceGroups);
-        else
-            return JavaTemplates.createPackageChooser(project,sourceGroups,customPanel);
+        if (customPanel==null) {
+            if (sourceGroups.length == 0)
+                return Templates.createSimpleTargetChooser(project, sourceGroups);
+            else
+                return JavaTemplates.createPackageChooser(project, sourceGroups);
+        } else {
+            if (sourceGroups.length == 0)
+                return Templates.createSimpleTargetChooser(project, sourceGroups, customPanel);
+            else
+                return JavaTemplates.createPackageChooser(project, sourceGroups, customPanel);
+        }
     }
         
     public Set instantiate(TemplateWizard wizard) throws IOException {

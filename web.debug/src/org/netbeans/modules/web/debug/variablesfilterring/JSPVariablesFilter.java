@@ -429,7 +429,7 @@ public class JSPVariablesFilter implements TreeModelFilter {
                             "()Z",
                             new Variable[0]
                     );
-                    ret = hasMoreElements.getValue().equals("true");
+                    ret = (hasMoreElements != null && "true".equals(hasMoreElements.getValue()));
                 }
                 catch (InvalidExpressionException e) {
                 }

@@ -33,10 +33,7 @@ import java.awt.Component;
 import java.util.Set;
 import javax.swing.JComponent;
 import java.io.InputStream;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.util.Iterator;
-import java.util.HashSet;
 
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
@@ -48,6 +45,7 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.ErrorManager;
 
 public final class DataSourceWizard implements WizardDescriptor.InstantiatingIterator, ChangeListener, WizardConstants{
     
@@ -58,14 +56,14 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
+//    private transient WizardDescriptor wiz;
     private transient String[] steps;
     
     private ResourceConfigHelper helper;
     private Wizard wizardInfo;
         
     private boolean addSteps = false;
-    private boolean firstTime = true;
+//    private boolean firstTime = true;
     
     private ResourceConfigHelper cphelper;
     private ResourceConfigHelperHolder holder;
@@ -94,7 +92,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
     
     private String[] createSteps() {
         return new String[] {
-            __FirstStepChoose,
+            NbBundle.getMessage(DataSourceWizard.class,__FirstStepChoose),
             NbBundle.getMessage(DataSourceWizard.class, "LBL_GeneralAttributes_DS"), // NOI18N
             NbBundle.getMessage(DataSourceWizard.class, "LBL_AddProperty") // NOI18N
         };
@@ -112,7 +110,8 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
                 ResourceUtils.saveJDBCResourceDatatoXml(this.helper.getData(), null);
             }    
         }catch (Exception ex){
-            //System.out.println("Error in instantiate ");
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         return java.util.Collections.EMPTY_SET;
     }
@@ -122,7 +121,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
         this.holder = new ResourceConfigHelperHolder();
         this.helper = holder.getDataSourceHelper();
         
-        this.wiz = wiz;
+        //this.wiz = wiz;
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(ConnPoolWizard.class, "Templates/SunResources/JDBC_Resource")); //NOI18N
         index = 0;
                 
@@ -138,7 +137,8 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
                 this.helper.getData().setTargetFileObject(pkgLocation);
             }
         }catch (Exception ex){
-            //Unable to get project location
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         
         for (int i = 0; i < panels.length; i++) {
@@ -155,7 +155,7 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
     }
     
     public void uninitialize(WizardDescriptor wiz){
-        this.wiz = null;
+        //this.wiz = null;
         panels = null;
     }
     
@@ -164,7 +164,8 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
             InputStream in = Wizard.class.getClassLoader().getResourceAsStream(filePath);
             this.wizardInfo = Wizard.createGraph(in);
         }catch(Exception ex){
-            //System.out.println("Unable to get Wiz Info");
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                        ex);
         }
         return this.wizardInfo;
     }
@@ -182,8 +183,9 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
     }
     
     public synchronized void nextPanel(){
-        if (index + 1 == panels.length)
+        if (index + 1 == panels.length) {
             throw new java.util.NoSuchElementException();
+        }
         
         if (index == 0) {
             ((CommonPropertyPanel) panels[1]).setInitialFocus();
@@ -199,8 +201,9 @@ public final class DataSourceWizard implements WizardDescriptor.InstantiatingIte
     }
     
     public synchronized void previousPanel(){
-        if (index == 0)
+        if (index == 0) {
             throw new java.util.NoSuchElementException();
+        }
         
         index--;
     }

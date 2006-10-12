@@ -47,11 +47,12 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroupHelper;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldHelper;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 
-public class CPVendorPanel extends ResourceWizardPanel implements WizardConstants, ChangeListener, DocumentListener, ListDataListener {
+public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener, DocumentListener, ListDataListener {
     
     static final long serialVersionUID = 93474632245456421L;
     
@@ -61,6 +62,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
     private boolean useExistingConnection = true;
     private String[] vendors;
     private boolean firstTime = true;
+    private boolean setupValid = true;
         
     /** Creates new form DBSchemaConnectionpanel */
     public CPVendorPanel(ResourceConfigHelper helper, Wizard wiardInfo) {
@@ -103,15 +105,11 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
         }
         if (existingConnComboBox.getItemCount() == 0) {
             existingConnComboBox.insertItemAt(bundle.getString("NoConnection"), 0); //NOI18N
-            existingConnRadioButton.setEnabled(false);
-            existingConnComboBox.setEnabled(false);
             newCofigRadioButton.setSelected(true);
         } else {
             existingConnComboBox.insertItemAt(bundle.getString("SelectFromTheList"), 0); //NOI18N
-            existingConnRadioButton.setSelected(false);
-            newCofigRadioButton.setSelected(true);
-            nameComboBox.setEnabled(true);
-            existingConnComboBox.setEnabled(false);
+            existingConnRadioButton.setSelected(true);
+            setExistingConnData();
         }
         
         String vendorName = "other"; //NOI18N
@@ -483,22 +481,31 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
             if(value.equals(__NotApplicable)){
                 String name = propFields[i].getName();
                 if(vendorName.equals("derby_net")) {//NOI18N
-                    String workingUrl = url.substring(url.indexOf("//") + 2, url.length());
-                    String hostName = workingUrl.substring(0, workingUrl.indexOf(":"));
-                    String portNumber = workingUrl.substring(workingUrl.indexOf(":") + 1, workingUrl.indexOf("/"));
-                    String databaseName;
-                    int braceIndex = workingUrl.indexOf("[");
-                    if(braceIndex == -1)
-                       databaseName = workingUrl.substring(workingUrl.indexOf("/") + 1, workingUrl.length());
-                    else
-                       databaseName = workingUrl.substring(workingUrl.indexOf("/") + 1, braceIndex + 1).trim();
+                    String hostName = "";
+                    String portNumber = "";
+                    String databaseName = "";
+                    try{
+                        String workingUrl = url.substring(url.indexOf("//") + 2, url.length());
+                        if(workingUrl.indexOf(":") != -1){
+                            hostName = workingUrl.substring(0, workingUrl.indexOf(":"));
+                            if(workingUrl.indexOf("/") != -1){
+                                portNumber = workingUrl.substring(workingUrl.indexOf(":") + 1, workingUrl.indexOf("/"));
+                                int braceIndex = workingUrl.indexOf("[");
+                                if(braceIndex == -1)
+                                    databaseName = workingUrl.substring(workingUrl.indexOf("/") + 1, workingUrl.length());
+                                else
+                                    databaseName = workingUrl.substring(workingUrl.indexOf("/") + 1, braceIndex + 1).trim();
+                            }
+                        }
+                    }catch(java.lang.StringIndexOutOfBoundsException ex){
+                    }
                     if (name.equals(__DerbyPortNumber))
                         data.addProperty(name, portNumber);
                     else if (name.equals(__DerbyDatabaseName))
                         data.addProperty(name, databaseName);
                     else if (name.equals(__ServerName))
                         data.addProperty(name, hostName);
-                }    
+                }   
             }
         }
     }
@@ -517,18 +524,34 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
     private static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
     
     public boolean isValid() {
+        if(! setupValid){
+            setErrorMsg(bundle.getString("Err_InvalidSetup"));
+            return false;
+        }
+        setErrorMsg(bundle.getString("Empty_String"));
         String name = nameField.getText();
-        if (name == null || name.length() == 0)
+        if (name == null || name.length() == 0){
+            setErrorMsg(bundle.getString("Err_InvalidName"));
             return false;
-        else if(! ResourceUtils.isLegalResourceName(name))
+        }else if(! ResourceUtils.isLegalResourceName(name))
             return false;
+        else if(! ResourceUtils.isUniqueFileName(name, this.helper.getData().getTargetFileObject(), __ConnectionPoolResource)){
+            setErrorMsg(bundle.getString("Err_DuplFileName"));
+            return false;
+        }
+        
         if (existingConnRadioButton.isSelected()) {
             if (existingConnComboBox.getSelectedIndex() > 0)
                 return true;
+            else
+                setErrorMsg(bundle.getString("Err_ChooseDBConn"));
         }else if (newCofigRadioButton.isSelected()) {
             if (nameComboBox.getSelectedIndex() > 0)
                 return true;
+            else
+                setErrorMsg(bundle.getString("Err_ChooseDBVendor"));
         } 
+        
         return false;
     }
 
@@ -608,22 +631,28 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
     }
     
     public void readSettings(Object settings) {
+        this.wizDescriptor = (WizardDescriptor)settings;
         TemplateWizard wizard = (TemplateWizard)settings;
         String targetName = wizard.getTargetName();
         if(this.helper.getData().getString(__DynamicWizPanel).equals("true")){ //NOI18N
             targetName = null;
         }  
-        targetName = ResourceUtils.createUniqueFileName(targetName, ResourceUtils.setUpExists(this.helper.getData().getTargetFileObject()), __ConnectionPoolResource);
-        this.nameField.setText(targetName);
-        this.helper.getData().setString(__Name, targetName);
-        this.helper.getData().setTargetFile(targetName);
-    }
-    
-    public void storeSettings(Object settings) {
+        FileObject setupFolder = ResourceUtils.getResourceDirectory(this.helper.getData().getTargetFileObject());
+        this.helper.getData().setTargetFileObject (setupFolder);
+        if(setupFolder != null){
+            targetName = ResourceUtils.createUniqueFileName (targetName, setupFolder, __ConnectionPoolResource);
+            this.nameField.setText (targetName);
+            this.helper.getData ().setString (__Name, targetName);
+            this.helper.getData ().setTargetFile (targetName);
+        }else
+            setupValid = false;
     }
     
     public void setInitialFocus(){
         new setFocus(nameField);
     }
     
+    private boolean setupValid(){
+        return setupValid;
+    }
 }

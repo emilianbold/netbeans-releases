@@ -37,7 +37,7 @@ import org.openide.ErrorManager;
 
 
 /**
- * Main class of the deployment process. This serves a a wrapper for the 
+ * Main class of the deployment process. This serves as a wrapper for the 
  * server's DeploymentManager implementation, all calls are delegated to the
  * server's implementation, with the thread's context classloader updated
  * if necessary.
@@ -54,6 +54,9 @@ public class WLDeploymentManager implements DeploymentManager {
     private boolean isConnected;
     private String host;
     private String port;
+    
+    /** System process of the started WL server */
+    private Process process;
     
     /** Create connected DM */
     public WLDeploymentManager(DeploymentManager dm, String uri, String username, String password, String host, String port) {
@@ -124,6 +127,25 @@ public class WLDeploymentManager implements DeploymentManager {
             
         }
         return instanceProperties;
+    }
+    
+    /**
+     * Set the <code>Process</code> of the started WL server.
+     *
+     * @param <code>Process</code> of the started WL server.
+     */
+    public synchronized void setServerProcess(Process process) {
+        this.process = process;
+    }
+
+    /**
+     * Return <code>Process</code> of the started WL server.
+     *
+     * @return <code>Process</code> of the started WL server, <code>null</code> if
+     *         WL wasn't started by IDE.
+     */
+    public synchronized Process getServerProcess() {
+        return process;
     }
     
     public ProgressObject distribute(Target[] target, File file, File file2) 
@@ -452,7 +474,9 @@ public class WLDeploymentManager implements DeploymentManager {
                 catch (Exception e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
-                dm = null;
+                finally {
+                    dm = null;
+                }
             }
         } finally {
             originalLoader();

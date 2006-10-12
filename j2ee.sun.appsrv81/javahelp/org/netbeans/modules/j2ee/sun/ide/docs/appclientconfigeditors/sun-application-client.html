@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+    <head>
+        <!--
+        * Copyright 2006 Sun Microsystems, Inc.
+        * All rights reserved. Use is subject to license terms.
+        -->
+        <title>sun-application-client.xml Visual Editor</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"></head>
+    <body style="background-color: rgb(255, 255, 255);">
+        <h2><tt>sun-application-client.xml</tt> Visual Editor</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The <tt>sun-application-client.xml</tt> visual editor lets you edit an enterprise
+            application client's 
+            platform-specific deployment descriptor for the Sun Java System Application 
+            Server. You open the visual editor by expanding your project's Configuration 
+            Files node in the Projects window and double-clicking the <tt>sun-application-client.xml</tt> 
+        file. </p>
+        <h3>Java Web Start Access</h3>
+        
+        <p>Specifies changes to default Java Web Start parameters for an embedded or 
+            stand-alone application client module.
+        </p>
+        <ul>
+            
+            <li><b>Context Root.</b>&nbsp;Contains the context root for the Java Web Start enabled application
+                client module. If none is specified, a default is generated.&nbsp;
+                <p>The default for an application is as follows:&nbsp;</p>
+                <pre>http://<var>host</var>:<var>port</var>/<var>app-name</var>/<var>relative-URI-to-appclient-jar</var></pre>
+                <p>The default for a stand-alone application client module is as
+                follows:&nbsp;</p>
+                <pre>http://<var>host</var>:<var>port</var>/<var>module-name</var></pre>
+                <p>If the <tt>app-name</tt> or <tt>module-name</tt> is
+                    not specified during deployment, the name of the EAR or JAR file without
+                    the extension is used. If the application or module is not in EAR
+                    or JAR file format, a name is generated and written to the server
+            log.</p></li>
+            <li><b>Vendor.</b>&nbsp;Specifies whether the application client module is eligible
+            to be Java Web Start enabled.</li>
+            <li><b>Eligible</b>&nbsp;Specifies the name of the vendor as it appears in Java Web Start
+            download and launch screens.</li>
+        </ul>
+        
+        <h3>Message Destinations</h3>
+        <p>In the Message Destinations table, you can specify message destinations and 
+        their corresponding JNDI names. </p>
+        <p>For more on server-specific deployment descriptors for
+            the Sun Java System Application Server, see the following document:
+            
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://docs.sun.com/app/docs/doc/819-3660/6n5s7klpc?a=view1">
+                <param name="text" value="<html><u>http://docs.sun.com/app/docs/doc/819-3660/6n5s7klpc?a=view</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+        </p>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/appclient/appclient_edit_dd.html">Editing an Enterprise Application Client's Deployment Descriptors</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/appclient/appclient_about.html">About Enterprise Application Clients</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>

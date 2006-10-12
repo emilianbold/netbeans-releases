@@ -30,6 +30,7 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.customizer.ClassPathUiSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.websvc.api.jaxws.project.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
@@ -53,7 +54,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 
 /**
@@ -70,7 +70,6 @@ public class UpdateHelper {
     private final Project project;
     private final AntProjectHelper helper;
     private final AuxiliaryConfiguration cfg;
-    private final GeneratedFilesHelper genFileHelper;
     private final Notifier notifier;
     private boolean alreadyAskedInWriteAccess;
     private Boolean isCurrent;
@@ -87,15 +86,13 @@ public class UpdateHelper {
      * @param project
      * @param helper AntProjectHelper
      * @param cfg AuxiliaryConfiguration
-     * @param genFileHelper GeneratedFilesHelper
      * @param notifier used to ask user about project update
      */
-    UpdateHelper (Project project, AntProjectHelper helper, AuxiliaryConfiguration cfg, GeneratedFilesHelper genFileHelper, Notifier notifier) {
-        assert project != null && helper != null && cfg != null && genFileHelper != null && notifier != null;
+    UpdateHelper (Project project, AntProjectHelper helper, AuxiliaryConfiguration cfg, Notifier notifier) {
+        assert project != null && helper != null && cfg != null && notifier != null;
         this.project = project;
         this.helper = helper;
         this.cfg = cfg;
-        this.genFileHelper = genFileHelper;
         this.notifier = notifier;
     }
    
@@ -315,7 +312,7 @@ public class UpdateHelper {
                 String propertyName = cpti.getReference();
                 if(propertyName != null) {
                     String libname = propertyName.substring("${libs.".length());
-                    if(libname != null && libname.indexOf(".classpath}") != -1) libname = libname.substring(0, libname.indexOf(".classpath}"));
+                    if(libname.indexOf(".classpath}") != -1) libname = libname.substring(0, libname.indexOf(".classpath}"));
                     
                     if(!("servlet24".equals(libname) || "jsp20".equals(libname))) { //NOI18N
                         cpItems.add(cpti);

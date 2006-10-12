@@ -24,6 +24,9 @@
 package org.netbeans.modules.j2ee.sun.api;
 
 import java.io.File;
+import java.util.HashSet;
+import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
 /**
  *
@@ -38,5 +41,11 @@ public interface ResourceConfiguratorInterface {
     public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir);
 
     public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir);
+    
+    public Datasource createDataSource(String jndiName, String url, String username, String password, String driver, File dir) throws DatasourceAlreadyExistsException;
+    
+    public HashSet getServerDataSources();  
+    
+    public HashSet getResources(File dir);   
     
 }

@@ -20,19 +20,14 @@
 package org.netbeans.modules.tomcat5.nodes;
 
 import java.awt.Component;
-import java.awt.Image;
 import java.util.LinkedList;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.nodes.actions.AdminConsoleAction;
 import org.netbeans.modules.tomcat5.nodes.actions.ServerLogAction;
-import org.netbeans.modules.tomcat5.nodes.actions.ServerLogAction;
 import org.netbeans.modules.tomcat5.nodes.actions.TerminateAction;
-import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
-import org.openide.filesystems.*;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.tomcat5.customizer.Customizer;
 import org.netbeans.modules.tomcat5.nodes.actions.SharedContextLogAction;
 import org.netbeans.modules.tomcat5.nodes.actions.EditServerXmlAction;
@@ -43,6 +38,11 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.Utilities;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 
 /**

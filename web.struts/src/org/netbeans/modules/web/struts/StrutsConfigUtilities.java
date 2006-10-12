@@ -23,11 +23,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -176,42 +179,61 @@ public class StrutsConfigUtilities {
     /** Returns name of Struts module, which contains the configuration file.
      */
     public static String getModuleName(FileObject config, FileObject dd){
-        Servlet servlet = getActionServlet(dd);
-        InitParam [] param = servlet.getInitParam();
-        StringTokenizer st = null;
-        int index = 0;
         String moduleName = null;
-        while (moduleName == null && index < param.length){
-            if(param[index].getParamName().trim().startsWith(DEFAULT_MODULE_NAME)){
-                String[] files = param[index].getParamValue().split(","); //NOI18N
-                for (int i = 0; i < files.length; i++){
-                    String file = files[i];
-                    if (config.getPath().endsWith(file)){
-                        if (!param[index].getParamName().trim().equals(DEFAULT_MODULE_NAME)){
-                            moduleName = param[index].getParamName().trim()
-                            .substring(DEFAULT_MODULE_NAME.length()+1);
-                        } else{
-                            moduleName = DEFAULT_MODULE_NAME;
+        if (dd != null) {
+            Servlet servlet = getActionServlet(dd);
+            if (servlet != null){
+                InitParam [] param = servlet.getInitParam();
+                StringTokenizer st = null;
+                int index = 0;
+
+                while (moduleName == null && index < param.length){
+                    if(param[index].getParamName().trim().startsWith(DEFAULT_MODULE_NAME)){
+                        String[] files = param[index].getParamValue().split(","); //NOI18N
+                        for (int i = 0; i < files.length; i++){
+                            String file = files[i];
+                            if (config.getPath().endsWith(file)){
+                                if (!param[index].getParamName().trim().equals(DEFAULT_MODULE_NAME)){
+                                    moduleName = param[index].getParamName().trim()
+                                    .substring(DEFAULT_MODULE_NAME.length()+1);
+                                } else{
+                                    moduleName = DEFAULT_MODULE_NAME;
+                                }
+                                break;
+                            }
                         }
-                        break;
+
                     }
+                    index++;
                 }
-                
             }
-            index++;
         }
         return moduleName;
     }
     
     public static Servlet getActionServlet(FileObject dd) {
-        // PENDING - must be more declarative.
         if (dd == null) {
             return null;
         }
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-            return (Servlet) webApp
+            Servlet servlet =  (Servlet) webApp
                     .findBeanByName("Servlet", "ServletClass", "org.apache.struts.action.ActionServlet"); //NOI18N;
+            if (servlet == null){
+                // check whether a servler class doesn't extend org.apache.struts.action.ActionServlet
+                Servlet[] servlets = webApp.getServlet();
+                ClassPath cp = ClassPath.getClassPath(dd, ClassPath.EXECUTE);
+                JavaClass actionServlet = JMIUtils.findClass("org.apache.struts.action.ActionServlet", cp);
+                if (actionServlet != null){
+                    for (int i = 0; i < servlets.length; i++) {
+                        servlet = servlets[i];
+                        JavaClass servletClass = JMIUtils.findClass(servlets[i].getServletClass(), cp);
+                        if (servletClass != null && servletClass.isSubTypeOf(actionServlet))
+                            continue;
+                    }
+                }
+            }
+            return servlet;
         } catch (java.io.IOException e) {
             return null;
         }
@@ -239,23 +261,25 @@ public class StrutsConfigUtilities {
     /** Returns relative path for all struts configuration files in the web module
      */
     public static String[] getConfigFiles(FileObject dd){
-        Servlet servlet = getActionServlet(dd);
-        if (servlet!=null) {
-            InitParam[] params = servlet.getInitParam();
-            List list = new ArrayList();
-            for (int i=0;i<params.length;i++) {
-                String paramName=params[i].getParamName();
-                if (paramName!=null) {
-                    if (paramName.startsWith(DEFAULT_MODULE_NAME)){
-                        String[] files = params[i].getParamValue().split(","); //NOI18N
-                        for (int j = 0; j < files.length; j++)
-                            list.add(files[j]);
+        if (dd != null){
+            Servlet servlet = getActionServlet(dd);
+            if (servlet!=null) {
+                InitParam[] params = servlet.getInitParam();
+                List list = new ArrayList();
+                for (int i=0;i<params.length;i++) {
+                    String paramName=params[i].getParamName();
+                    if (paramName!=null) {
+                        if (paramName.startsWith(DEFAULT_MODULE_NAME)){
+                            String[] files = params[i].getParamValue().split(","); //NOI18N
+                            for (int j = 0; j < files.length; j++)
+                                list.add(files[j]);
+                        }
                     }
                 }
+                String[] result = new String[list.size()];
+                list.toArray(result);
+                return result;
             }
-            String[] result = new String[list.size()];
-            list.toArray(result);
-            return result;
         }
         return new String[]{};
     }
@@ -263,30 +287,32 @@ public class StrutsConfigUtilities {
     /** Returns all configuration files in the web module
      */
     public static FileObject[] getConfigFilesFO(FileObject dd){
-        FileObject docBase = WebModule.getWebModule(dd).getDocumentBase();
-        if (docBase == null)
-            return null;
-        Servlet servlet = getActionServlet(dd);
-        if (servlet!=null) {
-            InitParam[] params = servlet.getInitParam();
-            List list = new ArrayList();
-            FileObject file;
-            for (int i=0;i<params.length;i++) {
-                String paramName=params[i].getParamName();
-                if (paramName!=null) {
-                    if (paramName.startsWith(DEFAULT_MODULE_NAME)){ //NOI18N
-                        String[] files = params[i].getParamValue().split(","); //NOI18N
-                        for (int j = 0; j < files.length; j++){
-                            file = docBase.getFileObject(files[j]);
-                            if (file != null)
-                                list.add(file);
+        if (dd != null){
+            FileObject docBase = WebModule.getWebModule(dd).getDocumentBase();
+            if (docBase == null)
+                return null;
+            Servlet servlet = getActionServlet(dd);
+            if (servlet!=null) {
+                InitParam[] params = servlet.getInitParam();
+                List list = new ArrayList();
+                FileObject file;
+                for (int i=0;i<params.length;i++) {
+                    String paramName=params[i].getParamName();
+                    if (paramName!=null) {
+                        if (paramName.startsWith(DEFAULT_MODULE_NAME)){ //NOI18N
+                            String[] files = params[i].getParamValue().split(","); //NOI18N
+                            for (int j = 0; j < files.length; j++){
+                                file = docBase.getFileObject(files[j]);
+                                if (file != null)
+                                    list.add(file);
+                            }
                         }
                     }
                 }
+                FileObject[] result = new FileObject[list.size()];
+                list.toArray(result);
+                return result;
             }
-            FileObject[] result = new FileObject[list.size()];
-            list.toArray(result);
-            return result;
         }
         return new FileObject[]{};
     }

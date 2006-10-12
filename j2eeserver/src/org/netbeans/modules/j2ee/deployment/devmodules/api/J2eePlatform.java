@@ -25,12 +25,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -59,6 +58,100 @@ public final class J2eePlatform {
     /** Platform roots property */
     public static final String PROP_PLATFORM_ROOTS = "platformRoots";   //NOI18N
     
+    
+    /** 
+     * Constant for the application runtime tool. The standard properties defined 
+     * for this tool are as follows {@link #TOOL_PROP_MAIN_CLASS},
+     * {@link #TOOL_PROP_MAIN_CLASS_ARGS}, {@link #TOOL_PROP_JVM_OPTS}
+     * @since 1.16 
+     */
+    public static final String TOOL_APP_CLIENT_RUNTIME = "appClientRuntime";     // NOI18N
+    
+    /** 
+     * Constant for the JSR109 tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_JSR109      = "jsr109";     // NOI18N
+    
+    /** 
+     * Constant for the WSCOMPILE tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_WSCOMPILE   = "wscompile";  // NOI18N
+    
+    /** 
+     * Constant for the WSIMPORT tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_WSIMPORT    = "wsimport";   // NOI18N
+    
+    /** 
+     * Constant for the WSGEN tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_WSGEN       = "wsgen";      // NOI18N
+    
+    /** 
+     * Constant for the WSIT tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_WSIT        = "wsit";       // NOI18N
+    
+    /** 
+     * Constant for the JWSDP tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_JWSDP       = "jwsdp";      // NOI18N
+    
+    /** 
+     * Constant for the KEYSTORE tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_KEYSTORE        = "keystore";       // NOI18N
+    
+    /** 
+     * Constant for the KEYSTORE_CLIENT tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_KEYSTORE_CLIENT = "keystoreClient"; // NOI18N
+    
+    /** 
+     * Constant for the TRUSTSTORE tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_TRUSTSTORE      = "truststore";     // NOI18N
+    
+    /** 
+     * Constant for the TRUSTSTORE_CLIENT tool.
+     * @since 1.16 
+     */
+    public static final String TOOL_TRUSTSTORE_CLIENT = "truststoreClient";     // NOI18N
+    
+    /** 
+     * Constant for the main class tool property.
+     * @since 1.16 
+     */
+    public static final String TOOL_PROP_MAIN_CLASS         = "main.class";     // NOI18N
+    
+    /** 
+     * Constant for the main class arguments tool property.
+     * @since 1.16 
+     */
+    public static final String TOOL_PROP_MAIN_CLASS_ARGS    = "main.class.args"; // NOI18N
+    
+    /** 
+     * Constant for the JVM options tool property.
+     * @since 1.16 
+     */
+    public static final String TOOL_PROP_JVM_OPTS           = "jvm.opts";       // NOI18N
+    
+    /**
+     * Constant for the distribution archive client property. Some of the tool
+     * property values may refer to this property.
+     * @since 1.16
+     */
+    public static final String CLIENT_PROP_DIST_ARCHIVE     = "client.dist.archive"; // NOI18N
+
     private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/Servers.png"; // NOI18N
     
     private J2eePlatformImpl impl;
@@ -157,9 +250,10 @@ public final class J2eePlatform {
     }
     
     /**
-     * Return classpath for the specified tool.
+     * Return classpath for the specified tool. Use the tool constants declared 
+     * in this class.
      *
-     * @param  toolName tool's name e.g. "wscompile".
+     * @param  toolName tool name, for example {@link #TOOL_APP_CLIENT_RUNTIME}.
      * @return classpath for the specified tool.
      */
     public File[] getToolClasspathEntries(String toolName) {
@@ -167,9 +261,32 @@ public final class J2eePlatform {
     }
     
     /**
-     * Specifies whether a tool of the given name is supported by this platform.
+     * Returns the property value for the specified tool.
+     * <p>
+     * The property value uses Ant property format and therefore may contain 
+     * references to another properties defined either by the client of this API 
+     * or by the tool itself.
+     * <p>
+     * The properties the client may be requited to define are as follows
+     * {@link #CLIENT_PROP_DIST_ARCHIVE}
+     * 
+     * @param toolName tool name, for example {@link #TOOL_APP_CLIENT_RUNTIME}.
+     * @param propertyName tool property name, for example {@link #TOOL_PROP_MAIN_CLASS}.
      *
-     * @param  toolName tool's name e.g. "wscompile".
+     * @return property value or null, if the property is not defined for the 
+     *         specified tool.
+     *         
+     * @since 1.16
+     */
+    public String getToolProperty(String toolName, String propertyName) {
+        return impl.getToolProperty(toolName, propertyName);
+    }
+    
+    /**
+     * Specifies whether a tool of the given name is supported by this platform.
+     * Use the tool constants declared in this class.
+     *
+     * @param  toolName tool name, for example {@link #TOOL_APP_CLIENT_RUNTIME}.
      * @return <code>true</code> if platform supports tool of the given name, 
      *         <code>false</code> otherwise.
      */
@@ -226,6 +343,18 @@ public final class J2eePlatform {
      */
     public Set/*<String>*/ getSupportedSpecVersions() {
         return impl.getSupportedSpecVersions();
+    }
+    
+    /**
+     * Return a list of supported J2EE specification versions for
+     * a given module type.
+     *
+     * @param moduleType one of the constants defined in 
+     *   {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
+     * @return list of supported J2EE specification versions.
+     */
+    public Set <String> getSupportedSpecVersions(Object moduleType) {
+        return impl.getSupportedSpecVersions(moduleType);
     }
     
     /**

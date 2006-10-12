@@ -18,22 +18,32 @@
  */
 
 package org.netbeans.modules.web.freeform;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ant.freeform.spi.HelpIDFragmentProvider;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.freeform.ui.WebClasspathPanel;
 import org.netbeans.modules.web.freeform.ui.WebLocationsPanel;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -43,11 +53,13 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.w3c.dom.Element;
 
 /**
  * @author David Konecny
@@ -61,8 +73,6 @@ public class WebProjectNature implements ProjectNature {
     
     private static final WeakHashMap/*<Project,WeakReference<Lookup>>*/ lookupCache = new WeakHashMap();
 
-    private List schemas = new ArrayList();
-    
     public WebProjectNature() {}
 
     public Lookup getLookup(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
@@ -80,9 +90,9 @@ public class WebProjectNature implements ProjectNature {
         if (!isMyProject(aux)) {
             return l;
         }
-        ProjectPropertiesPanel web = new WebLocationsPanel.Panel(project, projectHelper, projectEvaluator, aux);
+        ProjectPropertiesPanel web = new WebLocationsPanel.Panel(projectHelper, projectEvaluator, aux);
         l.add(web);
-        l.add(new WebClasspathPanel.Panel(project, projectHelper, projectEvaluator, aux));
+        l.add(new WebClasspathPanel.Panel(projectHelper, projectEvaluator, aux));
         return l;
     }
     
@@ -122,8 +132,10 @@ public class WebProjectNature implements ProjectNature {
     }
     
     private static Lookup initLookup(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
+        WebClasspath webcp = new WebClasspath(projectHelper, projectEvaluator, aux, project);
         return Lookups.fixed(new Object[] {
-            new PrivilegedTemplatesImpl(),           // List of templates in New action popup
+            new ProjectOpenedHookImpl(webcp),       // register webroots as source classpath
+            new PrivilegedTemplatesImpl(),          // List of templates in New action popup
             new WebModules(project, projectHelper, projectEvaluator), // WebModuleProvider, ClassPathProvider
             new WebFreeFormActionProvider(project, projectHelper, aux),   //ActionProvider
             new HelpIDFragmentProviderImpl(),
@@ -134,6 +146,116 @@ public class WebProjectNature implements ProjectNature {
         public String getHelpIDFragment() {
             return HELP_ID_FRAGMENT;
         }
+    }
+    
+    private static class ProjectOpenedHookImpl extends ProjectOpenedHook {
+        private final WebClasspath webcp;
+        public ProjectOpenedHookImpl(WebClasspath wcp) {
+            this.webcp = wcp;
+        }
+        protected void projectOpened() {
+            webcp.prjOpened();
+        }
+        protected void projectClosed() {
+            webcp.prjClosed();
+        }
+    }
+    
+    public static final class WebClasspath implements AntProjectListener, PropertyChangeListener {
+        
+        private ClassPath registeredCP[] = new ClassPath[0];
+        private List/*<FileObject>*/ registeredRoots = Collections.EMPTY_LIST;
+        
+        private PropertyEvaluator evaluator;
+        private AuxiliaryConfiguration aux;
+        private Project project;
+        
+        private PropertyChangeSupport pcs;
+        
+        private boolean prjClosed = false;
+        
+        public WebClasspath(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux, Project proj) {
+            this.evaluator = evaluator;
+            this.aux = aux;
+            this.project = proj;
+            helper.addAntProjectListener(this);
+            evaluator.addPropertyChangeListener(this);
+            pcs = new PropertyChangeSupport(this);
+        }
+        
+        public void prjOpened() {
+            registeredRoots = getWebRoots(aux, project, evaluator);
+            FileObject fos[] = new FileObject[registeredRoots.size()];
+            ClassPath cp = ClassPathSupport.createClassPath((FileObject[]) registeredRoots.toArray(fos));
+            registeredCP = new ClassPath[] { cp };
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, registeredCP);
+            prjClosed = false;
+        }
+        
+        public void prjClosed() {
+            if (!registeredRoots.isEmpty()) {
+                GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, registeredCP);
+            }
+            registeredRoots = Collections.EMPTY_LIST;
+            prjClosed = true;
+        }
+        
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            updateClasspath();
+        }
+        
+        public void propertiesChanged(AntProjectEvent ev) {
+            // ignore
+        }
+        
+        public void propertyChange(PropertyChangeEvent ev) {
+            updateClasspath();
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+        
+        private synchronized void updateClasspath() {
+            if (!prjClosed) {
+                List newRoots = getWebRoots(aux, project, evaluator);
+                if (!newRoots.equals(registeredRoots)) {
+                    FileObject fos[] = new FileObject[newRoots.size()];
+                    ClassPath cp = ClassPathSupport.createClassPath((FileObject[]) newRoots.toArray(fos));
+                    GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, registeredCP);
+                    registeredCP = new ClassPath[] { cp };
+                    registeredRoots = newRoots;
+                    GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, registeredCP);
+                    pcs.firePropertyChange(ClassPathImplementation.PROP_RESOURCES, null, null);
+                }
+            }
+        }
+        
+        private List/*<FileObject>*/ getWebRoots(AuxiliaryConfiguration aux, Project proj, PropertyEvaluator evaluator) {
+            Element web = aux.getConfigurationFragment("web-data", WebProjectNature.NS_WEB, true); // NOI18N
+            if (web == null) {
+                return null;
+            }
+            List webModules = Util.findSubElements(web);
+            Iterator it = webModules.iterator();
+            List/*<FileObject>*/ roots = new ArrayList();
+            while (it.hasNext()) {
+                Element webModulesEl = (Element) it.next();
+                assert webModulesEl.getLocalName().equals("web-module") : webModulesEl; // NOI18N
+                roots.add(FileUtil.toFileObject(getFile(webModulesEl, "doc-root", proj, evaluator))); // NOI18N
+            }
+            return roots;
+        }
+        
+        private File getFile(Element parent, String fileElName, Project proj, PropertyEvaluator evaluator) {
+            Element el = Util.findElement(parent, fileElName, WebProjectNature.NS_WEB);
+            return Util.resolveFile(evaluator, FileUtil.toFile(proj.getProjectDirectory()), Util.findText(el));
+        }
+        
     }
     
     private static final class ProjectLookup extends ProxyLookup implements AntProjectListener {

@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.CopyOperationImplementation;
@@ -36,7 +37,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.ErrorManager;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -67,6 +68,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, "build.xml", files); // NOI18N
+        addFile(projectDirectory, "catalog.xml", files); //NOI18N
         
         return files;
     }
@@ -122,6 +124,9 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         assert targetNames.length > 0;
         
         ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
+        
+        WebProjectClassPathExtender extender = (WebProjectClassPathExtender)project.getLookup().lookup(WebProjectClassPathExtender.class);
+        extender.notifyDeleting();
     }
     
     public void notifyDeleted() throws IOException {
@@ -132,15 +137,38 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         //nothing.
     }
     
-    public void notifyCopied(Project original, File originalPath, String nueName) {
+    public void notifyCopied(Project original, File originalPath, final String newName) {
         if (original == null) {
             //nothing for the original project
             return ;
         }
         
+	final String oldProjectName = project.getName();
+        
         project.getReferenceHelper().fixReferences(originalPath);
         
-        project.setName(nueName);
+        project.setName(newName);
+        
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+		AntProjectHelper helper = project.getAntProjectHelper();
+		EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+		String warName = (String) projectProps.get(WebProjectProperties.WAR_NAME);
+		String warEarName = (String) projectProps.get(WebProjectProperties.WAR_EAR_NAME);
+		String oldName = warName.substring(0, warName.length() - 4);
+		if (warName.endsWith(".war") && oldName.equals(oldProjectName)) //NOI18N
+		    projectProps.put(WebProjectProperties.WAR_NAME, PropertyUtils.getUsablePropertyName(newName) + ".war"); //NOI18N
+		if (warEarName.endsWith(".war") && oldName.equals(oldProjectName)) //NOI18N
+		    projectProps.put(WebProjectProperties.WAR_EAR_NAME, PropertyUtils.getUsablePropertyName(newName) + ".war"); //NOI18N
+                
+                ProjectWebModule wm = (ProjectWebModule) project.getLookup ().lookup(ProjectWebModule.class);
+                if (wm != null) //should not be null
+                    wm.setContextPath("/" + newName);
+                
+		helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+            }
+        });
     }
     
     public void notifyMoving() throws IOException {
@@ -181,20 +209,6 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
 		helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
             }
         });
-    }
-    
-    private static boolean isParent(File folder, File fo) {
-        if (folder.equals(fo))
-            return false;
-        
-        while (fo != null) {
-            if (fo.equals(folder))
-                return true;
-            
-            fo = fo.getParentFile();
-        }
-        
-        return false;
     }
 
 }

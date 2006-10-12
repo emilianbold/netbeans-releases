@@ -19,31 +19,18 @@
 
 package org.netbeans.modules.web.project;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import javax.swing.Action;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
-import org.openide.loaders.DataLoaderPool;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Lookup;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
-import org.openide.loaders.DataLoader;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.actions.SystemAction;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -71,22 +58,26 @@ public class WebProjectModule extends ModuleInstall {
                             // JSPC classpath
                             StringBuffer sb = new StringBuffer(450);
                             // Ant is needed in classpath if we are forking JspC into another process
-                            sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false))
+                            sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false)) //NOI18N
+                            .append(":") // NOI18N
+                             //XXX This is fix for issue #74250. This is a hack and should be solved in the glassfish's jasper 
+                            // also it must be moved before J2EE_PLATFORM_CLASSPATH, because a server (JBoss) can expose
+                            // old jsp api, and the compiler is not then able compile some jsp pages with tag lib declarations
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/servlet2.5-jsp2.1-api.jar", null, false)) //NOI18N
                             .append(":${" + WebProjectProperties.J2EE_PLATFORM_CLASSPATH + "}:") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/jasper-compiler-5.5.9.jar", null, false))
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-jspparser.jar", null, false)) //NOI18N
                             .append(":") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/jasper-runtime-5.5.9.jar", null, false))
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/glassfish-logging.jar", null, false)) //NOI18N
                             .append(":") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-el.jar", null, false))
-                            .append(":") // NOI18N
-                            .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false));
+                            .append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false)); //NOI18N
+                            
                             String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
                             String jspc_cp = sb.toString();
                             if (jspc_cp_old == null || !jspc_cp_old.equals (jspc_cp)) {
                                 ep.setProperty(JSPC_CLASSPATH, jspc_cp);
                                 changed = true;
                             }
-                            File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false);
+                            File copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false); //NOI18N
                             if (copy_files == null) {
                                 String msg = NbBundle.getMessage(ProjectWebModule.class,"MSG_CopyFileMissing"); //NOI18N
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
@@ -108,109 +99,39 @@ public class WebProjectModule extends ModuleInstall {
         );
     }
     
-            
-    public static class ActionWrapper extends CallableSystemAction implements ContextAwareAction, PropertyChangeListener {
-        
-        private Action action;
-        
-        public ActionWrapper( Action action ) {
-            this.action = action;
-        }
-            
-        public String getName() {
-            return (String)action.getValue( Action.NAME );
-        }
-
-        public String iconResource() {
-            return null;
-        }
-
-        public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
-        }
-
-        protected boolean asynchronous() {
-            return false;
-        }
-
-        public void actionPerformed( ActionEvent ev ) {
-            action.actionPerformed(ev);
-        }
-        
-        public boolean isEnabled() {
-            return action.isEnabled();            
-        }
-        
-        protected void addNotify() {
-            this.action.addPropertyChangeListener( this );
-            super.addNotify();
-        }
-        
-        protected void removeNotify() {
-            this.action.removePropertyChangeListener( this );
-            super.removeNotify();
-        }
-        
-        public void performAction() {
-            actionPerformed( new ActionEvent( this, 0, "" ) ); // NOI18N
-        }
-        
-        public Action createContextAwareInstance( Lookup actionContext ) {
-            return ((ContextAwareAction)action).createContextAwareInstance( actionContext );
-        }
-        
-        public void propertyChange( PropertyChangeEvent evt ) {
-            firePropertyChange( evt.getPropertyName(), evt.getOldValue(), evt.getNewValue() );
-        }
-        
-    }
-    
-    public static class CompileWrapper extends ActionWrapper {
-        
-        CompileWrapper() {
-            super( FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_COMPILE_SINGLE,
+    public static Action compile() {
+        return FileSensitiveActions.fileCommandAction( 
+                       ActionProvider.COMMAND_COMPILE_SINGLE, 
                        NbBundle.getMessage(WebProjectModule.class, "LBL_CompileFile_Action"), // NOI18N
-                       null ) );
-        }
-        
+                       null );
     }
-    
-    public static class RunWrapper extends ActionWrapper {
-        RunWrapper() {
-            super( FileSensitiveActions.fileCommandAction( 
+            
+    public static Action run() {
+        return FileSensitiveActions.fileCommandAction( 
                        ActionProvider.COMMAND_RUN_SINGLE, 
                        NbBundle.getMessage(WebProjectModule.class, "LBL_RunFile_Action"), // NOI18N
-                       null ) );
-            
-        }
+                       null );
     }
     
-    public static class DebugWrapper extends ActionWrapper {
-        DebugWrapper() {
-            super( FileSensitiveActions.fileCommandAction( 
+    public static Action debug() {
+        return FileSensitiveActions.fileCommandAction( 
                        ActionProvider.COMMAND_DEBUG_SINGLE, 
                        NbBundle.getMessage(WebProjectModule.class, "LBL_DebugFile_Action"), // NOI18N
-                       null ) );
-        }
+                       null );
     }
-    
-    public static class HtmlRunWrapper extends ActionWrapper {
-        HtmlRunWrapper() {
-            super( FileSensitiveActions.fileCommandAction( 
+
+    public static Action htmlRun() {
+        return FileSensitiveActions.fileCommandAction( 
                        ActionProvider.COMMAND_RUN_SINGLE, 
                        NbBundle.getMessage(WebProjectModule.class, "LBL_RunFile_Action"), // NOI18N
-                       null ) );
-            
-        }
+                       null );
     }
-    
-    public static class HtmlDebugWrapper extends ActionWrapper {
-        HtmlDebugWrapper() {
-            super( FileSensitiveActions.fileCommandAction( 
+
+    public static Action htmlDebug() {
+        return FileSensitiveActions.fileCommandAction( 
                        ActionProvider.COMMAND_DEBUG_SINGLE, 
                        NbBundle.getMessage(WebProjectModule.class, "LBL_DebugFile_Action"), // NOI18N
-                       null ) );
-        }
+                       null );
     }
+    
 }

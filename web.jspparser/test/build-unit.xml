@@ -41,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
         <unzip src="unit/data/data3.zip" dest="${xtest.workdir}/user/jspparser-data3" />-->
         <unzip src="unit/data/project2.zip" dest="${xtest.workdir}/user/" />
         <unzip src="unit/data/project3.zip" dest="${xtest.workdir}/user/" />
+        <unzip src="unit/data/emptyWebProject.zip" dest="${xtest.workdir}/user/" />
     </target>
     
     <target name="unit-compiler">
@@ -51,13 +52,14 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
                 <pathelement location="${web/core.dir}/modules/jsp.jar"/>
                 <pathelement location="${web/webapi.dir}/modules/org-netbeans-api-web-webmodule.jar"/>
-		<pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-core.jar"/>
+                <pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-core.jar"/>
                 <pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-jspparser.jar"/>
                 <pathelement location="${java/api.dir}/modules/org-netbeans-api-java.jar"/>
-                <pathelement location="../../external/servlet-api-2.4.jar"/>
-                <pathelement location="../../external/jsp-api-2.0.jar"/>
+                <pathelement location="../../external/servlet2.5-jsp2.1-api.jar"/>
                 <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
                 <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
+                <pathelement location="${projects/libraries.dir}/modules/org-netbeans-modules-project-libraries.jar"/>
+                <pathelement location="${java/project.dir}/modules/org-netbeans-modules-java-project.jar"/>
             </classpath>
         </buildTests>        
     </target>

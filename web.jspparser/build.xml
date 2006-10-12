@@ -25,17 +25,15 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${cluster}/modules/ext"/>
         <copy todir="${cluster}/modules/ext">
             <fileset dir="../external">
-                <include name="jasper-compiler-${tomcat_version}.jar"/>
-                <include name="jasper-runtime-${tomcat_version}.jar"/>
-                <!-- Presumably this is used in the classpath of one of jasper-*.jar? -->
-                <include name="commons-el.jar"/>
+                <include name="glassfish-jspparser.jar"/>
+                <include name="servlet2.5-jsp2.1-api.jar"/>
             </fileset>
         </copy>
     </target>
     
     <target name="ext-compile">
         <mkdir dir="build/extclasses"/>
-        <javac srcdir="extsrc" destdir="build/extclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+        <javac srcdir="extsrc" destdir="build/extclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5">
             <classpath>
                 <path path="${module.classpath}"/>
                 <path location="${cluster}/${module.jar}"/>

@@ -243,6 +243,54 @@ registry UI.
 <p><i>Not supported in current version.</i></p>
 </usecase>
 
+<usecase id="Retrieve-data-sources" name="Retrieve data sources">
+    <p>
+        Data sources created in the module and deployed on the server are accessed using
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/spi/J2eeModuleProvider.html">J2eeModuleProvider</a> methods.
+        Some of the module's data source may be already also deployed on the server, in that case the client
+        is responsible for the duplicity handling.
+    </p>
+    <p>
+        Retrieval from a server is done by a server plugin. Core part of the functionality is done by 
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/DatasourceManager.html">DatasourceManager</a> implementation
+        which is exposed from a server plugin through 
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/OptionalDeploymentManagerFactory.html">OptionalDeploymentManagerFactory</a>.
+    </p>
+    <p>
+        Retrieval from a module is done with help of 
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/spi/J2eeModuleProvider.ConfigSupport.html">ConfigSupport</a> and 
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/ConfigurationSupport.html">ConfigurationSupport</a> implementations.
+    </p>
+</usecase>
+
+<usecase id="Create-data-source" name="Create data source">
+    <p>
+        Data sources are created in a module if they does not exist yet on a server or in a module itself.
+        Data sources are stored in the server-specific format, only some common subset of attributes 
+        (e.g. JNDI name, username, url, ...) is provided by a creator.<br/>
+    </p>
+    <p>
+        Data source creation is done with help of 
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/spi/J2eeModuleProvider.ConfigSupport.html">ConfigSupport</a> and 
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/ConfigurationSupport.html">ConfigurationSupport</a> implementations.
+        In case of conflict with existing data source, the first conflicting data source is passed to the thrown 
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/DatasourceAlreadyExistsException.html">DatasourceAlreadyExistsException</a>.
+    </p>
+</usecase>
+
+<usecase id="Deploy-data-sources" name="Deploy data source">
+    <p>
+        Data sources stored in a module are deployed (registered) on a module's target server at the beginning
+        of a module deployment.<br/>
+    </p>
+    <p>
+        Data sources stored in a module are retrived and passed to a
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/DatasourceManager.html">DatasourceManager</a> instance
+        for deploying (registering) on the server.<br/>
+        All module data sources having a conflict with some existing server data source are passed to the thrown 
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/DatasourceAlreadyExistsException.html">DatasourceAlreadyExistsException</a>.
+    </p>
+</usecase>
 
 </answer>
 <!--         

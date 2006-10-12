@@ -45,8 +45,6 @@ import org.netbeans.modules.web.project.classpath.ClassPathSupport;
  */
 public class ClassPathUiSupport {
     
-    private ClassPathSupport cps;
-             
     // Methods for working with list models ------------------------------------
     
     public static DefaultListModel createListModel( Iterator it ) {
@@ -301,10 +299,6 @@ public class ClassPathUiSupport {
         
         private ClassPathSupport.Item getItem(int index) {
             return (ClassPathSupport.Item)model.get(index);
-        }
-        
-        private void setItem(ClassPathSupport.Item item, int index) {
-            model.set(index, item);
         }
     }
 }

@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT handler-chains (handler-chain)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT handler-chain (handler-chain-name?, handler+)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT handler (handler-name?, handler-class)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT handler-chain-name (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT handler-name (#PCDATA)>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT handler-class (#PCDATA)>

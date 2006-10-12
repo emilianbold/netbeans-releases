@@ -20,16 +20,7 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextArea;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**

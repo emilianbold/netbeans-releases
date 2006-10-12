@@ -33,51 +33,66 @@ import java.util.Collections;
 
 import org.openide.modules.InstalledFileLocator;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
 
 
 public class ServerLocationManager  {
 
     public static final String INSTALL_ROOT_PROP_NAME = "com.sun.aas.installRoot"; //NOI18N
-
+    private static final String JAR_BRIGDES_DEFINITION_LAYER="/J2EE/SunAppServer/Bridge"; //NOI18N
     private static Map ServerLocationAndClassLoaderMap = Collections.synchronizedMap((Map)new HashMap(2,1));
     
     private static void updatePluginLoader(File platformLocation, ExtendedClassLoader loader) throws Exception{
-	try {
-	    java.io.File f = platformLocation;
-	    if (null == f || !f.exists())
-		return;
-	    String installRoot = f.getAbsolutePath();
+        try {
+            java.io.File f = platformLocation;
+            if (null == f || !f.exists()){
+                return;
+            }
+            String installRoot = f.getAbsolutePath();
             //if we are only 8.1 set the necessary property there:
             if(!isGlassFish(f)){
                 System.setProperty(INSTALL_ROOT_PROP_NAME, installRoot);
             }
-	    InstalledFileLocator fff= InstalledFileLocator.getDefault();
-	    f = fff.locate("modules/ext/appsrvbridge.jar", null, true);
-	    if (f!=null){
-		loader.addURL(f);
-		loadLocaleSpecificJars(f, loader);
-	    } else
-		System.out.println("cannot locate file modules/ext/appsrvbridge.jar");
-	    
-	    
-	    
-	    f = new File(installRoot+"/lib/appserv-admin.jar");
+            
+            Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
+            FileObject bridgesDir = rep.getDefaultFileSystem().findResource(JAR_BRIGDES_DEFINITION_LAYER);
+            FileObject[] ch =new  FileObject[0];
+            if(bridgesDir!=null){
+                ch = bridgesDir.getChildren();
+            }
+            
+            for(int i = 0; i < ch.length; i++) {
+                String location= (String)ch[i].getAttribute("jar.location");//NOI18N
+                //System.out.println("Location is "+location + platformLocation);
+                InstalledFileLocator fff= InstalledFileLocator.getDefault();
+                f = fff.locate(location, null, true);
+                if (f!=null){
+                    loader.addURL(f);
+                    loadLocaleSpecificJars(f, loader);
+                } else
+                    System.out.println("cannot locate file "+location);//NOI18N
+                
+            }
+            
+            f = new File(installRoot+"/lib/appserv-admin.jar");//NOI18N
 	    loader.addURL(f);
-	    f = new File(installRoot+"/lib/appserv-ext.jar");
+	    f = new File(installRoot+"/lib/appserv-ext.jar");//NOI18N
 	    loader.addURL(f);
-	    f = new File(installRoot+"/lib/appserv-rt.jar");
+	    f = new File(installRoot+"/lib/appserv-rt.jar");//NOI18N
 	    loader.addURL(f);
-	    f = new File(installRoot+"/lib/appserv-cmp.jar");
+	    f = new File(installRoot+"/lib/appserv-cmp.jar");//NOI18N
 	    loader.addURL(f);
-	    f = new File(installRoot+"/lib/commons-logging.jar");
+	    f = new File(installRoot+"/lib/commons-logging.jar");//NOI18N
 	    loader.addURL(f);
-	    f = new File(installRoot+"/lib/admin-cli.jar");
+	    f = new File(installRoot+"/lib/admin-cli.jar");//NOI18N
 	    loader.addURL(f);
-	    f = new File(installRoot+"/lib/common-laucher.jar");
+	    f = new File(installRoot+"/lib/common-laucher.jar");//NOI18N
 	    loader.addURL(f);
-	    f = new File(installRoot+"/lib/j2ee.jar");
+	    f = new File(installRoot+"/lib/j2ee.jar");//NOI18N
 	    loader.addURL(f);
-	    f = new File(installRoot+"/lib/install/applications/jmsra/imqjmsra.jar");
+	    f = new File(installRoot+"/lib/install/applications/jmsra/imqjmsra.jar");//NOI18N
 	    loader.addURL(f);
 	    
 	    //for AS 8.1: no more endorsed dir!!!
@@ -88,9 +103,9 @@ public class ServerLocationManager  {
 //////	    f = new File(installRoot+"/lib/xalan.jar");
 	//    loader.addURL(f);
 	    //for AS 8.1:
-	    f = new File(installRoot+"/lib/jaxrpc-api.jar");
+	    f = new File(installRoot+"/lib/jaxrpc-api.jar");//NOI18N
 	    loader.addURL(f);
-	    f = new File(installRoot+"/lib/jaxrpc-impl.jar");
+	    f = new File(installRoot+"/lib/jaxrpc-impl.jar");//NOI18N
 	    loader.addURL(f);
 	    
 	    
@@ -100,9 +115,7 @@ public class ServerLocationManager  {
     }
     
     
-    static public File[] getPlatformsLocation(){
-	return null;
-    }
+
     
     /* return the latest available platform, i.e if 9 and 8.1 are regsitered,
      ** this will return the location of the AS 9 server
@@ -170,15 +183,17 @@ public class ServerLocationManager  {
     public synchronized static ClassLoader getNetBeansAndServerClassLoader(File platformLocation) {
 	CacheData data =(CacheData) ServerLocationAndClassLoaderMap.get(platformLocation.getAbsolutePath());
 	if (data==null){
-	    if (!isGoodAppServerLocation(platformLocation))
+	    if (!isGoodAppServerLocation(platformLocation)){
 		return null;
+            }
             data = new CacheData();
 	    ServerLocationAndClassLoaderMap.put(platformLocation.getAbsolutePath(), data);
 	    
 	}
 	if(data.cachedClassLoader==null){
-	    if (!isGoodAppServerLocation(platformLocation))
+	    if (!isGoodAppServerLocation(platformLocation)){
 		return null;
+            }
 	    try {
 		data.cachedClassLoader =new ExtendedClassLoader( new Empty().getClass().getClassLoader());
 		updatePluginLoader( platformLocation, data.cachedClassLoader);
@@ -208,7 +223,16 @@ public class ServerLocationManager  {
                 "/lib/dtds/sun-web-app_2_5-0.dtd");                             //NOI18N
 	return as9.exists();
     }
-    
+    /* return true if derby/javaDB is installed with the server
+     **/
+    public static boolean isJavaDBPresent(File installdir){
+	//check for both names, derby or jaadb
+        File derbyInstall = new File(installdir,"derby");//NOI18N
+        if (!derbyInstall.exists()){
+             derbyInstall = new File(installdir,"javadb");//NOI18N for latest Glassfish
+        }	
+	return derbyInstall.exists();
+    }    
     // TODO remove isGoodAppServerLocation from PluginProperties.java???
     public static boolean isGoodAppServerLocation(File candidate){
 	if (null == candidate || !candidate.exists() || !candidate.canRead() ||
@@ -216,9 +240,10 @@ public class ServerLocationManager  {
 	    
 	    return false;
 	}
-        File f = new File(candidate.getAbsolutePath()+"/lib/appserv-rt.jar");
-        if (!f.exists())
+        File f = new File(candidate.getAbsolutePath()+"/lib/appserv-rt.jar");//NOI18N
+        if (!f.exists()){
             return false;
+        }
         
 	//now test for AS 9 (J2EE 5.0) which should work for this plugin
 	if(isGlassFish(candidate)){
@@ -273,13 +298,16 @@ public class ServerLocationManager  {
     }
 
     private static   boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
-        if (null == candidate)
+        if (null == candidate){
             return false;
+        }
         String[] children = candidate.list();
-        if (null == children)
+        if (null == children){
             return false;
-        if (null == requiredChildren)
+        }
+        if (null == requiredChildren){
             return true;
+        }
         java.util.List kidsList = java.util.Arrays.asList(children);
         return kidsList.containsAll(requiredChildren);
     }

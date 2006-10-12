@@ -36,18 +36,26 @@ public class SharedContextLogAction extends NodeAction {
     protected void performAction(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             TomcatInstanceNode cookie = (TomcatInstanceNode)nodes[i].getCookie(TomcatInstanceNode.class);
-            if (cookie == null) continue;
+            if (cookie == null) {
+                continue;
+            }
             TomcatManager tm = cookie.getTomcatManager();
-            if (tm != null) tm.logManager().openSharedContextLog();
+            if (tm != null) {
+                tm.logManager().openSharedContextLog();
+            }
         }
     }
 
     protected boolean enable(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             TomcatInstanceNode cookie = (TomcatInstanceNode)nodes[i].getCookie(TomcatInstanceNode.class);
-            if (cookie == null) return false;
+            if (cookie == null) {
+                return false;
+            }
             TomcatManager tm = cookie.getTomcatManager();
-            if (tm == null || !tm.logManager().hasSharedLogger()) return false;
+            if (tm == null || !tm.logManager().hasSharedLogger()) {
+                return false;
+            }
         }
         return true;
     }

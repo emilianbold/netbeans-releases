@@ -122,7 +122,6 @@ public class FieldValue extends org.netbeans.modules.schema2beans.BaseBean
 		comparators.remove(c);
 	}
 	public void validate() throws org.netbeans.modules.schema2beans.ValidateException {
-		boolean restrictionFailure = false;
 		// Validating property defaultFieldValue
 		if (getDefaultFieldValue() == null) {
 			throw new org.netbeans.modules.schema2beans.ValidateException("getDefaultFieldValue() == null", "defaultFieldValue", this);	// NOI18N
@@ -139,7 +138,6 @@ public class FieldValue extends org.netbeans.modules.schema2beans.BaseBean
 	// Dump the content of this bean returning it as a String
 	public void dump(StringBuffer str, String indent){
 		String s;
-		Object o;
 		org.netbeans.modules.schema2beans.BaseBean n;
 		str.append(indent);
 		str.append("DefaultFieldValue");	// NOI18N

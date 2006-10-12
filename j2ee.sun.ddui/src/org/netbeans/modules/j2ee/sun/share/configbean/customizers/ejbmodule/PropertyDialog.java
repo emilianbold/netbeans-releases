@@ -53,23 +53,6 @@ public class PropertyDialog extends BeanInputDialog{
 
 
     /** Creates a new instance of PropertyDialog */
-    public PropertyDialog(PropertyPanel parent,
-            String title, Object[] values, String helpID){
-        super(parent, title, true, values);
-        name = (String)values[0];
-        value = (String)values[1];
-        helpId = helpID;
-    }
-
-
-    public PropertyDialog(PropertyPanel parent,
-            String title, String helpID){
-        super(parent, title, true);
-        helpId = helpID;
-    }
-
-
-    /** Creates a new instance of PropertyDialog */
     public PropertyDialog(ActivationCfgPropertyPanel parent,
             String title, Object[] values){
         super(parent, title, true, values);

@@ -24,6 +24,7 @@
 
 package org.netbeans.modules.j2ee.sun.api;
 
+import java.io.IOException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
@@ -37,7 +38,6 @@ import javax.management.AttributeList;
 
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
-import java.util.Set;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 //import org.netbeans.modules.j2ee.sun.share.management.ServerMEJB;
@@ -64,8 +64,18 @@ public interface ServerInterface {
         AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException, RemoteException;
     
     DeploymentManager getDeploymentManager();
+
+    void  setDeploymentManager(DeploymentManager dm);
     
     MBeanServerConnection getMBeanServerConnection() throws RemoteException, ServerException;
      
     /*ServerMEJB*/Object getManagement();
+    
+    /* check if the dm is ok in term of user name and password,
+     * throws an IOexception if this is incorrect
+     * oterwise, returns normally
+     **/
+    void checkCredentials() throws  IOException;
+    
+    String getWebModuleName(String contextRoot);
 }

@@ -243,7 +243,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     
     void store( WizardDescriptor d ) {                
         String name = projectNameTextField.getText().trim();
-        String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
         d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
@@ -291,15 +290,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     
     
     // Private methods ---------------------------------------------------------
-    
-    private static JFileChooser createChooser() {
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-        chooser.setAcceptAllFileFilterUsed( false );
-        chooser.setName(NbBundle.getMessage(PanelProjectLocationVisual.class,"LBL_SelectProjectDirectoryTitle")); // NOI18N
-        return chooser;
-    }
     
     private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
         String name = MessageFormat.format (formater, new Object[]{new Integer (index)});                

@@ -26,9 +26,12 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
+                xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1"
                 exclude-result-prefixes="xalan p projdeps projdeps2">
 <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
+    <xsl:param name = "jax_ws_uri">jax-ws.xml</xsl:param>
+    <xsl:param name = "jaxws" select="document($jax_ws_uri)"/>
     <xsl:template match="/">
 
         <xsl:comment><![CDATA[
@@ -461,7 +464,97 @@ is divided into following sections:
                 <xsl:with-param name="targetname" select="'deps-jar'"/>
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
-
+            
+            <!-- wsimport task initialization -->
+            <xsl:if test="$jaxws/*/*/*/jaxws:wsdl-url">
+                <target name="wsimport-init" depends="init">
+                    <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
+                        <mkdir dir="${{build.generated.dir}}/wsimport/client"/>
+                        <mkdir dir="${{build.generated.dir}}/wsimport/binaries"/>
+                    </xsl:if>
+                    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+                        <classpath path="${{libs.jaxws20.classpath}}"/>
+                    </taskdef>
+                </target>
+            </xsl:if>
+            
+            <!-- wsimport-client targets - one for each jaxws client -->
+            <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
+                <xsl:variable name="wsname" select="@name"/>
+                <xsl:variable name="package_name" select="jaxws:package-name"/>
+                <xsl:variable name="wsdl_url" select="jaxws:local-wsdl-file"/>
+                <xsl:variable name="wsdl_url_actual" select="jaxws:wsdl-url"/>
+                <xsl:variable name="package_path" select = "translate($package_name,'.','/')"/>
+                <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
+                <target name="wsimport-client-check-{$wsname}" depends="wsimport-init">
+                    <condition property="wsimport-client-{$wsname}.notRequired">
+                        <available file="${{build.generated.dir}}/wsimport/client/{$package_path}" type="dir"/>
+                    </condition>
+                </target>
+                <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">
+                    <xsl:if test="jaxws:package-name/@forceReplace">
+                        <wsimport
+                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            package="{$package_name}"
+                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                            wsdlLocation="{$wsdl_url_actual}"
+                            catalog="{$catalog}">
+                            <xsl:if test="jaxws:binding">
+                                <binding dir="xml-resources/web-service-references/{$wsname}/bindings">
+                                    <xsl:attribute name="includes">
+                                        <xsl:for-each select="jaxws:binding">
+                                            <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                            <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                        </xsl:for-each>
+                                    </xsl:attribute>
+                                </binding>
+                            </xsl:if>
+                        </wsimport>
+                    </xsl:if>
+                    <xsl:if test="not(jaxws:package-name/@forceReplace)">
+                        <wsimport
+                            sourcedestdir="${{build.generated.dir}}/wsimport/client"
+                            destdir="${{build.generated.dir}}/wsimport/binaries"
+                            wsdl="${{basedir}}/xml-resources/web-service-references/{$wsname}/wsdl/{$wsdl_url}"
+                            wsdlLocation="{$wsdl_url_actual}"
+                            catalog="{$catalog}">
+                            <xsl:if test="jaxws:binding">
+                                <binding dir="xml-resources/web-service-references/{$wsname}/bindings">
+                                    <xsl:attribute name="includes">
+                                        <xsl:for-each select="jaxws:binding">
+                                            <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                            <xsl:value-of select="normalize-space(jaxws:file-name)"/>
+                                        </xsl:for-each>
+                                    </xsl:attribute>
+                                </binding>
+                            </xsl:if>
+                        </wsimport>
+                    </xsl:if>
+                    <copy todir="${{build.classes.dir}}">
+                        <fileset dir="${{build.generated.dir}}/wsimport/binaries" includes="**/*.xml"/>
+                    </copy>
+                </target>
+                <target name="wsimport-client-clean-{$wsname}" depends="-init-project">
+                    <delete dir="${{build.generated.dir}}/wsimport/client/{$package_path}"/>
+                </target>
+            </xsl:for-each>
+            
+            <!-- wsimport-client-generate and wsimport-client-compile targets -->
+            <xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
+                <target name="wsimport-client-generate">
+                    <xsl:attribute name="depends">
+                        <xsl:for-each select="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                            <xsl:text>wsimport-client-</xsl:text><xsl:value-of select="@name"/>
+                        </xsl:for-each>
+                    </xsl:attribute>
+                </target>
+                <target name="wsimport-client-compile" depends="-pre-pre-compile">
+                    <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws20.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                </target>
+            </xsl:if>
+            
             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
                 <target name="wscompile-init" depends="init">
                     <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile"
@@ -517,10 +610,15 @@ is divided into following sections:
                         </filterset>
                     </copy>
                     <wscompile
-                        xPrintStackTrace="true" verbose="false" fork="true" keep="true"
+                        verbose="${{wscompile.client.{$wsclientname}.verbose}}"
+                        debug="${{wscompile.client.{$wsclientname}.debug}}"
+                        xPrintStackTrace="${{wscompile.client.{$wsclientname}.xPrintStackTrace}}"
+                        xSerializable="${{wscompile.client.{$wsclientname}.xSerializable}}"
+                        optimize="${{wscompile.client.{$wsclientname}.optimize}}"
+                        fork="true" keep="true"
                         client="{$useclient}" import="{$useimport}"
                         features="${{wscompile.client.{$wsclientname}.features}}"
-                        base="${{build.classes.dir}}"
+                        base="${{build.generated.dir}}/wsbinary"
                         sourceBase="${{build.generated.dir}}/wsclient"
                         classpath="${{wscompile.classpath}}:${{javac.classpath}}"
                         mapping="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-mapping.xml"
@@ -548,7 +646,7 @@ is divided into following sections:
             </xsl:if>
             
             <target name="-pre-pre-compile">
-                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-generate</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-generate</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-generate</xsl:if></xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
 
@@ -558,7 +656,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if></xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 <j2seproject3:javac/>
                 <copy todir="${{build.classes.dir}}">
@@ -585,7 +683,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-compile-single">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if><xsl:if test="$jaxws/jaxws:jax-ws/jaxws:clients/jaxws:client">,wsimport-client-compile</xsl:if></xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <j2seproject3:javac>
                     <customize>

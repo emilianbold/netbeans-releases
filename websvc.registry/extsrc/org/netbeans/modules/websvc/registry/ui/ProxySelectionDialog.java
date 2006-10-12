@@ -119,7 +119,6 @@ public class ProxySelectionDialog extends javax.swing.JPanel implements ActionLi
         setLayout(new java.awt.GridBagLayout());
         
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(10, 10, 10, 10)));
-        setPreferredSize(new java.awt.Dimension(300, 100));
         serverlabel.setText(NbBundle.getMessage(this.getClass(), "LBL_HTTP_PROXY_SERVER"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

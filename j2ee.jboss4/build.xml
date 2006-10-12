@@ -59,16 +59,26 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 	  removeUnreferencedNodes="true"
           docroot="jboss"
 	  rootDir="src"/>
+	<schema2beans schema="${jb_dir}/resources/jboss-ds_1_5.dtd"
+	  package="org.netbeans.modules.j2ee.jboss4.config.gen"
+	  schemaType="dtd"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="datasources"
+	  rootDir="src"/>
+	<schema2beans schema="${jb_dir}/resources/jboss-client_4_0.dtd"
+	  package="org.netbeans.modules.j2ee.jboss4.config.gen"
+	  schemaType="dtd"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="jboss-client"
+	  rootDir="src"/>
   </target>
   
-  <target name="compile" depends="dd2beans_gen, copy_extra, projectized-common.compile"/>
+  <target name="compile" depends="dd2beans_gen, projectized-common.compile"/>
     
-    <target name="copy_extra">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <copy file="../external/jmxri.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        
-    </target>
-
   <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
 
   <target name="clean-ddgen-check">

@@ -105,7 +105,9 @@ public abstract class BaseEjb extends Base {
 	 */
 	protected class BaseEjbSnippet extends DefaultSnippet {
 		public CommonDDBean getDDSnippet() {
-			Ejb ejb = StorageBeanFactory.getDefault().createEjb();
+			Ejb ejb = getConfig().getStorageFactory().createEjb();
+            String version = getAppServerVersion().getEjbJarVersionAsString();
+            
             ejb.setEjbName(getEjbName());
 
 			if(null != jndiName){
@@ -124,17 +126,17 @@ public abstract class BaseEjb extends Base {
 
 			IorSecurityConfig iorSecConf = getIorSecurityConfig();
 			if(null != iorSecConf){
-                ejb.setIorSecurityConfig((IorSecurityConfig)iorSecConf.clone());
+                ejb.setIorSecurityConfig((IorSecurityConfig)iorSecConf.cloneVersion(version));
 			}
 
 			BeanPool beanPool = getBeanPool();
 			if(null != beanPool){
-                ejb.setBeanPool((BeanPool)beanPool.clone());
+                ejb.setBeanPool((BeanPool)beanPool.cloneVersion(version));
 			}
 
 			BeanCache beanCache = getBeanCache();
 			if(null != beanCache){
-				ejb.setBeanCache((BeanCache)beanCache.clone());
+				ejb.setBeanCache((BeanCache)beanCache.cloneVersion(version));
 			}
 			return ejb;
 		}
@@ -282,17 +284,23 @@ public abstract class BaseEjb extends Base {
     }
     
     protected boolean requiresJndiName() {
-        boolean hasRemote = false;
+        // For JavaEE5 and later spec bean, jndi name is optional.
+        boolean needsJndi = super.requiresJndiName();
 
-        DDBean [] remoteDDBeans = getDDBean().getChildBean("remote"); // NOI18N
-        if(remoteDDBeans.length > 0 && remoteDDBeans[0] != null) {
-            hasRemote = true;
+        if(needsJndi) {
+            // For J2EE 1.4 and previous beans, jndi name is only required for beans with
+            // remote interfaces.  Note this does not apply message driven beans and
+            // MDEjb.java overrides this method with logic correct to that bean type.
+            DDBean [] remoteDDBeans = getDDBean().getChildBean("remote"); // NOI18N
+            if(!(remoteDDBeans.length > 0 && remoteDDBeans[0] != null)) {
+                // remote interface is not present, return false.
+                needsJndi = false;
+            }
         }
         
-        return hasRemote;
+        return needsJndi;
     }
-    
-        
+
 	/* ------------------------------------------------------------------------
 	 * XPath to Factory mapping support
 	 */
@@ -316,8 +324,13 @@ public abstract class BaseEjb extends Base {
 			baseEjbFactoryMap.put("resource-ref", new DCBGenericFactory(ResourceRef.class));		// NOI18N
 			baseEjbFactoryMap.put("resource-env-ref", new DCBGenericFactory(ResourceEnvRef.class));	// NOI18N
 			
-			if(getJ2EEModuleVersion().compareTo(EjbJarVersion.EJBJAR_2_1) >= 0) {
+            J2EEBaseVersion moduleVersion = getJ2EEModuleVersion();
+			if(moduleVersion.compareTo(EjbJarVersion.EJBJAR_2_1) >= 0) {
 				baseEjbFactoryMap.put("service-ref", new DCBGenericFactory(ServiceRef.class));		// NOI18N
+                
+                if(moduleVersion.compareTo(EjbJarVersion.EJBJAR_3_0) >= 0) {
+                    baseEjbFactoryMap.put("message-destination-ref", new DCBGenericFactory(MessageDestinationRef.class));// NOI18N
+                }
 			}
 		}
 		return baseEjbFactoryMap;

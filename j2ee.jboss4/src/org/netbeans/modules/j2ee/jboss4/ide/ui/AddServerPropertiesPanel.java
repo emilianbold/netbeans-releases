@@ -20,11 +20,15 @@ package org.netbeans.modules.j2ee.jboss4.ide.ui;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -59,6 +63,30 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
                 return false;
             }
             
+            ServerInstance[] si = ServerRegistry.getInstance().getServerInstances();
+            
+            for(int i=0;i<si.length;i++) {
+                try {
+                    String property = si[i].getInstanceProperties().getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                    
+                    if(property == null)
+                        continue;
+                    
+                    String root = new File(property).getCanonicalPath();
+                    
+                    if(root.equals(new File(path).getCanonicalPath())) {
+                        wizard.putProperty(PROP_ERROR_MESSAGE,NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_InstanceExists"));
+                        return false;
+                    }
+                } catch (MissingResourceException ex) {
+                    // It's normal behaviour when si[i] is something else then jboss instance
+                    continue;
+                } catch (IOException ex) {
+                    // It's normal behaviour when si[i] is something else then jboss instance
+                    continue;
+                }
+            }
+            
             try{
                 new Integer(port);
             }catch(Exception e){
@@ -80,7 +108,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         
         wizard.putProperty(PROP_ERROR_MESSAGE,null);
         
-     //   JBTargetServerData ts = JBPluginProperties.getInstance().getTargetServerData();
+        //   JBTargetServerData ts = JBPluginProperties.getInstance().getTargetServerData();
         instantiatingIterator.setHost(host);
         instantiatingIterator.setPort(port);
         instantiatingIterator.setServer(panel.getDomain());

@@ -28,6 +28,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.config.model.FacesConfig;
@@ -83,8 +84,14 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             log ("\tsourceGroups.length: " + sourceGroups.length);
         }
         
-        WizardDescriptor.Panel secondPanel = new ManagedBeanPanel(project, wizard);               
-        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
+        WizardDescriptor.Panel secondPanel = new ManagedBeanPanel(project, wizard);
+        
+        WizardDescriptor.Panel javaPanel;
+        if (sourceGroups.length == 0)
+            javaPanel = Templates.createSimpleTargetChooser(project, sourceGroups, secondPanel);
+        else
+            javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
+
         panels = new WizardDescriptor.Panel[] { javaPanel };
         
         // Creating steps.
@@ -131,7 +138,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         JSFConfigDataObject configDO = (JSFConfigDataObject)DataObject.find(fo);
         FacesConfig config= configDO.getFacesConfig();
         
-        ManagedBean bean = new ManagedBean();
+        ManagedBean bean = config.newManagedBean();
         String targetName = Templates.getTargetName(wizard);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -164,7 +171,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
             doc = (BaseDocument)configDO.getEditorSupport().getDocument();
         }
-        JSFEditorUtilities.writeBean(doc, bean, "managed-bean"); //NOI18N
+        JSFEditorUtilities.writeBean(doc, (BaseBean) bean, "managed-bean"); //NOI18N
         configDO.getEditorSupport().saveDocument();        
         return Collections.singleton(dobj);
     }

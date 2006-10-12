@@ -22,15 +22,33 @@ import java.util.HashMap;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.MissingResourceException;
+import java.util.Set;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
-
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -38,7 +56,9 @@ import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
  */
 public class JBDeploymentFactory implements DeploymentFactory {
     
-    public static final String URI_PREFIX = "jboss-deployer:";//NOI18N
+    public static final String URI_PREFIX = "jboss-deployer:"; // NOI18N
+    
+    private static final String DISCONNECTED_URI = "jboss-deployer:http://localhost:8080&"; // NOI18N
     
     private static JBDeploymentFactory instance;
     
@@ -46,7 +66,10 @@ public class JBDeploymentFactory implements DeploymentFactory {
         if (instance == null) {
             instance = new JBDeploymentFactory();
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
+
+            registerDefaultServerInstance();
         }
+        
         return instance;
     }
     
@@ -56,7 +79,29 @@ public class JBDeploymentFactory implements DeploymentFactory {
      */
     private HashMap/*<String, DeploymentFactory*/ jbossFactories = new HashMap();
     
-    public URLClassLoader getJBClassLoader(String serverRoot){
+    public static class JBClassLoader extends URLClassLoader {
+
+        public JBClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException, RuntimeException {
+            super(urls, parent);
+        }
+        
+        protected PermissionCollection getPermissions(CodeSource codeSource) {
+            Permissions p = new Permissions();
+            p.add(new AllPermission());
+            return p;
+        }
+        
+       public Enumeration<URL> getResources(String name) throws IOException {
+           // get rid of annoying warnings
+           if (name.indexOf("jndi.properties") != -1) {// || name.indexOf("i18n_user.properties") != -1) { // NOI18N
+               return Collections.enumeration(Collections.<URL>emptyList());
+           } 
+
+           return super.getResources(name);
+       }         
+    }
+
+    public static URLClassLoader getJBClassLoader(String serverRoot){
         try {
 
             URL urls[] = new URL[]{
@@ -66,7 +111,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                     new File(serverRoot + "/client/jnp-client.jar").toURI().toURL(),           //NOI18N
                     new File(serverRoot + "/lib/dom4j.jar").toURI().toURL()                    //NOI18N
             };
-            URLClassLoader loader = new URLClassLoader(urls, getClass().getClassLoader());
+            URLClassLoader loader = new JBClassLoader(urls, JBDeploymentFactory.class.getClassLoader());
             return loader;
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
@@ -132,9 +177,20 @@ public class JBDeploymentFactory implements DeploymentFactory {
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
         
-        DeploymentFactory df = getFactory(uri);
-        if (df == null)
-            throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
+        DeploymentFactory df = null;
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+        if (ip == null) {
+            // null ip either means that the instance is not registered, or that this is the disconnected URL
+            if (!DISCONNECTED_URI.equals(uri)) {
+                throw new DeploymentManagerCreationException("JBoss instance " + uri + " is not registered in the IDE."); // NOI18N
+            }
+        }
+        else {
+            df = getFactory(uri);
+            if (df == null) {
+                throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
+            }
+        }
 
         String jbURI = uri;
         try {
@@ -144,7 +200,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
 
-        return new JBDeploymentManager(df.getDisconnectedDeploymentManager(jbURI), uri, null, null);
+        return new JBDeploymentManager((df != null ? df.getDisconnectedDeploymentManager(jbURI) : null), uri, null, null);
     }
     
     public String getProductVersion() {
@@ -155,4 +211,125 @@ public class JBDeploymentFactory implements DeploymentFactory {
     public String getDisplayName() {
         return NbBundle.getMessage(JBDeploymentFactory.class, "SERVER_NAME"); // NOI18N
     }
+    
+    private static final String INSTALL_ROOT_PROP_NAME = "org.netbeans.modules.j2ee.jboss4.installRoot"; // NOI18N
+
+    private static void registerDefaultServerInstance() {
+        try {
+            FileObject serverInstanceDir = getServerInstanceDir();
+            String serverLocation = getDefaultInstallLocation();
+            String domainLocation = serverLocation + File.separator + "server" + File.separator + "default"; // NOI18N
+            setRemovability(serverInstanceDir, domainLocation);
+            if (JBPluginUtils.isGoodJBServerLocation(new File(serverLocation))) {
+                if (JBPluginUtils.isGoodJBInstanceLocation(new File(domainLocation))) {
+                    if (!isAlreadyRegistered(serverInstanceDir, domainLocation)) {
+                        String host = "localhost"; // NOI18N
+                        String port = JBPluginUtils.getHTTPConnectorPort(domainLocation); // NOI18N
+                        register(serverInstanceDir, serverLocation, domainLocation, host, port);
+                    }
+                }
+            }
+        }
+        catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ioe.getMessage());
+        }
+    }
+    
+    private static String getDefaultInstallLocation() {
+        String installRoot = System.getProperty(INSTALL_ROOT_PROP_NAME);
+        if (installRoot != null && new File(installRoot).exists()) {
+            return installRoot;
+        }
+        
+        return "";
+    }
+    
+    private static boolean isAlreadyRegistered(FileObject serverInstanceDir, String domainLocation) throws IOException {
+        String domainLocationCan = new File(domainLocation).getCanonicalPath();
+        for (FileObject instanceFO : serverInstanceDir.getChildren()) {
+            String installedLocation = (String)instanceFO.getAttribute(JBPluginProperties.PROPERTY_SERVER_DIR);
+            if (installedLocation != null) {
+                String installedLocationCan = new File(installedLocation).getCanonicalPath();
+                if (domainLocationCan.equals(installedLocationCan)) {
+                    return true; // do not overwrite registered instance
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    private static void setRemovability(FileObject serverInstanceDir, String domainLocation) throws IOException {
+        String domainLocationCan = new File(domainLocation).getCanonicalPath();
+        for (FileObject instanceFO : serverInstanceDir.getChildren()) {
+            String url = (String)instanceFO.getAttribute(InstanceProperties.URL_ATTR);
+            if (url.startsWith(URI_PREFIX)) { // it's JBoss instance
+                String installedLocation = (String)instanceFO.getAttribute(JBPluginProperties.PROPERTY_SERVER_DIR);
+                String installedLocationCan = new File(installedLocation).getCanonicalPath();
+                if (domainLocationCan.equals(installedLocationCan)) {
+                    instanceFO.setAttribute(InstanceProperties.REMOVE_FORBIDDEN, Boolean.TRUE);
+                }
+                else {
+                    if (instanceFO.getAttribute(InstanceProperties.REMOVE_FORBIDDEN) != null) {
+                        instanceFO.setAttribute(InstanceProperties.REMOVE_FORBIDDEN, Boolean.FALSE);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void register(FileObject serverInstanceDir, String serverLocation, String domainLocation, String host, String port) throws IOException {
+        String displayName = generateDisplayName(serverInstanceDir);
+        
+        String url = URI_PREFIX + host + ":" + port + "#default&" + serverLocation;    // NOI18N
+      
+        String name = FileUtil.findFreeFileName(serverInstanceDir, "instance", null); // NOI18N
+        FileObject instanceFO = serverInstanceDir.createData(name);
+
+        instanceFO.setAttribute(InstanceProperties.URL_ATTR, url);
+        instanceFO.setAttribute(InstanceProperties.USERNAME_ATTR, "");
+        instanceFO.setAttribute(InstanceProperties.PASSWORD_ATTR, "");
+        instanceFO.setAttribute(InstanceProperties.DISPLAY_NAME_ATTR, displayName);
+        instanceFO.setAttribute(InstanceProperties.REMOVE_FORBIDDEN, "true");
+
+        instanceFO.setAttribute(JBPluginProperties.PROPERTY_SERVER, "default"); // NOI18N
+        String deployDir = JBPluginUtils.getDeployDir(domainLocation);
+        instanceFO.setAttribute(JBPluginProperties.PROPERTY_DEPLOY_DIR, deployDir);
+        instanceFO.setAttribute(JBPluginProperties.PROPERTY_SERVER_DIR, domainLocation);
+        instanceFO.setAttribute(JBPluginProperties.PROPERTY_ROOT_DIR, serverLocation);
+        instanceFO.setAttribute(JBPluginProperties.PROPERTY_HOST, host);
+        instanceFO.setAttribute(JBPluginProperties.PROPERTY_PORT, port);
+    }
+
+    private static FileObject getServerInstanceDir() {
+        Repository rep = (Repository)Lookup.getDefault().lookup(Repository.class);
+        FileObject dir = rep.getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
+        return dir;
+    }
+    
+    private static String generateDisplayName(FileObject serverInstanceDir) {
+        final String serverName = NbBundle.getMessage(JBDeploymentFactory.class, "SERVER_NAME"); // NOI18N
+        
+        String instanceName = serverName;
+        int counter = 1;
+        Set<String> registeredInstances = getServerInstancesNames(serverInstanceDir);
+        
+        while (registeredInstances.contains(instanceName.toUpperCase())) {
+            instanceName = serverName  + " (" + String.valueOf(counter++) + ")";
+        }
+        
+        return instanceName;
+    }
+
+    private static Set<String> getServerInstancesNames(FileObject serverInstanceDir) {
+        Set<String> names = new HashSet<String>();
+        for (FileObject instanceFO : serverInstanceDir.getChildren()) {
+            String instanceName = (String)instanceFO.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
+            names.add(instanceName.toUpperCase());
+        }
+        
+        return names;
+    }
+    
 }
+

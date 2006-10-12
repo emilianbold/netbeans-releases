@@ -29,6 +29,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * Reads/writes project.xml.
@@ -53,7 +54,6 @@ public class WebProjectGenerator {
      * @param soruces list of pairs[relative path, display name]
      */
     public static void putWebSourceFolder(AntProjectHelper helper, List/*<String>*/ sources) {
-        ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element foldersEl = Util.findElement(data, "folders", NS_GENERAL); // NOI18N
@@ -118,7 +118,12 @@ public class WebProjectGenerator {
             el = doc.createElementNS(NS_GENERAL, "location"); // NOI18N
             el.appendChild(doc.createTextNode(path)); // NOI18N
             sourceFolderEl.appendChild(el);
-            Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
+            Node firstNode = itemsEl.getFirstChild();
+            if (firstNode != null) {
+                itemsEl.insertBefore(sourceFolderEl, firstNode);
+            } else {
+                Util.appendChildElement(itemsEl, sourceFolderEl, viewItemElementsOrder);
+            }
         }
         helper.putPrimaryConfigurationData(data, true);
     }
@@ -174,7 +179,6 @@ public class WebProjectGenerator {
     public static void putWebModules(AntProjectHelper helper, 
             AuxiliaryConfiguration aux, List/*<WebModule>*/ webModules) {
         //assert ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
         Element data = aux.getConfigurationFragment("web-data", WebProjectNature.NS_WEB, true); // NOI18N
         if (data == null) {
             data = helper.getPrimaryConfigurationData(true).getOwnerDocument().

@@ -30,9 +30,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.AsContext;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.IorSecurityConfig;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SasContext;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.TransportConfig;
-import org.netbeans.modules.j2ee.sun.share.configbean.BaseEjb;
 
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BeanCustomizer;
+import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupport;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ErrorSupportClient;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
@@ -102,24 +101,11 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
 
 
     public java.awt.GridBagConstraints getErrorPanelConstraints(){
-        java.awt.GridBagConstraints gridBagConstraints = 
-            new java.awt.GridBagConstraints();
-        
-        gridBagConstraints.anchor = gridBagConstraints.CENTER;
-        gridBagConstraints.fill = gridBagConstraints.BOTH;
-        gridBagConstraints.gridheight = 1;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.insets.top = 0;
-        gridBagConstraints.insets.left = 4;
-        gridBagConstraints.insets.bottom = 5;
-        gridBagConstraints.insets.right = 5;
-        gridBagConstraints.ipadx = 0;
-        gridBagConstraints.ipady = 0;
-        gridBagConstraints.weightx = 0.0;
-        gridBagConstraints.weighty = 0.0;
-
+        java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(6,12,11,11);
         return gridBagConstraints;
     }
 
@@ -185,7 +171,7 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
     }
 	
 	public java.awt.Color getMessageForegroundColor() {
-		return BeanCustomizer.ErrorTextForegroundColor;
+		return BaseCustomizer.getErrorForegroundColor();
 	}
 
 
@@ -278,253 +264,59 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        transportConfigLabel = new javax.swing.JLabel();
+        transportConfigPanel = new javax.swing.JPanel();
+        transportConfigPanelPanel1 = new javax.swing.JPanel();
+        integrityLabel = new javax.swing.JLabel();
+        integrityComboBox = new javax.swing.JComboBox();
+        confidentialityLabel = new javax.swing.JLabel();
+        confidentialityComboBox = new javax.swing.JComboBox();
+        transportConfigPanel2 = new javax.swing.JPanel();
+        estbTrstInTrgtLabel = new javax.swing.JLabel();
+        estbTrstInTrgtComboBox = new javax.swing.JComboBox();
+        estbTrstInClntLabel = new javax.swing.JLabel();
+        estbTrstInClntComboBox = new javax.swing.JComboBox();
+        asContextLabel = new javax.swing.JLabel();
         asContextPanel = new javax.swing.JPanel();
+        requiredLabel = new javax.swing.JLabel();
         requiredComboBox = new javax.swing.JComboBox();
         authMethodLabel = new javax.swing.JLabel();
         authMethodComboBox = new javax.swing.JComboBox();
         realmLabel = new javax.swing.JLabel();
-        requiredLabel = new javax.swing.JLabel();
         realmTextField = new javax.swing.JTextField();
-        sasContextPanel = new javax.swing.JPanel();
-        callerPropagationComboBox = new javax.swing.JComboBox();
-        callerPropagationLabel = new javax.swing.JLabel();
-        transportConfigLabel = new javax.swing.JLabel();
-        asContextLabel = new javax.swing.JLabel();
         sasContextLabel = new javax.swing.JLabel();
-        transportConfigPanel = new javax.swing.JPanel();
-        confidentialityLabel1 = new javax.swing.JLabel();
-        transportConfigPanelPanel1 = new javax.swing.JPanel();
-        confidentialityLabel2 = new javax.swing.JLabel();
-        integrityLabel = new javax.swing.JLabel();
-        integrityComboBox = new javax.swing.JComboBox();
-        confidentialityComboBox = new javax.swing.JComboBox();
-        confidentialityLabel = new javax.swing.JLabel();
-        transportConfigPanel2 = new javax.swing.JPanel();
-        confidentialityLabel3 = new javax.swing.JLabel();
-        estbTrstInTrgtLabel = new javax.swing.JLabel();
-        estbTrstInClntLabel = new javax.swing.JLabel();
-        estbTrstInTrgtComboBox = new javax.swing.JComboBox();
-        estbTrstInClntComboBox = new javax.swing.JComboBox();
+        sasContextPanel = new javax.swing.JPanel();
+        callerPropagationLabel = new javax.swing.JLabel();
+        callerPropagationComboBox = new javax.swing.JComboBox();
         fillerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createTitledBorder(""));
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 formFocusGained(evt);
             }
         });
 
-        asContextPanel.setLayout(new java.awt.GridBagLayout());
-
-        asContextPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        requiredComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "true", "false" }));
-        requiredComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Tool_Tip"));
-        requiredComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                requiredStateChanged(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 15);
-        asContextPanel.add(requiredComboBox, gridBagConstraints);
-        requiredComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Acsbl_Name"));
-        requiredComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Acsbl_Desc"));
-
-        authMethodLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Auth_Method").charAt(0));
-        authMethodLabel.setLabelFor(authMethodComboBox);
-        authMethodLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Auth_Method_1"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
-        asContextPanel.add(authMethodLabel, gridBagConstraints);
-        authMethodLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Acsbl_Name"));
-        authMethodLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Acsbl_Desc"));
-
-        authMethodComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "USERNAME_PASSWORD" }));
-        authMethodComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Tool_Tip"));
-        authMethodComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                authMethodStateChanged(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
-        asContextPanel.add(authMethodComboBox, gridBagConstraints);
-        authMethodComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Acsbl_Name"));
-        authMethodComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Acsbl_Desc"));
-
-        realmLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Auth_Method").charAt(0));
-        realmLabel.setLabelFor(realmTextField);
-        realmLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Realm_1"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        asContextPanel.add(realmLabel, gridBagConstraints);
-        realmLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Acsbl_Name"));
-        realmLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Acsbl_Desc"));
-
-        requiredLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Required").charAt(0));
-        requiredLabel.setLabelFor(requiredComboBox);
-        requiredLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Required_1"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
-        asContextPanel.add(requiredLabel, gridBagConstraints);
-        requiredLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Acsbl_Name"));
-        requiredLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Acsbl_Desc"));
-
-        realmTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Tool_Tip"));
-        realmTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                realmActionPerformed(evt);
-            }
-        });
-        realmTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                realmTextFieldKeyReleased(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 56;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
-        asContextPanel.add(realmTextField, gridBagConstraints);
-        realmTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Acsbl_Name"));
-        realmTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Acsbl_Desc"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
-        add(asContextPanel, gridBagConstraints);
-
-        sasContextPanel.setLayout(new java.awt.GridBagLayout());
-
-        sasContextPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        callerPropagationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED" }));
-        callerPropagationComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Tool_Tip"));
-        callerPropagationComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                callerPropagationStateChanged(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
-        sasContextPanel.add(callerPropagationComboBox, gridBagConstraints);
-        callerPropagationComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Acsbl_Name"));
-        callerPropagationComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Acsbl_Desc"));
-
-        callerPropagationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Caller_Propagation").charAt(0));
-        callerPropagationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        callerPropagationLabel.setLabelFor(callerPropagationComboBox);
-        callerPropagationLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Caller_Propagation_1"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        sasContextPanel.add(callerPropagationLabel, gridBagConstraints);
-        callerPropagationLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Acsbl_Name"));
-        callerPropagationLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Acsbl_Desc"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
-        add(sasContextPanel, gridBagConstraints);
-
         transportConfigLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Transport_Config"));
         transportConfigLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(transportConfigLabel, gridBagConstraints);
-
-        asContextLabel.setLabelFor(asContextPanel);
-        asContextLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_As_Context"));
-        asContextLabel.setToolTipText("");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
-        add(asContextLabel, gridBagConstraints);
-
-        sasContextLabel.setLabelFor(sasContextPanel);
-        sasContextLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Sas_Context"));
-        sasContextLabel.setToolTipText("");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
-        add(sasContextLabel, gridBagConstraints);
 
         transportConfigPanel.setLayout(new java.awt.GridBagLayout());
 
         transportConfigPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        confidentialityLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Confidentiality").charAt(0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        transportConfigPanel.add(confidentialityLabel1, gridBagConstraints);
-
         transportConfigPanelPanel1.setLayout(new java.awt.GridBagLayout());
 
         transportConfigPanelPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        confidentialityLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Confidentiality").charAt(0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        transportConfigPanelPanel1.add(confidentialityLabel2, gridBagConstraints);
-
         integrityLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Integrity").charAt(0));
         integrityLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Integrity_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
         transportConfigPanelPanel1.add(integrityLabel, gridBagConstraints);
         integrityLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Integrity_Acsbl_Name"));
         integrityLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Integrity_Acsbl_Desc"));
@@ -543,14 +335,22 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 15);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         transportConfigPanelPanel1.add(integrityComboBox, gridBagConstraints);
         integrityComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Integrity_Acsbl_Name"));
         integrityComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Integrity_Acsbl_Desc"));
+
+        confidentialityLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Confidentiality").charAt(0));
+        confidentialityLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Confidentiality_1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        transportConfigPanelPanel1.add(confidentialityLabel, gridBagConstraints);
+        confidentialityLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Confidentiality_Acsbl_Name"));
+        confidentialityLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Confidentiality_Acsbl_Desc"));
 
         confidentialityComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED", "REQUIRED" }));
         confidentialityComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Confidentiality_Tool_Tip"));
@@ -561,65 +361,31 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 15);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         transportConfigPanelPanel1.add(confidentialityComboBox, gridBagConstraints);
         confidentialityComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Confidentiality_Acsbl_Name"));
         confidentialityComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Confidentiality_Acsbl_Desc"));
 
-        confidentialityLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Confidentiality").charAt(0));
-        confidentialityLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Confidentiality_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
-        transportConfigPanelPanel1.add(confidentialityLabel, gridBagConstraints);
-        confidentialityLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Confidentiality_Acsbl_Name"));
-        confidentialityLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Confidentiality_Acsbl_Desc"));
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         transportConfigPanel.add(transportConfigPanelPanel1, gridBagConstraints);
 
         transportConfigPanel2.setLayout(new java.awt.GridBagLayout());
 
         transportConfigPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        confidentialityLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Confidentiality").charAt(0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        transportConfigPanel2.add(confidentialityLabel3, gridBagConstraints);
-
         estbTrstInTrgtLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Establish_Trust_In_Target").charAt(0));
         estbTrstInTrgtLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Establish_Trust_In_Target_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
         transportConfigPanel2.add(estbTrstInTrgtLabel, gridBagConstraints);
         estbTrstInTrgtLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Target_Acsbl_Name"));
         estbTrstInTrgtLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Target_Acsbl_Desc"));
-
-        estbTrstInClntLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Establish_Trust_In_Client").charAt(0));
-        estbTrstInClntLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Establish_Trust_In_Client_1"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
-        transportConfigPanel2.add(estbTrstInClntLabel, gridBagConstraints);
-        estbTrstInClntLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Client_Acsbl_Name"));
-        estbTrstInClntLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Client_Acsbl_Desc"));
 
         estbTrstInTrgtComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED" }));
         estbTrstInTrgtComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Target_Tool_Tip"));
@@ -630,14 +396,22 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         transportConfigPanel2.add(estbTrstInTrgtComboBox, gridBagConstraints);
         estbTrstInTrgtComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Target_Acsbl_Name"));
         estbTrstInTrgtComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Target_Acsbl_Desc"));
+
+        estbTrstInClntLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Establish_Trust_In_Client").charAt(0));
+        estbTrstInClntLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Establish_Trust_In_Client_1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        transportConfigPanel2.add(estbTrstInClntLabel, gridBagConstraints);
+        estbTrstInClntLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Client_Acsbl_Name"));
+        estbTrstInClntLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Client_Acsbl_Desc"));
 
         estbTrstInClntComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED", "REQUIRED" }));
         estbTrstInClntComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Client_Tool_Tip"));
@@ -648,40 +422,186 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         transportConfigPanel2.add(estbTrstInClntComboBox, gridBagConstraints);
         estbTrstInClntComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Client_Acsbl_Name"));
         estbTrstInClntComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Establish_Trust_In_Client_Acsbl_Desc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         transportConfigPanel.add(transportConfigPanel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
         add(transportConfigPanel, gridBagConstraints);
 
+        asContextLabel.setLabelFor(asContextPanel);
+        asContextLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_As_Context"));
+        asContextLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
+        add(asContextLabel, gridBagConstraints);
+
+        asContextPanel.setLayout(new java.awt.GridBagLayout());
+
+        asContextPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        requiredLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Required").charAt(0));
+        requiredLabel.setLabelFor(requiredComboBox);
+        requiredLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Required_1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        asContextPanel.add(requiredLabel, gridBagConstraints);
+        requiredLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Acsbl_Name"));
+        requiredLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Acsbl_Desc"));
+
+        requiredComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "true", "false" }));
+        requiredComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Tool_Tip"));
+        requiredComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                requiredStateChanged(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        asContextPanel.add(requiredComboBox, gridBagConstraints);
+        requiredComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Acsbl_Name"));
+        requiredComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Required_Acsbl_Desc"));
+
+        authMethodLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Auth_Method").charAt(0));
+        authMethodLabel.setLabelFor(authMethodComboBox);
+        authMethodLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Auth_Method_1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        asContextPanel.add(authMethodLabel, gridBagConstraints);
+        authMethodLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Acsbl_Name"));
+        authMethodLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Acsbl_Desc"));
+
+        authMethodComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "USERNAME_PASSWORD" }));
+        authMethodComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Tool_Tip"));
+        authMethodComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                authMethodStateChanged(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
+        asContextPanel.add(authMethodComboBox, gridBagConstraints);
+        authMethodComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Acsbl_Name"));
+        authMethodComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Auth_Method_Acsbl_Desc"));
+
+        realmLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Auth_Method").charAt(0));
+        realmLabel.setLabelFor(realmTextField);
+        realmLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Realm_1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
+        asContextPanel.add(realmLabel, gridBagConstraints);
+        realmLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Acsbl_Name"));
+        realmLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Acsbl_Desc"));
+
+        realmTextField.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Tool_Tip"));
+        realmTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                realmActionPerformed(evt);
+            }
+        });
+        realmTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                realmTextFieldKeyReleased(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 56;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
+        asContextPanel.add(realmTextField, gridBagConstraints);
+        realmTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Acsbl_Name"));
+        realmTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Realm_Acsbl_Desc"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
+        add(asContextPanel, gridBagConstraints);
+
+        sasContextLabel.setLabelFor(sasContextPanel);
+        sasContextLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Sas_Context"));
+        sasContextLabel.setToolTipText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
+        add(sasContextLabel, gridBagConstraints);
+
+        sasContextPanel.setLayout(new java.awt.GridBagLayout());
+
+        sasContextPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        callerPropagationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("MNC_Caller_Propagation").charAt(0));
+        callerPropagationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        callerPropagationLabel.setLabelFor(callerPropagationComboBox);
+        callerPropagationLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Caller_Propagation_1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
+        sasContextPanel.add(callerPropagationLabel, gridBagConstraints);
+        callerPropagationLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Acsbl_Name"));
+        callerPropagationLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Acsbl_Desc"));
+
+        callerPropagationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "NONE", "SUPPORTED" }));
+        callerPropagationComboBox.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Tool_Tip"));
+        callerPropagationComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                callerPropagationStateChanged(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
+        sasContextPanel.add(callerPropagationComboBox, gridBagConstraints);
+        callerPropagationComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Acsbl_Name"));
+        callerPropagationComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Caller_Propagation_Acsbl_Desc"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 5);
+        add(sasContextPanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(fillerPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
 // TODO add your handling code here:
@@ -763,9 +683,6 @@ public class IorSecurityConfigPanel extends javax.swing.JPanel
     private javax.swing.JLabel callerPropagationLabel;
     private javax.swing.JComboBox confidentialityComboBox;
     private javax.swing.JLabel confidentialityLabel;
-    private javax.swing.JLabel confidentialityLabel1;
-    private javax.swing.JLabel confidentialityLabel2;
-    private javax.swing.JLabel confidentialityLabel3;
     private javax.swing.JComboBox estbTrstInClntComboBox;
     private javax.swing.JLabel estbTrstInClntLabel;
     private javax.swing.JComboBox estbTrstInTrgtComboBox;

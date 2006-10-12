@@ -202,8 +202,8 @@ public abstract class AttributeValueSupport extends Object {
             List items = createCompletionItems (offset, sup, item, valuePart);
             int valuePartLength = valuePart.length ();
             
-            return new CompletionQuery.DefaultResult(component, completionTitle(), 
-                items, offset - valuePartLength, valuePartLength);
+            return new JspCompletionQuery.JspCompletionResult(component, completionTitle(), 
+                items, offset - valuePartLength, valuePartLength, -1);
         }
         
     }

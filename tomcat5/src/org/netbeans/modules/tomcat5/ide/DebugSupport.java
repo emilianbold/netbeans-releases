@@ -101,7 +101,9 @@ public class DebugSupport {
                 servlet.addInitParam(initParam);
                 webApp.addServlet(servlet);
                 changed=true;
-            } catch (ClassNotFoundException ex) {}
+            } catch (ClassNotFoundException ex) {
+                TomcatManager.ERR.notify(ex);
+            }
         } else {
             try {
                 boolean isInitparam = false;
@@ -125,7 +127,9 @@ public class DebugSupport {
                     servlets[i].addInitParam(initParam);
                     changed=true;
                 }
-            } catch (ClassNotFoundException ex) {}
+            } catch (ClassNotFoundException ex) {
+                TomcatManager.ERR.notify(ex);
+            }
         }
 
         return changed;

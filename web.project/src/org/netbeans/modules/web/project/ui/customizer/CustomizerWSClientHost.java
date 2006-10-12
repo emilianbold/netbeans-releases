@@ -98,6 +98,8 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
         add(component);
         
         component.addPropertyChangeListener(WsCompileClientEditorSupport.PROP_FEATURES_CHANGED, this);
+        component.addPropertyChangeListener(WsCompileClientEditorSupport.PROP_OPTIONS_CHANGED, this);
+        
     }
     
     public void removeNotify() {
@@ -106,6 +108,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
 //        System.out.println("WSClientCustomizer: removeNotify");
         JPanel component = wsCompileEditor.getComponent();
         component.removePropertyChangeListener(WsCompileClientEditorSupport.PROP_FEATURES_CHANGED, this);
+        component.removePropertyChangeListener(WsCompileClientEditorSupport.PROP_OPTIONS_CHANGED, this);
     }
    
     public void initValues() {
@@ -127,10 +130,24 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
     
     public void propertyChange(PropertyChangeEvent evt) {
 //        System.out.println("WSClientCustomizer: propertyChange - " + evt.getPropertyName());
-        
-        WsCompileClientEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileClientEditorSupport.FeatureDescriptor) evt.getNewValue();
-        String propertyName = "wscompile.client." + newFeatureDesc.getServiceName() + ".features";
-        webProperties.putAdditionalProperty(propertyName, newFeatureDesc.getFeatures());
+        String prop = evt.getPropertyName();
+        if (WsCompileClientEditorSupport.PROP_FEATURES_CHANGED.equals(prop)) {
+            WsCompileClientEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileClientEditorSupport.FeatureDescriptor) evt.getNewValue();
+            String propertyName = "wscompile.client." + newFeatureDesc.getServiceName() + ".features";
+            webProperties.putAdditionalProperty(propertyName, newFeatureDesc.getFeatures());
+        } else if (WsCompileClientEditorSupport.PROP_OPTIONS_CHANGED.equals(prop)) {
+            WsCompileClientEditorSupport.OptionDescriptor oldOptionDesc = (WsCompileClientEditorSupport.OptionDescriptor) evt.getOldValue();
+            WsCompileClientEditorSupport.OptionDescriptor newOptionDesc = (WsCompileClientEditorSupport.OptionDescriptor) evt.getNewValue();
+            boolean[] oldOptions = oldOptionDesc.getOptions();
+            boolean[] newOptions = newOptionDesc.getOptions();
+            String serviceName = newOptionDesc.getServiceName();
+            String[] propertyNames=new String[]{"verbose","debug","xPrintStackTrace","xSerializable","optimize"}; //NOI18N
+            for (int i=0;i<newOptions.length;i++) {   
+                if (oldOptions[i]!=newOptions[i])
+                    webProperties.putAdditionalProperty("wscompile.client."+serviceName+"."+propertyNames[i], //NOI18N
+                                                         newOptions[i]?"true":"false"); //NOI18N
+            }
+        }
     }
     
     public HelpCtx getHelpCtx() {

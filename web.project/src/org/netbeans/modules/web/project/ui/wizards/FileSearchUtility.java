@@ -34,7 +34,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
 
-final class FileSearchUtility {
+public final class FileSearchUtility {
     
     /** Creates a new instance of FileSearchUtility. */
     private FileSearchUtility() {
@@ -48,7 +48,7 @@ final class FileSearchUtility {
     * @param onlyWritables only recurse into wriable directories
     * @return enumeration of type <code>FileObject</code>
     */
-    static Enumeration getChildrenToDepth(final FileObject root, final int depth, final boolean onlyWritables) {
+    public static Enumeration getChildrenToDepth(final FileObject root, final int depth, final boolean onlyWritables) {
         class WithChildren implements Enumerations.Processor {
             private int rootDepth;
             public WithChildren(final int rootDepth) {

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:AddNumbers/wsdl" xmlns:ns2="urn:AddNumbers/types" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" name="AddNumbers" targetNamespace="urn:AddNumbers/wsdl">
+  <types>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:AddNumbers/types" xmlns:soap11-enc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" targetNamespace="urn:AddNumbers/types">
+      <complexType name="add">
+        <sequence>
+          <element name="x" type="int"/>
+          <element name="y" type="int"/></sequence></complexType>
+      <complexType name="addResponse">
+        <sequence>
+          <element name="result" type="int"/></sequence></complexType>
+      <complexType name="NegativeNumberException">
+        <sequence/></complexType>
+      <element name="add" type="tns:add"/>
+      <element name="addResponse" type="tns:addResponse"/>
+      <element name="NegativeNumberException" type="tns:NegativeNumberException"/></schema></types>
+  <message name="AddNumbersSEI_add">
+    <part name="parameters" element="ns2:add"/></message>
+  <message name="AddNumbersSEI_addResponse">
+    <part name="result" element="ns2:addResponse"/></message>
+  <message name="NegativeNumberException">
+    <part name="NegativeNumberException" element="ns2:NegativeNumberException"/></message>
+  <portType name="AddNumbersSEI">
+    <operation name="add">
+      <input message="tns:AddNumbersSEI_add"/>
+      <output message="tns:AddNumbersSEI_addResponse"/>
+      <fault name="NegativeNumberException" message="tns:NegativeNumberException"/></operation></portType>
+  <binding name="AddNumbersSEIBinding" type="tns:AddNumbersSEI">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="add">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/></input>
+      <output>
+        <soap:body use="literal"/></output>
+      <fault name="NegativeNumberException">
+        <soap:fault name="NegativeNumberException" use="literal"/></fault></operation></binding>
+  <service name="AddNumbers">
+    <port name="AddNumbersSEIPort" binding="tns:AddNumbersSEIBinding">
+      <soap:address location="http://localhost:8080/WebApplication1/AddNumbers" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"/></port></service></definitions>

@@ -63,6 +63,7 @@ import org.openide.util.Utilities;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
@@ -302,7 +303,6 @@ public class WebClassPathUi {
         private final ButtonModel remove;
         private final ButtonModel moveUp;
         private final ButtonModel moveDown;
-        private final boolean includeNewFilesInDeployment;
                     
         public EditMediator( Project project,
                              ListComponent list,
@@ -333,7 +333,6 @@ public class WebClassPathUi {
             this.moveDown = moveDown;
 
             this.project = project;
-            this.includeNewFilesInDeployment = includeNewFilesInDeployment;
         }
 
         public static void register(Project project,
@@ -416,7 +415,10 @@ public class WebClassPathUi {
                 };
                 ((JButton)options[0]).setEnabled(false);
                 ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WebClassPathUi.class,"AD_AddLibrary"));
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], includedLibraries);
+                
+                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+                String j2eeVersion = wm.getJ2eePlatformVersion();
+                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
                 DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( WebClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
                 Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
@@ -492,11 +494,9 @@ public class WebClassPathUi {
         
         private static final class JListListComponent implements ListComponent {
             private JList list;
-            private DefaultListModel model;
             
             public JListListComponent(JList list) {
                 this.list = list;
-                this.model = model;
             }
             
             public Component getComponent() {

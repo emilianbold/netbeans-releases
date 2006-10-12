@@ -32,6 +32,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.web.project.test.TestBase;
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -55,7 +56,7 @@ public class WebSharabilityQueryTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        TestUtil.setLookup(new Object[] {
+        TestBase.setLookup(new Object[] {
             new WebProjectType(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation()
         });

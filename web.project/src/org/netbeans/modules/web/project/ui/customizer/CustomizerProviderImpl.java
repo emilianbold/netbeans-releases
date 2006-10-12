@@ -37,6 +37,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.ProjectWebModuleProvider;
@@ -186,38 +187,20 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString( "LBL_Config_Run" ), // NOI18N
                 null,
                 null );    
-        ProjectCustomizer.Category runTests = ProjectCustomizer.Category.create(
-                RUN_TESTS,
-                bundle.getString( "LBL_Config_Test" ), // NOI18N
-                null,
-                null);
 
         ProjectCustomizer.Category buildCategory = ProjectCustomizer.Category.create(
                 BUILD_CATEGORY,
                 bundle.getString( "LBL_Config_BuildCategory" ), // NOI18N
                 null,
                 new ProjectCustomizer.Category[] { build, war, javadoc }  );
-                
-        ProjectCustomizer.Category services = ProjectCustomizer.Category.create(
-                WEBSERVICES,
-                bundle.getString( "LBL_Config_WebServices" ), // NOI18N
-                null,
-                null);
-                
-        ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(
-                WEBSERVICECLIENTS,
-                bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
-                null,
-                null);
-                
-        ProjectCustomizer.Category webServices = ProjectCustomizer.Category.create(
-                WEBSERVICE_CATEGORY,
-                bundle.getString( "LBL_Config_WebServices" ), // NOI18N
-                null,
-                new ProjectCustomizer.Category[] { services, clients } );
-
+        
+        ProjectCustomizer.Category webServices=null;
+        ProjectCustomizer.Category services=null;
+        ProjectCustomizer.Category clients=null;
+        
         List servicesSettings = null;
         List serviceClientsSettings = null;
+        
         ProjectWebModule wm = (ProjectWebModule) uiProperties.getProject().getLookup().lookup(ProjectWebModule.class);
         FileObject docBase = wm.getDocumentBase();
         if (docBase != null) {
@@ -230,15 +213,41 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 serviceClientsSettings = clientSupport.getServiceClients();
             }
         }
-                
-        categories = new ProjectCustomizer.Category[] { 
-                sources,
-                frameworks,
-                libraries,
-                buildCategory,
-                run,  
-                webServices
-        };
+
+        if ((servicesSettings!=null && servicesSettings.size()>0) || (serviceClientsSettings!=null && serviceClientsSettings.size()>0)) {
+            services = ProjectCustomizer.Category.create(
+                    WEBSERVICES,
+                    bundle.getString( "LBL_Config_WebServices" ), // NOI18N
+                    null,
+                    null);
+            clients = ProjectCustomizer.Category.create(
+                    WEBSERVICECLIENTS,
+                    bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
+                    null,
+                    null);
+            webServices = ProjectCustomizer.Category.create(
+                    WEBSERVICE_CATEGORY,
+                    bundle.getString( "LBL_Config_WebServicesRoot" ), // NOI18N
+                    null,
+                    new ProjectCustomizer.Category[] { services, clients } );
+            
+            categories = new ProjectCustomizer.Category[] { 
+                    sources,
+                    frameworks,
+                    libraries,
+                    buildCategory,
+                    run,  
+                    webServices
+            };
+        } else {
+            categories = new ProjectCustomizer.Category[] { 
+                    sources,
+                    frameworks,
+                    libraries,
+                    buildCategory,
+                    run
+            };
+        }
         
         Map panels = new HashMap();
         panels.put( sources, new CustomizerSources( uiProperties ) );

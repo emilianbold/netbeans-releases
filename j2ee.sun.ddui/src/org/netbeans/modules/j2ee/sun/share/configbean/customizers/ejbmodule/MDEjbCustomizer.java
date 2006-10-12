@@ -61,13 +61,6 @@ public class MDEjbCustomizer extends EjbCustomizer
 	public MDEjbCustomizer() {
 	}
 	
-    public MDEjbCustomizer(DConfigBean bean) {
-        if(!(theBean instanceof MDEjb)){
-            assert(false);
-        }
-	setObject(bean);
-    }
-
 
     public void setObject(Object bean) {
         super.setObject(bean);
@@ -318,7 +311,7 @@ public class MDEjbCustomizer extends EjbCustomizer
         MdbConnectionFactory mdbConnectionFactory = 
             theBean.getMdbConnectionFactory();
         if(mdbConnectionFactory == null){
-            mdbConnectionFactory = StorageBeanFactory.getDefault().createMdbConnectionFactory();
+            mdbConnectionFactory = theBean.getConfig().getStorageFactory().createMdbConnectionFactory();
             try{
                 theBean.setMdbConnectionFactory(mdbConnectionFactory);
             }catch(java.beans.PropertyVetoException exception){
@@ -334,7 +327,7 @@ public class MDEjbCustomizer extends EjbCustomizer
         DefaultResourcePrincipal defaultResourcePrincipal =
             mdbConnectionFactory.getDefaultResourcePrincipal();
         if(defaultResourcePrincipal == null){
-            defaultResourcePrincipal = StorageBeanFactory.getDefault().createDefaultResourcePrincipal();
+            defaultResourcePrincipal = theBean.getConfig().getStorageFactory().createDefaultResourcePrincipal();
             mdbConnectionFactory.setDefaultResourcePrincipal(
                defaultResourcePrincipal);
         }
@@ -346,7 +339,7 @@ public class MDEjbCustomizer extends EjbCustomizer
         MdbResourceAdapter mdbResourceAdapter = 
             theBean.getMdbResourceAdapter();
         if(mdbResourceAdapter == null){
-            mdbResourceAdapter = StorageBeanFactory.getDefault().createMdbResourceAdapter();
+            mdbResourceAdapter = theBean.getConfig().getStorageFactory().createMdbResourceAdapter();
             try{
                 theBean.setMdbResourceAdapter(mdbResourceAdapter);
             }catch(java.beans.PropertyVetoException exception){
@@ -362,7 +355,7 @@ public class MDEjbCustomizer extends EjbCustomizer
         ActivationConfig activationConfig =
             mdbResourceAdapter.getActivationConfig();
         if(activationConfig == null){
-            activationConfig = StorageBeanFactory.getDefault().createActivationConfig();
+            activationConfig = theBean.getConfig().getStorageFactory().createActivationConfig();
             mdbResourceAdapter.setActivationConfig(
                activationConfig);
         }

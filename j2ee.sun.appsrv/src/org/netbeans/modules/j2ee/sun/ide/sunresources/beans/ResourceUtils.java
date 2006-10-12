@@ -23,10 +23,12 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
  * Created on September 17, 2003, 11:54 AM
  */
 
-import java.io.PrintWriter;
-import java.io.OutputStreamWriter;
 import java.io.File;
+import java.io.Writer;
 import java.io.FileInputStream;
+import java.io.OutputStreamWriter;
+import java.util.Arrays;
+import java.util.Collections;
 
 import java.util.Map;
 import java.util.List;
@@ -34,6 +36,8 @@ import java.util.Vector;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.ResourceBundle;
 
 import javax.management.Attribute;
@@ -47,22 +51,16 @@ import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
-import org.openide.nodes.Node;
-import org.openide.nodes.Node.Cookie;
-import org.openide.nodes.Node.Property;
-import org.openide.cookies.SaveCookie;
-
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileAlreadyLockedException;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
-
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.*;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.ide.editors.IsolationLevelEditor;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
@@ -71,9 +69,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
+import org.netbeans.modules.j2ee.sun.share.serverresources.SunDatasource;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
 
 /*
  *
@@ -82,6 +83,10 @@ import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 public class ResourceUtils implements WizardConstants{
     
     static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
+    static final String[] sysDatasources = {"jdbc/__TimerPool", "jdbc/__CallFlowPool", "jdbc/__default"}; //NOI18N
+    static final String[] sysConnpools = {"__CallFlowPool", "__TimerPool", "DerbyPool"}; //NOI18N
+    static final String SAMPLE_DATASOURCE = "jdbc/sample";
+    static final String SAMPLE_CONNPOOL = "SamplePool";
     
     /** Creates a new instance of ResourceUtils */
     public ResourceUtils() {
@@ -95,15 +100,40 @@ public class ResourceUtils implements WizardConstants{
         }
     } 
     
+    public static void register(Resources resource, SunDeploymentManagerInterface sunDm, boolean update, String resType) throws Exception {
+        if(sunDm.isRunning()){
+            ServerInterface mejb = sunDm.getManagement();
+            if(resType.equals(__JdbcConnectionPool)){
+                register(resource.getJdbcConnectionPool(0), mejb, update);
+            }else if(resType.equals(__JdbcResource)){
+                register(resource.getJdbcResource(0), mejb, update);
+            }else if(resType.equals(__PersistenceManagerFactoryResource)){
+                register(resource.getPersistenceManagerFactoryResource(0), mejb, update);
+            }else if(resType.equals(__MailResource)){
+                register(resource.getMailResource(0), mejb, update);
+            }else if(resType.equals(__JmsResource)){
+                if(resource.getAdminObjectResource().length != 0){
+                    register(resource.getAdminObjectResource(0), mejb, update);
+                }else{
+                    if(resource.getConnectorResource().length != 0 && resource.getConnectorConnectionPool().length != 0) {
+                        register(resource.getConnectorConnectionPool(0), mejb, update);
+                        register(resource.getConnectorResource(0), mejb, update);
+                    }
+                }
+            }
+        }else{
+            throw new Exception(bundle.getString("Err_RegResServerStopped")); //NOI18N
+        }
+    }
+    
     public static void register(JdbcConnectionPool resource, ServerInterface mejb, boolean update) throws Exception{
-        AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
+        AttributeList attrList = ResourceUtils.getResourceAttributes(resource, mejb);
         PropertyElement[] props = resource.getPropertyElement();
         Properties propsList = getProperties(props);
         Object[] params = new Object[]{attrList, propsList, null};
-        String operName = NbBundle.getMessage(ListServerInstances.class, "CreateCP"); //NOI18N
         String resourceName = resource.getName();
-        if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJdbcConnectionPool)){
-            createResource(operName, params, mejb);
+        if(!isResourceUpdated(resourceName, mejb, attrList, propsList, __GetJdbcConnectionPool)){
+            createResource(__CreateCP, params, mejb);
         }
     }
     
@@ -112,10 +142,9 @@ public class ResourceUtils implements WizardConstants{
         PropertyElement[] props = resource.getPropertyElement();
         Properties propsList = getProperties(props);
         Object[] params = new Object[]{attrList, propsList, null};
-        String operName = NbBundle.getMessage(ListServerInstances.class, "CreateDS"); //NOI18N
         String resourceName = resource.getJndiName();
-        if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJdbcResource)){
-            createResource(operName, params, mejb);
+        if(!isResourceUpdated(resourceName, mejb, attrList, propsList, __GetJdbcResource)){
+            createResource(__CreateDS, params, mejb);
         }
     }
        
@@ -124,10 +153,41 @@ public class ResourceUtils implements WizardConstants{
          PropertyElement[] props = resource.getPropertyElement();
          Properties propsList = getProperties(props);
          Object[] params = new Object[]{attrList, propsList, null};
-         String operName = NbBundle.getMessage(ListServerInstances.class, "CreatePMF"); //NOI18N
          String resourceName = resource.getJndiName();
-         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetPMFResource)){
-             createResource(operName, params, mejb);
+         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, __GetPMFResource)){
+             createResource(__CreatePMF, params, mejb);
+         }
+     }
+     
+     public static void register(AdminObjectResource resource, ServerInterface mejb, boolean update) throws Exception{
+         AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
+         PropertyElement[] props = resource.getPropertyElement();
+         Properties propsList = getProperties(props);
+         Object[] params = new Object[]{attrList, propsList, null};
+         String resourceName = resource.getJndiName();
+         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, __GetAdmObjResource)){
+             createResource(__CreateAdmObj, params, mejb);
+         }
+     }
+    
+     public static void register(ConnectorResource resource, ServerInterface mejb, boolean update) throws Exception{
+         AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
+         Properties propsList = new Properties();
+         Object[] params = new Object[]{attrList, propsList, null};
+         String resourceName = resource.getJndiName();
+         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, __GetConnectorResource)){
+             createResource(__CreateConnector, params, mejb);
+         }
+     }
+     
+     public static void register(ConnectorConnectionPool resource, ServerInterface mejb, boolean update) throws Exception{
+         AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
+         PropertyElement[] props = resource.getPropertyElement();
+         Properties propsList = getProperties(props);
+         Object[] params = new Object[]{attrList, propsList, null};
+         String resourceName = resource.getName();
+         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, __GetConnPoolResource)){
+             createResource(__CreateConnPool, params, mejb);
          }
      }
      
@@ -136,10 +196,9 @@ public class ResourceUtils implements WizardConstants{
          PropertyElement[] props = resource.getPropertyElement();
          Properties propsList = getProperties(props);
          Object[] params = new Object[]{attrList, propsList, null};
-         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateMail"); //NOI18N
          String resourceName = resource.getJndiName();
-         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetMailResource)){
-             createResource(operName, params, mejb);
+         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, __GetMailResource)){
+             createResource(__CreateMail, params, mejb);
          }
      }
      
@@ -158,9 +217,9 @@ public class ResourceUtils implements WizardConstants{
      private static boolean isResourceUpdated(String resourceName, ServerInterface mejb, AttributeList attrList, Properties props, String operName ){  
         boolean isResUpdated = false;
         try{
-            ObjectName objName = new ObjectName(WizardConstants.MAP_RESOURCES);
+            ObjectName objName = new ObjectName(MAP_RESOURCES);
             ObjectName[] resourceObjects = null;
-            if(operName.equals(WizardConstants.__GetPMFResource) || operName.equals(WizardConstants.__GetJmsResource)){
+            if(operName.equals(__GetPMFResource) || operName.equals(__GetJmsResource)){
                 String[] signature = new String[]{"java.lang.String"};  //NOI18N
                 Object[] params = new Object[]{null};
                 resourceObjects = (ObjectName[])  mejb.invoke(objName, operName, params, signature);
@@ -169,7 +228,7 @@ public class ResourceUtils implements WizardConstants{
             }
             if(resourceObjects != null){
                 ObjectName resOnServer = null;
-                if(operName.equals(WizardConstants.__GetJdbcConnectionPool))
+                if(operName.equals(__GetJdbcConnectionPool) || operName.equals(__GetConnPoolResource))
                     resOnServer = getResourceDeployed(resourceObjects, resourceName, false);
                 else
                     resOnServer = getResourceDeployed(resourceObjects, resourceName, true);
@@ -191,9 +250,9 @@ public class ResourceUtils implements WizardConstants{
             ObjectName resObj = resourceObjects[i];
             String jndiName = null;
             if(useJndi)
-                jndiName = resObj.getKeyProperty(WizardConstants.__JndiName);
+                jndiName = resObj.getKeyProperty(__JndiName);
             else
-                jndiName = resObj.getKeyProperty(WizardConstants.__Name);
+                jndiName = resObj.getKeyProperty(__Name);
             
             if(jndiName.equals(resourceName)){
                 return resObj;
@@ -320,7 +379,7 @@ public class ResourceUtils implements WizardConstants{
         }
     }
     
-    public static AttributeList getResourceAttributes(JdbcConnectionPool connPool){
+    public static AttributeList getResourceAttributes(JdbcConnectionPool connPool, ServerInterface mejb){
         AttributeList attrs = new AttributeList();
         attrs.add(new Attribute(__Name, connPool.getName()));
         attrs.add(new Attribute(__DatasourceClassname, connPool.getDatasourceClassname()));
@@ -341,6 +400,11 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__ValidationTableName, connPool.getValidationTableName()));
         attrs.add(new Attribute(__FailAllConnections, connPool.getFailAllConnections()));
         attrs.add(new Attribute(__Description, connPool.getDescription()));
+        
+        if(is90Server(mejb)){
+            attrs.add(new Attribute(__NonTransactionalConnections, connPool.getNonTransactionalConnections()));
+            attrs.add(new Attribute(__AllowNonComponentCallers, connPool.getAllowNonComponentCallers()));
+        }
         return attrs;
     }
     
@@ -361,6 +425,33 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__JdbcResourceJndiName, pmResource.getJdbcResourceJndiName()));
         attrs.add(new Attribute(__Enabled, pmResource.getEnabled()));
         attrs.add(new Attribute(__Description, pmResource.getDescription()));
+        return attrs;
+    }
+    
+    public static AttributeList getResourceAttributes(AdminObjectResource aoResource){
+        AttributeList attrs = new AttributeList();
+        attrs.add(new Attribute(__JndiName, aoResource.getJndiName()));
+        attrs.add(new Attribute(__Description, aoResource.getDescription()));
+        attrs.add(new Attribute(__Enabled, aoResource.getEnabled()));
+        attrs.add(new Attribute(__JavaMessageResType, aoResource.getResType()));
+        attrs.add(new Attribute(__AdminObjResAdapterName, aoResource.getResAdapter()));
+        return attrs;
+    }
+    
+    public static AttributeList getResourceAttributes(ConnectorResource connResource){
+        AttributeList attrs = new AttributeList();
+        attrs.add(new Attribute(__JndiName, connResource.getJndiName()));
+        attrs.add(new Attribute(__PoolName, connResource.getPoolName()));
+        attrs.add(new Attribute(__Description, connResource.getDescription()));
+        attrs.add(new Attribute(__Enabled, connResource.getEnabled()));
+        return attrs;
+    }
+    
+    public static AttributeList getResourceAttributes(ConnectorConnectionPool connPoolResource){
+        AttributeList attrs = new AttributeList();
+        attrs.add(new Attribute(__Name, connPoolResource.getName()));
+        attrs.add(new Attribute(__ConnectorPoolResAdName, connPoolResource.getResourceAdapterName()));
+        attrs.add(new Attribute(__ConnectorPoolConnDefName, connPoolResource.getConnectionDefinitionName()));
         return attrs;
     }
     
@@ -438,9 +529,10 @@ public class ResourceUtils implements WizardConstants{
                     }
                 }else{
                     String value = data.getString(key);
-                    if (key.equals(__Name))
+                    if (key.equals(__Name)){
                         connPool.setName(value);
-                    else if (key.equals(__DatasourceClassname))
+                        data.setTargetFile(value);
+                    }else if (key.equals(__DatasourceClassname))
                         connPool.setDatasourceClassname(value);
                     else if (key.equals(__ResType))
                         connPool.setResType(value);
@@ -454,9 +546,12 @@ public class ResourceUtils implements WizardConstants{
                         connPool.setPoolResizeQuantity(value);
                     else if (key.equals(__IdleTimeoutInSeconds))
                         connPool.setIdleTimeoutInSeconds(value);
-                    else if (key.equals(__TransactionIsolationLevel))
+                    else if (key.equals(__TransactionIsolationLevel)){
+                        if (value.equals(NbBundle.getMessage(IsolationLevelEditor.class, "LBL_driver_default"))){  //NOI18N
+                            value = null;
+                        }
                         connPool.setTransactionIsolationLevel(value);
-                    else if (key.equals(__IsIsolationLevelGuaranteed))
+                    }else if (key.equals(__IsIsolationLevelGuaranteed))
                         connPool.setIsIsolationLevelGuaranteed(value);
                     else if (key.equals(__IsConnectionValidationRequired))
                         connPool.setIsConnectionValidationRequired(value);
@@ -466,9 +561,12 @@ public class ResourceUtils implements WizardConstants{
                         connPool.setValidationTableName(value);
                     else if (key.equals(__FailAllConnections))
                         connPool.setFailAllConnections(value);
-                    else if (key.equals(__Description)){
+                    else if (key.equals(__Description))
                         connPool.setDescription(value); 
-                    }    
+                    else if (key.equals(__NonTransactionalConnections))
+                        connPool.setNonTransactionalConnections(value);
+                    else if (key.equals(__AllowNonComponentCallers))
+                        connPool.setAllowNonComponentCallers(value);    
                 }
                 
             } //for
@@ -497,9 +595,10 @@ public class ResourceUtils implements WizardConstants{
                     }
                 }else{
                     String value = dsData.getString(key);
-                    if (key.equals(__JndiName))
+                    if (key.equals(__JndiName)){
                         datasource.setJndiName(value);
-                    else if (key.equals(__PoolName))
+                        dsData.setTargetFile(value);
+                    }else if (key.equals(__PoolName))
                         datasource.setPoolName(value);
                     else if (key.equals(__JdbcObjectType))
                         datasource.setObjectType(value);
@@ -539,9 +638,10 @@ public class ResourceUtils implements WizardConstants{
                     }
                 }else{
                     String value = pmfData.getString(key);
-                    if (key.equals(__JndiName))
+                    if (key.equals(__JndiName)){
                         pmfresource.setJndiName(value);
-                    else if (key.equals(__FactoryClass))
+                        pmfData.setTargetFile(value);
+                    }else if (key.equals(__FactoryClass))
                         pmfresource.setFactoryClass(value);
                     else if (key.equals(__JdbcResourceJndiName))
                         pmfresource.setJdbcResourceJndiName(value);
@@ -566,33 +666,48 @@ public class ResourceUtils implements WizardConstants{
     public static void saveJMSResourceDatatoXml(ResourceConfigData jmsData) {
         try{
             Resources res = getResourceGraph();
-            JmsResource jmsResource = res.newJmsResource();
-            
-            String[] keys = jmsData.getFieldNames();
-            for (int i = 0; i < keys.length; i++) {
-                String key = keys[i];
-                if (key.equals(__Properties)) {
-                    Vector props = (Vector)jmsData.getProperties();
-                    for (int j = 0; j < props.size(); j++) {
-                        NameValuePair pair = (NameValuePair)props.elementAt(j);
-                        PropertyElement prop = jmsResource.newPropertyElement();
-                        prop = populatePropertyElement(prop, pair);
-                        jmsResource.addPropertyElement(prop);
-                    }
-                }else{
-                    String value = jmsData.getString(key);
-                    if (key.equals(__JndiName))
-                        jmsResource.setJndiName(value);
-                    else if (key.equals(__ResType))
-                        jmsResource.setResType(value);
-                    else if (key.equals(__Enabled))
-                        jmsResource.setEnabled(value);
-                    else if (key.equals(__Description))
-                        jmsResource.setDescription(value); 
+            String type = jmsData.getString(__ResType);
+            if(type.equals(__QUEUE) || type.equals(__TOPIC)){
+                AdminObjectResource aoresource = res.newAdminObjectResource();
+                aoresource.setDescription(jmsData.getString(__Description));
+                aoresource.setEnabled(jmsData.getString(__Enabled));
+                aoresource.setJndiName(jmsData.getString(__JndiName));
+                aoresource.setResType(jmsData.getString(__ResType));
+                aoresource.setResAdapter(__JmsResAdapter);
+                Vector props = (Vector)jmsData.getProperties();
+                for (int j = 0; j < props.size(); j++) {
+                    NameValuePair pair = (NameValuePair)props.elementAt(j);
+                    PropertyElement prop = aoresource.newPropertyElement();
+                    prop = populatePropertyElement(prop, pair);
+                    aoresource.addPropertyElement(prop);
                 }
+                
+                res.addAdminObjectResource(aoresource);
+            }else{
+                ConnectorResource connresource = res.newConnectorResource();
+                connresource.setDescription(jmsData.getString(__Description));
+                connresource.setEnabled(jmsData.getString(__Enabled));
+                connresource.setJndiName(jmsData.getString(__JndiName));
+                connresource.setPoolName(jmsData.getString(__JndiName));
+                
+                ConnectorConnectionPool connpoolresource = res.newConnectorConnectionPool();
+                connpoolresource.setName(jmsData.getString(__JndiName));
+                connpoolresource.setConnectionDefinitionName(jmsData.getString(__ResType));
+                connpoolresource.setResourceAdapterName(__JmsResAdapter);
+                
+                Vector props = (Vector)jmsData.getProperties();
+                for (int j = 0; j < props.size(); j++) {
+                    NameValuePair pair = (NameValuePair)props.elementAt(j);
+                    PropertyElement prop = connpoolresource.newPropertyElement();
+                    prop = populatePropertyElement(prop, pair);
+                    connpoolresource.addPropertyElement(prop);
+                }
+                
+                res.addConnectorResource(connresource);
+                res.addConnectorConnectionPool(connpoolresource);
             }
-	    res.addJmsResource(jmsResource);
-	    createFile(jmsData.getTargetFileObject(), jmsData.getTargetFile(), res);
+            
+            createFile(jmsData.getTargetFileObject(), jmsData.getTargetFile(), res);
         }catch(Exception ex){
             System.out.println("Unable to saveJMSResourceDatatoXml ");
         }
@@ -617,9 +732,10 @@ public class ResourceUtils implements WizardConstants{
                     }
                 }else{
                     String value = data.getString(key);
-                    if (key.equals(__JndiName))
+                    if (key.equals(__JndiName)){
                         mlresource.setJndiName(value);
-                    else if (key.equals(__StoreProtocol))
+                        data.setTargetFile(value);
+                    }else if (key.equals(__StoreProtocol))
                         mlresource.setStoreProtocol(value);
                     else if (key.equals(__StoreProtocolClass))
                         mlresource.setStoreProtocolClass(value);
@@ -658,31 +774,24 @@ public class ResourceUtils implements WizardConstants{
             }
             String oldName = filename;
             targetFolder = setUpExists(targetFolder);
-            filename =  createUniqueFileName(filename, targetFolder, null);        
-	    if(!filename.equals(oldName)){
-                String msg = java.text.MessageFormat.format(NbBundle.getMessage(ResourceUtils.class, "LBL_UniqueResourceName"), new Object[]{oldName, filename}); //NOI18N
-                org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
-            }
-            
+            filename =  FileUtil.findFreeFileName(targetFolder, filename, __SunResourceExt);
+	                
             final String resFileName = filename;
             final FileObject resTargetFolder  = targetFolder;
-            
             FileSystem fs = targetFolder.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws java.io.IOException {
                     FileObject newfile = resTargetFolder.createData(resFileName, "sun-resource"); //NOI18N
                     
                     FileLock lock = newfile.lock();
+                    Writer w = null;
                     try {
-                        PrintWriter to = new PrintWriter(newfile.getOutputStream(lock));
-                        try {
-                            res.write(to);
-                            to.flush();
-                        } catch(Exception ex){
-                            //Unable to create file
-                        } finally {
-                            to.close();
-                        }
+                        Writer out = new OutputStreamWriter(newfile.getOutputStream(lock), "UTF8");
+                        res.write(out);
+                        out.flush();
+                        out.close();
+                    } catch(Exception ex){
+                        //Error writing file
                     } finally {
                         lock.releaseLock();
                     }
@@ -696,30 +805,25 @@ public class ResourceUtils implements WizardConstants{
     
     public static String createUniqueFileName(String in_targetName, FileObject fo, String defName){
         String targetName = in_targetName;
+        if (targetName == null || targetName.length() == 0) 
+            targetName = defName;
         
-        if (targetName == null || targetName.length() == 0) {
-            targetName = FileUtil.findFreeFileName(fo, defName, __SunResourceExt);
-        }else{
-            //Fix for bug# 5025573 - Check for invalid file names
-            if(! isFriendlyFilename(targetName)){
-                if(defName != null)
-                    targetName = defName;
-                else
-                    targetName = makeLegalFilename(targetName);
-            }
-            targetName = FileUtil.findFreeFileName(fo, targetName, __SunResourceExt);
-        }
+        targetName = makeLegalFilename(targetName);
+        targetName = FileUtil.findFreeFileName(fo, targetName, __SunResourceExt);
+        targetName = revertToResName(targetName);
         return targetName;
     }
     
-    public static List getRegisteredConnectionPools(ResourceConfigData data, String resourceType){
+    public static List getRegisteredConnectionPools(ResourceConfigData data){
         List connPools = new ArrayList();
         try {
             String OPER_OBJ_ConnPoolResource = "getJdbcConnectionPool"; //NOI18N
             String keyProp = "name"; //NOI18N
-            InstanceProperties instanceProperties = InstanceProperties.getDefaultInstance();
-            connPools = getResourceNames(instanceProperties, OPER_OBJ_ConnPoolResource, keyProp);
-            List projectCP = getProjectResources(data, resourceType);
+            InstanceProperties instanceProperties = getTargetServer(data.getTargetFileObject());
+            if(instanceProperties != null)
+                connPools = getResourceNames(instanceProperties, OPER_OBJ_ConnPoolResource, keyProp);
+            connPools.removeAll(Arrays.asList(sysConnpools));  
+            List projectCP = getProjectResources(data, __ConnectionPoolResource);
             for(int i=0; i<projectCP.size(); i++){
                 String localCP = projectCP.get(i).toString();
                 if(! connPools.contains(localCP))
@@ -731,14 +835,15 @@ public class ResourceUtils implements WizardConstants{
         return connPools;
     }
     
-    public static List getRegisteredJdbcResources(ResourceConfigData data, String resourceType){
+    public static List getRegisteredJdbcResources(ResourceConfigData data){
         List dataSources = new ArrayList();
         try {
-            String OPER_OBJ_JDBCResource = "getJdbcResource"; //NOI18N
             String keyProp = "jndi-name"; //NOI18N
-            InstanceProperties instanceProperties = InstanceProperties.getDefaultInstance();
-            dataSources = getResourceNames(instanceProperties, OPER_OBJ_JDBCResource, keyProp);
-            List projectDS = getProjectResources(data, resourceType);
+            InstanceProperties instanceProperties = getTargetServer(data.getTargetFileObject());
+            if(instanceProperties != null)
+                dataSources = getResourceNames(instanceProperties, WizardConstants.__GetJdbcResource, keyProp);
+            dataSources.removeAll(Arrays.asList(sysDatasources));    
+            List projectDS = getProjectResources(data, __JDBCResource);
             for(int i=0; i<projectDS.size(); i++){
                 String localDS = projectDS.get(i).toString();
                 if(! dataSources.contains(localDS))
@@ -751,10 +856,21 @@ public class ResourceUtils implements WizardConstants{
     }
     
     private static List getResourceNames(InstanceProperties instProps, String query, String keyProperty){
+        Object tmp = instProps.getDeploymentManager();
+        List retVal;
+        if (tmp instanceof SunDeploymentManagerInterface)  {
+            SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)tmp;
+            retVal = getResourceNames(eightDM, query, keyProperty);
+        } else {
+            retVal = Collections.EMPTY_LIST;
+        }
+        return retVal;
+    }
+    
+    private static List getResourceNames(SunDeploymentManagerInterface eightDM, String query, String keyProperty){
         List resList = new ArrayList();
         String MAP_RESOURCES = "ias:type=resources,category=config";//NOI18N
         try{
-            SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)instProps.getDeploymentManager();
             ServerInterface mejb = (ServerInterface)eightDM.getManagement();
             ObjectName objName = new ObjectName(MAP_RESOURCES);
             ObjectName[] beans = (ObjectName[])mejb.invoke(objName, query, null, null);
@@ -877,22 +993,406 @@ public class ResourceUtils implements WizardConstants{
     
     public static FileObject getResourceDirectory(FileObject fo){
         Project holdingProj = FileOwnerQuery.getOwner(fo);
-        FileObject resourceDir = fo;
+        FileObject resourceDir = null;
         if (holdingProj != null){
             J2eeModuleProvider provider = (J2eeModuleProvider) holdingProj.getLookup().lookup(J2eeModuleProvider.class);
-            File resourceLoc = provider.getEnterpriseResourceDirectory();
-            if(resourceLoc != null){
-                if(resourceLoc.exists()){
-                    resourceDir = FileUtil.toFileObject(resourceLoc);
-                }else{
-                    resourceLoc.mkdirs();
-                    resourceDir = FileUtil.toFileObject(resourceLoc);
+            if(provider != null){
+                File resourceLoc = provider.getEnterpriseResourceDirectory ();
+                if(resourceLoc != null){
+                    if(resourceLoc.exists ()){
+                        resourceDir = FileUtil.toFileObject (resourceLoc);
+                    }else{
+                        resourceLoc.mkdirs ();
+                        resourceDir = FileUtil.toFileObject (resourceLoc);
+                    }
                 }
             }
         }
         return resourceDir;
     }
     
+    /***************************************** DS Management API *****************************************************************************/
+    
+    public static HashSet getServerDataSources(DeploymentManager dm){
+        HashSet datasources = new HashSet();
+        try {
+            ObjectName configObjName = new ObjectName(WizardConstants.MAP_RESOURCES);
+            SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)dm;
+            ServerInterface mejb = (ServerInterface)eightDM.getManagement();
+            List systemDS = Arrays.asList(sysDatasources);
+            if(eightDM.isRunning()){
+                updateSampleDatasource(eightDM, configObjName);
+                ObjectName[] resourceObjects = (ObjectName[])  mejb.invoke(configObjName, WizardConstants.__GetJdbcResource, null, null);
+                for(int i=0; i<resourceObjects.length; i++){
+                    ObjectName objName = resourceObjects[i];
+                    //Get Required values from JDBC Resource
+                    String dsJndiName = (String)mejb.getAttribute(objName, "jndi-name"); //NOI18N
+                    if(! systemDS.contains(dsJndiName)){
+                        String poolName = (String)mejb.getAttribute(objName, "pool-name"); //NOI18N
+                        HashMap poolValues = fillInPoolValues(eightDM, configObjName, poolName);
+                        if(! poolValues.isEmpty()){
+                            String username = (String)poolValues.get(WizardConstants.__User);
+                            String password = (String)poolValues.get(WizardConstants.__Password);
+                            String url = (String)poolValues.get(WizardConstants.__Url);
+                            String driverClassName = (String)poolValues.get(WizardConstants.__DriverClassName);
+                            
+                            SunDatasource ds = new SunDatasource(dsJndiName, url, username, password, driverClassName);
+                            datasources.add(ds);
+                        }
+                    }
+                } // for - each JDBC Resource
+            } else{
+                if(eightDM.isLocal()) {
+                    datasources = formatXmlSunDatasources(eightDM.getSunDatasourcesFromXml());
+                }    
+            }// Server Running
+        } catch (Exception ex) {
+            //Unable to get server datasources
+        }
+        return datasources;
+    }
+    
+    private static void updateSampleDatasource(SunDeploymentManagerInterface eightDM, ObjectName configObjName){
+        try{
+            if(! eightDM.isLocal())
+                return;
+            List datasources = getResourceNames(eightDM, __GetJdbcResource, "jndi-name"); //NOI18N
+            if(! datasources.contains(SAMPLE_DATASOURCE)){
+                ServerInterface mejb = (ServerInterface)eightDM.getManagement();
+                
+                if(getConnectionPoolObjByName(mejb, configObjName, SAMPLE_CONNPOOL) == null){
+                    AttributeList poolAttrs = new AttributeList();
+                    Attribute attr = new Attribute("name", SAMPLE_CONNPOOL); //NOI18N
+                    poolAttrs.add(attr);
+                    attr = new Attribute("datasource-classname", "org.apache.derby.jdbc.ClientDataSource"); //NOI18N
+                    poolAttrs.add(attr);
+                    attr = new Attribute("res-type", "javax.sql.DataSource"); //NOI18N
+                    poolAttrs.add(attr);
+                    
+                    Properties propsList = new Properties();
+                    propsList.put(__User, "app"); //NOI18N
+                    propsList.put(__Password, "app"); //NOI18N
+                    propsList.put(__ServerName, "localhost"); //NOI18N
+                    propsList.put(__DerbyPortNumber, "1527");
+                    propsList.put(__DerbyDatabaseName, "sample"); //NOI18N
+                    Object[] poolParams = new Object[]{poolAttrs, propsList, null};
+                    createResource(__CreateCP, poolParams, mejb);
+                }
+                
+                AttributeList attrs = new AttributeList();
+                attrs.add(new Attribute(__JndiName, SAMPLE_DATASOURCE));
+                attrs.add(new Attribute(__PoolName, SAMPLE_CONNPOOL));
+                attrs.add(new Attribute(__JdbcObjectType, "user")); //NOI18N
+                attrs.add(new Attribute(__Enabled, "true")); //NOI18N
+                Object[] params = new Object[]{attrs, new Properties(), null};
+                createResource(__CreateDS, params, mejb);
+            }
+        }catch(Exception ex){}
+    }
+    
+    public static HashMap fillInPoolValues(SunDeploymentManagerInterface eightDM, ObjectName configObjName, String poolName) throws Exception {
+        HashMap connPoolAttrs = new HashMap();
+        ServerInterface mejb = (ServerInterface)eightDM.getManagement();
+        //Get Values from JDBC Connection Pool : driver
+        ObjectName connPoolObj = getConnectionPoolByName(mejb, configObjName, poolName);
+        String driverClassName = (String)mejb.getAttribute(connPoolObj, "datasource-classname"); //NOI18N
+        String url = ""; //NOI18N
+        String username = ""; //NOI18N
+        String password = ""; //NOI18N
+        String serverName = ""; //NOI18N
+        String portNo = ""; //NOI18N
+        String dbName = ""; //NOI18N
+        String sid = ""; //NOI18N
+        
+        AttributeList attrList = (AttributeList)mejb.invoke(connPoolObj, WizardConstants.__GetProperties, null, null);
+        HashMap attrs = getObjMap(attrList);
+        Object[] keys = attrs.keySet().toArray();
+        for(int i=0; i<keys.length; i++){
+            String keyName = (String)keys[i];
+            if(keyName.equalsIgnoreCase(WizardConstants.__DatabaseName)){
+                if(driverClassName.indexOf("pointbase") != -1){ //NOI18N
+                    url = getStringVal(attrs.get(keyName));
+                }else{
+                    dbName = getStringVal(attrs.get(keyName));
+                }
+            }else if(keyName.equalsIgnoreCase(WizardConstants.__User)) {
+                username = getStringVal(attrs.get(keyName));
+            }else if(keyName.equalsIgnoreCase(WizardConstants.__Password)) {
+                password = getStringVal(attrs.get(keyName));
+            }else if(keyName.equalsIgnoreCase(WizardConstants.__Url)) {
+                url = getStringVal(attrs.get(keyName));
+            }else if(keyName.equalsIgnoreCase(WizardConstants.__ServerName)) {
+                serverName = getStringVal(attrs.get(keyName));
+            }else if(keyName.equalsIgnoreCase(WizardConstants.__DerbyPortNumber)) {
+                portNo = getStringVal(attrs.get(keyName));
+            }else if(keyName.equalsIgnoreCase(WizardConstants.__SID)) {
+                sid = getStringVal(attrs.get(keyName));
+            }
+        }
+        
+        if(driverClassName.indexOf("derby") != -1){ //NOI18N
+            url = "jdbc:derby://"; //NOI18N
+            if(serverName != null){
+                url = url + serverName;
+                if(portNo != null) {
+                    url = url + ":" + portNo; //NOI18N
+                }    
+                url = url + "/" + dbName ; //NOI8N
+            }
+        }else if(url.equals("")) { //NOI18N
+            String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName);
+            String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null); 
+            if(serverName != null){
+                if(vName.equals("sybase2")){ //NOI18N
+                    url = urlPrefix + serverName; 
+                } else{
+                    url = urlPrefix + "//" + serverName; //NOI18N
+                }
+                if(portNo != null) {
+                    url = url + ":" + portNo; //NOI18N
+                }    
+            }
+            if(vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
+                url = url + ";SID=" + sid; //NOI18N
+            }else if(Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
+                url = url + ";databaseName=" + dbName; //NOI18N
+            }else if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
+                url = url + "/" + dbName ; //NOI8N
+            }    
+        }
+        
+        if((! eightDM.isLocal()) && (url.indexOf("localhost") != -1)){ //NOI18N
+            String hostName = eightDM.getHost();
+            url = url.replaceFirst("localhost", hostName); //NOI18N
+        }
+        DatabaseConnection databaseConnection = getDatabaseConnection(url);
+        if(databaseConnection != null){
+            driverClassName = databaseConnection.getDriverClass();
+        }else{
+            //Fix Issue 78212 - NB required driver classname
+            String drivername = DatabaseUtils.getDriverName(url);
+            if(drivername != null) {
+                driverClassName = drivername;
+            }    
+        }    
+        
+        connPoolAttrs.put(__User, username);
+        connPoolAttrs.put(__Password, password);
+        connPoolAttrs.put(__Url, url);
+        connPoolAttrs.put(__DriverClassName, driverClassName);
+        return connPoolAttrs;
+    }
+    
+    private static ObjectName getConnectionPoolByName(ServerInterface mejb, ObjectName configObjName, String poolName) throws Exception {
+        String[] signature = new String[]{"java.lang.String"};  //NOI18N
+        Object[] params = new Object[]{poolName};
+        ObjectName connPoolObj = (ObjectName) mejb.invoke(configObjName, WizardConstants.__GetJdbcConnectionPoolByName, params, signature);
+        return connPoolObj;
+    }
+    
+    private static ObjectName getConnectionPoolObjByName(ServerInterface mejb, ObjectName configObjName, String poolName) {
+        ObjectName connPoolObj = null;
+        try{
+            connPoolObj = getConnectionPoolByName(mejb, configObjName, poolName);
+        }catch(Exception ex){}
+        return connPoolObj;
+    }
+        
+    
+    private static String getStringVal(Object val){
+        String value = null;
+        if (val != null)
+            value = val.toString();
+        return value; 
+    }
+    
+    private static HashMap getObjMap(AttributeList attrList){
+        HashMap attrs = new HashMap();
+        for(int k=0; k<attrList.size(); k++){
+            Attribute currAttr = (Attribute)attrList.get(k);
+            String pname = currAttr.getName();
+            Object pObjvalue = currAttr.getValue();
+            attrs.put(pname, pObjvalue);
+        }
+        return attrs;
+    }
+    
+    public static String revertToResName(String filename) {
+        if(filename.indexOf("jdbc_") != -1)
+            filename = filename.replaceFirst("jdbc_", "jdbc/");
+        if(filename.indexOf("mail_") != -1)
+            filename = filename.replaceFirst("mail_", "mail/");
+        if(filename.indexOf("jms_") != -1)
+            filename = filename.replaceFirst("jms_", "jms/");
+        return filename;
+    }
+    
+    public static boolean isUniqueFileName(String in_targetName, FileObject fo, String defName){
+        boolean isUniq = true;
+        String targetName = in_targetName;
+        if (targetName != null && targetName.length() != 0) {
+              targetName = makeLegalFilename(targetName);
+              targetName = targetName + "." + __SunResourceExt; //NOI18N
+              File targFile = new File(fo.getPath(), targetName);
+              if(targFile.exists())
+                  isUniq = false;
+        }
+        return isUniq;
+    }
+    
+    public static DatabaseConnection getDatabaseConnection(String url) {
+        DatabaseConnection[] dbConns = ConnectionManager.getDefault().getConnections();
+        for(int i=0; i<dbConns.length; i++){
+            String dbConnUrl = ((DatabaseConnection)dbConns[i]).getDatabaseURL();
+            if(dbConnUrl.startsWith(url))
+                return ((DatabaseConnection)dbConns[i]);
+        }
+        return null;
+    }
+    
+    public static InstanceProperties getTargetServer(FileObject fo){
+        InstanceProperties serverName = null;
+        Project holdingProj = FileOwnerQuery.getOwner(fo);
+        if (holdingProj != null){
+            J2eeModuleProvider modProvider = (J2eeModuleProvider) holdingProj.getLookup().lookup(J2eeModuleProvider.class);
+            if(modProvider != null)
+                serverName = modProvider.getInstanceProperties();
+        }
+        return serverName;
+    }
+    
+    public static HashMap getConnPoolValues(File resourceDir, String poolName){
+        HashMap poolValues = new HashMap();
+        try{
+            ObjectName configObjName = new ObjectName(WizardConstants.MAP_RESOURCES);
+            InstanceProperties instanceProperties = getTargetServer(FileUtil.toFileObject(resourceDir));
+            if(instanceProperties != null){
+                SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)instanceProperties.getDeploymentManager();
+                if(eightDM.isRunning()){
+                    ServerInterface mejb = (ServerInterface)eightDM.getManagement();
+                    poolValues = fillInPoolValues(eightDM, configObjName, poolName);
+                }else{
+                    if(eightDM.isLocal()){
+                        HashMap poolMap = eightDM.getConnPoolsFromXml();
+                        poolValues = formatPoolMap((HashMap)poolMap.get(poolName));
+                    }
+                }    
+            }
+        }catch(Exception ex){ }
+        return poolValues;
+    }
+    
+    public static HashSet formatXmlSunDatasources(HashMap dsMap){
+        HashSet datasources = new HashSet();
+        String[] keys = (String[])dsMap.keySet().toArray(new String[dsMap.size()]);
+        for(int i=0; i<keys.length; i++){
+            String jndiName = keys[i];
+            HashMap poolValues = (HashMap)dsMap.get(jndiName);
+            poolValues = formatPoolMap(poolValues);
+            
+            String url = getStringVal(poolValues.get(__Url));
+            String username = getStringVal(poolValues.get(__User));
+            String password = getStringVal(poolValues.get(__Password));
+            String driverClassName = getStringVal(poolValues.get(__DriverClassName)); //NOI18N
+            if((url != null) && (! url.equals (""))) { //NOI18N
+                SunDatasource ds = new SunDatasource (jndiName, url, username, password, driverClassName);
+                datasources.add (ds);
+            }
+        }
+
+        return datasources;
+    }
+    
+    private static HashMap formatPoolMap(HashMap poolValues){
+        String driverClassName = getStringVal(poolValues.get("dsClassName")); //NOI18N
+        
+        String url = ""; //NOI18N
+        String serverName = getStringVal(poolValues.get(__ServerName));
+        String portNo     = getStringVal(poolValues.get(__DerbyPortNumber));
+        String dbName     = getStringVal(poolValues.get(__DerbyDatabaseName));
+        String dbVal     = getStringVal(poolValues.get(__DatabaseName));
+        String portVal     = getStringVal(poolValues.get(__PortNumber));
+        String sid     = getStringVal(poolValues.get(__SID));
+        if(driverClassName.indexOf("pointbase") != -1){
+            url = getStringVal(poolValues.get(__DatabaseName));
+        }else if(driverClassName.indexOf("derby") != -1){
+            if(serverName != null){
+                url = "jdbc:derby://" + serverName;
+                if(portNo != null) {
+                    url = url + ":" + portNo; //NOI18N
+                }
+                url = url + "/" + dbName ; //NOI8N
+            }
+        }else{
+            String in_url = getStringVal(poolValues.get(__Url));
+            if(in_url != null) {
+                url = in_url;
+            }    
+            if(url.equals("")) { //NOI18N
+                String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName);
+                String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null); 
+                if(serverName != null){
+                    if(vName.equals("sybase2")){ //NOI18N
+                        url = urlPrefix + serverName; 
+                    }else{
+                         url = urlPrefix + "//" + serverName; //NOI18N
+                    }    
+                    if(portVal != null) {
+                        url = url + ":" + portVal; //NOI18N
+                    }    
+                }
+                if(vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
+                    url = url + ";SID=" + sid; //NOI18N
+                }else if(Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
+                    url = url + ";databaseName=" + dbVal; //NOI18N
+                }else if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
+                    url = url + "/" + dbVal ; //NOI8N
+                }    
+            }   
+        }    
+        
+        DatabaseConnection databaseConnection = getDatabaseConnection(url);
+        if(databaseConnection != null) {
+            driverClassName = databaseConnection.getDriverClass();
+        }else{
+            //Fix Issue 78212 - NB required driver classname
+            String drivername = DatabaseUtils.getDriverName(url);
+            if(drivername != null) {
+                driverClassName = drivername;
+            }    
+        }
+        
+        poolValues.put(__Url, url);
+        poolValues.put(__DriverClassName, driverClassName);
+        
+        return poolValues;
+    }
+    
+    public static boolean is90Server(ServerInterface mejb){
+        boolean is90Server = true;
+        SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface)mejb.getDeploymentManager();
+        if(sunDm.isLocal()){   
+            is90Server = is90ServerLocal(sunDm); 
+        }else{
+            try{
+                ObjectName serverObj = new ObjectName("com.sun.appserv:j2eeType=J2EEServer,name=server,category=runtime"); //NOI18N
+                String serverName = (String)mejb.getAttribute(serverObj, "serverVersion"); //NOI18N
+                if((serverName != null) && (serverName.indexOf("8.") != -1)) //NOI18N
+                    is90Server = false;
+            }catch(Exception ex){ }
+        }
+        return is90Server;
+    }
+     
+    private static boolean is90ServerLocal(SunDeploymentManagerInterface sunDm){
+        boolean isGlassfish = true;
+        try{
+            isGlassfish = ServerLocationManager.isGlassFish(sunDm.getPlatformRoot());
+        }catch(Exception ex){ }
+        return isGlassfish;
+
+    }
+        
     private final static char BLANK = ' ';
     private final static char DOT   = '.';
     private final static char REPLACEMENT_CHAR = '_';

@@ -21,8 +21,7 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader;
 import java.io.InputStream;
 import org.xml.sax.InputSource;
 
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileObject;
+
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.Node;
@@ -37,10 +36,30 @@ import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
-import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcConnectionPool;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.AdminObjectResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorConnectionPool;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.MailResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PersistenceManagerFactoryResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBeanDataNode;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.DataSourceBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.DataSourceBeanDataNode;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JMSBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JMSBeanDataNode;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBeanDataNode;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBeanDataNode;
 
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.*;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.WeakListeners;
 
 /** Represents a SunResource object in the Repository.
@@ -190,10 +209,19 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                     return type;
                 }
                 
-                // import Java Message Service Resources
-                JmsResource[] jmsResources = resources.getJmsResource();
-                if(jmsResources.length != 0){
-                    JMSBean jmsBean = JMSBean.createBean(jmsResources[0]);
+                // import Admin Object Resources
+                AdminObjectResource[] aoResources = resources.getAdminObjectResource();
+                if(aoResources.length != 0){
+                    JMSBean jmsBean = JMSBean.createBean(aoResources[0]);
+                    type = this.JMS;
+                    setJMS(jmsBean);
+                    return type;
+                }
+                
+                ConnectorResource[] connResources = resources.getConnectorResource();
+                ConnectorConnectionPool[] connPoolResources = resources.getConnectorConnectionPool();
+                if(connResources.length != 0 && connPoolResources.length != 0){
+                    JMSBean jmsBean = JMSBean.createBean(resources);
                     type = this.JMS;
                     setJMS(jmsBean);
                     return type;

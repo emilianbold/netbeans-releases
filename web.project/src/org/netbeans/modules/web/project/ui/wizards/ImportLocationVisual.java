@@ -24,15 +24,16 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.web.project.Utils;
 
 import org.openide.WizardDescriptor;
@@ -72,18 +73,22 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
 
     private String generatedProjectName = "";
     private int generatedProjectNameIndex = 0;
-
-    private List serverInstanceIDs;
+    private final DefaultComboBoxModel serversModel = new DefaultComboBoxModel();
     private List earProjects;
     
     private static final String J2EE_SPEC_13_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_13"); //NOI18N
     private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "J2EESpecLevel_14"); //NOI18N
-
+    private static final String JAVA_EE_5_LABEL = NbBundle.getMessage(ImportLocationVisual.class, "JavaEESpecLevel_50"); //NOI18N
+    
     /** Creates new form TestPanel */
     public ImportLocationVisual (ImportWebProjectWizardIterator.ThePanel panel) {
         this.panel = panel;
         initComponents ();
-        initServerInstances();
+        initServers(FoldersListSettings.getDefault().getLastUsedServer());
+        // preselect the first item in the j2ee spec combo
+        if (j2eeSpecComboBox.getModel().getSize() > 0) {
+            j2eeSpecComboBox.setSelectedIndex(0);
+        }
         initEnterpriseApplications();
         
         setJ2eeVersionWarningPanel();
@@ -97,50 +102,43 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         
         moduleDocument = moduleLocationTextField.getDocument ();
         nameDocument = projectNameTextField.getDocument();
-
-        DocumentListener pl = new DocumentListener () {
+        
+        moduleLocationTextField.getDocument().addDocumentListener(new DocumentListener () {
             public void changedUpdate(DocumentEvent e) {
-                dataChanged(e);
+                locationDataChanged(e);
             }
-
             public void insertUpdate(DocumentEvent e) {
-                dataChanged(e);
+                locationDataChanged(e);
             }
-
             public void removeUpdate(DocumentEvent e) {
-                dataChanged(e);
-            }
-        };
-        moduleLocationTextField.getDocument().addDocumentListener(pl);
-
-        projectNameTextField.getDocument().addDocumentListener (new DocumentListener (){
-            public void changedUpdate(DocumentEvent e) {
-                dataChanged(e);
-            }
-
-            public void insertUpdate(DocumentEvent e) {
-                dataChanged(e);
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                dataChanged(e);
+                locationDataChanged(e);
             }
         });
         
-        projectLocationTextField.getDocument().addDocumentListener (new DocumentListener (){
+        projectNameTextField.getDocument().addDocumentListener (new DocumentListener () {
+            public void changedUpdate(DocumentEvent e) {
+                nameDataChanged(e);
+            }
+            public void insertUpdate(DocumentEvent e) {
+                nameDataChanged(e);
+            }
+            public void removeUpdate(DocumentEvent e) {
+                nameDataChanged(e);
+            }
+        });
+        
+        projectLocationTextField.getDocument().addDocumentListener (new DocumentListener () {
             public void changedUpdate(DocumentEvent e) {
                 fireChanges();
             }
-
             public void insertUpdate(DocumentEvent e) {
                 fireChanges();
             }
-
             public void removeUpdate(DocumentEvent e) {
                 fireChanges();
             }
-        });     
-
+        });
+        
     }
     
     private void computeSize() {
@@ -174,7 +172,8 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
                         generatedProjectNameIndex++;                
                     settings.putProperty (NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(generatedProjectNameIndex));
             }
-            projectNameTextField.setText(generatedProjectName);
+            // no project name needs to be generated
+            //projectNameTextField.setText(generatedProjectName);
             moduleLocationTextField.selectAll();
         }
     }
@@ -185,6 +184,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         if (srcPath.length() > 0) {
             srcRoot = FileUtil.normalizeFile(new File(srcPath));
         }
+        FoldersListSettings.getDefault().setLastUsedImportLocation(srcRoot);
         settings.putProperty (WizardProperties.SOURCE_ROOT, srcRoot);
         settings.putProperty (WizardProperties.NAME, projectNameTextField.getText().trim());
 
@@ -207,9 +207,22 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         settings.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
         
         if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
-            settings.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getJava14PlatformName());
-            settings.putProperty(WizardProperties.SOURCE_LEVEL, "1.4"); // NOI18N
-        }
+            settings.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getSuggestedJavaPlatformName());
+            
+            String j2ee = getSelectedJ2eeSpec();
+            if (j2ee != null) {
+                String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
+                FoldersListSettings fls = FoldersListSettings.getDefault();
+                String srcLevel = "1.6"; //NOI18N
+                if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_14) && fls.isAgreedSetSourceLevel14())
+                    srcLevel = "1.4"; //NOI18N
+                else if (warningType.equals(J2eeVersionWarningPanel.WARN_SET_SOURCE_LEVEL_15) && fls.isAgreedSetSourceLevel15())
+                    srcLevel = "1.5"; //NOI18N
+                
+                settings.putProperty(WizardProperties.SOURCE_LEVEL, srcLevel);
+            }            
+        } else
+            settings.putProperty(WizardProperties.SOURCE_LEVEL, null);
     }
 
     boolean valid (WizardDescriptor settings) {
@@ -250,7 +263,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             return false;
         }
 
-        File destFolder = new File(projectLocationPath);
+        File destFolder = FileUtil.normalizeFile(new File(projectLocationPath));
 	
 	// #47611: if there is a live project still residing here, forbid project creation.
         if (destFolder.isDirectory()) {
@@ -338,6 +351,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         j2eeSpecComboBox = new javax.swing.JComboBox();
         jLabelContextPath = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
+        manageServersButton = new javax.swing.JButton();
         warningPlaceHolderPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -482,7 +496,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
@@ -519,6 +533,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         jPanel1.add(serverInstanceLabel, gridBagConstraints);
 
+        serverInstanceComboBox.setModel(serversModel);
         serverInstanceComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverInstanceComboBoxActionPerformed(evt);
@@ -528,9 +543,9 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel1.add(serverInstanceComboBox, gridBagConstraints);
         serverInstanceComboBox.getAccessibleContext().setAccessibleName("Server");
@@ -546,6 +561,13 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         jPanel1.add(j2eeSpecLabel, gridBagConstraints);
+
+        j2eeSpecComboBox.setPrototypeDisplayValue("MMMMMMMMM" /* "Java EE 5" */);
+        j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                j2eeSpecComboBoxActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -585,6 +607,22 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         jPanel1.add(jTextFieldContextPath, gridBagConstraints);
         jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc"));
 
+        org.openide.awt.Mnemonics.setLocalizedText(manageServersButton, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_ManageServers"));
+        manageServersButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageServersButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
+        jPanel1.add(manageServersButton, gridBagConstraints);
+        manageServersButton.getAccessibleContext().setAccessibleName(null);
+        manageServersButton.getAccessibleContext().setAccessibleDescription(null);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -613,16 +651,50 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
 
     }// </editor-fold>//GEN-END:initComponents
 
+    private void j2eeSpecComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j2eeSpecComboBoxActionPerformed
+        setJ2eeVersionWarningPanel();
+    }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
+
+    private void manageServersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageServersButtonActionPerformed
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        String lastSelectedServerInstanceID = null;
+        if (serverInstanceWrapper != null) {
+            lastSelectedServerInstanceID = serverInstanceWrapper.getServerInstanceID();
+        }
+        ServerManager.showCustomizer(lastSelectedServerInstanceID);
+        String lastSelectedJ2eeSpecLevel = (String) j2eeSpecComboBox.getSelectedItem();
+        // refresh the list of servers
+        initServers(lastSelectedServerInstanceID);
+        if (lastSelectedJ2eeSpecLevel != null) {
+            j2eeSpecComboBox.setSelectedItem(lastSelectedJ2eeSpecLevel);
+        }
+    }//GEN-LAST:event_manageServersButtonActionPerformed
+
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
-        String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
-        String servInsID = ((ServerIDAdapter) serverInstanceIDs.get(serverInstanceComboBox.getSelectedIndex())).getServerID();
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(servInsID);
-        Set supportedVersions = j2eePlatform.getSupportedSpecVersions();
-        j2eeSpecComboBox.removeAllItems();
-        if (supportedVersions.contains(J2eeModule.J2EE_14)) j2eeSpecComboBox.addItem(J2EE_SPEC_14_LABEL);
-        if (supportedVersions.contains(J2eeModule.J2EE_13)) j2eeSpecComboBox.addItem(J2EE_SPEC_13_LABEL);
-        if (prevSelectedItem != null)
-            j2eeSpecComboBox.setSelectedItem(prevSelectedItem);
+        String prevSelectedItem = (String) j2eeSpecComboBox.getSelectedItem();
+        // update the j2ee spec list according to the selected server
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        if (serverInstanceWrapper != null) {
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceWrapper.getServerInstanceID());
+            Set supportedVersions = j2eePlatform.getSupportedSpecVersions(J2eeModule.WAR);
+            j2eeSpecComboBox.removeAllItems();
+            if (supportedVersions.contains(J2eeModule.JAVA_EE_5)) {
+                j2eeSpecComboBox.addItem(JAVA_EE_5_LABEL);
+            }
+            if (supportedVersions.contains(J2eeModule.J2EE_14)) {
+                j2eeSpecComboBox.addItem(J2EE_SPEC_14_LABEL);
+            }
+            if (supportedVersions.contains(J2eeModule.J2EE_13)) {
+                j2eeSpecComboBox.addItem(J2EE_SPEC_13_LABEL);
+            }
+            if (prevSelectedItem != null) {
+                j2eeSpecComboBox.setSelectedItem(prevSelectedItem);
+            }
+        } else {
+            j2eeSpecComboBox.removeAllItems();
+        }
+        // revalidate the form
+        panel.fireChangeEvent();
     }//GEN-LAST:event_serverInstanceComboBoxActionPerformed
 
     private void projectLocationTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_projectLocationTextFieldKeyReleased
@@ -636,6 +708,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
         JFileChooser chooser = org.netbeans.modules.web.project.ui.FileChooser.createDirectoryChooser(
                 "ImportLocationVisual.Project", projectLocationTextField.getText()); //NOI18N
+        chooser.setDialogTitle(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_BrowseProjectFolder"));
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             projectLocationTextField.setText( projectDir.getAbsolutePath());
@@ -646,6 +719,8 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        chooser.setDialogTitle(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_BrowseExistingSource"));
+        
         if (moduleLocationTextField.getText().length() > 0 && getProjectLocation().exists()) {
             chooser.setSelectedFile(getProjectLocation());
         } else {
@@ -661,7 +736,11 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             if (currentDirectory != null) {
                 chooser.setCurrentDirectory(currentDirectory);
             } else {
-                chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+                File lastUsedImportLoc = (File) FoldersListSettings.getDefault().getLastUsedImportLocation();
+                if (lastUsedImportLoc != null)
+                    chooser.setCurrentDirectory(lastUsedImportLoc.getParentFile());
+                else                    
+                    chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
             }
         }
         
@@ -688,6 +767,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     private javax.swing.JPanel jPanelOptions;
     private javax.swing.JSeparator jSeparator1;
     protected javax.swing.JTextField jTextFieldContextPath;
+    private javax.swing.JButton manageServersButton;
     public javax.swing.JTextField moduleLocationTextField;
     public javax.swing.JTextField projectLocationTextField;
     public javax.swing.JTextField projectNameTextField;
@@ -697,46 +777,91 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     private javax.swing.JPanel warningPlaceHolderPanel;
     // End of variables declaration//GEN-END:variables
 
-    /** Handles changes in the project name and project directory
-     */
-    private void dataChanged(DocumentEvent e) {
-        try {
-            if (e.getDocument() == moduleDocument) {
-                String moduleFolder = moduleLocationTextField.getText().trim();
-                FileObject fo;
-                try {
-                    fo = FileUtil.toFileObject(new File(moduleFolder));
-                } catch (IllegalArgumentException exc) {
-                    return;
-                }
-
-                if (fo != null)
-                    if (!FileSearchUtility.containsWebInf(fo) && !locationModified)
-                        projectLocationTextField.setText(moduleFolder);
-                    else
-                        computeLocation();
-            } else if (e.getDocument() == nameDocument) {
-                if (!contextModified)
-                    jTextFieldContextPath.setText(Utils.createDefaultContext(projectNameTextField.getText()));
-                if (locationComputed)
-                    computeLocation();
+    private String lastComputedPrjName = null;
+    private String computeProjectName() {
+        String cPrjName = null;
+        FileObject fo = FileUtil.toFileObject(getProjectLocation());
+        if (fo != null) {
+            cPrjName = fo.getName();
+        }
+        return cPrjName;
+    }
+    
+    private String lastComputedPrjFolder = null;
+    private String computeProjectFolder() {
+        return getProjectLocation().getAbsolutePath();
+    }
+    
+    private String lastComputedContextPath = null;
+    private String computeContextPath() {
+        return Utils.createDefaultContext(projectNameTextField.getText());
+    }
+    
+    boolean ignoreLocEvent = false;
+    // handles changes in Location
+    private void locationDataChanged(DocumentEvent de) {
+        if (!ignoreLocEvent) {
+            ignoreLocEvent = true;
+            if (de.getDocument() == moduleDocument) {
+                updateProjectName();
+                updateProjectFolder();
             }
-        } finally {
-            // all changes should be processed to update possible error messages
-            fireChanges();
+            ignoreLocEvent = false;
+        }
+        fireChanges();
+    }
+    
+    boolean ignoreNameEvent = false;
+    // handles changes in Project Name
+    private void nameDataChanged(DocumentEvent de) {
+        if (!ignoreNameEvent) {
+            ignoreNameEvent = true;
+            if (de.getDocument() == nameDocument) {
+                updateProjectFolder();
+                updateContextPath();
+            }
+            ignoreNameEvent = false;
+        }
+        fireChanges();
+    }
+    
+    private void updateProjectName() {
+        String prjName = computeProjectName();
+        if ((lastComputedPrjName != null) && (!lastComputedPrjName.equals(projectNameTextField.getText().trim()))) {
+            return;
+        }
+        lastComputedPrjName = prjName;
+        if (prjName != null) {
+            projectNameTextField.setText(prjName);
+        }
+    }
+    
+    private void updateProjectFolder() {
+        String prjFolder = computeProjectFolder();
+        if ((lastComputedPrjFolder != null) && (!lastComputedPrjFolder.equals(projectLocationTextField.getText().trim()))) {
+            return;
+        }
+        lastComputedPrjFolder = prjFolder;
+        if (prjFolder != null) {
+            projectLocationTextField.setText(prjFolder);
+        } else {
+            projectLocationTextField.setText(""); // NOI18N
+        }
+    }
+    
+    private void updateContextPath() {
+        String ctxPath = computeContextPath();
+        if ((lastComputedContextPath != null) && (!lastComputedContextPath.equals(jTextFieldContextPath.getText().trim()))) {
+            return;
+        }
+        lastComputedContextPath = ctxPath;
+        if (ctxPath != null) {
+            jTextFieldContextPath.setText(ctxPath);
         }
     }
     
     private void fireChanges() {
         panel.fireChangeEvent();
-    }
-    
-    private void computeLocation() {
-        if (locationModified) //modified by the user, don't compute the location
-            return;
-	
-        projectLocationTextField.setText(moduleLocationTextField.getText().trim());
-        locationComputed = true;
     }
     
     /** Help context where to find more about the paste type action.
@@ -745,40 +870,54 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ImportLocationVisual.class);
     }
-
-    private void initServerInstances() {
-        String[] servInstIDs = Deployment.getDefault().getServerInstanceIDs();
-        serverInstanceIDs = new ArrayList();
-        for (int i = 0; i < servInstIDs.length; i++) {
-            J2eePlatform j2eePlat = Deployment.getDefault().getJ2eePlatform(servInstIDs[i]);
-            if (j2eePlat != null && j2eePlat.getSupportedModuleTypes().contains(J2eeModule.WAR)) {
-		ServerIDAdapter serverIDAdapter = new ServerIDAdapter(servInstIDs[i]);
-                serverInstanceIDs.add(serverIDAdapter);
+    
+    /**
+     * Init servers model
+     * @param selectedServerInstanceID preselected instance or null if non is preselected
+     */
+    private void initServers(String selectedServerInstanceID) {
+        // init the list of server instances
+        serversModel.removeAllElements();
+        Set<ServerInstanceWrapper> servers = new TreeSet<ServerInstanceWrapper>();
+        ServerInstanceWrapper selectedItem = null;
+        boolean sjasFound = false;
+        for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
+            String displayName = Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID);
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            if (displayName != null && j2eePlatform != null && j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.WAR)) {
+                ServerInstanceWrapper serverWrapper = new ServerInstanceWrapper(serverInstanceID, displayName);
+                // decide whether this server should be preselected
+                if (selectedItem == null || !sjasFound) {
+                    if (selectedServerInstanceID != null) {
+                        if (selectedServerInstanceID.equals(serverInstanceID)) {
+                            selectedItem = serverWrapper;
+                        }
+                    } else {
+                        // preselect the best server ;)
+                        String shortName = Deployment.getDefault().getServerID(serverInstanceID);
+                        if ("J2EE".equals(shortName)) { // NOI18N
+                            selectedItem = serverWrapper;
+                            sjasFound = true;
+                        }
+                        else
+                        if ("JBoss4".equals(shortName)) { // NOI18N
+                            selectedItem = serverWrapper;
+                        }
+                    }
+                }
+                servers.add(serverWrapper);
             }
         }
-	
-	Collections.sort(serverInstanceIDs);
-	
-	String lastUsedServerID = FoldersListSettings.getDefault().getLastUsedServer();
-	String serverInst;
-	int idx = -1;
-	for (int i = 0; i < serverInstanceIDs.size(); i++) {
-	    serverInst = ((ServerIDAdapter) serverInstanceIDs.get(i)).getServerID();
-	    serverInstanceComboBox.addItem(Deployment.getDefault().getServerInstanceDisplayName(serverInst));
-	    
-	    if (serverInst.equals(lastUsedServerID))
-		idx = i;
-	    else if (idx == -1 && "J2EE".equals(Deployment.getDefault().getServerID(serverInst))) // NOI18N
-		idx = i;
-	}
-	
-        if (serverInstanceIDs.size() == 0) {
-            serverInstanceComboBox.setEnabled(false);
-            j2eeSpecComboBox.setEnabled(false);
-        } else if (idx != -1) {
-	    serverInstanceComboBox.setSelectedIndex(idx);
-	} else 
-            serverInstanceComboBox.setSelectedIndex(0);
+        for (ServerInstanceWrapper item : servers) {
+            serversModel.addElement(item);
+        }
+        if (selectedItem != null) {
+            // set the preselected item
+            serversModel.setSelectedItem(selectedItem);
+        } else if (serversModel.getSize() > 0) {
+            // set the first item
+            serversModel.setSelectedItem(serversModel.getElementAt(0));
+        }
     }
 
     private Project getSelectedEarApplication() {
@@ -807,12 +946,21 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
 
     private String getSelectedJ2eeSpec() {
         Object item = j2eeSpecComboBox.getSelectedItem();
-        return item == null ? null : item.equals(J2EE_SPEC_14_LABEL) ? J2eeModule.J2EE_14 : J2eeModule.J2EE_13;
+        String value = null;
+        if (item != null){
+            if (item.equals(JAVA_EE_5_LABEL)) value = J2eeModule.JAVA_EE_5;
+            else if (item.equals(J2EE_SPEC_14_LABEL)) value = J2eeModule.J2EE_14;
+            else if (item.equals(J2EE_SPEC_13_LABEL)) value = J2eeModule.J2EE_13;
+        }
+        return value;
     }
     
     private String getSelectedServer() {
-        int idx = serverInstanceComboBox.getSelectedIndex();
-        return idx == -1 ? null : ((ServerIDAdapter) serverInstanceIDs.get(idx)).getServerID();
+        ServerInstanceWrapper serverInstanceWrapper = (ServerInstanceWrapper) serversModel.getSelectedItem();
+        if (serverInstanceWrapper == null) {
+            return null;
+        }
+        return serverInstanceWrapper.getServerInstanceID();
     }
 
     private String validFreeProjectName (final File parentFolder, final String formater, final int index) {
@@ -822,12 +970,19 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }
     
     private void setJ2eeVersionWarningPanel() {
-        String warningType = J2eeVersionWarningPanel.findWarningType();
-        if (warningType == null)
+        String j2ee = getSelectedJ2eeSpec();
+        if (j2ee == null)
             return;
-        
-        warningPanel = new J2eeVersionWarningPanel(warningType);
-        warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
+        String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
+        if (warningType == null && warningPanel == null)
+            return;
+        if (warningPanel == null) {
+            warningPanel = new J2eeVersionWarningPanel(warningType);
+            warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
+            warningPanel.setWarningType(warningType);
+        } else {
+            warningPanel.setWarningType(warningType);
+        }
     }
     
     public File getProjectLocation() {
@@ -838,24 +993,30 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         return FileUtil.normalizeFile(new File(filename));
     }
 
-    private static class ServerIDAdapter implements Comparable {
-        private String serverID;
-        
-        public ServerIDAdapter(String serverID) {
-            this.serverID = serverID;
+    /**
+     * Server instance wrapper represents server instances in the servers combobox.
+     * @author sherold
+     */
+    private static class ServerInstanceWrapper implements Comparable {
+
+        private final String serverInstanceID;
+        private final String displayName;
+
+        ServerInstanceWrapper(String serverInstanceID, String displayName) {
+            this.serverInstanceID = serverInstanceID;
+            this.displayName = displayName;
         }
-        
-        public String getServerID() {
-            return serverID;
+
+        public String getServerInstanceID() {
+            return serverInstanceID;
         }
-        
+
         public String toString() {
-	    return Deployment.getDefault().getServerInstanceDisplayName(serverID);
+            return displayName;
         }
-        
+
         public int compareTo(Object o) {
             return toString().compareTo(o.toString());
         }
     }
-
 }

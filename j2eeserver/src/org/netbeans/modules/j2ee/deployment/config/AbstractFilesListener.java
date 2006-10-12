@@ -68,6 +68,11 @@ public abstract class AbstractFilesListener {
         }
     }
     private void startListening(File target) {
+        if (!target.isAbsolute()) {
+            // workaround for issue 84872. Should be removed when
+            // issue 85132 is addressed.
+            return;
+        }
         FileObject targetFO = FileUtil.toFileObject(target);
         while (targetFO == null) {
             target = target.getParentFile();

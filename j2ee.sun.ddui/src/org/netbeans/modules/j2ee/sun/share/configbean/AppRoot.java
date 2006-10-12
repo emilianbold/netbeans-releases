@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +68,7 @@ public class AppRoot extends BaseRoot {
 	private String realm;
 	
 	/** Holds list of web properties. */
-	private List webModules;
+//	private List webModules;
 	
 	/** Creates a new instance of AppRoot
 	 *  @param dDBean The root of the application.xml file
@@ -128,6 +129,13 @@ public class AppRoot extends BaseRoot {
 		return applicationVersion;
 	}
 	 
+    /** Generate a DOCTYPE string for the specified version (which may be different
+     *  than the current version of the tree
+     */
+    public String generateDocType(ASDDVersion version) {
+        return generateDocType("sun-application", version.getSunApplicationPublicId(), version.getSunApplicationSystemId()); // NOI18N
+    }
+     
 	/* ------------------------------------------------------------------------
 	 * Property getters/setters.
 	 */
@@ -168,8 +176,6 @@ public class AppRoot extends BaseRoot {
 		getPCS().firePropertyChange("realm", oldRealm, realm);
 	}
 	
-	
-	
 	/* ------------------------------------------------------------------------
 	 * Persistence support.  Loads DConfigBeans from previously saved Deployment
 	 * plan file.
@@ -179,7 +185,8 @@ public class AppRoot extends BaseRoot {
 		Snippet snipOne = new DefaultSnippet() {
 			
 			public CommonDDBean getDDSnippet() {
-				SunApplication sa = (SunApplication) DDProvider.getDefault().newGraph(SunApplication.class);
+				SunApplication sa = getConfig().getStorageFactory().createSunApplication();
+                String version = sa.getVersion().toString();
 				
 				if(passByReference != null && passByReference.length() > 0) {
 					sa.setPassByReference(passByReference);
@@ -188,6 +195,18 @@ public class AppRoot extends BaseRoot {
 				if(realm != null && realm.length() > 0) {
 					sa.setRealm(realm);
 				}
+                
+                /* IZ 78686 - add remaining saved role mappings here.  All entries that are represented
+                 * by real DConfigBeans should have been removed by now. */
+                if(savedRoleMappings != null && savedRoleMappings.size() > 0) {
+                    for (Iterator iter = savedRoleMappings.entrySet().iterator(); iter.hasNext();) {
+                        Map.Entry entry = (Map.Entry) iter.next();
+                        org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping mapping = 
+                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) entry.getValue();
+                        sa.addSecurityRoleMapping(
+                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) mapping.cloneVersion(version));
+                    }
+                }
 				
 				return sa;
 			}
@@ -207,14 +226,13 @@ public class AppRoot extends BaseRoot {
                 result = provider.getAppDDRoot(new org.xml.sax.InputSource(stream));
             } else {
                 // If we have a null stream, return a blank graph.
-                result = (SunApplication) provider.newGraph(SunApplication.class);
+                result = (SunApplication) provider.newGraph(SunApplication.class, 
+                        getConfig().getAppServerVersion().getApplicationVersionAsString());
             }
 
             // First set our version to match that of this deployment descriptor.
             getConfig().internalSetAppServerVersion(ASDDVersion.getASDDVersionFromAppVersion(result.getVersion()));
             
-            // Now map graph to that of 8.1.
-            result.setVersion(ASDDVersion.SUN_APPSERVER_8_1.getNumericApplicationVersion());
             return result;
         }
     }
@@ -243,6 +261,9 @@ public class AppRoot extends BaseRoot {
 		if(beanGraph != null) {
 			passByReference = beanGraph.getPassByReference();
 			realm = beanGraph.getRealm();
+            
+            // For IZ 78686 - save any security-role-mappings in graph.
+            saveMappingsToCache(beanGraph.getSecurityRoleMapping());
 		} else {
 			setDefaultProperties();
 		}
@@ -251,9 +272,9 @@ public class AppRoot extends BaseRoot {
 	}
 
 
-        public String getHelpId() {
-            return "AS_CFG_Application";                                //NOI18N
-        }
+	public String getHelpId() {
+		return "AS_CFG_Application"; //NOI18N
+	}
 
     
 	protected void clearProperties() {
@@ -281,7 +302,7 @@ public class AppRoot extends BaseRoot {
 			appRootFactoryMap.put("module/ejb", new DCBGenericFactory(EjbJarRef.class));				// NOI18N
 			appRootFactoryMap.put("module/web", new DCBGenericFactory(WebAppRef.class));				// NOI18N
 //			appRootFactoryMap.put("module/connector", new DCBGenericFactory(ConnectorRef.class));		// NOI18N
-//			appRootFactoryMap.put("module/java", new DCBGenericFactory(AppClientRef.class));			// NOI18N
+			appRootFactoryMap.put("module/java", new DCBGenericFactory(AppClientRef.class));			// NOI18N
 			appRootFactoryMap.put("security-role", new DCBGenericFactory(SecurityRoleMapping.class));	// NOI18N
 		}
 		

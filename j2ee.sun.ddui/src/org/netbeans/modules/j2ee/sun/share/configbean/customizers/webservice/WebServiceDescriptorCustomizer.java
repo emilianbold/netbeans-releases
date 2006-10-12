@@ -22,47 +22,38 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 
-import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.j2ee.sun.dd.api.common.PortInfo;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
-import org.netbeans.modules.j2ee.sun.share.configbean.ServletRef;
 
-import org.netbeans.modules.j2ee.sun.share.configbean.StorageBeanFactory;
 import org.netbeans.modules.j2ee.sun.share.configbean.WebServiceDescriptor;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.LoginConfigEntry;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.WebServiceEndpointEntryPanel;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.BaseCustomizer;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTableModel;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.GenericTablePanel;
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.HelpContext;
-
 
 /**
  *
  * @author Peter Williams
  */
 public class WebServiceDescriptorCustomizer extends BaseCustomizer implements 
-    TableModelListener, PropertyChangeListener {
+    /*TableModelListener,*/ PropertyChangeListener {
 
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(
+    static final ResourceBundle bundle = ResourceBundle.getBundle(
        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
 
-    private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
+    static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle"); // NOI18N
 
 	/** The bean currently being customized, or null if there isn't one
 	 */
 	private WebServiceDescriptor theBean;
 
-	// Table for editing webservice endpoints
-	private GenericTableModel webServiceEndpointModel;
-	private GenericTablePanel webServiceEndpointPanel;
-    private boolean updatingEndpointModel;
+    // For managing endpoint subpanel
+	private SelectedEndpointPanel selectedEndpointPanel;
+	private DefaultComboBoxModel endpointModel;
+    
     
 	/** Creates new form WebServiceDescriptorCustomizer */
 	public WebServiceDescriptorCustomizer() {
@@ -88,6 +79,9 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
         jTxtName = new javax.swing.JTextField();
         jLblWsdlPublishLocation = new javax.swing.JLabel();
         jTxtWsdlPublishLocation = new javax.swing.JTextField();
+        jLblPortDescription = new javax.swing.JLabel();
+        jLblPortComponentName = new javax.swing.JLabel();
+        jCbxPortSelector = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -99,7 +93,6 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jLblName, gridBagConstraints);
         jLblName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_WebServiceDescriptionName"));
         jLblName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_WebServiceDescriptionName"));
@@ -109,7 +102,7 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(jTxtName, gridBagConstraints);
 
         jLblWsdlPublishLocation.setLabelFor(jTxtWsdlPublishLocation);
@@ -118,7 +111,7 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         jPanel1.add(jLblWsdlPublishLocation, gridBagConstraints);
         jLblWsdlPublishLocation.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_WsdlPublishLocation"));
         jLblWsdlPublishLocation.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_WsdlPublishLocation"));
@@ -135,7 +128,7 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPanel1.add(jTxtWsdlPublishLocation, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -143,24 +136,67 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 5);
         add(jPanel1, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        jLblPortDescription.setText(bundle.getString("LBL_ServiceEndpointDescription"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
+        add(jLblPortDescription, gridBagConstraints);
+
+        jLblPortComponentName.setLabelFor(jCbxPortSelector);
+        jLblPortComponentName.setText(bundle.getString("LBL_PortComponentName_1"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
+        add(jLblPortComponentName, gridBagConstraints);
+
+        jCbxPortSelector.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCbxPortSelectorActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
+        add(jCbxPortSelector, gridBagConstraints);
+
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jCbxPortSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCbxPortSelectorActionPerformed
+		EndpointMapping endpointMapping = (EndpointMapping) endpointModel.getSelectedItem();
+
+		if(endpointMapping != null) {
+			selectedEndpointPanel.setEndpointMapping(endpointMapping);
+		} else {
+			selectedEndpointPanel.setEndpointMapping(null);
+		}
+    }//GEN-LAST:event_jCbxPortSelectorActionPerformed
 
     private void jTxtWsdlPublishLocationKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtWsdlPublishLocationKeyReleased
-		if(theBean != null) {
-			try {
-				theBean.setWsdlPublishLocation(jTxtWsdlPublishLocation.getText());
-			} catch(java.beans.PropertyVetoException ex) {
-				jTxtWsdlPublishLocation.setText(theBean.getWsdlPublishLocation());
-			}
-		}		
+        if(theBean != null) {
+            String oldWsdlPublishLocation = theBean.getWsdlPublishLocation();
+            try {
+                String newWsdlPublishLocation = jTxtWsdlPublishLocation.getText().trim();
+                if(!newWsdlPublishLocation.equals(oldWsdlPublishLocation)) {
+                    theBean.setWsdlPublishLocation(newWsdlPublishLocation);
+                    validateField(WebServiceDescriptor.FIELD_WSDL_PUBLISH_LOCATION);
+                }
+            } catch(java.beans.PropertyVetoException ex) {
+                jTxtWsdlPublishLocation.setText(oldWsdlPublishLocation);
+            }
+        }
     }//GEN-LAST:event_jTxtWsdlPublishLocationKeyReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox jCbxPortSelector;
     private javax.swing.JLabel jLblName;
+    private javax.swing.JLabel jLblPortComponentName;
+    private javax.swing.JLabel jLblPortDescription;
     private javax.swing.JLabel jLblWsdlPublishLocation;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField jTxtName;
@@ -173,30 +209,16 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
 		getAccessibleContext().setAccessibleName(bundle.getString("ACSN_WebServiceDescriptor"));	// NOI18N
 		getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_WebServiceDescriptor"));	// NOI18N
 
-		/** Add webservice endpoints table panel :
-		 *  TableEntry list has three properties: port component, endpoint address,
-		 *  and transport which are all standard values.  Authentication method,
-		 *  specified in the DTD, is not used for servlet based endpoints.
-		 */
-		ArrayList tableColumns = new ArrayList(4);
-		tableColumns.add(new GenericTableModel.ValueEntry(WebserviceEndpoint.PORT_COMPONENT_NAME, customizerBundle.getString("LBL_PortComponentName"), true));	// NOI18N
-		tableColumns.add(new LoginConfigEntry());
-		tableColumns.add(new GenericTableModel.ValueEntry(WebserviceEndpoint.ENDPOINT_ADDRESS_URI, customizerBundle.getString("LBL_EndpointAddressURI")));	// NOI18N
-		tableColumns.add(new GenericTableModel.ValueEntry(WebserviceEndpoint.TRANSPORT_GUARANTEE, customizerBundle.getString("LBL_TransportGuarantee")));	// NOI18N
-		
-		// add Properties table
-        webServiceEndpointModel = new GenericTableModel(webserviceEndpointFactory, tableColumns);
-        webServiceEndpointPanel = new GenericTablePanel(webServiceEndpointModel, 
-			customizerBundle, "WebServiceEndpoint",	// NOI18N - property name
-			WebServiceEndpointEntryPanel.class,
-			HelpContext.HELP_SERVICE_ENDPOINT_POPUP);
+		/** Add selected endpoint panel */
+		selectedEndpointPanel = new SelectedEndpointPanel(this);
+
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-		add(webServiceEndpointPanel, gridBagConstraints);
+		gridBagConstraints.insets = new Insets(0, 6, 0, 5);
+        add(selectedEndpointPanel, gridBagConstraints);
         
 		// Add error panel
 		addErrorPanel();
@@ -205,8 +227,35 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
 	protected void initFields() {
 		jTxtName.setText(theBean.getWebServiceDescriptionName());
         jTxtWsdlPublishLocation.setText(theBean.getWsdlPublishLocation());
-        webServiceEndpointPanel.setModel(theBean.getWebServiceEndpoints());
-        updatingEndpointModel = false;
+        
+        // endpoint combo & panel
+		// FIXME set combobox to proper value
+		endpointModel = new DefaultComboBoxModel();
+		List endpointList = theBean.getWebServiceEndpoints();
+		if(endpointList != null) {
+			Iterator iter = endpointList.iterator();
+			while(iter.hasNext()) {
+				WebserviceEndpoint endpoint = (WebserviceEndpoint) iter.next();
+				endpointModel.addElement(new EndpointMapping(endpoint));
+			}
+		}
+
+        // do endpoint panel enabling here, before we initialize the data.
+        // Otherwise, this method will undo certain selective enabling that is
+        // done on endpoint initialization.
+        enableButtonsAndPanels();
+        
+		jCbxPortSelector.setModel(endpointModel);
+
+		if(endpointModel.getSize() > 0) {
+			jCbxPortSelector.setSelectedIndex(0);
+		}
+	}
+    
+	private void enableButtonsAndPanels() {
+		boolean enabled = (endpointModel.getSize() > 0);
+		jCbxPortSelector.setEnabled(enabled);
+		selectedEndpointPanel.setContainerEnabled(selectedEndpointPanel, enabled);
 	}
 
 	public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
@@ -214,39 +263,19 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
 		
 		if(WebServiceDescriptor.WEBSERVICE_DESCRIPTION_NAME.equals(eventName)) {
 			jTxtName.setText(theBean.getWebServiceDescriptionName());
-		} else if(WebServiceDescriptor.WEBSERVICE_ENDPOINT.equals(eventName)) {
-            try {
-                updatingEndpointModel = true;
-                webServiceEndpointPanel.setModel(theBean.getWebServiceEndpoints());
-            } finally {
-                updatingEndpointModel = false;
-            }
-		}
-	}
-	
-	public void tableChanged(TableModelEvent e) {
-		if(theBean != null) {
-			try {
-                if(!updatingEndpointModel) {
-                    theBean.setWebServiceEndpoints(webServiceEndpointModel.getData());
-                    theBean.setDirty();
-                }
-			} catch(PropertyVetoException ex) {
-				// FIXME undo whatever changed... how?
-			}
-		}		
+		} else if(WebServiceDescriptor.ENDPOINT_SECURITY_BINDING.equals(eventName)) {
+            selectedEndpointPanel.reloadEndpointMapping();
+        }
 	}
 	
 	protected void addListeners() {
 		super.addListeners();
 		theBean.addPropertyChangeListener(this);
-		webServiceEndpointModel.addTableModelListener(this);
 	}
 	
 	protected void removeListeners() {
 		super.removeListeners();
 		theBean.removePropertyChangeListener(this);
-		webServiceEndpointModel.removeTableModelListener(this);
 	}	
 	
 	protected boolean setBean(Object bean) {
@@ -269,14 +298,5 @@ public class WebServiceDescriptorCustomizer extends BaseCustomizer implements
 
 	public String getHelpId() {
 		return "AS_CFG_WebServiceDescriptor";    // NOI18N
-	}
-    
-    // New for migration to sun DD API model.  Factory instance to pass to generic table model
-    // to allow it to create webserviceEndpoint beans.
-	private static GenericTableModel.ParentPropertyFactory webserviceEndpointFactory =
-        new GenericTableModel.ParentPropertyFactory() {
-            public CommonDDBean newParentProperty() {
-                return StorageBeanFactory.getDefault().createWebserviceEndpoint();
-            }
-        };
+    }
 }

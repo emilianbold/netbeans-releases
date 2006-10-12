@@ -38,9 +38,9 @@ class AddDomainNamePasswordPanel implements WizardDescriptor.Panel, ChangeListen
      * component from this class, just use getComponent().
      */
     private AddInstanceVisualNamePasswordPanel component;
-
+    
     private WizardDescriptor wiz;
-        
+    
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
@@ -56,27 +56,38 @@ class AddDomainNamePasswordPanel implements WizardDescriptor.Panel, ChangeListen
     public HelpCtx getHelp() {
         return new HelpCtx("AS_RegServ_EnterNameAndPassword"); //NOI18N
     }
-        
+    
     /** Determine if the content is valid.
      *
-     * The constraints on this is complex.  If there is a user name entry, there
-     * must be a password entry at least 8 chanracters long (trimmed for spaces).
-     *
-     * If there is a password entry, it must be atleast 8 characters long.
-     * 
-     * If there is a password entry, there must be a user name entry.
-     *
-     * If the page appears in the wizard for creating a personal instance, there
-     * be a passowrd entry.
+     * If the page appears for personal domain the password length must be zero
+     * length or have 8 or more characters.
      */
     public boolean isValid() {
         String password = component.getPWord().trim();
         String username = component.getUName().trim();
+        boolean retVal = true;
+        if (wiz.getProperty(AddDomainWizardIterator.TYPE) == AddDomainWizardIterator.PERSONAL) {
+            int len = password.length();
+            if (retVal && (len > 0) && (len < 8)) {
+                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddDomainNamePasswordPanel.class,
+                        "MSG_PasswordLength"));                                     //NOI18N
+                retVal = false;
+            }
+            if (retVal && username.length() < 1 && len > 0) {
+                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddDomainNamePasswordPanel.class,
+                        "MSG_AdminNameLength"));                                     //NOI18N
+                retVal = false;
+            }
+        }
         
-        wiz.putProperty(AddDomainWizardIterator.USER_NAME,username);
-        wiz.putProperty(AddDomainWizardIterator.PASSWORD,password);
-        wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, null);
-        return true;
+        if (retVal) {
+            wiz.putProperty(AddDomainWizardIterator.USER_NAME,username);
+            wiz.putProperty(AddDomainWizardIterator.PASSWORD,password);
+            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE, null);
+        }
+        return retVal;
     }
     
     // Event handling
@@ -102,7 +113,7 @@ class AddDomainNamePasswordPanel implements WizardDescriptor.Panel, ChangeListen
             ((ChangeListener)it.next()).stateChanged(ev);
         }
     }
-
+    
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
@@ -116,7 +127,7 @@ class AddDomainNamePasswordPanel implements WizardDescriptor.Panel, ChangeListen
     public void storeSettings(Object settings) {
         // TODO implement?
     }
-
+    
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }

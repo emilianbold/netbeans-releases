@@ -60,11 +60,12 @@ public class PortDetector {
             InputStream is = socket.getInputStream();
             BufferedReader bis = new BufferedReader(new InputStreamReader(is));
             
-            boolean found = false;
-            String line = null;
-            while ((line = bis.readLine()) != null) {
+             while (( bis.readLine()) != null) {
                 i++;
-                if ( i > 5 ) break; //we have the header
+                if ( i > 5 ) {
+                    break; //we have the header
+                
+                }
             }
             
             // We are reading the certificate.
@@ -147,7 +148,7 @@ public class PortDetector {
 	}
 
 	byte[] input = new byte[istream.available()];
-	int len = istream.read(input);
+	istream.read(input);
 
 	// Close the socket
 	socket.close();

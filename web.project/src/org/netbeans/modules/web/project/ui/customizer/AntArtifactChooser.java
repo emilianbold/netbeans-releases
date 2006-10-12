@@ -197,7 +197,6 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         
         AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
-        chooser.setPreferredSize( new Dimension( 650, 380 ) );
         chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
 
         int option = chooser.showOpenDialog( parent ); // Show the chooser

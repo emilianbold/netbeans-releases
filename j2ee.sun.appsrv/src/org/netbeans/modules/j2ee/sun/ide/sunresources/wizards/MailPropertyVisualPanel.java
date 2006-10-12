@@ -205,7 +205,7 @@ public class MailPropertyVisualPanel extends javax.swing.JPanel implements Wizar
     
     public void tableChanged(TableModelEvent evt) {
         setPropTableCellEditor();
-        this.panel.fireChangeEvent();
+        this.panel.fireChange(evt.getSource());
     }
 
     public void setPropTableCellEditor() {

@@ -25,10 +25,9 @@ import org.openide.filesystems.FileObject;
 /**
  * Provider interface for web services.
  *
- * @author Peter Williams
+ * @author Peter Williams, Milan Kuchtiak
  */
 public interface WebServicesSupportProvider {
 
     public WebServicesSupport findWebServicesSupport(FileObject file);
-
 }

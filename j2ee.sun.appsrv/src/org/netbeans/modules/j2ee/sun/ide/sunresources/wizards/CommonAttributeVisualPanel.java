@@ -360,9 +360,9 @@ public class CommonAttributeVisualPanel extends javax.swing.JPanel implements Ch
         
         List list = null;
         if (getPanelType().equals(TYPE_JDBC_RESOURCE)) {
-            list = ResourceUtils.getRegisteredConnectionPools(this.helper.getData(), __ConnectionPoolResource);    
+            list = ResourceUtils.getRegisteredConnectionPools(this.helper.getData());    
         }else if (getPanelType().equals(TYPE_PERSISTENCE_MANAGER)) {
-            list = ResourceUtils.getRegisteredJdbcResources(this.helper.getData(), __JDBCResource); 
+            list = ResourceUtils.getRegisteredJdbcResources(this.helper.getData()); 
         }
         if(list != null){
             for (int i = 0; i < list.size(); i++) {

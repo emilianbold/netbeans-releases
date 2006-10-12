@@ -17,11 +17,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
- * WebAppRootCustomizer.java
+ * AppRootCustomizer.java
  *
  * Created on September 4, 2003, 5:28 PM
  */
-
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.other;
 
 import java.beans.Customizer;
@@ -83,6 +82,7 @@ public class AppRootCustomizer extends BaseCustomizer {
         jCbxPassByReference = new javax.swing.JComboBox();
         jLblRealm = new javax.swing.JLabel();
         jTxtRealm = new javax.swing.JTextField();
+        jLblSecurityHelpText = new javax.swing.JLabel();
         jPnlModuleMaps = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -93,8 +93,7 @@ public class AppRootCustomizer extends BaseCustomizer {
         jLblPassByReference.setLabelFor(jCbxPassByReference);
         jLblPassByReference.setText(bundle.getString("LBL_PassByReference_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPnlGeneral.add(jLblPassByReference, gridBagConstraints);
         jLblPassByReference.getAccessibleContext().setAccessibleName(bundle.getString("PassByReference_Acsbl_Name"));
         jLblPassByReference.getAccessibleContext().setAccessibleDescription(bundle.getString("PassByReference_Acsbl_Desc"));
@@ -109,7 +108,7 @@ public class AppRootCustomizer extends BaseCustomizer {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPnlGeneral.add(jCbxPassByReference, gridBagConstraints);
         jCbxPassByReference.getAccessibleContext().setAccessibleName(bundle.getString("PassByReference_Acsbl_Name"));
         jCbxPassByReference.getAccessibleContext().setAccessibleDescription(bundle.getString("PassByReference_Acsbl_Desc"));
@@ -119,8 +118,8 @@ public class AppRootCustomizer extends BaseCustomizer {
         jLblRealm.setLabelFor(jTxtRealm);
         jLblRealm.setText(bundle.getString("LBL_Realm_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         jPnlGeneral.add(jLblRealm, gridBagConstraints);
         jLblRealm.getAccessibleContext().setAccessibleName(bundle.getString("Realm_Acsbl_Name"));
         jLblRealm.getAccessibleContext().setAccessibleDescription(bundle.getString("Realm_Acsbl_Desc"));
@@ -135,15 +134,23 @@ public class AppRootCustomizer extends BaseCustomizer {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 0.75;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPnlGeneral.add(jTxtRealm, gridBagConstraints);
         jTxtRealm.getAccessibleContext().setAccessibleName(bundle.getString("Realm_Acsbl_Name"));
         jTxtRealm.getAccessibleContext().setAccessibleDescription(bundle.getString("Realm_Acsbl_Desc"));
+
+        jLblSecurityHelpText.setText(bundle.getString("LBL_SecurityRoleMappingHelp"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        jPnlGeneral.add(jLblSecurityHelpText, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
         add(jPnlGeneral, gridBagConstraints);
 
         jPnlModuleMaps.setLayout(new java.awt.GridBagLayout());
@@ -153,10 +160,10 @@ public class AppRootCustomizer extends BaseCustomizer {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jPnlModuleMaps, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
 	private void jTxtRealmKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtRealmKeyReleased
 		// Add your handling code here:
@@ -185,6 +192,7 @@ public class AppRootCustomizer extends BaseCustomizer {
     private javax.swing.JComboBox jCbxPassByReference;
     private javax.swing.JLabel jLblPassByReference;
     private javax.swing.JLabel jLblRealm;
+    private javax.swing.JLabel jLblSecurityHelpText;
     private javax.swing.JPanel jPnlGeneral;
     private javax.swing.JPanel jPnlModuleMaps;
     private javax.swing.JTextField jTxtRealm;

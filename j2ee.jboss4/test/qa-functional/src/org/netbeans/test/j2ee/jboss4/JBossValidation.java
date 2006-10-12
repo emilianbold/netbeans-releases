@@ -100,7 +100,7 @@ public class JBossValidation extends JellyTestCase {
         Node node = new Node(new RuntimeTabOperator().getRootNode(),Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE"));
         node.performPopupActionNoBlock(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"));
         NbDialogOperator dialog = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"));
-        new JComboBoxOperator(dialog).selectItem("JBoss Application Server 4.0.3");
+        new JComboBoxOperator(dialog).selectItem("JBoss Application Server 4");
         new JButtonOperator(dialog,Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT")).push();
         new JTextFieldOperator(dialog).setText("");
         new JTextFieldOperator(dialog).typeText(path);

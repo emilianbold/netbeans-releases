@@ -169,7 +169,6 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLStmtCustomizer.class, "ACSN_Stmt_Variable"));
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLStmtCustomizer.class, "ACSD_Stmt_Variable"));
 
-        jComboBox2.setFont(new java.awt.Font("Dialog", 0, 12));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -233,8 +232,7 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jTextField2, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -94,7 +94,6 @@ public class OptionValuePair extends org.netbeans.modules.schema2beans.BaseBean
 		comparators.remove(c);
 	}
 	public void validate() throws org.netbeans.modules.schema2beans.ValidateException {
-		boolean restrictionFailure = false;
 		// Validating property optionName
 		if (getOptionName() == null) {
 			throw new org.netbeans.modules.schema2beans.ValidateException("getOptionName() == null", "optionName", this);	// NOI18N
@@ -108,8 +107,6 @@ public class OptionValuePair extends org.netbeans.modules.schema2beans.BaseBean
 	// Dump the content of this bean returning it as a String
 	public void dump(StringBuffer str, String indent){
 		String s;
-		Object o;
-		org.netbeans.modules.schema2beans.BaseBean n;
 		str.append(indent);
 		str.append("OptionName");	// NOI18N
 		str.append(indent+"\t");	// NOI18N

@@ -333,5 +333,136 @@ public class ResultItemPaintComponent extends JPanel {
             drawString(g, str, (mandatory ? Color.RED: Color.GREEN.darker()));
         }
     }
+
+    // ------------------- EL CLASSES -----------------------------
     
+    public static class ELPaintComponent extends ResultItemPaintComponent{
+        private String typeName = null;
+           
+        public void draw(Graphics g){
+            drawIcon(g, getIcon());
+            drawString(g, str, getExpressionColor(), new Font(getDrawFont().getName(), getDrawFont().getStyle() | Font.BOLD, getDrawFont().getSize()), false);
+            if (getTypeName() != null)
+                drawTypeName(g, getTypeName(), getTypeColor());
+        }
+
+        public Color getExpressionColor() {
+            return Color.blue;
+        }
+
+        public Color getTypeColor() {
+            return Color.BLACK;
+        }
+
+        public String getTypeName() {
+            return typeName;
+        }
+
+        public void setTypeName(String typeName) {
+            this.typeName = typeName;
+        }
+    }
+    
+    public static class ELImplicitObjectPaintComponent extends ELPaintComponent {
+        private int type = 0;
+       
+        private static final String OBJECT_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/class_16.png"; //NOI18N
+        private static final String MAP_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/map_16.png";      //NOI18N
+        
+        protected Icon getIcon(){
+            Icon icon = null;
+            switch (type){
+                case ELImplicitObjects.OBJECT_TYPE:
+                    icon = new ImageIcon(org.openide.util.Utilities.loadImage(OBJECT_PATH)); break;
+                case ELImplicitObjects.MAP_TYPE: 
+                    icon = new ImageIcon(org.openide.util.Utilities.loadImage(MAP_PATH)); break;
+            }
+            return icon;
+        }
+
+        public int getType() {
+            return type;
+        }
+
+        public void setType(int type) {
+            this.type = type;
+            
+        }
+        
+    }
+    
+    public static class ELBeanPaintComponent extends ELPaintComponent {
+        
+        public static final Color BEAN_NAME_COLOR = Color.blue.darker().darker();
+        private static final String BEAN_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/bean_16.png";    //NOI18N
+        
+        protected Icon getIcon(){
+            return new ImageIcon(org.openide.util.Utilities.loadImage(BEAN_PATH));
+        }
+        
+        public Color getExpressionColor(){
+            return BEAN_NAME_COLOR;
+        }
+        
+    }
+    
+    public static class ELPropertyPaintComponent extends ELPaintComponent {
+        
+        public static final Color PROPERTY_NAME_COLOR = Color.blue.darker().darker();
+        private static final String PROPERTY_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/property_16.png"; //NOI18N
+
+        
+        protected Icon getIcon(){
+            return new ImageIcon(org.openide.util.Utilities.loadImage(PROPERTY_PATH));
+        }
+   
+        public Color getExpressionColor(){
+            return PROPERTY_NAME_COLOR;
+        }
+    }
+    
+    public static class ELFunctionPaintComponent extends ELPaintComponent {
+        
+        private String prefix = null;
+        private String parameters = null;
+        private static final Color PREFIX_COLOR = Color.blue.darker().darker();
+        private static final Color FUNCTION_NAME_COLOR = Color.black;
+        private static final Color PARAMETER_COLOR = Color.black;
+        
+        private static final String ICON_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/function_16.png";
+
+        
+        protected Icon getIcon(){
+            return new ImageIcon(org.openide.util.Utilities.loadImage(ICON_PATH));
+        }
+   
+        public Color getExpressionColor(){
+            return FUNCTION_NAME_COLOR;
+        }
+        
+        public void draw(Graphics g){
+            drawIcon(g, getIcon());
+            drawString(g, prefix, PREFIX_COLOR, new Font(getDrawFont().getName(), getDrawFont().getStyle() | Font.BOLD, getDrawFont().getSize()), false);
+            drawString(g, ":"+str, FUNCTION_NAME_COLOR, new Font(getDrawFont().getName(), getDrawFont().getStyle() | Font.BOLD, getDrawFont().getSize()), false);
+            drawParameters(g, parameters);
+            if (getTypeName() != null)
+                drawTypeName(g, getTypeName(), getTypeColor());
+        }
+        
+        protected void drawParameters(Graphics g, String parList) {
+            drawString(g, "(", PARAMETER_COLOR); // NOI18N
+            if (parameters != null)
+                drawString(g, parameters, PARAMETER_COLOR);
+            drawString(g, ")", PARAMETER_COLOR);
+        }
+        
+        public void setPrefix(String prefix){
+            this.prefix = prefix;
+        }
+        
+        public void setParameters(String parameters){
+            this.parameters = parameters;
+        }
+
+    }
 }

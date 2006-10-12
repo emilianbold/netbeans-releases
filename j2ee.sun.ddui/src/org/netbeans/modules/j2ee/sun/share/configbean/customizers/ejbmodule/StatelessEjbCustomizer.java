@@ -115,11 +115,6 @@ public class StatelessEjbCustomizer extends SessionEjbCustomizer
 
 
     public java.awt.GridBagConstraints getErrorPanelConstraints(){
-        java.awt.GridBagConstraints gridBagConstraints = 
-            super.getErrorPanelConstraints();
-        
-        gridBagConstraints.gridy = 4;
-
-        return gridBagConstraints;
+        return super.getErrorPanelConstraints();
     }
 }

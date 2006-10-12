@@ -1,8 +1,33 @@
 <?xml version="1.0"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+ The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
 	<folder name="J2EE">
+           <folder name="SunAppServer">
+               <folder name="Bridge">
+                   <file name="appsrvbridge">
+                       <attr name="jar.location" stringvalue="modules/ext/appsrvbridge.jar"/>
+                   </file>
+               </folder>
+           </folder>
 	    <folder name="DeploymentPlugins">
 		    <folder name="J2EE">
 			    <file name="Descriptor" url="nbdep.xml"/>
@@ -45,11 +70,11 @@
 					</folder>
 					<folder name="EAR">
 						<file name="META-INF\sun-application.xml"/>
-					</folder>
+					</folder> 
 					<folder name="RAR">
-						<file name="META-INF\sun-connector.xml"/>
+						<file name="META-INF\sun-ra.xml"/>
 					</folder>
-
+                                        
 					<folder name="CAR">
 						<file name="META-INF\sun-application-client.xml"/>
 					</folder>
@@ -157,5 +182,9 @@
      <folder name="WarmUp">
          <file name="org.netbeans.modules.j2ee.sun.ide.WarmUp.instance" /> 
      </folder>
-          
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="org-netbeans-modules-j2ee-sunserver.xml" url="error-annotation.xml"/>
+	</folder>
+    </folder>          
 </filesystem>

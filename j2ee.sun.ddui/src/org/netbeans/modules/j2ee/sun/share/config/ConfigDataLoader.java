@@ -70,11 +70,12 @@ public class ConfigDataLoader extends UniFileLoader {
         primaryByName = new HashMap();
         secondaryByName = new HashMap();
         
-        // Sun Application Server specific files for 4.2.  !PW FIXME add appclient and connector in NB 5.0/Glassfish support
+        // Sun Application Server specific files
         primaryByName.put("sun-web.xml", "WEB-INF/sun-web.xml");
         primaryByName.put("sun-ejb-jar.xml", "META-INF/sun-ejb-jar.xml");
         secondaryByName.put("sun-cmp-mappings.xml", "META-INF/sun-cmp-mappings.xml");
         primaryByName.put("sun-application.xml", "META-INF/sun-application.xml");
+        primaryByName.put("sun-application-client.xml", "META-INF/sun-application-client.xml");
     }
     
     /** Gets default display name. Overrides superclass method. */

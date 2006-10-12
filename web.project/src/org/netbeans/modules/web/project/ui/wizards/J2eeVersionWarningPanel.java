@@ -22,9 +22,9 @@ package org.netbeans.modules.web.project.ui.wizards;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.NbBundle;
 
 /**
  * Displays a warning that the project's Java platform will be set to JDK 1.4 or
@@ -40,12 +40,22 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     public final static String WARN_SET_JDK_14 = "warnSetJdk14"; // NOI18N
     
     /**
+     * Display a warning that the target platform will be upgraded to JDK 1.5
+     */
+    public final static String WARN_SET_JDK_15 = "warnSetJdk15"; // NOI18N
+    
+    /**
      * Display a warning that the source level will be downgraded to 1.4
      */
     public final static String WARN_SET_SOURCE_LEVEL_14 = "warnSetSourceLevel14"; // NOI18N
     
+    /**
+     * Display a warning that the source level will be upgraded to 1.5
+     */
+    public final static String WARN_SET_SOURCE_LEVEL_15 = "warnSetSourceLevel15"; // NOI18N
+    
     private String warningType;
-    private String java14PlatformName;
+    private String javaPlatformName;
     
     public J2eeVersionWarningPanel(String warningType) {
         initComponents();
@@ -59,23 +69,27 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     public void setWarningType(String warningType) {
         String warningText = null;
         String checkBoxText = null;
-        boolean setJdk14 = false;
         
         this.warningType = warningType;
         
+        setJdk14Panel.setVisible(false);
+        setSourceLevel14Panel.setVisible(false);
+        setJdk15Panel.setVisible(false);
+        setSourceLevel15Panel.setVisible(false);
+        
         if (WARN_SET_JDK_14.equals(warningType)) {
-            setJdk14 = true;
+            setJdk14Panel.setVisible(true);
             downgradeJdk14CheckBox.setSelected(FoldersListSettings.getDefault().isAgreedSetJdk14());
         } else if (WARN_SET_SOURCE_LEVEL_14.equals(warningType)) {
-            setJdk14 = false;
+            setSourceLevel14Panel.setVisible(true);
             downgradeSourceLevel14CheckBox.setSelected(FoldersListSettings.getDefault().isAgreedSetSourceLevel14());
-        } else {
-            assert false : "Send WARN_SET_JDK_14 or WARN_SET_SOURCE_LEVEL_14"; // NOI18N
+        } else if (WARN_SET_JDK_15.equals(warningType)) {
+            setJdk15Panel.setVisible(true);
+            downgradeJdk15CheckBox.setSelected(FoldersListSettings.getDefault().isAgreedSetJdk15());
+        } else if (WARN_SET_SOURCE_LEVEL_15.equals(warningType)) {
+            setSourceLevel15Panel.setVisible(true);
+            downgradeSourceLevel15CheckBox.setSelected(FoldersListSettings.getDefault().isAgreedSetSourceLevel15());
         }
-        
-        setJdk14Panel.setVisible(setJdk14);
-        setSourceLevel14Panel.setVisible(!setJdk14);
-        
     }
     
     public boolean getDowngradeAllowed() {
@@ -83,38 +97,65 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
             return downgradeJdk14CheckBox.isSelected();
         } else if (WARN_SET_SOURCE_LEVEL_14.equals(warningType)) {
             return downgradeSourceLevel14CheckBox.isSelected();
+        } else if (WARN_SET_JDK_15.equals(warningType)) {
+            return downgradeJdk15CheckBox.isSelected();
+        } else if (WARN_SET_SOURCE_LEVEL_15.equals(warningType)) {
+            return downgradeSourceLevel15CheckBox.isSelected();
         } else return false;
     }
     
-    public String getJava14PlatformName() {
-        if (java14PlatformName == null && WARN_SET_JDK_14.equals(warningType)) {
-            JavaPlatform[] java14Platforms = getJava14Platforms();
-            java14PlatformName = java14Platforms[0].getDisplayName();
+    public String getSuggestedJavaPlatformName() {
+        if (javaPlatformName == null && WARN_SET_JDK_14.equals(warningType) ) {
+            JavaPlatform[] java14Platforms = getJavaPlatforms("1.4");
+            javaPlatformName = java14Platforms[0].getDisplayName();
         }
-        return java14PlatformName;
+        if (javaPlatformName == null && WARN_SET_JDK_15.equals(warningType) ) {
+            JavaPlatform[] java14Platforms = getJavaPlatforms("1.5");
+            javaPlatformName = java14Platforms[0].getDisplayName();
+        }
+        return javaPlatformName;
     }
     
-    public static String findWarningType() {
+    public static String findWarningType(String j2eeLevel) {
+//        System.out.println("findWarningType: j2eeLevel="+j2eeLevel);
         JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
         SpecificationVersion version = defaultPlatform.getSpecification().getVersion();
+//        System.out.println("default platform is "+version);
         
-        // no warning if 1.4 is the default
-        if (new SpecificationVersion("1.4").equals(version)) // NOI18N
+        // no warning if 1.4 is the default for j2ee14
+        if (new SpecificationVersion("1.4").equals(version) && j2eeLevel.equals(J2eeModule.J2EE_14)) // NOI18N
             return null;
         
-        // now we know the default platform is 1.5 or higher
-        JavaPlatform[] java14Platforms = getJava14Platforms();
-        if (java14Platforms.length > 0) {
-            // the user has JDK 1.4, so we warn we'll downgrade to 1.4
-            return WARN_SET_JDK_14;
+        // no warning if 1.5 is the default for j2ee15
+        if (new SpecificationVersion("1.5").equals(version) && j2eeLevel.equals(J2eeModule.JAVA_EE_5)) // NOI18N
+            return null;
+        
+        if (j2eeLevel.equals(J2eeModule.J2EE_14)) {
+            JavaPlatform[] java14Platforms = getJavaPlatforms("1.4"); //NOI18N
+            if (java14Platforms.length > 0) {
+                // the user has JDK 1.4, so we warn we'll downgrade to 1.4
+                return WARN_SET_JDK_14;
+            } else {
+                // no JDK 1.4, the best we can do is downgrade the source level to 1.4
+                return WARN_SET_SOURCE_LEVEL_14;
+            }
+        } else if (j2eeLevel.equals(J2eeModule.JAVA_EE_5)) {
+            JavaPlatform[] java15Platforms = getJavaPlatforms("1.5"); //NOI18N
+            if (java15Platforms.length > 0) {
+                // the user has JDK 1.4, so we warn we'll downgrade to 1.4
+                return WARN_SET_JDK_15;
+            } else {
+                // no JDK 1.4, the best we can do is downgrade the source level to 1.4
+                return WARN_SET_SOURCE_LEVEL_15;
+            }
         } else {
-            // no JDK 1.4, the best we can do is downgrade the source level to 1.4
-            return WARN_SET_SOURCE_LEVEL_14;
+            //e.g. 1.3, javaee6, etc. - better ignore then assert
+            return null;
         }
     }
     
-    private static JavaPlatform[] getJava14Platforms() {
-        return JavaPlatformManager.getDefault().getPlatforms(null, new Specification("J2SE", new SpecificationVersion("1.4"))); // NOI18N
+    private static JavaPlatform[] getJavaPlatforms(String level) {
+        return JavaPlatformManager.getDefault().getPlatforms(null, new Specification("J2SE", new SpecificationVersion(level))); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -129,8 +170,14 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         setJdk14Panel = new javax.swing.JPanel();
         warningJdk14TextArea = new javax.swing.JTextArea();
         downgradeJdk14CheckBox = new javax.swing.JCheckBox();
+        setSourceLevel15Panel = new javax.swing.JPanel();
+        warningSourceLevel15TextArea = new javax.swing.JTextArea();
+        downgradeSourceLevel15CheckBox = new javax.swing.JCheckBox();
+        setJdk15Panel = new javax.swing.JPanel();
+        warningJdk15TextArea = new javax.swing.JTextArea();
+        downgradeJdk15CheckBox = new javax.swing.JCheckBox();
         setSourceLevel14Panel = new javax.swing.JPanel();
-        warningSourceLevel14TextArea1 = new javax.swing.JTextArea();
+        warningSourceLevel14TextArea = new javax.swing.JTextArea();
         downgradeSourceLevel14CheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
@@ -148,8 +195,6 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         setJdk14Panel.add(warningJdk14TextArea, gridBagConstraints);
-        warningJdk14TextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "ACSN_LabelSetSourceLevel14"));
-        warningJdk14TextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "ACSD_LabelSetSourceLevel14"));
 
         downgradeJdk14CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetJdk14").charAt(0));
         downgradeJdk14CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetJdk14"));
@@ -178,21 +223,105 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(setJdk14Panel, gridBagConstraints);
 
-        setSourceLevel14Panel.setLayout(new java.awt.GridBagLayout());
+        setSourceLevel15Panel.setLayout(new java.awt.GridBagLayout());
 
-        warningSourceLevel14TextArea1.setEditable(false);
-        warningSourceLevel14TextArea1.setLineWrap(true);
-        warningSourceLevel14TextArea1.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetSourceLevel14"));
-        warningSourceLevel14TextArea1.setWrapStyleWord(true);
-        warningSourceLevel14TextArea1.setOpaque(false);
+        warningSourceLevel15TextArea.setEditable(false);
+        warningSourceLevel15TextArea.setLineWrap(true);
+        warningSourceLevel15TextArea.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetSourceLevel15"));
+        warningSourceLevel15TextArea.setWrapStyleWord(true);
+        warningSourceLevel15TextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        setSourceLevel14Panel.add(warningSourceLevel14TextArea1, gridBagConstraints);
-        warningSourceLevel14TextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "ACSN_LabelSetSourceLevel14"));
-        warningSourceLevel14TextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "ACSD_LabelSetSourceLevel14"));
+        setSourceLevel15Panel.add(warningSourceLevel15TextArea, gridBagConstraints);
+
+        downgradeSourceLevel15CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetSourceLevel15").charAt(0));
+        downgradeSourceLevel15CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetSourceLevel15"));
+        downgradeSourceLevel15CheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        downgradeSourceLevel15CheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downgradeSourceLevel15CheckBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        setSourceLevel15Panel.add(downgradeSourceLevel15CheckBox, gridBagConstraints);
+        downgradeSourceLevel15CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetSourceLevel15"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(setSourceLevel15Panel, gridBagConstraints);
+
+        setJdk15Panel.setLayout(new java.awt.GridBagLayout());
+
+        warningJdk15TextArea.setEditable(false);
+        warningJdk15TextArea.setLineWrap(true);
+        warningJdk15TextArea.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetJdk15"));
+        warningJdk15TextArea.setWrapStyleWord(true);
+        warningJdk15TextArea.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        setJdk15Panel.add(warningJdk15TextArea, gridBagConstraints);
+
+        downgradeJdk15CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetJdk15").charAt(0));
+        downgradeJdk15CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetJdk15"));
+        downgradeJdk15CheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        downgradeJdk15CheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downgradeJdk15CheckBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        setJdk15Panel.add(downgradeJdk15CheckBox, gridBagConstraints);
+        downgradeJdk15CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetJdk15"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(setJdk15Panel, gridBagConstraints);
+
+        setSourceLevel14Panel.setLayout(new java.awt.GridBagLayout());
+
+        warningSourceLevel14TextArea.setEditable(false);
+        warningSourceLevel14TextArea.setLineWrap(true);
+        warningSourceLevel14TextArea.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetSourceLevel14"));
+        warningSourceLevel14TextArea.setWrapStyleWord(true);
+        warningSourceLevel14TextArea.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        setSourceLevel14Panel.add(warningSourceLevel14TextArea, gridBagConstraints);
 
         downgradeSourceLevel14CheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "MNE_AgreeSetSourceLevel14").charAt(0));
         downgradeSourceLevel14CheckBox.setText(org.openide.util.NbBundle.getMessage(J2eeVersionWarningPanel.class, "CTL_AgreeSetSourceLevel14"));
@@ -216,13 +345,22 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
         downgradeSourceLevel14CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetSourceLevel14"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(setSourceLevel14Panel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void downgradeSourceLevel15CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downgradeSourceLevel15CheckBoxActionPerformed
+        FoldersListSettings.getDefault().setAgreedSetSourceLevel15(downgradeSourceLevel15CheckBox.isSelected());
+    }//GEN-LAST:event_downgradeSourceLevel15CheckBoxActionPerformed
+
+    private void downgradeJdk15CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downgradeJdk15CheckBoxActionPerformed
+        FoldersListSettings.getDefault().setAgreedSetJdk15(downgradeJdk15CheckBox.isSelected());
+    }//GEN-LAST:event_downgradeJdk15CheckBoxActionPerformed
 
     private void downgradeSourceLevel14CheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downgradeSourceLevel14CheckBoxActionPerformed
         FoldersListSettings.getDefault().setAgreedSetSourceLevel14(downgradeSourceLevel14CheckBox.isSelected());
@@ -234,11 +372,17 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox downgradeJdk14CheckBox;
+    private javax.swing.JCheckBox downgradeJdk15CheckBox;
     private javax.swing.JCheckBox downgradeSourceLevel14CheckBox;
+    private javax.swing.JCheckBox downgradeSourceLevel15CheckBox;
     private javax.swing.JPanel setJdk14Panel;
+    private javax.swing.JPanel setJdk15Panel;
     private javax.swing.JPanel setSourceLevel14Panel;
+    private javax.swing.JPanel setSourceLevel15Panel;
     private javax.swing.JTextArea warningJdk14TextArea;
-    private javax.swing.JTextArea warningSourceLevel14TextArea1;
+    private javax.swing.JTextArea warningJdk15TextArea;
+    private javax.swing.JTextArea warningSourceLevel14TextArea;
+    private javax.swing.JTextArea warningSourceLevel15TextArea;
     // End of variables declaration//GEN-END:variables
     
 }

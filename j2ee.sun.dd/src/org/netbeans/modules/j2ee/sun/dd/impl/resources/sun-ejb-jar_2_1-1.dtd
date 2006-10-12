@@ -479,8 +479,9 @@ is either true or false.
 <!ELEMENT required ( #PCDATA )> 
 
 <!--
-auth-method element describes the authentication method. The only supported value
-is USERNAME_PASSWORD
+auth-method element describes the authentication method.
+For CSIv2, the only supported value is USERNAME_PASSWORD.
+For EJB web service endpoint, supported values are BASIC and CLIENT_CERT.
 -->  
 <!ELEMENT auth-method ( #PCDATA )> 
 
@@ -873,8 +874,13 @@ Example :
 -->
 <!ELEMENT wsdl-publish-location ( #PCDATA )>
 
+<!--
+The message-layer entity is used to define the value of the
+auth-layer attribute of message-security-config elements.
 
-
+Used in: message-security-config
+-->
+<!ENTITY % message-layer    "(SOAP)">
 
 <!--
 The message-security-binding element is used to customize the
@@ -911,7 +917,7 @@ Used in: webservice-endpoint, port-info
 -->
 <!ELEMENT message-security-binding ( message-security* )>
 <!ATTLIST message-security-binding
-          auth-layer  CDATA #REQUIRED
+          auth-layer  %message-layer; #REQUIRED
           provider-id CDATA           #IMPLIED >
 
 <!--

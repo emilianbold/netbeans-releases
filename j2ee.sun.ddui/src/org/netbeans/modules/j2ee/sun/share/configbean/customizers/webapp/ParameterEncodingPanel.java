@@ -92,18 +92,18 @@ public class ParameterEncodingPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jLblParameterEncoding, gridBagConstraints);
 
         jPnlParameterEncoding.setLayout(new java.awt.GridBagLayout());
 
-        jPnlParameterEncoding.setBorder(new javax.swing.border.EtchedBorder());
+        jPnlParameterEncoding.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jLblDefaultCharset.setLabelFor(jCbxDefaultCharset);
         jLblDefaultCharset.setText(webappBundle.getString("LBL_DefaultCharset_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPnlParameterEncoding.add(jLblDefaultCharset, gridBagConstraints);
 
         jCbxDefaultCharset.setPrototypeDisplayValue("");
@@ -111,7 +111,7 @@ public class ParameterEncodingPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         jPnlParameterEncoding.add(jCbxDefaultCharset, gridBagConstraints);
 
         jLblFormHintField.setLabelFor(jTxtFormHintField);
@@ -120,7 +120,7 @@ public class ParameterEncodingPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         jPnlParameterEncoding.add(jLblFormHintField, gridBagConstraints);
 
         jTxtFormHintField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -133,18 +133,17 @@ public class ParameterEncodingPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPnlParameterEncoding.add(jTxtFormHintField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 5);
         add(jPnlParameterEncoding, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jTxtFormHintFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtFormHintFieldKeyReleased
         String oldFormHintField = formHintField;

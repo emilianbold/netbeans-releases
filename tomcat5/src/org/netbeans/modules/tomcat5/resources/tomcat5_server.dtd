@@ -3,7 +3,7 @@ A Server element represents the entire Catalina servlet container.
 Therefore, it must be the single outermost element in the conf/server.xml configuration file.
 Its attributes represent the characteristics of the servlet container as a whole.
 -->
-<!ELEMENT Server (Service+) >
+<!ELEMENT Server (Service+, GlobalNamingResources*) >
 <!ATTLIST Server port CDATA #IMPLIED>
 <!ATTLIST Server shutdown CDATA #IMPLIED>
 <!ATTLIST Server className CDATA #IMPLIED>
@@ -18,6 +18,12 @@ that share a single Engine component for processing incoming requests.
 <!ELEMENT Service (Connector+, Engine) >
 <!ATTLIST Service name CDATA #REQUIRED>
 <!ATTLIST Service className CDATA #IMPLIED>
+
+<!--
+The GlobalNamingResources element defines the global JNDI resources for the Server
+-->
+
+<!ELEMENT GlobalNamingResources (Resource*, ResourceParams*, Environment*) >
 
 <!--
 The HTTP/1.1 Connector element represents a Connector component that supports the HTTP/1.1 protocol.

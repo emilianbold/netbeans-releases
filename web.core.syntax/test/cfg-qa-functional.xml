@@ -19,28 +19,52 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="QA functional config">
-
+    
+     <testbag testattribs="writing" executor="ide_as" name="JSP text writing">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/WritingCompletionTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+        
+    <testbag testattribs="validation, autocompletion" executor="ide_as" name="JSP Syntax autocompletion">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/AutoCompletionTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>   
+    
     <!-- Validation suite for my module -->
     <testbag testattribs="validation" executor="ide" name="JSP Syntax validation">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="**/JspColoringTest.class"/>
-		<include name="**/CompletionTest.class"/>
-		<include name="**/CompletionTestOld.class"/>
+                <include name="**/JspColoringTest.class"/>
+                <include name="**/CompletionTest.class"/>
             </patternset>
         </testset>
     </testbag>
-
+    
+    <testbag testattribs="validation" executor="ide_as" name="JSP Syntax EE5 validation">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/J2EECompletionTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
     <testbag testattribs="validation-debug" executor="ide-debug" name="JSP Syntax validation - debug">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/web/core/syntax/JspColoringTest.class"/>
-		<include name="org/netbeans/test/web/core/syntax/CompletionTest.class"/>
+                <include name="org/netbeans/test/web/core/syntax/JspColoringTest.class"/>
+                <include name="org/netbeans/test/web/core/syntax/CompletionTest.class"/>
             </patternset>
         </testset>
     </testbag>
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide-debug" antfile="build-qa-functional.xml" target="runidetest-debug" default="false"/>
+    <executor name="ide_as" antfile="build-qa-functional.xml" target="runidetest_with_appserver"/>
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
 </mconfig>

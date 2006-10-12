@@ -31,12 +31,16 @@ import java.awt.Image;
 import java.awt.Component;
 
 import javax.enterprise.deploy.spi.DConfigBean;
+import javax.swing.SwingUtilities;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
+import org.openide.util.WeakListeners;
 
+import org.netbeans.modules.j2ee.sun.share.config.ConfigurationStorage;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigBeanStorage;
 import org.netbeans.modules.j2ee.sun.share.configbean.Base;
 import org.netbeans.modules.j2ee.sun.share.configbean.DConfigBeanProperties;
@@ -48,7 +52,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.DConfigBeanProperties;
  * @author  Jeri Lockhart
  * @version
  */
-public class ConfigBeanNode extends AbstractNode {
+public class ConfigBeanNode extends AbstractNode implements PropertyChangeListener {
     
     final ConfigBeanStorage bean;
     final BeanInfo info;
@@ -66,6 +70,9 @@ public class ConfigBeanNode extends AbstractNode {
         } else {
             extraProps = null;
         }
+        
+        ConfigurationStorage storage = bean.getStorage();
+        storage.addPropertyChangeListener(WeakListeners.propertyChange(this, storage));
     }
     
     public String getDisplayName() {
@@ -147,6 +154,12 @@ public class ConfigBeanNode extends AbstractNode {
     public boolean hasCustomizer() {
         return info.getBeanDescriptor().getCustomizerClass() != null;
     }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(DataObject.PROP_COOKIE.equals(evt.getPropertyName())) {
+            fireCookieChange();
+        }
+    }
     
     public static class ConfigChildren extends Children.Keys implements ConfigBeanStorage.ChildrenChangeListener {
         ConfigBeanStorage bean;
@@ -186,13 +199,21 @@ public class ConfigBeanNode extends AbstractNode {
             return (Node[]) ret.toArray(new Node[ret.size()]);
         }
         
-        public void childBeanAdded(ConfigBeanStorage childStorage) {
-            updateKeys();
-            refreshKey(childStorage.getConfigBean().getDDBean().getXpath());
+        public void childBeanAdded(final ConfigBeanStorage childStorage) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateKeys();
+                    refreshKey(childStorage.getConfigBean().getDDBean().getXpath());
+                }
+            });
         }
         
-        public void childBeanRemoved(ConfigBeanStorage childStorage) {
-            updateKey(childStorage.getConfigBean().getDDBean().getXpath());
+        public void childBeanRemoved(final ConfigBeanStorage childStorage) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateKey(childStorage.getConfigBean().getDDBean().getXpath());
+                }
+            });
         }
     }
 }

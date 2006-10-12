@@ -201,18 +201,18 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JButton" name="jButtonAddJar">
+    <Component class="javax.swing.JButton" name="jButtonAddProject">
       <Properties>
         <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_AddJar_LabelMnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_AddProject_LabelMnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_AddJar_JButton" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_AddProject_JButton" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="ACS_CustomizeWAR_AddJar_A11YDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="ACS_CustomizeWAR_AddProject_A11YDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Constraints>
@@ -241,18 +241,18 @@
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="javax.swing.JButton" name="jButtonAddProject">
+    <Component class="javax.swing.JButton" name="jButtonAddJar">
       <Properties>
         <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_AddProject_LabelMnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_AddJar_LabelMnemonic" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_AddProject_JButton" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_AddJar_JButton" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="ACS_CustomizeWAR_AddProject_A11YDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/project/ui/customizer/Bundle.properties" key="ACS_CustomizeWAR_AddJar_A11YDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Constraints>

@@ -22,7 +22,6 @@ package org.netbeans.modules.tomcat5.progress;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;

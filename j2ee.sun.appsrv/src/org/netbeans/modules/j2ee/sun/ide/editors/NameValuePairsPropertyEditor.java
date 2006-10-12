@@ -192,14 +192,16 @@ public class NameValuePairsPropertyEditor extends java.beans.PropertyEditorSuppo
             String rowParamName = null;
             if (editParamName == null || editParamName.trim().length() == 0)
                 errors.add(bundle.getString("ERR_InvalidEntry")); //NOI18N
-            else if (editParamValue == null || editParamValue.trim().length() == 0)
+            else if (editParamValue == null || editParamValue.trim().length() == 0){
                 errors.add(bundle.getString("ERR_NoValue"));  //NOI18N
+            }
             
             for (int i = 0; i < data.size(); i++) {
                 row = (NameValuePair) data.elementAt(i);
                 rowParamName = row.getParamName();
-                if (i != param && rowParamName.equals(editParamName))
+                if (i != param && rowParamName.equals(editParamName)){
                     errors.add(bundle.getString("ERR_DuplicateEntry")); //NOI18N
+                }
             }
             return errors;
         }

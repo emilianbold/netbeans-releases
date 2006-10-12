@@ -25,13 +25,9 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 
 import org.openide.*;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.*;
 
 /**
@@ -119,16 +115,23 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         // test if IDE is run on correct JDK version
         if (!WLPluginProperties.runningOnCorrectJdk()) {
             String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_JDK");
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg); // NOI18N
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg);
             return false;
         }
                 
         // check for the validity of the entered installation directory
         // if it's invalid, return false
         File serverRoot = new File (locationField.getText());
+        
+        if (!WLPluginProperties.isSupportedVersion(serverRoot)) {
+            String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_VERSION");
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg); 
+            return false;
+        }
+        
         if (!WLPluginProperties.isGoodServerLocation(serverRoot)) {
             String msg = NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_ROOT");
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg); // NOI18N
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg);
             return false;
         }
 
@@ -138,7 +141,7 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
                          NbBundle.getMessage(ServerLocationPanel.class, "DOMAIN_LIST_NOT_FOUND", 
                             serverRoot.getPath() + File.separator + WLPluginProperties.DOMAIN_LIST
                          );
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg); // NOI18N
+            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, msg);
             return false;
         }
 
@@ -225,13 +228,18 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
      * An instance of the fileschooser that is used for locating the server 
      * installation directory
      */
-    private JFileChooser fileChooser = new JFileChooser();
+    private JFileChooser fileChooser;
     
     /**
      * Shows the filechooser set to currently selected directory or to the
      * default system root if the directory is invalid
      */
     private void showFileChooser() {
+        
+        if (fileChooser == null) {
+            fileChooser = new JFileChooser();
+        }
+        
         // set the chooser's properties
         fileChooser.setFileFilter(new DirectoryFileFilter());
         fileChooser.setMultiSelectionEnabled(false);

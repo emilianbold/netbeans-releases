@@ -573,7 +573,13 @@ public class WebFreeFormActionProvider implements ActionProvider {
         int line;
         try {
             line = findLine(file, match, elementLocalName, elementAttributeName);
-        } catch (Exception e) {
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return;
+        } catch (SAXException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return;
+        } catch (ParserConfigurationException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return;
         }

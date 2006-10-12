@@ -73,6 +73,8 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         
         addFile(projectDirectory, "nbproject", files); // NOI18N
         addFile(projectDirectory, "build.xml", files); // NOI18N
+        addFile(projectDirectory, "xml-resources", files); //NOI18N
+        addFile(projectDirectory, "catalog.xml", files); //NOI18N
         
         return files;
     }

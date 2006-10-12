@@ -95,7 +95,8 @@ public class OneOneFinderModel extends BeanTableModel {
 
     //BeanTableModel Methods
     public Object addRow(Object[] values){
-        Finder param = StorageBeanFactory.getDefault().createFinder();
+        StorageBeanFactory storageFactory = ((CmpEntityEjb) getParent()).getConfig().getStorageFactory();
+        Finder param = storageFactory.createFinder();
         param.setMethodName((String)values[0]);
         param.setQueryParams((String)values[1]);
         param.setQueryFilter((String)values[2]);

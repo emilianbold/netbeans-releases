@@ -639,10 +639,15 @@ public final class EditableProperties extends AbstractMap/*<String,String>*/ imp
                     }
                     x += 4;
                 } else {
-                    if (ch == 't') ch = '\t';
-                    else if (ch == 'r') ch = '\r';
-                    else if (ch == 'n') ch = '\n';
-                    else if (ch == 'f') ch = '\f';
+                    if (ch == 't') {
+                        ch = '\t';
+                    } else if (ch == 'r') {
+                        ch = '\r';
+                    } else if (ch == 'n') {
+                        ch = '\n';
+                    } else if (ch == 'f') {
+                        ch = '\f';
+                    }
                     output.append(ch);
                 }
             }

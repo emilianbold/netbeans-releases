@@ -19,8 +19,15 @@
 
 package org.netbeans.modules.tomcat5;
 
-import java.io.*;
-import org.netbeans.modules.tomcat5.config.*;
+
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.tomcat5.config.gen.Context;
+import org.netbeans.modules.tomcat5.config.gen.Engine;
+import org.netbeans.modules.tomcat5.config.gen.Host;
+import org.netbeans.modules.tomcat5.config.gen.SContext;
+import org.netbeans.modules.tomcat5.config.gen.Server;
+import org.netbeans.modules.tomcat5.config.gen.Service;
 import org.openide.ErrorManager;
 
 
@@ -38,8 +45,6 @@ public class TomcatModuleConfig {
 
     private long timestampContextXML;
     private long timestampServerXML;
-
-    private String docBase;
     private String path;
     
     
@@ -59,7 +64,6 @@ public class TomcatModuleConfig {
      * @param serverXmlPath path to server.xml file.
      */
     public TomcatModuleConfig(String docBase, String path, String serverXmlPath) {
-        this.docBase = docBase;
         if (path.equals("/")) {
             this.path = ""; // NOI18N
         } else {
@@ -80,6 +84,10 @@ public class TomcatModuleConfig {
             Context ctx = Context.createGraph(contextXml);
             return ctx;
         } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            return null;
+        } catch (RuntimeException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return null;
         }
     }

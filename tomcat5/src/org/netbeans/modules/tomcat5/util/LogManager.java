@@ -20,18 +20,19 @@
 package org.netbeans.modules.tomcat5.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.*;
-
-import org.netbeans.modules.tomcat5.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.TomcatManagerConfig;
+import org.netbeans.modules.tomcat5.TomcatModule;
+import org.netbeans.modules.tomcat5.TomcatModuleConfig;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-
 
 /**
  * <code>LogManager</code> manages all context and shared context logs for one
@@ -86,7 +87,7 @@ public class LogManager {
         new Thread() {
             public void run() {
                 try {
-                    int ret = process.waitFor();
+                    process.waitFor();
                     Thread.sleep(2000);  // time for server log
                 } catch (InterruptedException e) {
                 } finally {
@@ -130,7 +131,9 @@ public class LogManager {
     public void openSharedContextLog() {
         TomcatManagerConfig tomcatManagerConfig = manager.getTomcatManagerConfig();
         tomcatManagerConfig.refresh();
-        if (!tomcatManagerConfig.hasLogger()) return;
+        if (!tomcatManagerConfig.hasLogger()) {
+            return;
+        }
         LogViewer newSharedContextLog = null;
         try {
             TomcatProperties tp = manager.getTomcatProperties();

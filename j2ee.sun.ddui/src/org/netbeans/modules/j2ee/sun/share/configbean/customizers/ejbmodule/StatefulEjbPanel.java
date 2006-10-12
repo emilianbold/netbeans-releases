@@ -70,10 +70,8 @@ public class StatefulEjbPanel extends javax.swing.JPanel {
         availabilityEnabledLabel.setLabelFor(availabilityEnabledComboBox);
         availabilityEnabledLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("LBL_Availability_Enabled"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 5, 10, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         add(availabilityEnabledLabel, gridBagConstraints);
         availabilityEnabledLabel.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Availability_Enabled_Acsbl_Name"));
         availabilityEnabledLabel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Availability_Enabled_Acsbl_Desc"));
@@ -87,18 +85,16 @@ public class StatefulEjbPanel extends javax.swing.JPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipadx = 72;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(availabilityEnabledComboBox, gridBagConstraints);
         availabilityEnabledComboBox.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Availability_Enabled_Acsbl_Name"));
         availabilityEnabledComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/share/configbean/customizers/ejbmodule/Bundle").getString("Availability_Enabled_Acsbl_Desc"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void availabilityEnabledItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_availabilityEnabledItemStateChanged
         // Add your handling code here:

@@ -18,7 +18,6 @@
  */
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -33,13 +32,10 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.impl.Utils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -66,6 +62,9 @@ public class ProgressUI implements ProgressListener {
     private String lastMessage;
     private JComponent progressComponent;
     private boolean finished;
+    
+    /** helps to avoid double processing of the completion event */
+    private boolean completionEventProcessed;
     
     /** Creates a new instance of ProgressUI */
     public ProgressUI(String title, boolean modal) {
@@ -108,7 +107,7 @@ public class ProgressUI implements ProgressListener {
     public void progress(final String message) {
         handle.progress(message);
         if (modal) {
-            Utils.runInEventDispatchThread(new Runnable() {
+            Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
                     if (messageLabel != null) {
                         messageLabel.setText(message);
@@ -128,7 +127,7 @@ public class ProgressUI implements ProgressListener {
             progObj.removeProgressListener(this);
             progObj = null;
         }
-        Utils.runInEventDispatchThread(new Runnable() {
+        Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 finished = true;
                 if (dialog != null) {
@@ -156,7 +155,16 @@ public class ProgressUI implements ProgressListener {
         }
         progObj = obj;
         if (progObj != null) {
+            synchronized (this) {
+                completionEventProcessed = false;
+            }
             progObj.addProgressListener(this);
+            // safety-catch to not to miss the completion event, if it had come
+            // before the progress listener was registered
+            DeploymentStatus status = progObj.getDeploymentStatus();
+            if (status.isCompleted() || status.isFailed()) {
+                handleDeploymentStatus(status);
+            }
         }
     }
     
@@ -215,16 +223,23 @@ public class ProgressUI implements ProgressListener {
     // ProgressListener implementation ----------------------------------------
     
     public void handleProgressEvent(ProgressEvent progressEvent) {
-        DeploymentStatus status = progressEvent.getDeploymentStatus();
-        StateType state = status.getState();
-        if (state == StateType.COMPLETED) {
-            progress(status.getMessage());
-        } else if (state == StateType.RUNNING) {
-            progress(status.getMessage());
-        } else if (state == StateType.FAILED) {
+        handleDeploymentStatus(progressEvent.getDeploymentStatus());
+    }
+
+    private void handleDeploymentStatus(DeploymentStatus status) {
+        synchronized (this) {
+            if (completionEventProcessed) {
+                // this event has already been processed
+                return;
+            }
+            if (status.isCompleted() || status.isFailed()) {
+                completionEventProcessed = true;
+            }
+        }
+        if (status.isFailed()) {
             failed(status.getMessage());
-        } else if (state == StateType.RELEASED) {
-            failed(status.getMessage());
+        } else {
+            progress(status.getMessage());
         }
     }
 }

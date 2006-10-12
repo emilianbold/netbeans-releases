@@ -125,7 +125,6 @@ public class MappingEditor extends JPanel implements ActionListener {
         tflC.fill = GridBagConstraints.HORIZONTAL; 
         tflC.insets = endInsets;
 
-        setPreferredSize(new Dimension(400, 150));
         this.setLayout(new GridBagLayout());
 	
 	// Add the component rows

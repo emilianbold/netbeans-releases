@@ -317,6 +317,10 @@ public class SunApplicationProxy implements SunApplication {
             else appRoot.merge(root, mode);
         }
     }
+    
+    public CommonDDBean cloneVersion(String version) {
+        return appRoot == null ? null : appRoot.cloneVersion(version);
+    }
    
     public static interface OutputProvider {
         public void write(SunApplication appRoot) throws java.io.IOException;

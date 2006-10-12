@@ -96,15 +96,18 @@ public class EjbRef extends Base {
 			//   expand relative field id to full xpath id based on current context
 			//   lookup validator for this field in field validator DB
 			//   execute validator
-			String absoluteFieldXpath = getAbsoluteXpath(fieldId);
-			if(!Utils.notEmpty(jndiName)) {
-				Object [] args = new Object[1];
-				args[0] = FIELD_JNDI_NAME;
-				String message = MessageFormat.format(bundle.getString("ERR_SpecifiedFieldIsEmpty"), args); // NOI18N
-				error = ValidationError.getValidationError(absoluteFieldXpath, message);
-			} else {
-				error = ValidationError.getValidationErrorMask(absoluteFieldXpath);
-			}
+			J2EEBaseVersion moduleVersion = getJ2EEModuleVersion();
+            if(moduleVersion.compareSpecification(J2EEVersion.JAVAEE_5_0) < 0) {
+                String absoluteFieldXpath = getAbsoluteXpath(fieldId);
+                if(!Utils.notEmpty(jndiName)) {
+                    Object [] args = new Object[1];
+                    args[0] = FIELD_JNDI_NAME;
+                    String message = MessageFormat.format(bundle.getString("ERR_SpecifiedFieldIsEmpty"), args); // NOI18N
+                    error = ValidationError.getValidationError(absoluteFieldXpath, message);
+                } else {
+                    error = ValidationError.getValidationErrorMask(absoluteFieldXpath);
+                }
+            }
 		}
 		
 		if(error != null) {
@@ -175,7 +178,7 @@ public class EjbRef extends Base {
 		Snippet snipOne = new DefaultSnippet() {
 			public CommonDDBean getDDSnippet() {
 				org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef ref = 
-                    StorageBeanFactory.getDefault().createEjbRef();
+                    getConfig().getStorageFactory().createEjbRef();
 
 				// write properties into Servlet bean
 				String ejbRefName = getEjbRefName();
@@ -237,15 +240,17 @@ public class EjbRef extends Base {
 	}
 	
 	protected void setDefaultProperties() {
-		// Set default JNDI name
-		jndiName = ejbRefNameDD.getText();
+        if(requiresJndiName()) {
+            // Set default JNDI name
+            jndiName = ejbRefNameDD.getText();
 
-		// Prepend "ejb/" only if, the Ref name does not start with "ejb/"
-		// By blue prints convention, Ref name always starts with "ejb/"
-		if (!jndiName.startsWith("ejb/")) {	// NOI18N
-			jndiName = "ejb/" + jndiName;	// NOI18N
-		}
-        
-        getConfig().getMasterDCBRoot().setDirty();
+            // Prepend "ejb/" only if, the Ref name does not start with "ejb/"
+            // By blue prints convention, Ref name always starts with "ejb/"
+            if (!jndiName.startsWith("ejb/")) {	// NOI18N
+                jndiName = "ejb/" + jndiName;	// NOI18N
+            }
+
+            getConfig().getMasterDCBRoot().setDirty();
+        }
 	}
 }

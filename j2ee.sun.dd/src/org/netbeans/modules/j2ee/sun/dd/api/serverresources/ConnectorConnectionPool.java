@@ -41,6 +41,9 @@ public interface ConnectorConnectionPool {
 	public static final String SECURITY_MAP = "SecurityMap";	// NOI18N
 	public static final String PROPERTY = "PropertyElement";	// NOI18N
         
+        public static final String TRANSACTIONSUPPORT = "TransactionSupport";	// NOI18N
+        public static final String ISCONNECTIONVALIDATIONREQUIRED = "IsConnectionValidationRequired";	// NOI18N
+        
 	public void setName(java.lang.String value);
 
 	public java.lang.String getName();
@@ -82,19 +85,12 @@ public interface ConnectorConnectionPool {
 	public String getDescription();
 
 	public void setSecurityMap(int index, SecurityMap value);
-
 	public SecurityMap getSecurityMap(int index);
-
 	public int sizeSecurityMap();
-
 	public void setSecurityMap(SecurityMap[] value);
-
 	public SecurityMap[] getSecurityMap();
-
 	public int addSecurityMap(SecurityMap value);
-
 	public int removeSecurityMap(SecurityMap value);
-
 	public SecurityMap newSecurityMap();
 
 	public void setPropertyElement(int index, PropertyElement value);
@@ -105,4 +101,13 @@ public interface ConnectorConnectionPool {
 	public int addPropertyElement(PropertyElement value);
 	public int removePropertyElement(PropertyElement value);
 	public PropertyElement newPropertyElement();
+        
+        //Resource 1.2
+        public void setTransactionSupport(java.lang.String value);
+
+	public java.lang.String getTransactionSupport();
+
+	public void setIsConnectionValidationRequired(java.lang.String value);
+
+	public java.lang.String getIsConnectionValidationRequired();
 }

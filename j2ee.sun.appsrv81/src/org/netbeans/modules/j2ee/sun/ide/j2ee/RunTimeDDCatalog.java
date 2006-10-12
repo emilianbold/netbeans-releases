@@ -59,7 +59,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 J2EE Application 1.4//EN" 	, "sun-application_1_4-0.dtd" , ///[THIS IS DEPRECATED]
         "-//Sun Microsystems, Inc.//DTD Application Server 8.0 J2EE Application 1.4//EN"                , "sun-application_1_4-0.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Application Server 8.1 J2EE Application 1.4//EN"                , "sun-application_1_4-0.dtd" ,
-        "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 9.0 J2EE Application 5.0//EN"                             , "sun-application_5_0-0.dtd",
+        "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Java EE Application 5.0//EN"             , "sun-application_5_0-0.dtd",
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 EJB 2.0//EN"                     , "sun-ejb-jar_2_0-0.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 EJB 2.1//EN"                     , "sun-ejb-jar_2_1-0.dtd" , ///[THIS IS DEPRECATED]
         "-//Sun Microsystems, Inc.//DTD Application Server 8.0 EJB 2.1//EN"                             , "sun-ejb-jar_2_1-0.dtd" ,
@@ -69,6 +69,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 Application Client 1.4//EN" 	, "sun-application-client_1_4-0.dtd" , ///[THIS IS DEPRECATED]
         "-//Sun Microsystems, Inc.//DTD Application Server 8.0 Application Client 1.4//EN"              , "sun-application-client_1_4-0.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Application Server 8.1 Application Client 1.4//EN"              , "sun-application-client_1_4-1.dtd" ,
+        "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Application Client 5.0//EN"              , "sun-application-client_5_0-0.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 Connector 1.0//EN"               , "sun-connector_1_0-0.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 Servlet 2.3//EN"                 , "sun-web-app_2_3-0.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 Servlet 2.4//EN"                 , "sun-web-app_2_4-0.dtd" , ///[THIS IS DEPRECATED]
@@ -81,7 +82,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         "-//Sun Microsystems, Inc.//DTD Application Server 8.0 OR Mapping//EN"                          , "sun-cmp-mapping_1_1.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Application Server 8.1 OR Mapping//EN"                          , "sun-cmp-mapping_1_2.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Application Server 8.0 Domain//EN"                              , "sun-domain_1_0.dtd" ,
-        "-//Sun Microsystems, Inc.//DTD Application Server 8.0 Application Client Container //EN" 	, "sun-application-client-container_1_0.dtd" ,
+        "-//Sun Microsystems Inc.//DTD Application Server 8.0 Application Client Container//EN" 	, "sun-application-client-container_1_2.dtd" ,
         "-//Sun Microsystems, Inc.//DTD Application Server 8.1 Application Client Container //EN" 	, "sun-application-client-container_1_1.dtd" ,
         "-//Sun Microsystems Inc.//DTD Application Server 8.0 Domain//EN"                              ,"sun-domain_1_1.dtd",
         "-//Sun Microsystems Inc.//DTD Application Server 8.1 Domain//EN"                              ,"sun-domain_1_1.dtd",
@@ -116,6 +117,12 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         "SCHEMA:http://java.sun.com/xml/ns/j2ee/j2ee_jaxrpc_mapping_1_1.xsd"        , "j2ee_jaxrpc_mapping_1_1",
         "SCHEMA:http://www.ibm.com/webservices/xsd/j2ee_web_services_1_1.xsd"             ,"j2ee_web_services_1_1",
        // "SCHEMA:http://www.ibm.com/webservices/xsd/j2ee_web_services_client_1_1.xsd"          ,"j2ee_web_services_client_1_1",
+        "SCHEMA:http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"                    , "ejb-jar_3_0",
+        "SCHEMA:http://java.sun.com/xml/ns/javaee/application-client_5.xsd"         , "application-client_5",
+        "SCHEMA:http://java.sun.com/xml/ns/javaee/application_5.xsd"         , "application_5",
+        "SCHEMA:http://java.sun.com/xml/ns/persistence/orm_1_0.xsd"         , "orm_1_0",
+        "SCHEMA:http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"         , "persistence_1_0",
+
     };
     
     File platformRootDir=null;
@@ -306,7 +313,17 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     private static final String APP_5= JAVAEE_NS+"/"+APP_5_XSD; // NOI18N
     public static final String APP_5_ID = "SCHEMA:"+APP_5; // NOI18N
  
-
+    
+    private static final String APPCLIENT_TAG="application-client"; //NOI18N
+    private static final String APPCLIENT_1_4_XSD="application-client_1_4.xsd"; // NOI18N
+    private static final String APPCLIENT_1_4= J2EE_NS+"/"+APPCLIENT_1_4_XSD; // NOI18N
+    public static final String APPCLIENT_1_4_ID = "SCHEMA:"+APPCLIENT_1_4; // NOI18N
+ 
+    private static final String APPCLIENT_5_XSD="application-client_5.xsd"; // NOI18N
+    private static final String APPCLIENT_5= JAVAEE_NS+"/"+APPCLIENT_5_XSD; // NOI18N
+    public static final String APPCLIENT_5_ID = "SCHEMA:"+APPCLIENT_5; // NOI18N
+    
+    
     private static final String WEBSERVICES_TAG="webservices"; //NOI18N
     private static final String WEBSERVICES_1_1_XSD="j2ee_web_services_1_1.xsd"; // NOI18N
     private static final String WEBSERVICES_1_1= IBM_J2EE_NS+"/"+WEBSERVICES_1_1_XSD; // NOI18N
@@ -320,18 +337,20 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     private static final String WEBAPP_2_5_XSD="web-app_2_5.xsd"; // NOI18N
     private static final String WEBAPP_2_5 = JAVAEE_NS+"/"+WEBAPP_2_5_XSD; // NOI18N
     public static final String WEBAPP_2_5_ID = "SCHEMA:"+WEBAPP_2_5; // NOI18N
-    
-    public static final String PERSISTENCEORM_NS = "http://java.sun.com/xml/ns/persistence_ORM"; // NOI18N
-    private static final String PERSISTENCEORM_TAG="persistence-jar"; //NOI18N
-    private static final String PERSISTENCEORM_XSD="persistence_ORM.xsd"; // NOI18N
-    private static final String PERSISTENCEORM = PERSISTENCEORM_NS+"/"+PERSISTENCEORM_XSD; // NOI18N
-    public static final String PERSISTENCEORM_ID = "SCHEMA:"+PERSISTENCEORM; // NOI18N
 
     public static final String PERSISTENCE_NS = "http://java.sun.com/xml/ns/persistence"; // NOI18N
     private static final String PERSISTENCE_TAG="persistence"; //NOI18N
-    private static final String PERSISTENCE_XSD="persistence.xsd"; // NOI18N
+    private static final String PERSISTENCE_XSD="persistence_1_0.xsd"; // NOI18N
     private static final String PERSISTENCE = PERSISTENCE_NS+"/"+PERSISTENCE_XSD; // NOI18N
-    public static final String PERSISTENCE_ID = "SCHEMA:"+PERSISTENCE; // NOI18N
+    public static final String PERSISTENCE_ID = "SCHEMA:"+PERSISTENCE; // NOI18N    
+    
+    public static final String PERSISTENCEORM_NS = "http://java.sun.com/xml/ns/persistence/orm"; // NOI18N
+    private static final String PERSISTENCEORM_TAG="entity-mappings"; //NOI18N
+    private static final String PERSISTENCEORM_XSD="orm_1_0.xsd"; // NOI18N
+    private static final String PERSISTENCEORM = PERSISTENCE_NS+"/"+PERSISTENCEORM_XSD; // NOI18N  yes not ORM NS!!!
+    public static final String PERSISTENCEORM_ID = "SCHEMA:"+PERSISTENCEORM; // NOI18N
+
+
     
     
     public String getFullURLFromSystemId(String systemId){
@@ -460,7 +479,21 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
                     }
 
                 }
-                
+                if (APPCLIENT_TAG.equals(tag)) {  // NOI18N
+                    String xmlns = element.getAttribute(XMLNS_ATTR);
+                    if (xmlns!=null && J2EE_NS.equals(xmlns)) {
+                        java.util.Vector v = new java.util.Vector();
+                        v.add(next);
+                        return v.elements();
+                        //   return org.openide.util.Enumerations.singleton(next);
+                    }
+                    else   if (xmlns!=null && JAVAEE_NS.equals(xmlns)) {
+                        java.util.Vector v = new java.util.Vector();
+                        v.add(next);
+                        return v.elements();
+                        //   return org.openide.util.Enumerations.singleton(next);
+                    }
+                }                
                 if (PERSISTENCEORM_TAG.equals(tag)) {  // NOI18N
                     String xmlns = element.getAttribute(XMLNS_ATTR);
                     if (xmlns!=null && PERSISTENCEORM_NS.equals(xmlns)) {
@@ -529,32 +562,47 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
                 try {
                     
                     
-                    if (ctx.getFileObject() == null) return null;
+                    if (ctx.getFileObject() == null) {
+                        return null;
+                    }
+                    InputSource inputSource = null;                    
                     
-                    if (is.getSystemId().endsWith("ejb-jar.xml") ) {  // NOI18N
-                        //System.out.println("ejbjar  tag");
-                        InputSource inputSource = resolver.resolveEntity(EJBJAR_2_1_ID, null);
-                        if (inputSource!=null) {
-                            return DTDUtil.parseDTD(true, inputSource);
-                        }
+                    String mimeType = ctx.getFileObject().getMIMEType();
+                    if (mimeType==null){
+                        return null;
+                    }
+                    if (mimeType.equals("text/x-dd-ejbjar3.0")){// NOI18N
+                        inputSource = resolver.resolveEntity(EJBJAR_3_0_ID, "");
+                    } else if (mimeType.equals("text/x-dd-ejbjar2.1")) {// NOI18N
+                        inputSource = resolver.resolveEntity(EJBJAR_2_1_ID, "");
+                    } else if (mimeType.equals("text/x-dd-application5.0")) {// NOI18N
+                        inputSource = resolver.resolveEntity(APP_5_ID, "");
+                    }else if (mimeType.equals("text/x-dd-application1.4")) {// NOI18N
+                        inputSource = resolver.resolveEntity(APP_1_4_ID, "");
+                    }else if (mimeType.equals("text/x-dd-client5.0")) {// NOI18N
+                        inputSource = resolver.resolveEntity(APPCLIENT_5_ID, "");
+                    }else if (mimeType.equals("text/x-dd-client1.4")) {// NOI18N
+                        inputSource = resolver.resolveEntity(APPCLIENT_1_4_ID, "");
+                    }else if (mimeType.equals("text/x-persistence1.0")) {// NOI18N
+                        inputSource = resolver.resolveEntity(PERSISTENCE_ID, "");
+                    }else if (mimeType.equals("text/x-orm1.0")) {// NOI18N
+                        inputSource = resolver.resolveEntity(PERSISTENCEORM_ID, "");
+                    }
+
+                    if (inputSource!=null) {
+                        return DTDUtil.parseDTD(true, inputSource);
                     }
                     
-                    if (is.getSystemId().endsWith("application.xml") ) {  // NOI18N
-                        //System.out.println("app tag");
-                        InputSource inputSource = resolver.resolveEntity(APP_1_4_ID, null);
-                        if (inputSource!=null) {
-                            return DTDUtil.parseDTD(true, inputSource);
-                        }
-                    }
+                    
                     if (is.getSystemId().endsWith("webservices.xml") ) {  // NOI18N
-                       // System.out.println("webservices tag");
-                        InputSource inputSource = resolver.resolveEntity(WEBSERVICES_1_1_ID, null);
+                        // System.out.println("webservices tag");
+                        inputSource = resolver.resolveEntity(WEBSERVICES_1_1_ID, "");
                         if (inputSource!=null) {
                             return DTDUtil.parseDTD(true, inputSource);
                         }
+                        
+                        
                     }
-                    
-                    
                     
                 } catch(SAXException e) {
                 } catch(java.io.IOException e) {
@@ -586,13 +634,13 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         }catch(Exception e){
             
         }
-        
         if (name.equals("http://java.sun.com/xml/ns/jax-rpc/ri/config")){
             return prefix +"jax-rpc-ri-config.xsd";
         }
-        if (name.equals("http://java.sun.com/xml/ns/persistence")){
-            return prefix +"persistence.xsd";
-        }        
+//        if (name.equals("http://java.sun.com/xml/ns/persistence")){
+//            System.out.println("prefix +persistence.xsd="+ prefix +"persistence.xsd");
+//            return prefix +"persistence.xsd";
+//        }        
         // ludo: this is meant to be this way.
         if (name.equals("http://java.sun.com/xml/ns/j2eeppppppp")){
             return prefix +"j2ee_web_services_1_1.xsd";

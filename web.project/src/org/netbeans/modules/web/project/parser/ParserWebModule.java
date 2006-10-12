@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.web.project.parser;
 
+import java.io.File;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.filesystems.FileObject;
 import java.beans.PropertyChangeListener;
@@ -55,4 +56,8 @@ public class ParserWebModule extends JspParserAPI.WebModule {
     public void addPropertyChangeListener(PropertyChangeListener l) {}
 
     public void removePropertyChangeListener(PropertyChangeListener l) {}
+
+    public File[] getExtraClasspathEntries() {
+        return null;
+    }
 }

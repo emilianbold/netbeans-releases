@@ -42,13 +42,8 @@ public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
         public static final String VERSION_2_4_0 = "2.40"; //NOI18N
         public static final String VERSION_2_3_0 = "2.30"; //NOI18N
         
-        public static final int STATE_VALID=0;
-        public static final int STATE_INVALID_PARSABLE=1;
-        public static final int STATE_INVALID_UNPARSABLE=2;
-        public static final String PROPERTY_STATUS="dd_status"; //NOI18N
-        public static final String PROPERTY_VERSION="dd_version"; //NOI18N
-    
         public static final String ERRORURL = "ErrorUrl";	// NOI18N
+	public static final String HTTPSERVLETSECURITYPROVIDER = "HttpservletSecurityProvider";	// NOI18N
 	public static final String CONTEXT_ROOT = "ContextRoot";	// NOI18N
 	public static final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
 	public static final String SERVLET = "Servlet";	// NOI18N
@@ -90,6 +85,9 @@ public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
          */
 	public String getContextRoot();
 
+	public void setHttpservletSecurityProvider(java.lang.String value) throws VersionNotSupportedException;
+	public java.lang.String getHttpservletSecurityProvider() throws VersionNotSupportedException;
+    
 	public void setSecurityRoleMapping(int index, SecurityRoleMapping value);
 	public SecurityRoleMapping getSecurityRoleMapping(int index);
 	public int sizeSecurityRoleMapping();
@@ -288,17 +286,7 @@ public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
 	public int removeWebserviceDescription(WebserviceDescription value);
 	public WebserviceDescription newWebserviceDescription();
 
-        /** Setter for version property.
-         * Warning : Only the upgrade from lower to higher version is supported.
-         * @param version ejb-jar version value
-         */
-        public void setVersion(java.math.BigDecimal version);
-        /** Getter for version property.
-         * @return property value
-         */
-        public java.math.BigDecimal getVersion();
-        
-         //Required for web 2.5.0
+        //Required for web 2.5.0
         public void setMessageDestinationRef(int index, MessageDestinationRef value) throws VersionNotSupportedException;
         public MessageDestinationRef getMessageDestinationRef(int index) throws VersionNotSupportedException;
         public int sizeMessageDestinationRef() throws VersionNotSupportedException;

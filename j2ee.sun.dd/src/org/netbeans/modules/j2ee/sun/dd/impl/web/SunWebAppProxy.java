@@ -115,6 +115,10 @@ public class SunWebAppProxy implements SunWebApp {
         return webRoot==null?null:webRoot.getErrorUrl();
     }
 
+    public String getHttpservletSecurityProvider() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?null:webRoot.getHttpservletSecurityProvider();
+    }
+    
     public boolean[] getIdempotentUrlPattern() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
         return webRoot==null?null:webRoot.getIdempotentUrlPattern();
     }
@@ -347,6 +351,10 @@ public class SunWebAppProxy implements SunWebApp {
         if (webRoot!=null) webRoot.setErrorUrl(str);
     }
 
+    public void setHttpservletSecurityProvider(String str) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        if (webRoot!=null) webRoot.setHttpservletSecurityProvider(str);
+    }
+    
     public void setIdempotentUrlPattern(boolean[] values) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
         if (webRoot!=null) webRoot.setIdempotentUrlPattern(values);
     }
@@ -747,6 +755,10 @@ public class SunWebAppProxy implements SunWebApp {
         }
     }
 
+    public CommonDDBean cloneVersion(String version) {
+        return webRoot == null ? null : webRoot.cloneVersion(version);
+    }
+   
     public int removeMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
         return webRoot==null?-1:webRoot.removeMessageDestinationRef(value);
     }
@@ -778,8 +790,7 @@ public class SunWebAppProxy implements SunWebApp {
     public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
         return webRoot==null?null:webRoot.getMessageDestinationRef();
     }
-    
-    
+
     /** Contract between friend modules that enables 
     * a specific handling of write(FileObject) method for targeted FileObject
     */

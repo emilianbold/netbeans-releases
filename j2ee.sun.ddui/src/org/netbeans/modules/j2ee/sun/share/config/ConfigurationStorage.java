@@ -16,14 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.j2ee.sun.share.config;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.util.*;
-
-import javax.swing.SwingUtilities;
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
@@ -31,10 +30,15 @@ import javax.enterprise.deploy.spi.exceptions.*;
 import org.openide.*;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.*;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.WeakListeners;
 
 import org.xml.sax.SAXException;
 
@@ -48,14 +52,20 @@ import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfigurat
  * for creating the DeployableObjects and the DConfigBeanRoots and tracking
  * changes at the application level.
  */
-public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurationProvider,*/ /*ModuleListener,*/ Node.Cookie {
+public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie {
     
     public static final String ROOT = "/"; // NOI18N
     private SunONEDeploymentConfiguration config;
+    
+    // Dataobject support -- ref to dataobject, property change listener
+    // that deletes the reference and detaches itself when dataobject is made invalid.
+    private ConfigDataObject configDataObject = null;
+    private Object dobjMonitor = new Object();
+    private PropertyChangeListener weakPropListener = null;
+    
     // Map of url -> ModuleDeploymentSupport
     Map moduleMap = new HashMap();
     final Map versionListeners = new HashMap();
-    ConfigurationSaver saver;
     private boolean needsSave = false;
     final J2eeModuleProvider module;
     boolean loaded = false;
@@ -64,11 +74,16 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     private int cleanInProgress;
     private boolean saveFailedDialogDisplayed;
     
+    // PropertyChangeSupport instance to let us forward dataobject cookie changes
+    // to any listeners (ie. ConfigBeanNode).
+    private PropertyChangeSupport dobjCookieChangeSupport;
+    
     public ConfigurationStorage(J2eeModuleProvider module, SunONEDeploymentConfiguration config) throws ConfigurationException, InvalidModuleException, IOException, SAXException {
         this.module = module;
         this.config = config;
         this.saveInProgress = 0;
         this.cleanInProgress = 0;
+        this.dobjCookieChangeSupport = new PropertyChangeSupport(this);
         
         load(); // calls init(), below.
         createVersionListeners();
@@ -132,7 +147,7 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
         StandardDDImpl[] ddBeans = (StandardDDImpl[]) ddRoot.getChildBean(ejbDDBean.getXpath());
 
         for(int i = 0; i < ddBeans.length; i++) {
-            String ejbName = (String) ddBeans[i].proxy.bean.getValue("EjbName"); // NOI18N // NOI18N
+            String ejbName = (String) ddBeans[i].proxy.bean.getValue("EjbName"); // NOI18N
             if (theEjbName.equals(ejbName)) {
                 result = ddBeans[i];
                 break;
@@ -146,7 +161,7 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                     ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
                 }
             }
-            Exception ex = new Exception("Failed to lookup: " + theEjbName + ", type " + ejbDDBean.getXpath());
+            Exception ex = new Exception("Failed to lookup: " + theEjbName + ", type " + ejbDDBean.getXpath()); // NOI18N
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
@@ -168,15 +183,57 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
     }
     
     public ConfigDataObject getPrimaryDataObject() {
-        if (saver instanceof ConfigDataObject) {
-            return (ConfigDataObject) saver;
+        ConfigDataObject configDO;
+        
+        synchronized (dobjMonitor) {
+            if(configDataObject == null) {
+                FileObject configFO = FileUtil.toFileObject(config.getConfigFiles()[0]);
+                if(configFO != null) {
+                    try {
+                        DataObject dObj = DataObject.find(configFO);
+                        if(dObj instanceof ConfigDataObject) {
+                            configDataObject = (ConfigDataObject) dObj;
+                            weakPropListener = WeakListeners.propertyChange(this, configDataObject);
+                            configDataObject.addPropertyChangeListener(weakPropListener);
+//                            System.out.println("CS: Lookup & cached dataobject for " + configDataObject.getName());
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        // return null if not found.
+                    }
+                }
+            }
+            configDO = configDataObject;
         }
-        return null;
+        return configDO;
     }
     
-    public void setSaver(ConfigurationSaver saver)  {
-        this.saver = saver;
+    public void propertyChange(PropertyChangeEvent evt) {
+        // if dataobject is being made invalid, remove listener and null our reference.
+//        System.out.println("CS.DataObject.propchange: " + evt.getPropertyName() + ", old = " + evt.getOldValue() + ", new = " + evt.getNewValue());
+        if(DataObject.PROP_VALID.equals(evt.getPropertyName())) {
+            if(Boolean.FALSE.equals(evt.getNewValue())) {
+                synchronized (dobjMonitor) {
+//                    System.out.println("CS: Removing invalid dataobject reference to " + configDataObject.getName());
+                    configDataObject.removePropertyChangeListener(weakPropListener);
+                    configDataObject = null;
+                    weakPropListener = null;
+                }
+            }
+        } 
+        // Forward cookie changes to anyone listening to us (see ConfigBeanNode.java)
+        else if(DataObject.PROP_COOKIE.equals(evt.getPropertyName())) {
+            dobjCookieChangeSupport.firePropertyChange(evt);
+        }
     }
+    
+    public void addPropertyChangeListener(PropertyChangeListener pCL) {
+        dobjCookieChangeSupport.addPropertyChangeListener(pCL);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pCL) {
+        dobjCookieChangeSupport.removePropertyChangeListener(pCL);
+    }
+    
     
     /**
      * Return comma separeted list of files.
@@ -198,28 +255,53 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
      * modified otherwise.
      */
     public void autoSave() {
+//        System.out.println("autosave... [" + System.currentTimeMillis() + "]");
         if (autoSaveTask == null) {
+//            System.out.println("creating autosaver... [" + System.currentTimeMillis() + "]");
             autoSaveTask = RequestProcessor.getDefault().post(new Runnable() {
                 private boolean dialogIsDisplayed;
                 public void run() {
                     // TODO should be rewritten - currently needs to be run in 
                     // the event dispatch thread since we are accessing window api,
                     // see also ConfigDataObject.fileChanged
-                    SwingUtilities.invokeLater(new Runnable() {
+//                    System.out.println("running autosaver... [" + System.currentTimeMillis() + "]");
+                    Mutex.EVENT.readAccess(new Runnable() {
                         public void run() {
-                            ConfigDataObject configDO = getPrimaryDataObject();
-                            if (configDO == null || dialogIsDisplayed) {
-                                return;
+//                            System.out.println("running nested autosaver... [" + System.currentTimeMillis() + "]");
+                            if(dialogIsDisplayed) {
+//                                System.out.println("editor save query active, no autosave... [" + System.currentTimeMillis() + "]");
+                                return; // Reentrancy not supported nor needed.
                             }
+                            
+                            ConfigDataObject configDO = getPrimaryDataObject();
+                            if (configDO == null) {
+//                                System.out.println("no saver/dataobject... [" + System.currentTimeMillis() + "]");
+                                // no dataobject -- if primary file does not exist, save configuration
+                                FileObject configFO = FileUtil.toFileObject(config.getConfigFiles()[0]);
+                                if(configFO == null) {
+                                    try {
+//                                        System.out.println("no file object, saving new configuration... [" + System.currentTimeMillis() + "]");
+                                        save();
+//                                        System.out.println("configuration saved... [" + System.currentTimeMillis() + "]");
+                                    } catch (Exception ex) {
+                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                                    }
+                                }
+                                
+                                // return because we've either just saved or there was no saver (and thus nothing to save).
+                                return;
+                            } 
+                            
                             // proceed in auto save only if graphical config editor is not opened
                             if (!configDO.isConfigEditorOpened()) {
+//                                System.out.println("editor is closed, saving... [" + System.currentTimeMillis() + "]");
                                 try {
                                     // if config files are modified, ask whether to rewrite them
                                     if (configDO.areModified()) {
                                         File files[] = ConfigurationStorage.this.config.getConfigFiles();
                                         String serverName = ConfigurationStorage.this.config.getAppServerVersion().toString();
                                         String msg = NbBundle.getMessage(ConfigurationStorage.class, 
-                                                "MSG_SaveGeneratedChanges", 
+                                                "MSG_SaveGeneratedChanges", // NOI18N
                                                 serverName, 
                                                 filesToString(files));
                                         Confirmation cf = new Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
@@ -230,6 +312,7 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                                         }
                                     }
                                     save();
+//                                    System.out.println("configuration saved... [" + System.currentTimeMillis() + "]");
                                 } catch (Exception ex) {
                                     // ignore it
                                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -237,6 +320,7 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                                     dialogIsDisplayed = false;
                                 }
                             } else {
+//                                System.out.println("editor is open, marking dirty... [" + System.currentTimeMillis() + "]");
                                 configDO.setChanged();
                             }
                         }
@@ -244,6 +328,7 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
                 }
             }, 100);
         } else {
+//            System.out.println("scheduling autosave... [" + System.currentTimeMillis() + "]");
             autoSaveTask.schedule(100);
         }
     }
@@ -374,10 +459,10 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
             
             if(config != null) {
                 config.writeDeploymentPlanFiles(this);
-                
                 needsSave = false;
-                if(saver != null) {
-                    saver.resetChanged();
+                ConfigDataObject configDO = getPrimaryDataObject();
+                if(configDO != null) {
+                    configDO.resetChanged();
                 }
             } else {
                 throw new IllegalStateException("Attempted to save configuration when DeploymentConfiguration is null.");
@@ -453,12 +538,9 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
 
         if(config instanceof SunONEDeploymentConfiguration) {
             SunONEDeploymentConfiguration s1dc = (SunONEDeploymentConfiguration) config;
-            s1dc.readDeploymentPlanFiles(this);
-            
-            for(Iterator i = moduleMap.values().iterator();i.hasNext();) {
-                ModuleDDSupport mod = (ModuleDDSupport) i.next();
-                createDConfigBean(mod);
-            }
+            ModuleDDSupport rootSupport = (ModuleDDSupport) moduleMap.get(ROOT);
+            s1dc.readDeploymentPlanFiles(this, rootSupport.getDDBeanRoot());
+            createDConfigBean(rootSupport);
             loaded = true;
         } else {
             throw new IllegalArgumentException("Invalid DeploymentConfiguration: " + config);
@@ -514,7 +596,11 @@ public class ConfigurationStorage implements /* !PW Removed DeploymentConfigurat
             }
         }*/
     }
-    
+
+    boolean saveInProgress() {
+        return (saveInProgress > 0);
+    }
+
     private class ModuleVersionListener implements J2eeModule.VersionListener {
         private String moduleUri;
         ModuleVersionListener(String moduleUri) {

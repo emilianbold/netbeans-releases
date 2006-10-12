@@ -66,6 +66,8 @@ public class ConnPoolBean extends JdbcCP implements java.io.Serializable{
         bean.setConnValidMethod(pool.getConnectionValidationMethod());
         bean.setValidationTableName(pool.getValidationTableName());
         bean.setFailAllConns(pool.getFailAllConnections());
+        bean.setNontranxconns(pool.getNonTransactionalConnections());
+        bean.setAllowNonComponentCallers(pool.getAllowNonComponentCallers());
                 
         PropertyElement[] extraProperties = pool.getPropertyElement();
         Vector vec = new Vector();       
@@ -105,7 +107,8 @@ public class ConnPoolBean extends JdbcCP implements java.io.Serializable{
         connPool.setConnectionValidationMethod(getConnValidMethod());
         connPool.setValidationTableName(getValidationTableName());
         connPool.setFailAllConnections(getFailAllConns());
-        
+        connPool.setNonTransactionalConnections(getNontranxconns());
+        connPool.setAllowNonComponentCallers(getAllowNonComponentCallers());
         NameValuePair[] params = getExtraParams();
         if (params != null && params.length > 0) {
             for (int i = 0; i < params.length; i++) {

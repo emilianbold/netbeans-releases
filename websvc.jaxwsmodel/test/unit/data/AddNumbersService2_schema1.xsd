@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<xs:schema version="1.0" targetNamespace="http://duke.org" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="AddNumbersException" type="xs:string"/>
+
+  <xs:element name="addNumbers" type="ns1:addNumbers" xmlns:ns1="http://duke.org"/>
+
+  <xs:complexType name="addNumbers">
+    <xs:sequence>
+      <xs:element name="arg0" type="xs:int"/>
+      <xs:element name="arg1" type="xs:int"/>
+
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="addNumbersResponse" type="ns2:addNumbersResponse" xmlns:ns2="http://duke.org"/>
+
+  <xs:complexType name="addNumbersResponse">
+    <xs:sequence>
+      <xs:element name="return" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

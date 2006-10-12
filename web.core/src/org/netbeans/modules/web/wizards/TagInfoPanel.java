@@ -142,6 +142,8 @@ public class TagInfoPanel implements WizardDescriptor.Panel {
         for (int i = 0; i < groups.length && packageName == null; i++) {
             packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
         }
+        if (packageName == null)
+            packageName = ""; //NOI18N
         packageName = packageName.replace('/','.');
         
         if (targetName!=null) {

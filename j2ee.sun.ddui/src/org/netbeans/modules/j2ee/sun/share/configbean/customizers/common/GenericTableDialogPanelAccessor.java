@@ -27,6 +27,8 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 import java.util.Collection;
 import java.util.List;
 
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
+
 /** Interface to be implemented by dialog subpanels that are to be used for data
  *  entry into a table managed by the GenericTablePanel/GenericTableModel pair.
  *
@@ -40,10 +42,12 @@ public interface GenericTableDialogPanelAccessor {
 	
 	/** Initialization routine to handle any required building or initialization tasks.
 	 *
+     * @param asVersion The appserver version required by the current bean tree
 	 * @param preferredWidth The calculated dynamic preferredWidth for the child dialog.
 	 * @param entries List of field descriptions 
+     * @param data Custom data in a format defined by the implementing class.
 	 */
-	public void init(int preferredWidth, List entries, Object data);
+	public void init(ASDDVersion asVersion, int preferredWidth, List entries, Object data);
 	
 	/** Set the error manager for use by this panel.
 	 */

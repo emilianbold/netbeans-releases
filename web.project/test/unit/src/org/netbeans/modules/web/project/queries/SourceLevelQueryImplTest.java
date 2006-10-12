@@ -30,6 +30,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
+import org.netbeans.modules.web.project.test.TestBase;
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -58,7 +59,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
+        TestBase.setLookup(new Object[] {
             new org.netbeans.modules.web.project.WebProjectType(),
             new org.netbeans.modules.java.project.ProjectSourceLevelQueryImpl(),
             new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),

@@ -253,6 +253,7 @@ public class JSFConfigDataObject extends MultiDataObject
         }
     }
     
+
     /** Update the node from document. This method is called after document is changed.
     * @param is Input source for the document
     * @return number of the line with error (document is invalid), 0 (xml document is valid)
@@ -261,7 +262,17 @@ public class JSFConfigDataObject extends MultiDataObject
     protected SAXParseError updateNode(InputStream is) throws java.io.IOException{
         try {
             Document doc = getDomDocument(is);
-            lastGoodFacesConfig = FacesConfig.createGraph(doc);        
+            String version = JSFCatalog.extractVersion(doc);
+            //check version, use impl class to create graph
+            if (FacesConfig.VERSION_1_1.equals(version)) {
+                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_1.FacesConfig.createGraph(doc);
+            }
+            if (FacesConfig.VERSION_1_0.equals(version)) {
+                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_1.FacesConfig.createGraph(doc);
+            }
+            if (FacesConfig.VERSION_1_2.equals(version)) {
+                lastGoodFacesConfig = org.netbeans.modules.web.jsf.config.model_1_2.FacesConfig.createGraph(doc);
+            }
         }
         catch(SAXParseException ex) {
             return new SAXParseError(ex);

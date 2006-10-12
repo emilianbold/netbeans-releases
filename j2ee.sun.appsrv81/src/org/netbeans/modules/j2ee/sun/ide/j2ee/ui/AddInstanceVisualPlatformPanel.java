@@ -1,4 +1,22 @@
 /*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+/*
  * AddInstanceVisualPlatformPanel.java
  *
  * Created on October 28, 2005, 9:30 PM
@@ -19,7 +37,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -45,7 +62,7 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
             }
             public void removeUpdate(DocumentEvent e) {
                 fireChangeEvent();
-            }                    
+            }
         });
         type = AddDomainWizardIterator.DEFAULT;
         platformField.setText(defaultLoc.getAbsolutePath());
@@ -78,45 +95,50 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
     }
     
     void setDomainsList(Object[] domainsList) {
-        if (domainsList != null) { 
+        if (domainsList != null) {
             instanceSelector.setModel(new javax.swing.DefaultComboBoxModel(domainsList));
         } else {
             instanceSelector.setModel(new javax.swing.DefaultComboBoxModel());
         }
     }
-        
+    
     String getDomainDir() {
+        String retVal = null;
+        boolean okay = true;
         String tmp = (String) instanceSelector.getSelectedItem();
-        if (null == tmp)
-            return null;
-        int firstParen = tmp.lastIndexOf('(');
-        int lastParen = tmp.lastIndexOf(')');
-        if (firstParen < 0) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,
-                    NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
-                    "ERRMSG_PARSE_DOMAIN_DIR", tmp));
-            return null;
+        if (null != tmp) {
+            int firstParen = tmp.lastIndexOf('(');
+            int lastParen = tmp.lastIndexOf(')');
+            if (firstParen < 0) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR,
+                        NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
+                        "ERRMSG_PARSE_DOMAIN_DIR", tmp));
+                okay = false;
+            }
+            if (okay && lastParen < 0) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR,
+                        NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
+                        "ERRMSG_PARSE_DOMAIN_DIR", tmp));
+                okay = false;
+            }
+            if (okay && lastParen < firstParen) {
+                ErrorManager.getDefault().log(ErrorManager.ERROR,
+                        NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
+                        "ERRMSG_PARSE_DOMAIN_DIR", tmp));
+                okay = false;
+            }
+            if (okay) {
+                retVal = tmp.substring(firstParen+1,lastParen);
+            }
         }
-        if (lastParen < 0) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,
-                    NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
-                    "ERRMSG_PARSE_DOMAIN_DIR", tmp));
-            return null;
-        }
-        if (lastParen < firstParen) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR,
-                    NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
-                    "ERRMSG_PARSE_DOMAIN_DIR", tmp));
-            return null;
-        }
-        return tmp.substring(firstParen+1,lastParen);
+        return retVal;
     }
-
+    
     public String getName() {
         return NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
                 "StepName_EnterPlatformDirectory");                                // NOI18N
     }
-
+    
     // Event Handling
     //
     private Set/*<ChangeListener.*/ listenrs = new HashSet/*<Changelisteners.*/();
@@ -173,7 +195,7 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         JFileChooser chooser = new PlatformInstChooser();
         String fname = platformField.getText();
         Util.decorateChooser(chooser,fname,
-                NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, 
+                NbBundle.getMessage(AddInstanceVisualPlatformPanel.class,
                 "LBL_Choose_Install")); //NOI18M
         int returnValue = chooser.showDialog(this,
                 NbBundle.getMessage(AddInstanceVisualDirectoryPanel.class,
@@ -191,14 +213,13 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
             
             if ( ServerLocationManager.isGoodAppServerLocation(dir) ) {
                 super.approveSelection();
-            }
-            else {
+            } else {
                 setCurrentDirectory( dir );
             }
         }
         
     }
-        
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -303,6 +324,7 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 11, 5, 0);
         add(instanceSelector, gridBagConstraints);
+        instanceSelector.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "Domain_A11Y_DESC"));
 
         instanceTypeButtonGroup.add(registerLocal);
         registerLocal.setMnemonic(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "MNM_registerLocal").charAt(0));
@@ -381,35 +403,37 @@ public class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 23, 5, 6);
         add(instanceSelectorLabel, gridBagConstraints);
+        instanceSelectorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "Domain_A11Y_DESC"));
 
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void instanceSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instanceSelectorActionPerformed
         fireChangeEvent();
     }//GEN-LAST:event_instanceSelectorActionPerformed
-
+    
     private void createPersonalItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createPersonalItemStateChanged
         setSelectedType(AddDomainWizardIterator.PERSONAL,evt);
     }//GEN-LAST:event_createPersonalItemStateChanged
-
+    
     private void registerRemoteItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_registerRemoteItemStateChanged
         setSelectedType(AddDomainWizardIterator.REMOTE,evt);
     }//GEN-LAST:event_registerRemoteItemStateChanged
-
+    
     private void registerLocalItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_registerLocalItemStateChanged
         setSelectedType(AddDomainWizardIterator.LOCAL,evt);
     }//GEN-LAST:event_registerLocalItemStateChanged
-
+    
     private void registerDefaultItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_registerDefaultItemStateChanged
         setSelectedType(AddDomainWizardIterator.DEFAULT,evt);
     }//GEN-LAST:event_registerDefaultItemStateChanged
-
+    
     private void openDirectoryCooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDirectoryCooserActionPerformed
         String val = browseInstallLocation();
-        if (null != val && val.length() >=1)
+        if (null != val && val.length() >=1) {
             platformField.setText(val);
+        }
     }//GEN-LAST:event_openDirectoryCooserActionPerformed
-
+    
     ComboBoxModel getDomainsListModel() {
         return instanceSelector.getModel();
     }

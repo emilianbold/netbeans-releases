@@ -22,10 +22,15 @@ package org.netbeans.modules.web.core.jsploader;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -38,10 +43,10 @@ import org.openide.util.WeakListeners;
 
 public class JspParserAccess {
     
-    public static synchronized JspParserAPI.WebModule getJspParserWM (WebModule webModule) {
+    public static synchronized JspParserAPI.WebModule getJspParserWM(WebModule webModule) {
         return new WM(webModule);
     }
-
+    
     // PENDING - will also need this:
     //public static JspParserAPI.WebModule getParserWMOutsideWM (FileObject packageRoot) { }
     
@@ -51,45 +56,60 @@ public class JspParserAccess {
         PropertyChangeSupport pcs;
         
         /** Creates an instance of a new web module for the parser.
-         * @param docBase the document base of the web module. May be null if 
+         * @param docBase the document base of the web module. May be null if
          *  we are parsing a tag file that it outside of a web module.
          */
-        private WM (WebModule webModule) {
+        private WM(WebModule webModule) {
             this.webModule = webModule;
             pcs = new PropertyChangeSupport(this);
             //Listen on the changes for libraries
             if(webModule != null) {
-                ClassPath cp = ClassPath.getClassPath(webModule.getDocumentBase (), ClassPath.EXECUTE);
+                ClassPath cp = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE);
                 cp.addPropertyChangeListener(WeakListeners.propertyChange(this, cp));
             }
         }
         
+        public File[] getExtraClasspathEntries(){
+            File[] entries = null;
+            if (webModule != null){
+                Project p = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+                J2eeModuleProvider jprovider = (J2eeModuleProvider)p.getLookup().lookup(J2eeModuleProvider.class);
+                if (jprovider != null){
+                    String serverID = jprovider.getServerInstanceID();
+                    J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverID);
+                    // platform can be null, if the target server is not resolved. 
+                    if (platform != null)
+                        entries = platform.getClasspathEntries();
+                }
+                
+                
+            }
+            return entries;
+        }
         
         public FileObject getDocumentBase() {
             if (webModule != null)
-                return webModule.getDocumentBase ();
+                return webModule.getDocumentBase();
             return null;
         }
         
         /** Returns InputStream for the file open in editor or null
          * if the file is not open.
          */
-        public java.io.InputStream getEditorInputStream (FileObject fo) {
+        public java.io.InputStream getEditorInputStream(FileObject fo) {
             InputStream result = null;
             EditorCookie ec = null;
             try {
                 
-                ec = (EditorCookie)(DataObject.find(fo)).getCookie(EditorCookie.class);                    
-            }
-            catch (org.openide.loaders.DataObjectNotFoundException e){
+                ec = (EditorCookie)(DataObject.find(fo)).getCookie(EditorCookie.class);
+            } catch (org.openide.loaders.DataObjectNotFoundException e){
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             if (ec != null && (ec instanceof CloneableEditorSupport)) {
                 try {
                     
                     result = ((CloneableEditorSupport)ec).getInputStream();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
@@ -119,7 +139,7 @@ public class JspParserAccess {
             }
             return (FileObject[])folders.toArray(new FileObject[folders.size()]);
         }
-*/        
+ */
         
 /*        public FileObject[] getLibraries() {
             // PENDING - better implementation when we will be able distinguish the libraries.
@@ -136,9 +156,9 @@ public class JspParserAccess {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             return (FileObject[])lib.toArray(new FileObject[lib.size()]);
-            
+ 
         }*/
-       
+        
         public void removePropertyChangeListener(PropertyChangeListener l) {
             pcs.removePropertyChangeListener(l);
         }

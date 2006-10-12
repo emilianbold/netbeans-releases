@@ -16,34 +16,33 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
-import org.netbeans.modules.schema2beans.BaseBean;
-
-import javax.enterprise.deploy.spi.DConfigBean;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.XpathEvent;
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
+
+import org.netbeans.modules.j2ee.sun.share.PrincipalNameMapping;
+import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 
 
 /** Property structure of SecurityRoleMapping from DTD:
  *
- *		security-role-mapping : SecurityRoleMapping[0,n]
- *			role-name : String
+ *		securityRoleMapping <security-role-mapping> : SecurityRoleMapping[0,n]
+ *			roleName <role-name> : String
  *			(
- *			  | principal-name : String
- *			  | group-name : String
+ *			  | principalName <principal-name> : String
+ *			  | 	[attr: class-name CDATA #IMPLIED ]
+ *			  | groupName <group-name> : String
  *			)[1,n]
  *
  * Master list of principal and group names are stored in ---
@@ -60,10 +59,13 @@ public class SecurityRoleMapping extends Base {
 	private DDBean securityRoleNameDD;
 	
     /** Holds value of property principalName. */
-    private ArrayList principalNames;
+    private ArrayList/*PrincipalNameMapping*/ principalNames;
     
     /** Holds value of property groupName. */
-    private ArrayList groupNames;
+    private ArrayList/*String*/ groupNames;
+    
+    /** Our parent if this security-role-mapping is inside a root module (EAR, WAR, EJB) */
+    private BaseRoot rootParent;
     
     /** Creates a new instance of SunONESRMDConfigBean */
 	public SecurityRoleMapping() {
@@ -80,9 +82,22 @@ public class SecurityRoleMapping extends Base {
 //		initGroup(dDBean, parent);
 		
 		securityRoleNameDD = getNameDD("role-name"); // NOI18N
-		
+
+        // IZ 78686, 84549 - if inside an EAR, WAR, or EJB, remove this mapping from the loaded mappings.
+        if(parent instanceof BaseRoot) {
+            rootParent = (BaseRoot) parent;
+            updateRootMappings();
+        }
+        
 		loadFromPlanFile(getConfig());
 	}
+    
+    private void updateRootMappings() {
+		if(rootParent != null) {
+            org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping mapping = 
+                    rootParent.removeSavedRoleMapping(getRoleName());
+        }
+    }
 	
 	protected String getComponentName() {
 		return getRoleName();
@@ -107,6 +122,9 @@ public class SecurityRoleMapping extends Base {
 			// name changed...
 			getPCS().firePropertyChange(ROLE_NAME, "", getRoleName());
 			getPCS().firePropertyChange(DISPLAY_NAME, "", getDisplayName());
+
+            // IZ 78686, 84549 - if inside an EAR, WAR, or EJB, remove from loaded mappings on name change.
+            updateRootMappings();
 		}
 	}
 
@@ -122,12 +140,12 @@ public class SecurityRoleMapping extends Base {
      * @return Value of property principalNames.
      *
      */
-    public List getPrincipalNames() {
+    public List/*PrincipalNameMapping*/ getPrincipalNames() {
         return principalNames;
     }
     
-	public String getPrincipalName(int index) {
-		return (String) principalNames.get(index);
+	public PrincipalNameMapping getPrincipalName(int index) {
+		return (PrincipalNameMapping) principalNames.get(index);
 	}
 	
     /** Setter for property principalNames.
@@ -136,20 +154,20 @@ public class SecurityRoleMapping extends Base {
      * @throws PropertyVetoException
      *
      */
-    public void setPrincipalNames(ArrayList newPrincipalNames) throws java.beans.PropertyVetoException {
+    public void setPrincipalNames(ArrayList/*PrincipalNameMapping*/ newPrincipalNames) throws java.beans.PropertyVetoException {
         List oldPrincipalNames = principalNames;
         getVCS().fireVetoableChange("principalNames", oldPrincipalNames, newPrincipalNames);	// NOI18N
         principalNames = newPrincipalNames;
         getPCS().firePropertyChange("principalNames", oldPrincipalNames, principalNames);	// NOI18N
     }
     
-	public void addPrincipalName(String newPrincipalName) throws java.beans.PropertyVetoException {
+	public void addPrincipalName(PrincipalNameMapping newPrincipalName) throws java.beans.PropertyVetoException {
 		getVCS().fireVetoableChange("principalName", null, newPrincipalName);	// NOI18N
 		principalNames.add(newPrincipalName);
 		getPCS().firePropertyChange("principalName", null, newPrincipalName );	// NOI18N
 	}
 	
-	public void removePrincipalName(String oldPrincipalName) throws java.beans.PropertyVetoException {
+	public void removePrincipalName(PrincipalNameMapping oldPrincipalName) throws java.beans.PropertyVetoException {
 		getVCS().fireVetoableChange("principalName", oldPrincipalName, null);	// NOI18N
 		principalNames.remove(oldPrincipalName);
 		getPCS().firePropertyChange("principalName", oldPrincipalName, null );	// NOI18N
@@ -201,18 +219,28 @@ public class SecurityRoleMapping extends Base {
 		Snippet snipOne = new DefaultSnippet() {
 			public CommonDDBean getDDSnippet() {
 				org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping srm = 
-					StorageBeanFactory.getDefault().createSecurityRoleMapping();
+					getConfig().getStorageFactory().createSecurityRoleMapping();
 
 				// write properties into SecurityRoleMapping bean
 				srm.setRoleName(getRoleName());
 				
 				if(principalNames.size() > 0) {
-					String [] names = (String []) principalNames.toArray(new String[0]);
-					srm.setPrincipalName(names);
+					Iterator principalIter = principalNames.iterator();
+					while(principalIter.hasNext()) {
+						PrincipalNameMapping nameMap = (PrincipalNameMapping) principalIter.next();
+						int index = srm.addPrincipalName(nameMap.getPrincipalName());
+						if(Utils.notEmpty(nameMap.getClassName())) {
+							try {
+								srm.setPrincipalNameClassName(index, nameMap.getClassName());
+							} catch(VersionNotSupportedException ex) {
+								// Should not happen at runtime.
+							}
+						}
+					}
 				}
 				
 				if(groupNames.size() > 0) {
-					String [] names = (String []) groupNames.toArray(new String[0]);
+					String [] names = (String []) groupNames.toArray(new String[groupNames.size()]);
 					srm.setGroupName(names);
 				}
 
@@ -261,7 +289,13 @@ public class SecurityRoleMapping extends Base {
 			if(names != null && names.length > 0) {
 				principalNames = new ArrayList(names.length+3);
 				for(int i = 0; i < names.length; i++) {
-					principalNames.add(names[i]);
+                    String className = null;
+                    try {
+                        className = beanGraph.getPrincipalNameClassName(i);
+                    } catch(VersionNotSupportedException ex) {
+                        // Should not happen at runtime.
+                    }
+					principalNames.add(new PrincipalNameMapping(names[i], className));
 				}
 			}
 			

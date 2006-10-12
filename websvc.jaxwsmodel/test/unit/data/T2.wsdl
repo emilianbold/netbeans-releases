@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+ xmlns:tns="http://xml.netbeans.org/examples/targetNS" 
+ xmlns:ns="http://xml.netbeans.org/examples/targetNS" 
+ xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+ name="Foo" 
+ targetNamespace="http://xml.netbeans.org/examples/targetNS">
+<types>
+    <xsd:schema targetNamespace="http://xml.netbeans.org/examples/targetNS">
+      <xsd:element name="id" type="xsd:string"/>
+      <xsd:element name="item" type="ns:ItemType"/>
+      <xsd:complexType name="ItemType">
+        <xsd:sequence>
+          <xsd:element ref="ns:id"/>
+          <xsd:element name="productName" type="xsd:string"/>
+          <xsd:element name="price" type="xsd:double"/>
+          <xsd:element name="quantity" type="xsd:integer"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:element name="error" type="xsd:string"/>
+    </xsd:schema>
+  </types>
+<message name="FooRequest">
+    <part name="id" element="ns:id"/>
+  </message>
+<message name="FooResponse">
+    <part name="item" element="ns:item"/>
+
+  </message>
+<message name="FooError">
+    <part name="error" element="ns:error"/>
+  </message>
+<portType name="FooPortType">
+    <operation name="FooOperation">
+      <input message="tns:FooRequest"/>
+      <output message="tns:FooResponse"/>
+      <fault message="tns:FooError" name="err"/>
+    </operation>
+
+  </portType>
+<binding name="FooBinding" type="tns:FooPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="FooOperation">
+      <soap:operation soapAction="REPLACE_WITH_ACTION_URL"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+
+        <soap:body use="literal"/>
+      </output>
+      <fault name="err">
+        <soap:fault name="error" use="literal"/>
+      </fault>
+    </operation>
+  </binding>
+<wsdl:service name="Test2WS">
+<wsdl:port name="FooPortTypePort" binding="tns:FooBinding">
+<soap:address location="http://d-eprg05-75-121.Czech.Sun.COM:8080/wp1/Test2WS"/>
+
+</wsdl:port>
+</wsdl:service>
+</definitions>

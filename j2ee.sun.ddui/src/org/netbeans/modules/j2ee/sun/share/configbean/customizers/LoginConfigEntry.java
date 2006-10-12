@@ -69,7 +69,8 @@ public class LoginConfigEntry extends GenericTableModel.TableEntry {
         LoginConfig lc = (LoginConfig) parent.getValue(WebserviceEndpoint.LOGIN_CONFIG);
         if(value != null) {
             if(lc == null) {
-                lc = StorageBeanFactory.getDefault().createLoginConfig();
+                WebserviceEndpoint endpoint = (WebserviceEndpoint) parent;
+                lc = endpoint.newLoginConfig();
                 parent.setValue(propertyName, lc);
             }
 

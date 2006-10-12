@@ -41,18 +41,21 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv</friend>
+                <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv90</friend>
+                <friend>org.netbeans.modules.j2ee.sun.avk</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ws7</friend>
-                <friend>org.netbeans.modules.j2ee.sun.avk</friend>
+                <friend>org.netbeans.modules.identity.profile.api</friend>
                 <package>org.netbeans.modules.j2ee.sun.dd.api</package>
-                <package>org.netbeans.modules.j2ee.sun.dd.api.web</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.api.app</package>
-                <package>org.netbeans.modules.j2ee.sun.dd.api.ejb</package>
+                <package>org.netbeans.modules.j2ee.sun.dd.api.client</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.api.common</package>
+                <package>org.netbeans.modules.j2ee.sun.dd.api.ejb</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.api.serverresources</package>
+                <package>org.netbeans.modules.j2ee.sun.dd.api.services</package>
+                <package>org.netbeans.modules.j2ee.sun.dd.api.web</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.impl.verifier</package>
             </friend-packages>

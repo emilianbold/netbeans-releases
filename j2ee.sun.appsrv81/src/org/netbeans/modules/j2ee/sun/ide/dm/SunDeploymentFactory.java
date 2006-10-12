@@ -20,25 +20,33 @@
 package org.netbeans.modules.j2ee.sun.ide.dm;
 
 import java.io.File;
-import java.net.Authenticator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
-import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
-import org.openide.filesystems.FileObject;
+
 /** This deploymenmt factory can creates an alternate deployment manager for
  * S1AS.
  * @author vkraemer,ludo
  */
-public class SunDeploymentFactory implements Constants, DeploymentFactory {
+public class SunDeploymentFactory implements Constants, DeploymentFactory, InstanceListener {
     
-
+    /* default server as defined in the nbdep.xml file by out plugin
+     * if we get this URL, we need to calculate an existing default domain from
+     * the registry, preferably a AS 9.0 one, if we have the choice between AS 8.x and 9.0
+     *
+     **/
+    private static final String DEFAULTSERVERDEF="[  ]deployer:Sun:AppServer::localhost:4849";// NOI18N
+    
     //
     // this whole class should probably be a subclass of the
     // com.sun.enterprise.deployapi.SunDeploymentFactory...
@@ -48,13 +56,15 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
     /** resource bundle
      */
     protected static final ResourceBundle bundle = ResourceBundle.getBundle(
-            "org.netbeans.modules.j2ee.sun.ide.dm.Bundle");	// NOI18N
+            "org.netbeans.modules.j2ee.sun.ide.dm.Bundle");    // NOI18N
+    
+    private boolean instanceListenerAdded;
     
     public SunDeploymentFactory() {
-        
+        instanceListenerAdded = false;
     }
     
-    
+    static final private Map<String,DeploymentManager> dms = new HashMap<String,DeploymentManager>();
     
     /** This method returns a connected deployment manager.
      *
@@ -65,19 +75,43 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
      * @return a deployment manager for a particular server instance
      */
     public DeploymentManager getDeploymentManager(String uri, String userName,String password) throws DeploymentManagerCreationException {
+        registerInstanceListener();
         
         try {
-            Authenticator.setDefault(new AdminAuthenticator());
+            if (DEFAULTSERVERDEF.equals(uri)){
+                String defaultURI = null;//don;t know yet which one
+                String ServerUrls[] = InstanceProperties.getInstanceList();
+                for (String elem : ServerUrls) {
+                    if(handlesURI(elem)){
+                        if (defaultURI == null){
+                            defaultURI = elem; //get the first one available. Could be 8 or 9.0 server
+                        }
+                        File serverLocation = getServerLocationFromURI(elem);
+                        if (ServerLocationManager.isGlassFish(serverLocation)){
+                            defaultURI = elem;// make sure we pick one AS 9 is one is available
+                            break;
+                        }
+                    }
+                }
+                if (defaultURI != null){
+                    uri = defaultURI;
+                }
+            }
             innerDF = ServerLocationManager.getDeploymentFactory(getServerLocationFromURI(uri));
             if (innerDF==null){
                 throw new DeploymentManagerCreationException(getRealURI(uri)+getServerLocationFromURI( uri)+bundle.getString("MSG_WrongInstallDir"));
-                
             }
-            return  new SunDeploymentManager(innerDF, getRealURI(uri), userName, password,getServerLocationFromURI( uri));
+            synchronized (dms) {
+                DeploymentManager retVal = dms.get(uri);
+                if (null == retVal) {
+                    retVal = new SunDeploymentManager(innerDF, getRealURI(uri), userName, password,getServerLocationFromURI( uri));
+                    dms.put(uri,retVal);
+                }
+                return retVal;
+            }
         } catch (Exception e) {
             throw new DeploymentManagerCreationException(getRealURI(uri)+getServerLocationFromURI( uri)+bundle.getString("MSG_WrongInstallDir"));
         }
-        
     }
     
     /** This method returns a disconnected deployment manager.
@@ -89,17 +123,12 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
      * @return a deployment manager for doing configuration.
      */
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-        
         try {
-            Authenticator.setDefault(new AdminAuthenticator());
-            innerDF = ServerLocationManager.getDeploymentFactory(getServerLocationFromURI(uri));
-
-            return new SunDeploymentManager(innerDF,getRealURI(uri),null,null,getServerLocationFromURI( uri));
+            
+            return getDeploymentManager(uri,null,null);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new DeploymentManagerCreationException(getRealURI(uri)+getServerLocationFromURI( uri)+bundle.getString("MSG_WrongInstallDir"));
         }
-        
     }
     
     /** Determines whether this URI is handled by the Deployment factory
@@ -115,14 +144,15 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
      * @return boolean value
      */
     public boolean handlesURI(String uri) {
-        if (uri==null)
+        if (uri==null){
             return false;
-        if(uri.startsWith("[")){//NOI18N
-            if (uri.indexOf(SunURIManager.SUNSERVERSURI)!=-1)
-            return true;
         }
-
-
+        if(uri.startsWith("[")){//NOI18N
+            if (uri.indexOf(SunURIManager.SUNSERVERSURI)!=-1){
+                return true;
+            }
+        }
+        
         
         return false;
     }
@@ -132,8 +162,9 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
     }
     
     public String getProductVersion() {
-        if (null != innerDF)
+        if (null != innerDF){
             return innerDF.getProductVersion();
+        }
         return "1.0";//NOI18N
     }
     
@@ -143,16 +174,39 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
             String loc = uri.substring(1,uri.indexOf("]"));
             return  new File(loc);
         }
-        
         throw new DeploymentManagerCreationException(uri+bundle.getString("MSG_WrongInstallDir"));
     }
+    
     private static String getRealURI(String uri) throws DeploymentManagerCreationException{
-        
         if(uri.startsWith("[")){//NOI18N
             return uri.substring(uri.indexOf("]")+1,uri.length());
-        } 
+        }
         return uri;// the old one.
-        
-        
     }
+    
+    private void registerInstanceListener() {
+        synchronized(dms) {
+            if(!instanceListenerAdded) {
+                Deployment.getDefault().addInstanceListener(this);
+                instanceListenerAdded = true;
+            }
+        }
+    }
+    
+    // Listen for server instance removed event so we can clear it's DM from the cache, if necessary
+    public void instanceRemoved(String serverInstanceID) {
+        synchronized (dms) {
+            // serverInstanceID is really the URI of this installed server :)
+            dms.remove(serverInstanceID);
+        }
+    }
+    
+    public void instanceAdded(String serverInstanceID) {
+        // n/a
+    }
+    
+    public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID) {
+        // n/a
+    }
+    
 }

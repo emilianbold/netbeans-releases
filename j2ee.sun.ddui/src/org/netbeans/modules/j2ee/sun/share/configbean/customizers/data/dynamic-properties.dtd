@@ -15,7 +15,7 @@
 <!ELEMENT dynamic-properties (property-list*, validator*)>
 
 <!-- Each property list can be fixed or editable and has a name -->
-<!ELEMENT property-list (property-name, property-param+, help-id?)>
+<!ELEMENT property-list (property-name, help-id?, property-param*)>
 <!ATTLIST property-list editable CDATA "false"
 						description CDATA "true"
 						bundle-path CDATA #IMPLIED>
@@ -107,7 +107,7 @@
 	the property is applicable to all versions.
 	
 	Allowable Strings:  major[.minor][pe|se|ee]
-		Major version is require.
+		Major version is required.
 		Minor is optional (not present matches all)
 		Type is optional (not present matches all)
 		

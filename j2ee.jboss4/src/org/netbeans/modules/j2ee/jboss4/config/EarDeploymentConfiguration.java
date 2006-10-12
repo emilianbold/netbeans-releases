@@ -37,7 +37,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class EarDeploymentConfiguration extends JBDeploymentConfiguration {
     
-    private File file;
+    private File jbossAppFile;
     private JbossApp jbossApp;
         
     /**
@@ -54,11 +54,11 @@ public class EarDeploymentConfiguration extends JBDeploymentConfiguration {
      * @param file jboss-app.xml file.
      */
     public void init(File file) {
-        this.file = file;
+        this.jbossAppFile = file;
         getJbossApp();
-        if (dataObject == null) {
+        if (deploymentDescriptorDO == null) {
             try {
-                dataObject = dataObject.find(FileUtil.toFileObject(file));
+                deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossAppFile));
             } catch(DataObjectNotFoundException donfe) {
                 ErrorManager.getDefault().notify(donfe);
             }
@@ -74,10 +74,10 @@ public class EarDeploymentConfiguration extends JBDeploymentConfiguration {
     public synchronized JbossApp getJbossApp() {
         if (jbossApp == null) {
             try {
-                if (file.exists()) {
+                if (jbossAppFile.exists()) {
                     // load configuration if already exists
                     try {
-                        jbossApp = jbossApp.createGraph(file);
+                        jbossApp = jbossApp.createGraph(jbossAppFile);
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     } catch (RuntimeException re) {
@@ -86,7 +86,7 @@ public class EarDeploymentConfiguration extends JBDeploymentConfiguration {
                 } else {
                     // create jboss-app.xml if it does not exist yet
                     jbossApp = genereatejbossApp();
-                    writefile(file, jbossApp);
+                    writefile(jbossAppFile, jbossApp);
                 }
             } catch (ConfigurationException ce) {
                 ErrorManager.getDefault().notify(ce);

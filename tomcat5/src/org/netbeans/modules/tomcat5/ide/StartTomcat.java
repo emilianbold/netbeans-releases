@@ -19,41 +19,47 @@
 
 package org.netbeans.modules.tomcat5.ide;
 
-import java.io.*;
-import java.util.*;
-
-import javax.enterprise.deploy.shared.*;
-import javax.enterprise.deploy.spi.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
-import javax.enterprise.deploy.spi.status.*;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
+import javax.enterprise.deploy.spi.status.ClientConfiguration;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.enterprise.deploy.spi.status.ProgressListener;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.java.platform.JavaPlatform;
-
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
-
-import org.netbeans.modules.tomcat5.*;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 import org.netbeans.modules.tomcat5.util.LogManager;
 import org.netbeans.modules.tomcat5.util.Utils;
-
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
+import org.netbeans.modules.tomcat5.TomcatFactory;
+import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.util.EditableProperties;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.NbDocument;
 import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
@@ -215,7 +221,6 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                                         new StartRunnable(MODE_DEBUG, CommandType.START, null), 
                                         0, 
                                         Thread.NORM_PRIORITY);
-        isDebugModeUri.put(tm.getUri(), new Object());
         return this;
     }
     
@@ -346,6 +351,35 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                 }
             }
             
+            // set the JAVA_OPTS value
+            String javaOpts = tp.getJavaOpts();            
+            // use the IDE proxy settings if the 'use proxy' checkbox is selected
+            // do not override a property if it was set manually by the user
+            if (tp.getProxyEnabled()) {
+                StringBuilder sb = new StringBuilder(javaOpts);
+                final String[] PROXY_PROPS = {
+                    "http.proxyHost",       // NOI18N
+                    "http.proxyPort",       // NOI18N
+                    "http.nonProxyHosts",   // NOI18N
+                    "https.proxyHost",      // NOI18N
+                    "https.proxyPort",      // NOI18N
+                };
+                boolean isWindows = Utilities.isWindows();
+                for (String prop : PROXY_PROPS) {
+                    if (javaOpts.indexOf(prop) == -1) {
+                        String value = System.getProperty(prop);
+                        if (value != null) {
+                            if (isWindows && "http.nonProxyHosts".equals(prop)) { // NOI18N
+                                // enclose in double quotes to escape the pipes separating the hosts on windows
+                                value = "\"" + value + "\""; // NOI18N
+                            }
+                            sb.append(" -D").append(prop).append("=").append(value); // NOI18N
+                        }
+                    }
+                }
+                javaOpts = sb.toString();
+            }
+            
             JavaPlatform platform = mode == MODE_PROFILE ? profilerSettings.getJavaPlatform()
                                                          : getJavaPlatform();
             String jdkVersion = platform.getSpecification().getVersion().toString();
@@ -386,7 +420,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         new String[] {
                             "JAVA_HOME="        + getJavaHome(platform), // NOI18N
                             "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
-                            "JAVA_OPTS="        + tp.getJavaOpts(), // NOI18N
+                            "JAVA_OPTS="        + javaOpts, // NOI18N
                             "JPDA_TRANSPORT="   + transport,        // NOI18N
                             "JPDA_ADDRESS="     + address,          // NOI18N
                             "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
@@ -428,7 +462,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     String[] defaultEnv = new String[] {
                         "JAVA_HOME="        + getJavaHome(platform),        // NOI18N
                         "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
-                        "JAVA_OPTS="        + tp.getJavaOpts(),             // NOI18N
+                        "JAVA_OPTS="        + javaOpts,             // NOI18N
                         "CATALINA_OPTS="    + catalinaOpts.toString(),      // NOI18N
                         "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
                         "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
@@ -480,7 +514,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         new String[] { 
                             "JAVA_HOME="        + getJavaHome(platform),   // NOI18N
                             "JRE_HOME=",  // NOI18N ensure that JRE_HOME system property won't be used instead of JAVA_HOME
-                            "JAVA_OPTS="        + tp.getJavaOpts(), // NOI18N
+                            "JAVA_OPTS="        + javaOpts, // NOI18N
                             "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
                             "CATALINA_BASE="    + baseDir.getAbsolutePath(),    // NOI18N
                             // this is used in the setclasspath.sb/bat script for work-arounding 
@@ -509,6 +543,9 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             }            
             fireCmdExecProgressEvent("MSG_waiting", StateType.RUNNING);
             if (hasCommandSucceeded()) {
+                if (command == CommandType.START && mode == MODE_DEBUG) {
+                    isDebugModeUri.put(tm.getUri(), new Object());
+                }
                 fireCmdExecProgressEvent(command == CommandType.START ? "MSG_Started" : "MSG_Stopped", 
                                          StateType.COMPLETED);
             } else {
@@ -751,76 +788,72 @@ public final class StartTomcat extends StartServer implements ProgressObject {
      loader in the catalina.properties file */
     private void patchCatalinaProperties(File catalinaBase, final boolean endorsedEnabled) {
         File catalinaProp = new File(catalinaBase, "conf/catalina.properties"); // NOI18N
-        FileObject catalinaPropFO = FileUtil.toFileObject(catalinaProp);
-        if (catalinaPropFO == null) {
+        if (!catalinaProp.exists()) {
             return; // catalina.properties does not exist, can't do anything
         }
-        DataObject dataObject = null;           
         EditableProperties props = new EditableProperties();
-        InputStream is = null;
         try {
-            is = new BufferedInputStream(catalinaPropFO.getInputStream());
-            props.load(is);
-            String COMMON_LOADER = "common.loader"; // NOI18N
-            String commonLoader = props.getProperty(COMMON_LOADER);
-            if (commonLoader != null) {
-                String COMMON_ENDORSED = "${catalina.home}/common/endorsed/*.jar"; // NOI18N 
-                int idx = commonLoader.indexOf(COMMON_ENDORSED);
-                if (endorsedEnabled) {
-                    if (idx == -1) { // common/endorsed/*.jar is not present, add it
-                        String COMMON_LIB = "${catalina.home}/common/lib/*.jar"; // NOI18N
-                        int commonLibIdx = commonLoader.indexOf(COMMON_LIB);
-                        StringBuffer sb = new StringBuffer(commonLibIdx == -1 
-                                ? commonLoader 
-                                : commonLoader.substring(0, commonLibIdx));
-                        if (commonLibIdx != -1) {
-                            sb.append(COMMON_ENDORSED).append(',').append(commonLoader.substring(commonLibIdx));
+            InputStream is = new BufferedInputStream(new FileInputStream(catalinaProp));
+            try {
+                props.load(is);
+                String COMMON_LOADER = "common.loader"; // NOI18N
+                String commonLoader = props.getProperty(COMMON_LOADER);
+                if (commonLoader != null) {
+                    String COMMON_ENDORSED = "${catalina.home}/common/endorsed/*.jar"; // NOI18N 
+                    int idx = commonLoader.indexOf(COMMON_ENDORSED);
+                    if (endorsedEnabled) {
+                        if (idx == -1) { // common/endorsed/*.jar is not present, add it
+                            String COMMON_LIB = "${catalina.home}/common/lib/*.jar"; // NOI18N
+                            int commonLibIdx = commonLoader.indexOf(COMMON_LIB);
+                            StringBuffer sb = new StringBuffer(commonLibIdx == -1 
+                                    ? commonLoader 
+                                    : commonLoader.substring(0, commonLibIdx));
+                            if (commonLibIdx != -1) {
+                                sb.append(COMMON_ENDORSED).append(',').append(commonLoader.substring(commonLibIdx));
+                            } else {
+                                if (commonLoader.trim().length() != 0) {
+                                    sb.append(',');
+                                }
+                                sb.append(COMMON_ENDORSED);
+                            }
+                            props.setProperty(COMMON_LOADER, sb.toString());
                         } else {
-                            if (commonLoader.trim().length() != 0) {
-                                sb.append(',');
-                            }
-                            sb.append(COMMON_ENDORSED);
+                            return;
                         }
-                        props.setProperty(COMMON_LOADER, sb.toString());
                     } else {
-                        return;
-                    }
-                } else {
-                    if (idx != -1) { // common/endorsed/*.jar is present, remove it
-                        String strBefore = commonLoader.substring(0, idx);
-                        int commaIdx = strBefore.lastIndexOf(',');
-                        StringBuffer sb = new StringBuffer(commonLoader.substring(0, commaIdx == -1 ? idx : commaIdx));
-                        String strAfter = commonLoader.substring(idx + COMMON_ENDORSED.length());
-                        if (commaIdx == -1) {
-                            // we have to cut off the trailing comman after the endorsed lib
-                            int trailingCommaIdx = strAfter.indexOf(',');
-                            if (trailingCommaIdx != -1) {
-                                strAfter = strAfter.substring(trailingCommaIdx + 1);
+                        if (idx != -1) { // common/endorsed/*.jar is present, remove it
+                            String strBefore = commonLoader.substring(0, idx);
+                            int commaIdx = strBefore.lastIndexOf(',');
+                            StringBuffer sb = new StringBuffer(commonLoader.substring(0, commaIdx == -1 ? idx : commaIdx));
+                            String strAfter = commonLoader.substring(idx + COMMON_ENDORSED.length());
+                            if (commaIdx == -1) {
+                                // we have to cut off the trailing comman after the endorsed lib
+                                int trailingCommaIdx = strAfter.indexOf(',');
+                                if (trailingCommaIdx != -1) {
+                                    strAfter = strAfter.substring(trailingCommaIdx + 1);
+                                }
                             }
+                            sb.append(strAfter);
+                            props.setProperty(COMMON_LOADER, sb.toString());
+                        } else {
+                            return;
                         }
-                        sb.append(strAfter);
-                        props.setProperty(COMMON_LOADER, sb.toString());
-                    } else {
-                        return;
                     }
                 }
+            } finally {
                 is.close();
-                is = null;
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
+            }
+            // store changes
+            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(catalinaProp));
+            try {
                 props.store(out);
-                Utils.saveDoc(catalinaPropFO, out);
+            } finally {
+                out.close();
             }
         } catch (FileNotFoundException fnfe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fnfe);
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ioe) { // no op 
-                }
-            }
         }
     }
     

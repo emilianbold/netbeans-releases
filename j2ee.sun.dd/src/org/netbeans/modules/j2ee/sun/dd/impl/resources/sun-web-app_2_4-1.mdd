@@ -2,10 +2,10 @@
 <metaDD>
         <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.SecurityRoleMapping</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.EjbRef</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ResourceRef</import>
-		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ResourceEnvRef</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.SecurityRoleMapping</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.EjbRef</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceRef</import>
+		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceEnvRef</import>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ServiceRef</import>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.MessageDestination</import>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceDescription</import>
@@ -25,6 +25,12 @@
                 }
                 public boolean isMyClassLoader() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_4_1);
+                }
+                public void setHttpservletSecurityProvider(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_4_1);
+                }
+                public java.lang.String getHttpservletSecurityProvider() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_4_1);
                 }
                 public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
                         throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_4_1);
@@ -64,10 +70,20 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping</implements>
 	</meta-element>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceEndpoint</import>
+        <import>org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp</import>
+        <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceEndpoint</import>
 		<dtd-name>servlet</dtd-name>
 		<bean-name>Servlet</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.web.Servlet</implements>
+		<user-code>
+    //needed for 2_5_0
+	public void setPrincipalNameClassName(String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_4_1);
+    }
+	public String getPrincipalNameClassName() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunWebApp.VERSION_2_4_1);
+    }
+		</user-code>
 	</meta-element>
 	<meta-element>
 		<dtd-name>idempotent-url-pattern</dtd-name>

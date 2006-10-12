@@ -24,18 +24,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.spi.status.*;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.openide.filesystems.*;
 import java.util.*;
@@ -92,6 +91,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private J2eePlatformImpl j2eePlatformImpl;
     private StartServer startServer;
     private FindJSPServlet findJSPServlet;
+    private DatasourceManager dsMgr;
+    private DatasourceManager ddsMgr;
     private final Set targetsStartedByIde = new HashSet(); // valued by target name
     private Map targets; // keyed by target name, valued by ServerTarget
     private boolean managerStartedByIde = false;
@@ -113,6 +114,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private static ServerInstance   profiledServerInstance;
     private ProfilerServerSettings  profilerSettings;
     
+    private final DebuggerStateListener debuggerStateListener;
+    
     // PENDING how to manage connected/disconnected servers with the same manager?
     // maybe concept of 'default unconnected instance' is broken?
     public ServerInstance(Server server, String url) {
@@ -120,7 +123,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
         this.url = url;
         instanceProperties = new InstancePropertiesImpl(url);
         // listen to debugger changes so that we can update server status accordingly
-        DebuggerManager.getDebuggerManager().addDebuggerListener(new DebuggerStateListener());
+        debuggerStateListener = new DebuggerStateListener();
+        DebuggerManager.getDebuggerManager().addDebuggerListener(debuggerStateListener);
     }
     
     /** Return this server instance InstanceProperties. */
@@ -142,8 +146,13 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     public DeploymentManager getDeploymentManager() {
-        if (manager != null) return manager;
-        
+        DeploymentManager managerTmp = null;
+        synchronized (this) {
+            managerTmp = manager;
+        }
+        if (managerTmp != null) {
+            return managerTmp;
+        }
         try {
             FileObject fo = ServerRegistry.getInstanceFileObject(url);
             if (fo == null) {
@@ -152,27 +161,38 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
             String username = (String) fo.getAttribute(ServerRegistry.USERNAME_ATTR);
             String password = (String) fo.getAttribute(ServerRegistry.PASSWORD_ATTR);
-            manager = server.getDeploymentManager(url, username, password);
+            managerTmp = server.getDeploymentManager(url, username, password);
+            synchronized (this) {
+                manager = managerTmp;
+            }
         } catch(javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException e) {
             throw new RuntimeException(e);
         }
-        return manager;
+        return managerTmp;
     }
     
-    public boolean isConnected () {
+    public synchronized boolean isConnected () {
         return manager != null;
     }
     
     public DeploymentManager getDisconnectedDeploymentManager() throws DeploymentManagerCreationException {
-        if (disconnectedManager != null) return disconnectedManager;
-        
+        DeploymentManager disconnectedManagerTmp = null;
+        synchronized (this) {
+            disconnectedManagerTmp = disconnectedManager;
+        }
+        if (disconnectedManagerTmp != null) {
+            return disconnectedManagerTmp;
+        }
         FileObject fo = ServerRegistry.getInstanceFileObject(url);
         if (fo == null) {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
             throw new IllegalStateException(msg);
         }
-        disconnectedManager = server.getDisconnectedDeploymentManager(url);
-        return disconnectedManager;
+        disconnectedManagerTmp = server.getDisconnectedDeploymentManager(url);
+        synchronized (this) {
+            disconnectedManager = disconnectedManagerTmp;
+        }
+        return disconnectedManagerTmp;
     }
     
     public J2eePlatform getJ2eePlatform() {
@@ -219,6 +239,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
+                    int oldState = getServerState();
                     setServerState(STATE_WAITING);
                     if (ServerInstance.this == profiledServerInstance) {
                         int profState = ProfilerSupport.getState();
@@ -241,9 +262,15 @@ public class ServerInstance implements Node.Cookie, Comparable {
                     if (isSuspended()) {
                         setServerState(ServerInstance.STATE_SUSPENDED);
                     } else if (isDebuggable(null)) {
+                        if (oldState != ServerInstance.STATE_SUSPENDED) {
+                            // this will decrease the possibility of accessing server
+                            // when it is in suspended mode when we might freeze
+                            reset();
+                        }
                         initCoTarget();
                         setServerState(ServerInstance.STATE_DEBUGGING);
                     } else if (isReallyRunning()) {
+                        reset();
                         initCoTarget();
                         setServerState(ServerInstance.STATE_RUNNING);
                     } else {
@@ -261,23 +288,28 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     public void reset() {
-        if (manager != null) {
-            manager.release();
+        DeploymentManager managerTmp = null;
+        synchronized (this) {
+            managerTmp = manager;
             manager = null;
         }
-        if (disconnectedManager != null) {
-            disconnectedManager = null;
+        if (managerTmp != null) {
+            managerTmp.release();
         }
-        incrementalDeployment = null;
-        tmidResolver = null;
-        startServer = null;
-        findJSPServlet = null;
-        coTarget = null;
-        targets = null;
+        synchronized (this) {
+            disconnectedManager = null;
+            incrementalDeployment = null;
+            tmidResolver = null;
+            startServer = null;
+            findJSPServlet = null;
+            coTarget = null;
+            targets = null;
+        }
     }
     
     /** Remove this server instance and stop it if it has been started from within the IDE */
     public void remove() {
+        DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerStateListener);
         stopIfStartedByIde();        
         // close the server io window
         InputOutput io = UISupport.getServerIO(url);
@@ -345,18 +377,26 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     public ServerTarget[] getTargets() {
-        getTargetMap();
-        return (ServerTarget[]) targets.values().toArray(new ServerTarget[targets.size()]);
+        Map targets = getTargetMap();
+        synchronized (this) {
+            return (ServerTarget[]) targets.values().toArray(new ServerTarget[targets.size()]);
+        }
     }
     
     public Collection getTargetList() {
-        getTargetMap();
-        return  targets.values();
+        Map targets = getTargetMap();
+        synchronized (this) {
+            return targets.values();
+        }
     }
     
     // PENDING use targets final variable?
     private Map getTargetMap() {
-        if (targets == null) {
+        Map tmpTargets = null;
+        synchronized (this) {
+            tmpTargets = targets;
+        }
+        if (tmpTargets == null) {
             Target[] targs = null;
             StartServer startServer = getStartServer();
             try {
@@ -372,13 +412,16 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 targs = new Target[0];
             }
             
-            targets = new HashMap();
+            tmpTargets = new HashMap();
             for (int i = 0; i < targs.length; i++) {
                 //System.out.println("getTargetMap: targ["+i+"]="+targs[i]);
-                targets.put(targs[i].getName(), new ServerTarget(this, targs[i]));
+                tmpTargets.put(targs[i].getName(), new ServerTarget(this, targs[i]));
+            }
+            synchronized (this) {
+                targets = tmpTargets;
             }
         }
-        return targets;
+        return tmpTargets;
     }
     
     public ServerTarget getServerTarget(String targetName) {
@@ -390,39 +433,118 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     public StartServer getStartServer() {
-        if (startServer == null) {
-            try {
-                startServer = server.getOptionalFactory ().getStartServer(getDisconnectedDeploymentManager());
-            }  catch (DeploymentManagerCreationException dmce) {
-                ErrorManager.getDefault().notify(dmce);
-            }
+        DeploymentManager dm = null;
+        try {
+            dm = getDisconnectedDeploymentManager();
+        }  catch (DeploymentManagerCreationException dmce) {
+            throw new RuntimeException(dmce);
         }
-        return startServer;
+        synchronized (this) {
+            if (startServer == null) {
+                startServer = server.getOptionalFactory().getStartServer(dm);
+            }
+            return startServer;
+        }
     }
     
     public IncrementalDeployment getIncrementalDeployment() {
-        if (incrementalDeployment == null) {
-            incrementalDeployment = server.getOptionalFactory().getIncrementalDeployment(getDeploymentManager());
+        DeploymentManager dm = getDeploymentManager();
+        synchronized (this) {
+            if (incrementalDeployment == null) {
+                incrementalDeployment = server.getOptionalFactory().getIncrementalDeployment(dm);
+            }
+            return incrementalDeployment;
         }
-        return incrementalDeployment;
+    }
+    
+    public AntDeploymentProvider getAntDeploymentProvider() {
+        try {
+            return server.getOptionalFactory().getAntDeploymentProvider(getDisconnectedDeploymentManager());
+        } catch (DeploymentManagerCreationException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return null;
+        }
     }
     
     public TargetModuleIDResolver getTargetModuleIDResolver() {
-        if (tmidResolver == null) {
-            tmidResolver = server.getOptionalFactory().getTargetModuleIDResolver(getDeploymentManager());
+        DeploymentManager dm = getDeploymentManager();
+        synchronized (this) {
+            if (tmidResolver == null) {
+                tmidResolver = server.getOptionalFactory().getTargetModuleIDResolver(dm);
+            }
+            return tmidResolver;
         }
-        return tmidResolver;
     }
     
     public FindJSPServlet getFindJSPServlet() {
-        if (findJSPServlet == null) {
-            try {
-                findJSPServlet = server.getOptionalFactory().getFindJSPServlet (getDisconnectedDeploymentManager());
-            }  catch (DeploymentManagerCreationException dmce) {
-                ErrorManager.getDefault().notify(dmce);
-            }
+        DeploymentManager dm = null;
+        try {
+            dm = getDisconnectedDeploymentManager();
+        }  catch (DeploymentManagerCreationException dmce) {
+            throw new RuntimeException(dmce);
         }
-        return findJSPServlet;
+        synchronized (this) {
+            if (findJSPServlet == null) {
+                findJSPServlet = server.getOptionalFactory().getFindJSPServlet(dm);
+            }
+            return findJSPServlet;
+        }
+    }
+    
+    private DatasourceManager getDatasourceManager() {
+        DeploymentManager dm = getDeploymentManager();
+        synchronized (this) {
+            if (dsMgr == null) {
+                dsMgr = server.getOptionalFactory().getDatasourceManager(dm);
+            }
+            return dsMgr;
+        }
+    }
+    
+    private DatasourceManager getDisconnectedDatasourceManager() {
+        DeploymentManager dm = null;
+        try {
+            dm = getDisconnectedDeploymentManager();
+        }  catch (DeploymentManagerCreationException dmce) {
+            throw new RuntimeException(dmce);
+        }
+        synchronized (this) {
+            if (ddsMgr == null) {
+                ddsMgr = server.getOptionalFactory().getDatasourceManager(dm);
+            }
+            return ddsMgr;
+        }
+    }
+    
+    /**
+     * Gets the data sources deployed on the this server instance.
+     *
+     * @return set of data sources 
+     */
+    public Set<Datasource> getDatasources() {
+        
+        DatasourceManager ddsMgr = getDisconnectedDatasourceManager();
+                
+        Set deployedDS = Collections.<Datasource>emptySet();
+        if (ddsMgr != null) 
+            deployedDS = ddsMgr.getDatasources();
+        
+        return deployedDS;
+    }
+    
+    /**
+     * Deploys data sources saved in the module.
+     *
+     * @exception ConfigurationException if there is some problem with data source configuration
+     * @exception DatasourceAlreadyExistsException if module data source(s) are conflicting
+     * with data source(s) already deployed on the server
+     */
+    public void deployDatasources(Set<Datasource> datasources) throws ConfigurationException, DatasourceAlreadyExistsException {
+        
+        DatasourceManager dsMgr = getDatasourceManager();
+
+        if (dsMgr != null) 
+            dsMgr.deployDatasources(datasources);
     }
     
     //---------- State API's:  running, debuggable, startedByIDE -----------
@@ -776,6 +898,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
                     start();
                 }
             });
+            return;
         }
         if (isRunning()) {
             return;
@@ -817,14 +940,16 @@ public class ServerInstance implements Node.Cookie, Comparable {
      */
     public void stopDontWait() {
         if (isReallyRunning()) {
-            assert startServer.canStopDeploymentManagerSilently() : "server does not support silent stop of deployment manager";
-            startServer.stopDeploymentManagerSilently();
+            StartServer startServ = getStartServer();
+            assert startServ.canStopDeploymentManagerSilently() : "server does not support silent stop of deployment manager";
+            startServ.stopDeploymentManagerSilently();
         }
     }
     
     /** see stopDontWait */
     public boolean canStopDontWait() {
-        return startServer.canStopDeploymentManagerSilently();
+        StartServer startServ = getStartServer();
+        return startServ.canStopDeploymentManagerSilently();
     }
     
     //------------------------------------------------------------
@@ -880,7 +1005,11 @@ public class ServerInstance implements Node.Cookie, Comparable {
             ui.progress(NbBundle.getMessage(ServerInstance.class, "MSG_PluginHasNoStartServerClass", getServer()));
             return;
         }
-        
+        if (isSuspended()) {
+            // cannot do anything with the server right now
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_ServerSuspended", getServer());
+            throw new ServerException(msg);
+        }
         boolean canControlAdmin = ss.supportsStartDeploymentManager();
         boolean canDebug = ss.supportsStartDebugging(target);
         boolean needsRestart = ss.needsRestart(target);
@@ -1202,6 +1331,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         StartProgressHandler handler = new StartProgressHandler();
         ProgressObject po = null;
         try {
+            setCommandSucceeded(false);
             po = getStartServer().stopDeploymentManager();
             ui.setProgressObject(po);
             po.addProgressListener(handler);
@@ -1367,15 +1497,18 @@ public class ServerInstance implements Node.Cookie, Comparable {
         return getTargetMap().keySet().contains(target.getName());
     }
     
-    public ServerTarget getCoTarget() {
+    public synchronized ServerTarget getCoTarget() {
         return coTarget;
     }
     
     private void initCoTarget() {
         ServerTarget[] childs = getTargets();
         for (int i=0; i<childs.length; i++) {
-            if (getStartServer().isAlsoTargetServer(childs[i].getTarget()))
-                coTarget = childs[i];
+            if (getStartServer().isAlsoTargetServer(childs[i].getTarget())) {
+                synchronized (this) {
+                    coTarget = childs[i];
+                }
+            }
         }
     }
     

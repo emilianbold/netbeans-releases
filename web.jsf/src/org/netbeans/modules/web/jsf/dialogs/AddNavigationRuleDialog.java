@@ -58,7 +58,8 @@ public class AddNavigationRuleDialog extends javax.swing.JPanel implements Valid
             Iterator iter = JSFConfigUtilities.getAllNavigationRules(config).iterator();
             while (iter.hasNext()){
                 rule = (NavigationRule) iter.next();
-                existingRules.put(rule.getFromViewId(), "");
+                if (rule.getFromViewId() != null)
+                    existingRules.put(rule.getFromViewId(), "");
             }
         }
         if (existingRules.get(getFromView())!=null)

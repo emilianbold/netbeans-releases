@@ -73,14 +73,16 @@ public class Wizard extends org.netbeans.modules.schema2beans.BaseBean
 		if (doc == null)
 		{
 			doc = GraphManager.createRootElementNode("wizard");	// NOI18N
-			if (doc == null)
+			if (doc == null){
 				throw new Schema2BeansException(Common.getMessage(
 					"CantCreateDOMRoot_msg", "wizard"));
+                        }
 		}
 		Node n = GraphManager.getElementNode("wizard", doc);	// NOI18N
-		if (n == null)
+		if (n == null){
 			throw new Schema2BeansException(Common.getMessage(
 				"DocRootNotInDOMGraph_msg", "wizard", doc.getFirstChild().getNodeName()));
+                }
 
 		this.graphManager.setXmlDocument(doc);
 
@@ -205,7 +207,6 @@ public class Wizard extends org.netbeans.modules.schema2beans.BaseBean
 	}
 
 	public void validate() throws org.netbeans.modules.schema2beans.ValidateException {
-		boolean restrictionFailure = false;
 		// Validating property name
 		if (getName() == null) {
 			throw new org.netbeans.modules.schema2beans.ValidateException("getName() == null", "name", this);	// NOI18N
@@ -250,7 +251,6 @@ public class Wizard extends org.netbeans.modules.schema2beans.BaseBean
 	// Dump the content of this bean returning it as a String
 	public void dump(StringBuffer str, String indent){
 		String s;
-		Object o;
 		org.netbeans.modules.schema2beans.BaseBean n;
 		str.append(indent);
 		str.append("Name");	// NOI18N

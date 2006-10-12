@@ -67,22 +67,8 @@ public class JspServletDataLoader extends JavaDataLoader {
         return NbBundle.getBundle(JspServletDataLoader.class).getString("PROP_JspServletLoader_Name");
     }
     
-    /** Gets default actions. Overrides superclass method. */
-    protected SystemAction[] defaultActions() {
-        return new SystemAction [] {
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(FileSystemAction.class),
-            null,
-            SystemAction.get(CutAction.class),
-            SystemAction.get(CopyAction.class),
-            SystemAction.get(PasteAction.class),
-            null,
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get (RenameAction.class),
-            null,
-            SystemAction.get(ToolsAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
+    protected String actionsContext() {
+        return "Loaders/text/x-jsp-servlet/Actions/"; // NOI18N
     }
 
     /** For a given file finds a primary file.

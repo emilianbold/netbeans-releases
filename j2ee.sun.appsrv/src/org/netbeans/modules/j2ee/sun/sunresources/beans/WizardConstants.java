@@ -24,9 +24,6 @@
 
 package org.netbeans.modules.j2ee.sun.sunresources.beans;
 
-import java.util.ResourceBundle;
-import org.openide.util.NbBundle;
-
 /**
  *
  * @author  shirleyc
@@ -56,6 +53,8 @@ public interface WizardConstants {
     public static final String __ValidationTableName = "validation-table-name";
     public static final String __FailAllConnections = "fail-all-connections";
     public static final String __Description = "description";
+    public static final String __NonTransactionalConnections = "non-transactional-connections";
+    public static final String __AllowNonComponentCallers = "allow-non-component-callers";
     public static final String __JdbcConnectionPool = "jdbc-connection-pool"; 
         
     public static final String __DatabaseVendor = "database-vendor";
@@ -108,25 +107,31 @@ public interface WizardConstants {
     //Contains __JndiName, __ResType, __Enabled, __Properties, __Description
     public static final String __JmsResource = "jms-resource";
     public static final String __Properties2 = "properties2";
+    public static final String __AdminObjPropertyName = "Name";
     
     //jms-resource Bean
     //Contains __BeanjndiName and __BeanisEnabled and __Description   
 ////    public static final String __JMSResType = "resType";
     
     public static final String __JavaMessageJndiName = "jndi_name";
-    public static final String __JavaMessageResType = "res_type";
+    public static final String __JavaMessageResType = "res-type";
+    public static final String __AdminObjResAdapterName = "res-adapter";
+    public static final String __ConnectorPoolResAdName = "resource-adapter-name";
+    public static final String __ConnectorPoolConnDefName = "connection-definition-name";
     
     //Default Names for the resources
     public static final String __ConnectionPoolResource = "connectionPool";
-    public static final String __JDBCResource = "datasource";
-    public static final String __JMSResource = "jms";
-    public static final String __MAILResource = "mail";
+    public static final String __JDBCResource = "jdbc/myDatasource";
+    public static final String __JMSResource = "jms/myQueue";
+    public static final String __ADMINOBJResource = "jms/myQueue";
+    public static final String __CONNECTORResource = "jms/myConnector";
+    public static final String __MAILResource = "mail/mySession";
     public static final String __PersistenceResource = "persistence";
     public static final String __DynamicWizPanel = "dynamicPanel"; //to identify ds & cp created dynamically
     public static final String __SunResourceExt = "sun-resource";
     
     //First Step - temporary workaround
-    public static final String __FirstStepChoose = "Choose ...";
+    public static final String __FirstStepChoose = "Choose";
     //Resource Folder
     public static final String __SunResourceFolder = "setup";
     
@@ -135,7 +140,12 @@ public interface WizardConstants {
     public static final String __GetJdbcConnectionPool = "getJdbcConnectionPool";
     public static final String __GetMailResource = "getMailResource";
     public static final String __GetJmsResource = "getJmsResource";
+    public static final String __GetAdmObjResource = "getAdminObjectResource";
+    public static final String __GetConnectorResource = "getConnectorResource";
+    public static final String __GetConnPoolResource = "getConnectorConnectionPool";
     public static final String __GetPMFResource = "getPersistenceManagerFactoryResource";
+    public static final String __GetJdbcResourceByName = "getJdbcResourceByJndiName";
+    public static final String __GetJdbcConnectionPoolByName = "getJdbcConnectionPoolByName";
     public static final String __GetProperties = "getProperties";
     public static final String __SetProperty = "setProperty";
     public static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
@@ -144,4 +154,44 @@ public interface WizardConstants {
     public static final String __DerbyPortNumber = "PortNumber";
     public static final String __ServerName = "serverName";
     public static final String __DerbyConnAttr = "connectionAttributes";
+    
+    public static final String __PortNumber = "portNumber";
+    public static final String __SID = "SID";
+    
+    public static final String[] VendorsExtraProps = {"sun_db2", "sun_oracle", "sun_msftsql",
+        "sun_sybase", "db2", "microsoft_sql", "post-gre-sql", "mysql", "datadirect_sql",
+        "datadirect_db2", "datadirect_informix", "datadirect_sybase", "datadirect_oracle", 
+        "jtds_sql", "jtds_sybase", "informix", "sybase2"};
+    
+    
+    public static final String[] VendorsDBNameProp = {"sun_db2", "sun_oracle", "sun_msftsql",
+        "db2", "post-gre-sql", "mysql", "datadirect_sql", 
+        "datadirect_db2", "datadirect_informix", "datadirect_sybase", "datadirect_oracle",
+        "jtds_sql", "jtds_sybase", "informix"};
+    
+    
+    public static final String[] Reqd_DBName = {"sun_db2", "sun_msftsql", "datadirect_sql", 
+        "datadirect_db2", "datadirect_informix", "datadirect_sybase"};
+    
+    //Suffixes to create Resource File Names (for Zero Config)
+    public static final String __ConnPoolSuffix = "Pool"; 
+    
+    public static final String __DriverClassName = "driverClassName"; 
+    
+    public static final String __QUEUE = "javax.jms.Queue"; // NOI18N
+    public static final String __TOPIC = "javax.jms.Topic"; // NOI18N
+    
+    public static final String __QUEUE_CNTN_FACTORY = "javax.jms.QueueConnectionFactory"; // NOI18N
+    public static final String __TOPIC_CNTN_FACTORY = "javax.jms.TopicConnectionFactory"; // NOI18N
+    public static final String __CNTN_FACTORY = "javax.jms.ConnectionFactory"; // NOI18N
+    
+    public static final String __JmsResAdapter = "jmsra";  
+    //Create Resource Operations
+    public static final String __CreateCP = "createJdbcConnectionPool";
+    public static final String __CreateDS = "createJdbcResource";
+    public static final String __CreatePMF = "createPersistenceManagerFactoryResource";
+    public static final String __CreateMail = "createMailResource";
+    public static final String __CreateAdmObj = "createAdminObjectResource"; 
+    public static final String __CreateConnector = "createConnectorResource";
+    public static final String __CreateConnPool = "createConnectorConnectionPool";
 }

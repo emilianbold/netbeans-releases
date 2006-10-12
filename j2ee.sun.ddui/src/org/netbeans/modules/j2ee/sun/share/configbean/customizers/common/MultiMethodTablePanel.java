@@ -104,12 +104,9 @@ public abstract class MultiMethodTablePanel extends MethodTablePanel {
 
         GridBagConstraints gridBagConstraints;
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 1;
-        gridBagConstraints.gridheight = 1;
-        gridBagConstraints.insets = new java.awt.Insets(5, 10, 10, 10);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6,6,0,5);
         selectionPanel = getSelectionPanel();
         add(selectionPanel, gridBagConstraints);
 
@@ -136,17 +133,11 @@ public abstract class MultiMethodTablePanel extends MethodTablePanel {
         //adjustColumnWidth(1, false);
         //adjustColumnWidth(methodTable, 2, "description field template", false);   //NOI18N
         ///setColumnColor();
+        
         tablePane = new javax.swing.JScrollPane(methodTable);
         tablePane.setOpaque(true);
         tablePane.setToolTipText(getTablePaneToolTip());
-
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 10);
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        
-        add(tablePane, gridBagConstraints); 
+        add(tablePane, getTableGridBagConstraints()); 
         tablePane.getAccessibleContext().setAccessibleName(getTablePaneAcsblName());
         tablePane.getAccessibleContext().setAccessibleDescription(getTablePaneAcsblDesc());
      }
@@ -168,36 +159,30 @@ public abstract class MultiMethodTablePanel extends MethodTablePanel {
 
 
     void setColumnColor(){
-            TableCellRenderer rend = methodTable.getCellRenderer(0, 0);
-            ///Component comp = rend.getTableCellRendererComponent(this, v, false, false, 0, 0);
-            ///DisabledBackgroundColor  = ColorTools.brighter(DisabledBackgroundColor, -0.03);
-            JComponent comp = (JComponent)rend;
-            comp.setBackground(DisabledBackgroundColor);
-            comp.setOpaque(true);
+        TableCellRenderer rend = methodTable.getCellRenderer(0, 0);
+        ///Component comp = rend.getTableCellRendererComponent(this, v, false, false, 0, 0);
+        ///DisabledBackgroundColor  = ColorTools.brighter(DisabledBackgroundColor, -0.03);
+        JComponent comp = (JComponent)rend;
+        comp.setBackground(DisabledBackgroundColor);
+        comp.setOpaque(true);
     }
 
 
      private JPanel getSelectionPanel(){
         JPanel selectionPanel = new JPanel();
         selectionPanel.setLayout(new GridBagLayout());
+  
         selectionLabel = new javax.swing.JLabel();
         selectionLabel.setText(getSelectionLabelText());
         selectionLabel.setLabelFor(selectionComboBox);
         selectionLabel.setDisplayedMnemonic(getSelectionLabelMnemonic());
+//        selectionLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-
-        selectionLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-
-        GridBagConstraints gridBagConstraints;
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 1, 3, 1);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0,0,0,0);
         selectionPanel.add(selectionLabel, gridBagConstraints);
         selectionLabel.getAccessibleContext().setAccessibleName(getSelectionLabelAcsblName());
         selectionLabel.getAccessibleContext().setAccessibleDescription(getSelectionLabelAcsblDesc());
-
 
         selectionComboBox = new JComboBox();
         String[] selections = model.getSelections();
@@ -209,10 +194,10 @@ public abstract class MultiMethodTablePanel extends MethodTablePanel {
             }
         });
 
-        gridBagConstraints.ipadx = 72;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 1, 1, 1);
+        gridBagConstraints.insets = new java.awt.Insets(0,6,0,0);
         selectionPanel.add(selectionComboBox, gridBagConstraints);
         selectionComboBox.getAccessibleContext().setAccessibleName(getSelectionComboAcsblName());
         selectionComboBox.getAccessibleContext().setAccessibleDescription(getSelectionComboAcsblDesc());

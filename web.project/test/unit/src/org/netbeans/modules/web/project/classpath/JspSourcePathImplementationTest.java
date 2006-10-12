@@ -23,11 +23,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.test.TestBase;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -43,6 +43,11 @@ public class JspSourcePathImplementationTest extends NbTestCase {
     
     public JspSourcePathImplementationTest(String testName) {
         super(testName);
+    }
+    
+    public void setUp() throws Exception {
+        // just in order to add our repository implementation
+        TestBase.setLookup(new Object[0]);
     }
     
     public void testJspSourcePathImplementation() throws Exception {

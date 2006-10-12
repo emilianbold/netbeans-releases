@@ -25,7 +25,6 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.openide.ErrorManager;
-import org.openide.util.RequestProcessor;
 
 /**
  * This is a utility class that can be used by ProgressObject's,
@@ -43,8 +42,6 @@ public class ProgressEventSupport {
     
     private DeploymentStatus status;
     
-    private TargetModuleID tmID;
-    
     /**
      * Constructs a <code>ProgressEventSupport</code> object.
      *
@@ -59,22 +56,10 @@ public class ProgressEventSupport {
     
     /** Add a ProgressListener to the listener list. */
     public synchronized void addProgressListener (ProgressListener lsnr) {
-        boolean notify = false;
         if (listeners == null) {
             listeners = new java.util.Vector();
         }
         listeners.addElement(lsnr);
-        if (status != null && !status.isRunning ()) {
-            notify = true;
-        }
-        if (notify) {
-            // not to miss completion event
-            RequestProcessor.getDefault ().post (new Runnable () {
-                public void run () {
-                    fireHandleProgressEvent (tmID, status);
-                }
-            });
-        }
     }
     
     /** Remove a ProgressListener from the listener list. */
@@ -90,10 +75,10 @@ public class ProgressEventSupport {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("progress event from "+obj+" status "+sCode); // NOI18N
         }
+        synchronized (this) {
+            status = sCode;
+        }
         ProgressEvent evt = new ProgressEvent (obj, targetModuleID, sCode);
-        status = sCode;
-        tmID = targetModuleID;
-        
 	java.util.Vector targets = null;
 	synchronized (this) {
 	    if (listeners != null) {
@@ -111,7 +96,7 @@ public class ProgressEventSupport {
     
     /** Returns last DeploymentStatus notified by {@link fireHandleProgressEvent}
      */
-    public DeploymentStatus getDeploymentStatus () {
+    public synchronized DeploymentStatus getDeploymentStatus () {
         return status;
     }
 }

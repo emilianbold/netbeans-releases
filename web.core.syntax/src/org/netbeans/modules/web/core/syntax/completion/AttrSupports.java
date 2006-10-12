@@ -45,7 +45,7 @@ import org.netbeans.modules.web.core.syntax.*;
  * @author  pjiricka
  */
 public class AttrSupports extends Object {
-
+    
     public static class ScopeSupport extends AttributeValueSupport.Default {
         
         public ScopeSupport(boolean tag, String longName, String attrName) {
@@ -78,7 +78,7 @@ public class AttrSupports extends Object {
         
     }
     
-     public static class PluginTypeSupport extends AttributeValueSupport.Default {
+    public static class PluginTypeSupport extends AttributeValueSupport.Default {
         
         public PluginTypeSupport(boolean tag, String longName, String attrName) {
             super(tag, longName, attrName);
@@ -125,7 +125,7 @@ public class AttrSupports extends Object {
         }
         
     }
-
+    
     /** Support for code completing of package and class. */
     public static class PackageClassSupport extends AttributeValueSupport.Default {
         /** Index where to start substitution */
@@ -133,22 +133,22 @@ public class AttrSupports extends Object {
         /** Length of currently substituted text */
         private int itemLength;
         
-        public PackageClassSupport (boolean tag, String longName, String attrName) {
-            super (tag, longName, attrName);
+        public PackageClassSupport(boolean tag, String longName, String attrName) {
+            super(tag, longName, attrName);
         }
         
-        protected List possibleValues (JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            return new ArrayList ();
+        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            return new ArrayList();
         }
         
         /** Returns the complete result that contains elements from getCompletionItems.   */
-        public CompletionQuery.Result getResult (JTextComponent component, int offset, 
-            JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
+        public CompletionQuery.Result getResult(JTextComponent component, int offset,
+                JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             if(valuePart.lastIndexOf(',') > 0)
                 valuePart = valuePart.substring(valuePart.lastIndexOf(',')+1).trim();
-            List res = completionResults (offset, sup, item, valuePart);
-            return new JavaCompletionQuery.JavaResult (component, res, completionTitle (), null, 
-                itemOffset, itemLength, 0);
+            List res = completionResults(offset, sup, item, valuePart);
+            return new JspCompletionQuery.JspJavaCompletionResult(component, res, completionTitle(), null,
+                    itemOffset, itemLength, 0);
         }
         
         /** Returns generated List of items for completion.
@@ -192,7 +192,7 @@ public class AttrSupports extends Object {
         }
         
     }
-
+    
     public static class GetSetPropertyName extends AttributeValueSupport.Default {
         
         public GetSetPropertyName(boolean tag, String longName, String attrName) {
@@ -202,14 +202,16 @@ public class AttrSupports extends Object {
         protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
             ArrayList list = new ArrayList();
             PageInfo.BeanData[] beanData = sup.getBeanData();
-            for (int i = 0; i < beanData.length; i++) {
-                list.add(beanData[i].getId());
+            if(beanData != null) {
+                for (int i = 0; i < beanData.length; i++) {
+                    list.add(beanData[i].getId());
+                }
             }
             return list;
         }
         
     }
-
+    
     
     public static abstract class GetSetPropertyProperty extends AttributeValueSupport.Default {
         
@@ -232,7 +234,7 @@ public class AttrSupports extends Object {
                         break;
                     }
                 }
-
+                
                 if (className != null) {
                     try {
                         FileObject fo = NbEditorUtilities.getDataObject( sup.getDocument()).getPrimaryFile();
@@ -245,17 +247,15 @@ public class AttrSupports extends Object {
                             if (setter && (properties[j].getWriteMethod() != null))
                                 list.add(properties[j].getName());
                             if (!setter && (properties[j].getReadMethod() != null) && !properties[j].getName().equals("class")) //NOI18N
-                                    list.add(properties[j].getName());
+                                list.add(properties[j].getName());
                         }
-                    }
-                    catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException e) {
                         // do nothing
-                    }
-                    catch (IntrospectionException e) {
+                    } catch (IntrospectionException e) {
                         // do nothing
                     }
                 }
-            }    
+            }
             return list;
         }
     }
@@ -308,7 +308,7 @@ public class AttrSupports extends Object {
         }
         
     }
-
+    
     public static class TaglibTagdir extends AttributeValueSupport.Default {
         
         public TaglibTagdir() {
@@ -347,83 +347,80 @@ public class AttrSupports extends Object {
         }
         
     }
-
+    
     
     /** Support for code completing of package and class. */
     public static class FilenameSupport extends AttributeValueSupport.Default {
-        static final ImageIcon PACKAGE_ICON =         
-            new ImageIcon(org.openide.util.Utilities.loadImage("org/openide/loaders/defaultFolder.gif")); // NOI18N
+        static final ImageIcon PACKAGE_ICON =
+                new ImageIcon(org.openide.util.Utilities.loadImage("org/openide/loaders/defaultFolder.gif")); // NOI18N
         
         /** Index where to start substitution */
         private int itemOffset;
         /** Length of currently substituted text */
         private int itemLength;
         
-        public FilenameSupport (boolean tag, String longName, String attrName) {
-            super (tag, longName, attrName);
+        public FilenameSupport(boolean tag, String longName, String attrName) {
+            super(tag, longName, attrName);
         }
         
-        protected List possibleValues (JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            return new ArrayList ();
+        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            return new ArrayList();
         }
         
         /** Returns the complete result that contains elements from getCompletionItems.   */
-        public CompletionQuery.Result getResult (JTextComponent component, int offset, 
-            JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-            List res = completionResults (offset, sup, item, valuePart);
-            return new CompletionQuery.DefaultResult(component, 
-                        completionTitle (), res, 
-                        itemOffset, itemLength);
+        public CompletionQuery.Result getResult(JTextComponent component, int offset,
+                JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
+            List res = completionResults(offset, sup, item, valuePart);
+            return new JspCompletionQuery.JspCompletionResult(component,
+                    completionTitle(), res,
+                    itemOffset, itemLength, -1);
         }
         
-        /** Returns generated List of items for completion.  
+        /** Returns generated List of items for completion.
          *  It sets itemLength and itemOffset variables as a side effect
          */
-        private List completionResults (int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-            List res = new ArrayList ();
+        private List completionResults(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
+            List res = new ArrayList();
             String path = "";   // NOI18N
             String fileNamePart = valuePart;
-            int lastSlash = valuePart.lastIndexOf ('/');
+            int lastSlash = valuePart.lastIndexOf('/');
             if (lastSlash == 0) {
                 path = "/"; // NOI18N
-                fileNamePart = valuePart.substring (1);
-            }
-            else if (lastSlash > 0) { // not a leading slash?
-                path = valuePart.substring (0, lastSlash);
-                fileNamePart = (lastSlash == valuePart.length ())? "": valuePart.substring (lastSlash+1);    // NOI18N
+                fileNamePart = valuePart.substring(1);
+            } else if (lastSlash > 0) { // not a leading slash?
+                path = valuePart.substring(0, lastSlash);
+                fileNamePart = (lastSlash == valuePart.length())? "": valuePart.substring(lastSlash+1);    // NOI18N
             }
             
             try {
                 FileObject orig = sup.getFileObject();
                 FileObject documentBase = JspUtils.guessWebModuleRoot(sup.getDocument(), orig);
                 // need to normalize fileNamePart with respect to orig
-                String ctxPath = JspUtils.resolveRelativeURL ("/"+orig.getPath (), path);  // NOI18N
+                String ctxPath = JspUtils.resolveRelativeURL("/"+orig.getPath(), path);  // NOI18N
                 //is this absolute path?
                 if (path.startsWith("/"))
                     ctxPath = documentBase.getPath() + path;
-                else 
-                    ctxPath = ctxPath.substring (1);
+                else
+                    ctxPath = ctxPath.substring(1);
                 
                 
-                FileSystem fs = orig.getFileSystem ();
+                FileSystem fs = orig.getFileSystem();
                 
-                FileObject folder = fs.findResource (ctxPath);
+                FileObject folder = fs.findResource(ctxPath);
                 if (folder != null) {
-                    res = files (folder, fileNamePart, sup);
+                    res = files(folder, fileNamePart, sup);
                     if (!folder.equals(documentBase) && !path.startsWith("/") // NOI18N
-                        && (path.length() == 0 || (path.lastIndexOf("../")+3 == path.length()))){ // NOI18N
-                        res.add(0,  new JspCompletionItem.FileAttributeValue ("../", java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
+                    && (path.length() == 0 || (path.lastIndexOf("../")+3 == path.length()))){ // NOI18N
+                        res.add(0,  new JspCompletionItem.FileAttributeValue("../", java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
                     }
                 }
-            }
-            catch (FileStateInvalidException ex) {
+            } catch (FileStateInvalidException ex) {
                 // unreachable FS - disable completion
-            }
-            catch (IllegalArgumentException ex) {
+            } catch (IllegalArgumentException ex) {
                 // resolving failed
             }
-            itemOffset = offset - valuePart.length () + lastSlash + 1;  // works even with -1
-            itemLength = fileNamePart.length ();
+            itemOffset = offset - valuePart.length() + lastSlash + 1;  // works even with -1
+            itemLength = fileNamePart.length();
             
             
             //set substitute offset
@@ -431,30 +428,30 @@ public class AttrSupports extends Object {
             while(i.hasNext()) {
                 JspCompletionItem.JspResultItem resultItem = (JspCompletionItem.JspResultItem)i.next();
                 resultItem.setSubstituteOffset(itemOffset);
-            }            
+            }
             
             return res;
         }
         
-        private List files (FileObject folder, String prefix, JspSyntaxSupport sup) {
-            ArrayList res = new ArrayList ();
+        private List files(FileObject folder, String prefix, JspSyntaxSupport sup) {
+            ArrayList res = new ArrayList();
             TreeMap resFolders = new TreeMap();
             TreeMap resFiles = new TreeMap();
             
-            Enumeration files = folder.getChildren (false);
-            while (files.hasMoreElements ()) {
-                FileObject file = (FileObject)files.nextElement ();
-                String fname = file.getNameExt ();
-                if (fname.startsWith (prefix) && !"cvs".equalsIgnoreCase(fname)) {
+            Enumeration files = folder.getChildren(false);
+            while (files.hasMoreElements()) {
+                FileObject file = (FileObject)files.nextElement();
+                String fname = file.getNameExt();
+                if (fname.startsWith(prefix) && !"cvs".equalsIgnoreCase(fname)) {
                     
                     if (file.isFolder())
-                        resFolders.put(file.getNameExt (), new JspCompletionItem.FileAttributeValue (file.getNameExt () + "/", java.awt.Color.BLUE, PACKAGE_ICON));
+                        resFolders.put(file.getNameExt(), new JspCompletionItem.FileAttributeValue(file.getNameExt() + "/", java.awt.Color.BLUE, PACKAGE_ICON));
                     else{
                         java.awt.Image icon = JspUtils.getIcon(sup.getDocument(), file);
                         if (icon != null)
-                            resFiles.put (file.getNameExt (), new JspCompletionItem.FileAttributeValue (file.getNameExt (), java.awt.Color.BLACK, new javax.swing.ImageIcon(icon)));
-                        else 
-                            resFiles.put (file.getNameExt (), new JspCompletionItem.FileAttributeValue (file.getNameExt (), java.awt.Color.BLACK));
+                            resFiles.put(file.getNameExt(), new JspCompletionItem.FileAttributeValue(file.getNameExt(), java.awt.Color.BLACK, new javax.swing.ImageIcon(icon)));
+                        else
+                            resFiles.put(file.getNameExt(), new JspCompletionItem.FileAttributeValue(file.getNameExt(), java.awt.Color.BLACK));
                     }
                 }
             }
@@ -463,13 +460,13 @@ public class AttrSupports extends Object {
             
             return res;
         }
-            
+        
     }
     
     public static class TrueFalseSupport extends AttributeValueSupport.Default {
         
-        public TrueFalseSupport (boolean tag, String longName, String attrName) {
-            super (tag, longName, attrName);
+        public TrueFalseSupport(boolean tag, String longName, String attrName) {
+            super(tag, longName, attrName);
         }
         
         protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
@@ -480,7 +477,7 @@ public class AttrSupports extends Object {
         }
         
     }
-
+    
     public static class PageLanguage extends AttributeValueSupport.Default {
         
         public PageLanguage() {
@@ -497,8 +494,8 @@ public class AttrSupports extends Object {
     
     public static class EncodingSupport extends AttributeValueSupport.Default {
         
-        public EncodingSupport (boolean tag, String longName, String attrName) {
-            super (tag, longName, attrName);
+        public EncodingSupport(boolean tag, String longName, String attrName) {
+            super(tag, longName, attrName);
         }
         
         protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
@@ -506,11 +503,11 @@ public class AttrSupports extends Object {
             Iterator iter = java.nio.charset.Charset.availableCharsets().keySet().iterator();
             
             while (iter.hasNext())
-                list.add(iter.next()); 
+                list.add(iter.next());
             
             return list;
         }
         
     }
-
+    
 }

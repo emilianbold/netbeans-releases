@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<metaDD>
+	<meta-element>
+		<dtd-name>endpoints</dtd-name>
+		<bean-name>Endpoints</bean-name>
+	</meta-element>
+	<meta-element>
+		<dtd-name>endpoint</dtd-name>
+		<bean-name>Endpoint</bean-name>
+	</meta-element>
+</metaDD>

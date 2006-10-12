@@ -53,6 +53,10 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
+import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;

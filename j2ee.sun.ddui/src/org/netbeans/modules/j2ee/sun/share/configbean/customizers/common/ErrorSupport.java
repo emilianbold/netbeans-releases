@@ -24,6 +24,15 @@
 
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
 
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.util.Iterator;
+import java.util.ResourceBundle;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 /**
  *
  * @author  Rajeshwar Patil
@@ -31,9 +40,10 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
  */
 public class ErrorSupport implements ErrorSupportClient{
 
+	private static final ResourceBundle bundle = ResourceBundle.getBundle(
+		"org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle");	// NOI18N
+    
 	private java.util.List errorList;
-	private javax.swing.JTextArea errorArea;
-	private javax.swing.JScrollPane errorPane;
 	private javax.swing.JPanel errorPanel;
 	private javax.swing.JComponent focusedComponent;
 
@@ -54,8 +64,6 @@ public class ErrorSupport implements ErrorSupportClient{
 
 	private void initialize(){
 		errorList = new java.util.ArrayList();
-		errorArea = null;
-		errorPane = null;
 		errorPanel = null;
 		focusedComponent = null;
 	}
@@ -80,61 +88,45 @@ public class ErrorSupport implements ErrorSupportClient{
 			}
 		}
 
-		java.awt.Container parentPanel = client.getErrorPanelParent();
+		Container parentPanel = client.getErrorPanelParent();
 		if(parentPanel != null){
 			if(errorList.size() != 0){
-				String errorString = ""; // NOI18N
-				for (int i=0;i<errorList.size();i++){
-					errorString+=(i==0?(String)errorList.get(i):"\n"+  //NOI18N
-						(String)errorList.get(i));
-				}
+                if(errorPanel == null) {
+                    errorPanel = new JPanel(new GridBagLayout());
+                    parentPanel.add(errorPanel, client.getErrorPanelConstraints());
+                } else {
+                    errorPanel.removeAll();
+                }
+              
+                for(Iterator iter = errorList.iterator(); iter.hasNext(); ) {
+                    String message = (String) iter.next();
 
-				if (errorArea == null){
-					errorArea = new javax.swing.JTextArea(errorString, 3, 50);
-					errorArea.setEditable(false);
-					errorArea.setForeground(client.getMessageForegroundColor());
-					errorPane = new javax.swing.JScrollPane(errorArea);
-					errorPane.setVerticalScrollBarPolicy(
-						javax.swing.JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-					errorPane.setPreferredSize(new java.awt.Dimension(200, 20));
+                    // Add error message
+                    JLabel label = new JLabel();
+                    label.setIcon(BaseCustomizer.errorMessageIcon);
+                    label.setText(message);
+                    label.getAccessibleContext().setAccessibleName(bundle.getString("ASCN_ErrorMessage")); // NOI18N
+                    label.getAccessibleContext().setAccessibleDescription(message);
+                    label.setForeground(getMessageForegroundColor());
 
-					errorPanel = 
-						new javax.swing.JPanel(new java.awt.GridBagLayout()); 
-
-					java.awt.GridBagConstraints gridBagConstraints = 
-						new java.awt.GridBagConstraints();
-
-					gridBagConstraints.anchor = gridBagConstraints.SOUTH;
-					gridBagConstraints.fill = gridBagConstraints.HORIZONTAL;
-					gridBagConstraints.gridheight = 1;
-					gridBagConstraints.gridwidth = 1;
-					gridBagConstraints.gridx = 0;
-					gridBagConstraints.gridy = 0;
-					gridBagConstraints.insets.top = 0;
-					gridBagConstraints.insets.left = 0;
-					gridBagConstraints.insets.bottom = 0;
-					gridBagConstraints.insets.right = 0;
-					///gridBagConstraints.ipadx = 240;
-					gridBagConstraints.ipady = 30;
-					gridBagConstraints.weightx = 1.0;
-					gridBagConstraints.weighty = 0.0;
-
-					errorPanel.add(errorPane, gridBagConstraints);
-					parentPanel.add(errorPanel, 
-						client.getErrorPanelConstraints());
-				} else {
-					errorArea.setText(errorString);
-				}
-				//parentPanel.pack();
-				if (focusedComponent != null) focusedComponent.requestFocus();
-			}else{
-				if(errorArea != null){
-					parentPanel.remove(errorPanel);
-					errorArea = null;
-				}
+                    GridBagConstraints constraints = new GridBagConstraints();
+                    constraints.gridwidth = GridBagConstraints.REMAINDER;
+                    constraints.fill = GridBagConstraints.HORIZONTAL;
+                    constraints.weightx = 1.0;
+                    errorPanel.add(label, constraints);
+                }
+                
+//				if (focusedComponent != null) {
+//                    focusedComponent.requestFocus();
+//                }
+			} else {
+                if(errorPanel != null) {
+                    parentPanel.remove(errorPanel);
+                    errorPanel = null;
+                }
 			}
-			///parentPanel.validate();
-			parentPanel.paintAll(parentPanel.getGraphics());
+            
+			parentPanel.validate();
 		}
 	}
 
@@ -203,30 +195,15 @@ public class ErrorSupport implements ErrorSupportClient{
 
 
 	public java.awt.GridBagConstraints getErrorPanelConstraints(){
-
-		java.awt.GridBagConstraints gridBagConstraints = 
-			new java.awt.GridBagConstraints();
-
-		gridBagConstraints.anchor = gridBagConstraints.CENTER;
-		gridBagConstraints.fill = gridBagConstraints.BOTH;
-		gridBagConstraints.gridheight = 1;
-		gridBagConstraints.gridwidth = 1;
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 5;
-		gridBagConstraints.insets.top = 0;
-		gridBagConstraints.insets.left = 5;
-		gridBagConstraints.insets.bottom = 5;
-		gridBagConstraints.insets.right = 5;
-		gridBagConstraints.ipadx = 0;
-		gridBagConstraints.ipady = 0;
-		gridBagConstraints.weightx = 0.0;
-		gridBagConstraints.weighty = 0.0;
-
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new Insets(6,12,11,11);
 		return gridBagConstraints;
 	}
 
 	public java.awt.Color getMessageForegroundColor() {
-		// default error message color to red.
-		return java.awt.Color.red;
+        return BaseCustomizer.getErrorForegroundColor();
 	}
 }

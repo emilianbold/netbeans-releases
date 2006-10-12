@@ -80,8 +80,6 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
 
         setLayout(new java.awt.GridBagLayout());
 
-        setMinimumSize(new java.awt.Dimension(400, 125));
-        setPreferredSize(new java.awt.Dimension(400, 125));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -134,8 +132,7 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
         add(jTextFieldCreatedFile, gridBagConstraints);
         jTextFieldCreatedFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportBuildfile.class, "ACS_LBL_IW_CreatedFile_A11YDesc"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabelBuildName;

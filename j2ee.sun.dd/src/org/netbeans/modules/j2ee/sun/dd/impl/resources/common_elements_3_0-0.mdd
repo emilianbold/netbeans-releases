@@ -1,13 +1,17 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <metaDD>
-        <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
+    <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.LoginConfig</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.MessageSecurityBinding</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ServiceQname</import>
+        <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.MessageSecurityBinding</import>
+        <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ServiceQname</import>
 		<dtd-name>webservice-endpoint</dtd-name>
 		<bean-name>WebserviceEndpoint</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint</implements>
+	</meta-element>
+	<meta-element>
+		<dtd-name>security-role-mapping</dtd-name>
+		<bean-name>SecurityRoleMapping</bean-name>
+		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping</implements>
 	</meta-element>
 	<meta-element>
 		<dtd-name>port-component-name</dtd-name>
@@ -46,16 +50,6 @@
 		<wrapper-class>String</wrapper-class>
 	</meta-element>
 	<meta-element>
-		<dtd-name>property</dtd-name>
-		<bean-name>PropertyElement</bean-name>
-		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.PropertyElement</implements>
-	</meta-element>
-	<meta-element>
-		<dtd-name>description</dtd-name>
-		<bean-name>Description</bean-name>
-		<wrapper-class>String</wrapper-class>
-	</meta-element>
-	<meta-element>
 		<dtd-name>#PCDATA</dtd-name>
 		<bean-name>Pcdata</bean-name>
 		<wrapper-class>String</wrapper-class>
@@ -71,10 +65,14 @@
 		<wrapper-class>String</wrapper-class>
 	</meta-element>
 	<meta-element>
-                <skip-generation/>
 		<dtd-name>login-config</dtd-name>
 		<bean-name>LoginConfig</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.LoginConfig</implements>
+	</meta-element>
+	<meta-element>
+		<dtd-name>realm</dtd-name>
+		<bean-name>Realm</bean-name>
+		<wrapper-class>String</wrapper-class>
 	</meta-element>
 	<meta-element>
                 <skip-generation/>

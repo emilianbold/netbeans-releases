@@ -24,6 +24,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Recognize text/struts+xml: -->
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-web-struts-resources-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsConfigIcon.png" />
             </file>
         </folder>
     </folder>
@@ -67,13 +69,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
-                <folder name="struts-config1.0">
-                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
-                </folder>
-                <folder name="struts-config1.1">
-                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
-                </folder>
-                <folder name="struts-config1.2">
+                <folder name="x-struts+xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
             </folder>

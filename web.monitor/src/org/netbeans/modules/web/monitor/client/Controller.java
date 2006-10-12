@@ -23,11 +23,14 @@
 
 package  org.netbeans.modules.web.monitor.client;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
+import java.util.Iterator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
@@ -945,6 +948,7 @@ class Controller  {
 	if(debug) log("getTransactions removed old nodes"); //NOI18N 
 
 	e = currDir.getData(false);
+        final List fileObjectsToDelete = new ArrayList();
 	while(e.hasMoreElements()) {
 
 	    fo = (FileObject)e.nextElement();
@@ -959,24 +963,22 @@ class Controller  {
                 if (md != null) {
                     nodes.add(createTransactionNode(md, true)); 
                 }
-            }
-            else {
-                // delete it
-                final FileObject foToDelete = fo;
-                RequestProcessor.getDefault().post(new Runnable () {
-                    public void run() {
-                        Thread.yield();
-                        try {
-                            foToDelete.delete();
-                        }
-                        catch (IOException e) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                        }
-                    }
-                });
+            } else {
+                fileObjectsToDelete.add(fo);
             }
 	}
-	    
+        RequestProcessor.getDefault().post(new Runnable () {
+            public void run() {
+                for (Iterator it = fileObjectsToDelete.iterator(); it.hasNext(); ) {
+                    try {
+                        ((FileObject) it.next()).delete();
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    }
+                }
+            }
+        });
+	
 	numtns = nodes.size();
  	tns = new TransactionNode[numtns]; 
 	for(int i=0;i<numtns;++i) 

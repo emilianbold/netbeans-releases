@@ -107,20 +107,16 @@ public class Tag extends org.netbeans.modules.schema2beans.BaseBean
 		comparators.remove(c);
 	}
 	public void validate() throws org.netbeans.modules.schema2beans.ValidateException {
-		boolean restrictionFailure = false;
 		// Validating property tagItem
 		for (int _index = 0; _index < sizeTagItem(); ++_index) {
-			String element = getTagItem(_index);
-			if (element != null) {
-			}
+			getTagItem(_index);
+
 		}
 	}
 
 	// Dump the content of this bean returning it as a String
 	public void dump(StringBuffer str, String indent){
 		String s;
-		Object o;
-		org.netbeans.modules.schema2beans.BaseBean n;
 		str.append(indent);
 		str.append("TagItem["+this.sizeTagItem()+"]");	// NOI18N
 		for(int i=0; i<this.sizeTagItem(); i++)

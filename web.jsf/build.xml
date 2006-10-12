@@ -20,8 +20,9 @@ Microsystems, Inc. All Rights Reserved.
 <project name="web/jsf" default="netbeans" basedir=".">
 
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <property name="s2b_root" location="src/org/netbeans/modules/web/jsf/config/model"/>
+    
+    <property name="s2b_root11" location="src/org/netbeans/modules/web/jsf/config/model_1_1"/>
+    <property name="s2b_root12" location="src/org/netbeans/modules/web/jsf/config/model_1_2"/>
     <property name="s2b_res_root" location="src/org/netbeans/modules/web/jsf/resources"/>
 
     <target name="s2binit" depends="build-init">
@@ -38,8 +39,18 @@ Microsystems, Inc. All Rights Reserved.
      <echo message="generating code generation input file information" />
 	<schema2beans schema="${s2b_res_root}/web-facesconfig_1_1.dtd"
 	  mddFile="${s2b_res_root}/web-facesconfig_1_1.mdd"
-	  package="org.netbeans.modules.web.jsf.config.model"
+	  package="org.netbeans.modules.web.jsf.config.model_1_1"
 	  validate="false"
+	  useInterfaces="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+	  rootDir="src"/>
+	<schema2beans schema="${s2b_res_root}/web-facesconfig_1_2.xsd"
+	  mddFile="${s2b_res_root}/web-facesconfig_1_2.mdd"
+	  package="org.netbeans.modules.web.jsf.config.model_1_2"
+	  validate="false"
+	  useInterfaces="true"
+	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
     </target>
@@ -49,13 +60,20 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean" depends="clean-s2b-src, projectized-common.clean"/>
 
     <target name="clean-s2b-src">
-        <mkdir dir="${s2b_root}"/>
+        <mkdir dir="${s2b_root11}"/>
+        <mkdir dir="${s2b_root12}"/>
         <delete>
-            <fileset dir="${s2b_root}">
+            <fileset dir="${s2b_root11}">
                 <include name="*.java"/>
             </fileset>
         </delete>
-        <delete dir="${s2b_root}"/>
+        <delete>
+            <fileset dir="${s2b_root12}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root11}"/>
+        <delete dir="${s2b_root12}"/>
     </target>
   
     <target name="netbeans-extra" depends="release"/>
@@ -77,9 +95,6 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../external/jsf-1.1/jsf-impl.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf"/>
 	      
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
-        <copy file="../external/jsf-1.1/jsf-1.1.01-javadoc.zip"
-              todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
     </target>
 
 </project>

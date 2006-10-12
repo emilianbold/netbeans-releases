@@ -100,9 +100,6 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jLabelFrameworks, gridBagConstraints);
 
-        jScrollPane1.setMaximumSize(new java.awt.Dimension(32767, 70));
-        jScrollPane1.setMinimumSize(new java.awt.Dimension(22, 70));
-        jScrollPane1.setPreferredSize(new java.awt.Dimension(259, 70));
         jScrollPane1.setViewportView(jListFrameworks);
         jListFrameworks.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "ACS_Frameworks_FrameworksList_A11YDesc"));
 
@@ -116,6 +113,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
 
         jButtonAdd.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "LBL_CustomizerFrameworks_AddButton_LabelMnemonic").charAt(0));
         jButtonAdd.setText(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "LBL_AddFramework"));
+        jButtonAdd.setActionCommand("Add...");
         jButtonAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonAddActionPerformed(evt);
@@ -159,8 +157,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         gridBagConstraints.weighty = 1.0;
         add(jPanelConfig, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed
         AddFrameworkPanel panel = new AddFrameworkPanel(usedFrameworks);

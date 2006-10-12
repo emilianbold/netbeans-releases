@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.registry.actions;
 
+import org.netbeans.modules.websvc.api.registry.WebServiceMethod;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -45,7 +46,7 @@ public class TestWebServiceMethodAction extends NodeAction {
 		// only acts on the first node, ignoring the remainder.  See also performAction()
 		// which is written the same way.
         if(activatedNodes != null && activatedNodes.length > 0 && 
-			activatedNodes[0].getCookie(WebServiceMethodCookieImpl.class) != null) {
+			activatedNodes[0].getCookie(WebServiceMethod.class) != null) {
 			return true;
 		} else {
 			return false;
@@ -66,7 +67,7 @@ public class TestWebServiceMethodAction extends NodeAction {
     
     protected void performAction(Node[] activatedNodes) {
         if(null != activatedNodes && activatedNodes.length > 0) {
-			WebServiceMethodCookieImpl methodCookie = (WebServiceMethodCookieImpl) activatedNodes[0].getCookie(WebServiceMethodCookieImpl.class);
+			WebServiceMethod methodCookie = (WebServiceMethod) activatedNodes[0].getCookie(WebServiceMethod.class);
 			
 			// !PW The node logic below relies on the fact that the tree of filternodes
 			// is a continuous wrapper of the webservice node structure from the service
@@ -75,7 +76,7 @@ public class TestWebServiceMethodAction extends NodeAction {
 			/** First get the method name
 			 */
 			String methodName = activatedNodes[0].getName();
-			final JavaMethod currentMethod = methodCookie.getJavaMethod();
+			final JavaMethod currentMethod = (JavaMethod)methodCookie.getJavaMethod();
 			
 			/** Now the parent node is a port node with the port information.
 			 */

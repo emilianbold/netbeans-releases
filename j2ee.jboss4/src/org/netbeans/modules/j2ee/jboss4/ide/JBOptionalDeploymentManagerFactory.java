@@ -18,6 +18,9 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide;
 
+import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DatasourceManager;
+import org.netbeans.modules.j2ee.jboss4.config.JBossDatasourceManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
@@ -41,11 +44,22 @@ public class JBOptionalDeploymentManagerFactory extends OptionalDeploymentManage
     }
 
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
-        return null;
+        return new JBFindJSPServlet((JBDeploymentManager)dm);
     }
 
     public InstantiatingIterator getAddInstanceIterator() {
         return new JBInstantiatingIterator();
+    }
+    
+    public DatasourceManager getDatasourceManager(DeploymentManager dm) {
+        
+        if (!(dm instanceof JBDeploymentManager))
+            throw new IllegalArgumentException("");
+
+        String serverUrl = ((JBDeploymentManager)dm).getUrl();
+        JBossDatasourceManager dsMgr = new JBossDatasourceManager(serverUrl);
+        
+        return dsMgr;
     }
     
 }

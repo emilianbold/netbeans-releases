@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.registry.nodes;
 
+import org.netbeans.modules.websvc.api.registry.WebServiceMethod;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.*;
@@ -51,7 +52,7 @@ import javax.swing.Action;
  * such nodes with the proper behavior.
  * @author octav
  */
-public class WebServiceMethodNode extends AbstractNode implements WebServiceMethodCookieImpl {
+public class WebServiceMethodNode extends AbstractNode implements WebServiceMethod {
     
     private JavaMethod javaMethod;
     private Port port;
@@ -60,7 +61,7 @@ public class WebServiceMethodNode extends AbstractNode implements WebServiceMeth
         this(null,null);
     }
     
-    public JavaMethod getJavaMethod() {
+    public Object getJavaMethod() {
         return javaMethod;
     }
     // will frequently accept an element from some data model in the constructor:

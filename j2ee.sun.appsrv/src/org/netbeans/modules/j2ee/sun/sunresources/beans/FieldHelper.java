@@ -48,8 +48,9 @@ public class FieldHelper {
     public static Field getField(FieldGroup group, String fieldName) {
         Field[] fields = group.getField();
         for (int i = 0; i < fields.length; i++) {
-            if (fields[i].getName().equals(fieldName))
+            if (fields[i].getName().equals(fieldName)){
                 return fields[i];
+            }
         }
         return null;
     }
@@ -93,8 +94,9 @@ public class FieldHelper {
         OptionValuePair[] options = urlField.getFieldValue().getOptionValuePair();
         for (int i = 0; i < options.length; i++) {
             String condUrl = options[i].getConditionalValue();
-            if(connUrl.indexOf(condUrl) != -1)
+            if(connUrl.indexOf(condUrl) != -1){
                 return options[i].getOptionName();
+            }
         }
         return vendorName;
     }

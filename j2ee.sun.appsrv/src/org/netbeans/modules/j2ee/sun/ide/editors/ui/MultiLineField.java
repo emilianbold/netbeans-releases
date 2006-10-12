@@ -143,8 +143,6 @@ public class MultiLineField extends JComponent implements Accessible {
     }
 
     public void addNotify () {
-	boolean makeNewFont = false;
-
 	super.addNotify ();
 	
 	int ptSize = getFont ().getSize ();

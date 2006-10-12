@@ -40,6 +40,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePairsPropertyEditor;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
+import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 
 /**
  *
@@ -74,11 +75,19 @@ public class JMSBeanDataNode extends BaseResourceNode implements java.beans.Prop
     
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
         FileObject resFile = getJMSBeanDataNode().getDataObject().getPrimaryFile();
-        ResourceUtils.saveNodeToXml(resFile, resource.getGraph());
+        ResourceUtils.saveNodeToXml(resFile, getBeanGraph());
     }
     
     public Resources getBeanGraph(){
-        return resource.getGraph();
+        String type = getJmsResType();
+        if(type.equals(WizardConstants.__QUEUE) || type.equals(WizardConstants.__TOPIC))
+            return resource.getAdminObjectGraph();
+        else
+            return resource.getConnectorGraph();
+    }
+    
+    public String getJmsResType(){
+        return resource.getResType();
     }
     
     public HelpCtx getHelpCtx() {

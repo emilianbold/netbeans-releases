@@ -159,14 +159,15 @@ public class CmpEntityEjb extends EntityEjb {
     protected class CmpEntityEjbSnippet extends EntityEjb.EntityEjbSnippet {
         public CommonDDBean getDDSnippet() {
             Ejb ejb = (Ejb) super.getDDSnippet();
+            String version = getAppServerVersion().getEjbJarVersionAsString();
 
             if(null != cmp){
-                ejb.setCmp((Cmp) cmp.clone());
+                ejb.setCmp((Cmp) cmp.cloneVersion(version));
             }
 
             if(null != flushAtEndOfMethod){
                 try{
-                    ejb.setFlushAtEndOfMethod((FlushAtEndOfMethod)flushAtEndOfMethod.clone());
+                    ejb.setFlushAtEndOfMethod((FlushAtEndOfMethod)flushAtEndOfMethod.cloneVersion(version));
                 }catch(org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException e){
                     //System.out.println("Not Supported Version");      //NOI18N
                 }
@@ -278,7 +279,7 @@ public class CmpEntityEjb extends EntityEjb {
 	//methods called by the customizer model
 	public void addFinder(Finder finder){
 		if(null == cmp){
-			cmp = StorageBeanFactory.getDefault().createCmp();
+			cmp = getConfig().getStorageFactory().createCmp();
 		}
 		OneOneFinders oneOneFinders = cmp.getOneOneFinders();
 		if(null == oneOneFinders){
@@ -298,7 +299,7 @@ public class CmpEntityEjb extends EntityEjb {
             System.out.println("CmpEntityEjb addMethod params :" + method.getMethodParams() );           //NOI18N   
 */
             if(null == flushAtEndOfMethod){
-                flushAtEndOfMethod = StorageBeanFactory.getDefault().createFlushAtEndOfMethod();
+                flushAtEndOfMethod = getConfig().getStorageFactory().createFlushAtEndOfMethod();
             }
             flushAtEndOfMethod.addMethod(method);
 	}
@@ -307,7 +308,7 @@ public class CmpEntityEjb extends EntityEjb {
         public void addQueryMethod(QueryMethod queryMethod){
             try{
                 if(null == cmp){
-                    cmp = StorageBeanFactory.getDefault().createCmp();
+                    cmp = getConfig().getStorageFactory().createCmp();
                 }
 
                 PrefetchDisabled prefetchDisabled = cmp.getPrefetchDisabled();

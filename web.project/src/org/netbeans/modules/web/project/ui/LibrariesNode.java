@@ -601,7 +601,10 @@ final class LibrariesNode extends AbstractNode {
             };
             ((JButton)options[0]).setEnabled(false);
             ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WebClassPathUi.class,"AD_AddLibrary"));
-            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], Collections.EMPTY_SET);
+                        
+            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+            String j2eeVersion = wm.getJ2eePlatformVersion();
+            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
             DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( LibrariesNode.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
@@ -626,16 +629,6 @@ final class LibrariesNode extends AbstractNode {
             }
         }
         
-        private String getProjectJ2eeVersion() {
-            String version = null;
-            
-            version = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(WebProjectProperties.J2EE_PLATFORM);
-            if (version == null || version.equals(""))
-                version = WebModule.J2EE_13_LEVEL;
-            
-            return version;
-        }
-
     }
 
     private static class AddFolderAction extends AbstractAction {
@@ -660,8 +653,7 @@ final class LibrariesNode extends AbstractNode {
             //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
             chooser.setAcceptAllFileFilterUsed( false );
             FileFilter fileFilter = new SimpleFileFilter (
-                    NbBundle.getMessage( WebClassPathUi.class, "LBL_ZipJarFolderFilter" ),                  // NOI18N
-                    new String[] {"ZIP","JAR"} );   // NOI18N
+                    NbBundle.getMessage( WebClassPathUi.class, "LBL_ZipJarFolderFilter" )); // NOI18N
             chooser.setFileFilter(fileFilter);
             File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder();
             chooser.setCurrentDirectory (curDir);
@@ -703,12 +695,10 @@ final class LibrariesNode extends AbstractNode {
     private static class SimpleFileFilter extends FileFilter {
 
         private String description;
-        private Collection extensions;
 
 
-        public SimpleFileFilter (String description, String[] extensions) {
+        public SimpleFileFilter (String description) {
             this.description = description;
-            this.extensions = Arrays.asList(extensions);
         }
 
         public boolean accept(File f) {

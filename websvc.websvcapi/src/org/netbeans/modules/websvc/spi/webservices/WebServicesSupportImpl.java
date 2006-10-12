@@ -20,6 +20,7 @@
 package org.netbeans.modules.websvc.spi.webservices;
 
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -117,5 +118,10 @@ public interface WebServicesSupportImpl {
      * Determine if the web service was created from WSDL
      */
     public boolean isFromWSDL(String serviceName);
+    
+    /**
+     * Provide classpath where annotations define webservices
+     */
+    public ClassPath getClassPath();
     
 }

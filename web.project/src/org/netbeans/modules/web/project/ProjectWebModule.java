@@ -22,15 +22,16 @@ package org.netbeans.modules.web.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -47,7 +48,9 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.*;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.openide.ErrorManager;
 
 
 /** A web module implementation on top of project.
@@ -86,7 +89,9 @@ public final class ProjectWebModule extends J2eeModuleProvider
             return null;
         }
         FileObject dd = webInfFo.getFileObject (FILE_DD);
-        if (dd == null && !silent) {
+        if (dd == null && !silent 
+                && (J2eeModule.J2EE_13.equals(getJ2eePlatformVersion ()) || 
+                    J2eeModule.J2EE_14.equals(getJ2eePlatformVersion ()))) {
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebXmlNotFound", //NOI18N
                     webInfFo.getPath()));
         }
@@ -164,13 +169,17 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return docBase;
     }
 
-    public ClassPath getJavaSources () {
-        ClassPathProvider cpp = (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
-        if (cpp != null) {
-            return cpp.findClassPath (getFileObject ("src.dir"), ClassPath.SOURCE); //NOI18N
-        }
-        return null;
+    public FileObject[] getJavaSources() {
+        return project.getSourceRoots().getRoots();
     }
+    
+//    public ClassPath getJavaSources () {
+//        ClassPathProvider cpp = (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
+//        if (cpp != null) {
+//            return cpp.findClassPath (getFileObject ("src.dir"), ClassPath.SOURCE); //NOI18N
+//        }
+//        return null;
+//    }
     
     public FileObject getWebInf () {
         return getWebInf(false);
@@ -195,6 +204,10 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     public FileObject getConfDir() {
         return getFileObject(WebProjectProperties.CONF_DIR);
+    }
+    
+    public File getConfDirAsFile() {
+        return getFile(WebProjectProperties.CONF_DIR);
     }
     
     public ClassPathProvider getClassPathProvider () {
@@ -247,16 +260,16 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public File getDeploymentConfigurationFile(String name) {
-        if (name == null) {
-            return null;
-        }
+        assert name != null : "File name of the deployement configuration file can't be null"; //NOI18N
+
         String path = getConfigSupport().getContentRelativePath(name);
         if (path == null) {
             path = name;
         }
         FileObject documentBase = getDocumentBase();
         if (documentBase == null) {
-            return null;
+            //in case that docbase is null ... but normally it should not be
+            return new File(getConfDirAsFile(), name);
         }
         return new File(FileUtil.toFile(documentBase), path);
     }
@@ -335,7 +348,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         try {
             FileObject deploymentDescriptor = getDeploymentDescriptor ();
             if(deploymentDescriptor != null) {
-                return DDProvider.getDefault ().getDDRoot (deploymentDescriptor);
+                return DDProvider.getDefault ().getMergedDDRoot (deploymentDescriptor);
             }
         } catch (java.io.IOException e) {
             org.openide.ErrorManager.getDefault ().log (e.getLocalizedMessage ());
@@ -344,16 +357,24 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     private Webservices getWebservices() {
-        FileObject wsdd = getDD();
-        if(wsdd != null) {
+        if (Util.isJavaEE5orHigher(project)) {
+            WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(project.getProjectDirectory());
             try {
-                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault()
-                .getDDRoot(getDD());
-            } catch (java.io.IOException e) {
-                org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getMergedDDRoot(wss);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        } else {
+            FileObject wsdd = getDD();
+            if(wsdd != null) {
+                try {
+                    return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault()
+                    .getDDRoot(getDD());
+                } catch (java.io.IOException e) {
+                    org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+                }
             }
         }
-        
         return null;
     }
     
@@ -367,7 +388,10 @@ public final class ProjectWebModule extends J2eeModuleProvider
 
     public String getModuleVersion () {
         WebApp wapp = getWebApp ();
-        return wapp.getVersion ();
+        String version = "2.5";             //NOI18N
+        if (wapp != null)
+            version = wapp.getVersion();
+        return version;
     }
 
     private Set versionListeners() {
@@ -446,7 +470,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
            showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted"));
            return null;
        }
-       return getWebInf().getFileObject(WebProjectWebServicesSupport.WEBSERVICES_DD, "xml"); // NOI18N
+       return getWebInf().getFileObject(WebServicesConstants.WEBSERVICES_DD, "xml"); // NOI18N
    }
     
     public FileObject[] getSourceRoots() {

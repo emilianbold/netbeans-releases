@@ -23,6 +23,7 @@ package org.netbeans.modules.web.core.syntax.completion;
 import java.awt.Graphics;
 import java.io.IOException;
 import java.util.*;
+import javax.swing.ImageIcon;
 import javax.swing.text.*;
 import java.awt.Color;
 import java.awt.Component;
@@ -38,6 +39,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
+
 
 /**
  *
@@ -201,6 +203,10 @@ public class JspCompletionItem {
             this(prefix, ti, (SyntaxElement.Tag)null);
         }
         
+        public CharSequence getInsertPrefix() {
+            return getItemText();
+        }
+        
         public boolean hasHelp(){
             return true;
         }
@@ -329,6 +335,10 @@ public class JspCompletionItem {
             return ti;
         }
         
+        public CharSequence getInsertPrefix() {
+            return getItemText();
+        }
+        
         public String getHelp(){
             URL url = super.getHelpURL();
             if (url != null){
@@ -398,6 +408,10 @@ public class JspCompletionItem {
             this.tagInfo = tagInfo;
             if (tagInfo != null)
                 setHelp(tagInfo.getInfoString());
+        }
+        
+        public CharSequence getInsertPrefix() {
+            return null;
         }
         
         public int getSortPriority() {
@@ -544,6 +558,10 @@ public class JspCompletionItem {
     
     /** Item representing a JSP attribute value. */
     static class AttributeValue extends JspResultItem {
+        
+        public CharSequence getInsertPrefix() {
+            return null;
+        }
         
         AttributeValue( String text ) {
             //super(text, Color.red);
@@ -707,5 +725,129 @@ public class JspCompletionItem {
         return NbBundle.getMessage(JspCompletionItem.class, key);
     }
     
+
+    // ------------------------ EL Items ------------------------------------------
     
+    public interface ELItem{};
+    
+    public static class ELImplicitObject extends JspResultItem implements ELItem {
+        
+        private static ResultItemPaintComponent.ELImplicitObjectPaintComponent paintComponent = null;
+        
+        int type;
+        
+        ELImplicitObject(String text, int type){
+            super(text);
+            this.type = type;
+        }
+        
+        public int getSortPriority() {
+            return 15;
+        }
+        
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null)
+                paintComponent = new ResultItemPaintComponent.ELImplicitObjectPaintComponent();
+            paintComponent.setString(text);
+            paintComponent.setType(type);
+            return paintComponent;
+        }
+
+        public String getItemText() {
+            String result = text;
+            if (type == org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects.MAP_TYPE)
+                result = result + "[]";
+            return result;    //NOI18N
+        }
+        
+        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
+            if (type == org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects.MAP_TYPE)
+                return substituteText(c, offset, len, getItemText(), 1);
+            else
+                return substituteText(c, offset, len, getItemText(), 0);
+        }       
+    }
+    
+  
+    public static class ELBean extends JspResultItem implements ELItem {
+        
+        private static ResultItemPaintComponent.ELBeanPaintComponent paintComponent = null;
+        
+        protected String type;
+        
+        public ELBean( String text, String type ) {
+            super(text);
+            if (type.lastIndexOf('.')> -1 )
+                this.type = type.substring(type.lastIndexOf('.')+1);
+            else
+                this.type = type;
+        }        
+        
+        public int getSortPriority() {
+            return 10;
+        }
+        
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null)
+                paintComponent = new ResultItemPaintComponent.ELBeanPaintComponent();
+            paintComponent.setString(text);
+            paintComponent.setTypeName(type);
+            return paintComponent;
+        }
+    }
+    
+    public static class ELProperty extends ELBean implements ELItem {
+        
+        private static ResultItemPaintComponent.ELPropertyPaintComponent paintComponent = null;
+        
+        public ELProperty( String text, String type ) {
+            super(text, type);
+        }        
+                
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null)
+                paintComponent = new ResultItemPaintComponent.ELPropertyPaintComponent();
+            paintComponent.setString(text);
+            paintComponent.setTypeName(type);
+            return paintComponent;
+        }
+    }
+    
+    public static class ELFunction extends ELBean implements ELItem {
+        
+        private static ResultItemPaintComponent.ELFunctionPaintComponent paintComponent = null;
+        
+        private String prefix;
+        private String parameters;
+                
+        
+        public ELFunction( String prefix, String name, String type, String parameters) {
+            super(name, type);
+            this.prefix = prefix;
+            this.parameters = parameters;
+        }        
+                
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null)
+                paintComponent = new ResultItemPaintComponent.ELFunctionPaintComponent();
+            paintComponent.setString(text);
+            paintComponent.setTypeName(type);
+            paintComponent.setPrefix(prefix);
+            paintComponent.setParameters(parameters);
+            return paintComponent;
+        }
+        
+        public int getSortPriority() {
+            return 12;
+        }
+        
+        public String getItemText() {
+            return prefix+":"+text+"()";    //NOI18N
+        }
+        
+        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
+            return substituteText(c, offset, len, getItemText(), 1); 
+        }
+    }
+
 }

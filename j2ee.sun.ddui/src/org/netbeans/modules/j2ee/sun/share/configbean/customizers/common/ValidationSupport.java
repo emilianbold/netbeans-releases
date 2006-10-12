@@ -90,14 +90,14 @@ public class ValidationSupport {
      * @return <code>boolean</code> <code>true</code> if the given xpath is 
      * of mandatory field; else returns <code>false</code>
      */
-    public boolean iSRequiredProperty(String xpath){
-        boolean isRequried = false;
+    public boolean isRequiredProperty(String xpath){
+        boolean isRequired = false;
         String property = ""; //NOI18N
         java.util.Collection errors = validate(property, xpath, null);
         if(!errors.isEmpty()){
-            isRequried = true;
+            isRequired = true;
         }
-        return isRequried;
+        return isRequired;
     }
 
 

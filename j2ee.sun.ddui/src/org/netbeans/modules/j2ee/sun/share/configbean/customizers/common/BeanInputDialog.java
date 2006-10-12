@@ -127,16 +127,18 @@ public abstract class BeanInputDialog extends InputDialog {
 		int preferredWidth = parentPanel.getWidth()*3/4;
 		int noOfFields = getNOofFields();
 		if(-1 != noOfFields){
-                    ///dialogPanel.setBorder(new EmptyBorder(new Insets(5, 5, 0, 5)));
-                    //dialogPanel.setPreferredSize(new Dimension(preferredWidth,
-                        //(int)dialogPanel.getPreferredSize().getHeight()));
-                    Dimension dm =  getContentPane().getPreferredSize();
-                    int preferredHeight = (int)dialogPanel.getPreferredSize().getHeight();
+            ///dialogPanel.setBorder(new EmptyBorder(new Insets(5, 5, 0, 5)));
+            //dialogPanel.setPreferredSize(new Dimension(preferredWidth,
+                //(int)dialogPanel.getPreferredSize().getHeight()));
+            Dimension dm =  getContentPane().getPreferredSize();
+            int preferredHeight = (int)dialogPanel.getPreferredSize().getHeight();
 
-                    if(preferredWidth < dm.getWidth())
-                        preferredWidth = (int)dm.getWidth();
-                    if(preferredHeight < dm.getHeight())
-                        preferredHeight = (int)dm.getHeight();
+            if(preferredWidth < dm.getWidth()) {
+                preferredWidth = (int)dm.getWidth();
+            }
+            if(preferredHeight < dm.getHeight()) {
+                preferredHeight = (int)dm.getHeight();
+            }
 		}
 	};
 
@@ -195,18 +197,21 @@ public abstract class BeanInputDialog extends InputDialog {
 				// the original item.  But it is not allowed to match any other
 				// item.  What is a clean way to do this?  Only the model knows
 				// which are the key fields.
+//				if(model.alreadyExists(newValues) && !original) {
+//					result = true;
+//				}
 			}
 		}
 	
 		return result;
 	}
 
-        protected BeanTableModel getModel(){
-            BeanTableModel model = null;
-            if(parentPanel instanceof BeanTablePanel) {
-                    BeanTablePanel beanPanel = (BeanTablePanel) parentPanel;
-                    model = beanPanel.getModel();
-            }
-            return model;
+    protected BeanTableModel getModel(){
+        BeanTableModel model = null;
+        if(parentPanel instanceof BeanTablePanel) {
+            BeanTablePanel beanPanel = (BeanTablePanel) parentPanel;
+            model = beanPanel.getModel();
         }
+        return model;
+    }
 }

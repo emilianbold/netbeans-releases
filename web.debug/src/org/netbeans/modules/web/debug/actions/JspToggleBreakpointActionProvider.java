@@ -66,11 +66,17 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
 
         //#67910 - setting of a bp allowed only in JSP contained in some web module
         FileObject fo = Utils.getFileObjectFromUrl(url);
-        Object owner = null;
-        if (fo != null)
+        WebModule owner = null;
+        if (fo != null) {
             owner = WebModule.getWebModule(fo);
+        }
         
         boolean isJsp = Utils.isJsp(fo) || Utils.isTag(fo);
+        
+        String webRoot = null;
+        if (owner != null && owner.getDocumentBase() != null) {
+            webRoot = FileUtil.getRelativePath(owner.getDocumentBase(), fo);
+        }
 
         //#issue 65969 fix:
         //we allow bp setting only if the file is JSP or TAG file and target server of it's module is NOT WebLogic 9;
@@ -78,7 +84,7 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
         //supports JSP debugging or not
         String serverID = Utils.getTargetServerID(fo);
 
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, owner != null && isJsp && !"WebLogic9".equals(serverID)); //NOI18N
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, owner != null && webRoot != null && isJsp && !"WebLogic9".equals(serverID)); //NOI18N
         if ( debugger != null && 
              debugger.getState () == debugger.STATE_DISCONNECTED
         ) 

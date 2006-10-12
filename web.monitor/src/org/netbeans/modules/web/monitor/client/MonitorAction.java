@@ -78,12 +78,16 @@ public class MonitorAction extends CallableSystemAction {
    
     static void addTransaction(String id) { 
 	if(!TransactionView.getInstance().isOpened()) {
+            boolean initialized = TransactionView.getInstance().isInitialized();
+            // If not initialized yet, this will cause the record to be loaded 
+            // from disk, so we don't need to add it in this case
 	    openTransactionView(); 
-	    // This will cause the record to be loaded from disk, so
-	    // we don't need to add it in this case
+            if (!initialized) {
+                return;
+            }
 	} 
 	// Otherwise we add it to the current records
-	else Controller.getInstance().addTransaction(id); 
+	Controller.getInstance().addTransaction(id); 
     } 
 
     private static void openTransactionView() {

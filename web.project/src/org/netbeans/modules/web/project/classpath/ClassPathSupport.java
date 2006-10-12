@@ -624,7 +624,7 @@ public class ClassPathSupport {
 
             switch ( getType() ) {
                 case TYPE_ARTIFACT:
-                    if ( getArtifact().getType() != item.getArtifact().getType() ) {
+                    if (!(getArtifact().getType()).equals(item.getArtifact().getType())) {
                         return false;
                     }
 

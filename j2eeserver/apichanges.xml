@@ -86,6 +86,128 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ensureResourceDefinedUpdate">
+            <api name="j2eeserver"/>
+            <summary>
+                Passing JNDI name for the resource definition callback
+            </summary>
+            <version major="1" minor="20"/>
+            <date day="11" month="8" year="2006"/>
+            <author login="lkotouc"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Plugin needs to know JNDI name of the resource which the resource being
+                    defined is coming from.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+            <issue number="82476"/>
+        </change>
+        <change id="serverIcons">
+            <api name="plugins"/>
+            <summary>
+                Added support for getting the default server icons.
+            </summary>
+            <version major="1" minor="19"/>
+            <date day="9" month="4" year="2006"/>
+            <author login="sherold"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Added support for getting the default server icons for
+                    EAR, EJB, WAR archives and their respective containers (folders).
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="UISupport"/>
+        </change>
+        <change id="antDeployment">
+            <api name="j2eeserver"/>
+            <summary>
+                Added support for Ant (headless) deployment.
+            </summary>
+            <version major="1" minor="18"/>
+            <date day="4" month="4" year="2006"/>
+            <author login="sherold"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Ant deployment support allows to generate Ant deployment build
+                    scripts that can be used to deploy j2ee modules to the
+                    server. The generated deployment build script can run in a headless 
+                    mode - without the IDE. The IDE does not even have to be installed.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="AntDeploymentHelper"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="AntDeploymentProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="OptionalDeploymentManagerFactory"/>
+        </change>
+        <change id="j2eeSpecVersionPerModule">
+            <api name="j2eeserver"/>
+            <summary>
+                Added support for getting J2EE version per module.
+            </summary>
+            <version major="1" minor="17"/>
+            <date day="4" month="4" year="2006"/>
+            <author login="pbuzek"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                Some for servers support different versions of j2ee for different modules.
+                For example JBoss 4.0.3 supports EJB 3.0 in ejb module, but only servlet api 2.4
+                in web module.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl"/>
+        </change>
+        <change id="j2eePlatformTools">
+            <api name="j2eeserver"/>
+            <summary>
+                Added support for getting the tool properties, added constants for
+                tools and tool properties.
+            </summary>
+            <version major="1" minor="16"/>
+            <date day="22" month="3" year="2006"/>
+            <author login="sherold"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Many tools need properties like main class or JVM options,
+                    the getToolProperty method allows to get those properties
+                    now, so far these properties had to be hardcoded.
+                </p>
+                <p>
+                    The constats for the tools and the tool properties were added
+                    to avoid problems that might occur if the tool string changes.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="J2eePlatformImpl"/>
+        </change>
+        <change id="DatasourceManagementAPI">
+            <api name="j2eeserver"/>
+            <summary>DS management API allows clients to access and manipulate the data sources</summary>
+            <version major="1" minor="15"/>
+            <date day="17" month="3" year="2006"/>
+            <author login="lkotouc"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    DS management API allows clients to access and manipulate the data sources. 
+                    Data sources are created in the module and deployed when the module deployment begins.
+                    Data sources are accessed at two places - at the modules where they are stored after creation 
+                    and on the module's target server.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="Datasource"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DatasourceAlreadyExistsException"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DatasourceManager"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="OptionalDeploymentManagerFactory"/>
+        </change>
         <change id="resourceDirUpdate">
             <api name="j2eeserver"/>
             <summary>

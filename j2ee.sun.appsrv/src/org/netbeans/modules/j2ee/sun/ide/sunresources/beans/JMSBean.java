@@ -25,11 +25,14 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 
 import java.util.Vector;
-
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.share.serverresources.JavaMsgServiceResource;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
-import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PropertyElement;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.AdminObjectResource;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorConnectionPool;
 
 /**
  *
@@ -45,17 +48,22 @@ public class JMSBean extends JavaMsgServiceResource implements java.io.Serializa
         return super.getName();
     }
     
-     public static JMSBean createBean(JmsResource jmsresource) {
+    public static JMSBean createBean(Resources resources) {
         JMSBean bean = new JMSBean();
         //name attribute in bean is for studio display purpose. 
-        //It is not part of the jms-resource dtd.
-        bean.setName(jmsresource.getJndiName());
-        bean.setDescription(jmsresource.getDescription());
-        bean.setJndiName(jmsresource.getJndiName());
-        bean.setResType(jmsresource.getResType());
-        bean.setIsEnabled(jmsresource.getEnabled());
+        //It is not part of the resource dtd.
+        ConnectorResource connresource = resources.getConnectorResource(0);
+        bean.setName(connresource.getJndiName());
+        bean.setDescription(connresource.getDescription());
+        bean.setIsEnabled(connresource.getEnabled());
+        bean.setJndiName(connresource.getJndiName());
+        bean.setPoolName(connresource.getPoolName());
         
-        PropertyElement[] extraProperties = jmsresource.getPropertyElement();
+        ConnectorConnectionPool connpoolresource = resources.getConnectorConnectionPool(0);
+        bean.setResAdapter(connpoolresource.getResourceAdapterName());
+        bean.setResType(connpoolresource.getConnectionDefinitionName());
+         
+        PropertyElement[] extraProperties = connpoolresource.getPropertyElement();
         Vector vec = new Vector();       
         for (int i = 0; i < extraProperties.length; i++) {
             NameValuePair pair = new NameValuePair();
@@ -72,27 +80,85 @@ public class JMSBean extends JavaMsgServiceResource implements java.io.Serializa
         return bean;
     }
      
-    public Resources getGraph(){
+    public static JMSBean createBean(AdminObjectResource aoresource) {
+        JMSBean bean = new JMSBean();
+        
+        //name attribute in bean is for studio display purpose. 
+        //It is not part of the resource dtd. 
+        bean.setName(aoresource.getJndiName());
+        bean.setDescription(aoresource.getDescription());
+        bean.setIsEnabled(aoresource.getEnabled());
+        bean.setJndiName(aoresource.getJndiName());
+        bean.setResAdapter(aoresource.getResAdapter());
+        bean.setResType(aoresource.getResType());
+        
+        PropertyElement[] extraProperties = aoresource.getPropertyElement();
+        Vector vec = new Vector();       
+        for (int i = 0; i < extraProperties.length; i++) {
+            NameValuePair pair = new NameValuePair();
+            pair.setParamName(extraProperties[i].getName());
+            pair.setParamValue(extraProperties[i].getValue());
+            vec.add(pair);
+        }
+        
+        if (vec != null && vec.size() > 0) {
+            NameValuePair[] props = new NameValuePair[vec.size()];
+            bean.setExtraParams((NameValuePair[])vec.toArray(props));
+        }    
+        
+        return bean;
+    }
+    
+    public Resources getConnectorGraph(){
          Resources res = getResourceGraph();
-         JmsResource jmsresource = res.newJmsResource();
-         jmsresource.setDescription(getDescription());
-         jmsresource.setJndiName(getJndiName());
-         jmsresource.setResType(getResType());
-         jmsresource.setEnabled(getIsEnabled());
+         ConnectorResource connresource = res.newConnectorResource();
+         connresource.setDescription(getDescription());
+         connresource.setEnabled(getIsEnabled());
+         connresource.setJndiName(getJndiName());
+         connresource.setPoolName(getJndiName());
+                  
+         ConnectorConnectionPool connpoolresource = res.newConnectorConnectionPool();
+         connpoolresource.setName(getJndiName());
+         connpoolresource.setResourceAdapterName(getResAdapter());
+         connpoolresource.setConnectionDefinitionName(getResType());
+         // set properties
+         NameValuePair[] params = getExtraParams();
+         if (params != null && params.length > 0) {
+             for (int i = 0; i < params.length; i++) {
+                 NameValuePair pair = params[i];
+                 PropertyElement prop = connpoolresource.newPropertyElement();
+                 prop = populatePropertyElement(prop, pair);
+                 connpoolresource.addPropertyElement(prop);
+             }
+         }
+		                
+         res.addConnectorResource(connresource);
+         res.addConnectorConnectionPool(connpoolresource);
+         
+         return res;
+     }
+    
+     public Resources getAdminObjectGraph(){
+         Resources res = getResourceGraph();
+         AdminObjectResource aoresource = res.newAdminObjectResource();
+         aoresource.setDescription(getDescription());
+         aoresource.setEnabled(getIsEnabled());
+         aoresource.setJndiName(getJndiName());
+         aoresource.setResAdapter(getResAdapter());
+         aoresource.setResType(getResType());
          
          // set properties
          NameValuePair[] params = getExtraParams();
          if (params != null && params.length > 0) {
              for (int i = 0; i < params.length; i++) {
                  NameValuePair pair = params[i];
-                 PropertyElement prop = jmsresource.newPropertyElement();
+                 PropertyElement prop = aoresource.newPropertyElement();
                  prop = populatePropertyElement(prop, pair);
-                 jmsresource.addPropertyElement(prop);
+                 aoresource.addPropertyElement(prop);
              }
          }
          
-         res.addJmsResource(jmsresource);
+         res.addAdminObjectResource(aoresource);
          return res;
      }
-    
 }

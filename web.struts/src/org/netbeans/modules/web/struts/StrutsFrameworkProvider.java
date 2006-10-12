@@ -29,7 +29,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -44,9 +43,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Taglib;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.web.struts.config.model.MessageResources;
-import org.netbeans.modules.web.struts.config.model.StrutsConfig;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
@@ -67,7 +64,7 @@ import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.netbeans.modules.web.struts.ui.StrutsConfigurationPanel;
 
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.openide.loaders.DataObject;
+import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -141,16 +138,21 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         FileObject webinf = wm.getWebInf();
         List files = new ArrayList();
-        FileObject[] configs = StrutsConfigUtilities.getConfigFilesFO(wm.getDeploymentDescriptor());
-        for (int i = 0; i < configs.length; i ++){
-            files.add(FileUtil.toFile(configs[i]));
+        // The JavaEE 5 introduce web modules without deployment descriptor. 
+        // In such wm can not be struts used. 
+        FileObject dd = wm.getDeploymentDescriptor();
+        if (dd != null){
+            FileObject[] configs = StrutsConfigUtilities.getConfigFilesFO(dd);
+            for (int i = 0; i < configs.length; i ++){
+                files.add(FileUtil.toFile(configs[i]));
+            }
+            FileObject fo = webinf.getFileObject("tiles-defs.xml");  //NOI18N
+            if (fo != null) files.add(FileUtil.toFile(fo));
+            fo = webinf.getFileObject("validation.xml");            //NOI18N
+            if (fo != null) files.add(FileUtil.toFile(fo));
+            fo = webinf.getFileObject("validator-rules.xml");       //NOI18N
+            if (fo != null) files.add(FileUtil.toFile(fo));
         }
-        FileObject fo = webinf.getFileObject("tiles-defs.xml");  //NOI18N
-        if (fo != null) files.add(FileUtil.toFile(fo));
-        fo = webinf.getFileObject("validation.xml");            //NOI18N
-        if (fo != null) files.add(FileUtil.toFile(fo));
-        fo = webinf.getFileObject("validator-rules.xml");       //NOI18N
-        if (fo != null) files.add(FileUtil.toFile(fo));
         
         File [] rFiles = new File [files.size()];
         files.toArray(rFiles);
@@ -158,7 +160,10 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
     }
 
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule wm) {
-        return StrutsConfigUtilities.getActionServlet(wm.getDeploymentDescriptor()) == null ? false : true;
+        // The JavaEE 5 introduce web modules without deployment descriptor. 
+        // In such wm can not be struts used. 
+        FileObject dd = wm.getDeploymentDescriptor();
+        return (dd != null && StrutsConfigUtilities.getActionServlet(dd) != null);
     }
     
     public FrameworkConfigurationPanel getConfigurationPanel(WebModule wm) {
@@ -204,75 +209,101 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
         }
         
         public void run() throws IOException {
+            FileObject target;
+            String content;
             // copy struts-config.xml
-            String content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-config.xml").getInputStream (), "UTF-8"); //NOI18N
-            content = content.replaceFirst("____ACTION_MAPPING___",  //NOI18N
-                    StrutsConfigUtilities.getActionAsResource(panel.getURLPattern(), "/Welcome"));
-            content = content.replaceFirst("_____MESSAGE_RESOURCE____",  //NOI18N
-                    panel.getAppResource().replace('.', '/'));
-            FileObject target = FileUtil.createData(wm.getWebInf(), "struts-config.xml");//NOI18N
-            createFile(target, content, "UTF-8"); //NOI18N
+            if (canCreateNewFile(wm.getWebInf(), "struts-config.xml")) { //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-config.xml").getInputStream (), "UTF-8"); //NOI18N
+                content = content.replaceFirst("____ACTION_MAPPING___",  //NOI18N
+                        StrutsConfigUtilities.getActionAsResource(panel.getURLPattern(), "/Welcome"));
+                content = content.replaceFirst("_____MESSAGE_RESOURCE____",  //NOI18N
+                        panel.getAppResource().replace('.', '/'));
+                target = FileUtil.createData(wm.getWebInf(), "struts-config.xml");//NOI18N
+                createFile(target, content, "UTF-8"); //NOI18N
+            }
             //copy tiles-defs.xml
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/tiles-defs.xml").getInputStream (), "UTF-8"); //NOI18N
-            target = FileUtil.createData(wm.getWebInf(), "tiles-defs.xml");//NOI18N
-            createFile(target, content, "UTF-8"); //NOI18N
+            if (canCreateNewFile(wm.getWebInf(), "tiles-defs.xml")) { //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/tiles-defs.xml").getInputStream (), "UTF-8"); //NOI18N
+                target = FileUtil.createData(wm.getWebInf(), "tiles-defs.xml");//NOI18N
+                createFile(target, content, "UTF-8"); //NOI18N
+            }
             //copy validation.xml
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/validation.xml").getInputStream (), "UTF-8"); //NOI18N
-            target = FileUtil.createData(wm.getWebInf(), "validation.xml");//NOI18N
-            createFile(target, content, "UTF-8"); //NOI18N
+            if (canCreateNewFile(wm.getWebInf(), "validation.xml")) { //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/validation.xml").getInputStream (), "UTF-8"); //NOI18N
+                target = FileUtil.createData(wm.getWebInf(), "validation.xml");//NOI18N
+                createFile(target, content, "UTF-8"); //NOI18N
+            }
             //copy validator-rules.xml
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/validator-rules.xml").getInputStream (), "UTF-8"); //NOI18N
-            target = FileUtil.createData(wm.getWebInf(), "validator-rules.xml");//NOI18N
-            createFile(target, content, "UTF-8"); //NOI18N
-            //copy Welcome.jsp
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/welcome.jsp").getInputStream (), "UTF-8"); //NOI18N
-            target = FileUtil.createData(wm.getDocumentBase(), "welcomeStruts.jsp");//NOI18N
-            createFile(target, content, "UTF-8"); //NOI18N
+            if (canCreateNewFile(wm.getWebInf(), "validator-rules.xml")) { //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/validator-rules.xml").getInputStream (), "UTF-8"); //NOI18N
+                target = FileUtil.createData(wm.getWebInf(), "validator-rules.xml");//NOI18N
+                createFile(target, content, "UTF-8"); //NOI18N
+            }
+            
             //MessageResource.properties
-            content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/MessageResources.properties").getInputStream (), "UTF-8"); //NOI18N
             Project project = FileOwnerQuery.getOwner(wm.getDocumentBase());
             SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             String sresource = panel.getAppResource();
-            String path = sresource.substring(0, sresource.lastIndexOf("."));   //NOI18N
-            String name = sresource.substring(sresource.lastIndexOf(".")+1);    //NOI18N
-            name = name + ".properties";   //NOI18N
-            FileObject targetFolder = sourceGroups[0].getRootFolder();
-            String folders[] = path.split("\\.");
-            for (int i = 0; i < folders.length; i++){
-                if (targetFolder.getFileObject(folders[i])== null)
-                    targetFolder = targetFolder.createFolder(folders[i]);
-                else
-                    targetFolder = targetFolder.getFileObject(folders[i]);
+            if (sresource != null && sresource.trim().length()>0) {
+                int index = sresource.lastIndexOf('.');
+                String path = "";
+                String name = sresource;
+                if (index > -1){
+                    path = sresource.substring(0, sresource.lastIndexOf("."));   //NOI18N
+                    name = sresource.substring(sresource.lastIndexOf(".")+1);    //NOI18N
+                }
+                name = name + ".properties";   //NOI18N
+                FileObject targetFolder = sourceGroups[0].getRootFolder();
+                String folders[] = path.split("\\.");
+                for (int i = 0; i < folders.length; i++){
+                    if (targetFolder.getFileObject(folders[i])== null)
+                        targetFolder = targetFolder.createFolder(folders[i]);
+                    else
+                        targetFolder = targetFolder.getFileObject(folders[i]);
+                }
+                if (canCreateNewFile(targetFolder, name)) { //NOI18N
+                    content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/MessageResources.properties").getInputStream (), "UTF-8"); //NOI18N
+                    target = FileUtil.createData(targetFolder, name);//NOI18N
+                    createFile(target, content, "UTF-8"); //NOI18N
+                }
             }
-            target = FileUtil.createData(targetFolder, name);//NOI18N
-            createFile(target, content, "UTF-8"); //NOI18N
             
             if (panel.addTLDs()){
                 //copy struts-bean.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-bean.tld").getInputStream (), "UTF-8"); //NOI18N
-                target = FileUtil.createData(wm.getWebInf(), "struts-bean.tld");//NOI18N
-                createFile(target, content, "UTF-8"); //NOI18N
+                if (canCreateNewFile(wm.getWebInf(), "struts-bean.tld")) { //NOI18N
+                    content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-bean.tld").getInputStream (), "UTF-8"); //NOI18N
+                    target = FileUtil.createData(wm.getWebInf(), "struts-bean.tld");//NOI18N
+                    createFile(target, content, "UTF-8"); //NOI18N
+                }
                 //copy struts-html.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-html.tld").getInputStream (), "UTF-8"); //NOI18N
-                target = FileUtil.createData(wm.getWebInf(), "struts-html.tld");//NOI18N
-                createFile(target, content, "UTF-8"); //NOI18N
+                if (canCreateNewFile(wm.getWebInf(), "struts-html.tld")) { //NOI18N
+                    content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-html.tld").getInputStream (), "UTF-8"); //NOI18N
+                    target = FileUtil.createData(wm.getWebInf(), "struts-html.tld");//NOI18N
+                    createFile(target, content, "UTF-8"); //NOI18N
+                }
                 //copy struts-logic.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-logic.tld").getInputStream (), "UTF-8"); //NOI18N
-                target = FileUtil.createData(wm.getWebInf(), "struts-logic.tld");//NOI18N
-                createFile(target, content, "UTF-8"); //NOI18N
+                if (canCreateNewFile(wm.getWebInf(), "struts-logic.tld")) { //NOI18N
+                    content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-logic.tld").getInputStream (), "UTF-8"); //NOI18N
+                    target = FileUtil.createData(wm.getWebInf(), "struts-logic.tld");//NOI18N
+                    createFile(target, content, "UTF-8"); //NOI18N
+                }
                 //copy struts-nested.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-nested.tld").getInputStream (), "UTF-8"); //NOI18N
-                target = FileUtil.createData(wm.getWebInf(), "struts-nested.tld");//NOI18N
-                createFile(target, content, "UTF-8"); //NOI18N
+                if (canCreateNewFile(wm.getWebInf(), "struts-nested.tld")) { //NOI18N
+                    content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-nested.tld").getInputStream (), "UTF-8"); //NOI18N
+                    target = FileUtil.createData(wm.getWebInf(), "struts-nested.tld");//NOI18N
+                    createFile(target, content, "UTF-8"); //NOI18N
+                }
                 //copy struts-tiles.tld
-                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-tiles.tld").getInputStream (), "UTF-8"); //NOI18N
-                target = FileUtil.createData(wm.getWebInf(), "struts-tiles.tld");//NOI18N
-                createFile(target, content, "UTF-8"); //NOI18N
+                if (canCreateNewFile(wm.getWebInf(), "struts-tiles.tld")) { //NOI18N
+                    content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-tiles.tld").getInputStream (), "UTF-8"); //NOI18N
+                    target = FileUtil.createData(wm.getWebInf(), "struts-tiles.tld");//NOI18N
+                    createFile(target, content, "UTF-8"); //NOI18N
+                }
             }
             
             // Enter servlet into the deployment descriptor
             FileObject dd = wm.getDeploymentDescriptor();
-            WebApp ddRoot = DDProvider.getDefault().getDDRootCopy(dd);
+            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             if (ddRoot != null){
                 try{
                     Servlet servlet = (Servlet)ddRoot.createBean("Servlet"); //NOI18N
@@ -341,12 +372,33 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                 }
             }
             
-            // changing index.jsp
-            FileObject documentBase = wm.getDocumentBase();
-            FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
-            if (indexjsp != null){
-                changeIndexJSP(indexjsp);
+            //copy Welcome.jsp
+            if (canCreateNewFile(wm.getDocumentBase(), "welcomeStruts.jsp")) { //NOI18N
+                content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/welcome.jsp").getInputStream (), "UTF-8"); //NOI18N
+                target = FileUtil.createData(wm.getDocumentBase(), "welcomeStruts.jsp");//NOI18N
+                createFile(target, content, "UTF-8"); //NOI18N
+                // changing index.jsp
+                FileObject documentBase = wm.getDocumentBase();
+                FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
+                if (indexjsp != null){
+                    changeIndexJSP(indexjsp);
+                }
             }
+        }
+        
+        private boolean canCreateNewFile(FileObject parent, String name){
+            File fileToBe = new File(FileUtil.toFile(parent), name);
+            boolean create = true;
+            if (fileToBe.exists()){
+                DialogDescriptor dialog = new DialogDescriptor(
+                        NbBundle.getMessage(StrutsFrameworkProvider.class, "MSG_OverwriteFile", fileToBe.getAbsolutePath()),
+                        NbBundle.getMessage(StrutsFrameworkProvider.class, "TTL_OverwriteFile"),
+                        true, DialogDescriptor.YES_NO_OPTION, DialogDescriptor.NO_OPTION, null);
+                java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
+                d.setVisible(true);
+                create = (dialog.getValue() == org.openide.DialogDescriptor.NO_OPTION);
+            }
+            return create;
         }
         
         private Taglib createTaglib(CreateCapability createObject, String location, String uri) throws ClassNotFoundException {

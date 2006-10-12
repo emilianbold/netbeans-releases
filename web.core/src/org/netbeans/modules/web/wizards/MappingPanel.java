@@ -75,7 +75,6 @@ class MappingPanel extends JPanel implements ActionListener,
     private void initComponents () {
 	// Layout description
 	setLayout(new java.awt.GridBagLayout());
-	setPreferredSize(new java.awt.Dimension(450, 250));
 
 	// Entity covers entire row
 	GridBagConstraints fullRowC = new GridBagConstraints();

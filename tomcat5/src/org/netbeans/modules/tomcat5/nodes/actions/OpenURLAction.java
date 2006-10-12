@@ -56,7 +56,9 @@ public class OpenURLAction extends NodeAction {
     protected boolean enable (Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             TomcatWebModuleCookie cookie = (TomcatWebModuleCookie)nodes[i].getCookie(TomcatWebModuleCookie.class);
-            if (cookie == null || !(cookie.isRunning())) return false;
+            if (cookie == null || !(cookie.isRunning())) {
+                return false;
+            }
         }
         return true;
     }

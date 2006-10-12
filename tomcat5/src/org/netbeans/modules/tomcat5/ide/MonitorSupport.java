@@ -26,22 +26,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.*;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
-
-import org.openide.filesystems.*;
-import org.openide.nodes.Node;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -49,11 +41,14 @@ import org.openide.util.LookupEvent;
 
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
 import org.netbeans.modules.schema2beans.Common;
 import org.netbeans.modules.schema2beans.BaseBean;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 
 /** Monitor enabling/disabling utilities for Tomcat 5.
  *

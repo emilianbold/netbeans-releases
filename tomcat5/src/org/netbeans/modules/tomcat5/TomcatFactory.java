@@ -40,6 +40,7 @@ import org.openide.util.NbBundle;
  */
 public class TomcatFactory implements DeploymentFactory {
     
+    public static final String SERVER_ID = "Tomcat"; // NOI18N
     public static final String tomcatUriPrefix = "tomcat:"; // NOI18N
 
     private static final String DISCONNECTED_URI = "tomcat:jakarta-tomcat-5.0.x"; // NOI18N

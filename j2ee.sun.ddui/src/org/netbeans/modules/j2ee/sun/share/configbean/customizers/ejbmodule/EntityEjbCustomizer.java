@@ -56,14 +56,6 @@ public class EntityEjbCustomizer extends EjbCustomizer
 	public EntityEjbCustomizer() {
 	}
 	
-    public EntityEjbCustomizer(DConfigBean bean) {
-        if(!(bean instanceof EntityEjb)){
-            assert(false);
-        }
-		
-		setObject(bean);
-    }
-
     public void setObject(Object bean) {
         super.setObject(bean);
 		

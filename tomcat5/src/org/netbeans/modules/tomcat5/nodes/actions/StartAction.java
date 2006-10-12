@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.tomcat5.nodes.actions;
 
-import org.netbeans.modules.tomcat5.nodes.TomcatWebModuleNode;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -39,11 +37,10 @@ public class StartAction extends NodeAction {
         TomcatWebModuleCookie cookie;
         for (int i=0; i<nodes.length; i++) {
             cookie = (TomcatWebModuleCookie)nodes[i].getCookie(TomcatWebModuleCookie.class);            
-            if (cookie == null || cookie.isRunning())
+            if (cookie == null || cookie.isRunning()) {
                 return false;
-
+            }
         }
-         
         return true;
     }
     
@@ -55,9 +52,9 @@ public class StartAction extends NodeAction {
         
         for (int i=0; i<nodes.length; i++) {
             TomcatWebModuleCookie cookie = (TomcatWebModuleCookie)nodes[i].getCookie(TomcatWebModuleCookie.class);            
-            if (cookie != null)
+            if (cookie != null) {
                 cookie.start();
-
+            }
         }
     }
     

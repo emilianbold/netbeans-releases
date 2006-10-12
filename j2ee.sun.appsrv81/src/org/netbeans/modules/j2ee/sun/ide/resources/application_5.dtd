@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+	The application element is the root element of a Java EE
+	application deployment descriptor.
+
+      -->
+<!ELEMENT application ((description*, display-name*, icon*), module+, security-role*,library-directory?)>
+
+<!ATTLIST application
+	version CDATA #FIXED "5"
+	id ID #IMPLIED
+
+>
+<!--
+
+	    The application deployment descriptor must have one
+	    module element for each Java EE module in the
+	    application package. A module element is defined
+	    by moduleType definition.
+
+	  -->
+<!ELEMENT module ((connector | ejb | java | web), alt-dd?)>
+
+<!ATTLIST module
+	id ID #IMPLIED
+>
+<!ELEMENT security-role (description*, role-name)>
+<!ATTLIST security-role
+	id ID #IMPLIED
+>
+<!--
+
+	    The library-directory element specifies the pathname
+	    of a directory within the application package, relative
+	    to the top level of the application package.  All files
+	    named &quot*.jar&quot in this directory must be made available
+	    in the class path of all components included in this
+	    application package.  If this element isn&apost specified,
+	    the directory named &quotlib&quot is searched.  An empty element
+	    may be used to disable searching.
+
+	  -->
+<!ELEMENT library-directory (#PCDATA)>
+<!ATTLIST library-directory
+	id ID #IMPLIED
+>
+<!--
+
+	      The connector element specifies the URI of a
+	      resource adapter archive file, relative to the
+	      top level of the application package.
+
+	    -->
+<!ELEMENT connector (#PCDATA)>
+<!ATTLIST connector
+	id ID #IMPLIED
+>
+<!--
+
+	      The ejb element specifies the URI of an ejb-jar,
+	      relative to the top level of the application
+	      package.
+
+	    -->
+<!ELEMENT ejb (#PCDATA)>
+<!ATTLIST ejb
+	id ID #IMPLIED
+>
+<!--
+
+	      The java element specifies the URI of a java
+	      application client module, relative to the top
+	      level of the application package.
+
+	    -->
+<!ELEMENT java (#PCDATA)>
+<!ATTLIST java
+	id ID #IMPLIED
+>
+<!ELEMENT web (web-uri, context-root)>
+<!ATTLIST web
+	id ID #IMPLIED
+>
+<!--
+
+	    The alt-dd element specifies an optional URI to the
+	    post-assembly version of the deployment descriptor
+	    file for a particular Java EE module.  The URI must
+	    specify the full pathname of the deployment
+	    descriptor file relative to the application&aposs root
+	    directory. If alt-dd is not specified, the deployer
+	    must read the deployment descriptor from the default
+	    location and file name required by the respective
+	    component specification.
+
+	  -->
+<!ELEMENT alt-dd (#PCDATA)>
+<!ATTLIST alt-dd
+	id ID #IMPLIED
+>
+<!--
+
+	    The web-uri element specifies the URI of a web
+	    application file, relative to the top level of the
+	    application package.
+
+	  -->
+<!ELEMENT web-uri (#PCDATA)>
+<!ATTLIST web-uri
+	id ID #IMPLIED
+>
+<!--
+
+	    The context-root element specifies the context root
+	    of a web application.
+
+	  -->
+<!ELEMENT context-root (#PCDATA)>
+<!ATTLIST context-root
+	id ID #IMPLIED
+>

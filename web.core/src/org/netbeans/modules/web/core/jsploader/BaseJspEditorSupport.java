@@ -437,7 +437,10 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             String mimeType = dataObject.getPrimaryFile().getMIMEType();
             instanceContent.add(getActionMap());
             
-            if (dataObject instanceof JspDataObject && mimeType.equals(JSP_MIME_TYPE) && !isXmlSyntax(dataObject)) {
+            if (dataObject instanceof JspDataObject && 
+               (mimeType.equals(JSP_MIME_TYPE) || mimeType.equals(TAG_MIME_TYPE)) && 
+                !isXmlSyntax(dataObject)) 
+            {
                 try {
                     PaletteController pc = JSPPaletteFactory.getPalette();
                     instanceContent.add(pc);
@@ -460,6 +463,11 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
         
         private void initialize() {
             Node nodes[] = {((DataEditorSupport)cloneableEditorSupport()).getDataObject().getNodeDelegate()};
+
+            //init lookup
+            instanceContent = new InstanceContent();
+            associateLookup(new ProxyLookup(new Lookup[] { new AbstractLookup(instanceContent), nodes[0].getLookup()}));
+            
             setActivatedNodes(nodes);
             caretListener = new CaretListener() {
                 public void caretUpdate(CaretEvent e) {
@@ -469,10 +477,6 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             
             taglibParseSupport = (TagLibParseSupport)((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject().getCookie(TagLibParseSupport.class);
 
-            //init lookup
-            instanceContent = new InstanceContent();
-            associateLookup(new ProxyLookup(new Lookup[] { new AbstractLookup(instanceContent), getActivatedNodes()[0].getLookup()}));
-            
         }
         
         /* This method is called when parent window of this component has focus,

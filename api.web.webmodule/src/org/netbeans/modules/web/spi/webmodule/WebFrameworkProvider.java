@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Set;
 
 import org.netbeans.modules.web.api.webmodule.*;
+import org.openide.filesystems.FileObject;
 
 /**
  * Through this class the IDE obtains information about the web framework and also calls
@@ -95,4 +96,26 @@ public abstract class WebFrameworkProvider {
      * @return The panel for configuration the framework.
      */
     public abstract FrameworkConfigurationPanel getConfigurationPanel(WebModule wm);
+    
+    
+    /**
+     * Returns the part of the request's URL that calls the web component. 
+     * This path starts with a "/" character and includes either the servlet name 
+     * or a path to the servlet/jsp. Includes as well the mapping, but does not include 
+     * any extra path information or a query string. 
+     * The method can return null. Then common servlet path is used. 
+     * <br/>
+     * JSF Example: There is index.jsp directly in the document base. Normaly the URL 
+     * for accessing this page in browser should be http://server:port/contextpath/index.jsp. 
+     * The servletpath is /index.jsp.
+     * Because the index.jsp includes jsf tags, should be called with appropriate JSF servlet 
+     * mapping. If the mapping is /faces/*, then the right url is 
+     * http://server:port/contextpath/faces/index.jsp and this method should returns /faces/index.jsp.
+     * @param fo arbitrary FileObject. Should be a jsp file.
+     * @return A string that contains the servletPath including mapping as well. Can return null.
+     * 
+     */
+    public String getServletPath(FileObject file){
+        return null;
+    }
 }

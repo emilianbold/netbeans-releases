@@ -25,33 +25,25 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.util.ResourceBundle;
-
+import java.util.Vector;
+import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
-import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroupHelper;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author  nityad
  */
-public class JMSWizardPanel implements WizardDescriptor.FinishPanel, WizardConstants{
-    protected ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"); //NOI18N
-
-    
+public class JMSWizardPanel extends ResourceWizardPanel {
+        
     /** The visual component that displays this panel.
      * If you need to access the component from this class,
      * just use getComponent().
@@ -60,6 +52,7 @@ public class JMSWizardPanel implements WizardDescriptor.FinishPanel, WizardConst
     private ResourceConfigHelper helper;    
     private Wizard wizardInfo;
     private String[] groupNames;
+    private boolean setupValid = true;
     
     /** Creates a new instance of JMSWizardPanel */
     public JMSWizardPanel(ResourceConfigHelper helper, Wizard wizardInfo) {
@@ -104,54 +97,59 @@ public class JMSWizardPanel implements WizardDescriptor.FinishPanel, WizardConst
     public boolean isValid() {
         //Fix for bug# 5025502 & 5025573 - User should not be allowed to register a 
         //JMS Resource without JNDI name or invalid name 
+        if(! setupValid){
+            setErrorMsg(bundle.getString("Err_InvalidSetup"));
+            return false;
+        }
+        setErrorMsg(bundle.getString("Empty_String"));
         String jndiName = helper.getData().getString("jndi-name"); //NOI18N
-        if(jndiName.trim().length() == 0 || jndiName.trim().equals("")) //NOI18N
+        if(jndiName.trim().length() == 0 || jndiName.trim().equals("")) {//NOI18N
+            setErrorMsg(bundle.getString("Err_InvalidJndiName"));
             return false;
-        else if(! ResourceUtils.isLegalResourceName(jndiName))
+        }else if(! ResourceUtils.isLegalResourceName(jndiName))
             return false;
-        else
+        else if(! ResourceUtils.isUniqueFileName(jndiName, this.helper.getData().getTargetFileObject(), __JMSResource)){
+            setErrorMsg(bundle.getString("Err_DuplFileJndiName"));
+            return false;
+        }else
             return true;
-        
     }
   
-    private final Set listeners = new HashSet (1); 
-    public final void addChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
-        }
+    public FieldGroup getFieldGroup(String groupName) {
+        return FieldGroupHelper.getFieldGroup(wizardInfo, groupName); 
     }
-    public final void removeChangeListener (ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
-        }
-    }
-    protected final void fireChangeEvent () {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
-        }
-        ChangeEvent ev = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener) it.next ()).stateChanged (ev);
-        }
-    }
-     
     
-    // You can use a settings object to keep track of state.155
-    // Normally the settings object will be the WizardDescriptor,
-    // so you can use WizardDescriptor.getProperty & putProperty
-    // to store information entered by the user.
     public void readSettings(Object settings) {
+        this.wizDescriptor = (WizardDescriptor)settings;
         TemplateWizard wizard = (TemplateWizard)settings;
         String targetName = wizard.getTargetName();
-        targetName = ResourceUtils.createUniqueFileName(targetName, ResourceUtils.setUpExists(this.helper.getData().getTargetFileObject()), __JMSResource);
-        this.helper.getData().setTargetFile(targetName);
-        if(component == null)
-            getComponent();
-        component.setHelper(this.helper);
+        FileObject resFolder = ResourceUtils.getResourceDirectory(this.helper.getData().getTargetFileObject());
+        this.helper.getData().setTargetFileObject (resFolder);
+        if(resFolder != null){
+            targetName = ResourceUtils.createUniqueFileName (targetName, resFolder, __JMSResource);
+            this.helper.getData ().setTargetFile (targetName);
+            if(component == null)
+                getComponent ();
+            component.setHelper (this.helper);
+        }else
+            setupValid = false;
     }
     
-    public void storeSettings(Object settings) {
+    public boolean isFinishPanel() {
+        isValid();
+        ResourceConfigData data = helper.getData();
+        Vector vec = data.getProperties();
+        for (int i = 0; i < vec.size(); i++) {
+            NameValuePair pair = (NameValuePair)vec.elementAt(i);
+            if (pair.getParamName() == null || pair.getParamValue() == null ||
+                    pair.getParamName().length() == 0 || pair.getParamValue().length() == 0){
+                return false;
+            }
+        }
+        return true;
     }
     
+    private boolean setupValid(){
+        return setupValid;
+    }
 }

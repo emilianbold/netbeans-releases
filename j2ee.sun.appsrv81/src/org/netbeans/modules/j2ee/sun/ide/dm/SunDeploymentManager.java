@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
@@ -16,20 +17,35 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+// </editor-fold>
+
 package org.netbeans.modules.j2ee.sun.ide.dm;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Authenticator;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Locale;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.enterprise.deploy.model.DeployableObject;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
+import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -42,11 +58,13 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
 import org.netbeans.modules.j2ee.sun.ide.editors.AdminAuthenticator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.ProgressEventSupport;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
@@ -56,6 +74,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.mbmapping.ServerInfo;
 
 import java.util.jar.JarOutputStream;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import org.netbeans.modules.j2ee.sun.share.plan.Util;
 
 
@@ -63,22 +82,37 @@ import org.netbeans.modules.j2ee.sun.share.plan.Util;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
-import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
+import java.util.Properties;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.DomainEditor;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 /**
  *
  * @author  ludo, vkraemer
  */
 public class SunDeploymentManager implements Constants, DeploymentManager, SunDeploymentManagerInterface {
+    
+    private PropertyChangeSupport propertySupport;
     private DeploymentManager innerDM;
     private DeploymentFactory df;
     private String host, userName, password;
     private String uri;
     private boolean isConnected;
+    /* map that give a password for a given uri
+     **/
+    private static Map passwordForURI = Collections.synchronizedMap((Map)new HashMap(2,1));
+    
     /* port is the admin port number, ususally 4848*/
     
     int adminPortNumber;
@@ -93,6 +127,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     private transient boolean secureStatusHasBeenChecked = false;
     private boolean runningState=false;
     private boolean secure =false;
+    private boolean goodUserNamePassword =false;
+    private boolean maybeRunningButWrongUserName =false;
     private long timeStampCheckingRunning =0;
     private File platformRoot  =null;
     //are we java ee 5 or only 8.x? Needed for testing the secure mode.
@@ -105,7 +141,6 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     private boolean isLocal = false;
     /* used by a netbeans extension to associatate a StartServer with this DM
      */
-    private SunServerStateInterface startServerInterface =null;
     static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.dm.Bundle");// NOI18N
     
     /* this is interesting: JMXREMOTE APIs create a factory and load it from the getContext classloader
@@ -114,23 +149,24 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
      * done in the app server jsr 88 impl!!!
      * this ClassLoader origClassLoader is used to stored the original CL so that NB is happy after a jsr88 call.
      **/
-
-
+    
+    
     public SunDeploymentManager( DeploymentFactory df, String uri,String userName, String password, File platformRootDir)  throws DeploymentManagerCreationException{
+        propertySupport = new PropertyChangeSupport(this);
         this.df= df;
         this.uri =uri;
-	this.platformRoot =  platformRootDir;
+        this.platformRoot =  platformRootDir;
         isGlassFish= ServerLocationManager.isGlassFish(platformRootDir);
         secure = uri.endsWith(SECURESTRINGDETECTION);
         String uriNonSecure =uri;
-        if (secure)
+        if (secure){
             uriNonSecure = uri.substring(0,  uri.length()- SECURESTRINGDETECTION.length());
-        
+        }
         host = getHostFromURI(uriNonSecure);
         adminPortNumber = getPortFromURI(uriNonSecure);
         try {
-            InstanceProperties props = SunURIManager.getInstanceProperties(platformRoot, host, adminPortNumber); 
-
+            InstanceProperties props = SunURIManager.getInstanceProperties(platformRoot, host, adminPortNumber);
+            
             if (userName == null && props != null) {
                 this.userName = props.getProperty(InstanceProperties.USERNAME_ATTR);
             } else {
@@ -141,30 +177,43 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             } else {
                 this.password = password;
             }
+            if (!"".equals(this.password)){
+                passwordForURI.put(uri+platformRoot,this.password);
+            } else {
+                this.password = (String) passwordForURI.get(uri+platformRoot);
+                if (this.password==null) this.password="";
+                
+            }
+            
+            
             isConnected = this.userName != null;
         } catch (IllegalStateException ise) {
             // get before set throws an ISE.  Instance registration time
             // triggers this
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ise);
         }
-        resetInnerDeploymentManager();        
+        resetInnerDeploymentManager();
         calculateIsLocal();
     }
     
-
-
+    
+    
     /* return the real dm created from the app server implementation of 88, not our wrapper (ie. not this class
      **
      */
     
-
+    
     
     private void resetInnerDeploymentManager() throws DeploymentManagerCreationException{
         try {
             if (isConnected){
-                innerDM = df.getDeploymentManager(uri,userName,password);
+                if (df!=null) {
+                    innerDM = df.getDeploymentManager(uri,userName,password);
+                }
             } else{
-                if (df!=null) innerDM = df.getDisconnectedDeploymentManager(uri);
+                if (df!=null) {
+                    innerDM = df.getDisconnectedDeploymentManager(uri);
+                }
             }
 ////////            if(innerDM == null) {
 ////////                throw new DeploymentManagerCreationException("invalid URI");
@@ -176,14 +225,14 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             throw new DeploymentManagerCreationException("DeploymentManagerCreationException" + e.getMessage());
         }
         if (secure) {
-          // different classloader!  AppServerBridge.setServerConnectionEnvironment(innerDM);
+            // different classloader!  AppServerBridge.setServerConnectionEnvironment(innerDM);
             try{
                 Class[] argClass = new Class[1];
                 argClass[0] = DeploymentManager.class;
                 Object[] argObject = new Object[1];
                 argObject[0] = innerDM;
                 
-                 ClassLoader loader =  getExtendedClassLoader();
+                ClassLoader loader =  getExtendedClassLoader();
                 if(loader != null){
                     Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.AppServerBridge");
                     Method setServerConnectionEnvironment = cc.getMethod("setServerConnectionEnvironment", argClass);//NOI18N
@@ -194,17 +243,28 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 ex.printStackTrace();
             }
         }
-
+        
     }
     public String getUserName() {
         InstanceProperties props = SunURIManager.getInstanceProperties(platformRoot, host, adminPortNumber);
-        this.userName = props.getProperty(InstanceProperties.USERNAME_ATTR);
+        if (null != props) {
+            this.userName = props.getProperty(InstanceProperties.USERNAME_ATTR);
+        }
         return userName;
     }
     
     public String getPassword() {
-        InstanceProperties props = SunURIManager.getInstanceProperties(platformRoot, host, adminPortNumber);        
-        this.password = props.getProperty(InstanceProperties.PASSWORD_ATTR);
+        InstanceProperties props = SunURIManager.getInstanceProperties(platformRoot, host, adminPortNumber);
+        if (null != props) {
+            this.password = props.getProperty(InstanceProperties.PASSWORD_ATTR);
+        }
+        if (password.equals("")){//it means we did not stored the password. Get it from the static in memory cache if available
+            password = (String) passwordForURI.get(uri+platformRoot);
+            if (this.password==null) {
+                this.password="";
+            }
+            
+        }
         return password;
     }
     
@@ -228,20 +288,31 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
       *return true is this  deploymment manager needs a restart, because of changes in admin configuration
       */
     public boolean isRestartNeeded(){
-        try{
-        ServerInfo si = new ServerInfo(getMBeanServerConnection());
-        return si.isRestartRequired();
-        }
-        catch (java.rmi.RemoteException e){
-            return false;//silent assumption: server mgiht not even be running!
+        if (secureStatusHasBeenChecked==false){
+            return false;
         }
         
+        if (goodUserNamePassword==false){
+            return false;
+        }
+        if (isRunning()==false){
+            return false;
+        }
+        boolean retVal;
+        try{
+            ServerInfo si = new ServerInfo(getMBeanServerConnection());
+            retVal = si.isRestartRequired();
+        } catch (java.rmi.RemoteException e){
+            retVal = false;//silent assumption: server mgiht not even be running!
+        }
+        return retVal;
     }
-
+    
     
     public void fixJVMDebugOptions() throws java.rmi.RemoteException{
         JvmOptions jvmInfo = new JvmOptions(getMBeanServerConnection());
-        String addr= jvmInfo.getAddressValue();
+        //String addr=
+        jvmInfo.getAddressValue();
         if (jvmInfo.isWindows()){
             if (jvmInfo.isSharedMemory()==false){//force shmem on windows system!!!
                 jvmInfo.setDefaultTransportForDebug(getHost()+getPort());
@@ -257,40 +328,43 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             retVal = jvmInfo.getAddressValue();
             lastAddress = retVal;
         } catch (java.rmi.RemoteException re) {
-            if (null == lastAddress)
+            if (null == lastAddress){
                 throw re;
+            }
+            
         }
-        return retVal;       
+        return retVal;
     }
     
     boolean lastIsSharedMem = false;
-   public boolean isDebugSharedMemory() throws java.rmi.RemoteException{
-       boolean retVal = lastIsSharedMem;
+    public boolean isDebugSharedMemory() throws java.rmi.RemoteException{
+        boolean retVal = lastIsSharedMem;
         JvmOptions jvmInfo = null;
         try {
             jvmInfo = new JvmOptions(getMBeanServerConnection());
             retVal = jvmInfo.isSharedMemory();
             lastIsSharedMem = retVal;
         } catch (java.rmi.RemoteException re) {
-            // there is nothing that we can do here.
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                    re);
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,e);
         }
         return  retVal;
-      
-       
-   }    
+        
+        
+    }
 //   public String getDebugAddressValue() throws java.rmi.RemoteException{
 //       JvmOptions jvmInfo = new JvmOptions(getMBeanServerConnection());
 //        return jvmInfo.getAddressValue();
-//       
+//
 //   }
 //   public boolean isDebugSharedMemory() throws java.rmi.RemoteException{
 //        JvmOptions jvmInfo = new JvmOptions(getMBeanServerConnection());
 //        return  jvmInfo.isSharedMemory();
-//      
-//       
-//   }    
+//
+//
+//   }
     public DeploymentConfiguration createConfiguration(DeployableObject dObj)
     throws javax.enterprise.deploy.spi.exceptions.InvalidModuleException {
         return new SunONEDeploymentConfiguration(dObj/*, this*/);
@@ -299,7 +373,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     File getInternalPlanFile(InputStream plan) throws IllegalStateException {
         JarOutputStream jar = null;
-        InputStream innerPlan = null;
+//        InputStream innerPlan = null;
         
         try {
             File tmpFile = File.createTempFile("dplan","tmp");
@@ -309,32 +383,50 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             jar = null;
             tmpFile.deleteOnExit();
             return tmpFile;
-        }
-        catch (java.io.IOException ioe) {
+        } catch (java.io.IOException ioe) {
             IllegalStateException ise =
-            new IllegalStateException("file handling issues");
+                    new IllegalStateException("file handling issues");
             ise.initCause(ioe);
             throw ise;
-        }
-        finally {
-            if (jar != null)
+        } finally {
+            if (jar != null){
                 try {
                     jar.close();
-                }
-                catch (Throwable t) {
+                } catch (Throwable t) {
                     jsr88Logger.severe("bad one");
                 }
+            }
         }
     }
     
+    
+//    // TODO remove once https://glassfish.dev.java.net/issues/show_bug.cgi?id=601601 is not an issue...
+//    // after 8.1, 8.2, and 9.0 PE are no loger supported.
+//    //
+//    private static ProgressObject tempDirFailureObject =
+//            new ShortCircuitProgressObject(CommandType.DISTRIBUTE,
+//            NbBundle.getMessage(SunDeploymentManager.class,"ERR_BAD_TEMP_DIR"),
+//            StateType.FAILED,new TargetModuleID[0]);
+//
+//    private boolean badTempDir() {
+//        if (!Utilities.isWindows()) {
+//            return false;
+//        } else {
+//            // TODO perform the real test here!
+//            return false;
+//        }
+//    }
+//    // end remove after https://glassfish.dev.java.net/issues/show_bug.cgi?id=601 resolved
+    
+    
     public ProgressObject distribute(Target[] target,
-    InputStream archive, InputStream plan) throws IllegalStateException {
+            InputStream archive, InputStream plan) throws IllegalStateException {
         InputStream innerPlan = null;
         //System.out.println("distribute.");
         ThrowExceptionIfSuspended();
-      //  getStartServerInterface().viewLogFile();
+        //  getStartServerInterface().viewLogFile();
         ViewLogAction.viewLog(this);
-
+        
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         try {
             // do a stream distribute
@@ -345,67 +437,75 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             //
             //  2. call the inner DeploymentManager.distribute method
             //
-             Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
-            ProgressObject retVal = innerDM.distribute(target, archive, innerPlan);
+            ProgressObject retVal;
+//            if (badTempDir()) {
+//                retVal = tempDirFailureObject;
+//            } else {
+            Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
+            retVal = innerDM.distribute(target, archive, innerPlan);
             retVal.addProgressListener(new FileDeleter(f));
+//            }
             return retVal;
-        }
-        catch (IllegalStateException ise) {
+            
+            
+        } catch (IllegalStateException ise) {
             throw ise;
-        }
-        catch (java.io.IOException ioe) {
+        } catch (java.io.IOException ioe) {
             IllegalStateException ise =
-            new IllegalStateException("file handling issues");
+                    new IllegalStateException("file handling issues");
             ise.initCause(ioe);
             throw ise;
-        }
-        finally {
+        } finally {
             Thread.currentThread().setContextClassLoader(origClassLoader);
-            if (null != innerPlan)
+            if (null != innerPlan){
                 try {
                     innerPlan.close();
-                }
-                catch (Throwable t) {
+                } catch (Throwable t) {
                     jsr88Logger.severe("bad two");
                 }
+            }
         }
     }
     
     public ProgressObject distribute(Target[] target, File archive, File plan)
     throws IllegalStateException {
-        InputStream a, p;
-  //      System.out.println("distribute.2"+plan);
         ThrowExceptionIfSuspended();
+        
         File[] resourceDirs = Utils.getResourceDirs(archive);
         if(resourceDirs != null){
             Utils.registerResources(resourceDirs, (ServerInterface)getManagement());
         }
-
+        
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
-      //  getStartServerInterface().viewLogFile();
-        ViewLogAction.viewLog(this);
+            //  getStartServerInterface().viewLogFile();
+            ViewLogAction.viewLog(this);
+//            if (badTempDir()) {
+//                return tempDirFailureObject;
+//            }
             return innerDM.distribute(target, archive, null);
-           // return distribute(target, a, p);
+            // return distribute(target, a, p);
             //}
-        }
-        catch (/*java.io.FileNotFoundException*/ Exception fnfe) {
+        } catch (/*java.io.FileNotFoundException*/ Exception fnfe) {
             IllegalStateException ise =
-            new IllegalStateException();
+                    new IllegalStateException();
             ise.initCause(fnfe);
             throw ise;
-        }
-        finally{
+        } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
         }
-
+        
     }
     
     public TargetModuleID[] getAvailableModules(ModuleType modType, Target[] target)
     throws TargetException, IllegalStateException {
         
-        ThrowExceptionIfSuspended();
+        try {
+            ThrowExceptionIfSuspended();
+        } catch (RuntimeException re) {
+            return new TargetModuleID[0];
+        }
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         
@@ -418,16 +518,15 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         for(int j = 0; j < tm.length; j++) {
                 System.out.println("TargetModuleID is "+j+" "+tm[j]);
          }
-     */
+ */
             return tm;
-        }
-        finally{
+        } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
         }
     }
     
     public Locale getCurrentLocale() {//TODO change the classloader there also!!! Ludo
-      //  System.out.println("getCurrentLocale.");
+        //  System.out.println("getCurrentLocale.");
         ThrowExceptionIfSuspended();
         return innerDM.getCurrentLocale();
     }
@@ -458,8 +557,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         try{
             TargetModuleID[] ttt= innerDM.getRunningModules(mType, target);
             return ttt;
-        }
-        finally{
+        } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
         }
         
@@ -472,58 +570,67 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     }
     
     public Target[] getTargets() throws IllegalStateException {
-        ThrowExceptionIfSuspended();
-        if (secureStatusHasBeenChecked==false) //unknown status. no targets.
-            return null;
-        Target[] retVal = null;
-        // VBK Hack for getting the configuration editing to in the origClassLoader
-        // J2EE 1.4 RI beta 1 deploytool to appear. It required this call to
-        // return at least 1 target in the return value.
-        if (null == innerDM) {
-            retVal = new Target[1];
-            retVal[0] = new FakeTarget();
-            return retVal;
+        try {
+            ThrowExceptionIfSuspended();
+        } catch (Exception ex) {
+            return new Target[0];
         }
-        AdminAuthenticator.setPreferredSunDeploymentManagerInterface(this);
-        if (isLocal()){// if the server is local, make sure we are talking to the correct one
-            //we do that by testing the server location known by the IDE with the server location known by the
-            // server
-            try{
-                Object configDir = getManagement().invoke(new javax.management.ObjectName("ias:type=domain,category=config"),"getConfigDir", null, null);
-                if (configDir==null){
-                    mmm=null;
-                    return null;
+        Target[] retVal = null;
+        if (secureStatusHasBeenChecked==false){ //unknown status. no targets.
+            retVal = null;
+        } else {
+            // VBK Hack for getting the configuration editing to in the origClassLoader
+            // J2EE 1.4 RI beta 1 deploytool to appear. It required this call to
+            // return at least 1 target in the return value.
+            if (null == innerDM) {
+                retVal = new Target[1];
+                retVal[0] = new FakeTarget();
+//            return retVal;
+            } else {
+                if (isLocal()){// if the server is local, make sure we are talking to the correct one
+                    //we do that by testing the server location known by the IDE with the server location known by the
+                    // server
+                    try{
+                        Object configDir = getManagement().invoke(new javax.management.ObjectName("ias:type=domain,category=config"),"getConfigDir", null, null);
+                        if (configDir==null){
+                            mmm=null;
+                            return null;
+                        }
+                        String dir = configDir.toString();
+                        File domainLocationAsReturnedByTheServer = new File(dir).getParentFile().getParentFile();
+                        
+                        String l1 =  domainLocationAsReturnedByTheServer.getCanonicalPath();
+                        DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
+                        String domainDir =  dmProps.getLocation();
+                        domainDir = new File(domainDir).getCanonicalPath();
+                        
+                        if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not reutrn an invalid target
+                            
+                            return null;
+                        }
+                    } catch (java.rmi.RemoteException  ee) {
+                        return null;//cannot talk to the admin server->not running well
+                    } catch (Throwable  ee) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                ee);
+                        return null;//cannot talk to the admin server->not running well
+                    }
                 }
-                String dir = configDir.toString();
-                File domainLocationAsReturnedByTheServer = new File(dir).getParentFile().getParentFile();
-                
-                String l1 =  domainLocationAsReturnedByTheServer.getCanonicalPath();
-                DeploymentManagerProperties dmProps = new DeploymentManagerProperties(this);
-                String domainDir =  dmProps.getLocation();
-                domainDir = new File(domainDir).getCanonicalPath();
-
-                if (l1.equals(domainDir)==false){ //not the same location, so let's make sure we do not reutrn an invalid target
+                ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
+                    retVal = innerDM.getTargets();
+                } catch (IllegalStateException ise) {
+                    retVal = new Target[0];
+                    //	throw ise;
+                } finally{
+                    Thread.currentThread().setContextClassLoader(origClassLoader);
                     
-                    return null;
                 }
-            } catch (Throwable  ee) {
-                ee.printStackTrace();
             }
         }
-        ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
-            retVal = innerDM.getTargets();
-        } catch (IllegalStateException ise) {
-            return new Target[0];
-            //	throw ise;
-        } finally{
-            Thread.currentThread().setContextClassLoader(origClassLoader);
-            
-        }
-        return retVal;
-
         
+        return retVal;
     }
     
     public boolean isDConfigBeanVersionSupported(DConfigBeanVersionType vers) {
@@ -545,71 +652,55 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     }
     
     public ProgressObject redeploy(TargetModuleID[] targetModuleID,
-    InputStream archive, InputStream plan)
-    throws UnsupportedOperationException, IllegalStateException {
+            InputStream archive, InputStream plan)
+            throws UnsupportedOperationException, IllegalStateException {
         //System.out.println("redeploy.");
         ThrowExceptionIfSuspended();
-
+        
         InputStream innerPlan = null;
-   //     getStartServerInterface().viewLogFile();
+        //     getStartServerInterface().viewLogFile();
         ViewLogAction.viewLog(this);
         
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         try {
-           Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
-    //        File f = getInternalPlanFile(plan);
-    //        innerPlan = new FileInputStream(f);
+            Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
+            //        File f = getInternalPlanFile(plan);
+            //        innerPlan = new FileInputStream(f);
             ProgressObject  retVal = innerDM.redeploy(targetModuleID, archive, innerPlan);
 //            retVal.addProgressListener(new FileDeleter(f));
             return retVal;
-        }
-        catch (IllegalStateException ise) {
+        } catch (IllegalStateException ise) {
             ise.printStackTrace();
             throw ise;
-        }
-        catch (Exception ioe) {
+        } catch (Exception ioe) {
             ioe.printStackTrace();
             IllegalStateException ise =
-            new IllegalStateException("file handling issues");
+                    new IllegalStateException("file handling issues");
             ise.initCause(ioe);
             throw ise;
-        }
-        finally {
+        } finally {
             Thread.currentThread().setContextClassLoader(origClassLoader);
-            if (null != innerPlan)
+            if (null != innerPlan){
                 try {
                     innerPlan.close();
-                }
-                catch (Throwable t) {
+                } catch (Throwable t) {
                     t.printStackTrace();
                     jsr88Logger.severe("bad two");
                 }
+            }
         }
     }
     
     public ProgressObject redeploy(TargetModuleID[] targetModuleID,
-    File archive, File plan)
-    throws UnsupportedOperationException, IllegalStateException {
+            File archive, File plan)
+            throws UnsupportedOperationException, IllegalStateException {
         ThrowExceptionIfSuspended();
-
+        
         File[] resourceDirs = Utils.getResourceDirs(archive);
         if(resourceDirs != null){
             Utils.registerResources(resourceDirs, (ServerInterface)getManagement());
         }
-
-        InputStream a, p=null;
-        //System.out.println("redeploy.");
-        try {
-            a = new FileInputStream(archive);
-//            p = new FileInputStream(plan);
-         }
-        catch (java.io.FileNotFoundException fnfe) {
-            fnfe.printStackTrace();
-            IllegalStateException ise =
-            new IllegalStateException();
-            ise.initCause(fnfe);
-            throw ise;
-        }
+        
         ViewLogAction.viewLog(this);
         
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
@@ -617,8 +708,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         try{
             return  innerDM.redeploy(targetModuleID, archive, null);
             //return redeploy(targetModuleID, a, p);
-        }
-        finally{
+        } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
             
         }
@@ -637,14 +727,14 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     public void setDConfigBeanVersion(DConfigBeanVersionType versionType)
     throws DConfigBeanVersionUnsupportedException {
-       // System.out.println("setDConfigBeanVersion.");
+        // System.out.println("setDConfigBeanVersion.");
         ThrowExceptionIfSuspended();
         innerDM.setDConfigBeanVersion(versionType);
     }
     
     public void setLocale(Locale locale)
     throws UnsupportedOperationException {
-       // System.out.println("setLocale.");
+        // System.out.println("setLocale.");
         ThrowExceptionIfSuspended();
         innerDM.setLocale(locale);
     }
@@ -655,14 +745,21 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
         try{
-            return  innerDM.start(targetModuleID);
-        }
-        finally{
+            // need to weed list of targetModules -- no app clients!
+            // see https://glassfish.dev.java.net/issues/show_bug.cgi?id=641
+            TargetModuleID[] weeded = weedOutAppClientTMID(targetModuleID);
+            ProgressObject retVal = null;
+            if (weeded.length < 1) {
+                retVal = new ShortCircuitProgressObject(CommandType.START,
+                        NbBundle.getMessage(SunDeploymentManager.class,"MESS_STARTED"),
+                        StateType.COMPLETED,targetModuleID);
+            } else {
+                retVal =  innerDM.start(weeded);
+            }
+            return retVal;
+        } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
-            
         }
-        
-        
     }
     
     public ProgressObject stop(TargetModuleID[] targetModuleID)
@@ -670,21 +767,53 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         ThrowExceptionIfSuspended();
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
-        try{ 
-            return  innerDM.stop(targetModuleID);
-        }
-        finally{
+        try{
+            // need to weed list of targetModules -- no app clients!
+            // see https://glassfish.dev.java.net/issues/show_bug.cgi?id=641
+            TargetModuleID[] weeded = weedOutAppClientTMID(targetModuleID);
+            ProgressObject retVal = null;
+            if (weeded.length < 1) {
+                retVal = new ShortCircuitProgressObject(CommandType.STOP,
+                        NbBundle.getMessage(SunDeploymentManager.class,"MESS_STOPPED"),
+                        StateType.COMPLETED,targetModuleID);
+            } else {
+                retVal =  innerDM.stop(weeded);
+            }
+            return retVal;
+        } finally{
             Thread.currentThread().setContextClassLoader(origClassLoader);
-            
         }
-        
-        
-        
+    }
+    
+    private TargetModuleID[] weedOutAppClientTMID(TargetModuleID[] tmids) {
+        ArrayList<TargetModuleID> retList = new ArrayList<TargetModuleID>();
+        try{
+            Class[] argClass = new Class[1];
+            argClass[0] = TargetModuleID.class;
+            Object[] argObject = new Object[1];
+            
+            ClassLoader loader =  getExtendedClassLoader();
+            if(loader != null){
+                Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.AppServerBridge");
+                Method isCar = cc.getMethod("isCar", argClass);//NOI18N
+                for (TargetModuleID tmid : tmids) {
+                    argObject[0] = tmid;
+                    boolean doNotAddToRetList = ((Boolean) isCar.invoke(null,argObject)).booleanValue();
+                    if (!doNotAddToRetList) {
+                        retList.add(tmid);
+                    }
+                }
+            }
+        }catch(Exception ex){
+            //Suppressing exception while trying to obtain admin host port value
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
+        }
+        return retList.toArray(new TargetModuleID[retList.size()]);
     }
     
     public ProgressObject undeploy(TargetModuleID[] targetModuleID)
     throws IllegalStateException {
-       // System.out.println("undeploy.");
+        // System.out.println("undeploy.");
         ThrowExceptionIfSuspended();
         ClassLoader origClassLoader=Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(ServerLocationManager.getServerOnlyClassLoader(getPlatformRoot()));
@@ -701,57 +830,67 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     
     private void calculateIsLocal(){
-        if (getHost().equals("localhost"))
-        {
-            isLocal =true;
-            return;
+        boolean isset = false;
+        InstanceProperties ip = SunURIManager.getInstanceProperties(getPlatformRoot(),
+                getHost(), getPort());
+        if (ip!=null){ //Null is a possible returned value there...
+            Object domainDir = ip.getProperty("LOCATION");
+            if ("".equals(domainDir)) {
+                isLocal = false;
+                isset = true;
+            }
         }
-        try {
-            new Thread() {
-                public void run() {
-                    try {
-                        String ia = InetAddress.getByName(getHost()).getHostAddress();
-                        if(ia.equals("127.0.0.1")){//NOI18N
-                             isLocal = true;
-                             return;
+        if (!isset) {
+            if (getHost().equals("localhost")) {
+                isLocal = true;
+            } else {
+                try {
+                    new Thread() {
+                        public void run() {
+                            try {
+                                String ia = InetAddress.getByName(getHost()).getHostAddress();
+                                if(ia.equals("127.0.0.1")){//NOI18N
+                                    isLocal = true;
+                                } else {
+                                    String localCanonName = InetAddress.getLocalHost().getCanonicalHostName();
+                                    String currentCanonName = InetAddress.getByName(getHost()).getCanonicalHostName();
+                                    
+                                    isLocal =  (localCanonName.equals(currentCanonName) ) ? true : false;
+                                }
+                            } catch (Exception e) {
+                                // e.printStackTrace();
+                                jsr88Logger.severe(e.getMessage());
+                            }
                         }
-                        
-                        String localCanonName = InetAddress.getLocalHost().getCanonicalHostName();
-                        String currentCanonName = InetAddress.getByName(getHost()).getCanonicalHostName();
-                        
-                        isLocal =  (localCanonName.equals(currentCanonName) ) ? true : false;
-                        return;
-                    } catch (Exception e) {
-                       // e.printStackTrace();
-                    }
+                    }.start();
+                    
+                } catch (Throwable t) {
+                    // t.printStackTrace(); wll default to false.
+                    return;
                 }
-            }.start();
-            
-        }
-        catch (Throwable t) {
-           // t.printStackTrace(); wll default to false.
+            }
         }
     }
     
-    /* return true if the server instance is locale
-     **/
+   /* return true if the server instance is locale
+    **/
     public boolean isLocal() {
         
         return isLocal; //the cached value
         
     }
-        
-      //  return LOCALHOST.equals(getHost());
-
+    
+    //  return LOCALHOST.equals(getHost());
+    
     
      /* return the status of an instance.
       * It is optimized to return the previous status if called more than twice within
       * a 5 seconds intervall
       * This boosts IDE reactivity
       */
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return isRunning(false);
-    
+        
     }
      /* return the status of an instance.
       * when not forced, It is optimized to return the previous status if called more than twice within
@@ -759,74 +898,103 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
       * This boosts IDE reactivity
       */
     public boolean isRunning(boolean forced) {
-
-        if (isSuspended())
-        return true;
-        long current=System.currentTimeMillis();
-      //  System.out.println("in in running call"+ (current-timeStampCheckingRunning));
-        if (forced==false)
-            if (current-timeStampCheckingRunning<4000){
-            //  System.out.println("Cached in in running call");
-            //timeStampCheckingRunning = current;
-            return runningState;
-            }
-        boolean newrunningState = false; 
-        timeStampCheckingRunning = current;
         
-        try {          
+        boolean retVal = false;
+        
+        if (isSuspended()) {
+            retVal = true;
+        } else {
             
-            Target[] t= getTargets();
-            if (t != null) {
-                if (t.length==0)
-                    newrunningState = false;
-                else
+//            if (secureStatusHasBeenChecked==false){
+//
+//            }
+//         if (secureStatusHasBeenChecked&& (goodUserNamePassword==false)){
+//            System.out.println("ISRUNNING TRUE BUT!!!!WRONG U PA: REFRESH THE NODe Please") ;
+//            return true;
+//            }
+            
+            long current=System.currentTimeMillis();
+            //  System.out.println("in in running call"+ (current-timeStampCheckingRunning));
+            if (forced==false && current-timeStampCheckingRunning<4000){
+                //  System.out.println("Cached in in running call");
+                //timeStampCheckingRunning = current;
+                retVal = runningState;
+                
+            } else {
+                boolean newrunningState = false;
+                timeStampCheckingRunning = current;
+                
+                try {
+                    if (secureStatusHasBeenChecked&& (maybeRunningButWrongUserName==true)){
+                        testCredentials() ;//that will prompt again the dialog for user/password
+                    }
+                    ThrowExceptionIfSuspended();
                     
-                    newrunningState = true;
-            }
-
-           //System.out.println("isRunning" +runningState);
-        } catch (Throwable /*IllegalStateException*/ e) {
-            newrunningState  =false;
-            //System.out.println(" bisRunning" +runningState);
-       }
-        if(newrunningState!=runningState){
-            // state changed
-            new DeploymentManagerProperties(this).refreshServerInstance();
-        }
-        runningState = newrunningState;
-        if ((runningState)&&(nonAdminPortNumber == null)){
-            try{
-      //  System.out.println("inrunning get admin port number"+(System.currentTimeMillis()-current));
-                nonAdminPortNumber =  (String)getManagement().getAttribute(new javax.management.ObjectName("com.sun.appserv:type=http-listener,id=http-listener-1,config=server-config,category=config") ,"port");
-              //  sharedMemoryName = getDebugAddressValueReal();
-            } catch (Throwable /*IllegalStateException*/ ee) {
-            ee.printStackTrace();
-           }            
-        }
-        timeStampCheckingRunning = System.currentTimeMillis();
+                    Target[] t= getTargets();
+                    if (t != null) {
+                        if (t.length==0)
+                            newrunningState = false;
+                        else
+                            
+                            newrunningState = true;
+                    }
+                    
+                    //System.out.println("isRunning" +runningState);
+                } catch (Throwable /*IllegalStateException*/ e) {
+                    newrunningState  =false;
+                    //System.out.println(" bisRunning" +runningState);
+                }
+                runningState = newrunningState;
+                if ((runningState)&&(nonAdminPortNumber == null)){
+                    try{
+                        //  System.out.println("inrunning get admin port number"+(System.currentTimeMillis()-current));
+                        nonAdminPortNumber =  (String)getManagement().getAttribute(new javax.management.ObjectName("com.sun.appserv:type=http-listener,id=http-listener-1,config=server-config,category=config") ,"port");
+                        //  sharedMemoryName = getDebugAddressValueReal();
+                        // fix the null http port setting... in the ant properties file.
+                        Runnable t = new Runnable() {
+                            public void run() {
+                                try {
+                                    storeAntDeploymentProperties(getAntDeploymentPropertiesFile(),true);
+                                } catch (IOException ioe) {
+                                    // what can I do here
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ioe);
+                                }
+                                
+                            }
+                            
+                        };
+                        RequestProcessor.getDefault().post(t);
+                    } catch (Throwable /*IllegalStateException*/ ee) {
+                        ee.printStackTrace();
+                    }
+                }
+                timeStampCheckingRunning = System.currentTimeMillis();
 //        System.out.println("startinsruning"+(timeStampCheckingRunning-current));
-
-       return runningState;
+                
+                retVal = runningState;
+            }
+        }
+        return retVal;
     }
     
-
     
-
+    
+    
     
     public void  ThrowExceptionIfSuspended(){
         
         /* this is called before any remote call, so it's a good place to do this extra check about being secure of not For EE version
          ** and accordingly set the environment correctly */
-
+        
         if (secureStatusHasBeenChecked == false) {
-            long current=System.currentTimeMillis();
+            // long current=System.currentTimeMillis();
             mmm=null;
             try{
                 if(isGlassFish)
                     secure=PortDetector.isSecurePortGlassFish(getHost(),getPort());
                 else
                     secure=PortDetector.isSecurePort(getHost(),getPort());
-                    
+                
                 if (secure==true){
                     if (!uri.endsWith(SECURESTRINGDETECTION)){
                         uri=uri+SECURESTRINGDETECTION;//make it secure and reset the inner one
@@ -837,71 +1005,50 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 }
                 //System.out.println("secure="+secure);
                 secureStatusHasBeenChecked = true;// check done!!!
-                 
+                
+                //  now we know if we are secure or not, we can check is the username passowrd is good:
+                testCredentials();
+                
+                
             } catch(Exception e){
                 //Cannot detect if it's secure of not yet..
                 // could be IOException, ConnectException, SocketTimeoutException
-              //  System.out.println("timeout "+( System.currentTimeMillis()-current));
-              //  System.out.println("caanot check secure");
+                //  System.out.println("timeout "+( System.currentTimeMillis()-current));
+                //  System.out.println("caanot check secure");
                 secureStatusHasBeenChecked = false;
                 //System.out.println("could be IOException, ConnectException, SocketTimeoutException");
                 //e.printStackTrace();
             }
         }
-            if (isSuspended()){
-
-                //System.out.println("CANNOT DO A remote operation  WHILE STOPPED IN A BREAK POINT IN DEBUG MODE...");
-                throw new RuntimeException(bundle.getString("MSG_ServerInDebug")) ;
-            }
-
+        if (isSuspended()){
+            
+            //System.out.println("CANNOT DO A remote operation  WHILE STOPPED IN A BREAK POINT IN DEBUG MODE...");
+            throw new RuntimeException(bundle.getString("MSG_ServerInDebug")) ;
+        }
+        if (secureStatusHasBeenChecked&& (goodUserNamePassword==false)){
+            throw new RuntimeException(bundle.getString("MSG_WRONG_UserPassword")) ;
+        }
+        
     }
     
     
     /**
-     * Returns true if this server is started in debug mode AND debugger is attached to it 
+     * Returns true if this server is started in debug mode AND debugger is attached to it
      * AND threads are suspended (e.g. debugger stopped on breakpoint)
      */
     public boolean isSuspended() {
         return org.netbeans.modules.j2ee.sun.ide.j2ee.StartSunServer.isSuspended(this);
-    }      
+    }
     
     
-   
-
-
+    
+    
+    
     private ServerInterface mmm=null;
     
     public ServerInterface getManagement() {
         if(mmm==null){
             
-        try{
-            Class[] argClass = new Class[1];
-            argClass[0] = javax.enterprise.deploy.spi.DeploymentManager.class;
-            Object[] argObject = new Object[1];
-            argObject[0] = this;
-            
-            ClassLoader loader = getExtendedClassLoader();
-            if(loader != null){
-                Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.share.management.ServerMEJB");
-                mmm = (ServerInterface)cc.newInstance();
-                java.lang.reflect.Method setDeploymentManager = cc.getMethod("setDeploymentManager", argClass);//NOI18N
-                setDeploymentManager.invoke(mmm, argObject);
-            }
-        }catch(Exception ex){
-            //Suppressing exception while trying to obtain admin host port value
-            ex.printStackTrace();
-        }           
-            
-            
-           /// mmm = new ServerMEJB(this);
-        }
-        return mmm;
-    }
-    
-    private ResourceConfiguratorInterface resourceConfigurator = null;
-    
-    public ResourceConfiguratorInterface getResourceConfigurator() {
-        if(resourceConfigurator == null){
             try{
                 Class[] argClass = new Class[1];
                 argClass[0] = javax.enterprise.deploy.spi.DeploymentManager.class;
@@ -910,32 +1057,123 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                 
                 ClassLoader loader = getExtendedClassLoader();
                 if(loader != null){
-                    Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator");
-                    resourceConfigurator = (ResourceConfiguratorInterface)cc.newInstance();
-                    java.lang.reflect.Method setDeploymentManager = cc.getMethod("setDeploymentManager", argClass);//NOI18N
-                    setDeploymentManager.invoke(resourceConfigurator, argObject);
+                    Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.share.management.ServerMEJB");
+                    mmm = (ServerInterface)cc.newInstance();
+                    mmm.setDeploymentManager(this);
                 }
             }catch(Exception ex){
-                //Suppressing exception
-                //return will be a null value for resourceConfigurator
+                mmm = null;
+                //Suppressing exception while trying to obtain admin host port value
+                ex.printStackTrace();
             }
+            
+            
+        }
+        return mmm;
+    }
+    
+    
+    public void testCredentials() {
+        
+        Authenticator.setDefault(new AdminAuthenticator(this));
+        
+        goodUserNamePassword =false;
+        maybeRunningButWrongUserName=false;
+        try {
+            Class[] argClass = new Class[1];
+            argClass[0] = javax.enterprise.deploy.spi.DeploymentManager.class;
+            Object[] argObject = new Object[1];
+            argObject[0] = this;
+            
+            ClassLoader loader = getExtendedClassLoader();
+            if(loader != null){
+                Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.share.management.ServerMEJB");
+                ServerInterface si;
+                
+                si = (ServerInterface) cc.newInstance();
+                si.setDeploymentManager(this);
+                si.checkCredentials();
+                goodUserNamePassword =true;
+            }
+            
+            
+        } catch (ClassNotFoundException ex) {
+            goodUserNamePassword =false;
+        }  catch (InstantiationException ex) {
+            goodUserNamePassword =false;
+        } catch (IllegalAccessException ex) {
+            goodUserNamePassword =false;
+        } catch (IOException e){
+            if(!e.getMessage().contains("500")){//not an internal error, so user/password error!!!
+                maybeRunningButWrongUserName =true ;
+            }
+            
+            String serverTitle = getInstanceDisplayName();
+            DialogDescriptor desc = new DialogDescriptor(
+                    NbBundle.getMessage(SunDeploymentManager.class,
+                    "ERR_AUTH_DIALOG_MSG", new Object[] { ((serverTitle != null) ? serverTitle :           // NOI18N
+                        NbBundle.getMessage(SunDeploymentManager.class, "WORD_SERVER")),    // NOI18N
+                    e.getLocalizedMessage() } ),
+                    NbBundle.getMessage(SunDeploymentManager.class,"ERR_AUTH_DIALOG_TITLE"));   //NOI18N
+            desc.setModal(false);
+            desc.setMessageType(DialogDescriptor.ERROR_MESSAGE);
+            desc.setOptions(new Object[] { DialogDescriptor.OK_OPTION });
+            desc.setOptionsAlign(DialogDescriptor.BOTTOM_ALIGN);
+            DialogDisplayer.getDefault().notify(desc);
+        }
+        
+    }
+    
+    private String getInstanceDisplayName() {
+        InstanceProperties ip = SunURIManager.getInstanceProperties(getPlatformRoot(), getHost(), getPort());
+        return (ip != null) ? ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR) : null;
+    }
+    
+    private ResourceConfiguratorInterface resourceConfigurator = null;
+    
+    public ResourceConfiguratorInterface getResourceConfigurator() {
+        if(resourceConfigurator == null){
+            org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator r = new org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator();
+            r.setDeploymentManager(this);
+            resourceConfigurator = r;
+//            try{
+//                Class[] argClass = new Class[1];
+//                argClass[0] = javax.enterprise.deploy.spi.DeploymentManager.class;
+//                Object[] argObject = new Object[1];
+//                argObject[0] = this;
+//
+//                ClassLoader loader = getExtendedClassLoader();
+//                if(loader != null){
+//                    Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator");
+//                    resourceConfigurator = (ResourceConfiguratorInterface)cc.newInstance();
+//                    java.lang.reflect.Method setDeploymentManager = cc.getMethod("setDeploymentManager", argClass);//NOI18N
+//                    setDeploymentManager.invoke(resourceConfigurator, argObject);
+//                }
+//            }catch(Exception ex){
+//                //Suppressing exception
+//                //return will be a null value for resourceConfigurator
+//                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+//                        ex);
+//            }
         }
         return resourceConfigurator;
     }
     
-    public javax.management.MBeanServerConnection getMBeanServerConnection() throws RemoteException, ServerException{
+    private javax.management.MBeanServerConnection getMBeanServerConnection() throws RemoteException, ServerException{
         ServerInterface serverMgmt = getManagement();
         return (javax.management.MBeanServerConnection)serverMgmt.getMBeanServerConnection();
     }
     
-
-
-
+    
+    public boolean isMaybeRunningButWrongUserName() {
+        return maybeRunningButWrongUserName;
+    }
+    
     public boolean isSecure() {
         return secure;
     }
-
-
+    
+    
     
     
     
@@ -957,16 +1195,16 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     static int getPortFromURI(String uri) {
         int retVal = -1;
         int len1 = uri.lastIndexOf(':');
-        if (-1 == len1)
-            return retVal;
-        //int uriLength = uri.length();
-        try {
-            retVal = Integer.parseInt(uri.substring(len1+1));
-        } catch (NumberFormatException nfe) {
-            jsr88Logger.warning(nfe.getMessage());
+        if (-1 != len1){
+            //int uriLength = uri.length();
+            try {
+                retVal = Integer.parseInt(uri.substring(len1+1));
+            } catch (NumberFormatException nfe) {
+                jsr88Logger.warning(nfe.getMessage());
+            }
         }
         return retVal;
-    }  
+    }
     
     
     
@@ -974,6 +1212,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         try{
             resetInnerDeploymentManager();
         }catch(Exception ex)   {
+            return;//nothing much
         }
     }
     
@@ -981,50 +1220,296 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     public File getPlatformRoot() {
         return  platformRoot;
     }
-
+    
     private ClassLoader getExtendedClassLoader(){
-	
-	return ServerLocationManager.getNetBeansAndServerClassLoader(getPlatformRoot());	
+        
+        return ServerLocationManager.getNetBeansAndServerClassLoader(getPlatformRoot());
     }
-
+    
     public void setUserName(String name) {
         mmm = null;
+        secureStatusHasBeenChecked=false;
+        String oldValue = userName;
         userName = name;
+        propertySupport.firePropertyChange("name", oldValue, userName);
     }
-
+    
     public void setPassword(String pw) {
         mmm= null;
+        secureStatusHasBeenChecked=false;
+        String oldValue = password;
         password = pw;
+        passwordForURI.put(uri+platformRoot,password);
+        
         refreshDeploymentManager();
+        
+        propertySupport.firePropertyChange("password", oldValue, password);
+        
         
     }
     
-    // VBK hack target objects to support configuration prototyping in
-     // J2EE 1.4 RI beta 1 deploytool
-     class FakeTarget implements Target {
-         
-         public String getDescription() {
-             return "fakeTargetDescr";
-         }
-                  public String getName() {
-             return "fakeTargetName";
-         }
-         
-     }
-     
-     class FileDeleter implements ProgressListener {
-         File f;
-         public FileDeleter(File f) {
-             this.f = f;
-         }
-         
-         public void handleProgressEvent(ProgressEvent pe) {
-             DeploymentStatus ds = pe.getDeploymentStatus();
-             if (ds.isCompleted() || ds.isFailed()) {
-                 boolean complete = ds.isCompleted();
-                 f.delete();
-             }
-         }
-     }    
+    public File getAntDeploymentPropertiesFile() {
+        return new File(System.getProperty("netbeans.user"), getInstanceID() + ".properties"); // NOI18N
+    }
     
+    public void storeAntDeploymentProperties(File file, boolean create) throws IOException {
+        if (!create && !file.exists()) {
+            return;
+        }
+        Properties antProps = new Properties();
+        antProps.setProperty("sjsas.root", getPlatformRoot().getAbsolutePath()); // NOI18N
+        antProps.setProperty("sjsas.url", getWebUrl());                // NOI18N
+        antProps.setProperty("sjsas.username", getUserName());         // NOI18N
+        antProps.setProperty("sjsas.password", getPassword());         // NOI18N
+        antProps.setProperty("sjsas.host",getHost());
+        antProps.setProperty("sjsas.port",getPort()+"");
+        file.createNewFile();
+        FileObject fo = FileUtil.toFileObject(file);
+        FileLock lock = null;
+        try {
+            lock = fo.lock();
+            OutputStream os = fo.getOutputStream(lock);
+            try {
+                antProps.store(os,"");
+            } finally {
+                if (null != os) {
+                    os.close();
+                }
+            }
+        } finally {
+            if (null != lock) {
+                lock.releaseLock();
+            }
+        }
+    }
+    
+    private static String PROP_INSTANCE_ID = "PROP_INSTANCE_ID";
+    
+    // package protected for access from SunDeploymentFactory.
+    String getInstanceID() {
+        InstanceProperties ip = SunURIManager.getInstanceProperties(platformRoot,host,adminPortNumber);
+        String name = null;
+        if (null != ip) {
+            name = ip.getProperty(PROP_INSTANCE_ID);
+        }
+        if (name == null) {
+            boolean isGF = ServerLocationManager.isGlassFish(platformRoot);
+            String prefix = isGF ? "glassfish" : "sjsas8"; // NOI18N
+            String[] instanceURLs = Deployment.getDefault().getInstancesOfServer("J2EE"); // NOI18N
+            int len = 0;
+            if (null != instanceURLs) {
+                len = instanceURLs.length;
+            }
+            for (int i = 0; name == null; i++) {
+                if (i == 0) {
+                    name = prefix;
+                } else {
+                    name = prefix + "_" + i; // NOI18N
+                }
+                
+                for (int j = 0; j < len; j++) { // String url: instanceURLs) {
+                    String url = instanceURLs[j];
+                    String uri = null;
+                    if (null != ip) {
+                        uri = ip.getProperty(InstanceProperties.URL_ATTR);
+                    }
+                    if (!url.equals(uri)) {
+                        InstanceProperties iip = InstanceProperties.getInstanceProperties(url);
+                        if (iip != null) {
+                            String anotherName = iip.getProperty(PROP_INSTANCE_ID);
+                            if (name.equals(anotherName)) {
+                                name = null;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (null != ip) {
+                ip.setProperty(PROP_INSTANCE_ID, name);
+            }
+        }
+        return name;
+    }
+    
+    private String getWebUrl() {
+        return "http://"+host+":"+nonAdminPortNumber;       // NOI18N
+    }
+    
+    public HashMap getSunDatasourcesFromXml(){
+        DomainEditor dEditor = new DomainEditor(this);
+        return dEditor.getSunDatasourcesFromXml();
+    }
+    
+    public HashMap getConnPoolsFromXml(){
+        DomainEditor dEditor = new DomainEditor(this);
+        return dEditor.getConnPoolsFromXml();
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertySupport.removePropertyChangeListener(listener);
+    }
+    
+    // VBK hack target objects to support configuration prototyping in
+    // J2EE 1.4 RI beta 1 deploytool
+    class FakeTarget implements Target {
+        
+        public String getDescription() {
+            return "fakeTargetDescr";      // NOI18N
+        }
+        public String getName() {
+            return "fakeTargetName";       // NOI18N
+        }
+        
+    }
+    
+    /** put a file inside this progress listener to get rid of it after
+     * it has been used
+     */
+// <editor-fold defaultstate="collapsed" desc=" FileDeleter code ">
+    class FileDeleter implements ProgressListener {
+        File f;
+        public FileDeleter(File f) {
+            this.f = f;
+        }
+        
+        public void handleProgressEvent(ProgressEvent pe) {
+            DeploymentStatus ds = pe.getDeploymentStatus();
+            if (ds.isCompleted() || ds.isFailed()) {
+                // boolean complete = ds.isCompleted();
+                f.delete();
+            }
+        }
+    }
+    //</editor-fold>
+    
+    /**
+     * ProgressObject for use in cases where we need to short circuit the flow of
+     * method calls between the plugin and the server's jsr-88 implementation class.
+     *
+     * This allows the plugin's jsr-88 "interface" to work-around bugs in the
+     * server's jsr-88 implementation.
+     */
+// <editor-fold defaultstate="collapsed" desc=" ShortCircuitProgressObject code ">
+    static class ShortCircuitProgressObject implements ProgressObject {
+        
+        private CommandType ct;
+        private String message;
+        private StateType st;
+        private TargetModuleID[] tmids;
+        
+        ProgressEventSupport pes = new ProgressEventSupport(this);
+        
+        /**
+         *
+         * @param ct
+         * @param message
+         * @param st
+         * @param tmids
+         */
+        ShortCircuitProgressObject(CommandType ct, String message, StateType st, TargetModuleID[] tmids) {
+            this.ct = ct;
+            this.message = message;
+            this.st = st;
+            this.tmids = tmids;
+        }
+        
+        /**
+         *
+         * @return
+         */
+        public DeploymentStatus getDeploymentStatus() {
+            return new DeploymentStatus() {
+                public ActionType getAction() {
+                    return ActionType.EXECUTE;
+                }
+                public CommandType getCommand() {
+                    return ct;
+                }
+                public String getMessage() {
+                    return message;
+                }
+                public StateType getState() {
+                    return st;
+                }
+                public boolean isCompleted() {
+                    return st.equals(StateType.COMPLETED);
+                }
+                public boolean isFailed() {
+                    return st.equals(StateType.FAILED);
+                }
+                public boolean isRunning() {
+                    return st.equals(StateType.RUNNING);
+                }
+            };
+        }
+        
+        /**
+         *
+         * @return
+         */
+        public TargetModuleID[] getResultTargetModuleIDs() {
+            return tmids;
+        }
+        
+        /**
+         *
+         * @param targetModuleID
+         * @return
+         */
+        public ClientConfiguration getClientConfiguration(TargetModuleID targetModuleID) {
+            return null;
+        }
+        
+        /**
+         *
+         * @return
+         */
+        public boolean isCancelSupported() {
+            return false;
+        }
+        
+        /**
+         *
+         * @throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException
+         */
+        public void cancel() throws OperationUnsupportedException {
+        }
+        
+        /**
+         *
+         * @return
+         */
+        public boolean isStopSupported() {
+            return false;
+        }
+        
+        /**
+         *
+         * @throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException
+         */
+        public void stop() throws OperationUnsupportedException {
+        }
+        
+        /**
+         *
+         * @param progressListener
+         */
+        public void addProgressListener(ProgressListener progressListener) {
+            pes.addProgressListener(progressListener);
+        }
+        
+        /**
+         *
+         * @param progressListener
+         */
+        public void removeProgressListener(ProgressListener progressListener) {
+            pes.removeProgressListener(progressListener);
+        }
+    }
+//</editor-fold>
 }

@@ -255,10 +255,9 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         jPanel1.add(jLabelEncoding, gridBagConstraints);
 
-        jTextFieldEncoding.setMinimumSize(new java.awt.Dimension(150, 22));
-        jTextFieldEncoding.setPreferredSize(new java.awt.Dimension(150, 22));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jTextFieldEncoding, gridBagConstraints);
@@ -313,8 +312,7 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
         add(jCheckBoxPreview, gridBagConstraints);
         jCheckBoxPreview.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("AD_jCheckBoxPreview"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void reenableSplitIndex(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reenableSplitIndex
         jCheckBoxSplitIndex.setEnabled( jCheckBoxIndex.isSelected() );

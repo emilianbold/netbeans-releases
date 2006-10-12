@@ -2,10 +2,10 @@
 <metaDD>
         <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.SecurityRoleMapping</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.EjbRef</import>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ResourceRef</import>
-		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ResourceEnvRef</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_3_0_0.SecurityRoleMapping</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.EjbRef</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceRef</import>
+		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_0.ResourceEnvRef</import>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ServiceRef</import>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.MessageDestination</import>
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceDescription</import>
@@ -40,7 +40,6 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping</implements>
 	</meta-element>
 	<meta-element>
-                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_3_0_0.WebserviceEndpoint</import>
 		<dtd-name>servlet</dtd-name>
 		<bean-name>Servlet</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.web.Servlet</implements>
@@ -419,7 +418,9 @@
 		<wrapper-class>String</wrapper-class>
 	</meta-element>
 	<meta-element>
-                <skip-generation/>
+        <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.LoginConfig</import>
+        <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.MessageSecurityBinding</import>
+        <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ServiceQname</import>
 		<dtd-name>webservice-endpoint</dtd-name>
 		<bean-name>WebserviceEndpoint</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint</implements>

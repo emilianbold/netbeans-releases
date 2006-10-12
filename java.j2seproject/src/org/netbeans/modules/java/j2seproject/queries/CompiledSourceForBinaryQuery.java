@@ -19,6 +19,9 @@
 package org.netbeans.modules.java.j2seproject.queries;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
@@ -39,13 +42,16 @@ import javax.swing.event.ChangeEvent;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
+import org.openide.filesystems.URLMapper;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
  * @author Jesse Glick, Tomas Zezula
  */
 public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
-
+    
+    private static final String PROP_BUILD_DIR = "build.dir";   //NOI18N
+    
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
@@ -110,7 +116,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         return false;
     }
     
-    private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
+    private class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
 
         private ArrayList listeners;
         private SourceRoots sourceRoots;
@@ -121,7 +127,40 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         }
         
         public FileObject[] getRoots () {
-            return this.sourceRoots.getRoots(); //No need to cache it, SourceRoots does
+            //todo: May need to cache the result
+            List result = new ArrayList (); 
+            result.addAll(Arrays.asList(this.sourceRoots.getRoots()));            
+            try {
+                String buildDir = evaluator.getProperty(PROP_BUILD_DIR);
+                if (buildDir != null) {
+                    // generated/wsclient
+                    File f =  new File (helper.resolveFile (buildDir),"generated/wsclient"); //NOI18N
+                    URL url = f.toURI().toURL();
+                    if (!f.exists()) {  //NOI18N
+                        assert !url.toExternalForm().endsWith("/");  //NOI18N
+                        url = new URL (url.toExternalForm()+'/');   //NOI18N
+                    }
+                    FileObject root = URLMapper.findFileObject(url);
+                    if (root != null) {
+                        result.add(root);
+                    }
+
+                    // generated/wsimport/client
+                    f = new File (helper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N
+                    url = f.toURI().toURL();
+                    if (!f.exists()) {  //NOI18N
+                        assert !url.toExternalForm().endsWith("/");  //NOI18N
+                        url = new URL (url.toExternalForm()+'/');   //NOI18N
+                    }
+                    root = URLMapper.findFileObject(url);
+                    if (root != null) {
+                        result.add(root);
+                    }
+                }
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault ().notify (ex);
+            }
+            return (FileObject[]) result.toArray(new FileObject[result.size()]);
         }
         
         public synchronized void addChangeListener (ChangeListener l) {

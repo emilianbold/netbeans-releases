@@ -670,7 +670,7 @@ public class XMLUtil {
         if (i<9) return false;
         if (i>9 && i<32) return false;
         // return false for <, ]
-        //if (i==60 || i==93) return false;
+        // if (i==60 || i==93) return false;
         // otherwise return true
         return true;
     }

@@ -69,6 +69,8 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         btv.setRootVisible( false );
         btv.setSelectionMode( javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION );
         btv.setBorder( SAMPLE_SCROLL_PANE.getBorder() );
+        btv.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BrowseFolders.class, "ACSD_SelectFile"));
         folderPanel.add( btv, java.awt.BorderLayout.CENTER );
     }
         
@@ -128,7 +130,11 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
             new JButton( NbBundle.getMessage(BrowseFolders.class,"LBL_SelectFile")), 
             new JButton( NbBundle.getMessage(BrowseFolders.class,"LBL_Cancel") ), 
         };
-                
+        options[0].getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BrowseFolders.class, "ACSD_SelectFile"));
+        options[1].getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BrowseFolders.class, "ACSD_Cancel"));
+        
         OptionsListener optionsListener = new OptionsListener( bf );
         
         options[ 0 ].setActionCommand( OptionsListener.COMMAND_SELECT );
@@ -149,6 +155,8 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         dialogDescriptor.setClosingOptions( new Object[] { options[ 0 ], options[ 1 ] } );
             
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
+        dialog.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BrowseFolders.class, "ACSD_BrowseFoldersDialog"));
         dialog.setVisible(true);
         
         return optionsListener.getResult();

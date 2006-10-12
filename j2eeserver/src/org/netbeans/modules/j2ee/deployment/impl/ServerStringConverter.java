@@ -72,6 +72,9 @@ public class ServerStringConverter extends org.netbeans.spi.settings.DOMConverto
         Reader reader = null;
         try {
             FileObject dir = Repository.getDefault().getDefaultFileSystem().findResource(fromDir);
+            if (dir == null) {
+                return null;
+            }
             FileObject fo = dir.getFileObject (fromFile);
             if (fo == null)
                 return null;

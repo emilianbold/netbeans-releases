@@ -17,15 +17,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
- * WebAppRootCustomizer.java
+ * ModuleRefCustomizer.java
  *
  * Created on September 4, 2003, 5:28 PM
  */
-
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.other;
 
 import java.beans.Customizer;
 import java.beans.PropertyVetoException;
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.JPanel;
 
@@ -82,7 +82,6 @@ public class ModuleRefCustomizer extends BaseCustomizer {
         jLblModuleUri.setText(bundle.getString("LBL_ModuleURI_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPnlGeneral.add(jLblModuleUri, gridBagConstraints);
         jLblModuleUri.getAccessibleContext().setAccessibleName(bundle.getString("ModuleURI_Acsbl_Name"));
         jLblModuleUri.getAccessibleContext().setAccessibleDescription(bundle.getString("ModuleURI_Acsbl_Desc"));
@@ -93,7 +92,7 @@ public class ModuleRefCustomizer extends BaseCustomizer {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 2;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPnlGeneral.add(jTxtModuleUri, gridBagConstraints);
         jTxtModuleUri.getAccessibleContext().setAccessibleName(bundle.getString("ModuleURI_Acsbl_Name"));
         jTxtModuleUri.getAccessibleContext().setAccessibleDescription(bundle.getString("ModuleURI_Acsbl_Desc"));
@@ -101,6 +100,7 @@ public class ModuleRefCustomizer extends BaseCustomizer {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
         add(jPnlGeneral, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -108,11 +108,10 @@ public class ModuleRefCustomizer extends BaseCustomizer {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jPnlPlaceHolder, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 		
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLblModuleUri;
@@ -134,8 +133,12 @@ public class ModuleRefCustomizer extends BaseCustomizer {
 	 *  was passed in.
 	 */
 	protected void initFields() {
+        // Set nice title based on the type of module this represents.
+        getTitlePanel().setCustomizerTitle(MessageFormat.format(
+                bundle.getString("LBL_SunTFModuleRef"), new Object [] { theBean.getTitleFragment() }));
+        
 		jTxtModuleUri.setText(theBean.getModuleUri());
-		
+
 		//jTxtIdentity.setText(theBean.getIdentity());
 		//jTxtRefIdentity.setText(theBean.getRefIdentity());
 	}

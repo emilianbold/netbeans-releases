@@ -50,13 +50,13 @@ import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Provider, TableModelListener, ListSelectionListener, ChangeListener {
     
     /** All available web extensions */
-    public static int ALL_FRAMEWORKS = 0;
+    public static final int ALL_FRAMEWORKS = 0;
     
     /** Web extensions used in the project */
-    public static int USED_FRAMEWORKS = 1;
+    public static final int USED_FRAMEWORKS = 1;
     
     /** Web extensions which are not used in the project */
-    public static int UNUSED_FRAMEWORKS = 2;
+    public static final int UNUSED_FRAMEWORKS = 2;
     
     private List ignoredFrameworks;
     private HashMap configPanels = new HashMap();
@@ -119,7 +119,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
                 addFrameworkToModel((WebFrameworkProvider) frameworks.get(i));
                 configPanels.put((WebFrameworkProvider) frameworks.get(i), ((WebFrameworkProvider) frameworks.get(i)).getConfigurationPanel(null));
             }
-        } else if (project != null && filter == USED_FRAMEWORKS) {
+        } else if (filter == USED_FRAMEWORKS) {
             for (int i = 0; i < frameworks.size(); i++) {
                 WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
                 if (framework.isInWebModule(project.getAPIWebModule())) {
@@ -127,7 +127,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
                     configPanels.put(framework, framework.getConfigurationPanel(null));
                 }
             }
-        } else if (project != null && filter == UNUSED_FRAMEWORKS) {
+        } else if (filter == UNUSED_FRAMEWORKS) {
             for (int i = 0; i < frameworks.size(); i++) {
                 WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
                 if (!framework.isInWebModule(project.getAPIWebModule())) {
@@ -158,8 +158,6 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
-
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTableFrameworks = new javax.swing.JTable();
@@ -167,18 +165,11 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         jLabelConfig = new javax.swing.JLabel();
         jPanelConfig = new javax.swing.JPanel();
 
-        setLayout(new java.awt.GridBagLayout());
-
         setPreferredSize(new java.awt.Dimension(500, 340));
         setRequestFocusEnabled(false);
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "MNE_Frameworks").charAt(0));
         jLabel1.setLabelFor(jTableFrameworks);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "LBL_NWP2_Frameworks"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jLabel1, gridBagConstraints);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "LBL_NWP2_Select_Frameworks"));
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSupportedFrameworksVisual.class, "ACS_LBL_NWP2_FrameworksTable_A11YDesc"));
 
         jScrollPane1.setMaximumSize(new java.awt.Dimension(32767, 70));
@@ -197,48 +188,34 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         ));
         jScrollPane1.setViewportView(jTableFrameworks);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.01;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jScrollPane1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jSeparator1, gridBagConstraints);
-
         jLabelConfig.setLabelFor(jPanelConfig);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jLabelConfig, gridBagConstraints);
 
         jPanelConfig.setLayout(new java.awt.GridBagLayout());
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanelConfig, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+            .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabelConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
@@ -296,7 +273,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         FrameworksTableModel model = (FrameworksTableModel) jTableFrameworks.getModel();
         for (int i = 0; i < model.getRowCount(); i++) {
             FrameworkModelItem item = model.getItem(i);
-            if (item.isSelected() == Boolean.TRUE)
+            if (item.isSelected())
                 selectedFrameworks.add(item.getFramework());
         }
         
@@ -350,6 +327,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
 
             jPanelConfig.add(((FrameworkConfigurationPanel) configPanels.get(framework)).getComponent(), gridBagConstraints);
             
+            jLabelConfig.setEnabled(item.isSelected().booleanValue());
             ((FrameworkConfigurationPanel) configPanels.get(framework)).enableComponents(item.isSelected().booleanValue());
             ((FrameworkConfigurationPanel) configPanels.get(framework)).readSettings(wizardDescriptor);
             jPanelConfig.revalidate();

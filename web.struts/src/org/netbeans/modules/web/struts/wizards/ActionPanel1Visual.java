@@ -419,12 +419,15 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
                             if (beans[i]==null) beans[i]="???"; //NOI18N
                         }
                         CBFormName.setModel(new javax.swing.DefaultComboBoxModel(beans));
-                        
+                        jButtonBrowse.setEnabled(true);
                         return;
                     }
                 } catch (DataObjectNotFoundException ex) {}
             }
+        } else{
+            jButtonBrowse.setEnabled(false);
         }
+        
         CBInputAction.setModel(new javax.swing.DefaultComboBoxModel(new String[]{}));
         CBFormName.setModel(new javax.swing.DefaultComboBoxModel(new String[]{}));
     }

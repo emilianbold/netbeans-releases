@@ -322,7 +322,7 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
     }
     
     public String getToView(){
-        return (String)jComboBoxToView.getSelectedItem();
+        return (String)jComboBoxToView.getEditor().getItem();
     }
     
     public boolean isRedirect(){

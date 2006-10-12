@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project basedir="." default="netbeans" name="websvc/jaxwsmodel">
+    <description>Builds, tests, and runs the project org.netbeans.modules.websvc.wsdlmodel</description>
+    <echo message="${basedir}"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <property name="resource_root" location="src/org/netbeans/modules/websvc/jaxwsmodel/resources"/>
+    <property name="gegerated_dir" location="src/org/netbeans/modules/websvc/jaxwsmodel/project_config1_0"/>
+    <property name="generated_handler-config_dir" location="src/org/netbeans/modules/websvc/jaxwsmodel/handler_config1_0"/>
+    <property name="generated_endpoints_dir" location="src/org/netbeans/modules/websvc/jaxwsmodel/endpoints_config1_0"/>
+    
+    <target name="s2binit" depends="build-init">
+        <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+            <classpath>
+                <pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+                <pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
+                <pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
+            </classpath>
+        </taskdef>
+    </target>
+
+    <target name="s2b_generate" depends="s2binit">
+        <echo message="generating code generation input file information" />
+
+        <schema2beans filename="${resource_root}/jax-ws.dtd"
+        mddFile="${resource_root}/jax-ws.mdd"
+        attrprop="true"
+        package="org.netbeans.modules.websvc.jaxwsmodel.project_config1_0"
+        rootDir="src"/>
+        <schema2beans filename="${resource_root}/handler-config.dtd"
+        mddFile="${resource_root}/handler-config.mdd"
+        package="org.netbeans.modules.websvc.jaxwsmodel.handler_config1_0"
+        rootDir="src"/>
+        <schema2beans filename="${resource_root}/endpoints.dtd"
+        mddFile="${resource_root}/endpoints.mdd"
+        attrprop="true"
+        package="org.netbeans.modules.websvc.jaxwsmodel.endpoints_config1_0"
+        rootDir="src"/>
+    </target>
+
+    <target name="compile" depends="s2b_generate, projectized-common.compile"/>
+    
+    <target name="clean" depends="clean-s2b-src, projectized-common.clean"/>
+
+    <target name="clean-s2b-src">
+        <mkdir dir="${gegerated_dir}"/>
+        <delete>
+            <fileset dir="${gegerated_dir}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${gegerated_dir}"/>
+        <delete dir="${generated_handler-config_dir}"/>
+        <delete dir="${generated_endpoints_dir}"/>
+    </target>
+  
+</project>

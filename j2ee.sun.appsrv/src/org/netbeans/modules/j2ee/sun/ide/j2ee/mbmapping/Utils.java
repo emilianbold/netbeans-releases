@@ -31,7 +31,6 @@ import java.util.HashSet;
 import javax.management.Attribute;
 import javax.management.MBeanInfo;
 import javax.management.ObjectName;
-import javax.management.AttributeList;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanServerConnection;
@@ -67,9 +66,11 @@ public class Utils {
         String attrValue = null;
         try{
             Object attValue = in_conn.getAttribute(objName, attributeName);
-            if(attValue != null)
+            if(attValue != null){
                 attrValue = attValue.toString();
+            }
         }catch(Exception ex){
+            return null;
             //suppress Exception. Callers to any of the getters should handle null condition
         }
         return attrValue;
@@ -114,6 +115,7 @@ public class Utils {
             
         }catch(Exception ex){
             //System.out.println("Error in getRequiredObjectName " + ex.getLocalizedMessage());
+            return oName;
         }
         return oName;
     }
@@ -154,6 +156,7 @@ public class Utils {
             }
         }catch(Exception ex){
             //System.out.println("Error in getRequiredObjectName " + ex.getLocalizedMessage());
+            return oName;
         }
         return oName;
     }

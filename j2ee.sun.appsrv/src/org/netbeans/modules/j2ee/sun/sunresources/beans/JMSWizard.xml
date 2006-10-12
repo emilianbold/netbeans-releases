@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
 
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE wizard>
-
 <wizard>
     <name>jms-resource</name>
     <field-group>
@@ -32,7 +48,13 @@
     <field-group>
         <name>properties</name>
         <field field-type="string">
-            <name>imqDestinationName</name>
+            <name>Name</name>
+            <field-value>
+                <default-field-value></default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>Description</name>
             <field-value>
                 <default-field-value></default-field-value>
             </field-value>
@@ -41,21 +63,51 @@
     <field-group>
         <name>properties2</name>
         <field field-type="string">
-            <name>imqBrokerHostName</name>
-            <field-value>
-                <default-field-value>localhost</default-field-value>
-            </field-value>
-        </field>
-        <field field-type="string">
-            <name>imqBrokerHostPort</name>
-            <field-value>
-                <default-field-value>7676</default-field-value>
-            </field-value>
-        </field>
-        <field field-type="string">
-            <name>imqConfiguredClientID</name>
+            <name>ClientId</name>
             <field-value>
                 <default-field-value></default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>Password</name>
+            <field-value>
+                <default-field-value>guest</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>ReconnectEnabled</name>
+            <field-value>
+                <default-field-value>true</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>AddressListBehavior</name>
+            <field-value>
+                <default-field-value>RANDOM</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="string">
+            <name>UserName</name>
+            <field-value>
+                <default-field-value>guest</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="int">
+            <name>ReconnectInterval</name>
+            <field-value>
+                <default-field-value>5000</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="int">
+            <name>ReconnectAttempts</name>
+            <field-value>
+                <default-field-value>3</default-field-value>
+            </field-value>
+        </field>
+        <field field-type="int">
+            <name>AddressListIterations</name>
+            <field-value>
+                <default-field-value>3</default-field-value>
             </field-value>
         </field>
     </field-group>

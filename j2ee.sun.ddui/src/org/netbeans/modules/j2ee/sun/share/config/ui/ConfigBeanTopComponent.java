@@ -47,10 +47,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.api.project.FileOwnerQuery;
-
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
 import org.netbeans.modules.j2ee.sun.share.config.ConfigDataObject;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigurationStorage;
@@ -61,9 +58,17 @@ import org.netbeans.modules.j2ee.sun.share.config.SecondaryConfigDataObject;
  *
  * @author  Jeri Lockhart
  */
-public class ConfigBeanTopComponent extends CloneableTopComponent {
+public class ConfigBeanTopComponent extends CloneableTopComponent
+{
     
-    private ConfigDataObject configDO = null;
+//    private static int identitySource;
+//    private final int identity;
+//
+//    public int getIdentity() {
+//        return identity;
+//    }
+
+    private ConfigurationStorage storage = null;
     private Node rootNode = null;   // Root node for the editor's explorer
     private TwoPanelComponentPanel componentPanel;
     
@@ -78,20 +83,27 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
     //     ModuleType.CAR;
     
     private boolean appConfig = false;
+
     
     /** default constructor for deserialization */
     public ConfigBeanTopComponent() {
+//        identity = ++identitySource;
+
         // hint to windows system
         putClientProperty("PersistenceType", "Never"); //NOI18N
         //        putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
-        
+//        System.out.println("ConfigBeanTopComponent::ctor id #" + getIdentity());
     }
     
     /** Creates a new instance of ConfigBeanTopComponent */
-    public ConfigBeanTopComponent(ConfigDataObject dobj) {
+    public ConfigBeanTopComponent(ConfigurationStorage storage) {
         this();
-        this.configDO = dobj;
+        this.storage = storage;
         initialize();
+    }
+    
+    public ConfigDataObject getConfigDataObject() {
+        return storage.getPrimaryDataObject();
     }
     
     public void setName(String name) {
@@ -99,26 +111,45 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
             name = "sun-ejb-jar.xml / sun-cmp-mappings.xml";
         }
         
+//        new Exception("Who called ConfigBeanTopComponent.setName( '" + name + "' ) -- ").printStackTrace();
         super.setName(name);
     }
 
-    public boolean isFor(FileObject document) {
-        return (this.configDO.getPrimaryFile().equals(document));
-    }
-    
-    public boolean isFor(ConfigDataObject configDO) {
-        return (this.configDO == configDO);
-    }
-    
-    public boolean isFor(SecondaryConfigDataObject configDO) {
-        return configDO.isSecondaryOf(this.configDO);
-    }
+//    public String getName() {
+//        String result;
+//        result = super.getName();
+//        System.out.println("CBTC.getName() returned '" + result + "'");
+//        return result;
+//    }
+//    
+//    public String getDisplayName() {
+//        String result;
+//        result = super.getDisplayName();
+//        System.out.println("CBTC.getDisplayName() returned '" + result + "'");
+//        return result;
+//    }
+//
+//    public void setDisplayName(String displayName) {
+//        System.out.println("CBTC.setDisplayName() called with '" + displayName + "'");
+//        new Exception("Who called ConfigBeanTopComponent.setDisplayName( '" + displayName + "' ) -- ").printStackTrace();
+//        super.setDisplayName(displayName);
+//    }
 
-    private ConfigurationStorage getConfigStorage() {
-        if (configDO != null) {
-            return (ConfigurationStorage) configDO.getCookie(ConfigurationStorage.class);
+    public boolean isFor(FileObject document) {
+        boolean result = false;
+        ConfigDataObject configDO = getConfigDataObject();
+        if(configDO != null) {
+            result = configDO.getPrimaryFile().equals(document);
         }
-        return null;
+        return result;
+    }
+    
+    public boolean isFor(ConfigurationStorage otherStorage) {
+        return getConfigStorage() == otherStorage;
+    }
+    
+    private ConfigurationStorage getConfigStorage() {
+        return storage;
     }
     
     public static ConfigBeanTopComponent findByConfigStorage(ConfigurationStorage configStorage) {
@@ -157,14 +188,18 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
     }
     
     protected String preferredID() {
-        if (configDO != null)
-            return configDO.getPrimaryFile().getPath();
-        else
-            return "";
+        String preferredID = ""; // NOI18N
+        ConfigDataObject configDO = getConfigDataObject();
+        if(configDO != null) {
+            preferredID = configDO.getPrimaryFile().getPath();
+        }
+        return preferredID;
     }
 
     /** Initializes this instance. Used by construction and deserialization. */
     public void initialize() {
+//        System.out.println("ConfigBeanTopComponent::initialize() called on #" + getIdentity());
+        ConfigDataObject configDO = getConfigDataObject();
         Node selNode = configDO.getNodeDelegate ();
 
         try {
@@ -192,16 +227,18 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
         fsName = fsName.replace (another, sep);
         setToolTipText (fsName);
         Node [] topNodes = rootNode.getChildren().getNodes();
-        if(topNodes.length > 0) {
-            setActivatedNodes(new Node[] { selNode, rootNode.getChildren().getNodes()[0] });
-        }
+        
+        // Only one activated node at a time, otherwise <Save> enabling doesn't work.  See IZ 65225
+        Node [] activatedNode = new Node[1];
+        activatedNode[0] = (topNodes.length > 0) ? topNodes[0] : selNode;
+        setActivatedNodes(activatedNode);
+        
         setIcon (Utilities.loadImage ("org/netbeans/modules/j2ee/sun/share/config/ui/resources/ConfigFile.gif")); //NOI18N
     }
     
-    public void reset() {
-        configDO = null;
+    public synchronized void reset() {
+//        System.out.println("ConfigBeanTopComponent::reset() called on #" + getIdentity());
         rootNode = null;
-        //panelView = null;
         componentPanel = null;
         appConfig = false;
     }
@@ -233,17 +270,13 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
         return getConfigStorage().getMainNode();
     }
     
-    private J2eeModule getProvider() {
-        J2eeModuleProvider provider = (J2eeModuleProvider) FileOwnerQuery.getOwner (configDO.getPrimaryFile ()).getLookup ().lookup (J2eeModuleProvider.class);
-        return provider.getJ2eeModule ();
-    }
-    
     private Node buildTree() {
+        ConfigDataObject configDO = getConfigDataObject();
         Node filterRoot = configDO.getNodeDelegate();
-        J2eeModule prov = getProvider();
         AbstractNode root = null;
         Array  children = new Array();
-        /*if (prov instanceof J2eeModuleContainer) {
+        /*J2eeModule prov = getProvider();
+        if (prov instanceof J2eeModuleContainer) {
             appConfig = true;
             J2eeModuleContainer appProv = (J2eeModuleContainer) prov;
             ArrayList childArr = new ArrayList();
@@ -290,13 +323,22 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
     }
     
     protected void componentClosed () {
+//        System.out.println("ConfigBeanTopComponent::componentClosed() called on #" + getIdentity());
         super.componentClosed();
+        ConfigDataObject configDO = getConfigDataObject();
         if (configDO != null) {
-            configDO.editorClosed ();
+            configDO.editorClosed(this);
+        } else {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
+//                    "ConfigBeanTopComponent.componentClosed(): Top component has null dataobject!")); // NOI18N
+            // No data object means file was deleted from underneath the editor.
+//            System.out.println("No data object for config editor being closed.");
+//            System.out.println("  Storage is " + storage);
         }
     }
     
     public void open() {
+//        System.out.println("ConfigBeanTopComponent::open() called on #" + getIdentity());
         super.open();
         //refresh();
     }
@@ -318,7 +360,9 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
     
     
     public boolean closeLast() {
+//        System.out.println("ConfigBeanTopComponent::closeLast() called on #" + getIdentity());
         super.closeLast();
+        ConfigDataObject configDO = getConfigDataObject();
         if (configDO != null && configDO.isModified ()) {
             
             ResourceBundle bundle = NbBundle.getBundle(ConfigBeanTopComponent.class);
@@ -398,7 +442,8 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
      * @return the copy of this object
      */
     protected CloneableTopComponent createClonedObject() {
-        return new ConfigBeanTopComponent(this.configDO);
+//        System.out.println("ConfigBeanTopComponent::createClonedObject() called on #" + getIdentity());
+        return new ConfigBeanTopComponent(storage);
     }
 
     private class TwoPanelComponentPanel extends ComponentPanel {
@@ -430,10 +475,13 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
                 return nodes[0].getHelpCtx();
             } else if (rootNode != null) {
                 return rootNode.getHelpCtx();
-            } else if (configDO != null) {
-                return configDO.getHelpCtx();
             } else {
-                return HelpCtx.DEFAULT_HELP;
+                ConfigDataObject configDO = getConfigDataObject();
+                if (configDO != null) {
+                    return configDO.getHelpCtx();
+                } else {
+                    return HelpCtx.DEFAULT_HELP;
+                }
             }
         }
         

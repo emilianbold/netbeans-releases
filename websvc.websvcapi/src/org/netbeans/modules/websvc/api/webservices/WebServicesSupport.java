@@ -21,6 +21,8 @@ package org.netbeans.modules.websvc.api.webservices;
 
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.metadata.MetadataUnit;
 import org.netbeans.modules.websvc.webservices.WebServicesSupportAccessor;
 import org.netbeans.modules.websvc.spi.webservices.*;
 import org.openide.filesystems.FileObject;
@@ -28,6 +30,7 @@ import org.openide.util.Lookup;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /** WebServicesSupport should be used to manipulate a projects representation
@@ -39,7 +42,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
  *
  * @author Peter Williams
  */
-public final class WebServicesSupport {
+public final class WebServicesSupport implements MetadataUnit {
     
     private WebServicesSupportImpl impl;
     private static final Lookup.Result implementations =
@@ -145,6 +148,14 @@ public final class WebServicesSupport {
     
     public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL, String[] wscompileFeatures) {
         impl.addServiceImpl(serviceName, configFile, fromWSDL,wscompileFeatures);
+    }
+
+    public FileObject getDeploymentDescriptor() {
+        return getWebservicesDD();
+    }
+
+    public ClassPath getClassPath() {
+        return impl.getClassPath();
     }
     
 }

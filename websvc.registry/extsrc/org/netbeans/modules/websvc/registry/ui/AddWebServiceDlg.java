@@ -440,7 +440,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         infoTextArea.addHyperlinkListener(this);
         
         infoTextScrollPane.setViewportView(infoTextArea);
-        infoTextScrollPane.setPreferredSize(new Dimension(600, 250));
         
         infoTextPanel.add(infoTextScrollPane, BorderLayout.CENTER);
         
@@ -454,7 +453,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
         messageTextArea.setContentType("text/html");
         messageTextArea.setToolTipText(NbBundle.getMessage(AddWebServiceDlg.class, "TOOLTIP_MESSAGEAREA"));
         messageTextScrollPane.setViewportView(messageTextArea);
-        messageTextScrollPane.setPreferredSize(new Dimension(600, 100));
         
         messagePanel.add(messageTextScrollPane, BorderLayout.CENTER);
         org.openide.awt.Mnemonics.setLocalizedText(messageTextlabel, NbBundle.getMessage(AddWebServiceDlg.class, "RESULTS"));

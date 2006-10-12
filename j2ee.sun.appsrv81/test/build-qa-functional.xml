@@ -27,10 +27,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
 
     <target name="set-environment">
-        <condition property="sjsas.server.path" value="e:\space\optional\sjsas">
+        <condition property="sjsas.server.path" value="e:\\space\\AppServer">
             <os family="windows"/>
         </condition>
-        <condition property="sjsas.server.path" value="/space/optional/sjsas">
+        <condition property="sjsas.server.path" value="/space/appserver">
             <os family="unix"/>
         </condition>
         <property name="xtest.ide.commandline.suffix" value="-J-Dsjsas.server.path=${sjsas.server.path} -J-Dnetbeans.dest.dir=${netbeans.dest.dir}"/>
@@ -45,13 +45,33 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="runidetest" depends="init,init-cp, check-sjsas">
         <copy todir="${xtest.tmpdir}/SjsasTestEjb">
-            <fileset dir="qa-functional/data/SjsasTestEjb"/>
+            <fileset dir="${xtest.data}/SjsasTestEjb"/>
         </copy>
         <copy todir="${xtest.tmpdir}/SjsasTestWeb">
-            <fileset dir="qa-functional/data/SjsasTestWeb"/>
+            <fileset dir="${xtest.data}/SjsasTestWeb"/>
+        </copy>
+        <copy todir="${xtest.tmpdir}/SjsasJSFTest">
+            <fileset dir="${xtest.data}/SjsasJSFTest"/>
+        </copy>
+        <copy todir="${xtest.tmpdir}/CalculatorWSApplication">
+            <fileset dir="${xtest.data}/CalculatorWSApplication"/>
+        </copy>
+        <copy todir="${xtest.tmpdir}/customer-cmp-ear">
+            <fileset dir="${xtest.data}/customer-cmp-ear"/>
+        </copy>
+        <copy todir="${xtest.tmpdir}/SimpleMessage">
+            <fileset dir="${xtest.data}/SimpleMessage"/>
+        </copy>
+        <copy todir="${xtest.tmpdir}/duke_stateful">
+            <fileset dir="${xtest.data}/duke_stateful"/>
         </copy>
         <executeTests pluginname="ide"/>
         <delete dir="${xtest.tmpdir}/SjsasTestWeb"/>
         <delete dir="${xtest.tmpdir}/SjsasTestEjb"/>
+        <delete dir="${xtest.tmpdir}/SjsasJSFTest"/>
+        <delete dir="${xtest.tmpdir}/customer-cmp-ear"/>
+        <delete dir="${xtest.tmpdir}/SimpleMessage"/>
+        <delete dir="${xtest.tmpdir}/duke_stateful"/>
+        <delete dir="${xtest.tmpdir}/CalculatorWSApplication"/>
     </target>        
 </project>

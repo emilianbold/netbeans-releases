@@ -31,12 +31,6 @@ public interface SunApplication extends org.netbeans.modules.j2ee.sun.dd.api.Roo
         public static final String VERSION_5_0_0 = "5.00"; //NOI18N
         public static final String VERSION_1_4_0 = "1.40"; //NOI18N
         public static final String VERSION_1_3_0 = "1.30"; //NOI18N
-
-        public static final int STATE_VALID=0;
-        public static final int STATE_INVALID_PARSABLE=1;
-        public static final int STATE_INVALID_UNPARSABLE=2;
-        public static final String PROPERTY_STATUS="dd_status"; //NOI18N
-        public static final String PROPERTY_VERSION="dd_version"; //NOI18N
         
         public static final String WEB = "Web";	// NOI18N
 	public static final String PASS_BY_REFERENCE = "PassByReference";	// NOI18N
@@ -88,13 +82,4 @@ public interface SunApplication extends org.netbeans.modules.j2ee.sun.dd.api.Roo
         */
 	public String getRealm();
 
-        /** Setter for version property.
-         * Warning : Only the upgrade from lower to higher version is supported.
-         * @param version ejb-jar version value
-         */
-        public void setVersion(java.math.BigDecimal version);
-        /** Getter for version property.
-         * @return property value
-         */
-        public java.math.BigDecimal getVersion();
 }

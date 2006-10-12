@@ -17,11 +17,10 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
- * WebAppRootCustomizer.java
+ * WebAppRefCustomizer.java
  *
  * Created on September 4, 2003, 5:28 PM
  */
-
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.other;
 
 import java.beans.Customizer;
@@ -85,8 +84,7 @@ public class WebAppRefCustomizer extends BaseCustomizer {
         jLblWebUri.setLabelFor(jTxtWebUri);
         jLblWebUri.setText(bundle.getString("LBL_WebURI_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPnlGeneral.add(jLblWebUri, gridBagConstraints);
         jLblWebUri.getAccessibleContext().setAccessibleName(bundle.getString("WebURI_Acsbl_Name"));
         jLblWebUri.getAccessibleContext().setAccessibleDescription(bundle.getString("WebURI_Acsbl_Desc"));
@@ -96,7 +94,7 @@ public class WebAppRefCustomizer extends BaseCustomizer {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 2;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPnlGeneral.add(jTxtWebUri, gridBagConstraints);
         jTxtWebUri.getAccessibleContext().setAccessibleName(bundle.getString("WebURI_Acsbl_Name"));
         jTxtWebUri.getAccessibleContext().setAccessibleDescription(bundle.getString("WebURI_Acsbl_Desc"));
@@ -106,8 +104,8 @@ public class WebAppRefCustomizer extends BaseCustomizer {
         jLblContextRoot.setLabelFor(jTxtContextRoot);
         jLblContextRoot.setText(bundle.getString("LBL_ContextRoot_1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         jPnlGeneral.add(jLblContextRoot, gridBagConstraints);
         jLblContextRoot.getAccessibleContext().setAccessibleName(bundle.getString("ContextRoot_Acsbl_Name"));
         jLblContextRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("ContextRoot_Acsbl_Desc"));
@@ -122,7 +120,7 @@ public class WebAppRefCustomizer extends BaseCustomizer {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 2;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPnlGeneral.add(jTxtContextRoot, gridBagConstraints);
         jTxtContextRoot.getAccessibleContext().setAccessibleName(bundle.getString("ContextRoot_Acsbl_Name"));
         jTxtContextRoot.getAccessibleContext().setAccessibleDescription(bundle.getString("ContextRoot_Acsbl_Desc"));
@@ -137,7 +135,7 @@ public class WebAppRefCustomizer extends BaseCustomizer {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPnlGeneral.add(jBtnDefault, gridBagConstraints);
         jBtnDefault.getAccessibleContext().setAccessibleName(bundle.getString("ResetToDefault_Acsbl_Name"));
         jBtnDefault.getAccessibleContext().setAccessibleDescription(bundle.getString("ResetToDefault_Acsbl_Desc"));
@@ -145,6 +143,7 @@ public class WebAppRefCustomizer extends BaseCustomizer {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 5);
         add(jPnlGeneral, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -152,11 +151,10 @@ public class WebAppRefCustomizer extends BaseCustomizer {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jPnlPlaceHolder, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
 	private void jBtnDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnDefaultActionPerformed
 		// Add your handling code here:

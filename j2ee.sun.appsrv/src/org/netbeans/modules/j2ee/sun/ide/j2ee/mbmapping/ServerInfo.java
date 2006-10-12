@@ -33,12 +33,9 @@ import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 import javax.management.AttributeList;
 import javax.management.MBeanAttributeInfo;
-import javax.management.MBeanOperationInfo;
-import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
-import javax.management.IntrospectionException;
 import javax.management.InstanceNotFoundException;
 import javax.management.AttributeNotFoundException;
 import javax.management.InvalidAttributeValueException;
@@ -71,7 +68,8 @@ public class ServerInfo extends ModuleMBean implements Constants{
         ObjectName runtimeName = null;
         try{
             runtimeName = new ObjectName(OBJ_J2EE);
-        }catch(Exception ex){        
+        }catch(Exception ex){  
+            return null;
         }    
         return runtimeName;
     }
@@ -84,6 +82,7 @@ public class ServerInfo extends ModuleMBean implements Constants{
             attList.addAll(jsrList);
         }catch(Exception ex){
             //System.out.println("Error in getAttributes of ServerInfo " + ex.getMessage());
+            return attList;
         }
         return attList;
     }
@@ -123,8 +122,9 @@ public class ServerInfo extends ModuleMBean implements Constants{
     InvalidAttributeValueException, MBeanException, ReflectionException, java.io.IOException {
         String attrName = attribute.getName();
         Set appList = new HashSet(Arrays.asList(JSR_SERVER_INFO));
-        if(appList.contains(attrName))
+        if(appList.contains(attrName)){
             this.conn.setAttribute(this.runtimeObjName, attribute);
+        }
     }
     
     private AttributeList createAddAttributes(){
@@ -155,7 +155,6 @@ public class ServerInfo extends ModuleMBean implements Constants{
     }
     
     public String getHiddenPassword(){
-        String currentPassword = this.password;
         String modPassword = ""; //NOI18N
         for (int i = 0; i < password.length(); i++) {
             char c = '*' ; 
@@ -172,8 +171,9 @@ public class ServerInfo extends ModuleMBean implements Constants{
     public boolean isRestartRequired(){
         boolean restartReq = false;
         String val = (String)getRuntimeAttributeValue("restartRequired"); //NOI18N
-        if(val != null)
+        if(val != null){
             restartReq = Boolean.valueOf(val).booleanValue();
+        }
         return restartReq;
     }
     

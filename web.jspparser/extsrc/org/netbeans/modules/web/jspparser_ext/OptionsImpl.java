@@ -49,7 +49,7 @@ public class OptionsImpl implements Options {
 
     /** Creates a new instance of OptionsImpl */
     public OptionsImpl(ServletContext context) {
-        tldLocationsCache = new TldLocationsCache(context, true);
+        tldLocationsCache = new TldLocationsCache(context, this, true);
         jspConfig = new JspConfig(context);
         tagPluginManager = new TagPluginManager(context);
     }
@@ -178,4 +178,21 @@ public class OptionsImpl implements Options {
         // should not be needed
         throw new UnsupportedOperationException();
     }
+    
+    public int getInitialCapacity(){
+        throw new UnsupportedOperationException();
+    }
+    
+    public boolean getUsePrecompiled(){
+        return false;
+    }
+    
+    public String getSystemClassPath(){
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean isTldValidationEnabled() {
+        return false;
+    }
+    
 }

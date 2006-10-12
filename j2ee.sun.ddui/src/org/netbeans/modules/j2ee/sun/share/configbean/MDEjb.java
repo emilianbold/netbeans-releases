@@ -40,10 +40,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.MdbConnectionFactory;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.MdbResourceAdapter;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
 
-import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.PropertyElement;
-import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.JmsResource;
-import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources;
-
 
 /**
  *
@@ -130,28 +126,53 @@ public class MDEjb extends BaseEjb {
 	 * plan file.
 	 */
 	protected class MDEjbSnippet extends BaseEjb.BaseEjbSnippet {
-            public CommonDDBean getDDSnippet() {
-                    Ejb ejb = (Ejb) super.getDDSnippet();
+        public CommonDDBean getDDSnippet() {
+            Ejb ejb = (Ejb) super.getDDSnippet();
+            String version = getAppServerVersion().getEjbJarVersionAsString();
 
-                    if(subscriptionName != null){
-                        ejb.setJmsDurableSubscriptionName(subscriptionName);
-                    }
-
-                    if(maxMessageLoad != null){
-                        ejb.setJmsMaxMessagesLoad(maxMessageLoad);
-                    }
-
-                    if(null != mdbConnectionFactory){
-                        ejb.setMdbConnectionFactory((MdbConnectionFactory)mdbConnectionFactory.clone());
-                    }
-
-                    if(null != mdbResourceAdapter){
-                        ejb.setMdbResourceAdapter((MdbResourceAdapter)mdbResourceAdapter.clone());
-                    }
-
-                    return ejb;
+            if(subscriptionName != null){
+                ejb.setJmsDurableSubscriptionName(subscriptionName);
             }
+
+            if(maxMessageLoad != null){
+                ejb.setJmsMaxMessagesLoad(maxMessageLoad);
+            }
+
+            if(null != mdbConnectionFactory){
+                ejb.setMdbConnectionFactory((MdbConnectionFactory)mdbConnectionFactory.cloneVersion(version));
+            }
+
+            if(null != mdbResourceAdapter){
+                ejb.setMdbResourceAdapter((MdbResourceAdapter)mdbResourceAdapter.cloneVersion(version));
+            }
+
+            return ejb;
         }
+        
+		public boolean hasDDSnippet() {
+            boolean result = super.hasDDSnippet();
+            
+            if(!result) {
+                if(Utils.notEmpty(subscriptionName)) {
+                    return true;
+                }
+
+                if(Utils.notEmpty(maxMessageLoad)) {
+                    return true;
+                }
+
+                if(mdbConnectionFactory != null) {
+                    return true;
+                }
+
+                if(mdbResourceAdapter != null) {
+                    return true;
+                }
+            }
+            
+            return result;
+		}
+    }
 
 
 	java.util.Collection getSnippets() {
@@ -203,7 +224,8 @@ public class MDEjb extends BaseEjb {
     }
 
     protected boolean requiresJndiName() {
-        return true;
+        // For JavaEE5 and later spec bean, jndi name is optional, otherwise required.
+        return J2EEVersion.J2EE_1_4.compareSpecification(getJ2EEModuleVersion()) >= 0;
     }
 
     
@@ -257,7 +279,7 @@ public class MDEjb extends BaseEjb {
     private ActivationConfig getActivationConfig(){
         MdbResourceAdapter mdbResourceAdapter = getMdbResourceAdapter();
         if(null == mdbResourceAdapter){
-            mdbResourceAdapter = StorageBeanFactory.getDefault().createMdbResourceAdapter();
+            mdbResourceAdapter = getConfig().getStorageFactory().createMdbResourceAdapter();
             try{
                 setMdbResourceAdapter(mdbResourceAdapter);
             }catch(java.beans.PropertyVetoException exception){
@@ -267,7 +289,7 @@ public class MDEjb extends BaseEjb {
         ActivationConfig activationCfg = 
             mdbResourceAdapter.getActivationConfig();
         if(null == activationCfg){
-            activationCfg = StorageBeanFactory.getDefault().createActivationConfig();
+            activationCfg = getConfig().getStorageFactory().createActivationConfig();
             mdbResourceAdapter.setActivationConfig(activationCfg);
         }
         return activationCfg;

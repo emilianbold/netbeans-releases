@@ -65,25 +65,25 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="../external" target="unzip"/>
         
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.7-lib/antlr.jar"
+        <copy file="../external/struts-1.2.9-lib/antlr.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.7-lib/commons-beanutils.jar"
+        <copy file="../external/struts-1.2.9-lib/commons-beanutils.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.7-lib/commons-digester.jar"
+        <copy file="../external/struts-1.2.9-lib/commons-digester.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.7-lib/commons-fileupload.jar"
+        <copy file="../external/struts-1.2.9-lib/commons-fileupload.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.7-lib/commons-logging.jar"
+        <copy file="../external/struts-1.2.9-lib/commons-logging.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.7-lib/commons-validator.jar"
+        <copy file="../external/struts-1.2.9-lib/commons-validator.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.7-lib/jakarta-oro.jar"
+        <copy file="../external/struts-1.2.9-lib/jakarta-oro.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.7-lib/struts.jar"
+        <copy file="../external/struts-1.2.9-lib/struts.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
               
         <mkdir dir="${cluster}/docs"/>
-        <copy file="../external/struts-javadoc.zip"
+        <copy file="../external/struts-1.2.9-javadoc.zip"
               todir="${cluster}/docs"/>
     </target>   
 

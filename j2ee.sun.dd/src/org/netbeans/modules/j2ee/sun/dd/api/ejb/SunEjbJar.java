@@ -34,12 +34,6 @@ public interface SunEjbJar extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
     public static final String VERSION_2_1_0 = "2.10"; //NOI18N
     public static final String VERSION_2_0_0 = "2.00"; //NOI18N
         
-    public static final int STATE_VALID=0;
-    public static final int STATE_INVALID_PARSABLE=1;
-    public static final int STATE_INVALID_UNPARSABLE=2;
-    public static final String PROPERTY_STATUS="dd_status"; //NOI18N
-    public static final String PROPERTY_VERSION="dd_version"; //NOI18N
-    
     public static final String SECURITY_ROLE_MAPPING = "SecurityRoleMapping";	// NOI18N
     public static final String ENTERPRISE_BEANS = "EnterpriseBeans";	// NOI18N
         
@@ -55,13 +49,5 @@ public interface SunEjbJar extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
     public EnterpriseBeans getEnterpriseBeans();
     public EnterpriseBeans newEnterpriseBeans();
     
-    /** Setter for version property.
-     * Warning : Only the upgrade from lower to higher version is supported.
-     * @param version ejb-jar version value
-     */
-    public void setVersion(java.math.BigDecimal version);
-    /** Getter for version property.
-     * @return property value
-     */
-    public java.math.BigDecimal getVersion();
+    
 }

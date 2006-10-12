@@ -33,6 +33,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.project.TestPlatformProvider;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.test.TestBase;
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -67,7 +68,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
         bootPlatformRoot = scratch.createFolder("DefaultPlatformRoot");
         ClassPath defBCP = ClassPathSupport.createClassPath(new URL[] { bootPlatformRoot.getURL() });
         
-        TestUtil.setLookup(new Object[] {
+        TestBase.setLookup(new Object[] {
             new TestPlatformProvider(defBCP, defBCP)
         });
         

@@ -20,11 +20,17 @@
 package org.netbeans.modules.web.freeform.ui;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
+
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
@@ -33,6 +39,8 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
+
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -98,7 +106,6 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(275, 202));
         jLabel3.setLabelFor(classpath);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "LBL_ClasspathPanel_jLabel3"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -219,8 +226,7 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
         jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "ACSN_ClasspathPanel_jTextArea"));
         jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebClasspathPanel.class, "ACSD_ClasspathPanel_jTextArea"));
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void classpathValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_classpathValueChanged
         updateButtons();
@@ -287,10 +293,23 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
                 chooser.setSelectedFile(projectFolder);
         }
         chooser.setDialogTitle(NbBundle.getMessage(WebClasspathPanel.class, "LBL_Browse_Classpath"));
+        
+        //#77911: prevent adding a non-folder element on the classpath:
+        FileFilter fileFilter = new SimpleFileFilter(NbBundle.getMessage(WebClasspathPanel.class, "LBL_ZipJarFolderFilter")); // NOI18N
+        chooser.setFileFilter(fileFilter);                                                                 
+        chooser.setAcceptAllFileFilterUsed( false );
+
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File files[] = chooser.getSelectedFiles();
             for (int i=0; i<files.length; i++) {
                 File file = FileUtil.normalizeFile(files[i]);
+                
+                //Check if the file is acceted by the FileFilter,
+                //user may enter the name of non displayed file into JFileChooser
+                if (!fileFilter.accept(file)) {
+                    continue;
+                }
+
                 listModel.addElement(file.getAbsolutePath());
                 lastChosenFile = file;
             }
@@ -324,7 +343,6 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private void setClasspath(String classpath, PropertyEvaluator evaluator){
         if (classpath == null)
             return;
-        StringTokenizer ts = new StringTokenizer(classpath, "" + File.pathSeparatorChar ); //NOI18N
         listModel.clear();
         listModel.addElement(JAVA_SOURCES_CLASSPATH);
         
@@ -341,14 +359,12 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
     public static class Panel implements ProjectPropertiesPanel{
         
         private WebClasspathPanel panel = null;
-        private Project project;
         private AntProjectHelper projectHelper;
         private PropertyEvaluator projectEvaluator;
         private AuxiliaryConfiguration aux;
         
         
-        public Panel(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
-            this.project = project;
+        public Panel(AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
             this.projectHelper = projectHelper;
             this.projectEvaluator = projectEvaluator;
             this.aux = aux;
@@ -404,5 +420,29 @@ public class WebClasspathPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JButton moveUp;
     private javax.swing.JButton removeClasspath;
     // End of variables declaration//GEN-END:variables
-    
+
+    private static class SimpleFileFilter extends FileFilter {
+
+        private String description;
+
+        public SimpleFileFilter (String description) {
+            this.description = description;
+        }
+
+        public boolean accept(File f) {
+            if (f.isDirectory())
+                return true;            
+            try {
+                return FileUtil.isArchiveFile(f.toURI().toURL());
+            } catch (MalformedURLException mue) {
+                ErrorManager.getDefault().notify(mue);
+                return false;
+            }
+        }
+
+        public String getDescription() {
+            return this.description;
+        }
+    }
+
 }

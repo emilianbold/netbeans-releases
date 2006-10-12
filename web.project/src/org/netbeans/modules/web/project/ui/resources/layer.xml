@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="org-netbeans-modules-web-project">
         <file name="web-2.3.xml" url="web-2.3.xml"/>
         <file name="web-2.4.xml" url="web-2.4.xml"/>
+        <file name="web-2.5.xml" url="web-2.5.xml"/>
         <file name="MANIFEST.MF" url="MANIFEST.MF"/>
     </folder>
     <folder name="Services">
@@ -69,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
                   </file>
                   <attr boolvalue="true" name="jsp-project-separator-1.instance/CompileFile.instance" />
                   <file name="CompileFile.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$CompileWrapper" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.compile" />
                   </file>
                   <attr boolvalue="true" name="CompileFile.instance/jsp-project-separator-2.instance" />
                   <file name="jsp-project-separator-2.instance">
@@ -77,11 +78,11 @@ Microsystems, Inc. All Rights Reserved.
                   </file>
                   <attr boolvalue="true" name="jsp-project-separator-2.instance/RunFile.instance" />
                   <file name="RunFile.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$RunWrapper" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.run" />
                   </file>
                   <attr boolvalue="true" name="RunFile.instance/DebugFile.instance" />
                   <file name="DebugFile.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$DebugWrapper" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.debug" />
                   </file>
                   <attr boolvalue="true" name="DebugFile.instance/jsp-project-separator-3.instance" />
               </folder>
@@ -95,11 +96,11 @@ Microsystems, Inc. All Rights Reserved.
                   </file>
                   <attr boolvalue="true" name="webHtml-project-separator-1.instance/RunFile.instance" />
                   <file name="RunFile.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$HtmlRunWrapper" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlRun" />
                   </file>
                   <attr boolvalue="true" name="RunFile.instance/DebugFile.instance" />
                   <file name="DebugFile.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$HtmlDebugWrapper" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.project.WebProjectModule.htmlDebug" />
                   </file>
                   <attr boolvalue="true" name="DebugFile.instance/webHtml-project-separator-2.instance" />
                   <file name="webHtml-project-separator-2.instance">

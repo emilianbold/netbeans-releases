@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.tomcat5.nodes.actions;
 
-import org.netbeans.modules.tomcat5.nodes.TomcatWebModuleNode;
+import org.netbeans.modules.tomcat5.nodes.TomcatWebModule;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -42,8 +42,9 @@ public class UndeployAction extends NodeAction {
     protected void performAction(org.openide.nodes.Node[] nodes) {
         for (int i=0; i<nodes.length; i++) {
             TomcatWebModuleCookie cookie = (TomcatWebModuleCookie)nodes[i].getCookie(TomcatWebModuleCookie.class);
-            if (cookie != null)
+            if (cookie != null) {
                 cookie.undeploy();
+            }
         }
     }
     
@@ -55,7 +56,16 @@ public class UndeployAction extends NodeAction {
         return null;
     }
     
-    protected boolean enable(Node[] activatedNodes) {
+    protected boolean enable(Node[] nodes) {
+        for (int i=0; i<nodes.length; i++) {
+            TomcatWebModule module = (TomcatWebModule) nodes[i].getLookup().lookup(TomcatWebModule.class);
+            if (module != null) {
+                // it should not be allowed to undeploy the /manager application
+                if ("/manager".equals(module.getTomcatModule().getPath())) { // NOI18N
+                    return false;
+                }
+            }
+        }
         return true;
     }
     

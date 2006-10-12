@@ -32,6 +32,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -42,7 +43,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 //XXX There should be a way how to add nonexistent test dir
 
@@ -179,7 +179,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }
     }
 
-    static String checkValidity (final File projectLocation, final File webPages, final File[] sources, final File[] tests ) {
+    private String checkValidity (final File projectLocation, final File webPages, final File[] sources, final File[] tests) {
         String ploc = projectLocation.getAbsolutePath ();
         
 	if (projectLocation.equals(webPages))
@@ -191,7 +191,19 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         FileObject webInf = FileUtil.toFileObject(webPages).getFileObject(ProjectWebModule.FOLDER_WEB_INF);
 	if (webInf == null)
 	    return NbBundle.getMessage(PanelSourceFolders.class, "MSG_WebInfCorrupted", webPages.getPath()); //NOI18N
-	
+        else {
+            FileObject webXml = webInf.getFileObject(ProjectWebModule.FILE_DD);
+            
+            //#74837 - filesystem is probably not refreshed and file object for non-existing file is found
+            //rather setting to null that refreshing filesystem from a performance reason
+            if (webXml != null && !webXml.isValid())
+                webXml = null;
+            
+            String j2eeLevel = (String) wizardDescriptor.getProperty(WizardProperties.J2EE_LEVEL);
+            if (webXml == null && (j2eeLevel.equals(J2eeModule.J2EE_13) || j2eeLevel.equals(J2eeModule.J2EE_14)))
+                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_FileNotFound", webPages.getPath()); //NOI18N
+        }        
+        
         for (int i=0; i<sources.length;i++) {
             if (!sources[i].isDirectory() || !sources[i].canRead()) {
                 return MessageFormat.format(NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalSources"), //NOI18N
@@ -300,6 +312,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(500, 340));
         getAccessibleContext().setAccessibleName(null);
         getAccessibleContext().setAccessibleDescription(null);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LocationDesc_Label"));
@@ -404,8 +417,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(testsPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLibrariesActionPerformed
         JFileChooser chooser = new JFileChooser();
@@ -414,7 +426,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (jTextFieldLibraries.getText().length() > 0 && getLibraries().exists()) {
             chooser.setSelectedFile(getLibraries());
         } else {
-            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+            chooser.setCurrentDirectory((File) wizardDescriptor.getProperty(WizardProperties.SOURCE_ROOT));
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File configFilesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
@@ -429,7 +441,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (jTextFieldWebPages.getText().length() > 0 && getWebPages().exists()) {
             chooser.setSelectedFile(getWebPages());
         } else {
-            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
+            chooser.setCurrentDirectory((File) wizardDescriptor.getProperty(WizardProperties.SOURCE_ROOT));
         }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File webPagesDir = FileUtil.normalizeFile(chooser.getSelectedFile());

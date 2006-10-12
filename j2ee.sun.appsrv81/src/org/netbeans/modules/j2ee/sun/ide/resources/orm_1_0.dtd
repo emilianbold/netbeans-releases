@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--element and attribute declarations-->
+<!ELEMENT entity-mappings (description?, persistence-unit-metadata?, package?, schema?, catalog?, access?, sequence-generator*, 
+        table-generator*, named-query*, named-native-query*, sql-result-set-mapping*, mapped-superclass*, entity*, embeddable*)>
+<!ATTLIST entity-mappings
+	version CDATA #FIXED "1.0"
+ 
+>
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT persistence-unit-metadata (xml-mapping-metadata-complete?, persistence-unit-defaults?)>
+<!ELEMENT package (#PCDATA)>
+<!ELEMENT schema (#PCDATA)>
+<!ELEMENT catalog (#PCDATA)>
+<!ELEMENT access (#PCDATA)>
+<!ELEMENT sequence-generator EMPTY>
+<!ATTLIST sequence-generator
+	name CDATA #REQUIRED
+	sequence-name CDATA #IMPLIED
+	initial-value NMTOKEN #IMPLIED
+	allocation-size NMTOKEN #IMPLIED
+>
+<!ELEMENT table-generator (unique-constraint*)>
+<!ATTLIST table-generator
+	name CDATA #REQUIRED
+	table CDATA #IMPLIED
+	catalog CDATA #IMPLIED
+	schema CDATA #IMPLIED
+	pk-column-name CDATA #IMPLIED
+	value-column-name CDATA #IMPLIED
+	pk-column-value CDATA #IMPLIED
+	initial-value NMTOKEN #IMPLIED
+	allocation-size NMTOKEN #IMPLIED
+>
+<!ELEMENT named-query (query, hint*)>
+<!ATTLIST named-query
+	name CDATA #REQUIRED
+>
+<!ELEMENT named-native-query (query, hint*)>
+<!ATTLIST named-native-query
+	name CDATA #REQUIRED
+	result-class CDATA #IMPLIED
+	result-set-mapping CDATA #IMPLIED
+>
+<!ELEMENT sql-result-set-mapping (entity-result*, column-result*)>
+<!ATTLIST sql-result-set-mapping
+	name CDATA #REQUIRED
+>
+<!ELEMENT mapped-superclass (description?, id-class?, exclude-default-listeners?, exclude-superclass-listeners?, entity-listeners?, pre-persist?, 
+        post-persist?, pre-remove?, post-remove?, pre-update?, post-update?, post-load?, attributes?)>
+<!ATTLIST mapped-superclass
+	class CDATA #REQUIRED
+	access (PROPERTY | FIELD) #IMPLIED
+	metadata-complete NMTOKEN #IMPLIED
+>
+<!ELEMENT entity (description?, table?, secondary-table*, primary-key-join-column*, id-class?, inheritance?, discriminator-value?, 
+        discriminator-column?, sequence-generator?, table-generator?, named-query*, named-native-query*, sql-result-set-mapping*, 
+                exclude-default-listeners?, exclude-superclass-listeners?, entity-listeners?, pre-persist?, post-persist?, pre-remove?, 
+                post-remove?, pre-update?, post-update?, post-load?, attribute-override*, association-override*, attributes?)>
+<!ATTLIST entity
+	name CDATA #IMPLIED
+	class CDATA #REQUIRED
+	access (PROPERTY | FIELD) #IMPLIED
+	metadata-complete NMTOKEN #IMPLIED
+>
+<!ELEMENT embeddable ((description)?, (attributes)?)>
+<!ATTLIST embeddable
+	class CDATA #REQUIRED
+	access (PROPERTY | FIELD) #IMPLIED
+	metadata-complete NMTOKEN #IMPLIED
+>
+<!ELEMENT xml-mapping-metadata-complete EMPTY>
+<!ELEMENT persistence-unit-defaults (schema?, catalog?, access?, cascade-persist?, entity-listeners?)>
+<!ELEMENT schema (#PCDATA)>
+<!ELEMENT catalog (#PCDATA)>
+<!ELEMENT access (#PCDATA)>
+<!ELEMENT cascade-persist EMPTY>
+<!ELEMENT entity-listeners (entity-listener*)>
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT table (unique-constraint*)>
+<!ATTLIST table
+	name CDATA #IMPLIED
+	catalog CDATA #IMPLIED
+	schema CDATA #IMPLIED
+>
+<!ELEMENT secondary-table (primary-key-join-column*, unique-constraint*)>
+<!ATTLIST secondary-table
+	name CDATA #REQUIRED
+	catalog CDATA #IMPLIED
+	schema CDATA #IMPLIED
+>
+<!ELEMENT primary-key-join-column EMPTY>
+<!ATTLIST primary-key-join-column
+	name CDATA #IMPLIED
+	referenced-column-name CDATA #IMPLIED
+	column-definition CDATA #IMPLIED
+>
+<!ELEMENT id-class EMPTY>
+<!ATTLIST id-class
+	class CDATA #REQUIRED
+>
+<!ELEMENT inheritance EMPTY>
+<!ATTLIST inheritance
+	strategy (SINGLE_TABLE | JOINED | TABLE_PER_CLASS) #IMPLIED
+>
+<!ELEMENT discriminator-value (#PCDATA)>
+<!ELEMENT discriminator-column EMPTY>
+<!ATTLIST discriminator-column
+	name CDATA #IMPLIED
+	discriminator-type (STRING | CHAR | INTEGER) #IMPLIED
+	column-definition CDATA #IMPLIED
+	length NMTOKEN #IMPLIED
+>
+<!ELEMENT sequence-generator EMPTY>
+<!ATTLIST sequence-generator
+	name CDATA #REQUIRED
+	sequence-name CDATA #IMPLIED
+	initial-value NMTOKEN #IMPLIED
+	allocation-size NMTOKEN #IMPLIED
+>
+<!ELEMENT table-generator (unique-constraint*)>
+<!ATTLIST table-generator
+	name CDATA #REQUIRED
+	table CDATA #IMPLIED
+	catalog CDATA #IMPLIED
+	schema CDATA #IMPLIED
+	pk-column-name CDATA #IMPLIED
+	value-column-name CDATA #IMPLIED
+	pk-column-value CDATA #IMPLIED
+	initial-value NMTOKEN #IMPLIED
+	allocation-size NMTOKEN #IMPLIED
+>
+<!ELEMENT named-query (query, hint*)>
+<!ATTLIST named-query
+	name CDATA #REQUIRED
+>
+<!ELEMENT named-native-query (query, hint*)>
+<!ATTLIST named-native-query
+	name CDATA #REQUIRED
+	result-class CDATA #IMPLIED
+	result-set-mapping CDATA #IMPLIED
+>
+<!ELEMENT sql-result-set-mapping (entity-result*, column-result*)>
+<!ATTLIST sql-result-set-mapping
+	name CDATA #REQUIRED
+>
+<!ELEMENT exclude-default-listeners EMPTY>
+<!ELEMENT exclude-superclass-listeners EMPTY>
+<!ELEMENT entity-listeners (entity-listener*)>
+<!ELEMENT pre-persist EMPTY>
+<!ATTLIST pre-persist
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-persist EMPTY>
+<!ATTLIST post-persist
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT pre-remove EMPTY>
+<!ATTLIST pre-remove
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-remove EMPTY>
+<!ATTLIST post-remove
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT pre-update EMPTY>
+<!ATTLIST pre-update
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-update EMPTY>
+<!ATTLIST post-update
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-load EMPTY>
+<!ATTLIST post-load
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT attribute-override (column)>
+<!ATTLIST attribute-override
+	name CDATA #REQUIRED
+>
+<!ELEMENT association-override ((join-column)+)>
+<!ATTLIST association-override
+	name CDATA #REQUIRED
+>
+<!ELEMENT attributes ((id* | embedded-id?), basic*, version*, many-to-one*, one-to-many*, one-to-one*, many-to-many*, embedded*, transient*)>
+<!ELEMENT id (column?, generated-value?, temporal?, table-generator?, sequence-generator?)>
+<!ATTLIST id
+	name CDATA #REQUIRED
+>
+<!ELEMENT embedded-id (attribute-override*)>
+<!ATTLIST embedded-id
+	name CDATA #REQUIRED
+>
+<!ELEMENT basic (column?, (lob? | temporal? | enumerated?))>
+<!ATTLIST basic
+	name CDATA #REQUIRED
+	fetch (LAZY | EAGER) #IMPLIED
+	optional NMTOKEN #IMPLIED
+>
+<!ELEMENT version (column?, temporal?)>
+<!ATTLIST version
+	name CDATA #REQUIRED
+>
+<!ELEMENT many-to-one ((join-column* | join-table?), cascade?)>
+<!ATTLIST many-to-one
+	name CDATA #REQUIRED
+	target-entity CDATA #IMPLIED
+	fetch (LAZY | EAGER) #IMPLIED
+	optional NMTOKEN #IMPLIED
+>
+<!ELEMENT one-to-many (order-by?, map-key?, (join-table? | join-column*), cascade?)>
+<!ATTLIST one-to-many
+	name CDATA #REQUIRED
+	target-entity CDATA #IMPLIED
+	fetch (LAZY | EAGER) #IMPLIED
+	mapped-by CDATA #IMPLIED
+>
+<!ELEMENT one-to-one ((primary-key-join-column* | join-column* | join-table?), cascade?)>
+<!ATTLIST one-to-one
+	name CDATA #REQUIRED
+	target-entity CDATA #IMPLIED
+	fetch (LAZY | EAGER) #IMPLIED
+	optional NMTOKEN #IMPLIED
+	mapped-by CDATA #IMPLIED
+>
+<!ELEMENT many-to-many (order-by?, map-key?, join-table?, cascade?)>
+<!ATTLIST many-to-many
+	name CDATA #REQUIRED
+	target-entity CDATA #IMPLIED
+	fetch (LAZY | EAGER) #IMPLIED
+	mapped-by CDATA #IMPLIED
+>
+<!ELEMENT embedded (attribute-override*)>
+<!ATTLIST embedded
+	name CDATA #REQUIRED
+>
+<!ELEMENT transient EMPTY>
+<!ATTLIST transient
+	name CDATA #REQUIRED
+>
+<!ELEMENT entity-listener (pre-persist?, post-persist?, pre-remove?, post-remove?, pre-update?, post-update?, post-load?)>
+<!ATTLIST entity-listener
+	class CDATA #REQUIRED
+>
+<!ELEMENT pre-persist EMPTY>
+<!ATTLIST pre-persist
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-persist EMPTY>
+<!ATTLIST post-persist
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT pre-remove EMPTY>
+<!ATTLIST pre-remove
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-remove EMPTY>
+<!ATTLIST post-remove
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT pre-update EMPTY>
+<!ATTLIST pre-update
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-update EMPTY>
+<!ATTLIST post-update
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-load EMPTY>
+<!ATTLIST post-load
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT query (#PCDATA)>
+<!ELEMENT hint EMPTY>
+<!ATTLIST hint
+	name CDATA #REQUIRED
+	value CDATA #REQUIRED
+>
+<!ELEMENT query (#PCDATA)>
+<!ELEMENT hint EMPTY>
+<!ATTLIST hint
+	name CDATA #REQUIRED
+	value CDATA #REQUIRED
+>
+<!ELEMENT entity-result (field-result*)>
+<!ATTLIST entity-result
+	entity-class CDATA #REQUIRED
+	discriminator-column CDATA #IMPLIED
+>
+<!ELEMENT column-result EMPTY>
+<!ATTLIST column-result
+	name CDATA #REQUIRED
+>
+<!ELEMENT field-result EMPTY>
+<!ATTLIST field-result
+	name CDATA #REQUIRED
+	column CDATA #REQUIRED
+>
+<!ELEMENT unique-constraint (column-name+)>
+<!ELEMENT primary-key-join-column EMPTY>
+<!ATTLIST primary-key-join-column
+	name CDATA #IMPLIED
+	referenced-column-name CDATA #IMPLIED
+	column-definition CDATA #IMPLIED
+>
+
+<!ELEMENT column-name (#PCDATA)>
+<!ELEMENT column EMPTY>
+<!ATTLIST column
+	name CDATA #IMPLIED
+	unique NMTOKEN #IMPLIED
+	nullable NMTOKEN #IMPLIED
+	insertable NMTOKEN #IMPLIED
+	updatable NMTOKEN #IMPLIED
+	column-definition CDATA #IMPLIED
+	table CDATA #IMPLIED
+	length NMTOKEN #IMPLIED
+	precision NMTOKEN #IMPLIED
+	scale NMTOKEN #IMPLIED
+>
+<!ELEMENT join-column EMPTY>
+<!ATTLIST join-column
+	name CDATA #IMPLIED
+	referenced-column-name CDATA #IMPLIED
+	unique NMTOKEN #IMPLIED
+	nullable NMTOKEN #IMPLIED
+	insertable NMTOKEN #IMPLIED
+	updatable NMTOKEN #IMPLIED
+	column-definition CDATA #IMPLIED
+	table CDATA #IMPLIED
+>
+<!ELEMENT column EMPTY>
+<!ATTLIST column
+	name CDATA #IMPLIED
+	unique NMTOKEN #IMPLIED
+	nullable NMTOKEN #IMPLIED
+	insertable NMTOKEN #IMPLIED
+	updatable NMTOKEN #IMPLIED
+	column-definition CDATA #IMPLIED
+	table CDATA #IMPLIED
+	length NMTOKEN #IMPLIED
+	precision NMTOKEN #IMPLIED
+	scale NMTOKEN #IMPLIED
+>
+<!ELEMENT generated-value EMPTY>
+<!ATTLIST generated-value
+	strategy (TABLE | SEQUENCE | IDENTITY | AUTO) #IMPLIED
+	generator CDATA #IMPLIED
+>
+<!ELEMENT temporal (#PCDATA)>
+<!ELEMENT table-generator (unique-constraint*)>
+<!ATTLIST table-generator
+	name CDATA #REQUIRED
+	table CDATA #IMPLIED
+	catalog CDATA #IMPLIED
+	schema CDATA #IMPLIED
+	pk-column-name CDATA #IMPLIED
+	value-column-name CDATA #IMPLIED
+	pk-column-value CDATA #IMPLIED
+	initial-value NMTOKEN #IMPLIED
+	allocation-size NMTOKEN #IMPLIED
+>
+<!ELEMENT sequence-generator EMPTY>
+<!ATTLIST sequence-generator
+	name CDATA #REQUIRED
+	sequence-name CDATA #IMPLIED
+	initial-value NMTOKEN #IMPLIED
+	allocation-size NMTOKEN #IMPLIED
+>
+<!ELEMENT attribute-override (column)>
+<!ATTLIST attribute-override
+	name CDATA #REQUIRED
+>
+<!ELEMENT column EMPTY>
+<!ATTLIST column
+	name CDATA #IMPLIED
+	unique NMTOKEN #IMPLIED
+	nullable NMTOKEN #IMPLIED
+	insertable NMTOKEN #IMPLIED
+	updatable NMTOKEN #IMPLIED
+	column-definition CDATA #IMPLIED
+	table CDATA #IMPLIED
+	length NMTOKEN #IMPLIED
+	precision NMTOKEN #IMPLIED
+	scale NMTOKEN #IMPLIED
+>
+<!ELEMENT temporal (#PCDATA)>
+<!ELEMENT column EMPTY>
+<!ATTLIST column
+	name CDATA #IMPLIED
+	unique NMTOKEN #IMPLIED
+	nullable NMTOKEN #IMPLIED
+	insertable NMTOKEN #IMPLIED
+	updatable NMTOKEN #IMPLIED
+	column-definition CDATA #IMPLIED
+	table CDATA #IMPLIED
+	length NMTOKEN #IMPLIED
+	precision NMTOKEN #IMPLIED
+	scale NMTOKEN #IMPLIED
+>
+<!ELEMENT lob EMPTY>
+<!ELEMENT temporal (#PCDATA)>
+<!ELEMENT enumerated (#PCDATA)>
+<!ELEMENT join-column EMPTY>
+<!ATTLIST join-column
+	name CDATA #IMPLIED
+	referenced-column-name CDATA #IMPLIED
+	unique NMTOKEN #IMPLIED
+	nullable NMTOKEN #IMPLIED
+	insertable NMTOKEN #IMPLIED
+	updatable NMTOKEN #IMPLIED
+	column-definition CDATA #IMPLIED
+	table CDATA #IMPLIED
+>
+<!ELEMENT join-table (join-column*, inverse-join-column*, unique-constraint*)>
+<!ATTLIST join-table
+	name CDATA #IMPLIED
+	catalog CDATA #IMPLIED
+	schema CDATA #IMPLIED
+>
+<!ELEMENT cascade (cascade-all?, cascade-persist?, cascade-merge?, cascade-remove?, cascade-refresh?)>
+<!ELEMENT cascade-all EMPTY>
+<!ELEMENT cascade-persist EMPTY>
+<!ELEMENT cascade-merge EMPTY>
+<!ELEMENT cascade-remove EMPTY>
+<!ELEMENT cascade-refresh EMPTY>
+<!ELEMENT primary-key-join-column EMPTY>
+<!ATTLIST primary-key-join-column
+	name CDATA #IMPLIED
+	referenced-column-name CDATA #IMPLIED
+	column-definition CDATA #IMPLIED
+>
+<!ELEMENT join-column EMPTY>
+<!ATTLIST join-column
+	name CDATA #IMPLIED
+	referenced-column-name CDATA #IMPLIED
+	unique NMTOKEN #IMPLIED
+	nullable NMTOKEN #IMPLIED
+	insertable NMTOKEN #IMPLIED
+	updatable NMTOKEN #IMPLIED
+	column-definition CDATA #IMPLIED
+	table CDATA #IMPLIED
+>
+<!ELEMENT join-table (join-column*, inverse-join-column*, unique-constraint*)>
+<!ATTLIST join-table
+	name CDATA #IMPLIED
+	catalog CDATA #IMPLIED
+	schema CDATA #IMPLIED
+>
+<!ELEMENT cascade (cascade-all?, cascade-persist?, cascade-merge?, cascade-remove?, cascade-refresh?)>
+<!ELEMENT order-by (#PCDATA)>
+<!ELEMENT map-key EMPTY>
+<!ATTLIST map-key
+	name CDATA #IMPLIED
+>
+
+<!ELEMENT join-column EMPTY>
+<!ATTLIST join-column
+	name CDATA #IMPLIED
+	referenced-column-name CDATA #IMPLIED
+	unique NMTOKEN #IMPLIED
+	nullable NMTOKEN #IMPLIED
+	insertable NMTOKEN #IMPLIED
+	updatable NMTOKEN #IMPLIED
+	column-definition CDATA #IMPLIED
+	table CDATA #IMPLIED
+>
+
+<!ELEMENT inverse-join-column EMPTY>
+<!ATTLIST inverse-join-column
+	name CDATA #IMPLIED
+	referenced-column-name CDATA #IMPLIED
+	unique NMTOKEN #IMPLIED
+	nullable NMTOKEN #IMPLIED
+	insertable NMTOKEN #IMPLIED
+	updatable NMTOKEN #IMPLIED
+	column-definition CDATA #IMPLIED
+	table CDATA #IMPLIED
+>
+<!ELEMENT unique-constraint (column-name+)>
+<!ELEMENT order-by (#PCDATA)>
+<!ELEMENT map-key EMPTY>
+<!ATTLIST map-key
+	name CDATA #IMPLIED
+>
+
+
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT attributes (basic*, transient*)>
+<!ELEMENT basic (column?, (lob? | temporal? | enumerated?))>
+<!ATTLIST basic
+	name CDATA #REQUIRED
+	fetch (LAZY | EAGER) #IMPLIED
+	optional NMTOKEN #IMPLIED
+>
+<!ELEMENT transient EMPTY>
+<!ATTLIST transient
+	name CDATA #REQUIRED
+>
+<!ELEMENT attribute-override (column)>
+<!ATTLIST attribute-override
+	name CDATA #REQUIRED
+>
+<!ELEMENT description (#PCDATA)>
+<!ELEMENT id-class EMPTY>
+<!ATTLIST id-class
+	class CDATA #REQUIRED
+>
+<!ELEMENT exclude-default-listeners EMPTY>
+<!ELEMENT exclude-superclass-listeners EMPTY>
+<!ELEMENT entity-listeners (entity-listener*)>
+<!ELEMENT pre-persist EMPTY>
+<!ATTLIST pre-persist
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-persist EMPTY>
+<!ATTLIST post-persist
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT pre-remove EMPTY>
+<!ATTLIST pre-remove
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-remove EMPTY>
+<!ATTLIST post-remove
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT pre-update EMPTY>
+<!ATTLIST pre-update
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-update EMPTY>
+<!ATTLIST post-update
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT post-load EMPTY>
+<!ATTLIST post-load
+	method-name CDATA #REQUIRED
+>
+<!ELEMENT unique-constraint (column-name+)>

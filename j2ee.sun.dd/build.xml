@@ -34,6 +34,10 @@ Microsystems, Inc. All Rights Reserved.
   <property name="s2b_root_app_5_0_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/app/model_5_0_0"/>
   <property name="s2b_root_app_1_4_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/app/model_1_4_0"/>
   <property name="s2b_root_app_1_3_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/app/model_1_3_0"/>
+  <property name="s2b_root_client_5_0_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/client/model_5_0_0"/>
+  <property name="s2b_root_client_1_4_1" location="src/org/netbeans/modules/j2ee/sun/dd/impl/client/model_1_4_1"/>
+  <property name="s2b_root_client_1_4_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/client/model_1_4_0"/>
+  <property name="s2b_root_client_1_3_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/client/model_1_3_0"/>
   <property name="s2b_root_server_resources" location="src/org/netbeans/modules/j2ee/sun/dd/impl/serverresources/model"/>
   <property name="s2b_res_root" location="src/org/netbeans/modules/j2ee/sun/dd/impl/resources"/>
   <property name="s2b_static_verifier" location="src/org/netbeans/modules/j2ee/sun/dd/impl/verifier"/>
@@ -76,8 +80,8 @@ Microsystems, Inc. All Rights Reserved.
 	  useInterfaces="true"
 	  validate="true"
 	  attrProp="true"
-	  rootDir="src"/>  
-	<schema2beans schema="${s2b_res_root}/sun-ejb-jar_3_0-0.dtd"
+	  rootDir="src"/> 
+       <schema2beans schema="${s2b_res_root}/sun-ejb-jar_3_0-0.dtd"
  	  mddFile="${s2b_res_root}/sun-ejb-jar_3_0-0.mdd"
 	  package="org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0"
           docRoot="sun-ejb-jar"
@@ -165,6 +169,38 @@ Microsystems, Inc. All Rights Reserved.
 	  validate="false"
 	  attrProp="true"
 	  rootDir="src"/>  
+        <schema2beans schema="${s2b_res_root}/sun-application-client_5_0-0.dtd"
+ 	  mddFile="${s2b_res_root}/sun-application-client_5_0-0.mdd"
+	  package="org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0"
+          docRoot="sun-application-client"
+	  useInterfaces="true"
+	  validate="false"
+	  attrProp="true"
+	  rootDir="src"/>
+        <schema2beans schema="${s2b_res_root}/sun-application-client_1_4-1.dtd"
+ 	  mddFile="${s2b_res_root}/sun-application-client_1_4-1.mdd"
+	  package="org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_4_1"
+          docRoot="sun-application-client"
+	  useInterfaces="true"
+	  validate="false"
+	  attrProp="true"
+	  rootDir="src"/>
+        <schema2beans schema="${s2b_res_root}/sun-application-client_1_4-0.dtd"
+ 	  mddFile="${s2b_res_root}/sun-application-client_1_4-0.mdd"
+	  package="org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_4_0"
+          docRoot="sun-application-client"
+	  useInterfaces="true"
+	  validate="false"
+	  attrProp="true"
+	  rootDir="src"/>
+        <schema2beans schema="${s2b_res_root}/sun-application-client_1_3-0.dtd"
+ 	  mddFile="${s2b_res_root}/sun-application-client_1_3-0.mdd"
+	  package="org.netbeans.modules.j2ee.sun.dd.impl.client.model_1_3_0"
+          docRoot="sun-application-client"
+	  useInterfaces="true"
+	  validate="false"
+	  attrProp="true"
+	  rootDir="src"/>    
         <schema2beans schema="${s2b_res_root}/sun-resources.dtd"
  	  mddFile="${s2b_res_root}/sun-resources.mdd"
 	  package="org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model"
@@ -208,6 +244,10 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${s2b_root_app_5_0_0}"/>
         <mkdir dir="${s2b_root_app_1_4_0}"/>
         <mkdir dir="${s2b_root_app_1_3_0}"/>
+        <mkdir dir="${s2b_root_client_5_0_0}"/>
+        <mkdir dir="${s2b_root_client_1_4_1}"/>
+        <mkdir dir="${s2b_root_client_1_4_0}"/>
+        <mkdir dir="${s2b_root_client_1_3_0}"/>
         <mkdir dir="${s2b_root_server_resources}"/>
 	<mkdir dir="${s2b_static_verifier}"/>
         <delete>
@@ -295,11 +335,41 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete dir="${s2b_root_app_1_3_0}"/>
         <delete>
+            <fileset dir="${s2b_root_client_5_0_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_client_5_0_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_client_1_4_1}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_client_1_4_1}"/>
+        <delete>
+            <fileset dir="${s2b_root_client_1_4_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_client_1_4_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_client_1_3_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_client_1_3_0}"/>    
+        <delete>
             <fileset dir="${s2b_root_server_resources}">
                 <include name="*.java"/>
             </fileset>
         </delete>
         <delete dir="${s2b_root_server_resources}"/>
+        <delete>
+            <fileset dir="${s2b_static_verifier}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_static_verifier}"/>
   </target>
     <target name="javahelp" >
     </target>

@@ -20,18 +20,24 @@
 package org.netbeans.modules.web.jsf.editor;
 
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.netbeans.modules.web.jsf.config.model.ManagedBean;
+import org.netbeans.modules.web.jsf.JSFConfigDataObject;
+import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.config.model.NavigationCase;
-import org.netbeans.modules.web.jsf.config.model.NavigationRule;
 import org.openide.ErrorManager;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  *
@@ -43,9 +49,9 @@ public class JSFEditorUtilities {
     /** The constant from XML editor
      */
     // The constant are taken from class org.netbeans.modules.xml.text.syntax.XMLTokenIDs
-    protected static int XML_ELEMENT = 4;
-    protected static int XML_TEXT = 1;
-    static public String END_LINE = System.getProperty("line.separator");  //NOI18N
+    protected final static int XML_ELEMENT = 4;
+    protected final static int XML_TEXT = 1;
+    public final static String END_LINE = System.getProperty("line.separator");  //NOI18N
     
     /** Returns the value of from-view-id element of navigation rule definition on the offset possition.
      *  If there is not the navigation rule definition on the offset, then returns null. 
@@ -91,6 +97,7 @@ public class JSFEditorUtilities {
     public static int[] getNavigationRuleDefinition(BaseDocument doc, String ruleName){
         try{
             String text = doc.getText(0, doc.getLength());
+            //find first possition of text that is the ruleName
             int offset = text.indexOf(ruleName);
             int start = 0;
             int end = 0;
@@ -100,11 +107,14 @@ public class JSFEditorUtilities {
             while (offset != -1){
                 token = sup.getTokenChain(offset, offset+1);
                 if (token != null && token.getTokenID().getNumericID() == JSFEditorUtilities.XML_TEXT){
+                    // find first xml element before the ruleName
                     while (token!=null 
                             && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
                             && !token.getImage().equals(">")))
                         token = token.getPrevious();
+                    // is it the rule definition?
                     if (token != null && token.getImage().equals("<from-view-id")){
+                        // find start of the rule definition
                         while (token != null
                                 && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
                                 && token.getImage().equals("<navigation-rule")))
@@ -112,6 +122,7 @@ public class JSFEditorUtilities {
                         if(token != null && token.getImage().equals("<navigation-rule")){
                             start = token.getOffset();
                             token = sup.getTokenChain(offset, offset+1);
+                            // find the end of the rule definition
                             while (token != null
                                     && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
                                     && token.getImage().equals("</navigation-rule")))
@@ -132,8 +143,63 @@ public class JSFEditorUtilities {
                 }
                 offset = text.indexOf(ruleName, offset+ruleName.length());
             }
-        }
-        catch (BadLocationException e) {
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+        } 
+        return new int []{-1,-1};
+    }
+    
+    public static int[] getConverterDefinition(BaseDocument doc, String converterForClass){
+        try{
+            String text = doc.getText(0, doc.getLength());
+            //find first possition of text that is the ruleName
+            int offset = text.indexOf(converterForClass);
+            int start = 0;
+            int end = 0;
+            ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
+            TokenItem token;
+            
+            while (offset != -1){
+                token = sup.getTokenChain(offset, offset+1);
+                if (token != null && token.getTokenID().getNumericID() == JSFEditorUtilities.XML_TEXT){
+                    // find first xml element before the ruleName
+                    while (token!=null 
+                            && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                            && !token.getImage().equals(">")))
+                        token = token.getPrevious();
+                    // is it the rule definition?
+                    if (token != null && token.getImage().equals("<converter-for-class")){
+                        // find start of the rule definition
+                        while (token != null
+                                && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                                && token.getImage().equals("<converter")))
+                            token = token.getPrevious();
+                        if(token != null && token.getImage().equals("<converter")){
+                            start = token.getOffset();
+                            token = sup.getTokenChain(offset, offset+1);
+                            // find the end of the rule definition
+                            while (token != null
+                                    && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                                    && token.getImage().equals("</converter")))
+                                token = token.getNext();
+                            if (token!=null && token.getImage().equals("</converter")){
+                                while (token != null
+                                        && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                                        && token.getImage().equals(">")))
+                                    token = token.getNext();
+                                if (token!=null && token.getImage().equals(">")){
+                                    end = token.getOffset()+1;
+                                    return new int[]{start, end};
+                                }
+                            }
+                            return new int[]{start, text.length()};
+                        }
+                    }
+                }
+                offset = text.indexOf(converterForClass, offset+converterForClass.length());
+            }
+            
+        } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         } 
         return new int []{-1,-1};
@@ -143,7 +209,7 @@ public class JSFEditorUtilities {
         int possition = -1;
         int [] definition = getNavigationRuleDefinition(doc, fromViewID);
         ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
-        String sBean = addNewLines(navigationCase);
+        String sBean = addNewLines((BaseBean)navigationCase);
         TokenItem token;
         try{
             if (definition [0] > -1){
@@ -237,5 +303,126 @@ public class JSFEditorUtilities {
             doc.atomicUnlock();
         }
         return offset + formatLength + 1;
+    }
+    
+    /* Returns offset, where starts the definition of the manage bean
+     **/
+    public static int[] getManagedBeanDefinition(BaseDocument doc, String beanName){
+        try{
+            String text = doc.getText(0, doc.getLength());
+            int offset = text.indexOf(beanName);
+            int start = 0;
+            int end = 0;
+            ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
+            TokenItem token;
+            
+            while (offset != -1){
+                token = sup.getTokenChain(offset, offset+1);
+                if (token != null && token.getTokenID().getNumericID() == JSFEditorUtilities.XML_TEXT){
+                    while (token!=null 
+                            && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                            && !token.getImage().equals(">")))
+                        token = token.getPrevious();
+                    if (token != null && token.getImage().equals("<managed-bean-name")){    //NOI18N
+                        while (token != null
+                                && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                                && token.getImage().equals("<managed-bean")))
+                            token = token.getPrevious();
+                        if(token != null && token.getImage().equals("<managed-bean")){
+                            start = token.getOffset();
+                            token = sup.getTokenChain(offset, offset+1);
+                            while (token != null
+                                    && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                                    && token.getImage().equals("</managed-bean")))
+                                token = token.getNext();
+                            if (token!=null && token.getImage().equals("</managed-bean")){
+                                while (token != null
+                                        && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
+                                        && token.getImage().equals(">")))
+                                    token = token.getNext();
+                                if (token!=null && token.getImage().equals(">")){
+                                    end = token.getOffset()+1;
+                                    return new int[]{start, end};
+                                }
+                            }
+                            return new int[]{start, text.length()};
+                        }
+                    }
+                }
+                offset = text.indexOf(beanName, offset+beanName.length());
+            }
+        }
+        catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+        } 
+        return new int []{-1,-1};
+    }
+    
+    /**
+     * Method that allows to find its
+     * CloneableEditorSupport from given DataObject
+     * @return the support or null if the CloneableEditorSupport 
+     * was not found
+     * This method is hot fix for issue #53309
+     * this methd was copy/pasted from OpenSupport.Env class
+     * @param dob an instance of DataObject
+     */
+    public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
+        Node.Cookie obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+        if (obj instanceof CloneableEditorSupport) {
+            return (CloneableEditorSupport)obj;
+        }
+        obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+        if (obj instanceof CloneableEditorSupport) {
+            return (CloneableEditorSupport)obj;
+        }
+        return null;
+    }
+    
+    private static class CreateXMLPane implements Runnable{
+        JEditorPane ep;
+
+        public void run (){
+            ep = new JEditorPane("text/xml", "");
+        }
+
+        public JEditorPane getPane (){
+            return ep;
+        }
+    }
+    
+    /** This method returns a BaseDocument for the configuration file. If the configuration
+     *  file is not opened, then the document is not created yet and this method returns
+     *  in this case fake document. 
+     */
+    public static BaseDocument getBaseDocument(JSFConfigDataObject config){
+        BaseDocument document = null;
+        CloneableEditorSupport editor = JSFEditorUtilities.findCloneableEditorSupport(config);
+        if (editor != null){
+            document = (BaseDocument)editor.getDocument();
+            if (document == null) {
+                JEditorPane ep = null;
+                CreateXMLPane run = new CreateXMLPane();
+                try {
+                    SwingUtilities.invokeAndWait(run);
+                    document = new BaseDocument(run.getPane().getEditorKit().getClass(), false);
+                    String text = "";
+                    text = JSFFrameworkProvider.readResource(config.getPrimaryFile().getInputStream(), "UTF-8");
+                    document.remove(0, document.getLength());
+                    document.insertString(0, text, null);
+                } catch (InterruptedException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                } catch (InvocationTargetException ex) {
+                    ErrorManager.getDefault().notify(ex);   
+                } catch (FileNotFoundException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);    
+                } catch (BadLocationException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        }
+        return document;
     }
 }

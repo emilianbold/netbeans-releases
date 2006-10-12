@@ -22,6 +22,7 @@ package org.netbeans.modules.web.project;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.*;
@@ -65,21 +66,23 @@ public class Utils {
     }
 
     public static FileObject getValidDir(File dir) throws IOException {
-        FileObject dirFO;
-        if(!dir.exists()) {
-            //Refresh before mkdir not to depend on window focus, refreshFileSystem does not work correctly
-            refreshFolder (dir);
-            if (!dir.mkdirs()) {
-                throw new IOException ("Can not create project folder.");   //NOI18N
-            }
-            refreshFileSystem (dir);
+        Stack stack = new Stack ();
+        while (!dir.exists()) {
+            stack.push (dir.getName());
+            dir = dir.getParentFile();
         }
-        dirFO = FileUtil.toFileObject(dir);
-        assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
-        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N        
+        FileObject dirFO = FileUtil.toFileObject (dir);
+        if (dirFO == null) {
+            refreshFileSystem(dir);
+            dirFO = FileUtil.toFileObject (dir);
+        }
+        assert dirFO != null;
+        while (!stack.isEmpty()) {
+            dirFO = dirFO.createFolder((String)stack.pop());
+        }
         return dirFO;
     }
-
+    
     private static void refreshFileSystem (final File dir) throws FileStateInvalidException {
         File rootF = dir;
         while (rootF.getParentFile() != null) {
@@ -88,17 +91,6 @@ public class Utils {
         FileObject dirFO = FileUtil.toFileObject(rootF);
         assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
-    }
-    
-    private static void refreshFolder (File dir) {
-        while (!dir.exists()) {
-            dir = dir.getParentFile();
-        }        
-        FileObject fo = FileUtil.toFileObject(dir);
-        if (fo != null) {
-            fo.getChildren();
-            fo.refresh();
-        }
     }
     
     public static FileObject getValidEmptyDir(File dir) throws IOException {

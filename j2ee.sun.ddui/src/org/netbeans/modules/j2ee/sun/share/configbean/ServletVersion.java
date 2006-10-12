@@ -35,24 +35,34 @@ public final class ServletVersion extends J2EEBaseVersion {
 	 */
 	public static final ServletVersion SERVLET_2_3 = new ServletVersion(
 		"2.3", 2300,	// NOI18N
-		DTDRegistryLink.SUN_WEBAPP_230_DTD_PUBLIC_ID,
+		"1.3", 1300,	// NOI18N
+		DTDRegistryLink.SUN_WEBAPP_230_DTD_PUBLIC_ID, 
 		DTDRegistryLink.SUN_WEBAPP_230_DTD_SYSTEM_ID);
 	
 	/** Represents servlet version 2.4
 	 */
 	public static final ServletVersion SERVLET_2_4 = new ServletVersion(
-		"2.4", 2400,	// NOI18N
-		DTDRegistryLink.SUN_WEBAPP_240_DTD_PUBLIC_ID, 
-		DTDRegistryLink.SUN_WEBAPP_240_DTD_SYSTEM_ID);
+		"2.4", 2401,	// NOI18N
+		"1.4", 1400,	// NOI18N
+		DTDRegistryLink.SUN_WEBAPP_241_DTD_PUBLIC_ID, 
+		DTDRegistryLink.SUN_WEBAPP_241_DTD_SYSTEM_ID);
 	
+	/** Represents servlet version 2.5
+	 */
+	public static final ServletVersion SERVLET_2_5 = new ServletVersion(
+		"2.5", 2500,	// NOI18N
+		"5.0", 5000,	// NOI18N
+		DTDRegistryLink.SUN_WEBAPP_250_DTD_PUBLIC_ID, 
+		DTDRegistryLink.SUN_WEBAPP_250_DTD_SYSTEM_ID);
+    
 	/** -----------------------------------------------------------------------
 	 *  Implementation
 	 */
 	
 	/** Creates a new instance of ServletVersion 
 	 */
-	private ServletVersion(String version, int nv, String pubId, String sysId) {
-		super(version, nv, pubId, sysId);
+	private ServletVersion(String version, int nv, String specVersion, int nsv, String pubId, String sysId) {
+		super(version, nv, specVersion, nsv, pubId, sysId);
 	}
 
 	/** Comparator implementation that works only on ServletVersion objects
@@ -74,6 +84,8 @@ public final class ServletVersion extends J2EEBaseVersion {
 			result = SERVLET_2_3;
 		} else if(SERVLET_2_4.toString().equals(version)) {
 			result = SERVLET_2_4;
+		} else if(SERVLET_2_5.toString().equals(version)) {
+			result = SERVLET_2_5;
 		}
 		
 		return result;

@@ -270,7 +270,7 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
     public void displayDialog(){
 
         dlg = new DialogDescriptor(this, NbBundle.getMessage(this.getClass(), "TEST_WEB_SERVICE_METHOD"),
-            false, new Object[]{NotifyDescriptor.CANCEL_OPTION}, DialogDescriptor.CANCEL_OPTION,
+            false, new Object[]{NotifyDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
             DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), null);
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
         /**
@@ -346,12 +346,11 @@ public class TestWebServiceMethodDlg extends JPanel /* implements ActionListener
         pnlLabel.setLayout(new java.awt.GridLayout(2, 0, 10, 10));
 
         pnlLabel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
-        lblTitle.setFont(new java.awt.Font("Dialog", 1, 14));
+        lblTitle.setFont(new java.awt.Font(getFont().getName(), getFont().getStyle(), getFont().getSize()+2));
         lblTitle.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/registry/ui/Bundle").getString("TEST_WEBSVC_LABEL"));
         lblTitle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         pnlLabel.add(lblTitle);
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 0, 12));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(TestWebServiceMethodDlg.class, "PARAMETERS"));
         jLabel1.setToolTipText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "TEST_WEBSVC_INSTRUCTIONS"));
         jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);

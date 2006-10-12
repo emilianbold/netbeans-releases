@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <connector-resource enabled="true" jndi-name="jms/SimpleMessageDestinationFactory" object-type="user" pool-name="jms/SimpleMessageDestinationFactory">
+    <description/>
+  </connector-resource>
+  <connector-connection-pool connection-definition-name="javax.jms.QueueConnectionFactory" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" max-pool-size="32" max-wait-time-in-millis="60000" name="jms/SimpleMessageDestinationFactory" pool-resize-quantity="2" resource-adapter-name="jmsra" steady-pool-size="8"/>
+</resources>

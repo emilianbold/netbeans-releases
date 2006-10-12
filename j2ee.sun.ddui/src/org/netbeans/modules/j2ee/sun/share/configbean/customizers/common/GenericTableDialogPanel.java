@@ -36,7 +36,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -44,6 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
+import org.netbeans.modules.j2ee.sun.share.configbean.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.share.configbean.Utils;
 
 /**
@@ -68,7 +68,7 @@ public class GenericTableDialogPanel extends JPanel implements GenericTableDialo
 	public GenericTableDialogPanel() {
 	}
 	
-	public void init(int width, List entries, Object data) {
+	public void init(ASDDVersion asVersion, int width, List entries, Object data) {
 		// data field not used in generic dialog.	
 		fieldEntries = entries;
 		preferredWidth = width;
