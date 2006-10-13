@@ -22,11 +22,8 @@ package org.netbeans.modules.apisupport.project.metainf;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler.ServiceRootChildren;
@@ -35,6 +32,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 /**
@@ -109,6 +107,10 @@ public class ServiceNodeHandlerTest extends  TestBase {
                     "",
                     "org.myservice,org.myservice,impl,impl,"
                 );
+        //  test for NPE : service folder deleted #87049
+        deleteServiceFolder(prj1);
+        deleteServiceFolder(prj2);
+        deleteServiceFolder(prj3);
         
     }    
     private static void writeServices(NbModuleProject prj,String serviceType,String classes) throws IOException {
@@ -309,6 +311,17 @@ public class ServiceNodeHandlerTest extends  TestBase {
 	    }
 	}
 	return children.getNodes(true);
+    }
+    
+    private static void deleteServiceFolder(NbModuleProject prj) throws IOException {
+        FileObject srcDir = prj.getSourceDirectory();
+        FileObject serviceFo = FileUtil.createData(srcDir,"META-INF/services");
+        final FileObject miFo = FileUtil.createData(srcDir,"META-INF");
+        miFo.getFileSystem().runAtomicAction(new AtomicAction() {
+            public void run() throws IOException {
+                miFo.delete();
+            }
+        });
     }
     
 //    public static ServiceNodeHandler.ServiceRootNode getServiceNodeRoot(Project prj) {

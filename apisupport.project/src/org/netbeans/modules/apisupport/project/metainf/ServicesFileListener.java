@@ -86,13 +86,15 @@ final class ServicesFileListener implements FileChangeListener {
 
     private ServiceNodeHandler getHandler(FileObject fo) {
         FileObject parent =  fo.getParent();
-        if (parent.getName().equals("services") && parent.getParent().getName().equals("META-INF")) { // NOI18N
-            Project prj = FileOwnerQuery.getOwner(fo);
-            return (prj == null) ? null : 
-                (ServiceNodeHandler)prj.getLookup().lookup(ServiceNodeHandler.class);
-        } else {
-            return null;
+        if (parent != null && parent.getName().equals("services") ) {
+            parent = parent.getParent(); 
+            if (parent != null &&  parent.getName().equals("META-INF")) { // NOI18N
+                Project prj = FileOwnerQuery.getOwner(fo);
+                return (prj == null) ? null : 
+                    (ServiceNodeHandler)prj.getLookup().lookup(ServiceNodeHandler.class);
+            }
         }
+        return null;
     } 
 
     private void updateFile(FileObject fo) {
