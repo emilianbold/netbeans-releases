@@ -1135,9 +1135,21 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         /** Name of property for currently selected nodes. */
         public static final String PROP_CURRENT_NODES = "currentNodes"; // NOI18N
 
-        /** Name of property for lastly activated nodes nodes. */
+        /** Name of property for lastly activated nodes. */
         public static final String PROP_ACTIVATED_NODES = "activatedNodes"; // NOI18N
 
+        /** Name of property for listening to TopComponents opened through open() call,
+         * either by user or programmatically.
+         * Fired property change event returns opened TopComponent from its getNewValue()
+         */
+        public static final String PROP_TC_OPENED = "tcOpened"; // NOI18N
+        
+        /** Name of property for listening to TopComponents closed through close() call,
+         * either by user or programmatically.
+         * Fired property change event returns closed TopComponent from its getNewValue().
+         */
+        public static final String PROP_TC_CLOSED = "tcClosed"; // NOI18N
+        
         /** Get reference to a set of all opened componets in the system.
         *
         * @return live read-only set of {@link TopComponent}s

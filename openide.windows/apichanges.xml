@@ -24,6 +24,26 @@ Microsystems, Inc. All Rights Reserved.
 </apidefs>
 <changes>
 
+<change id="tcOpenedClosed">
+    <api name="winsys"/>
+    <summary>New constants PROP_TC_OPENED and PROP_TC_CLOSED in TopComponent.Registry</summary>
+    <version major="6" minor="9"/>
+    <date day="12" month="10" year="2006"/>
+    <author login="dsimonek"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        New constants PROP_TC_OPENED and PROP_TC_CLOSED was added to the 
+        <a href="@TOP@org/openide/windows/TopComponent.Registry.html#PROP_TC_OPENED">TopComponent.Registry</a>.
+        When any instance of TopComponent is opened through its open() method, 
+        either by user or programmatically, property change event PROP_TC_OPENED
+        is fired. Similarly, when TopComponent is closed by close() method, 
+        PROP_TC_CLOSED is fired. So clients listening to property changes of
+        TopComponent.Registry can track opened and closed TopComponents easily.
+    </description>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <issue number="87009"/>
+</change>
+    
 <change id="invokeWhenUIReady">
     <api name="winsys"/>
     <summary>New method to invoke code after main window is shown</summary>

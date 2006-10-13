@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.utilities;
 
+import org.netbeans.modules.openfile.RecentFiles;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.SharedClassObject;
 
@@ -43,6 +44,7 @@ public class Installer extends ModuleInstall {
      */
     public void restored() {
         searchInstaller.restored();
+        RecentFiles.init();
     }
     
     /**

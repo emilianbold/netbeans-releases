@@ -598,6 +598,7 @@ final class DummyWindowManager extends WindowManager {
             opened.add(tc);
 
             if (pcs != null) {
+                pcs.firePropertyChange(PROP_TC_OPENED, null, tc);
                 pcs.firePropertyChange(PROP_OPENED, null, null);
             }
         }
@@ -606,6 +607,7 @@ final class DummyWindowManager extends WindowManager {
             opened.remove(tc);
 
             if (pcs != null) {
+                pcs.firePropertyChange(PROP_TC_CLOSED, null, tc);
                 pcs.firePropertyChange(PROP_OPENED, null, null);
             }
 

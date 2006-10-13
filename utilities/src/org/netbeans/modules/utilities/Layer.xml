@@ -227,6 +227,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="System">
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
+            <file name="org-netbeans-modules-openfile-RecentFileAction.instance"/>
         </folder> <!-- System -->
 
         <folder name="Window">
@@ -240,6 +241,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="File">
             <!-- position of OpenFileAction defined in projects/ui module -->
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
+            <file name="org-netbeans-modules-openfile-RecentFileAction.instance"/>
+            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-modules-openfile-RecentFileAction.instance" boolvalue="true"/>
         </folder> <!-- File -->
 
         <folder name="Window">

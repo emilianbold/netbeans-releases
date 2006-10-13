@@ -19,6 +19,8 @@
 
 package org.openide.windows;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ObjectInputStream;
 import junit.framework.TestCase;
 import org.openide.util.io.NbMarshalledObject;
@@ -87,25 +89,38 @@ public class TopComponentTest extends TestCase {
         assertEquals("testTooltip", tc.getToolTipText());
         assertEquals("If the old component does not have a display name, then keep it null", null, tc.getDisplayName());
     }
+
+    TopComponent tcOpened = null;
+    TopComponent tcClosed = null;
     
-    
-    
-    //    public void testXXX() {
-    //        File fil = new File("/Users/mkleint/oldTcWithoutDisplayName.ser");
-    //        TopComponent tc = new TopComponent();
-    //        tc.setName("testName");
-    //        tc.setDisplayName("testdisplayName");
-    //        tc.setToolTipText("testTooltip");1
-    //        System.out.println("file=" + fil);
-    //        try {
-    //            ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(fil));
-    //            stream.writeObject(tc);
-    //            stream.close();
-    //        } catch (Exception exc) {
-    //            System.out.println("exception");
-    //        }
-    //        // TODO code application logic here
-    //    }
+    public void testOpenedClosed () throws Exception {
+        System.out.println("Testing property firing of TopComponent's registry");
+        tcOpened = null;
+        tcClosed = null;
+                
+        TopComponent.getRegistry().addPropertyChangeListener(
+                new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (TopComponent.Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
+                            tcOpened = (TopComponent) evt.getNewValue();
+                        } 
+                        if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+                            tcClosed = (TopComponent) evt.getNewValue();
+                        } 
+                    }
+                });
+                
+        TopComponent tc = new TopComponent();
+        
+        tc.open();
+        assertNotNull("Property change was not fired, tcOpened is null", tcOpened);
+        assertEquals("New value in property change is wrong", tc, tcOpened);
+                
+        tc.close();
+        assertNotNull("Property change was not fired, tcClosed is null", tcClosed);
+        assertEquals("New value in property change is wrong", tc, tcClosed);
+        
+    }
     
     
     

@@ -154,6 +154,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         }
         Set<TopComponent> old = new HashSet<TopComponent>(openSet);
         openSet.add(tc);
+        doFirePropertyChange(PROP_TC_OPENED, null, tc);
         doFirePropertyChange(PROP_OPENED, old, new HashSet<TopComponent>(openSet));
     }
     
@@ -165,6 +166,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
 
         Set<TopComponent> old = new HashSet<TopComponent>(openSet);
         openSet.remove(tc);
+        doFirePropertyChange(PROP_TC_CLOSED, null, tc);
         doFirePropertyChange(PROP_OPENED, old, new HashSet<TopComponent>(openSet));
     }
     
