@@ -160,6 +160,7 @@ PropertyChangeListener {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jButton1 = new javax.swing.JButton();
         lLanguage = new javax.swing.JLabel();
         cbLanguage = new javax.swing.JComboBox();
@@ -167,6 +168,7 @@ PropertyChangeListener {
         spCategories = new javax.swing.JScrollPane();
         lCategories = new javax.swing.JList();
         lPreview = new javax.swing.JLabel();
+        spPreview = new javax.swing.JScrollPane();
         pPreview = new javax.swing.JPanel();
         lFont = new javax.swing.JLabel();
         lForeground = new javax.swing.JLabel();
@@ -192,9 +194,12 @@ PropertyChangeListener {
 
         lPreview.setText("Preview:");
 
-        pPreview.setLayout(new java.awt.BorderLayout());
+        spPreview.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        spPreview.setAutoscrolls(true);
 
-        pPreview.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        pPreview.setAutoscrolls(true);
+        pPreview.setLayout(new java.awt.BorderLayout());
+        spPreview.setViewportView(pPreview);
 
         lFont.setLabelFor(bFont);
         lFont.setText("Font:");
@@ -221,7 +226,7 @@ PropertyChangeListener {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(pPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE)
+                    .add(spPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(lLanguage)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -239,7 +244,7 @@ PropertyChangeListener {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(tfFont)
+                                .add(tfFont, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 13, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(bFont))
                             .add(cbForeground, 0, 38, Short.MAX_VALUE)
@@ -287,7 +292,7 @@ PropertyChangeListener {
                             .add(lEffectColor)
                             .add(cbEffectColor, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                .add(spPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -312,6 +317,7 @@ PropertyChangeListener {
     private javax.swing.JLabel lPreview;
     private javax.swing.JPanel pPreview;
     private javax.swing.JScrollPane spCategories;
+    private javax.swing.JScrollPane spPreview;
     private javax.swing.JTextField tfFont;
     // End of variables declaration//GEN-END:variables
     
