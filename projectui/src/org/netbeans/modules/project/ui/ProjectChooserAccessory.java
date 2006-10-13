@@ -20,6 +20,7 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -77,7 +78,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         initComponents();
 
         modelUpdater = new ModelUpdater();
-        updateSubprojectsTask = new RequestProcessor( "ProjectChooserAccesoryModelUpdater" ).create( modelUpdater );
+        updateSubprojectsTask = new RequestProcessor(ModelUpdater.class.getName()).create(modelUpdater);
         updateSubprojectsTask.setPriority( Thread.MIN_PRIORITY );
 
         // Listen on the subproject checkbox to change the option accordingly
@@ -190,15 +191,13 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         }
     }
 
-    // Implementayion of PropertyChange listener
-
     public void propertyChange( PropertyChangeEvent e ) {
         if ( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals( e.getPropertyName() ) ||
              JFileChooser.SELECTED_FILES_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {
 
             // We have to update the Accessory
             JFileChooser chooser = (JFileChooser)e.getSource();
-            ListModel spListModel = jListSubprojects.getModel();
+            final ListModel spListModel = jListSubprojects.getModel();
 
 
             final File[] projectDirs;
@@ -209,8 +208,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 projectDirs = new File[] { chooser.getSelectedFile() };
             }
 
-            // Project project = OpenProjectList.fileToProject( projectDir );
-            List<Project> projects = new ArrayList<Project>( projectDirs.length );
+            // #87119: do not block EQ loading projects
+            jTextFieldProjectName.setText(NbBundle.getMessage(ProjectChooserAccessory.class, "MSG_PrjChooser_WaitMessage"));
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+
+            final List<Project> projects = new ArrayList<Project>( projectDirs.length );
             for (File dir : projectDirs) {
                 if (dir != null) {
                     Project project = getProject(FileUtil.normalizeFile(dir));
@@ -219,6 +222,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             }
+
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
 
             if ( !projects.isEmpty() ) {
                 // Enable all components acessory
@@ -275,7 +281,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 if (projectDirs.length == 1 && projectDirs[0] != null) {
                     File dir = FileUtil.normalizeFile(projectDirs[0]);
                     FileObject fo = FileUtil.toFileObject(dir);
-                    if (fo != null && fo.isFolder()) {
+                    if (fo != null && fo.isFolder() && ProjectManager.getDefault().isProject(fo)) {
                         try {
                             Project prj = ProjectManager.getDefault().findProject(fo);
                             if (prj == null) {
@@ -307,6 +313,10 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 }
             }
 
+                        }
+                    });
+                }
+            });
         }
         else if ( JFileChooser.DIRECTORY_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {
             // Selection lost => disable accessory
