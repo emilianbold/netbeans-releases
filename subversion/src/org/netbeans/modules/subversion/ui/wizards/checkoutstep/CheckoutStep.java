@@ -25,8 +25,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
@@ -35,6 +33,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.settings.HistorySettings;
+import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
@@ -86,7 +85,8 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                         workdirPanel.searchRevisionButton
                 );        
             String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CheckoutStep.class, "LBL_BrowserMessage");
-            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, false, false, false);
+            int browserMode = Browser.BROWSER_SHOW_FILES | Browser.BROWSER_SELECT_FOLDERS;                    
+            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode);
         } else {
             repositoryPaths.setRepositoryFile(repositoryFile);
         }                

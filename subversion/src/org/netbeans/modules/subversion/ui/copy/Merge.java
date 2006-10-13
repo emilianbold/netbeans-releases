@@ -31,11 +31,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -170,16 +170,19 @@ public class Merge extends CopyDialog implements ItemListener {
         }
 
         protected static void init(RepositoryPaths paths, JLabel label, File root) {
+            String browserPurposeMessage;
+            int browserMode;
             if(root.isFile()) {
                 if(label!=null) {
                     label.setText(org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_RepositoryFile")); // NOI18N
                 }
-                String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageMergeFile");
-                paths.setupBrowserBehavior(browserPurposeMessage, true, true, true);
+                browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageMergeFile");
+                browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY | Browser.BROWSER_SHOW_FILES | Browser.BROWSER_SELECT_FILES;                
             } else {
-                String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageMergeFolder");
-                paths.setupBrowserBehavior(browserPurposeMessage, true, false, false);
+                browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageMergeFolder");
+                browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;                
             }
+            paths.setupBrowserBehavior(browserPurposeMessage, browserMode);
         }
 
         protected abstract JPanel getFieldsPanel();

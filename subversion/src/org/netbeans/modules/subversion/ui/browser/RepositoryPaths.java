@@ -65,10 +65,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     private JButton searchRevisionButton;
 
     // browser
-    private boolean showFiles = false;
-    private boolean singleSelection = false;
-    private boolean fileSelectionOnly = false;
-    private boolean writeable;
+    private int browserMode;
     private BrowserAction[] browserActions;
     private String browserPurpose;
             
@@ -103,15 +100,13 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }                
     }
 
-    public void setupBrowserBehavior(String browserPurpose, boolean singleSelection, boolean showFiles, boolean fileSelectionOnly) {
-        this.singleSelection = singleSelection;
-        this.fileSelectionOnly = fileSelectionOnly;
-        this.showFiles = showFiles;                
+    public void setupBrowserBehavior(String browserPurpose, int browserMode) {
+        this.browserMode = browserMode;                
         this.browserPurpose = browserPurpose;
     }            
     
-    public void setupBrowserBehavior(String browserPurpose, boolean singleSelection, boolean showFiles, boolean fileSelectionOnly, BrowserAction[] browserActions) {
-        setupBrowserBehavior(browserPurpose, singleSelection, showFiles, fileSelectionOnly);
+    public void setupBrowserBehavior(String browserPurpose, int browserMode, BrowserAction[] browserActions) {
+        setupBrowserBehavior(browserPurpose, browserMode);
         this.browserActions = browserActions;
         this.browserPurpose = browserPurpose;
     }            
@@ -172,9 +167,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         final Browser browser = 
             new Browser(
                 browserPurpose,
-                showFiles, 
-                singleSelection,
-                fileSelectionOnly,
+                browserMode,
                 new RepositoryFile(getRepositoryUrl(), revision), 
                 repositoryFilesToSelect, 
                 browserActions);        

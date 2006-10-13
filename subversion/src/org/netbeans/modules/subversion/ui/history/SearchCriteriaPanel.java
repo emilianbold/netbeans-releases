@@ -316,12 +316,13 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         String title = destination == tfFrom ? NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_StartTag") : NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_EndTag"); // NOI18N
         final Browser browser;
         RepositoryFile repoFile = new RepositoryFile(repositoryUrl, SVNRevision.HEAD);
+        int browserMode;
         if(roots[0].isFile()) {
-            browser = new Browser(title, true, true, false, repoFile, null, null);
+            browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY | Browser.BROWSER_SHOW_FILES | Browser.BROWSER_SELECT_FOLDERS;                        
         } else {
-            browser = new Browser(title, false, true, false, repoFile, null, null);
+            browserMode = Browser.BROWSER_SHOW_FILES;                        
         }        
-        
+        browser = new Browser(title, browserMode, repoFile, null, null);        
         final DialogDescriptor dialogDescriptor = 
                 new DialogDescriptor(browser.getBrowserPanel(), NbBundle.getMessage(SearchCriteriaPanel.class, "LBL_Search_BrowseRepository")); // NOI18N 
         dialogDescriptor.setModal(true);

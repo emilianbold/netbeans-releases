@@ -31,6 +31,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
@@ -75,7 +76,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         
         repositoryPaths = 
             new CopyRepositoryPaths(
-                repositoryRoot, // initialize only with root
+                repositoryRoot, 
                 (JTextComponent) panel.urlComboBox.getEditor().getEditorComponent(),
                 panel.browseRepositoryButton,
                 null,
@@ -90,10 +91,14 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         }
 
         String defaultFolderName = localeFile.isFile() ? "" : localeFile.getName();
-        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, true, false, false, new BrowserAction[] { new CreateFolderAction(defaultFolderName)} );                
+        int browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;
+        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, new BrowserAction[] { new CreateFolderAction(defaultFolderName)} );                
         repositoryPaths.addPropertyChangeListener(this);
 
         setupUrlComboBox(panel.urlComboBox, CreateCopy.class.getName());
+        
+        //repositoryPaths.setRepositoryTextField(defaultFolderName);
+                
         panel.messageTextArea.getDocument().addDocumentListener(this);
     }       
     

@@ -47,20 +47,24 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
  */
 public class Browser implements VetoableChangeListener, BrowserClient {
         
-    private final BrowserPanel panel;    
+    
+    public final static int BROWSER_SHOW_FILES = 1;
+    public final static int BROWSER_SINGLE_SELECTION_ONLY = 2;
+    public final static int BROWSER_SELECT_FILES = 4;
+    public final static int BROWSER_SELECT_FOLDERS = 8;
+    public final static int BROWSER_SELECT_ANYTHING = BROWSER_SELECT_FOLDERS | BROWSER_SELECT_FILES;
+
+    private final int mode;
     
     private static final RepositoryFile[] EMPTY_ROOT = new RepositoryFile[0];
     private static final Action[] EMPTY_ACTIONS = new Action[0];
     
-    private final boolean showFiles;    
-    
-    private RepositoryFile repositoryRoot;        
-    
+    private final BrowserPanel panel;    
+            
+    private RepositoryFile repositoryRoot;            
     private Action[] nodeActions;
 
     private SvnProgressSupport support;
-
-    private boolean fileSelectionOnly; 
 
     /**
      * Creates a new instance
@@ -74,15 +78,13 @@ public class Browser implements VetoableChangeListener, BrowserClient {
      * @param nodeActions an array of actions from which the context menu on the tree items will be created
      * 
      */    
-    public Browser(String title, boolean showFiles, boolean singleSelectionOnly, boolean fileSelectionOnly,
-                   RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions) {
-        this.showFiles = showFiles;
-        this.fileSelectionOnly = fileSelectionOnly;
-
+    public Browser(String title, int mode, RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions) {
+        this.mode = mode;       
+        
         panel = new BrowserPanel(title,           
                                  org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSN_RepositoryTree"),         // NOI18N
                                  org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSD_RepositoryTree"),         // NOI18N
-                                 singleSelectionOnly);
+                                 (mode & BROWSER_SINGLE_SELECTION_ONLY) == BROWSER_SINGLE_SELECTION_ONLY);
         panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Browser_Prompt"));
         getExplorerManager().addVetoableChangeListener(this);                
         
@@ -184,8 +186,9 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 }
 
                 ISVNDirEntry dirEntry = dirEntries[i];                
-                if( dirEntry.getNodeKind()==SVNNodeKind.DIR || 
-                    (dirEntry.getNodeKind()==SVNNodeKind.FILE && showFiles) ) 
+                if( dirEntry.getNodeKind()==SVNNodeKind.DIR ||                  // directory or
+                    (dirEntry.getNodeKind()==SVNNodeKind.FILE &&                // (file and show_files_allowed) 
+                     ((mode & BROWSER_SHOW_FILES) == BROWSER_SHOW_FILES)) ) 
                 {
                     RepositoryFile repositoryFile = entry.getRepositoryFile();
                     RepositoryPathNode.RepositoryPathEntry e = 
@@ -252,15 +255,16 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             
             Node[] oldSelection = (Node[]) evt.getOldValue();                                    
 
-            if(fileSelectionOnly) {
-                for (int i = 0; i < newSelection.length; i++) {
-                    if(newSelection[i] instanceof RepositoryPathNode) {
-                        RepositoryPathNode node = (RepositoryPathNode) newSelection[i];
-                        if(node.getEntry().getSvnNodeKind() == SVNNodeKind.DIR) {                            
-                            throw new PropertyVetoException("", evt); // NOI18N
-                        }
-                    }
-                }
+            if((mode & BROWSER_SELECT_FILES) == BROWSER_SELECT_FILES &&         // file seelction only
+                checkForNodeType(newSelection, SVNNodeKind.DIR)) 
+            {
+                    throw new PropertyVetoException("", evt); // NOI18N                
+            }        
+            
+            if((mode & BROWSER_SELECT_FOLDERS) == BROWSER_SELECT_FOLDERS && 
+               checkForNodeType(newSelection, SVNNodeKind.FILE)) 
+            {         // file seelction only                
+                throw new PropertyVetoException("", evt); // NOI18N
             }        
             
             // RULE: don't select nodes on a different level as the already selected 
@@ -290,6 +294,19 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     
         }
     }    
+
+    private boolean checkForNodeType(Node[] newSelection, SVNNodeKind nodeKind) {
+        for (int i = 0; i < newSelection.length; i++) {
+            if(newSelection[i] instanceof RepositoryPathNode) {
+                RepositoryPathNode node = (RepositoryPathNode) newSelection[i];
+                if(node.getEntry().getSvnNodeKind() == nodeKind) {                            
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+   
     
     private boolean selectionIsAtLevel(Node[] newSelection, int level) {
         for (int i = 0; i < newSelection.length; i++) {

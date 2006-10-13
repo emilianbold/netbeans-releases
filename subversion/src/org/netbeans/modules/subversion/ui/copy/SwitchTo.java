@@ -24,6 +24,7 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
@@ -60,15 +61,18 @@ public class SwitchTo extends CopyDialog {
             );
         repositoryPaths.addPropertyChangeListener(this);
         getSwitchToPanel().getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_RepositoryFile"));
+        
+        String browserPurposeMessage;
+        int browserMode;
         if(root.isFile()) {
             getSwitchToPanel().urlLabel.setText(NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_RepositoryFile")); // NOI18N
-            String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageSwitchFile");
-            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, true, true, true, null);
+            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageSwitchFile");
+            browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY | Browser.BROWSER_SHOW_FILES | Browser.BROWSER_SELECT_FILES;                        
         } else {
-            String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageSwitchFolder");
-            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, true, false, false, null);
+            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageSwitchFolder");
+            browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;                                    
         }
-                
+        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, null);    
         setupUrlComboBox(panel.urlComboBox, SwitchTo.class.getName());                
     }            
     
