@@ -425,20 +425,25 @@ public class Install extends ModuleInstall {
         protected Node[] createNodes(Object key) {
             Node n = null;
             if(key instanceof Action) {
-                n = new PendingActionNode((Action)key);
+                Action action = (Action)key;
+                Icon icon = (action instanceof SystemAction) ?
+                    ((SystemAction)action).getIcon() : null;
+
+                String actionName = (String)action.getValue(Action.NAME);
+                if (actionName == null) actionName = ""; // NOI18N
+                actionName = org.openide.awt.Actions.cutAmpersand(actionName);
+                n = new NoActionNode(icon, actionName, NbBundle.getMessage(
+                    Install.class, "CTL_ActionInProgress", actionName));
             }
             else if ( key instanceof ExecutorTask) {
-                AbstractNode an = new AbstractNode( Children.LEAF );
-                an.setName(key.toString());
-                an.setDisplayName(NbBundle.getMessage(Install.class, "CTL_PendingExternalProcess2", 
+                n = new NoActionNode(null, key.toString(),
+                    NbBundle.getMessage(Install.class, "CTL_PendingExternalProcess2", 
                     // getExecutionEngine() had better be non-null, since getPendingTasks gave an ExecutorTask:
-                    ExecutionEngine.getExecutionEngine().getRunningTaskName((ExecutorTask) key)));
-                n = an;
+                    ExecutionEngine.getExecutionEngine().getRunningTaskName((ExecutorTask) key))
+                );
             }
 	    else if (key instanceof InternalHandle) {
-                AbstractNode an = new AbstractNode( Children.LEAF );
-                an.setName(((InternalHandle)key).getDisplayName());
-                n = an;
+                n = new NoActionNode(null, ((InternalHandle)key).getDisplayName(), null);
 	    }
             return n == null ? null : new Node[] { n };
         }
@@ -485,47 +490,28 @@ public class Install extends ModuleInstall {
         
     } //  End of class PendingChildren.
 
-    
-    /** Node representing pending action task. */
-    private static class PendingActionNode extends AbstractNode {
-
-        /** Icon retrieved from action if it is 
-         * of <code>SystemAction</code> instance. */
-        private Icon icon;
+    /** Node without any actions. */
+    private static class NoActionNode extends AbstractNode {
+        private Image img;
         
         /** Creates node for action. */
-        public PendingActionNode(Action action) {
+        public NoActionNode(Icon icon, String name, String display) {
             super(Children.LEAF);
+            if (icon != null) img = Utilities.icon2Image(icon);
             
-            String actionName = (String)action.getValue(Action.NAME);
-            if (actionName == null) {
-                actionName = ""; // NOI18N
-            }
-            actionName = org.openide.awt.Actions.cutAmpersand(actionName);
-            setName(actionName);
-            setDisplayName(actionName + " " // NOI18N
-                + NbBundle.getMessage(Install.class, "CTL_ActionInProgress"));
-            
-            if(action instanceof SystemAction) {
-                this.icon = ((SystemAction)action).getIcon();
-            }
+            setName(name);
+            if (display != null) setDisplayName(display);
         }
 
-        /** Overrides superclass method. */
-        public Image getIcon(int type) {
-            if(icon != null) {
-                return Utilities.icon2Image(icon);
-            } else {
-                return super.getIcon(type);
-            }
-        }
-
-        /** Overrides superclass method.
-         * @return empty array of actions */
+        /** @return empty array of actions */
         public Action[] getActions(boolean context) {
             return new Action[0];
         }
-        
-    } // End of class PendingActionNode.
-    
+     
+        /** @return provided icon or delegate to superclass if no icon provided.
+         */
+        public Image getIcon(int type) {
+            return img == null ? super.getIcon(type) : img;
+        }
+    }    
 }
