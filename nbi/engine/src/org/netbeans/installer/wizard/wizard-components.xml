@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
-    <!--
-    <component class="org.netbeans.installer.wizard.components.panels.TestPanel"/>
-    -->
-    
     <component class="org.netbeans.installer.wizard.components.panels.TextPanel">
         <properties>
             <property name="text">$P{org.netbeans.installer.wizard.Bundle, WelcomePage.text}</property>
@@ -11,7 +7,7 @@
         </properties>
     </component>
     
-    <component class="org.netbeans.installer.wizard.components.panels.ComponentsTreePanel"/>
+    <component class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPage"/>
     
     <component class="org.netbeans.installer.wizard.components.panels.PreInstallSummaryPanel"/>
     
