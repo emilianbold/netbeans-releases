@@ -58,8 +58,7 @@ public class Utils {
         OptionsOperator optionsOper = OptionsOperator.invoke();
         optionsOper.selectGeneral();
         // "Web Browser:"
-        String webBrowserLabel = Bundle.getStringTrimmed(
-                "org.netbeans.modules.options.general.Bundle", "Web_Browser");
+        String webBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.options.general.Bundle", "CTL_Web_Browser");
         JLabelOperator jloWebBrowser = new JLabelOperator(optionsOper, webBrowserLabel);
         // "Swing HTML Browser"
         String swingBrowserLabel = Bundle.getString("org.netbeans.core.ui.Bundle", "Services/Browsers/SwingBrowser.settings");
