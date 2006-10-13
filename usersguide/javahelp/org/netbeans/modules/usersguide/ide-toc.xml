@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -152,6 +152,7 @@
     <tocitem text="Overriding and Implementing Methods" target="java.override.tasktopic" />
     <tocitem text="Generating a Try-Catch Block" target="editing.surround_try-catch" />
     <tocitem text="Synchronizing Source With an Interface" target="java.sync.new-interface" />
+    <tocitem text="Java Annotations in Source Code" target="editing_javaannotations" />
     <tocitem text="Working With Beans">
       <tocitem text="About" target="beans.intro"/>
       <tocitem text="Creating a Bean" target="beans.creating" />

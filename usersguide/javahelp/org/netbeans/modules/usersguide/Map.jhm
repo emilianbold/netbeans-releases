@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -170,6 +170,7 @@
 <mapID target="editing.editor-props" url="editing/configuring/editor-props.html" />
 <mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
+<mapID target="editing_javaannotations" url="editing/editing_javaannotations.html" />
 <mapID target="editing.tasks" url="editing/tasks_viewing.html" />
 <mapID target="editor.hiding" url="editing/editor_hiding.html" />
 <mapID target="editor.hiding-jsp" url="editing/editor_hiding-jsp.html" />
@@ -391,6 +392,32 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="editing/todo_window_csh.html" />
 
 
+
+<!-- Projects window nodes -->
+<!-- ====================== -->
+<!-- J2SE standard project node -->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$J2SELogicalViewRootNode" url="project/csh/proj_project_window.html" />
+
+<!-- J2SE freeform project node -->
+<mapID target="freeform.node.java" url="project/csh/proj_project_window.html" />
+
+<!-- Web standard project node -->
+<mapID target="org.netbeans.modules.web.project.ui.WebPhysicalViewProvider$WebLogicalViewRootNode" url="project/csh/proj_project_window.html" />
+
+<!-- Web freeform project node -->
+<mapID target="freeform.node.java.web" url="project/csh/proj_project_window.html" />
+
+<!-- EJB standard project node -->
+<mapID target="org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider$WebLogicalViewRootNode" url="project/csh/proj_project_window.html" />
+
+<!-- EJB freeform project node -->
+<mapID target="freeform.node.ejb.java" url="project/csh/proj_project_window.html" />
+
+<!-- EAR standard project node -->
+<mapID target="org.netbeans.modules.j2ee.earproject.ui.J2eeArchiveLogicalViewProvider$ArchiveLogicalViewRootNode" url="project/csh/proj_project_window.html" />
+
+
+
 <!-- New Wizard templates page :-->
 <mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/csh/proj_wiz.html" />
 
@@ -426,6 +453,14 @@ under Print Settings in the Options window)
 <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="project/csh/proj_j2sefree_props_output.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel" url="project/csh/proj_j2sefree_props_buildrun.html" />
 
+<!-- Freeform EJB Module Project Properties dialog:-->
+    <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel.ejb.java" url="project/csh/proj_j2sefree_props_sources.html" />
+    <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel.ejb.java" url="project/csh/proj_j2sefree_props_classpath.html" />
+    <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel.ejb.java" url="project/csh/proj_j2sefree_props_output.html" />
+    <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel.ejb.java" url="project/csh/proj_j2sefree_props_buildrun.html" />
+<!-- The following project properties topic is located in the j2ee module 
+    <mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsPanel.ejb.java" url="ejb/csh/freeform_ejb_properties.html" />
+-->
 
 
 <!-- Add Libraries dialog box (from Project Properties -> Compiling Classes:-->
@@ -480,6 +515,12 @@ under Print Settings in the Options window)
 
 <!--csh page for projects|settings|Java Sources:-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
+
+<!--csh pages for Find and Find in Projects windows-->
+<mapID target="org.netbeans.modules.search.types.FullTextType" url="files/findinfiles-csh.html" />
+<mapID target="org.netbeans.modules.search.types.ObjectNameType" url="files/findinfiles-csh.html" />
+<mapID target="org.netbeans.modules.search.types.ModificationDateType" url="files/findinfiles-csh.html" />
+
 
 <!--CSH for Debugger windows-->
 <mapID target="NetbeansDebuggerSourcesNode" url="debug/CSH/sources_view.html" />
@@ -553,7 +594,9 @@ under Print Settings in the Options window)
 <!--CSH topic for GUI Builder main workspace-->
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
 
-<!--the following 2 ids are no longer used + there is no id for the common palette - should we use one for it?-->
+<!-- Common palette ID-->
+<mapID target="CommonPalette" url="gui/csh/gui_palette_window.html" />
+<!--the following 2 ids are no longer used-->
 <!--<mapID target="gui.components.palette" url="gui_palette_window.html" />-->
 <!--<mapID target="gui.options.component-palette" url="pending.html" />-->
 
@@ -715,6 +758,9 @@ under Print Settings in the Options window)
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/workspace/toolbar_customize.html" /> 
+
+<!-- Database Explorer node; both general container and instance node for databases--> -->
+<mapID target="dbexpovew" url="files/files_runtime.html" />
 
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:-->  
    <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
