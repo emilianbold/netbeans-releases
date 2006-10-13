@@ -2,6 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.websvc.registry
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/registry/netbeans/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/websvc/registry/netbeans/WebServiceModuleInstaller.class
-OpenIDE-Module-Layer: org/netbeans/modules/websvc/registry/netbeans/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.4.20
 
