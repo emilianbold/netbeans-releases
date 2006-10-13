@@ -11,7 +11,21 @@
     <mapID target="credits" url="credits.html" />
 
     <mapID target="svn_about" url="svnmodule/svn_about.html" />
-    
+    <mapID target="svn_overview" url="svnmodule/svn_overview.html" />
+    <mapID target="svn_quickref" url="svnmodule/svn_quickref.html" />        
+    <mapID target="svn_setup" url="svnmodule/svn_setup.html" />        
+
+    <mapID target="svn_checkout" url="svnmodule/svn_checkout.html" />
+    <mapID target="svn_updating" url="svnmodule/svn_updating.html" />
+    <mapID target="svn_diff" url="svnmodule/svn_diff.html" />
+    <mapID target="svn_commit" url="svnmodule/svn_commit.html" />
+    <mapID target="svn_projects" url="svnmodule/svn_project-system.html" />
+
+    <mapID target="svn_merge" url="svnmodule/svn_merge.html" />
+    <mapID target="svn_mergeresolve" url="svnmodule/svn_mergeresolve.html" />
+
+<!-- ========================== -->
+<!--CSH topics-->
     <!--TODO find out what this is for-->
     <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
 
@@ -24,11 +38,26 @@
     <!--Checkout wizard, step 2-->	
     <mapID target="org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep" url="pending.html" />
 
+<!--Commit dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.commit.CommitAction" url="pending.html" />
 
+<!--Create Copy dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.copy.CreateCopy" url="pending.html" />
 
+<!--Subversion Diff window-->
+    <mapID target="org.netbeans.modules.subversion.ui.diff.DiffTopComponent" url="pending.html" />
+<!--Subversion Versioning window-->
+    <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="pending.html" />
+<!--Subversion Switch To dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="pending.html" />
+<!--Subversion Search History window-->
+    <mapID target="org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" url="pending.html" />
+<!--Subversion Revert Modifications dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="pending.html" />
 
-
-
+<!--Merge dialog-->
+<!--TODO create CSH topic-->
+    <mapID target="org.netbeans.modules.subversion.ui.copy.Merge" url="svnmodule/svn_merge.html" />
 
 </map>
 
