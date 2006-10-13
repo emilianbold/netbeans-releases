@@ -274,7 +274,7 @@ registry UI.
         <a href="@TOP@/org/netbeans/modules/j2ee/deployment/devmodules/spi/J2eeModuleProvider.ConfigSupport.html">ConfigSupport</a> and 
         <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/ConfigurationSupport.html">ConfigurationSupport</a> implementations.
         In case of conflict with existing data source, the first conflicting data source is passed to the thrown 
-        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/DatasourceAlreadyExistsException.html">DatasourceAlreadyExistsException</a>.
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/common/api/DatasourceAlreadyExistsException.html">DatasourceAlreadyExistsException</a>.
     </p>
 </usecase>
 
@@ -288,7 +288,7 @@ registry UI.
         <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/DatasourceManager.html">DatasourceManager</a> instance
         for deploying (registering) on the server.<br/>
         All module data sources having a conflict with some existing server data source are passed to the thrown 
-        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/plugins/api/DatasourceAlreadyExistsException.html">DatasourceAlreadyExistsException</a>.
+        <a href="@TOP@/org/netbeans/modules/j2ee/deployment/common/api/DatasourceAlreadyExistsException.html">DatasourceAlreadyExistsException</a>.
     </p>
 </usecase>
 

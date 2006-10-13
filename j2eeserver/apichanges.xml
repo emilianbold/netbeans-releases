@@ -201,10 +201,10 @@ is the proper place.
                     and on the module's target server.
                 </p>
             </description>
+            <class package="org.netbeans.modules.j2ee.deployment.common.api" name="Datasource"/>
+            <class package="org.netbeans.modules.j2ee.deployment.common.api" name="DatasourceAlreadyExistsException"/>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="Datasource"/>
-            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DatasourceAlreadyExistsException"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DatasourceManager"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="OptionalDeploymentManagerFactory"/>
         </change>
