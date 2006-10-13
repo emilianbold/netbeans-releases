@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE helpset
@@ -8,7 +8,6 @@
          "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
 <helpset version="2.0">
 
-<!-- last updated 28Jul05-->
 
   <!-- title -->
   <title>NetBeans Modules Help</title>
