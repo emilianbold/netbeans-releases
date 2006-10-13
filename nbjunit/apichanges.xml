@@ -32,6 +32,25 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="PreferencesForTests">
+        <api name="nbjunit"/>
+        <summary>Default implementation of Preferences isn't used for running tests anymore</summary>
+        <version major="1" minor="38"/>
+        <date day="13" month="10" year="2006"/>
+        <author login="rmatous"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Not persistent implementation of <code>java.util.prefs.Preferences</code> 
+                is installed in place of the platform-specific default implementation for running tests.
+                See document
+                <a href="@org-openide-util@/org/openide/util/doc-files/preferences.html">Preferences in NetBeans</a>
+                to learn more.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbTestCase"/>
+    </change>
+    
     <change id="MockServicesAndLookup">
         <api name="nbjunit"/>
         <summary>Added class <code>MockServices</code></summary>

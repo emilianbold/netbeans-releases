@@ -215,5 +215,18 @@ own code in.
 (See as an example: <A HREF="http://www.netbeans.org/source/browse/ide/launcher/upgrade/src/org/netbeans/upgrade/systemoptions/TaskTagsProcessor.java?view=markup">TaskTagsProcessor</A>
  and here is a <A
    HREF="http://www.netbeans.org/source/browse/ide/launcher/upgrade/test/unit/src/org/netbeans/upgrade/systemoptions/ExampleSettingsTest.java?view=markup">test</A>).
+ <H4 ALIGN=LEFT>How to write tests that needs Preferences API?</H4>
+ Not persistent implementation of <code>java.util.prefs.Preferences</code> 
+ is installed in place of the platform-specific default implementation for
+ running tests which is in spirit of unit testing because individual tests
+ shouldn't interact. But if this behaviour isn't suitable then there is possible
+ to reinstall platform-specific default implementation again:  
+<PRE>
++         public void run(final TestResult result) {
++             //just initialize Preferences before code NbTestCase
++             Preferences.userRoot();                        
++             super.run(result);
++         }
+</PRE>
 </body>
 </html>

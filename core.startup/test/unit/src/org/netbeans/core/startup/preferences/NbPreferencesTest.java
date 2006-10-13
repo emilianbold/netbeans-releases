@@ -19,16 +19,17 @@
 
 package org.netbeans.core.startup.preferences;
 
+import java.util.prefs.Preferences;
 import junit.framework.Test;
+import junit.framework.TestResult;
 import junit.framework.TestSuite;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Radek Matous
  */
-public class NbPreferencesTest extends NbTestCase {
+public class NbPreferencesTest extends NbTestCase {    
     public NbPreferencesTest(String testName) {
         super(testName);
     }
@@ -48,6 +49,12 @@ public class NbPreferencesTest extends NbTestCase {
             super(testName);                        
         }
         
+        public void run(final TestResult result) {
+            //just do registration before code NbTestCase
+            NbPreferencesFactory.doRegistration();       
+            Preferences.userRoot();                        
+            super.run(result);
+        }
         
         protected void tearDown() throws Exception {
             super.tearDown();
@@ -59,13 +66,12 @@ public class NbPreferencesTest extends NbTestCase {
              **/
         }
         
-        protected void setUp() throws Exception {
-            super.setUp();
-            NbPreferencesFactory.doRegistration();
+        protected void setUp() throws Exception {            
+            super.setUp();                        
             Statistics.CHILDREN_NAMES.reset();
             Statistics.FLUSH.reset();
             Statistics.LOAD.reset();
             Statistics.REMOVE_NODE.reset();
-        }        
+        }           
     }
 }

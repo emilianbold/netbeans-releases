@@ -52,7 +52,7 @@ import org.netbeans.insane.scanner.ObjectMap;
 import org.netbeans.insane.scanner.ScannerUtils;
 import org.netbeans.insane.scanner.Visitor;
 import org.netbeans.junit.diff.Diff;
-
+import org.netbeans.junit.internal.MemoryPreferencesFactory;
 /**
  * NetBeans extension to JUnit's {@link TestCase}.
  * Adds various abilities such as comparing golden files, getting a working
@@ -147,13 +147,15 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     protected Level logLevel() {
         return null;
     }
-     
+         
     /**
      * Runs the test case, while conditionally skip some according to result of
      * {@link #canRun} method.
      */
     public void run(final TestResult result) {
         if (canRun()) {
+            System.setProperty("java.util.prefs.PreferencesFactory",
+                    MemoryPreferencesFactory.class.getName());//NOI18N            
             Level lev = logLevel();
             if (lev != null) {
                 Log.configure(lev, NbTestCase.this);
