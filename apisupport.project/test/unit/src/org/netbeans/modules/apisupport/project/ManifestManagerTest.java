@@ -20,6 +20,7 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import java.util.Collections;
 
 /**
  * Test functionality of ManifestManager.
@@ -83,4 +84,12 @@ public class ManifestManagerTest extends TestBase {
         ManifestManager mm = ManifestManager.getInstance(manifest, true);
         assertEquals("one public package", 1, mm.getPublicPackages().length);
     }
+    
+    public void testJarWithNoManifest() throws Exception {
+        // See #87064.
+        File jar = new File(getWorkDir(), "test.jar");
+        TestBase.createJar(jar, Collections.singletonMap("foo", "bar"), null);
+        ManifestManager.getInstanceFromJAR(jar);
+    }
+    
 }

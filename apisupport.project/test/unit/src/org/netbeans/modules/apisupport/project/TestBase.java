@@ -409,14 +409,16 @@ public abstract class TestBase extends NbTestCase {
      * Create a fresh JAR file.
      * @param jar the file to create
      * @param contents keys are JAR entry paths, values are text contents (will be written in UTF-8)
-     * @param manifest a manifest to store
+     * @param manifest a manifest to store (or null for none)
      */
     public static void createJar(File jar, Map/*<String,String>*/ contents, Manifest manifest) throws IOException {
-        manifest.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
+        if (manifest != null) {
+            manifest.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
+        }
         jar.getParentFile().mkdirs();
         OutputStream os = new FileOutputStream(jar);
         try {
-            JarOutputStream jos = new JarOutputStream(os, manifest);
+            JarOutputStream jos = manifest != null ? new JarOutputStream(os, manifest) : new JarOutputStream(os);
             Iterator it = contents.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry) it.next();
