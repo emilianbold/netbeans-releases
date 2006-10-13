@@ -122,6 +122,7 @@ public class DownloadManager {
         public void run() {
             try {
                 while (true) {
+                    if (Thread.interrupted()) return;
                     synchronized (this) {
                         wait();
                     }
@@ -132,11 +133,11 @@ public class DownloadManager {
         }
         
         public void URLStatusChanged(URL url){
-          //  if (queue.getStatus(url) == URLStatus.DOWNLOAD_FINISHED) {
-                synchronized (this) {
-                    notify();
-                }
-          //  }
+            //  if (queue.getStatus(url) == URLStatus.DOWNLOAD_FINISHED) {
+            synchronized (this) {
+                notify();
+            }
+            //  }
         }
     }
 }
