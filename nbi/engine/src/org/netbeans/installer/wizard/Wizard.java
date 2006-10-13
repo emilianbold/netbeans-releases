@@ -35,14 +35,12 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathFactory;
-import org.netbeans.installer.download.DownloadManager;
 import org.netbeans.installer.download.DownloadOptions;
-import org.netbeans.installer.product.ProductComponent;
+import org.netbeans.installer.util.FileProxy;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
-import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
@@ -111,9 +109,9 @@ public class Wizard extends SubWizard {
             options.put(DownloadOptions.CLASSLOADER, loader);
             
             File schemaFile =
-                    DownloadManager.getInstance().download(componentsSchemaURI, options);
+                    FileProxy.getInstance().getFile(componentsSchemaURI, loader);
             File componentsFile =
-                    DownloadManager.getInstance().download(componentsURI, options);
+                    FileProxy.getInstance().getFile(componentsURI, loader);
             
             SchemaFactory schemaFactory =
                     SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -147,7 +145,7 @@ public class Wizard extends SubWizard {
     }
     
     private static List<WizardComponent> loadWizardComponents(Node node, ClassLoader loader)
-            throws InitializationException {
+    throws InitializationException {
         List<WizardComponent> wizardComponents = new ArrayList<WizardComponent>();
         
         XPath xpath = XPathFactory.newInstance().newXPath();
@@ -168,7 +166,7 @@ public class Wizard extends SubWizard {
     }
     
     private static WizardComponent loadWizardComponent(Node node, ClassLoader loader)
-            throws InitializationException {
+    throws InitializationException {
         WizardComponent component = null;
         
         try {
@@ -223,7 +221,7 @@ public class Wizard extends SubWizard {
     }
     
     private static List<WizardCondition> loadWizardConditions(Node node, ClassLoader loader)
-            throws InitializationException {
+    throws InitializationException {
         List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
         
         try {
@@ -242,7 +240,7 @@ public class Wizard extends SubWizard {
                         (WizardCondition) Class.forName(classname).newInstance();
                 
                 Node propertiesNode = (Node)
-                        xpath.evaluate("./properties", node, XPathConstants.NODE);
+                xpath.evaluate("./properties", node, XPathConstants.NODE);
                 loadProperties(propertiesNode, condition, loader);
                 wizardConditions.add(condition);
             }
@@ -264,7 +262,7 @@ public class Wizard extends SubWizard {
     }
     
     private static void loadProperties(Node node, Object component, ClassLoader loader)
-            throws InitializationException {
+    throws InitializationException {
         try {
             XPath xpath = XPathFactory.newInstance().newXPath();
             

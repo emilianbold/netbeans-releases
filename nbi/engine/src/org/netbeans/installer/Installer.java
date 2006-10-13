@@ -23,11 +23,14 @@ package org.netbeans.installer;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+
 import java.util.Locale;
 import java.util.Properties;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.netbeans.installer.downloader.DownloadManager;
+import org.netbeans.installer.downloader.DownloaderConsts;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
@@ -151,6 +154,9 @@ public class Installer {
             ErrorManager.getInstance().notify(CRITICAL, "Cannot write to local directory - not enought permissions");
         }
         
+        DownloaderConsts.setWorkingDirectory(new File(localDirectory, "wd"));
+        DownloaderConsts.setOutputDirectory(new File(localDirectory, "downloads"));
+        DownloadManager.getInstance().start();
         
         final Wizard wizard = Wizard.getInstance();
         
@@ -169,6 +175,7 @@ public class Installer {
      */
     public void cancel() {
         // exit with the cancel error code
+        DownloadManager.getInstance().shutdown();
         System.exit(CANCEL_ERRORCODE);
     }
     
@@ -184,7 +191,7 @@ public class Installer {
         
         wizard.executeAction(new FinalizeRegistryAction());
         wizard.close();
-        
+        DownloadManager.getInstance().shutdown();
         System.exit(NORMAL_ERRORCODE);
     }
     
@@ -197,6 +204,7 @@ public class Installer {
      */
     public void criticalExit() {
         // exit immediately, as the system is apparently in a crashed state
+        DownloadManager.getInstance().shutdown();
         System.exit(CRITICAL_ERRORCODE);
     }
     
