@@ -344,7 +344,7 @@ public class Wsdl2Java {
         //File wsdlFile = new File("D:\\wsdl2java\\AddressBook.wsdl");
         
         try{
-            wsdl2java.setWsdlUrl(wsdlFile.toURL());
+            wsdl2java.setWsdlUrl(wsdlFile.toURI().toURL());
             //wsdl2java.setWsdlUrl(new URL("http://www.lixusnet.com/lixusnet/AddFinder.jws?wsdl"));
             //wsdl2java.setWsdlUrl(new URL("http://ws.digiposs.com/WorldTime.jws?wsdl"));
             //wsdl2java.setWsdlUrl(new URL("http://www.xmethods.net/sd/2001/TemperatureService.wsdl"));

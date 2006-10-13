@@ -44,7 +44,7 @@ public class ExtensionClassLoader extends URLClassLoader {
         
     public void addURL(File f) throws MalformedURLException, RuntimeException {
             if (f.isFile()){
-                addURL(f.toURL());
+                addURL(f.toURI().toURL());
               ///  System.out.println("adding file  = "+f.getAbsolutePath());
               ///  System.out.println("adding file  exists= "+f.exists() );
             }
@@ -53,13 +53,6 @@ public class ExtensionClassLoader extends URLClassLoader {
             }
     }
     
-
-    
-    
-
-    
-    
-
     protected PermissionCollection getPermissions(CodeSource _cs) {
         Permissions p = new Permissions();
         p.add(new AllPermission());
