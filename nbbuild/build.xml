@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -91,8 +91,10 @@ Microsystems, Inc. All Rights Reserved.
     </fail>
     <!-- OK, continue: -->
     <mkdir dir="build/antclasses"/>
+    <available property="have.javahelp" file="../apisupport/external" type="dir"/>
     <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.4">
       <classpath refid="bootstrap-cp"/>
+      <exclude name="**/CheckHelpSets.java" unless="have.javahelp"/>
     </javac>
     <jar jarfile="nbantext.jar">
       <fileset dir="build/antclasses"/>
@@ -121,6 +123,13 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="init" depends="init-module-list,set-buildnumber,init-tasks">
+    <fail message="You need to have some modules checked out to build NetBeans. For example, try running the 'checkout' target.">
+        <condition>
+            <not>
+                <available file="../core"/>
+            </not>
+        </condition>
+    </fail>
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
@@ -1157,13 +1166,31 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 <!-- end of localized builds -->
 
 
-  <target name="print-selected-modules" depends="init" description="Prints list of modules to build in selected moduleconfig.">
+  <target name="print-selected-modules" depends="init-module-list" description="Prints list of modules to build in selected moduleconfig.">
     <echo message="modules=${allmodules}"/>
   </target>
 
-  <target name="print-cvs-modules" depends="init" description="Prints list of cvs modules required to build in selected moduleconfig.">
+  <target name="print-cvs-modules" depends="init-module-list" description="Prints list of CVS (top-level) modules required to build in selected moduleconfig.">
     <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
-    <printcvsmodules modules="${fixedmodules},${modules}" targetprefix="all-" />
+    <printcvsmodules modules="${fixedmodules},${modules}" cvsmodulesproperty="cvsmodules"/>
+  </target>
+  
+  <target name="checkout" depends="print-cvs-modules" description="Check out all CVS modules which are needed to build (and test) the selected moduleconfig.">
+      <!-- The following mess is an attempt to guess the correct CVSROOT and branch from the current checkout. -->
+      <tempfile property="cvsinfo" destdir="${java.io.tmpdir}" prefix="cvsinfo" suffix=".properties"/>
+      <loadfile srcfile="CVS/Root" property="cvsroot.with.newline" failonerror="false"/>
+      <property name="cvsroot.with.newline" value=":pserver:anoncvs@cvs.netbeans.org:/cvs&#13;&#10;"/>
+      <echo file="${cvsinfo}">cvsroot=${cvsroot.with.newline}</echo>
+      <loadfile srcfile="CVS/Tag" property="cvstag.with.T.and.newline" failonerror="false"/>
+      <property name="cvstag.with.T.and.newline" value="T"/>
+      <echo file="${cvsinfo}" append="true">cvstag.with.T=${cvstag.with.T.and.newline}</echo>
+      <property file="${cvsinfo}"/>
+      <delete file="${cvsinfo}"/>
+      <pathconvert property="cvstag">
+          <map from="/T" to=""/>
+          <path path="/${cvstag.with.T}"/>
+      </pathconvert>
+      <cvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} jemmy jellytools xtest" tag="${cvstag}" quiet="true" failonerror="true"/>
   </target>
 
   <target name="check-commit-validation">
