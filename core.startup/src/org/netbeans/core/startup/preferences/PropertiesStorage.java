@@ -184,7 +184,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
                     OutputStream os = null;
                     try {
                         os = outputStream();
-                        properties.store(os,"");//NOI18N
+                        properties.store(os, null);
                     } finally {
                         if (os != null) os.close();
                     }
