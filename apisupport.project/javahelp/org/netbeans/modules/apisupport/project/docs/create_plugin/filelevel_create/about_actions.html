@@ -1,89 +1,95 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
 <head>
 
-	<title>About Actions</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <title>About Actions</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-	<h2>About Actions</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
+    <h2>About Actions</h2>
+    <p><small> 
+        <a href="#seealso">See Also</a> 
+    </small></p>
 
-Actions are defined by the <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/overview-summary.html">
-    <param name="text" value="<html><u>Actions API</u>.</html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object> <p>The Actions API is a standard representation of the actions a user can 
-invoke. It provides
-an interface to such IDE elements as toolbars, menus, and keyboard shortcuts, allowing
-third parties to create actions that are sensitive to context and invocable in
-more than one way. The Actions API offers the ability to
-write the action once, and have it automatically apply as appropriate. For example, a
-user action might show up in both a toolbar and be selected by a keyboard shortcut,
-all from the same implementation.
+    <p>Actions are defined by the <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-dialogs/overview-summary.html">
+        <param name="text" value="<html><u>Actions API</u>.</html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object> <p>The Actions API is a standard representation of the actions a user can 
+        invoke. It provides
+        an interface to such IDE elements as toolbars, menus, and keyboard shortcuts, allowing
+        third parties to create actions that are sensitive to context and invocable in
+        more than one way. The Actions API offers the ability to
+        write the action once, and have it automatically apply as appropriate. For example, a
+        user action might show up in both a toolbar and be selected by a keyboard shortcut,
+    all from the same implementation.</p>
 
-<p>Actions are typically presented in pop-up menus, or attached to a component such as
-a window, node, or data object.
+    <p>Actions are typically presented in pop-up menus, or attached to a component such as
+    a window, node, or data object.</p>
 
 
-<p>The Actions API provides two types of action:
- <ul>
-	 <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/util/actions/CallableSystemAction.html">
-    <param name="text" value="<html><u>Class CallableSystemAction</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object><p>An action called programmatically from menu items in the main menu bar,
-toolbar buttons in the main toolbars, and keyboard shortcuts throughout the IDE. For example, in the IDE, the action that
-defines Tools &gt; Options subclasses <tt>CallableSystemAction</tt>.
+    <p>The Actions API provides two types of action:
+    <ul>
+        <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/util/actions/CallableSystemAction.html">
+            <param name="text" value="<html><u>Class CallableSystemAction</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object><p>An action that can be called programmatically throughout the IDE,
+        regardless of context, be it from a menu item in the main menu bar,
+        a toolbar button in the main toolbar, or a keyboard shortcut. For example, in the IDE, the action that
+        defines Tools &gt; Options subclasses <tt>CallableSystemAction</tt>.
  
-	  <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-nodes/org/openide/util/actions/CookieAction.html">
-    <param name="text" value="<html><u>Class CookieAction</u></html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object><p>An action called programmatically from a node. Nodes typically represent DataObjects. A DataObject is basically
-a parsed file&#8212;a Java object that knows the meaning of what is in a file or what the file represents and can do 
-something with it. Nodes add features to DataObjects that the user interacts with, such as actions, 
-localized display names, and icons.</p>
- </ul>
+        <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://www.netbeans.org/download/dev/javadoc/org-openide-nodes/org/openide/util/actions/CookieAction.html">
+        <param name="text" value="<html><u>Class CookieAction</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+        </object><p>An action that is context aware. Whether it can be called depends on
+            the cookies of the selected nodes. Cookies are a design 
+            pattern used to add behaviors to existing data objects and nodes, or to separate 
+            an implementation from the main object. The Loaders API describes how to use cookies in 
+            conjunction with data objects, including creating new cookie interfaces, creating new
+            cookie support implementations, and reusing existing supports. The Nodes API also permits 
+            use of cookies to add behavior to nodes. 
 
- <p>Both types of action can be created with the <a href="../../csh/ActionTypePanel.html">New Action wizard</a>. The wizard
- automatically registers actions in the <a href="../../about/about-xml-layers.html"><tt>layer.xml</tt> file</a>.
+        </p>
+    </ul>
 
- <p>For an example of the use of an action that shows up as a menu item and as a toolbar button, see the
-		 <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://platform.netbeans.org/tutorials/quickstart-nbm.html">
-    <param name="text" value="<html><u>NetBeans IDE 5.0 Plug-in Module Quick Start Guide</u>.</html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object> For an example of an action that shows up as an edit box in a toolbar, see the
-		 <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://platform.netbeans.org/tutorials/nbm-google.html">
-    <param name="text" value="<html><u>NetBeans Google Toolbar Module Tutorial</u>.</html>">
-    <param name="textFontSize" value="medium">
-    <param name="textColor" value="blue">
-</object>
+    <p>Both types of action can be created with the <a href="../../csh/ActionTypePanel.html">New Action wizard</a>. The wizard
+    automatically registers actions in the <a href="../../about/about-xml-layers.html"><tt>layer.xml</tt> file</a>.
 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
-    <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
-</dl> 
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+    <p>For an example of the use of an action that shows up as a menu item and as a toolbar button, see the
+    <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://platform.netbeans.org/tutorials/quickstart-nbm.html">
+        <param name="text" value="<html><u>NetBeans IDE 5.0 Plug-in Module Quick Start Guide</u>.</html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object> For an example of an action that shows up as an edit box in a toolbar, see the
+    <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://platform.netbeans.org/tutorials/nbm-google.html">
+        <param name="text" value="<html><u>NetBeans Google Toolbar Module Tutorial</u>.</html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+    </object>
+
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
+    </dl> 
+    <hr>
+    <small><a href="../../credits.html">Legal Notices</a></small> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>

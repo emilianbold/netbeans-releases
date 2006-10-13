@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
@@ -8,7 +8,7 @@
 
     <title>About Module Project Templates</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
@@ -21,14 +21,17 @@
 
     <ul>
         <li><b><img src="../../images/module.gif" width="16" height="16" alt="Module icon">&nbsp;Module project.</b>
-        Use a module project as the place where you code your plug-in module. Module projects implement the
-        plug-in module's features and functionality that extend the NetBeans APIs, which you kickstart by using
+        Use a module project as the place where you code your module. Module projects implement the
+        module's features and functionality that extend the NetBeans APIs, which you kickstart by using
         file templates. In addition, module projects include the business logic that integrate the 
-        library wrapper module projects into the plug-in module. Code housed in module projects also provide the user interface for receiving and processing user input. </li>
+        library wrapper module projects into the module. Code housed in module projects also provide the user interface for receiving and processing user input. </li>
         
         <li><b><img src="../../images/module.gif" width="16" height="16" alt="Library Wrapper Module icon">&nbsp;Library Wrapper Module project.</b>
-        Use library wrapper module projects to put one or more library JAR files on a plug-in module's classpath.
-        You can also export some or all of the JAR file's packages as public packages.</li>
+        Use library wrapper module projects to put one or more library JAR files on a module's classpath.      
+        You have to export some or all of the packages as public, or the library wrapper module 
+        becomes useless. 
+        The wizard that you use to create the library wrapper module
+        project automatically exports as public any packages it finds in the JARs.</li>
         <li><b><img src="../../images/suite.gif" width="16" height="16" alt="Module Suite icon">&nbsp;Module Suite project.</b>
             Use a module suite project to group and deploy a set of interdependent module projects and library wrapper
             module projects. For rich-client applications, the module suite project is a skeleton application
@@ -84,7 +87,7 @@
                 for the module. By default, the <tt>MANIFEST.MF</tt> file created for a module project
                 specifies its version, name, <tt>layer.xml</tt>, localizing bundle, and specification version.
             </td>
-            <td>All</td>
+            <td>Module Project</td>
         </tr>
         <tr valign="top"> 
             <td>Project Metadata</td>
@@ -103,7 +106,7 @@
     </table>
     <dl>
         <dt><a name="seealso">See Also</a></dt>
-        <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
+        <dd><a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
         <dd><a href="../../about/about-netbeans-platform.html">About the NetBeans Platform</a></dd>
         <dd><a href="../../about/nbmodule-about-system-filesystem.html">About the System Filesystem</a></dd>
         <dd><a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>
@@ -113,4 +116,9 @@
     </dl> 
     <hr>
     <small><a href="../../credits.html">Legal Notices</a> </small>
+        <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>

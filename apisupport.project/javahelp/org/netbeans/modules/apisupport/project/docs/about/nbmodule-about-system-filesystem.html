@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
@@ -8,7 +8,7 @@
 
     <title>About the System Filesystem</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-    <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
@@ -18,7 +18,7 @@
     </small></p>
     The system filesystem is the central repository for configuration data in NetBeans.
     It is composed at runtime of a stack of <a href="about-xml-layers.html">XML layer files</a>
-    supplied by plug-in modules in
+    supplied by modules in
     the system.
     It is a <i>virtual</i> filesystem that contains configuration information.
     NetBeans stores a wide variety of configuration information in the system filesystem. For example, the system filesystem 
@@ -31,7 +31,7 @@
     filesystem to store data that relate to your module. You can also add objects 
     to existing folders. One of the reasons 
     to use the system filesystem is that it enables an application to be constructed piecemeal
-    from pluggable components (plug-in modules) without requiring the use of a monolithic "master controller" that knows about everything. 
+    from pluggable components (modules) without requiring the use of a monolithic "master controller" that knows about everything. 
     <p>One important aspect of a NetBeans virtual filesystem is that it can fire events to notify the rest of 
     the system when something in it changes. NetBeans listens for changes in the system filesystem, and if, 
     for example, something creates a new object in one of the menu folders, that new item will appear in the menu. 

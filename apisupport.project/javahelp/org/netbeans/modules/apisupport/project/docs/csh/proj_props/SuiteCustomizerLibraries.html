@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
 <head>
     <title>Module Suite Project Properties Dailog Box: Libraries</title>
-    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
     <h2>Module Suite Project Properties Dialog Box: Libraries</h2>
@@ -21,15 +21,20 @@
 
     <ul>
         <li><b>Java Platform:</b> Specifies the target JDK for building module
-        projects or module suite projects. This is supported in
-        Update 1. However, you <u>must</u> use a "5.0 update 1" <a href="../NbPlatformCustomizer.html">harness</a> to build your 
-        module project or module suite project for this feature to work.</li>
+        projects or module suite projects.</li>
         <li><b>NetBeans Platform:</b> Specifies the target NetBeans platform against which the
         module suite is compiled and run. Available NetBeans platforms are those that have been registered in the 
         <a href="../NbPlatformCustomizer.html">NetBeans Platform Manager</a>.</li>
 	
         <li><b>Platform Modules.</b> Specifies the clusters that will be deployed together with
-        the module suite project. All clusters in the platform are available by default.
+        the module suite project. The following clusters are available by default:
+        <ul>
+            <li>enterprise3
+            <li>harness
+            <li>ide7
+            <li>nb5.5
+            <li>platform6
+        </ul>
     </ul>
     <dl>
         <dt><a name="seealso">See Also</a></dt>

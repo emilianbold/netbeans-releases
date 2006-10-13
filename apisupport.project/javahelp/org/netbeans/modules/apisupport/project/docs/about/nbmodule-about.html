@@ -1,48 +1,47 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
 <head>
 
-    <title>About Plug-in Modules and Rich-Client Applications</title>
+    <title>About Modules and Rich-Client Applications</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-    <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
-    <h2>About Plug-in Modules and Rich-Client Applications</h2>
+    <h2>About Modules and Rich-Client Applications</h2>
     <p><small> 
         <a href="#seealso">See Also</a> 
     </small></p>
-    <p>A NetBeans plug-in module is a Java archive (JAR) file which contains Java classes written to interact with the 
+    <p>A NetBeans module is a Java archive (JAR) file which contains Java classes written to interact with the 
     <a href="about-open-apis.html">NetBeans APIs</a>. 
-    A plug-in module identifies 
+    A module identifies 
     itself as a module by an entry in its <tt>MANIFEST.MF</tt> file.
-    NetBeans plug-in modules are packaged as NBM files (<tt>.nbm</tt> extension) for non-installer
+    NetBeans modules are packaged as NBM files (<tt>.nbm</tt> extension) for non-installer
     distribution, usually via the Update Center wizard under the Tools menu.
-    <p>NetBeans plug-in modules are written with one of two aims in mind:
+    <p>NetBeans modules are written with one of two aims in mind:
     <ul>
         <li><b>Extending the IDE.</b> You can very easily generate skeleton
         code for extending the IDE's functionality with 
-        new features. For example, you can use the skeleton code to write plug-in modules that make your favorite cutting-edge 
+        new features. For example, you can use the skeleton code to write modules that make your favorite cutting-edge 
         technologies available to the NetBeans IDE. Or, if you miss some functionality in the IDE, you
         can add it yourself, by using the skeleton code to
-        write a plug-in module that provides the desired functionality.
+        write a module that provides the desired functionality.
         <li><b>Building a rich-client application.</b> You can use the core of the IDE as a platform on 
         top of which you develop standalone desktop applications. The core of the IDE is a separate product
-        called the <a href="about-netbeans-platform.html">NetBeans Platform</a>. By loading plug-in modules
-        into the NetBeans Platform, you can save a lot of development time 
-        by reusing the platform's existing features such as menus, toolbars, windowing systems. 
+        called the <a href="about-netbeans-platform.html">NetBeans Platform</a>. By basing your application on the NetBeans Platform, 
+ you can save a lot of development time, because you can 
+        reuse the platform's existing features such as menus, toolbars, and windowing systems. 
         
         <ul class="note"><li>Even though it is a separate product, there is little need to download the NetBeans Platform separately&#8212;you can develop
-        the rich-client application in the IDE and then exclude the plug-in modules that are specific
+        the rich-client application in the IDE and then exclude the modules that are specific
         to the IDE but that are superfluous to you application. Only when
-        you are creating a rich-client application that does not make
-        use of the IDE's features, such as editor functionality, does
-        it make sense to download the NetBeans Platform and install
-        the plug-in modules that define the application into it.</ul>
+        you want to use a different <i>version</i> of the platform than is included in the IDE,
+        does it make sense to download the NetBeans Platform and install
+        the modules that define the application into it.</ul>
  
         
     </ul>

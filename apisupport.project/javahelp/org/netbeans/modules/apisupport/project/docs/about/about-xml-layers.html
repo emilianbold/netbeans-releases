@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
@@ -8,7 +8,7 @@
 
     <title>About XML Layer Files</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-    <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
@@ -16,16 +16,16 @@
     <p><small> 
         <a href="#seealso">See Also</a> 
     </small></p>
-    <p>Layer files (<tt>layer.xml</tt>) are small XML files provided by plug-in modules,
+    <p>Layer files (<tt>layer.xml</tt>) are small XML files provided by modules,
     which define a virtual filesystem. The layer file defines folders
     and files that will be merged into the <a href="nbmodule-about-system-filesystem.html">system filesystem</a> that
     makes up the runtime configuration information that the NetBeans Platform
     and its derivatives (such as the IDE) use.
 
-    <p>Layer files help to make it possible for plug-in modules to be
+    <p>Layer files help to make it possible for modules to be
     dynamically installed. The components of the IDE whose content is composed
     from folders in the system filesystem listen for changes
-    in folders and files in a filesystem. If a plug-in module is added at
+    in folders and files in a filesystem. If a module is added at
     runtime, the system filesystem fires changes; the user interface notices
     that the contents of the folder has changed and
     updates the user interface to reflect the changes.

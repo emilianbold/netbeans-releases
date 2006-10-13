@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
@@ -8,7 +8,7 @@
 
     <title>Creating a Library Wrapper Module Project</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
@@ -17,9 +17,10 @@
         <a href="#seealso">See Also</a> 
     </small></p>
     Use library wrapper module project template to create a library wrapper module
- project. Library wrapper module projects put one or more library
-    JAR files on a plug-in module's classpath. You can also export
-    some or all of the JAR file's packages as public packages.
+    project. Library wrapper module projects put one or more library
+    JAR files on a module's classpath.  You have to export some or all of the packages as public, or the library wrapper module 
+    becomes useless. The wizard that you use to create the library wrapper module
+    project automatically exports as public any packages it finds in the JARs.
 
     <p><b>To create a library wrapper module project:</b>
     <ol>

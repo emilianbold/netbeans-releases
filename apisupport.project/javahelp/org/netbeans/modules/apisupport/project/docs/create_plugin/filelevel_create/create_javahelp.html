@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
@@ -8,7 +8,7 @@
 
     <title>Bundling a JavaHelp Help Set</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
@@ -19,7 +19,7 @@
 
     <p>A <a href="../libs_jhelp/about_libs_jhelp.html">JavaHelp help set</a> 
     provides help files that explain the features and
-    functionality of your plug-in module.
+    functionality of your module.
 
     <p><b>To create a new JavaHelp help set:</b>
     <ol>
@@ -29,51 +29,47 @@
         <li>In the Location page, note the files that will be created and also note that they will be housed in a new folder called <tt>docs</tt>:
         <ul>
             <li><b>-about.html.</b> A sample HTML file that is registered
-             in the <tt>idx.xml</tt> file, <tt>map.xml</tt> file, and <tt>toc.xml</tt> file.
+            in the <tt>idx.xml</tt> file, <tt>map.xml</tt> file, and <tt>toc.xml</tt> file.
             <li><b>-hs.xml.</b> Helpset file.
             <li><b>-idx.xml.</b> Index file. Using the map ID created
-             in the <tt>map.xml</tt> file, you add items to the <tt>idx.xml</tt> file,
-              with the name of the topic that you want displayed in the index.
+            in the <tt>map.xml</tt> file, you add items to the <tt>idx.xml</tt> file,
+            with the name of the topic that you want displayed in the index.
             <li><b>-map.xml.</b> Map file. Each HTML file must be registered in the
-             map file. The map ID that you create for the HTML file is used in
-              the <tt>toc.xml</tt> file and <tt>idx.xml</tt> file.
+            map file. The map ID that you create for the HTML file is used in
+            the <tt>toc.xml</tt> file and <tt>idx.xml</tt> file.
             <li><b>-toc.html.</b> Table of contents file. Using the map ID created
-             in the <tt>map.xml</tt> file, you add items to the <tt>toc.xml</tt> file,
-              with the name of the topic that you want displayed in the table
-               of contents.
+            in the <tt>map.xml</tt> file, you add items to the <tt>toc.xml</tt> file,
+            with the name of the topic that you want displayed in the table
+            of contents.
             <li><b>-helpset.xml.</b> The reference file that is registered in
-             the <tt>layer.xml</tt> file.
+            the <tt>layer.xml</tt> file.
         </ul>
         <p><b>Note:</b> Each of the names above is prefixed by the name of
-         the project. For example, if the project name is <tt>myproject</tt>,
-          the files above would be <tt>myproject-about.html</tt>, <tt>myproject-hs.xml</tt>, etc.
+        the project. For example, if the project name is <tt>myproject</tt>,
+        the files above would be <tt>myproject-about.html</tt>, <tt>myproject-hs.xml</tt>, etc.
         <li>Click Finish.
     </ol>
 
-<p><b>To hide the IDE's default JavaHelp help sets:</b>
 
-<p>Optionally, if you do not want to include the IDE's default JavaHelp help sets with
- your plug-in module,
- you can hide them. Particularly when you are creating a rich-client
- application on top of the NetBeans Platform, it is unlikely that you
- will want the IDE's JavaHelp help sets to be included with your application.
- Therefore, in such scenarios, add the following tags to your module's <tt>layer.xml</tt> file:
-
-<pre>&lt;folder name="Services"&gt;
-    &lt;folder name="JavaHelp"&gt;
-	&lt;!--All 9 sub-helpsets provided by default by the IDE will be hidden: --&gt;
-	&lt;file name="com-sun-enterprise-tools-studio-j2ee-helpset.xml_hidden"/&gt;
-	&lt;file name="org-netbeans-modules-j2ee-helpset.xml_hidden"/&gt;
-	&lt;file name="org-netbeans-modules-usersguide-helpset.xml_hidden"/&gt;
-	&lt;file name="org-netbeans-modules-apisupport-project-helpset.xml_hidden"/&gt;
-        &lt;file name="org-netbeans-modules-web-monitor-resources-helpset.xml_hidden"/&gt;
-        &lt;file name="org-netbeans-modules-db-helpset.xml_hidden"/&gt;            
-	&lt;file name="org-netbeans-modules-tomcat5-helpset.xml_hidden"/&gt;            
-	&lt;file name="org-netbeans-modules-dbschema-helpset.xml_hidden"/&gt;            
-	&lt;file name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml_hidden"/&gt;
-    &lt;/folder&gt;
-&lt;/folder&gt;</pre>
-
+    <p>Optionally, if you do not want to include the IDE's default JavaHelp help sets with
+    your module,
+    you can hide them. Particularly when you are creating a rich-client
+    application on top of the NetBeans Platform, it is unlikely that you
+    will want the IDE's JavaHelp help sets to be included with your application.
+    
+    <p><b>To hide a JavaHelp help set:</b>
+    <ol>
+        <li>In the Projects window, expand the Important Files node.
+        <li>In the Important Files node, expand the XML Layer node, and then
+        wait a moment while the subnodes are loaded.
+        <li>Expand the <tt>&lt;this layer in context&gt;</tt> node.
+        <li>Within the <tt>Services/JavaHelp</tt> node, select the nodes of
+        the JavaHelp sets that you want to delete. Choose Delete.
+    </ol>
+ <p>In the <tt>layer.xml</tt> file, notice that tags have been added,
+        each with a <tt>_hidden</tt> flag. When your module is installed,
+        the <tt>_hidden</tt> flag tells the IDE, or the application built on
+        the NetBeans Platform, to exclude the specified items.
     <dl>
         <dt><a name="seealso">See Also</a></dt>
         <dd>  <a href="../../about/nbmodule-about.html">About NetBeans Platform and Module Development</a></dd>

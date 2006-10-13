@@ -11,7 +11,7 @@
 <!-- last updated 28Jul05-->
 
   <!-- title -->
-  <title>NetBeans Plug-in Help</title>
+  <title>NetBeans Modules Help</title>
   
   <!-- maps -->
   <maps>

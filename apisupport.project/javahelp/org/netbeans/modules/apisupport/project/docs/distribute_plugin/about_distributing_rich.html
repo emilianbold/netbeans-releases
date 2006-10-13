@@ -3,7 +3,7 @@
 <html>
     <title>About Distributing Rich-Client Applications</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-    <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
     <body>
@@ -23,9 +23,9 @@
             which is the application framework on top 
             of which you build your application. Each distinct
             part of a rich-client application is provided by a separate 
-            plug-in module, several of which serve to provide the user interface elements
+            module, several of which serve to provide the user interface elements
             from the Swing libraries. For example, if your rich-client application
-            is an editor, you might have one plug-in module that provides
+            is an editor, you might have one module that provides
             syntax highlighting, while another provides file templates. 
            
             <h3>Branding</h3>
@@ -39,18 +39,17 @@
             dialog box, you define such settings, as described in <a href="branding_plugins.html">Branding a Rich-Client Application</a>.
 
             <p>While branding, also consider whether your rich-client application
-            needs all the plug-in modules that the IDE uses. For example, if your rich-client
-            application is not an editor, you will not need the plug-in modules that relate to
+            needs all the modules that the IDE uses. For example, if your rich-client
+            application is not an editor, you will not need the modules that relate to
             editor functionality. Similarly, it is unlikely that all of the IDE's menu items 
-            and toolbar buttons are needed by your application. See <a href="remove_unwanted_modules.html">Removing Unwanted Modules</a>
-            and <a href="hide_unwanted_ui.html">Hiding Unwanted Menus and Toolbars</a> for details.
+            and toolbar buttons are needed by your application. 
          
             <h3>Releasing</h3>
             <p>Once a rich-client application is branded, you can distribute it over the 
             web as a web-startable JNLP application. Alternatively, you can distribute the ZIP file.
             See <a href="../build_plugin/building_jnlp.html">Building a JNLP Application</a>
             and <a href="../build_plugin/building_zip.html">Building a ZIP Distribution</a> for details.
-            Updates to the plug-in modules that make up a rich-client application can be distributed 
+            Updates to the modules that make up a rich-client application can be distributed 
             via the Update Center.
             <dl>
                 <dt><a name="seealso">See Also</a></dt>

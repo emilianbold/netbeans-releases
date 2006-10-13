@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
@@ -8,7 +8,7 @@
 
     <title>About Bundling Supporting Items</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-    <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+    <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
@@ -18,12 +18,12 @@
     </small></p>
     
     The IDE provides wizards for bundling various supporting items
-    with your plug-in module. Using these wizards means you can
+    with your module. Using these wizards means you can
     simply point-and-click at the items you want to include, and then the IDE
     does all the work for you.
     
     <p>You can use wizards to quickly and easily bundle the following items
-    with your plug-in module:
+    with your module:
      
     <ul>    
         <li><b>Libraries.</b> To bundle a class library so that it
@@ -58,7 +58,7 @@
         </object>
         
         <li><b>Project Samples.</b> Project samples that illustrate 
-        some aspect of project functionality are often provided by plug-in modules
+        some aspect of project functionality are often provided by modules
         that inject a new technology into the IDE. For example,
         in the Samples directory within the New Project wizard, an Anagram Game is included
         to demonstrate J2SE functionality. A sample is a kind of project template; it
@@ -75,7 +75,7 @@
         <li><b>Private Update Center URLs.</b> When you bundle the URL to
         a <a href="../filelevel_create/about_update_centers.html">private update center</a>,
         you help your users, because they will not need to register your update center
-        manually. Instead, when they install your plug-in module, your update center
+        manually. Instead, when they install your module, your update center
         will automatically be declared in the Update Center wizard. As a result, when
         your users go to Tools &gt; Update Center, they will immediately see your
         update center in the 'Select Update Center(s) to connect' list. An update
@@ -87,7 +87,7 @@
         <li><b>JavaHelp Help Sets.</b> The IDE provides a number of JavaHelp help sets. You can
         add your own, or, if you are creating an application on top of the NetBeans Platform,
         you can provide a help set specifically for your application. (You can also hide help
-        sets provided by other plug-in modules.) The files required
+        sets provided by other modules.) The files required
         for a JavaHelp help set can be generated for you by the IDE. Registration of the
         help set in the IDE can also be automated. As a result, you do not need to think
         about these infrastuctural matters, so that you can focus your time and
@@ -96,8 +96,8 @@
 
         <li><b>License.</b> With the creation of any software, there
         is often a need for that software to have a software license.
-        The IDE's support for creating plug-in modules allows
-        you to add a license to the plug-in module that is under
+        The IDE's support for creating modules allows
+        you to add a license to the module that is under
         creation.
         <p>For details, see <a href="../filelevel_create/create_license.html">Bundling a License</a>.
         
@@ -105,22 +105,21 @@
     </ul>
 
 
-    <table>
-        <tr>
-            <th colspan=2 align=left><a name="seealso">See also</th>
-        </tr>
-        <tr>
-            <td width="23"></td>
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+                <dd><a href="../filelevel_create/create_j2se_library_descriptor.html">Bundling a Library</a></dd><!--TODO should be -->
+                <dd><a href="../filelevel_create/create_action.html">Creating an Action</a></dd>
+                <dd><a href="../filelevel_create/create_file_type.html">Creating a File Type</a> </dd> 
+                <dd><a href="../filelevel_create/create_project_template.html">Creating a Project Template</a></dd>
+                <dd><a href="../filelevel_create/create_window_component.html">Creating a Window Component</a> </dd> 
+                <dd><a href="../filelevel_create/create_wizard.html">Creating a Wizard</a> </dd> 
+    </dl>
          
-            <td> 
-                <a href="create_j2se_library_descriptor.html">Creating a J2SE Library Descriptor</a><br>
-                <a href="create_action.html">Creating an Action</a><br>
-                <a href="create_file_type.html">Creating a File Type</a> <br> 
-                <a href="create_project_template.html">Creating a Project Template</a><br>
-                <a href="create_window_component.html">Creating a Window Component</a> <br> 
-                <a href="create_wizard.html">Creating a Wizard</a> <br> 
-            </td>
-        </tr>
-    </table><hr>
+<hr>
     <small><a href="../../credits.html">Legal Notices</a> </small>
+        <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 </body></html>

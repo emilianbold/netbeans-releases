@@ -6,7 +6,6 @@
 
     <mapID target="apisupport_tbd" url="tbd.html"/>
 
-    <mapID target="apisupport_whats_new_50update1" url="about/whats_new_50update1.html"/>
 	
     <!-- Start of "Getting Started" section -->
     <mapID target="apisupport_about_plugins" url="about/nbmodule-about.html"/>
@@ -47,6 +46,7 @@
     <mapID target="apisupport_create_project_template" url="create_plugin/filelevel_create/create_project_template.html"/>
     <mapID target="apisupport_about_update_centers" url="create_plugin/filelevel_create/about_update_centers.html"/>
     <mapID target="apisupport_create_update_centers" url="create_plugin/filelevel_create/create_update_centers.html"/>
+ <mapID target="apisupport_create_update_centers_manually" url="create_plugin/filelevel_create/create_update_centers_manually.html"/>
     <mapID target="apisupport_about_window_components" url="create_plugin/filelevel_create/about_window_components.html"/>
     <mapID target="apisupport_create_window_component" url="create_plugin/filelevel_create/create_window_component.html"/>
     <mapID target="apisupport_about_wizards" url="create_plugin/filelevel_create/about_wizards.html"/>
@@ -65,7 +65,6 @@
     <mapID target="apisupport_install_devide" url="distribute_plugin/install_devide.html"/>
     <mapID target="apisupport_run_rich_client" url="distribute_plugin/run_rich_client.html"/>
     <mapID target="apisupport_remove_unwanted_modules" url="distribute_plugin/remove_unwanted_modules.html"/>
-    <mapID target="apisupport_hide_unwanted_ui" url="distribute_plugin/hide_unwanted_ui.html"/>
     <mapID target="apisupport_creating_splash_screen" url="distribute_plugin/creating_splash_screen.html"/>
     <mapID target="apisupport_distributing_plugins" url="distribute_plugin/distributing_plugins.html"/>	
     <mapID target="apisupport_deploying_plugins" url="distribute_plugin/deploying_plugins.html"/>
@@ -73,14 +72,10 @@
 
  <mapID target="create_license" url="create_plugin/filelevel_create/create_license.html"/>
 
-  <mapID target="apisupport_register_nbm_file" url="distribute_plugin/apisupport_register_nbm_file.html"/>
     <mapID target="apisupport_about_libs_jhelp" url="create_plugin/libs_jhelp/about_libs_jhelp.html"/>
-    <mapID target="apisupport_registering_plugins" url="register_plugin/about-registering-plugins.html"/>
-    <mapID target="apisupport_browsing_system" url="register_plugin/apisupport_browsing_system.html"/>
     <mapID target="apisupport_editing_xml_layer" url="register_plugin/apisupport_editing_xml_layer.html"/>
  <mapID target="apisupport_general_update_center" url="distribute_plugin/apisupport_general_update_center.html"/>
 <mapID target="apisupport_generate_autoupdate_descriptor" url="distribute_plugin/generate_autoupdate_descriptor.html"/>
-<mapID target="apisupport_using_shared_jnlp_repository" url="distribute_plugin/apisupport_using_shared_jnlp_repository.html"/>
 <mapID target="apisupport_searching_apis" url="create_plugin/apisupport_searching_apis.html"/>
 <mapID target="apisupport_extending_skeletons" url="create_plugin/apisupport_extending_skeletons.html"/>
 
