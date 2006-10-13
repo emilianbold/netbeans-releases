@@ -144,6 +144,15 @@ class IndentationModel {
         return changed;
     }
 
+    void applyChanges() {
+        applyParameterToAll ("setJavaFormatLeadingStarInComment", Boolean.valueOf (getJavaFormatLeadingStarInComment ()), Boolean.TYPE); //NOI18N
+        applyParameterToAll ("setJavaFormatNewlineBeforeBrace", Boolean.valueOf (getJavaFormatNewlineBeforeBrace ()), Boolean.TYPE); //NOI18N
+        applyParameterToAll ("setJavaFormatSpaceBeforeParenthesis", Boolean.valueOf (getJavaFormatSpaceBeforeParenthesis ()), Boolean.TYPE); //NOI18N
+        applyParameterToAll ("setJavaFormatStatementContinuationIndent", getJavaFormatStatementContinuationIndent (), Integer.TYPE); //NOI18N
+        applyParameterToAll ("setExpandTabs", Boolean.valueOf(isExpandTabs ()), Boolean.TYPE); //NOI18N
+        applyParameterToAll ("setSpacesPerTab", getSpacesPerTab (), Integer.TYPE); //NOI18N
+    }
+    
     void revertChanges () {
         if (!changed) return; // no changes
         if (getJavaFormatLeadingStarInComment () != originalAddStar)
@@ -181,27 +190,53 @@ class IndentationModel {
                 getSpacesPerTab ().intValue () != originalIndent;
     }
     
-    private IndentEngine javaIndentEngine;
-    private Object getParameter (String parameterName, Object defaultValue) {
+    private IndentEngine javaIndentEngine = null;
+    
+    private IndentEngine getDefaultIndentEngine() {
         if (javaIndentEngine == null) {
             BaseOptions options = getOptions ("text/x-java");
-            if (options == null)
+            if (options == null) {
                 options = getOptions ("text/plain");
-            if (options == null) return defaultValue;
-            javaIndentEngine = options.getIndentEngine ();
+            }
+            javaIndentEngine = options == null ? null : options.getIndentEngine ();
         }
-        try {
-            Method method = javaIndentEngine.getClass ().getMethod (
-                parameterName,
-                new Class [0]
-            );
-            return method.invoke (javaIndentEngine, new Object [0]);
-        } catch (Exception ex) {
+        return javaIndentEngine;
+    }
+    
+    private Object getParameter (String parameterName, Object defaultValue) {
+        IndentEngine eng = getDefaultIndentEngine();
+        if (eng != null) {
+            try {
+                Method method = eng.getClass ().getMethod (
+                    parameterName,
+                    new Class [0]
+                );
+                return method.invoke (eng, new Object [0]);
+            } catch (Exception ex) {
+            }
         }
         return defaultValue;
     }
     
     private void setParameter (
+        String parameterName, 
+        Object parameterValue,
+        Class parameterType
+    ) {
+        IndentEngine eng = getDefaultIndentEngine();
+        if (eng != null) {
+            try {
+                Method method = eng.getClass ().getMethod (
+                    parameterName,
+                    new Class [] {parameterType}
+                );
+                method.invoke (eng, new Object [] {parameterValue});
+            } catch (Exception ex) {
+            }
+        }
+    }
+    
+    private void applyParameterToAll (
         String parameterName, 
         Object parameterValue,
         Class parameterType

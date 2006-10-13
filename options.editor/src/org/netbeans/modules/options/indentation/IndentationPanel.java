@@ -317,6 +317,8 @@ ActionListener {
     }
     
     public void applyChanges () {
+        if (model != null)
+            model.applyChanges ();
     }
     
     public void cancel () {
