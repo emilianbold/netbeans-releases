@@ -23,11 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.management.IntrospectionException;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.modules.derby.DerbyOptions;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -35,18 +37,16 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.options.SystemOption;
+import org.openide.nodes.BeanNode;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Andrei Badea
  */
-public class DerbyOptions extends SystemOption {
-    
-    private static final long serialVersionUID = 1101894610105398924L;
-    
+public class DerbyOptions {
+    private static final DerbyOptions INSTANCE = new DerbyOptions();
     /**
      * This system property allows setting a default value for the Derby system home directory.
      * Its value will be returned by the {@link getSystemHome} method if the
@@ -74,8 +74,22 @@ public class DerbyOptions extends SystemOption {
     private static final String DRIVER_NAME_EMBEDDED = "apache_derby_embedded"; // NOI18N
     
     public static DerbyOptions getDefault() {
-        return (DerbyOptions)SharedClassObject.findObject(DerbyOptions.class, true);
+        return INSTANCE;
     }
+    
+    protected final String putProperty(String key, String value, boolean notify) {
+        String retval = NbPreferences.forModule(DerbyOptions.class).get(key, null);
+        if (value != null) {
+            NbPreferences.forModule(DerbyOptions.class).put(key, value);
+        } else {
+            NbPreferences.forModule(DerbyOptions.class).remove(key);
+        }
+        return retval;
+    }
+
+    protected final String getProperty(String key) {
+        return NbPreferences.forModule(DerbyOptions.class).get(key, null);
+    }    
     
     public String displayName() {
         return NbBundle.getMessage(DerbyOptions.class, "LBL_DerbyOptions");
@@ -126,16 +140,12 @@ public class DerbyOptions extends SystemOption {
             }
         }
         
-        synchronized (getLock()) {
-            if (!isReadExternal()) {
-                stopDerbyServer();
-            }
+        synchronized (this) {
+            stopDerbyServer();
             if (location != null && location.length() <= 0) {
                 location = getDefaultInstallLocation();
             }
-            if (!isReadExternal()) {
-                registerDrivers(location);
-            }
+            registerDrivers(location);
             putProperty(PROP_DERBY_LOCATION, location, true);
         }
     }
@@ -172,10 +182,8 @@ public class DerbyOptions extends SystemOption {
             }
         }
         
-        synchronized (getLock()) {
-            if (!isReadExternal()) {
-                stopDerbyServer();
-            }
+        synchronized (this) {
+            stopDerbyServer();
             putProperty(PROP_DERBY_SYSTEM_HOME, derbySystemHome, true);
         }
     }
@@ -280,4 +288,8 @@ public class DerbyOptions extends SystemOption {
             }
         }
     }
+    
+    private static BeanNode createViewNode() throws java.beans.IntrospectionException {
+        return new BeanNode(DerbyOptions.getDefault());
+    }     
 }

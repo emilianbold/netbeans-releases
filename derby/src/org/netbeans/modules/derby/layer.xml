@@ -36,17 +36,13 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="DerbyDatabaseAction.instance/javadoc-Search-Doc-Action.instance" boolvalue="true"/>
         </folder>
     </folder>
-    
-    <folder name="Services">
-        <file name="org-netbeans-modules-derby-DerbyOptions.settings" url="DerbyOptions.settings"/>
-    </folder>
-    
+        
     <folder name="UI">
         <folder name="Services">
             <folder name="IDEConfiguration">
                 <folder name="ServerAndExternalToolSettings">
-                    <file name="org-netbeans-modules-derby-DerbyOptions.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-derby-DerbyOptions.settings"/>
+                    <file name="DerbyOptionsNode.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.DerbyOptions.createViewNode"/>
                     </file>
                 </folder>
             </folder>
