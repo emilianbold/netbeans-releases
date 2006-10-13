@@ -254,8 +254,12 @@ public class RegenerateXMLTask extends Task{
             }
         }
 
-        // adding workdir into crashed suites
-        if (!produceBigReportOnly) { 
+        // adding workdir and build script log file into crashed suites
+        if (!produceBigReportOnly) {
+            // build script log file (e.g. results\testrun_061012-155425\logs\mymodule_unit.log)
+            File logFile = new File(
+                    new File(testBagRoot.getParentFile(), PEConstants.ANT_LOGDIR_LOCATION), 
+                    testBag.getModule().replace('/','_')+"_"+testBag.getTestType()+".log");
             boolean failure = false;
             File[] suiteFiles = FileUtils.listFiles(suitesDir,null,".xml");
             for (int i=0; i< suiteFiles.length; i++) {
@@ -284,6 +288,14 @@ public class RegenerateXMLTask extends Task{
                                }
                           }
                        }
+                    }
+                    // If build script log file exists (only when running from instance) 
+                    // and log file name not already added.
+                    if(logFile.exists() && testSuite.xmlat_unexpectedFailure.indexOf("log") == -1) {
+                        // Add build script log file name. Final string will be
+                        // "Suite is not finished - mymodule_unit.log". First part is set in XMLReporter.
+                        testSuite.xmlat_unexpectedFailure += " - "+testBag.getModule().replace('/','_')+"_"+testBag.getTestType()+".log";
+                        modified = true;
                     }
                 }
                 if (modified) {

@@ -67,7 +67,17 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         </P>
         <xsl:if test="@unexpectedFailure">
             <h3>Unexpected Failure:</h3>
-            <p><blockquote><xsl:value-of select="@unexpectedFailure"/></blockquote></p>
+            <p><blockquote>
+                <!-- Add link to build script log if exist. It is added to unexpectedFailure in RegenerateXMLTask#regenerateTestBag. -->
+                <xsl:variable name="includeLog" select="contains(@unexpectedFailure, 'log')"/>
+                <xsl:if test="boolean($includeLog)">
+                    <xsl:value-of select="substring-before(@unexpectedFailure, ' - ')"/>.
+                    Look at <A><xsl:attribute name="href">../../../logs/<xsl:value-of select="substring-after(@unexpectedFailure, '- ')"/></xsl:attribute>build script log file</A>.
+                </xsl:if>
+                <xsl:if test="not(boolean($includeLog))">
+                    <xsl:value-of select="@unexpectedFailure"/>
+                </xsl:if>
+            </blockquote></p>
         </xsl:if>
         <HR/>
         <P>
