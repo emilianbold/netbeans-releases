@@ -116,7 +116,8 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         targetComboBoxActionPerformed(null);
         String initialProperties = (String) script.getAttribute(ATTR_PROPERTIES);
         if (initialProperties == null) {
-            Properties props = AntSettings.getDefault().getProperties();
+            Properties props = new Properties();
+            props.putAll(AntSettings.getProperties());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
                 props.store(baos, null);
@@ -130,7 +131,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         propertiesPane.setText(initialProperties);
         Integer verbosity = (Integer) script.getAttribute(ATTR_VERBOSITY);
         if (verbosity == null) {
-            verbosity = new Integer(AntSettings.getDefault().getVerbosity());
+            verbosity = new Integer(AntSettings.getVerbosity());
         }
         verbosityComboBox.setModel(new DefaultComboBoxModel(VERBOSITIES));
         for (int i = 0; i < VERBOSITY_LEVELS.length; i++) {
@@ -319,12 +320,12 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
             }
             script.setAttribute(ATTR_TARGETS, targetsSpaceSep.toString());
         }
-        if (props.equals(AntSettings.getDefault().getProperties())) {
+        if (props.equals(AntSettings.getProperties())) {
             script.setAttribute(ATTR_PROPERTIES, null);
         } else {
             script.setAttribute(ATTR_PROPERTIES, propertiesPane.getText());
         }
-        if (verbosity == AntSettings.getDefault().getVerbosity()) {
+        if (verbosity == AntSettings.getVerbosity()) {
             script.setAttribute(ATTR_VERBOSITY, null);
         } else {
             script.setAttribute(ATTR_VERBOSITY, new Integer(verbosity));
