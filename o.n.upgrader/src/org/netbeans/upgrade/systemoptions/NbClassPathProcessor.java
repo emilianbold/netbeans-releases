@@ -19,39 +19,32 @@
 
 package org.netbeans.upgrade.systemoptions;
 
-import java.rmi.UnexpectedException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Radek Matous
  */
-class NbClassPathProcessor extends PropertyProcessor {    
+class NbClassPathProcessor extends PropertyProcessor {
     NbClassPathProcessor() {
         super("org.openide.execution.NbClassPath");//NOI18N
     }
-    
+
     void processPropertyImpl(String propertyName, Object value) {
-        StringBuffer sb = new StringBuffer();       
-        if ("extraClasspath".equals(propertyName)) {//NOI18N
-            List l = ((SerParser.ObjectWrapper)value).data;
-            for (Iterator it = l.iterator(); it.hasNext();) {
-                Object elem = (Object) it.next();
-                if (elem instanceof SerParser.NameValue) {
-                    SerParser.NameValue nv = (SerParser.NameValue)elem;
-                    if (nv.value != null && nv.name != null) {
-                        if (nv.name.name.equals("classpath")) {//NOI18N
-                            addProperty(nv.name.name,nv.value.toString());//NOI18N
-                        } else  if (nv.name.name.equals("items")) {//NOI18N
-                            //skip it - won't be imported 
-                        }                        
+        StringBuffer sb = new StringBuffer();
+        List l = ((SerParser.ObjectWrapper)value).data;
+        for (Iterator it = l.iterator(); it.hasNext();) {
+            Object elem = (Object) it.next();
+            if (elem instanceof SerParser.NameValue) {
+                SerParser.NameValue nv = (SerParser.NameValue)elem;
+                if (nv.value != null && nv.name != null) {
+                    if (nv.name.name.equals("classpath")) {//NOI18N
+                        addProperty(propertyName, nv.value.toString());
+                    } else  if (nv.name.name.equals("items")) {//NOI18N
+                        //skip it - won't be imported
                     }
                 }
-            }            
-        }  else {
-            throw new IllegalStateException();
+            }
         }
     }
 }

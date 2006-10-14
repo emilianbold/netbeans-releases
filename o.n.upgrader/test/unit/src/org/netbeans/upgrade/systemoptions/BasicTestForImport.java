@@ -19,15 +19,17 @@
 
 package org.netbeans.upgrade.systemoptions;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.TreeSet;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- *
  * @author Radek Matous
  */
 public abstract class BasicTestForImport extends NbTestCase {
@@ -70,14 +72,8 @@ public abstract class BasicTestForImport extends NbTestCase {
     }
 
     public void assertPropertyNames(final String[] propertyNames) throws IOException, ClassNotFoundException {
-        Result support = readSystemOption(false);        
-        List propertyNamesList = Arrays.asList(propertyNames);
-        List parsedPropNames = Arrays.asList(support.getPropertyNames());
-        assertEquals(parsedPropNames.toString(), propertyNames.length, parsedPropNames.size());
-        for (Iterator it = parsedPropNames.iterator(); it.hasNext();) {
-            String propName = (String) it.next();
-            assertTrue(parsedPropNames.toString(), propertyNamesList.contains(propName));
-        }        
+        assertEquals(new TreeSet<String>(Arrays.asList(propertyNames)).toString(),
+                new TreeSet<String>(Arrays.asList(readSystemOption(false).getPropertyNames())).toString());
     }
     
     public void assertProperty(final String propertyName, final String expected) throws IOException, ClassNotFoundException {

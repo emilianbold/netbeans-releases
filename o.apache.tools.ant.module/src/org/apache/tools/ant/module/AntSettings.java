@@ -19,128 +19,122 @@
 
 package org.apache.tools.ant.module;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AutomaticExtraClasspathProvider;
 import org.openide.ErrorManager;
-import org.openide.execution.NbClassPath;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.options.SystemOption;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
+import org.openide.util.NbPreferences;
 
-public class AntSettings extends SystemOption implements ChangeListener {
+public class AntSettings {
 
-    public static final String PROP_VERBOSITY = "verbosity"; // NOI18N
-    public static final String PROP_PROPERTIES = "properties"; // NOI18N
-    public static final String PROP_SAVE_ALL = "saveAll"; // NOI18N
-    public static final String PROP_CUSTOM_DEFS = "customDefs"; // NOI18N
-    public static final String PROP_ANT_VERSION = "antVersion"; // NOI18N
+    private static final String PROP_VERBOSITY = "verbosity"; // NOI18N
+    private static final String PROP_PROPERTIES = "properties"; // NOI18N
+    private static final String PROP_SAVE_ALL = "saveAll"; // NOI18N
+    private static final String PROP_CUSTOM_DEFS = "customDefs"; // NOI18N
+    private static final String PROP_ANT_VERSION = "antVersion"; // NOI18N
     public static final String PROP_ANT_HOME = "antHome"; // NOI18N
     public static final String PROP_EXTRA_CLASSPATH = "extraClasspath"; // NOI18N
     public static final String PROP_AUTOMATIC_EXTRA_CLASSPATH = "automaticExtraClasspath"; // NOI18N
-    public static final String PROP_AUTO_CLOSE_TABS = "autoCloseTabs"; // NOI18N
-    public static final String PROP_ALWAYS_SHOW_OUTPUT = "alwaysShowOutput"; // NOI18N
-    
-    private static final long serialVersionUID = -4457782585534082966L;
-    
+    private static final String PROP_AUTO_CLOSE_TABS = "autoCloseTabs"; // NOI18N
+    private static final String PROP_ALWAYS_SHOW_OUTPUT = "alwaysShowOutput"; // NOI18N
+
+    private AntSettings() {}
+
+    private static Preferences prefs() {
+        return NbPreferences.forModule(AntSettings.class);
+    }
+
+    public static int getVerbosity() {
+        return prefs().getInt(PROP_VERBOSITY, AntEvent.LOG_INFO);
+    }
+
+    public static void setVerbosity(int v) {
+        prefs().putInt(PROP_VERBOSITY, v);
+    }
+
+    public static Map<String,String> getProperties() {
+        Map<String,String> p = new HashMap<String,String>();
+        // Enable hyperlinking for Jikes by default:
+        for (String pair : prefs().get(PROP_PROPERTIES, "build.compiler.emacs=true").split("\n")) { // NOI18N
+            String[] nameval = pair.split("=", 2); // NOI18N
+            p.put(nameval[0], nameval[1]);
+        }
+        return p;
+    }
+
+    public static void setProperties(Map<String,String> p) {
+        if (!(p instanceof SortedMap)) {
+            p = new TreeMap<String,String>(p);
+        }
+        StringBuilder b = new StringBuilder();
+        for (Map.Entry<String,String> pair : p.entrySet()) {
+            if (b.length() > 0) {
+                b.append('\n');
+            }
+            b.append(pair.getKey());
+            b.append('=');
+            b.append(pair.getValue());
+        }
+        prefs().put(PROP_PROPERTIES, b.toString());
+    }
+
+    public static boolean getSaveAll() {
+        return prefs().getBoolean(PROP_SAVE_ALL, true);
+    }
+
+    public static void setSaveAll(boolean sa) {
+        prefs().putBoolean(PROP_SAVE_ALL, sa);
+    }
+
+    private static IntrospectedInfo customDefs;
+    static {
+        new IntrospectedInfo(); // trigger IntrospectedInfo static block
+    }
+    public static synchronized IntrospectedInfo getCustomDefs() {
+        if (customDefs == null) {
+            customDefs = IntrospectedInfoSerializer.instance.load(prefs().node(PROP_CUSTOM_DEFS));
+        }
+        return customDefs;
+    }
+
+    public static synchronized void setCustomDefs(IntrospectedInfo ii) {
+        IntrospectedInfoSerializer.instance.store(prefs().node(PROP_CUSTOM_DEFS), ii);
+        customDefs = ii;
+    }
+
+    private static String antVersion;
+    // #14993: read-only property for the version of Ant
+    public static String getAntVersion() {
+        if (antVersion == null) {
+            antVersion = AntBridge.getInterface().getAntVersion();
+        }
+        return antVersion;
+    }
+
     /**
      * Transient value of ${ant.home} unless otherwise set.
      * @see "#43522"
      */
     private static File defaultAntHome = null;
-    
-    @Override
-    protected void initialize () {
-        super.initialize();
-        setVerbosity(AntEvent.LOG_INFO);
-        Properties p = new Properties ();
-        // Enable hyperlinking for Jikes:
-        p.setProperty ("build.compiler.emacs", "true"); // NOI18N
-        setProperties (p);
-        setSaveAll (true);
-        setCustomDefs (new IntrospectedInfo ());
-        setAutoCloseTabs(true); // #47753
-        setAlwaysShowOutput(true); // XXX #63332: prefer false if have unobtrusive progress indication
-    }
 
-    @Override
-    public String displayName () {
-        return AntSettings.class.getName(); // not dislayed
-    }
-
-    public static AntSettings getDefault () {
-        return findObject(AntSettings.class, true);
-    }
-
-    public int getVerbosity () {
-        return (Integer) getProperty(PROP_VERBOSITY);
-    }
-
-    public void setVerbosity (int v) {
-        putProperty (PROP_VERBOSITY, v, true);
-    }
-
-    @SuppressWarnings("unchecked")
-    public Properties getProperties () {
-        HashMap m = (HashMap)getProperty(PROP_PROPERTIES);
-        Properties p = new Properties();
-        p.putAll(m);
-        return p;
-    }
-    
-    @SuppressWarnings("unchecked")
-    public void setProperties (Properties p) {
-        HashMap m = new HashMap(p);
-        putProperty (PROP_PROPERTIES, m, true);
-    }
-    
-    public boolean getSaveAll () {
-        return (Boolean) getProperty(PROP_SAVE_ALL);
-    }
-    
-    public void setSaveAll (boolean sa) {
-        putProperty(PROP_SAVE_ALL, sa, true);
-    }
-    
-    public IntrospectedInfo getCustomDefs () {
-        return (IntrospectedInfo) getProperty (PROP_CUSTOM_DEFS);
-    }
-    
-    public void setCustomDefs (IntrospectedInfo ii) {
-        putProperty (PROP_CUSTOM_DEFS, ii, true);
-        ii.addChangeListener(WeakListeners.change(this, ii));
-        // Ideally would also remove listener from old one, but in practice
-        // identity of this object never changes so it does not really matter...
-    }
-
-    // #14993: read-only property for the version of Ant
-    public String getAntVersion() {
-        String v = (String)getProperty(PROP_ANT_VERSION);
-        if (v == null) {
-            v = AntBridge.getInterface().getAntVersion();
-            putProperty(PROP_ANT_VERSION, v, false);
-        }
-        return v;
-    }
-    
-    public void stateChanged(ChangeEvent e) {
-        // [PENDING] Should not be necessary, but see #15825.
-        firePropertyChange(PROP_CUSTOM_DEFS, null, null);
-    }
-    
-    private static File getDefaultAntHome() {
+    private static synchronized File getDefaultAntHome() {
         if (defaultAntHome == null) {
             File antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N
             if (antJar == null) {
@@ -154,101 +148,122 @@ public class AntSettings extends SystemOption implements ChangeListener {
         assert defaultAntHome != null;
         return defaultAntHome;
     }
-    
+
     /**
      * Get the Ant installation to use.
      * Might be null!
      */
-    public File getAntHomeWithDefault() {
-        File f = getAntHome();
+    public static File getAntHome() {
+        String h = prefs().get(PROP_ANT_HOME, null);
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            AntModule.err.log("getAntHomeWithDefault: antHome=" + f);
+            AntModule.err.log("getAntHomeWithDefault: antHome=" + h);
         }
-        if (f == null) {
+        if (h != null) {
+            return new File(h);
+        } else {
             // Not explicitly configured. Check default.
-            f = getDefaultAntHome();
+            return getDefaultAntHome();
         }
-        return f;
     }
 
-    /**
-     * For serialization only.
-     * May return null.
-     * Use {@link #getAntHomeWithDefault} instead.
-     */
-    public File getAntHome() {
-        return (File)getProperty(PROP_ANT_HOME);
-    }
-    
-    public void setAntHome(File f) {
+    public static void setAntHome(File f) {
         if (f != null && f.equals(getDefaultAntHome())) {
             f = null;
         }
         if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
             AntModule.err.log("setAntHome: " + f);
         }
-        putProperty(PROP_ANT_HOME, f, true);
-        putProperty(PROP_ANT_VERSION, null, false);
-        firePropertyChange(PROP_ANT_VERSION, null, null);
-    }
-    
-    public NbClassPath getExtraClasspath() {
-        NbClassPath p = (NbClassPath)getProperty(PROP_EXTRA_CLASSPATH);
-        if (p == null) {
-            // XXX could perhaps populate with xerces.jar:dom-ranges.jar
-            // However currently there is no sure way to get the "good" Xerces
-            // from libs/xerces (rather than the messed-up one from xml/tax)
-            // without hardcoding the JAR name, which seems unwise since it is
-            // definitely subject to change.
-            p = new NbClassPath(new File[0]);
-            putProperty(PROP_EXTRA_CLASSPATH, p, false);
+        if (f != null) {
+            prefs().put(PROP_ANT_HOME, f.getAbsolutePath());
+        } else {
+            prefs().remove(PROP_ANT_HOME);
         }
-        return p;
+        antVersion = null;
+        firePropertyChange(PROP_ANT_HOME);
     }
-    
-    public void setExtraClasspath(NbClassPath p) {
-        putProperty(PROP_EXTRA_CLASSPATH, p, true);
+
+    public static List<File> getExtraClasspath() {
+        // XXX could perhaps populate with xerces.jar:dom-ranges.jar
+        // However currently there is no sure way to get the "good" Xerces
+        // from libs/xerces (rather than the messed-up one from xml/tax)
+        // without hardcoding the JAR name, which seems unwise since it is
+        // definitely subject to change.
+        List<File> files = new ArrayList<File>();
+        for (String f : prefs().get(PROP_EXTRA_CLASSPATH, "").split(Pattern.quote(File.pathSeparator))) {
+            files.add(new File(f));
+        }
+        return files;
     }
-    
-    private NbClassPath defAECP = null;
-    private Lookup.Result<AutomaticExtraClasspathProvider> aecpResult = null;
-    
-    public NbClassPath getAutomaticExtraClasspath() {
-        synchronized (/* #66463 */getLock()) {
+
+    public static void setExtraClasspath(List<File> p) {
+        StringBuilder b = new StringBuilder();
+        for (File f : p) {
+            if (b.length() > 0) {
+                b.append(File.pathSeparatorChar);
+            }
+            b.append(f);
+        }
+        prefs().put(PROP_EXTRA_CLASSPATH, b.toString());
+        firePropertyChange(PROP_EXTRA_CLASSPATH);
+    }
+
+    private static List<File> defAECP = null;
+    private static Lookup.Result<AutomaticExtraClasspathProvider> aecpResult = null;
+
+    public static synchronized List<File> getAutomaticExtraClasspath() {
         if (aecpResult == null) {
             aecpResult = Lookup.getDefault().lookupResult(AutomaticExtraClasspathProvider.class);
             aecpResult.addLookupListener(new LookupListener() {
                 public void resultChanged(LookupEvent ev) {
                     defAECP = null;
-                    firePropertyChange(PROP_AUTOMATIC_EXTRA_CLASSPATH, null, null);
+                    firePropertyChange(PROP_AUTOMATIC_EXTRA_CLASSPATH);
                 }
             });
         }
         if (defAECP == null) {
-            List<File> items = new ArrayList<File>();
+            defAECP = new ArrayList<File>();
             for (AutomaticExtraClasspathProvider provider : aecpResult.allInstances()) {
-                items.addAll(Arrays.asList(provider.getClasspathItems()));
+                defAECP.addAll(Arrays.asList(provider.getClasspathItems()));
             }
-            defAECP = new NbClassPath(items.toArray(new File[items.size()]));
         }
         return defAECP;
-        }
     }
-    
-    public boolean getAutoCloseTabs() {
-        return (Boolean) getProperty(PROP_AUTO_CLOSE_TABS);
+
+    public static boolean getAutoCloseTabs() {
+        return prefs().getBoolean(PROP_AUTO_CLOSE_TABS, /*#47753*/ true);
     }
-    
-    public void setAutoCloseTabs(boolean b) {
-        putProperty(PROP_AUTO_CLOSE_TABS, b, true);
+
+    public static void setAutoCloseTabs(boolean b) {
+        prefs().putBoolean(PROP_AUTO_CLOSE_TABS, b);
     }
-    
-    public boolean getAlwaysShowOutput() {
-        return (Boolean) getProperty(PROP_ALWAYS_SHOW_OUTPUT);
+
+    public static boolean getAlwaysShowOutput() {
+        // XXX #63332: prefer false if have unobtrusive progress indication
+        return prefs().getBoolean(PROP_ALWAYS_SHOW_OUTPUT, true);
     }
-    
-    public void setAlwaysShowOutput(boolean b) {
-        putProperty(PROP_ALWAYS_SHOW_OUTPUT, b, true);
+
+    public static void setAlwaysShowOutput(boolean b) {
+        prefs().putBoolean(PROP_ALWAYS_SHOW_OUTPUT, b);
     }
-    
+
+    private static final PropertyChangeSupport pcs = new PropertyChangeSupport(AntSettings.class);
+
+    public static void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+    }
+
+    public static void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+    }
+
+    private static void firePropertyChange(String prop) {
+        pcs.firePropertyChange(prop, null, null);
+    }
+
+    public static abstract class IntrospectedInfoSerializer {
+        public static IntrospectedInfoSerializer instance;
+        public abstract IntrospectedInfo load(Preferences node);
+        public abstract void store(Preferences node, IntrospectedInfo info);
+    }
+
 }

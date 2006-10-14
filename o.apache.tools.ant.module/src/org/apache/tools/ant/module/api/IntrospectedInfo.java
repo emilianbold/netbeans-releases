@@ -21,16 +21,20 @@ package org.apache.tools.ant.module.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntModule;
@@ -65,7 +69,9 @@ import org.openide.util.WeakListeners;
  * should be understood to inherit a namespace from its parent element.
  * <em>(Namespace support since <code>org.apache.tools.ant.module/3 3.6</code>)</em>
  */
-public final class IntrospectedInfo implements Serializable {
+public final class IntrospectedInfo {
+    
+    private static final Logger LOG = Logger.getLogger(IntrospectedInfo.class.getName());
     
     private static IntrospectedInfo defaults = null;
     private static boolean defaultsInited = false;
@@ -81,16 +87,14 @@ public final class IntrospectedInfo implements Serializable {
         return defaults;
     }
     
-    private static final long serialVersionUID = -2290064038236292995L;
-    
-    private Map<String,IntrospectedClass> clazzes = Collections.synchronizedMap(new HashMap<String,IntrospectedClass>());
+    private Map<String,IntrospectedClass> clazzes = Collections.synchronizedMap(new TreeMap<String,IntrospectedClass>());
     /** definitions first by kind then by name to class name */
-    private Map<String,Map<String,String>> namedefs = new HashMap<String,Map<String,String>>();
+    private Map<String,Map<String,String>> namedefs = new TreeMap<String,Map<String,String>>();
     
-    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(5);
-    private transient Set<ChangeListener> tonotify = new HashSet<ChangeListener>(5);
+    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(5);
+    private Set<ChangeListener> tonotify = new HashSet<ChangeListener>(5);
     
-    private transient ChangeListener antBridgeListener = new ChangeListener() {
+    private ChangeListener antBridgeListener = new ChangeListener() {
         public void stateChanged(ChangeEvent ev) {
             clearDefs();
             fireStateChanged();
@@ -152,30 +156,6 @@ public final class IntrospectedInfo implements Serializable {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> T getField(ObjectInputStream.GetField fields, String name) throws IOException {
-        return (T) fields.get(name, null);
-    }
-    private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
-        listeners = new HashSet<ChangeListener>(5);
-        tonotify = new HashSet<ChangeListener>(5);
-        //is.defaultReadObject();
-        ObjectInputStream.GetField fields = is.readFields();
-        clazzes = getField(fields, "clazzes"); // NOI18N
-        namedefs = getField(fields, "namedefs"); // NOI18n
-        if (namedefs == null) {
-            // Compatibility with older versions of this class.
-            AntModule.err.log("#15739: reading old version of IntrospectedInfo");
-            namedefs = new HashMap<String,Map<String,String>>();
-            Map<String,String> tasks = getField(fields, "tasks"); // NOI18N
-            if (tasks == null) throw new NullPointerException();
-            namedefs.put("task", tasks); // NOI18N
-            Map<String,String> types = getField(fields, "types"); // NOI18N
-            if (types == null) throw new NullPointerException();
-            namedefs.put("type", types); // NOI18N
-        }
-    }
-    
     /** Add a listener to changes in the definition set.
      * @param l the listener to add
      * @since 2.6
@@ -379,7 +359,7 @@ public final class IntrospectedInfo implements Serializable {
         synchronized (namedefs) {
             Map<String,String> m = namedefs.get(kind);
             if (m == null) {
-                m = new HashMap<String,String>();
+                m = new TreeMap<String,String>();
                 namedefs.put(kind, m);
             }
             m.put(name, clazz.getName());
@@ -467,7 +447,7 @@ public final class IntrospectedInfo implements Serializable {
         Set<Class> nueAttrTypeClazzes = new HashSet<Class>();
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> attrs...");
         if (e.hasMoreElements ()) {
-            info.attrs = new HashMap<String,String>();
+            info.attrs = new TreeMap<String,String>();
             while (e.hasMoreElements ()) {
                 String name = e.nextElement();
                 //if (dbg) AntModule.err.log ("\tname=" + name);
@@ -500,7 +480,7 @@ public final class IntrospectedInfo implements Serializable {
         e = helper.getNestedElements ();
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> subels...");
         if (e.hasMoreElements ()) {
-            info.subs = new HashMap<String,String>();
+            info.subs = new TreeMap<String,String>();
             while (e.hasMoreElements ()) {
                 String name = e.nextElement();
                 //if (dbg) AntModule.err.log ("\tname=" + name);
@@ -572,9 +552,12 @@ public final class IntrospectedInfo implements Serializable {
                 continue;
             }
             Class clazz = entry.getValue();
+            if (clazz.getName().equals("org.apache.tools.ant.taskdefs.MacroInstance")) { // NOI18N
+                continue;
+            }
             Map<String,String> registry = namedefs.get(kind);
             if (registry == null) {
-                registry = new HashMap<String,String>();
+                registry = new TreeMap<String,String>();
                 namedefs.put(kind, registry);
             }
             synchronized (this) {
@@ -606,11 +589,8 @@ public final class IntrospectedInfo implements Serializable {
         return "IntrospectedInfo[namedefs=" + namedefs + ",clazzes=" + clazzes + "]"; // NOI18N
     }
     
-    private static final class IntrospectedClass implements Serializable {
+    private static final class IntrospectedClass {
         
-        private static final long serialVersionUID = 4039297397834774403L;
-        
-        //public String clazz;
         public boolean supportsText;
         public Map<String,String> attrs; // null or name -> class
         public Map<String,String> subs; // null or name -> class
@@ -650,7 +630,7 @@ public final class IntrospectedInfo implements Serializable {
     // merging and including custom defs:
     
     /** only used to permit use of WeakListener */
-    private transient ChangeListener holder;
+    private ChangeListener holder;
     
     /**
      * Merge several IntrospectedInfo instances together.
@@ -669,7 +649,7 @@ public final class IntrospectedInfo implements Serializable {
                     if (ii.namedefs.containsKey(kind)) {
                         ii.namedefs.get(kind).putAll(entries);
                     } else {
-                        ii.namedefs.put(kind, new HashMap<String,String>(entries));
+                        ii.namedefs.put(kind, new TreeMap<String,String>(entries));
                     }
                 }
                 ii.fireStateChanged();
@@ -697,10 +677,122 @@ public final class IntrospectedInfo implements Serializable {
         if (merged == null) {
             merged = merge(new IntrospectedInfo[] {
                 getDefaults(),
-                AntSettings.getDefault().getCustomDefs(),
+                AntSettings.getCustomDefs(),
             });
         }
         return merged;
+    }
+
+    static {
+        AntSettings.IntrospectedInfoSerializer.instance = new AntSettings.IntrospectedInfoSerializer() {
+            /*
+            Format quick key:
+            Map<String,Map<String,String>> namedefs: task.echo=org.apache.tools.ant.taskdefs.Echo
+            Map<String,IntrospectedClass> clazzes: class.org.apache.tools.ant.taskdefs.Echo.<...>
+            boolean supportsText: .supportsText=true
+            null | Map<String,String> attrs: .attrs.message=java.lang.String
+            null | Map<String,String> subs: .subs.file=java.io.File
+            null | String[] enumTags: .enumTags=whenempty,always,never
+             */
+            Pattern p = Pattern.compile("(.+)\\.(supportsText|attrs\\.(.+)|subs\\.(.+)|enumTags)");
+            public IntrospectedInfo load(Preferences node) {
+                IntrospectedInfo ii = new IntrospectedInfo();
+                try {
+                    for (String k : node.keys()) {
+                        String v = node.get(k, null);
+                        assert v != null : k;
+                        String[] ss = k.split("\\.", 2);
+                        if (ss[0].equals("class")) {
+                            Matcher m = p.matcher(ss[1]);
+                            assert m.matches() : k;
+                            String c = m.group(1);
+                            IntrospectedClass ic = ii.clazzes.get(c);
+                            if (ic == null) {
+                                ic = new IntrospectedClass();
+                                ii.clazzes.put(c, ic);
+                            }
+                            String tail = m.group(2);
+                            if (tail.equals("supportsText")) {
+                                assert v.equals("true") : k;
+                                ic.supportsText = true;
+                            } else if (tail.equals("enumTags")) {
+                                ic.enumTags = v.split(",");
+                            } else if (m.group(3) != null) {
+                                if (ic.attrs == null) {
+                                    ic.attrs = new TreeMap<String,String>();
+                                }
+                                ic.attrs.put(m.group(3), v);
+                            } else {
+                                assert m.group(4) != null : k;
+                                if (ic.subs == null) {
+                                    ic.subs = new TreeMap<String,String>();
+                                }
+                                ic.subs.put(m.group(4), v);
+                            }
+                        } else {
+                            Map<String,String> m = ii.namedefs.get(ss[0]);
+                            if (m == null) {
+                                m = new TreeMap<String,String>();
+                                ii.namedefs.put(ss[0], m);
+                            }
+                            m.put(ss[1], v);
+                        }
+                    }
+                } catch (BackingStoreException x) {
+                    LOG.log(Level.WARNING, null, x);
+                }
+                for (String kind : new String[] {"task", "type"}) {
+                    if (!ii.namedefs.containsKey(kind)) {
+                        ii.namedefs.put(kind, new TreeMap<String,String>());
+                    }
+                }
+                return ii;
+            }
+            public void store(Preferences node, IntrospectedInfo info) {
+                try {
+                    node.clear();
+                } catch (BackingStoreException x) {
+                    LOG.log(Level.WARNING, null, x);
+                    return;
+                }
+                for (Map.Entry<String,Map<String,String>> kindEntries : info.namedefs.entrySet()) {
+                    for (Map.Entry<String,String> namedef : kindEntries.getValue().entrySet()) {
+                        node.put(kindEntries.getKey() + "." + namedef.getKey(), namedef.getValue());
+                    }
+                }
+                for (Map.Entry<String,IntrospectedClass> clazzPair : info.clazzes.entrySet()) {
+                    String c = "class." + clazzPair.getKey();
+                    IntrospectedClass ic = clazzPair.getValue();
+                    if (ic.supportsText) {
+                        node.putBoolean(c + ".supportsText", true);
+                    }
+                    if (ic.attrs != null) {
+                        for (Map.Entry<String,String> attr : ic.attrs.entrySet()) {
+                            node.put(c + ".attrs." + attr.getKey(), attr.getValue());
+                        }
+                    }
+                    if (ic.subs != null) {
+                        for (Map.Entry<String,String> sub : ic.subs.entrySet()) {
+                            node.put(c + ".subs." + sub.getKey(), sub.getValue());
+                        }
+                    }
+                    if (ic.enumTags != null) {
+                        StringBuilder b = new StringBuilder();
+                        for (String s : ic.enumTags) {
+                            if (b.length() > 0) {
+                                b.append(',');
+                            }
+                            b.append(s);
+                        }
+                        node.put(c + ".enumTags", b.toString());
+                    }
+                }
+                assert equiv(info, load(node)) : info + " vs. " + load(node);
+            }
+            private boolean equiv(IntrospectedInfo ii1, IntrospectedInfo ii2) {
+                return ii1.clazzes.equals(ii2.clazzes) && ii1.namedefs.equals(ii2.namedefs);
+            }
+        };
     }
     
 }

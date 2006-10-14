@@ -97,8 +97,9 @@ final public class AntTargetExecutor {
         /** Create instance of Env class describing environment for Ant target execution.
          */
         public Env() {
-            verbosity = AntSettings.getDefault().getVerbosity();
-            properties = (Properties) AntSettings.getDefault().getProperties().clone();
+            verbosity = AntSettings.getVerbosity();
+            properties = new Properties();
+            properties.putAll(AntSettings.getProperties());
         }
 
         /**

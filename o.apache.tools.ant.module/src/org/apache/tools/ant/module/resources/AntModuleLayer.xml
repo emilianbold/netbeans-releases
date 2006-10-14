@@ -67,8 +67,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Services">
 
-        <file name="org-apache-tools-ant-module-AntSettings.settings" url="AntSettings.settings"/>
-
         <!-- Recognize text/x-ant+xml: -->
         <folder name="MIMEResolver">
             <file name="org-apache-tools-ant-module-mime-resolver.xml" url="mime-resolver.xml">

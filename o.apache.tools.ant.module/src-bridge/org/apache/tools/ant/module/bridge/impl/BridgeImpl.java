@@ -52,6 +52,8 @@ import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.bridge.BridgeInterface;
 import org.apache.tools.ant.module.bridge.IntrospectionHelperProxy;
+import org.apache.tools.ant.module.bridge.impl.NbBuildLogger;
+import org.apache.tools.ant.module.bridge.impl.NbInputHandler;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
 import org.openide.ErrorManager;
@@ -149,7 +151,7 @@ public class BridgeImpl implements BridgeInterface {
         AntBridge.fakeJavaClassPath();
         try {
         
-        Project project = null;
+        final Project project;
         
         // first use the ProjectHelper to create the project object
         // from the given build file.
@@ -167,7 +169,7 @@ public class BridgeImpl implements BridgeInterface {
             project.setUserProperty("ant.file", buildFile.getAbsolutePath()); // NOI18N
             // #14993:
             project.setUserProperty("ant.version", Main.getAntVersion()); // NOI18N
-            File antHome = AntSettings.getDefault().getAntHomeWithDefault();
+            File antHome = AntSettings.getAntHome();
             if (antHome != null) {
                 project.setUserProperty("ant.home", antHome.getAbsolutePath()); // NOI18N
             }
@@ -261,18 +263,18 @@ public class BridgeImpl implements BridgeInterface {
         }
         
         // Now check to see if the Project defined any cool new custom tasks.
-        final Project p2 = project;
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                IntrospectedInfo custom = AntSettings.getDefault().getCustomDefs();
+                IntrospectedInfo custom = AntSettings.getCustomDefs();
                 Map<String,Map<String,Class>> defs = new HashMap<String,Map<String,Class>>();
-                defs.put("task", NbCollections.checkedMapByCopy(p2.getTaskDefinitions(), String.class, Class.class, true));
-                defs.put("type", NbCollections.checkedMapByCopy(p2.getDataTypeDefinitions(), String.class, Class.class, true));
+                defs.put("task", NbCollections.checkedMapByCopy(project.getTaskDefinitions(), String.class, Class.class, true));
+                defs.put("type", NbCollections.checkedMapByCopy(project.getDataTypeDefinitions(), String.class, Class.class, true));
                 custom.scanProject(defs);
+                AntSettings.setCustomDefs(custom);
                 logger.shutdown();
                 // #85698: do not invoke multiple refreshes at once
                 refreshFilesystemsTask.schedule(0);
-                gutProject(p2);
+                gutProject(project);
                 if (!ant16) {
                     // #36393 - memory leak in Ant 1.5.
                     RequestProcessor.getDefault().post(new Runnable() {

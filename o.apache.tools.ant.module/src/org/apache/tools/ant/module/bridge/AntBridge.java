@@ -46,12 +46,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntSettings;
 import org.openide.ErrorManager;
-import org.openide.execution.NbClassPath;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
@@ -146,7 +144,7 @@ public final class AntBridge {
     private static MiscListener miscListener = new MiscListener();
     private static Lookup.Result<ModuleInfo> modulesResult = Lookup.getDefault().lookupResult(ModuleInfo.class);
     static {
-        AntSettings.getDefault().addPropertyChangeListener(miscListener);
+        AntSettings.addPropertyChangeListener(miscListener);
         modulesResult.addLookupListener(miscListener);
     }
     
@@ -269,7 +267,7 @@ public final class AntBridge {
             // we are really loading Ant from the right place:
             Class ihClazz = Class.forName("org.apache.tools.ant.input.InputHandler", false, bridgeLoader); // NOI18N
             Class<? extends BridgeInterface> impl = bridgeLoader.loadClass("org.apache.tools.ant.module.bridge.impl.BridgeImpl").asSubclass(BridgeInterface.class); // NOI18N
-            if (AntSettings.getDefault().getAntHomeWithDefault() != null) {
+            if (AntSettings.getAntHome() != null) {
                 ClassLoader loaderUsedForAnt = ihClazz.getClassLoader();
                 if (loaderUsedForAnt != main) {
                     throw new IllegalStateException("Wrong class loader is finding Ant: " + loaderUsedForAnt); // NOI18N
@@ -343,7 +341,7 @@ public final class AntBridge {
     private static List<File> createMainClassPath() throws Exception {
         // Use LinkedHashSet to automatically suppress duplicates.
         Collection<File> cp = new LinkedHashSet<File>();
-        File antHome = AntSettings.getDefault().getAntHomeWithDefault();
+        File antHome = AntSettings.getAntHome();
         if (antHome != null) {
             File libdir = new File(antHome, "lib"); // NOI18N
             if (!libdir.isDirectory()) {
@@ -369,25 +367,8 @@ public final class AntBridge {
             }
         }
         // XXX consider adding ${user.home}/.ant/lib/*.jar (org.apache.tools.ant.launch.Launcher.USER_LIBDIR)
-        NbClassPath extra = AntSettings.getDefault().getExtraClasspath();
-        String extrapath = extra.getClassPath();
-        if (extrapath.startsWith("\"") && extrapath.endsWith("\"")) { // NOI18N
-            // *@%!* NbClassPath.getClassPath semantics.
-            extrapath = extrapath.substring(1, extrapath.length() - 1);
-        }
-        StringTokenizer tok = new StringTokenizer(extrapath, File.pathSeparator);
-        while (tok.hasMoreTokens()) {
-            cp.add(new File(tok.nextToken()));
-        }
-        extra = AntSettings.getDefault().getAutomaticExtraClasspath();
-        extrapath = extra.getClassPath();
-        if (extrapath.startsWith("\"") && extrapath.endsWith("\"")) { // NOI18N
-            extrapath = extrapath.substring(1, extrapath.length() - 1);
-        }
-        tok = new StringTokenizer(extrapath, File.pathSeparator);
-        while (tok.hasMoreTokens()) {
-            cp.add(new File(tok.nextToken()));
-        }
+        cp.addAll(AntSettings.getExtraClasspath());
+        cp.addAll(AntSettings.getAutomaticExtraClasspath());
         // XXX note that systemClassLoader will include boot.jar, and perhaps anything else
         // in lib/ext/*.jar, like rmi-ext.jar. Would be nicer to exclude everything NB-specific.
         // However the simplest way - to use the parent loader (JRE ext loader) - does not work
@@ -407,7 +388,7 @@ public final class AntBridge {
         while (it.hasNext()) {
             cp[i++] = it.next().toURI().toURL();
         }
-        if (AntSettings.getDefault().getAntHomeWithDefault() != null) {
+        if (AntSettings.getAntHome() != null) {
             ClassLoader parent = ClassLoader.getSystemClassLoader();
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 List<URL> parentURLs;
@@ -538,7 +519,8 @@ public final class AntBridge {
                     throw new IOException("No 'classname' attr on def of " + name + " in " + antlib); // NOI18N
                 }
                 // XXX would be good to handle at least onerror attr too
-                (type ? newTypeDefs : newTaskDefs).put(name, classname);
+                String nsname = "antlib:" + cnb + ":" + name; // NOI18N
+                (type ? newTypeDefs : newTaskDefs).put(nsname, classname);
             }
             loadDefs(newTaskDefs, tasks, l);
             loadDefs(newTypeDefs, types, l);

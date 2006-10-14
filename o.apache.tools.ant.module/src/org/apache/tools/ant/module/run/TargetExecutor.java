@@ -56,7 +56,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.ReaderInputStream;
 import org.openide.windows.IOProvider;
@@ -87,8 +86,8 @@ public final class TargetExecutor implements Runnable {
     private InputOutput io;
     private OutputStream outputStream;
     private boolean ok = false;
-    private int verbosity = AntSettings.getDefault ().getVerbosity ();
-    private Map<String,String> properties = NbCollections.checkedMapByCopy(AntSettings.getDefault().getProperties(), String.class, String.class, true);
+    private int verbosity = AntSettings.getVerbosity ();
+    private Map<String,String> properties = AntSettings.getProperties();
     private List<String> targetNames;
     /** used for the tab etc. */
     private String displayName;
@@ -260,7 +259,7 @@ public final class TargetExecutor implements Runnable {
         final ExecutorTask task;
         synchronized (this) {
             // OutputWindow
-            if (AntSettings.getDefault().getAutoCloseTabs()) { // #47753
+            if (AntSettings.getAutoCloseTabs()) { // #47753
             synchronized (freeTabs) {
                 for (Map.Entry<InputOutput,String> entry : freeTabs.entrySet()) {
                     InputOutput free = entry.getKey();
@@ -349,7 +348,7 @@ public final class TargetExecutor implements Runnable {
         assert ra != null;
         try {
             
-        final boolean[] displayed = new boolean[] {AntSettings.getDefault().getAlwaysShowOutput()};
+        final boolean[] displayed = new boolean[] {AntSettings.getAlwaysShowOutput()};
         
         if (outputStream == null) {
             if (displayed[0]) {
@@ -357,7 +356,7 @@ public final class TargetExecutor implements Runnable {
             }
         }
         
-        if (AntSettings.getDefault ().getSaveAll ()) {
+        if (AntSettings.getSaveAll()) {
             LifecycleManager.getDefault ().saveAll ();
         }
         

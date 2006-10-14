@@ -20,7 +20,7 @@
 package org.netbeans.upgrade.systemoptions;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Jesse Glick
  */
 public class AntSettingsTest extends BasicTestForImport {
     public AntSettingsTest(String testName) {
@@ -35,13 +35,12 @@ public class AntSettingsTest extends BasicTestForImport {
         assertPropertyNames(new String[] {
             "saveAll",
             "alwaysShowOutput",
-            //"customDefs", skipped
-            "classpath",
+            "extraClasspath",
             "antHome",
             "verbosity",
             "autoCloseTabs",
-            "loadFactor",
-            "threshold"
+            "properties",
+            // "customDefs" not imported
         });
     }
     public void testSaveAll() throws Exception {
@@ -50,28 +49,26 @@ public class AntSettingsTest extends BasicTestForImport {
     }
     public void testAlwaysShowOutput() throws Exception {
         assertPropertyType("alwaysShowOutput","java.lang.Boolean");
-        assertProperty("alwaysShowOutput","true");
+        assertProperty("alwaysShowOutput","false");
     }
-    public void testClasspath() throws Exception {
+    public void testExtraClasspath() throws Exception {
         assertPropertyType("extraClasspath","org.openide.execution.NbClassPath");
-        assertProperty("classpath","/home.local/rmatous/JavaApplication2:/home.local/rmatous/org-netbeans-modules-masterfs.jar");
+        assertProperty("extraClasspath","/home/jglick/NetBeansProjects:/home/jglick/NetBeansProjects/foo/dist/foo.jar");
     }
     public void testAntHome() throws Exception {
         assertPropertyType("antHome","java.io.File");
-        assertProperty("antHome","/space/ant/apache-ant-1.6.5");
+        assertProperty("antHome","/space/src/ant/dist");
     }
     public void testVerbosity() throws Exception {
         assertPropertyType("verbosity","java.lang.Integer");
-        assertProperty("verbosity","2");
+        assertProperty("verbosity","4");
     }
     public void testAutoCloseTabs() throws Exception {
         assertPropertyType("autoCloseTabs","java.lang.Boolean");
         assertProperty("autoCloseTabs","true");
     }
-    public void testLoadFactor() throws Exception {
-        assertProperty("loadFactor","0.75");
+    public void testProperties() throws Exception {
+        assertPropertyType("properties", "java.util.HashMap");
+        assertProperty("properties", "hello=kitty\nmuscular=midget");
     }
-    public void testThreshold() throws Exception {
-        assertProperty("threshold","12");
-    }        
 }

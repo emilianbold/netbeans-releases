@@ -26,7 +26,11 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -36,6 +40,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  * Implementation of one panel in Options Dialog.
@@ -43,8 +48,8 @@ import org.openide.util.NbBundle;
  */
 public class AntCustomizer extends JPanel implements ActionListener {
     
-    private NbClassPath     classpath;
-    private Properties      properties;
+    private List<File> classpath;
+    private Map<String,String> properties;
     private boolean         changed = false;
     private boolean         listen = false;
     private File            originalAntHome;
@@ -67,17 +72,16 @@ public class AntCustomizer extends JPanel implements ActionListener {
     
     void update () {
         listen = false;
-        AntSettings settings = AntSettings.getDefault ();
-        classpath = settings.getExtraClasspath ();
-        properties = settings.getProperties ();
-        originalAntHome = settings.getAntHomeWithDefault ();
+        classpath = AntSettings.getExtraClasspath();
+        properties = AntSettings.getProperties();
+        originalAntHome = AntSettings.getAntHome();
             
         tfAntHome.setText(originalAntHome != null ? originalAntHome.toString() : null);
-        cbSaveFiles.setSelected (settings.getSaveAll ());
-        cbReuseOutput.setSelected (settings.getAutoCloseTabs ());
-        cbAlwaysShowOutput.setSelected (settings.getAlwaysShowOutput ());
-        cbVerbosity.setSelectedIndex (settings.getVerbosity () - 1);
-        lAntVersion.setText ("(" + settings.getAntVersion () + ")");
+        cbSaveFiles.setSelected(AntSettings.getSaveAll());
+        cbReuseOutput.setSelected(AntSettings.getAutoCloseTabs());
+        cbAlwaysShowOutput.setSelected(AntSettings.getAlwaysShowOutput());
+        cbVerbosity.setSelectedIndex(AntSettings.getVerbosity() - 1);
+        lAntVersion.setText("(" + AntSettings.getAntVersion() + ")");
         changed = false;
         initialized = true;
         listen = true;
@@ -87,28 +91,33 @@ public class AntCustomizer extends JPanel implements ActionListener {
     
     void applyChanges () {
         if (!initialized) return;
-        AntSettings settings = AntSettings.getDefault ();
         String antHome = tfAntHome.getText ().trim ();
-        settings.setAntHome (new File (antHome));
-        if (settings.getAutoCloseTabs () != cbReuseOutput.isSelected ())
-            settings.setAutoCloseTabs (cbReuseOutput.isSelected ());
-        if (settings.getSaveAll () != cbSaveFiles.isSelected ())
-            settings.setSaveAll (cbSaveFiles.isSelected ());
-        if (settings.getAlwaysShowOutput () != cbAlwaysShowOutput.isSelected ())
-            settings.setAlwaysShowOutput (cbAlwaysShowOutput.isSelected ());
-        if (settings.getVerbosity () != cbVerbosity.getSelectedIndex () + 1)
-            settings.setVerbosity (cbVerbosity.getSelectedIndex () + 1);
-        if (!settings.getProperties ().equals (properties))
-            settings.setProperties (properties);
-        if (!settings.getExtraClasspath ().equals (classpath))
-            settings.setExtraClasspath (classpath);
+        AntSettings.setAntHome(new File(antHome));
+        if (AntSettings.getAutoCloseTabs() != cbReuseOutput.isSelected()) {
+            AntSettings.setAutoCloseTabs(cbReuseOutput.isSelected());
+        }
+        if (AntSettings.getSaveAll() != cbSaveFiles.isSelected()) {
+            AntSettings.setSaveAll(cbSaveFiles.isSelected());
+        }
+        if (AntSettings.getAlwaysShowOutput() != cbAlwaysShowOutput.isSelected()) {
+            AntSettings.setAlwaysShowOutput(cbAlwaysShowOutput.isSelected());
+        }
+        if (AntSettings.getVerbosity() != cbVerbosity.getSelectedIndex() + 1) {
+            AntSettings.setVerbosity(cbVerbosity.getSelectedIndex() + 1);
+        }
+        if (!AntSettings.getProperties().equals(properties)) {
+            AntSettings.setProperties(properties);
+        }
+        if (!AntSettings.getExtraClasspath().equals(classpath)) {
+            AntSettings.setExtraClasspath(classpath);
+        }
         changed = false;
     }
     
     void cancel () {
-        AntSettings settings = AntSettings.getDefault ();
-        if (settings.getAntHome () != originalAntHome)
-            settings.setAntHome (originalAntHome);
+        if (AntSettings.getAntHome() != originalAntHome) {
+            AntSettings.setAntHome(originalAntHome);
+        }
         changed = false;
     }
     
@@ -152,16 +161,14 @@ public class AntCustomizer extends JPanel implements ActionListener {
                     return;
                 }
                 tfAntHome.setText (file.getAbsolutePath ());
-                AntSettings settings = AntSettings.getDefault ();
-                settings.setAntHome (file);
-                lAntVersion.setText ("(" + settings.getAntVersion () + ")");
+                AntSettings.setAntHome(file);
+                lAntVersion.setText("(" + AntSettings.getAntVersion() + ")");
                 changed = true;
             }
         } else
         if (o == bClasspath) {
-            PropertyEditor editor = PropertyEditorManager.findEditor 
-                (NbClassPath.class);
-            editor.setValue (classpath);
+            PropertyEditor editor = PropertyEditorManager.findEditor(NbClassPath.class);
+            editor.setValue(new NbClassPath(classpath.toArray(new File[classpath.size()])));
             Component customEditor = editor.getCustomEditor ();
             DialogDescriptor dd = new DialogDescriptor (
                 customEditor,
@@ -170,14 +177,23 @@ public class AntCustomizer extends JPanel implements ActionListener {
             Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
             if (dd.getValue () == NotifyDescriptor.OK_OPTION) {
-                classpath = (NbClassPath) editor.getValue ();
+                String cp = ((NbClassPath) editor.getValue()).getClassPath();
+                if (cp.startsWith("\"") && cp.endsWith("\"")) {
+                    // *@%!* NbClassPath.getClassPath semantics.
+                    cp = cp.substring(1, cp.length() - 1);
+                }
+                classpath = new ArrayList<File>();
+                for (String f : cp.split(Pattern.quote(File.pathSeparator))) {
+                    classpath.add(new File(f));
+                }
                 changed = true;
             }
         } else
         if (o == bProperties) {
-            PropertyEditor editor = PropertyEditorManager.findEditor 
-                (Properties.class);
-            editor.setValue (properties);
+            PropertyEditor editor = PropertyEditorManager.findEditor(Properties.class);
+            Properties p = new Properties();
+            p.putAll(properties);
+            editor.setValue(p);
             Component customEditor = editor.getCustomEditor ();
             DialogDescriptor dd = new DialogDescriptor (
                 customEditor,
@@ -186,7 +202,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
             Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
             if (dd.getValue () == NotifyDescriptor.OK_OPTION) {
-                properties = (Properties) editor.getValue();
+                properties = NbCollections.checkedMapByCopy((Properties) editor.getValue(), String.class, String.class, true);
                 changed = true;
             }
         }
@@ -365,14 +381,14 @@ public class AntCustomizer extends JPanel implements ActionListener {
     }// </editor-fold>//GEN-END:initComponents
 
     private void bAntHomeDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAntHomeDefaultActionPerformed
-        AntSettings.getDefault().setAntHome(null);
-        File antHome = AntSettings.getDefault().getAntHomeWithDefault();
+        AntSettings.setAntHome(null);
+        File antHome = AntSettings.getAntHome();
         if (antHome != null) {
             tfAntHome.setText(antHome.getAbsolutePath());
         } else {
             tfAntHome.setText(null);
         }
-        lAntVersion.setText("(" + AntSettings.getDefault().getAntVersion() + ")");
+        lAntVersion.setText("(" + AntSettings.getAntVersion() + ")");
         changed = true;
     }//GEN-LAST:event_bAntHomeDefaultActionPerformed
         
