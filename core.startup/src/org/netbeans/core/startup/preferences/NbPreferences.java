@@ -99,6 +99,20 @@ public abstract class NbPreferences extends AbstractPreferences {
         asyncInvocationOfFlushSpi();
     }
     
+    @Override
+    public void put(String key, String value) {
+        try {
+            super.put(key, value);
+        } catch (IllegalArgumentException iae) {
+            if (iae.getMessage().contains("too long")) {
+                // Not for us!
+                putSpi(key, value);
+            } else {
+                throw iae;
+            }
+        }
+    }
+    
     protected final void removeSpi(String key) {
         properties().remove(key);
         fileStorage.markModified();

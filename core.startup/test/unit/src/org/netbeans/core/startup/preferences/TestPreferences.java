@@ -67,7 +67,8 @@ public class TestPreferences extends NbPreferencesTest.BasicSetupTest {
         }
     }
     
-    
+
+    /* We do not really care about enforcing these limits:
     public void testKeyExceededSize() throws Exception {
         Preferences pref = getPreferencesNode();
         StringBuffer sb = new StringBuffer();
@@ -95,6 +96,7 @@ public class TestPreferences extends NbPreferencesTest.BasicSetupTest {
         } catch (IllegalArgumentException iax) {
         }
     }
+     */
     
     public void testNameExceededSize() throws Exception {
         StringBuffer sb = new StringBuffer();
