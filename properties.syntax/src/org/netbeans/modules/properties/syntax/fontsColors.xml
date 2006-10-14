@@ -3,9 +3,9 @@
 <fontscolors>
     <fontcolor name="properties-line-comment" default="comment"/>
     <fontcolor name="properties-equal-sign" default="operator"/>
-    <fontcolor name="properties-value" foreColor="magenta" default="default"/>
+    <fontcolor name="properties-value" default="string"/>
     <fontcolor name="properties-text" default="default"/>
-    <fontcolor name="properties-key" foreColor="blue" default="identifier">
+    <fontcolor name="properties-key" default="keyword">
         <font style="bold"/>
     </fontcolor>
 </fontscolors>

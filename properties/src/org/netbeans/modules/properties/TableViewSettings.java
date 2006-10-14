@@ -40,11 +40,11 @@ import org.openide.util.LookupListener;
 public abstract class TableViewSettings {
     
     /** Default key color. */
-    public static final Color KEY_DEFAULT_COLOR = Color.blue;
+    public static final Color KEY_DEFAULT_COLOR = new Color(0, 0, 153);
     /** Default key background. */    
     public static final Color KEY_DEFAULT_BACKGROUND = Color.white;
     /** Default value color. */
-    public static final Color VALUE_DEFAULT_COLOR = Color.magenta;
+    public static final Color VALUE_DEFAULT_COLOR = new Color(153, 0, 107);
     /** Default value background. */
     public static final Color VALUE_DEFAULT_BACKGROUND = Color.white;
     /** Default highlight color. */
