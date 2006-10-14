@@ -196,7 +196,7 @@ public class VMDNodeWidget extends Widget implements StateModel.Listener, VMDMin
      * @param nodeType the node type
      */
     public void setNodeType (String nodeType) {
-        typeWidget.setLabel ("[" + nodeType + "]");
+        typeWidget.setLabel (nodeType != null ? "[" + nodeType + "]" : null);
     }
 
     /**
