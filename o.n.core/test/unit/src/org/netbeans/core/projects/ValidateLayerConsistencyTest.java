@@ -20,9 +20,11 @@
 package org.netbeans.core.projects;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,7 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import junit.framework.Test;
+import org.netbeans.core.startup.layers.BinaryCacheManager;
+import org.netbeans.core.startup.layers.ParsingLayerCacheManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.cookies.InstanceCookie;
@@ -342,7 +350,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             // ok, modules depend on each other
             if (list.size () <= 1) continue;
             
-            sb.append (e.getKey () + " is provided by: " + list + "\n");
+            sb.append (e.getKey ()).append( " is provided by: " ).append(list).append('\n');
             Map<String,ContentAndAttrs> diffList = differentContents.get(e.getKey());
             if (diffList != null) {
                 if (list.size() == 2) {
@@ -351,8 +359,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     ContentAndAttrs contentAttrs1 = diffList.get(module1);
                     ContentAndAttrs contentAttrs2 = diffList.get(module2);
                     if (!Arrays.equals(contentAttrs1.contents, contentAttrs2.contents)) {
-                        sb.append(" " + module1 + ": content = '" + new String(contentAttrs1.contents) + "\n");
-                        sb.append(" " + module2 + ": content = '" + new String(contentAttrs2.contents) + "\n");
+                        sb.append(' ').append(module1).append(": content = '").append(new String(contentAttrs1.contents)).append('\n');
+                        sb.append(' ').append(module2).append(": content = '").append(new String(contentAttrs2.contents)).append('\n');
                     }
                     if (!contentAttrs1.attrs.equals(contentAttrs2.attrs)) {
                         Map<String,Object> attr1 = contentAttrs1.attrs;
@@ -368,8 +376,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                                 attr2.remove(attribute);
                             }
                         }
-                        sb.append(" " + module1 + ": different attributes = '" + contentAttrs1.attrs + "\n");
-                        sb.append(" " + module2 + ": different attributes = '" + contentAttrs2.attrs + "\n");
+                        sb.append(' ').append(module1).append(": different attributes = '").append(contentAttrs1.attrs).append('\n');
+                        sb.append(' ').append(module2).append(": different attributes = '").append(contentAttrs2.attrs).append('\n');
                     }
                 } else {
                     for (String module : list) {
@@ -384,6 +392,69 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         
         if (sb.length () > 0) {
             fail ("Some modules override their files and do not depend on each other\n" + sb);
+        }
+    }
+    
+    public void testNoWarningsFromLayerParsing() throws Exception {
+        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+        assertNotNull ("In the IDE mode, there always should be a classloader", l);
+        
+        List<URL> urls = new ArrayList<URL>();
+        boolean atLeastOne = false;
+        Enumeration<URL> en = l.getResources("META-INF/MANIFEST.MF");
+        while (en.hasMoreElements ()) {
+            URL u = en.nextElement();
+            InputStream is = u.openStream();
+            Manifest mf;
+            try {
+                mf = new Manifest(is);
+            } finally {
+                is.close();
+            }
+            String module = mf.getMainAttributes ().getValue ("OpenIDE-Module");
+            if (module == null) continue;
+            String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
+            if (layer == null) continue;
+            
+            atLeastOne = true;
+            URL layerURL = new URL(u, "../" + layer);
+            urls.add(layerURL);
+        }
+        
+        File cacheDir;
+        File workDir = getWorkDir();
+        int i = 0;
+        do {
+            cacheDir = new File(workDir, "layercache"+i);
+        } while (!cacheDir.mkdir());
+
+        BinaryCacheManager bcm = new BinaryCacheManager(cacheDir);
+        Logger err = Logger.getLogger("org.netbeans.core.projects.cache");
+        LayerParsehandler h = new LayerParsehandler();
+        err.addHandler(h);
+        bcm.store(urls);
+        assertEquals("No errors or warnings during layer parsing: "+h.errors().toString(), 0, h.errors().size());
+    }
+    
+    private static class LayerParsehandler extends Handler {
+        List<String> errors = new ArrayList<String>();
+        
+        LayerParsehandler () {}
+        
+        public void publish(LogRecord rec) {
+            if (Level.WARNING.equals(rec.getLevel()) || Level.SEVERE.equals(rec.getLevel())) {
+                errors.add(MessageFormat.format(rec.getMessage(), rec.getParameters()));
+            }
+        }
+        
+        List<String> errors() {
+            return errors;
+        }
+
+        public void flush() {
+        }
+
+        public void close() throws SecurityException {
         }
     }
     
