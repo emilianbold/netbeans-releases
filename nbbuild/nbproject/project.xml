@@ -237,6 +237,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../html</project>
                 <project>../html/editor</project>
                 <project>../html/editor/lib</project>
+                <project>../html/lexer</project>
                 <project>../httpserver</project>
                 <project>../httpserver/servletapi</project>
                 <project>../i18n</project>
@@ -359,6 +360,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../web/jspdebug</project>
                 <project>../web/jspparser</project>
                 <project>../web/jspsyntax</project>
+                <project>../web/jspsyntax/lexer</project>
                 <project>../web/jstl11</project>
                 <project>../web/libs/glassfish_logging</project>
                 <project>../web/project</project>
