@@ -114,13 +114,13 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
         if (v == null) return "null";
         if (v instanceof VoidValue) return "void";
         if (v instanceof CharValue)
-            return "\'" + convertToCharInitializer (v.toString ()) + "\'";
+            return "\'" + v.toString () + "\'";
         if (v instanceof PrimitiveValue)
             return v.toString ();
         if (v instanceof StringReference)
-            return "\"" + convertToStringInitializer (
+            return "\"" +
                 ((StringReference) v).value ()
-            ) + "\"";
+                + "\"";
         if (v instanceof ClassObjectReference)
             return "class " + ((ClassObjectReference) v).reflectedType ().name ();
         if (v instanceof ArrayReference)
@@ -341,11 +341,11 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
             if (!(v.type () instanceof ClassType)) 
                 return getValue ();
             if (v instanceof CharValue)
-                return "\'" + convertToCharInitializer (v.toString ()) + "\'";
+                return "\'" + v.toString () + "\'";
             if (v instanceof StringReference)
-                return "\"" + convertToStringInitializer (
+                return "\"" +
                     ((StringReference) v).value ()
-                ) + "\"";
+                    + "\"";
             Method toStringMethod = ((ClassType) v.type ()).
                 concreteMethodByName ("toString", "()Ljava/lang/String;");
             StringReference sr = (StringReference) debugger.invokeMethod (
@@ -727,6 +727,7 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
         return "ObjectVariable ";
     }
     
+    /* Uncomment when needed. Was used to create "readable" String and Char values.
     private static String convertToStringInitializer (String s) {
         StringBuffer sb = new StringBuffer ();
         int i, k = s.length ();
@@ -790,6 +791,7 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
             }
         return sb.toString();
     }
+     */
     
     private class DebuggetStateListener extends Object implements PropertyChangeListener {
         
