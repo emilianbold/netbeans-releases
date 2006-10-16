@@ -29,9 +29,13 @@
     </target>
     
     <target name="native-build" depends="native-init,native-compile">
-        <copy file="${native.directory}/dist/${native.file}" tofile="${build.classes.dir}/${native.jar.dir}/${native.file}"/>
+        <copy file="${native.directory.windows}/${native.dist.directory}/${native.file.windows}" todir="${build.classes.dir}/${native.jar.dir}"/>
+        <copy file="${native.directory.linux}/${native.dist.directory}/${native.file.linux}" todir="${build.classes.dir}/${native.jar.dir}"/>
+        <copy file="${native.directory.solaris-x86}/${native.dist.directory}/${native.file.solaris-x86}" todir="${build.classes.dir}/${native.jar.dir}"/>
+        <copy file="${native.directory.solaris-sparc}/${native.dist.directory}/${native.file.solaris-sparc}" todir="${build.classes.dir}/${native.jar.dir}"/>
+        <copy file="${native.directory.macosx}/${native.dist.directory}/${native.file.macosx}" todir="${build.classes.dir}/${native.jar.dir}"/>
     </target>
-    
+
     <target name="define-platform">
         <condition property="is.windows">
             <contains string="${os.name}" substring="Windows"/>
