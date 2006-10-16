@@ -23,7 +23,7 @@ import org.netbeans.jellytools.actions.Action;
 
 /** Used to call "Redeploy Project" popup menu item on project's root node.
  * @see Action
- * @see org.netbeans.jellytools.nodes.FreeformProjectNode
+ * @see org.netbeans.jellytools.modules.freeform.nodes.FreeformProjectNode
  * @author Martin.Schovanek@sun.com
  */
 public class RedeployFreeformAction extends Action {

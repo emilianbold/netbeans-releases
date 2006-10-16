@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.25"
+  question-version="1.29"
   author="jskrivanek@netbeans.org"
 >
 
@@ -996,6 +996,51 @@ Microsystems, Inc. All Rights Reserved.
     <a href="http://www.netbeans.org/source/browse/jellytools">
         http://www.netbeans.org/source/browse/jellytools
     </a>
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   N/A.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                <pre xml:space="preserve">
+                    &lt;api type="export" group="preferences"
+                    name="preference node's absolute path name" category="private" url="http://..."&gt;
+                    description of individual keys, where it is used, what it
+                    influence, whether the module reads/write it, etc.
+                    &lt;/api&gt;            
+                </pre>
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+   No.
   </p>
  </answer>
 

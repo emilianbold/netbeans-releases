@@ -158,8 +158,11 @@ public class ComponentPaletteOperator extends TopComponentOperator {
      * expand methods before using this method.
      * @param displayName display name of component to be selected (e.g. Button)
      * @see #expandBeans
-     * @see #expandSwing
      * @see #expandAWT
+     * @see #expandSwingContainers
+     * @see #expandSwingControls
+     * @see #expandSwingMenus
+     * @see #expandSwingWindows
      */
     public void selectComponent(final String displayName) {
         int index = lstComponents().findItemIndex(new ListItemChooser() {

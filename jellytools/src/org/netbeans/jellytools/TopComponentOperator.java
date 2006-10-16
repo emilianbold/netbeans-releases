@@ -72,7 +72,7 @@ import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
  * @author Adam.Sotona@sun.com
  * @author Jiri.Skrivanek@sun.com
  *
- * @see org.netbeans.jellytools.ations.AttachWindowAction
+ * @see org.netbeans.jellytools.actions.AttachWindowAction
  * @see org.netbeans.jellytools.actions.CloneViewAction
  * @see org.netbeans.jellytools.actions.CloseAllDocumentsAction
  * @see org.netbeans.jellytools.actions.CloseViewAction

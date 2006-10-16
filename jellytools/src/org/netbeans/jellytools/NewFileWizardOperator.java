@@ -77,7 +77,7 @@ public class NewFileWizardOperator extends WizardOperator {
     }
 
     /** Invokes new wizard and returns instance of NewFileWizardOperator.
-     * @param initial wizard title
+     * @param title initial wizard title
      * @return  instance of NewFileWizardOperator
      */
     public static NewFileWizardOperator invoke(String title) {
