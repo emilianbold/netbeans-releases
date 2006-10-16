@@ -60,6 +60,11 @@ public class ClientRuntime {
      * The CVS Root this class manages.
      */ 
     private final String        cvsRoot; 
+
+    /**
+     * The CVS Root this class manages without password field.
+     */ 
+    private String              cvsRootDisplay; 
     
     /**
      * Processor to use when posting commands to given CVSRoot. It has a throughput of 1.
@@ -73,8 +78,21 @@ public class ClientRuntime {
 
     ClientRuntime(String root) {
         cvsRoot = root;
-        requestProcessor = new RequestProcessor("CVS: " + cvsRoot);  // NOI18N
-        log = IOProvider.getDefault().getIO(cvsRoot, false);
+        cvsRootDisplay = root;
+        try {
+            CVSRoot rt = CVSRoot.parse(cvsRoot);
+            if (rt.getPassword() != null) {
+                // this is not 100% correct but is straightforward
+                int idx = root.indexOf(rt.getPassword());
+                if (idx != -1) {
+                    cvsRootDisplay = cvsRoot.substring(0, idx - 1) + cvsRoot.substring(idx + rt.getPassword().length());
+                }
+            }
+        } catch (Exception e) {
+            // should not happen but is harmless here
+        }
+        requestProcessor = new RequestProcessor("CVS: " + cvsRootDisplay);  // NOI18N
+        log = IOProvider.getDefault().getIO(cvsRootDisplay, false);
     }
 
     private void ensureValidCommand(File [] files) throws IllegalCommandException {
@@ -145,7 +163,7 @@ public class ClientRuntime {
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                    
                 } finally {
                     log.getOut().close();
-                    log = IOProvider.getDefault().getIO(cvsRoot, false);
+                    log = IOProvider.getDefault().getIO(cvsRootDisplay, false);
                 }
             }
         });
@@ -166,7 +184,7 @@ public class ClientRuntime {
      */
     public void log(String message, OutputListener hyperlinkListener) {
         if (log.isClosed()) {
-            log = IOProvider.getDefault().getIO(cvsRoot, false);
+            log = IOProvider.getDefault().getIO(cvsRootDisplay, false);
             try {
                 // XXX workaround, otherwise it writes to nowhere
                 log.getOut().reset();
@@ -380,7 +398,7 @@ public class ClientRuntime {
     }
 
     public String toString() {
-        return "ClientRuntime queue=" + cvsRoot + " processor=" + requestProcessor;  // NOI18N
+        return "ClientRuntime queue=" + cvsRootDisplay + " processor=" + requestProcessor;  // NOI18N
     }
 
     /**
