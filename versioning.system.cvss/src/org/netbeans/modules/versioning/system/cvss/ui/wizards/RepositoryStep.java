@@ -466,7 +466,17 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                     repositoryPanel.extCommandTextField.setText(extSettings.extCommand);
                 }
             }
-            schedulePasswordUpdate();
+            repositoryPanel.extPasswordField.setEditable(root.getPassword() == null);
+            repositoryPanel.passwordTextField.setEditable(root.getPassword() == null);
+            if (root.getPassword() != null) {
+                if (CVSRoot.METHOD_EXT.equals(root.getMethod())) {
+                    repositoryPanel.extPasswordField.setText(root.getPassword());
+                } else if (CVSRoot.METHOD_PSERVER.equals(root.getMethod())) {
+                    repositoryPanel.passwordTextField.setText(root.getPassword());
+                }
+            } else {
+                schedulePasswordUpdate();
+            }
         }
         updateVisibility();
         updateLabel();
