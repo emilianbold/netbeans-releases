@@ -25,8 +25,12 @@ import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.text.*;
+import org.netbeans.api.jsp.lexer.JspLanguage;
+import org.netbeans.api.lexer.LanguageDescription;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.DrawLayer;
+import org.netbeans.editor.DrawLayerFactory;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenItem;
@@ -37,8 +41,10 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.editor.ext.java.JavaTokenContext;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
 import org.openide.ErrorManager;
 import org.openide.text.CloneableEditorSupport;
@@ -66,7 +72,7 @@ import org.netbeans.api.editor.fold.FoldUtilities;
  * @author Miloslav Metelka, Petr Jiricka, Yury Kamen
  * @versiob 1.5
  */
-public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
+public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.Provider{
     
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
@@ -83,6 +89,10 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     private static final long serialVersionUID = 8933974837050367142L;
     
     public static final boolean debug = false;
+    
+    //temporary - will be removed when lexer is stabilized
+    private static final boolean J2EE_LEXER_COLORING = Boolean.getBoolean("j2ee_lexer_coloring"); //NOI18N
+
     
     /** Default constructor */
     public JSPKit() {
@@ -218,6 +228,23 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
      */
     public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
         return null;
+    }
+    
+    /*
+     * @Override()
+     */
+    public Document createDefaultDocument() {
+        if(J2EE_LEXER_COLORING) {
+            Document doc = new JspEditorDocument(this.getClass());
+            Object mimeType = doc.getProperty("mimeType"); //NOI18N
+            if (mimeType == null){
+                doc.putProperty("mimeType", getContentType()); //NOI18N
+            }
+            doc.putProperty(LanguageDescription.class, JspLanguage.description());
+            return doc;
+        } else {
+            return super.createDefaultDocument();
+        }
     }
     
     protected void initDocument(BaseDocument doc) {
@@ -490,6 +517,21 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
         }
         
+    }
+    
+     public class JspEditorDocument extends NbEditorDocument {
+        public JspEditorDocument(Class kitClass) {
+            super(kitClass);
+        }
+        
+         public boolean addLayer(DrawLayer layer, int visibility) {
+             //filter out the syntax layer adding
+             if(!(layer instanceof DrawLayerFactory.SyntaxLayer)) {
+                 return super.addLayer(layer, visibility);
+             } else {
+                 return false;
+             }
+         }
     }
     
 }
