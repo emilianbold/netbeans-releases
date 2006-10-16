@@ -20,15 +20,14 @@ package org.netbeans.modules.subversion.ui.search;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import javax.swing.JList;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -39,11 +38,8 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.settings.HistorySettings;
 import org.netbeans.modules.subversion.util.NoContentPanel;
-import org.openide.ErrorManager;
-import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -129,12 +125,22 @@ public class SvnSearch implements ActionListener, DocumentListener {
                         return;
                     }    
 
-                    final ISVNLogMessage[] results = lm;
+                    final List<ISVNLogMessage> msgList = new ArrayList<ISVNLogMessage>(lm.length);
+                    if(revisionFrom instanceof SVNRevision.DateSpec) {
+                        long timeFrom = ((SVNRevision.DateSpec)revisionFrom).getDate().getTime();
+                        for (int i = 0; i < lm.length; i++) {
+                            if(lm[i].getDate().getTime() >= timeFrom) {
+                                msgList.add(lm[i]);
+                            }
+                        }
+                        lm = msgList.toArray(new ISVNLogMessage[msgList.size()]);
+                    }
+                    final ISVNLogMessage[] msgRet = lm;
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             panel.listPanel.setVisible(true);
                             panel.noContentPanel.setVisible(false);                     
-                            searchView.setResults(results);      
+                            searchView.setResults(msgRet);      
                         }
                     });
                 }                        
