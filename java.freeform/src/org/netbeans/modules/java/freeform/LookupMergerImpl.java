@@ -20,8 +20,8 @@
 package org.netbeans.modules.java.freeform;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.ant.freeform.spi.LookupMerger;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.LookupMerger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -30,19 +30,16 @@ import org.openide.util.Lookup;
  *
  * @author David Konecny
  */
-public class LookupMergerImpl implements LookupMerger {
+public class LookupMergerImpl implements LookupMerger<ClassPathProvider> {
 
     public LookupMergerImpl() {}
 
-    public Class<?>[] getMergeableClasses() {
-        return new Class<?>[] {ClassPathProvider.class};
+    public Class<ClassPathProvider> getMergeableClass() {
+        return ClassPathProvider.class;
     }
-    
-    public Object merge(Lookup lookup, Class clazz) {
-        if (clazz == ClassPathProvider.class) {
-            return new ClassPathProviderImpl(lookup);
-        }
-        throw new IllegalArgumentException("merging of "+clazz+" is not supported"); // NOI18N
+
+    public ClassPathProvider merge(Lookup lookup) {
+        return new ClassPathProviderImpl(lookup);
     }
     
     private static class ClassPathProviderImpl implements ClassPathProvider {

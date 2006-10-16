@@ -24,55 +24,30 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import org.netbeans.modules.ant.freeform.spi.LookupMerger;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.openide.util.Lookup;
 
 /**
- * Merges PrivilegedTemplates - all unique templates are returned.
- * Order is undefined - depends on the lookup.
+ * Merges ActionProvider 
  *
- * @author David Konecny
+ * @author David Konecny, Milos Kleint
  */
-public class LookupMergerImpl implements LookupMerger {
+public class LookupMergerImpl implements LookupMerger<ActionProvider> {
 
-    public LookupMergerImpl() {}
-    
-    public Class<?>[] getMergeableClasses() {
-        return new Class<?>[] {
-            PrivilegedTemplates.class,
-            ActionProvider.class,
-        };
+    public LookupMergerImpl() {
     }
     
-    public Object merge(Lookup lookup, Class<?> clazz) throws IllegalArgumentException {
-        if (clazz == PrivilegedTemplates.class) {
-            return new PrivilegedTemplatesImpl(lookup);
-        } else if (clazz == ActionProvider.class) {
-            return new ActionProviderImpl(lookup);
-        } else {
-            throw new IllegalArgumentException("merging of " + clazz + " is not supported"); // NOI18N
-        }
+
+    public Class<ActionProvider> getMergeableClass() {
+        return ActionProvider.class;
+    }
+
+    public ActionProvider merge(Lookup lookup) {
+        return new ActionProviderImpl(lookup);
     }
     
-    private static class PrivilegedTemplatesImpl implements PrivilegedTemplates {
-        
-        private Lookup lkp;
-        
-        public PrivilegedTemplatesImpl(Lookup lkp) {
-            this.lkp = lkp;
-        }
-        
-        public String[] getPrivilegedTemplates() {
-            Set<String> templates = new LinkedHashSet<String>();
-            for (PrivilegedTemplates pt : lkp.lookupAll(PrivilegedTemplates.class)) {
-                templates.addAll(Arrays.asList(pt.getPrivilegedTemplates()));
-            }
-            return templates.toArray(new String[templates.size()]);
-        }
-        
-    }
 
     /**
      * Permits any nature to add actions to the project.

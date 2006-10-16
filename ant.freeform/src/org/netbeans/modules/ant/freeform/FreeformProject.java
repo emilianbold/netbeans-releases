@@ -25,14 +25,12 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ant.freeform.spi.LookupMerger;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
@@ -41,6 +39,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -90,7 +89,8 @@ public final class FreeformProject implements Project {
             helper().createCacheDirectoryProvider(), // CacheDirectoryProvider
             new Subprojects(this), // SubprojectProvider
             new ArtifactProvider(this), // AntArtifactProvider
-            new LookupMergerImpl(), // LookupMerger
+            new LookupMergerImpl(), // LookupMerger or ActionProvider
+            UILookupMergerSupport.createPrivilegedTemplatesMerger(), 
             new FreeformProjectOperations(this),
 	    new FreeformSharabilityQuery(helper()), //SharabilityQueryImplementation
             new ProjectAccessor(this) //Access to AntProjectHelper and PropertyEvaluator
@@ -186,8 +186,8 @@ public final class FreeformProject implements Project {
         private final PropertyEvaluator evaluator;
         private final FreeformProject project;
         private final AuxiliaryConfiguration aux;
-        private Lookup.Result<LookupMerger> mergers;
-        private Reference<LookupListener> listenerRef;
+        private Lookup.Result<org.netbeans.spi.project.LookupMerger> mergers2;
+        private Reference<LookupListener> listenerRef2;
         
         //#68623: the proxy lookup fires changes only if someone listens on a particular template:
         private List<Lookup.Result<?>> results;
@@ -226,31 +226,33 @@ public final class FreeformProject implements Project {
             //merge:
             List<Class<?>> filteredClasses = new ArrayList<Class<?>>();
             List<Object> mergedInstances = new ArrayList<Object>();
-            LookupListener l = listenerRef != null ? listenerRef.get() : null;
+            //first comes the new project API's LookupMerger
+            //merge:
+            LookupListener l = listenerRef2 != null ? listenerRef2.get() : null;
             if (l != null) {
-                mergers.removeLookupListener(l);
+                mergers2.removeLookupListener(l);
             }
-            mergers = lkp.lookupResult(LookupMerger.class);
-            l = WeakListeners.create(LookupListener.class, this, mergers);
-            listenerRef = new WeakReference<LookupListener>(l);
-            mergers.addLookupListener(l);
-            for (LookupMerger lm : mergers.allInstances()) {
-                for (Class<?> c : lm.getMergeableClasses()) {
-                    if (filteredClasses.contains(c)) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING, 
+            mergers2 = lkp.lookupResult(org.netbeans.spi.project.LookupMerger.class);
+            l = WeakListeners.create(LookupListener.class, this, mergers2);
+            listenerRef2 = new WeakReference<LookupListener>(l);
+            mergers2.addLookupListener(l);
+            for (org.netbeans.spi.project.LookupMerger lm : mergers2.allInstances()) {
+                Class<?> c = lm.getMergeableClass();
+                if (filteredClasses.contains(c)) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING,
                             "Two LookupMerger registered for class " + c +
                             ". Only first one will be used"); // NOI18N
-                        continue;
-                    }
-                    filteredClasses.add(c);
-                    mergedInstances.add(lm.merge(lkp, c));
-                    
-                    Lookup.Result<?> result = lkp.lookupResult(c);
-                    
-                    result.addLookupListener(this);
-                    results.add(result);
+                    continue;
                 }
+                filteredClasses.add(c);
+                mergedInstances.add(lm.merge(lkp));
+                
+                Lookup.Result<?> result = lkp.lookupResult(c);
+                
+                result.addLookupListener(this);
+                results.add(result);
             }
+            
             lkp = Lookups.exclude(lkp, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
             Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
             setLookups(fixed, lkp);
