@@ -46,13 +46,17 @@ import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.html.lexer.HTMLLanguage;
+import org.netbeans.api.lexer.LanguageDescription;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.folding.HTMLFoldTypes;
+import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,7 +66,7 @@ import org.openide.util.NbBundle;
  * @version 1.00
  */
 
-public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements org.openide.util.HelpCtx.Provider {
+public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.Provider {
     
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(HTMLKit.class);
@@ -81,6 +85,8 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
     
     private static boolean setupReadersInitialized = false;
     
+    //temporary - will be removed when lexer is stabilized
+    private static final boolean J2EE_LEXER_COLORING = Boolean.getBoolean("j2ee_lexer_coloring"); //NOI18N
     
     public HTMLKit(){
         if (!setupReadersInitialized){
@@ -135,6 +141,23 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
      */
     public Completion createCompletionForProvider(ExtEditorUI extEditorUI) {
         return new HTMLCompletion(extEditorUI);
+    }
+    
+    /*
+     * @Override()
+     */
+    public Document createDefaultDocument() {
+        if(J2EE_LEXER_COLORING) {
+            Document doc = new HTMLEditorDocument(this.getClass());
+            Object mimeType = doc.getProperty("mimeType"); //NOI18N
+            if (mimeType == null){
+                doc.putProperty("mimeType", getContentType()); //NOI18N
+            }
+            doc.putProperty(LanguageDescription.class, HTMLLanguage.description());
+            return doc;
+        } else {
+            return super.createDefaultDocument();
+        }
     }
     
     public Formatter createFormatter() {
@@ -202,7 +225,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
                 Completion completion = ExtUtilities.getCompletion(target);
                 if (completion != null && completion.isPaneVisible()) {
                     if (completion.substituteText( true )) {
-//                        completion.setPaneVisible(false);
+                        //                        completion.setPaneVisible(false);
                     } else {
                         completion.refresh(false);
                     }
@@ -334,7 +357,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
                     } else if (plainFlavor == null && mime.startsWith("text/plain")) { //NOI18N
                         plainFlavor = flavors[i];
                     } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref") //NOI18N
-                    && flavors[i].getRepresentationClass() == java.lang.String.class) {
+                            && flavors[i].getRepresentationClass() == java.lang.String.class) {
                         refFlavor = flavors[i];
                     } else if (stringFlavor == null && flavors[i].equals(DataFlavor.stringFlavor)) {
                         stringFlavor = flavors[i];
@@ -356,7 +379,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
                 if (mime.startsWith("text/plain")) { //NOI18N
                     return flavors[i];
                 } else if (refFlavor == null && mime.startsWith("application/x-java-jvm-local-objectref") //NOI18N
-                && flavors[i].getRepresentationClass() == java.lang.String.class) {
+                        && flavors[i].getRepresentationClass() == java.lang.String.class) {
                     refFlavor = flavors[i];
                 } else if (stringFlavor == null && flavors[i].equals(DataFlavor.stringFlavor)) {
                     stringFlavor = flavors[i];
@@ -374,7 +397,7 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
          * Import the given stream data into the text component.
          */
         protected void handleReaderImport(Reader in, JTextComponent c, boolean useRead)
-        throws BadLocationException, IOException {
+                throws BadLocationException, IOException {
             if (useRead) {
                 int startPosition = c.getSelectionStart();
                 int endPosition = c.getSelectionEnd();
@@ -940,7 +963,20 @@ public class HTMLKit extends org.netbeans.modules.editor.NbEditorKit implements 
     
     // END of fix of issue #43309
     
-    
+    public class HTMLEditorDocument extends NbEditorDocument {
+        public HTMLEditorDocument(Class kitClass) {
+            super(kitClass);
+        }
+        
+        public boolean addLayer(DrawLayer layer, int visibility) {
+            //filter out the syntax layer adding
+            if(!(layer instanceof DrawLayerFactory.SyntaxLayer)) {
+                return super.addLayer(layer, visibility);
+            } else {
+                return false;
+            }
+        }
+    }
     
     
 }
