@@ -1313,15 +1313,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <resolve name="harness-modules" value="nb.cluster.harness"/>
     <mkdir dir="${netbeans.build.dir}"/>
     <taskdef name="definefileset" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
-    <definefileset modules="${cluster-modules}" targetprefix="all-" id="source-modules" dir=".." />
-    <definefileset modules="${cluster-modules}" targetprefix="all-" id="external-modules" dir=".." mode="binaries" />
-    <definefileset modules="${harness-modules}" targetprefix="all-" id="harness-source-modules" dir=".." />
-    <definefileset modules="${harness-modules}" targetprefix="all-" id="harness-external-modules" dir=".." mode="binaries" />
+    <definefileset modules="${cluster-modules}" id="source-modules" dir=".."/>
+    <definefileset modules="${harness-modules}" id="harness-source-modules" dir=".."/>
     <zip zipfile="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip" duplicate="preserve">
       <fileset refid="source-modules" />
-      <fileset refid="external-modules" />
       <fileset refid="harness-source-modules" />
-      <fileset refid="harness-external-modules" />
     </zip>
   </target>
   
