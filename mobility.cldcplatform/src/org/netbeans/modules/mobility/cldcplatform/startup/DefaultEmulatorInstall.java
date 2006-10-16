@@ -34,32 +34,24 @@ import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.openide.ErrorManager;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * @author David Kaspar
@@ -70,7 +62,6 @@ public class DefaultEmulatorInstall extends ModuleInstall {
     
     public void restored() {
         installEmulators();
-        import36Emulators();
     }
     
     public void installEmulators() {
@@ -379,66 +370,6 @@ public class DefaultEmulatorInstall extends ModuleInstall {
             if (zis != null) {
                 try { zis.closeEntry(); } catch (IOException e) {}
                 try { zis.close(); } catch (IOException e) {}
-            }
-        }
-    }
-    
-    private void import36Emulators() {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/Emulators"); //NOI18N
-        if (fo == null) return;
-        final Enumeration files = fo.getData(false);
-        final HashMap<File,String> emulators = new HashMap<File,String>();
-        while (files.hasMoreElements()) {
-            fo = (FileObject)files.nextElement();
-            if (fo.getExt().equals("settings")) try { //NOI18N
-                final Document doc = XMLUtil.parse(new InputSource(fo.getInputStream()), false, false, null, new EntityResolver() {
-                    @SuppressWarnings("unused")
-					public InputSource resolveEntity(String publicId, @SuppressWarnings("unused") String systemId) throws IOException {
-                        return new InputSource(new ByteArrayInputStream(new byte[0]));
-                    }
-                });
-                if (doc != null) {
-                    final Element rootEl = doc.getDocumentElement();
-                    if (rootEl != null) {
-                        final String path = rootEl.getAttribute("path"); //NOI18N
-                        if (path != null) {
-                            final File f = new File(path);
-                            if (f.isDirectory()) {
-                                String name = null;
-                                final NodeList nl  = rootEl.getElementsByTagName("vendor"); //NOI18N
-                                if (nl.getLength() > 0) {
-                                    name = ((Element)nl.item(0)).getAttribute("name");
-                                }
-                                emulators.put(FileUtil.normalizeFile(f), name == null ? f.getName() : name);
-                            }
-                        }
-                    }
-                }
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            } catch (SAXException se) {
-                ErrorManager.getDefault().notify(se);
-            } finally {
-                try {
-                    fo.delete();
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
-                }
-            }
-        }
-        if (emulators.isEmpty()) return;
-        final JavaPlatform pl[] = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        for ( JavaPlatform pli : pl ) {
-        	for ( FileObject obj : (Collection<FileObject>) pli.getInstallFolders() ) 
-                emulators.remove(FileUtil.toFile(obj));
-        }
-        
-        for ( final File f : emulators.keySet() ) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DefaultEmulatorInstall.class, "MSG_InstallingEmulator", emulators.get(f))); //NOI18N
-            try {
-                J2MEPlatform.createPlatform(f.getAbsolutePath());
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
             }
         }
     }
