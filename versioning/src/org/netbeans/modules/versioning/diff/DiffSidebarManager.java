@@ -50,7 +50,10 @@ class DiffSidebarManager {
 
     private boolean sidebarEnabled = false;
 
-    private Map<JTextComponent, DiffSidebar> sideBars = new WeakHashMap<JTextComponent, DiffSidebar>();
+    /**
+     * Holds created sidebars (to be able to show/hide them all at once). It is just a set, values are always null.
+     */
+    private final Map<DiffSidebar, Object> sideBars = new WeakHashMap<DiffSidebar, Object>();
 
     private DiffSidebarManager() {
     }
@@ -59,40 +62,50 @@ class DiffSidebarManager {
         return getSideBar(target);
     }
 
-    private synchronized DiffSidebar getSideBar(JTextComponent target) {
-        DiffSidebar sideBar = sideBars.get(target);
-        if (sideBar == null) {
-            File file = null;
-            Document doc = target.getDocument();
-            DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-            if (dobj != null) {
-                FileObject fo = dobj.getPrimaryFile();
-                file = FileUtil.toFile(fo);
-            }
-            if (file == null) return null;
-
-            DiffSidebarProvider.OriginalContent originalContent = null;
-            Collection<? extends DiffSidebarProvider> c = Lookup.getDefault().lookupAll(DiffSidebarProvider.class);
-            for (DiffSidebarProvider p : c) {
-                originalContent = p.getOriginalContent(file);
-                if (originalContent != null) {
+    private DiffSidebar getSideBar(JTextComponent target) {
+        synchronized(sideBars) {
+            DiffSidebar sideBar = null;
+            for (DiffSidebar bar : sideBars.keySet()) {
+                if (bar.getTextComponent() == target) {
+                    sideBar = bar;
                     break;
                 }
             }
-            if (originalContent == null) return null;
-
-            sideBar = new DiffSidebar(target, originalContent);
-            sideBars.put(target, sideBar);
-            sideBar.setSidebarVisible(sidebarEnabled);
+            if (sideBar == null) {
+                File file = null;
+                Document doc = target.getDocument();
+                DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+                if (dobj != null) {
+                    FileObject fo = dobj.getPrimaryFile();
+                    file = FileUtil.toFile(fo);
+                }
+                if (file == null) return null;
+    
+                DiffSidebarProvider.OriginalContent originalContent = null;
+                Collection<? extends DiffSidebarProvider> c = Lookup.getDefault().lookupAll(DiffSidebarProvider.class);
+                for (DiffSidebarProvider p : c) {
+                    originalContent = p.getOriginalContent(file);
+                    if (originalContent != null) {
+                        break;
+                    }
+                }
+                if (originalContent == null) return null;
+    
+                sideBar = new DiffSidebar(target, originalContent);
+                sideBars.put(sideBar, null);
+                sideBar.setSidebarVisible(sidebarEnabled);
+            }
+            return sideBar;
         }
-        return sideBar;
     }
 
     void setSidebarEnabled(boolean enable) {
-        for (DiffSidebar sideBar : sideBars.values()) {
-            sideBar.setSidebarVisible(enable);
+        synchronized(sideBars) {
+            for (DiffSidebar sideBar : sideBars.keySet()) {
+                sideBar.setSidebarVisible(enable);
+            }
+            sidebarEnabled = enable;
         }
-       sidebarEnabled = enable;
     }
 
     boolean isSidebarEnabled() {
@@ -102,5 +115,9 @@ class DiffSidebarManager {
     MarkProvider createMarkProvider(JTextComponent target) {
         DiffSidebar sideBar = getSideBar(target);
         return (sideBar != null) ? sideBar.getMarkProvider() : null;
+    }
+
+    DiffSidebar t9y_getSidebar() {
+        return sideBars.keySet().iterator().next();
     }
 }
