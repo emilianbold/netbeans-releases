@@ -736,6 +736,7 @@ public class SvnUtils {
 
     static final Pattern branchTagPattern = Pattern.compile(".*/(branches|tags)/(.+?)/.*"); // NOI18N
     static final Pattern branchPattern = Pattern.compile(".*/(branches)/(.+?)/.*"); // NOI18N
+    static final Pattern tagPattern = Pattern.compile(".*/(tags)/(.+?)/.*"); // NOI18N
 
     /**
      * Returns copy branch or tag name if lives
@@ -775,6 +776,22 @@ public class SvnUtils {
         return null;
     }
 
+    /**
+     * Returns tag name if the file is inside 'tags' folder.
+     *
+     * @return branch name or null
+     */
+    public static String getTag(File file) {
+        SVNUrl url = getRepositoryUrl(file);
+        if (url != null) {
+            Matcher m = tagPattern.matcher(url.toString());
+            if (m.matches()) {
+                return m.group(2);
+            }
+        }
+        return null;
+    }
+    
     /**
      * Refreshes statuses of this folder and all its parent folders up to filesystem root.
      * 

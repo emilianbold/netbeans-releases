@@ -75,6 +75,17 @@ public class CommitAction extends ContextAction {
             return;
         }
         
+        List<File> tagsFiles = new ArrayList<File>();                
+        for (int i = 0; i < roots.length; i++) {
+            String tag = SvnUtils.getTag(roots[i]);
+            if(tag!=null && !tag.equals("")) {
+                tagsFiles.add(roots[i]);
+            }
+        }
+        if(tagsFiles.size() > 0) {
+            
+        }
+        
         File[][] split = SvnUtils.splitFlatOthers(roots);
         List<File> fileList = new ArrayList<File>();
         for (int c = 0; c < split.length; c++) {
@@ -171,8 +182,9 @@ public class CommitAction extends ContextAction {
         Map<SvnFileNode, CommitOptions> files = table.getCommitFiles();
         Set stickyTags = new HashSet();
         boolean conflicts = false;
+        boolean tags = false;
         
-        for (SvnFileNode fileNode : files.keySet()) {
+        for (SvnFileNode fileNode : files.keySet()) {                                    
             CommitOptions options = files.get(fileNode);
             if (options == CommitOptions.EXCLUDE) continue;
             stickyTags.add(SvnUtils.getBranch(fileNode.getFile()));
@@ -185,10 +197,14 @@ public class CommitAction extends ContextAction {
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
             }
-            stickyTags.add(SvnUtils.getBranch(fileNode.getFile()));
+            stickyTags.add(SvnUtils.getBranch(fileNode.getFile()));            
+            if(tags == false) {
+                String tag = SvnUtils.getTag(fileNode.getFile());
+                tags = tag != null && !tag.trim().equals("");
+            }                       
         }
         
-        if (stickyTags.size() > 1) {
+        if (stickyTags.size() > 1 || tags) {
             table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS, 
                                                 CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
         } else {
@@ -214,10 +230,15 @@ public class CommitAction extends ContextAction {
             String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches");
             errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N
         }
+        if(tags) { // override the error msg if there seems to be a commit into tags ...
+            String msg = loc.getString("MSG_CommitForm_ErrorTags");
+            errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N            
+        }
         if (!conflicts) {
             panel.setErrorLabel(errorLabel);
             commit.setEnabled(true);
         }
+        
     }
     
     protected void performContextAction(Node[] nodes) {
