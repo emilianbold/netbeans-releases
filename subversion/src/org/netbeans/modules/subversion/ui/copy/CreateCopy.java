@@ -186,24 +186,24 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
             super(repositoryFile, repositoryPathTextField, browseButton, revisionTextField, searchRevisionButton);
         }
 
-        protected void setRepositoryTextField(String url) {
-            super.setRepositoryTextField(url + "/" + localeFile.getName());                     // NOI18N
-        }
+//        protected void setRepositoryTextField(String url) {
+//            super.setRepositoryTextField(url + "/" + localeFile.getName());                     // NOI18N
+//        }
+//
+//        protected void setRevisionTextField(String revision) {
+//            super.setRevisionTextField(revision);
+//        }        
+//
+//        protected String getRepositoryTextField() {
+//            String url = super.getRepositoryTextField();                     
+//            int idx = url.lastIndexOf("/");                                                     // NOI18N
+//            if(idx > 0) {
+//                // skip the last segment - it's the destination folder/file
+//                return url.substring(0, idx);
+//            } else {
+//                return "";                                                                      // NOI18N    
+//            }
+//        }
 
-        protected void setRevisionTextField(String revision) {
-            super.setRevisionTextField(revision);
-        }        
-
-        protected String getRepositoryTextField() {
-            String url = super.getRepositoryTextField();                     
-            int idx = url.lastIndexOf("/");                                                     // NOI18N
-            if(idx > 0) {
-                // skip the last segment - it's the destination folder/file
-                return url.substring(0, idx - 1);
-            } else {
-                return "";                                                                      // NOI18N    
-            }
-        }
-        
     }
 }
