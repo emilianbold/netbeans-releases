@@ -24,9 +24,9 @@ import java.awt.Font;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 import javax.swing.KeyStroke;
 import org.netbeans.editor.MultiKeyBinding;
-import org.netbeans.editor.SettingsDefaults;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.ArrayList;
@@ -40,7 +40,6 @@ import org.openide.loaders.DataObject;
 import java.util.Enumeration;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.actions.SystemAction;
-import java.lang.ClassNotFoundException;
 import java.util.Set;
 import java.awt.Dimension;
 
@@ -51,6 +50,8 @@ import java.awt.Dimension;
  */
 public class OptionUtilities {
 
+    private static final Logger LOG = Logger.getLogger(OptionUtilities.class.getName());
+    
     // the name of default folder for storing default maps such as macros, abbrevs...
     public static final String DEFAULT_FOLDER = "Defaults"; //NOI18N
     
@@ -506,6 +507,11 @@ public class OptionUtilities {
             while (j.hasNext()){
                 String attr = (String) j.next();
                 int idx = attr.indexOf('/');
+                if (idx == -1) {
+                    // ignore invalid attribute (#78020)
+                    LOG.warning("Ignoring invalid ordering attribute: '" + attr + "'"); //NOI18N
+                    continue;
+                }
                 String firstItem = attr.substring(0,idx);
                 String secondItem = attr.substring(idx+1);
                 int first = nameList.indexOf(firstItem);
