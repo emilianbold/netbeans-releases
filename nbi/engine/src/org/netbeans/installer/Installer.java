@@ -32,9 +32,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.DownloaderConsts;
 import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.util.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.actions.FinalizeRegistryAction;
 import org.netbeans.installer.wizard.components.actions.InitalizeRegistryAction;
@@ -391,17 +393,39 @@ public class Installer {
                 String path = url.getPath();
                 logManager.log(DEBUG, "NBI Engine URL for Installer.Class = " + url);
                 logManager.log(DEBUG, "URL Path = " + url.getPath());
+                String filePrefix = "file:";
+                String httpPrefix = "http://";
+                String jarResourceSep = "!/";
+                String name = "nbi-engine.jar";
+                File dest = null;
+                File jarfile = null;
                 if(path!=null) {
-                    String prefix = "file:";
-                    String jarResourceSep = "!/";
-                    File jarfile = new File(path.substring(prefix.length(),
-                            path.indexOf(jarResourceSep + installerResource)));
+                    if(path.startsWith(filePrefix)) {
+                        jarfile = new File(path.substring(filePrefix.length(),
+                                path.indexOf(jarResourceSep + installerResource)));
+                        
+                    } else if(path.startsWith(httpPrefix)) {
+                        String jarLocation = path.substring(
+                                path.indexOf(httpPrefix),
+                                path.indexOf(jarResourceSep + installerResource));
+                        try {
+                            logManager.log(MESSAGE,
+                                    "Downloading engine jar file from " + jarLocation);
+                            jarfile = FileProxy.getInstance().getFile(jarLocation);
+                        }  catch(DownloadException ex) {
+                            logManager.log(WARNING,
+                                    "Could not download engine jar. \nError = " + ex );
+                            jarfile = null;
+                        }
+                        
+                    }
                     
-                    File dest = new File(getLocalDirectory().getPath() +
-                            File.separator + jarfile.getName());
-                    
-                    if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath())) {
-                        FileUtils.getInstance().copyFile(jarfile,dest);
+                    if(jarfile!=null) {
+                        dest = new File(getLocalDirectory().getPath() +
+                                File.separator + name);
+                        if(!jarfile.getAbsolutePath().equals(dest.getAbsolutePath())) {
+                            FileUtils.getInstance().copyFile(jarfile,dest);
+                        }
                     }
                     cachedEngineJarFile = dest;
                     logManager.log(MESSAGE, "NBI Engine jar file = [" +
