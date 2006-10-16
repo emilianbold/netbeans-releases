@@ -21,8 +21,6 @@ package org.netbeans.core.multiview;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -32,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -46,17 +45,11 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.awt.UndoRedo;
-import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
-import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-
-
 
 /** Special subclass of TopComponent which shows and handles set of
  * MultiViewElements, shows them in switchable toggle buttons style, along
@@ -552,9 +545,13 @@ public final class MultiViewPeer  {
     Object createEditorListener() {
         try {
             final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class listenerClass = Class.forName(
-                    "org.netbeans.editor.SettingsChangeListener", false, loader); //NOI18N
-            
+            Class listenerClass;
+            try {
+                listenerClass = Class.forName("org.netbeans.editor.SettingsChangeListener", false, loader); //NOI18N
+            } catch (ClassNotFoundException  ex) {
+                Logger.getLogger(MultiViewPeer.class.getName()).log(Level.CONFIG, "Disabling interaction with editor/lib", ex); // NOI18N
+                return null;
+            }
             InvocationHandler ih =  new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -568,7 +565,7 @@ public final class MultiViewPeer  {
             return Proxy.newProxyInstance(loader,
                     new Class[] { listenerClass }, ih);
         } catch (Throwable t) {
-            t.printStackTrace();
+            Logger.getLogger(MultiViewPeer.class.getName()).log(Level.WARNING, null, t); 
         }
         return null;
     }
