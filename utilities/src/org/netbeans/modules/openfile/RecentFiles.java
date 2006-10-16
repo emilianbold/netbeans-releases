@@ -20,15 +20,15 @@
 package org.netbeans.modules.openfile;
         
 import java.beans.PropertyChangeEvent;
-import java.io.IOException;
 import java.util.prefs.BackingStoreException;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.loaders.DataObject;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.lang.NumberFormatException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,8 +39,7 @@ import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
@@ -124,6 +123,9 @@ public final class RecentFiles {
             hItem = decode(prefs.get(curKey, null));
             if (hItem != null) {
                 result.add(hItem);
+            } else {
+                // decode failed, so clear crippled item
+                prefs.remove(curKey);
             }
         }
         Collections.sort(result);
@@ -135,43 +137,54 @@ public final class RecentFiles {
         if (sepIndex <= 0) {
             return null;
         }
-        File file = new File(value.substring(0, sepIndex));
-        if (!file.exists()) {
+        URL url = null;
+        try {
+            url = new URL(value.substring(0, sepIndex));
+        } catch (MalformedURLException ex) {
+            // url corrupted, skip
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            return null;
+        }
+        FileObject fo = URLMapper.findFileObject(url);
+        if (fo == null) {
             return null;
         }
         long time = 0;
         try {
             time = Long.decode(value.substring(sepIndex + SEPARATOR.length()));
-        } catch (NumberFormatException exc) {
+        } catch (NumberFormatException ex) {
             // stored data corrupted, skip
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.INFO, ex.getMessage(), ex);
             return null;
         }
-        return new HistoryItem(FileUtil.toFileObject(file), time);
+        return new HistoryItem(fo, time);
     }
 
     static void storeRemoved (HistoryItem hItem) {
-        String path = null;
-        try {
-            path = FileUtil.toFile(hItem.getFile()).getCanonicalPath();
-        }
-        catch (IOException ex) {
-            Logger.getLogger(RecentFiles.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
+        String stringURL = null;
+        URL url = URLMapper.findURL(hItem.getFile(), URLMapper.EXTERNAL);
+        if (url == null) {
+            // not possible to store
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.INFO, 
+                    "storeRemoved: URL can't be found for FileObject " + hItem.getFile()); // NOI18N
             return;
-        };
-        getPrefs().remove(trimToKeySize(path));
+        }
+        stringURL = url.toExternalForm();
+        getPrefs().remove(trimToKeySize(stringURL));
     }
     
     static void storeAdded (HistoryItem hItem) {
-        String path = null;
-        try {
-            path = FileUtil.toFile(hItem.getFile()).getCanonicalPath();
-        }
-        catch (IOException ex) {
-            Logger.getLogger(RecentFiles.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
+        String stringURL = null;
+        URL url = URLMapper.findURL(hItem.getFile(), URLMapper.EXTERNAL);
+        if (url == null) {
+            // not possible to store
+            Logger.getLogger(RecentFiles.class.getName()).log(Level.INFO, 
+                    "storeAdded: URL can't be found for FileObject " + hItem.getFile()); // NOI18N
             return;
-        };
-        String value = path + SEPARATOR + String.valueOf(hItem.getTime());
-        getPrefs().put(trimToKeySize(path), value);
+        }
+        stringURL = url.toExternalForm();
+        String value = stringURL + SEPARATOR + String.valueOf(hItem.getTime());
+        getPrefs().put(trimToKeySize(stringURL), value);
     }
     
     private static String trimToKeySize (String path) {
