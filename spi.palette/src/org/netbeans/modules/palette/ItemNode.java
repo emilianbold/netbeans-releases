@@ -20,31 +20,16 @@
 
 package org.netbeans.modules.palette;
 
-import java.awt.Image;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.EventListener;
 import javax.swing.Action;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.DragAndDropHandler;
-
-import org.openide.*;
-import org.openide.actions.*;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
-import org.openide.util.datatransfer.NewType;
-import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -163,5 +148,9 @@ class ItemNode extends FilterNode {
     
     Node getOriginalNode() {
         return getOriginal();
+    }
+
+    public HelpCtx getHelpCtx() {
+        return Utils.getHelpCtx( this, super.getHelpCtx() );
     }
 }

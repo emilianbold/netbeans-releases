@@ -39,7 +39,6 @@ import org.netbeans.modules.palette.ui.PalettePanel;
 import org.openide.*;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.*;
-import org.openide.loaders.DataFolder;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 import org.openide.util.datatransfer.PasteType;
@@ -95,6 +94,23 @@ public final class Utils {
         } else {
             return !node.canDestroy();
         }
+    }
+    
+    public static HelpCtx getHelpCtx( Node node, HelpCtx defaultHelp ) {
+        HelpCtx retValue = defaultHelp;
+        if( null == retValue || HelpCtx.DEFAULT_HELP.equals( retValue ) ) {
+            Object val = node.getValue( PaletteController.ATTR_HELP_ID );
+            if( null == val ) {
+                DataObject dobj = (DataObject)node.getCookie( DataObject.class );
+                if( null != dobj ) {
+                    val = dobj.getPrimaryFile().getAttribute( PaletteController.ATTR_HELP_ID );
+                }
+            }
+        
+            if( null != val )
+                retValue = new HelpCtx( val.toString() );
+        }
+        return retValue;
     }
     
     public static void addCustomizationMenuItems( JPopupMenu popup, PaletteController controller, Settings settings ) {

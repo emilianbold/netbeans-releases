@@ -29,6 +29,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -241,4 +242,9 @@ public final class PaletteItemNode extends FilterNode {
         return icon;
     }
     
+    public HelpCtx getHelpCtx() {
+        DataNode dn = (DataNode) getOriginal();
+        Object helpId = dn.getDataObject().getPrimaryFile().getAttribute("helpId"); //NOI18N
+        return (helpId == null ? super.getHelpCtx() : new HelpCtx(helpId.toString()));
+    }
 }

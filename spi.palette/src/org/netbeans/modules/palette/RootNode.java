@@ -99,11 +99,6 @@ public final class RootNode extends FilterNode {
         return NO_PROPERTIES;
     }
 
-//    public HelpCtx getHelpCtx() {
-//        //TODO revisit this
-//        return new HelpCtx("gui.options.component-palette"); // NOI18N
-//    }
-
     public PasteType getDropType(Transferable t, int action, int index) {
         //no drop is accepted in palette's root node
         return null;
@@ -145,6 +140,10 @@ public final class RootNode extends FilterNode {
 
     public boolean canDestroy() {
         return false;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return Utils.getHelpCtx( this, super.getHelpCtx() );
     }
 
     // --------------

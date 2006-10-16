@@ -157,6 +157,10 @@ class CategoryDescriptor implements CategoryListener {
     boolean isOpened() {
         return opened;
     }
+    
+    boolean isSelected() {
+        return categoryButton.isFocusOwner() || itemsList.getSelectedIndex() >= 0;
+    }
 
     void setSelectedItem( Item item ) {
         if( itemsList.getSelectedValue () == item ) {

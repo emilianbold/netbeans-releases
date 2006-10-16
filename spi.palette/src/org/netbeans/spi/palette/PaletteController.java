@@ -67,7 +67,6 @@ public final class PaletteController {
         }
     }
 
-    //==========================================================================
     // Names of attributes of palette items and categories that the palette supports.
     // User can override their values in palette's user interface. Attribute values
     // are persisted and restored after IDE restarts.
@@ -115,7 +114,12 @@ public final class PaletteController {
      * Default value is "false".
      */
     public static final String ATTR_IS_READONLY = "isReadonly";
-    //==========================================================================
+    /**
+     * Use this attribut for palette's root, category or item to specify its
+     * help id.
+     * Default value is "CommonPalette".
+     */
+    public static final String ATTR_HELP_ID = "helpId";
 
     /**
      * Palette clients should listen to changes of this property if they want to

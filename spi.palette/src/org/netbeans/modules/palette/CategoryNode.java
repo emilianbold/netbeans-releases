@@ -35,6 +35,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -160,6 +161,10 @@ class CategoryNode extends FilterNode {
 
     public boolean canDestroy() {
         return !Utils.isReadonly( getOriginal() );
+    }
+
+    public HelpCtx getHelpCtx() {
+        return Utils.getHelpCtx( this, super.getHelpCtx() );
     }
     
     private static class Children extends FilterNode.Children {

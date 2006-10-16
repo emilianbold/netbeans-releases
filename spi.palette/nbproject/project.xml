@@ -94,21 +94,21 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-          <test-dependencies>
-              <test-type>
-                  <name>unit</name>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.spi.palette</code-name-base>
-                      <recursive/>
-                      <compile-dependency/>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.netbeans.core</code-name-base>
-                  </test-dependency>
-                  <test-dependency>
-                      <code-name-base>org.openide.modules</code-name-base>
-                  </test-dependency>
-              </test-type>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.spi.palette</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.modules</code-name-base>
+                    </test-dependency>
+                </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.spi.palette</package>

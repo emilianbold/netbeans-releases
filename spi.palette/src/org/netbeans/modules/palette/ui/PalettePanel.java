@@ -19,6 +19,13 @@
 
 
 package org.netbeans.modules.palette.ui;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.LayoutManager;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
@@ -27,18 +34,21 @@ import org.netbeans.modules.palette.ModelListener;
 import org.netbeans.modules.palette.Settings;
 import org.netbeans.modules.palette.Utils;
 import org.netbeans.spi.palette.PaletteController;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
-import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.Scrollable;
+import javax.swing.SwingUtilities;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 
 
 
@@ -376,25 +386,41 @@ public class PalettePanel extends JPanel implements Scrollable {
     }
     
     public HelpCtx getHelpCtx() {
-        Node selNode = null;
+        HelpCtx ctx = null;
         if( null != getModel() ) {
             Item selItem = getModel().getSelectedItem();
             if( null != selItem ) {
-                selNode = (Node) selItem.getLookup().lookup( Node.class );
-            } else {
-                selNode = (Node)getModel().getRoot().lookup( Node.class );
+                Node selNode = (Node) selItem.getLookup().lookup( Node.class );
+                if( null != selNode )
+                    ctx = selNode.getHelpCtx();
+            } 
+            if( null == ctx || HelpCtx.DEFAULT_HELP.equals( ctx ) ) {
+                //find the selected category
+                CategoryDescriptor selCategory = null;
+                for( int i=0; i<descriptors.length; i++ ) {
+                    if( descriptors[i].isSelected() ) {
+                        selCategory = descriptors[i];
+                        break;
+                    }
+                }
+                if( null != selCategory ) {
+                    Node selNode = (Node) selCategory.getCategory().getLookup().lookup( Node.class );
+                    if( null != selNode )
+                        ctx = selNode.getHelpCtx();
+                }
+            }
+            if( null == ctx || HelpCtx.DEFAULT_HELP.equals( ctx ) ) {
+                Node selNode = (Node) getModel().getRoot().lookup( Node.class );
+                if( null != selNode )
+                    ctx = selNode.getHelpCtx();
             }
         }
-        HelpCtx ctx = null;
-        if( null != selNode ) {
-            ctx = selNode.getHelpCtx();
-        }
-        if( null == ctx ) {
+        if( null == ctx || HelpCtx.DEFAULT_HELP.equals( ctx ) ) {
             ctx = new HelpCtx("CommonPalette"); // NOI18N
         }
         return ctx;
     }
-    
+
     private ModelListener getModelListener() {
         if( null == modelListener ) {
             modelListener = new ModelListener() {
