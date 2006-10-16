@@ -78,6 +78,7 @@ public final class SaveAsTemplateAction extends NodeAction {
         String title = NbBundle.getMessage(org.openide.loaders.DataObject.class, "Title_SaveAsTemplate");
         String rootTitle = NbBundle.getMessage(org.openide.loaders.DataObject.class, "CTL_SaveAsTemplate");
         Node templatesNode = NewTemplateAction.getTemplateRoot ();
+        templatesNode.setDisplayName(NbBundle.getMessage(org.openide.loaders.DataObject.class, "CTL_SaveAsTemplate_TemplatesRoot"));
         Node[] selected;
         // ask user: where to save the templates?
         try {
