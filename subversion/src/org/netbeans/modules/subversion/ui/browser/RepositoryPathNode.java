@@ -37,16 +37,11 @@ import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -338,6 +333,9 @@ public class RepositoryPathNode extends AbstractNode {
     static final String PROPERTY_NAME_AUTHOR   = "author"; // NOI18N    
     static final String PROPERTY_NAME_HISTORY  = "history"; // NOI18N    
 
+    private final static String HISTORY_DISPLAY_NAME = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Name");
+    private final static String HISTORY_SHORT_DESC = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Short_Desc");    
+           
     private class RevisionProperty extends NodeProperty {
 
         public RevisionProperty() {
@@ -362,7 +360,7 @@ public class RepositoryPathNode extends AbstractNode {
     }
 
     private class AuthorProperty extends NodeProperty {
-
+                
         public AuthorProperty() {
             super(PROPERTY_NAME_AUTHOR, String.class, PROPERTY_NAME_AUTHOR, PROPERTY_NAME_AUTHOR);
         }
@@ -373,9 +371,9 @@ public class RepositoryPathNode extends AbstractNode {
     }
 
     private class HistoryProperty extends PropertySupport.ReadOnly {
-
+       
         public HistoryProperty() {
-            super(PROPERTY_NAME_HISTORY, String.class, PROPERTY_NAME_HISTORY, PROPERTY_NAME_HISTORY);
+            super(PROPERTY_NAME_HISTORY, String.class, HISTORY_DISPLAY_NAME, HISTORY_SHORT_DESC);
         }
 
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
@@ -417,8 +415,7 @@ public class RepositoryPathNode extends AbstractNode {
         }     
 
         public PropertyEditor getPropertyEditor() {
-            return new PropertyEditorSupport() {                
-            };
+            return new PropertyEditorSupport();
         }                     
     }
 
@@ -426,12 +423,12 @@ public class RepositoryPathNode extends AbstractNode {
        
         public HistoryPropertyEditor() {      
             setValue("");           
-        }
-
+        }        
+        
         public boolean supportsCustomEditor () {
             return true;
         }
-    
+        
         public Component getCustomEditor() {
             SVNRevision revision = entry.getLastChangedRevision();
             SVNUrl url = entry.getRepositoryFile().getFileUrl();
