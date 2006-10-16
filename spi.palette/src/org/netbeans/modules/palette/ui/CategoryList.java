@@ -246,8 +246,8 @@ public class CategoryList extends JList implements Autoscroll {
 
     static class ItemRenderer implements ListCellRenderer {
 
-        private static JToggleButton button;
-        private static Border defaultBorder;
+        private JToggleButton button;
+        private Border defaultBorder;
 
         ItemRenderer () {
             if (button == null) {
