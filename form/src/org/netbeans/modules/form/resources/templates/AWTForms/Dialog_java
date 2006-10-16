@@ -48,7 +48,13 @@ public class Dialog extends java.awt.Dialog {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new __NAME__(new java.awt.Frame(), true).setVisible(true);
+                __NAME__ dialog = new __NAME__(new java.awt.Frame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
             }
         });
     }
