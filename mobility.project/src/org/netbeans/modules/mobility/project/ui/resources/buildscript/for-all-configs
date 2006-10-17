@@ -4,6 +4,15 @@
         <antcall target="${{target.to.call}}" inheritall="false" inheritrefs="false">
             <param name="config.active" value=""/>
         </antcall>
+        <xsl:for-each select="/project:project/project:configuration/configs:configurations/configs:configuration">
+            <antcall target="${{target.to.call}}" inheritall="false" inheritrefs="false">
+                <param name="config.active">
+                    <xsl:attribute name="value">
+                        <xsl:value-of select="."/>
+                    </xsl:attribute>
+                </param>
+            </antcall>
+        </xsl:for-each>
     </target>
     <target name="jar-all">
         <antcall target="for-all-configs">
