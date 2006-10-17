@@ -86,7 +86,7 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
     public ComponentsSelectionPanel() {
         setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
         setProperty(MESSAGE_CONTENT_TYPE_PROPERTY, DEFAULT_MESSAGE_CONTENT_TYPE);
-        setProperty(DISPLAY_NAME_LABEL_TEXT_PROEPRTY, DEFAULT_DISPLAY_NAME_LABEL_TEXT);
+        setProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY, DEFAULT_DISPLAY_NAME_LABEL_TEXT);
         setProperty(DESCRIPTION_TEXT_PROPERTY, DEFAULT_DESCRIPTION_TEXT);
         setProperty(DESCRIPTION_CONTENT_TYPE_PROPERTY, DEFAULT_DESCRIPTION_CONTENT_TYPE);
         setProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY, DEFAULT_REQUIREMENTS_LABEL_TEXT);
@@ -266,10 +266,10 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         } else {
             ProductTreeNode node = (ProductTreeNode) componentsTreeTable.getModel().getValueAt(selectedRow, 0);
             
-            displayNameLabel.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), getClassLoader()), node.getDisplayName()) + " ");
+            displayNameLabel.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY), getClassLoader()), node.getDisplayName()) + " ");
             displayNameLabel.setEnabled(true);
             
-            descriptionPane.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), getClassLoader()), node.getDescription()) + " ");
+            descriptionPane.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(DESCRIPTION_TEXT_PROPERTY), getClassLoader()), node.getDescription()) + " ");
             descriptionPane.setEnabled(true);
             
             if ((node instanceof ProductComponent) && (((ProductComponent) node).getRequirements().size() > 0)) {
@@ -595,7 +595,7 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
     
     private static final String MESSAGE_TEXT_PROPERTY = "message.text";
     private static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";
-    private static final String DISPLAY_NAME_LABEL_TEXT_PROEPRTY = "display.name.label.text";
+    private static final String DISPLAY_NAME_LABEL_TEXT_PROPERTY = "display.name.label.text";
     private static final String DESCRIPTION_TEXT_PROPERTY = "description.text";
     private static final String DESCRIPTION_CONTENT_TYPE_PROPERTY = "description.content.type";
     private static final String REQUIREMENTS_LABEL_TEXT_PROPERTY = "requirements.label.text";
