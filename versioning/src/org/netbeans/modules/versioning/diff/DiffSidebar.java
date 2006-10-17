@@ -28,13 +28,9 @@ import org.netbeans.api.diff.Diff;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.spi.diff.DiffProvider;
-import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
-import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
@@ -354,6 +350,16 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         reader.close();
     }
 
+    static void copyStreamsCloseAll(OutputStream writer, InputStream reader) throws IOException {
+        byte [] buffer = new byte[2048];
+        int n;
+        while ((n = reader.read(buffer)) != -1) {
+            writer.write(buffer, 0, n);
+        }
+        writer.close();
+        reader.close();
+    }
+    
     public Dimension getPreferredSize() {
         Dimension dim = textComponent.getSize();
         dim.width = annotated ? BAR_WIDTH : 0;
@@ -594,16 +600,12 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
         private void fetchOriginalContent() {
             if (originalContentBuffer != null) return;
-            File file = originalContent.getOriginalFile();
-            if (file == null) return;
+            Reader r = originalContent.getText();
+            if (r == null) return;
 
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo == null) return;
-            
             StringWriter w = new StringWriter(2048);
             try {
-                Reader original = EncodedReaderFactory.getDefault().getReader(file, getMimeType());
-                copyStreamsCloseAll(w, original);
+                copyStreamsCloseAll(w, r);
                 originalContentBuffer = w.toString();
             } catch (IOException e) {
                 // ignore, we will show no diff
