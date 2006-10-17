@@ -33,6 +33,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -197,9 +198,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
             return false;
         }
+        // not allow to create project on unix root folder, see #82339
+        File cfl = getCanonicalFile(new File(createdFolderTextField.getText()));
+        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
+            String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_ProjectInRootNotSupported");
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false;
+        }
+        
         final File destFolder = new File( createdFolderTextField.getText() ).getAbsoluteFile();
         if (getCanonicalFile (destFolder) == null) {
-            String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectName");
+            String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
             wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
             return false;
         }
@@ -330,19 +339,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     /** Handles changes in the Project name and project directory
      */
     private void updateTexts( DocumentEvent e ) {
-        
         Document doc = e.getDocument();
-                
         if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
             // Change in the project name
-        
             String projectName = projectNameTextField.getText();
-            String projectFolder = projectLocationTextField.getText(); 
-
-            //if ( projectFolder.trim().length() == 0 || projectFolder.equals( oldName )  ) {                
-            createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
-            //}
-            
+            String projectFolder = projectLocationTextField.getText();
+            String projFolderPath = getCanonicalPath(new File(projectFolder));
+            if (projFolderPath.endsWith(File.separator)) {
+                createdFolderTextField.setText(projFolderPath + projectName);
+            } else {
+                createdFolderTextField.setText(projFolderPath + File.separator + projectName);
+            }
         }                
         panel.fireChangeEvent(); // Notify that the panel changed        
     }
@@ -352,6 +359,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             return file.getCanonicalFile();
         } catch (IOException e) {
             return null;
+        }
+    }
+    
+    static String getCanonicalPath(File f) {
+        try {
+            return f.getCanonicalPath();
+        } catch (IOException e) {
+            return "";
         }
     }
 
