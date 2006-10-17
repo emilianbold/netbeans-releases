@@ -76,14 +76,14 @@ public class CreateCopyAction extends ContextAction {
         if(createCopy.showDialog()) {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this,  nodes) {
                 public void perform() {
-                    performCopy(createCopy, repositoryUrl, root, this, hasChanges);
+                    performCopy(createCopy, repositoryUrl, root, this);
                 } 
             };
             support.start(createRequestProcessor(nodes));
         }
     }
 
-    private void performCopy(CreateCopy createCopy, SVNUrl repositoryUrl, File root, SvnProgressSupport support, boolean hasChanges) {
+    private void performCopy(CreateCopy createCopy, SVNUrl repositoryUrl, File root, SvnProgressSupport support) {
         RepositoryFile toRepositoryFile = createCopy.getRepositoryFile();
         String message = createCopy.getMessage();           
         boolean switchTo = createCopy.getSwitchTo();
@@ -99,7 +99,7 @@ public class CreateCopyAction extends ContextAction {
             }
 
             if(!toRepositoryFile.isRepositoryRoot()) {
-                SVNUrl folderToCreate = toRepositoryFile.getFileUrl();
+                SVNUrl folderToCreate = toRepositoryFile.removeLastSegment().getFileUrl();
                 ISVNInfo info = null;
                 try{
                     info = client.getInfo(folderToCreate);                                                                
