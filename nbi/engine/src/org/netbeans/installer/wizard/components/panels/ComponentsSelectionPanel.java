@@ -226,13 +226,13 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         
         for (ProductComponent component: componentsToInstall) {
             for (ProductComponent requirement: component.getRequirements()) {
-                if (!componentsToInstall.contains(requirement)) {
+                if ((requirement.getStatus() != Status.TO_BE_INSTALLED) && (requirement.getStatus() != Status.INSTALLED)) {
                     return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY), getClassLoader()), component.getDisplayName(), requirement.getDisplayName());
                 }
             }
             
             for (ProductComponent conflict: component.getConflicts()) {
-                if (componentsToInstall.contains(conflict)) {
+                if ((conflict.getStatus() == Status.TO_BE_INSTALLED) || (conflict.getStatus() == Status.INSTALLED)) {
                     return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_CONFLICT_INSTALL_PROPERTY), getClassLoader()), component.getDisplayName(), conflict.getDisplayName());
                 }
             }
