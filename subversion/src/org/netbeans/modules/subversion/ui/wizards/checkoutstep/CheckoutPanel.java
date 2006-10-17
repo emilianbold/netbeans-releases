@@ -39,6 +39,7 @@ public class CheckoutPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jPopupMenu1 = new javax.swing.JPopupMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jLabel1 = new javax.swing.JLabel();
@@ -55,44 +56,38 @@ public class CheckoutPanel extends javax.swing.JPanel {
                 jMenuItem1ActionPerformed(evt);
             }
         });
-
         jPopupMenu1.add(jMenuItem1);
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/wizards/checkoutstep/Bundle"); // NOI18N
         setName(bundle.getString("BK2024")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_LocalFolderHint")); // NOI18N
 
         jLabel2.setLabelFor(workdirTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_LocalFolder")); // NOI18N
-        jLabel2.getAccessibleContext().setAccessibleDescription("Local Folder");
 
         org.openide.awt.Mnemonics.setLocalizedText(browseWorkdirButton, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Browse2")); // NOI18N
-        browseWorkdirButton.getAccessibleContext().setAccessibleDescription("Browse Local Directory");
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_RepositoryHint")); // NOI18N
 
         jLabel4.setLabelFor(repositoryPathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_RepositoryFolder")); // NOI18N
-        jLabel4.getAccessibleContext().setAccessibleDescription("Repository Folders to Checkout");
 
         org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Browse1")); // NOI18N
-        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Foldres");
 
         jLabel5.setLabelFor(revisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Revision")); // NOI18N
-        jLabel5.getAccessibleContext().setAccessibleDescription("Repository Revision");
 
         org.openide.awt.Mnemonics.setLocalizedText(searchRevisionButton, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_Search")); // NOI18N
-        searchRevisionButton.getAccessibleContext().setAccessibleDescription("Search Revision Number");
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_EmptyHint")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_LocalHint")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(atWorkingDirLevelCheckBox, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_CheckoutContent")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(atWorkingDirLevelCheckBox, org.openide.util.NbBundle.getMessage(CheckoutPanel.class, "CTL_Checkout_CheckoutContentEmpty")); // NOI18N
         atWorkingDirLevelCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        atWorkingDirLevelCheckBox.setEnabled(false);
         atWorkingDirLevelCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        atWorkingDirLevelCheckBox.getAccessibleContext().setAccessibleDescription("Checkout only folder contents");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -103,11 +98,11 @@ public class CheckoutPanel extends javax.swing.JPanel {
                     .add(atWorkingDirLevelCheckBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                        .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                                        .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, Short.MAX_VALUE)
                                         .add(jLabel4))
                                     .add(jLabel2))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -124,7 +119,7 @@ public class CheckoutPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(browseRepositoryButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(browseWorkdirButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE))
+                            .add(browseWorkdirButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 95, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                     .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 475, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -158,6 +153,14 @@ public class CheckoutPanel extends javax.swing.JPanel {
                 .add(jLabel7)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jLabel2.getAccessibleContext().setAccessibleDescription("Local Folder");
+        browseWorkdirButton.getAccessibleContext().setAccessibleDescription("Browse Local Directory");
+        jLabel4.getAccessibleContext().setAccessibleDescription("Repository Folders to Checkout");
+        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Foldres");
+        jLabel5.getAccessibleContext().setAccessibleDescription("Repository Revision");
+        searchRevisionButton.getAccessibleContext().setAccessibleDescription("Search Revision Number");
+        atWorkingDirLevelCheckBox.getAccessibleContext().setAccessibleDescription("Checkout only folder contents");
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed

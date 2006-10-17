@@ -126,7 +126,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         if (text == null || text.length() == 0) {
             invalid(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2014"));// NOI18N
             return false;
-        }
+        }                
         
         String errorMessage = null;
         if (full) {
@@ -233,15 +233,17 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         return defaultDir;
     }
 
-    public void insertUpdate(DocumentEvent e) {
+    public void insertUpdate(DocumentEvent e) {        
         validateUserInput(false);
+        refreshSkipLabel();
     }
 
     public void removeUpdate(DocumentEvent e) {
         validateUserInput(false);
+        refreshSkipLabel();
     }
 
-    public void changedUpdate(DocumentEvent e) {
+    public void changedUpdate(DocumentEvent e) {        
     }
 
     public void focusGained(FocusEvent e) {
@@ -249,6 +251,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
 
     public void focusLost(FocusEvent e) {
         validateUserInput(true);
+        refreshSkipLabel();
     }
         
     public void actionPerformed(ActionEvent e) {
@@ -272,6 +275,28 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
 
     public boolean isAtWorkingDirLevel() {
         return workdirPanel.atWorkingDirLevelCheckBox.isSelected();
+    }
+
+    private void refreshSkipLabel() {
+        String repositoryFolder = workdirPanel.repositoryPathTextField.getText().trim();        
+        while(repositoryFolder.indexOf("//") > -1) {
+            repositoryFolder = repositoryFolder.replaceAll("//", "/");                
+        } 
+        if(repositoryFolder.equals("")  ||      // the skip option doesn't make sense if there is no one, 
+           repositoryFolder.equals(".") ||      // or more as one folder to be checked out
+           repositoryFolder.equals("/") ||      
+           repositoryFolder.indexOf(",") > -1)  
+        {
+            workdirPanel.atWorkingDirLevelCheckBox.setText(NbBundle.getMessage(CheckoutStep.class, "CTL_Checkout_CheckoutContentEmpty"));
+            workdirPanel.atWorkingDirLevelCheckBox.setEnabled(false);
+        } else {                        
+            workdirPanel.atWorkingDirLevelCheckBox.setText (
+                    NbBundle.getMessage(CheckoutStep.class, 
+                                        "CTL_Checkout_CheckoutContentFolder", 
+                                         new Object[] {repositoryFolder})
+            );
+            workdirPanel.atWorkingDirLevelCheckBox.setEnabled(true);                
+        }
     }
 }
 
