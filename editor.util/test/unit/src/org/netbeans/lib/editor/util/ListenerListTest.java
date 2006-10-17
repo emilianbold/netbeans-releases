@@ -48,12 +48,12 @@ public class ListenerListTest extends NbTestCase {
     }
     
     public void testAddAndRemoveListeners() {
-        ListenerListCouple couple = new ListenerListCouple();
-        L l1 = new L();
-        L l11 = new L();
-        L l2 = new L();
-        L l21 = new L();
-        L l3 = new L();
+        ListenerListCouple<MyL> couple = new ListenerListCouple<MyL>();
+        MyL l1 = new MyL();
+        MyL l11 = new MyL();
+        MyL l2 = new MyL();
+        MyL l21 = new MyL();
+        MyL l3 = new MyL();
         couple.add(l1);
         couple.add(l2);
         couple.add(l3);
@@ -68,23 +68,23 @@ public class ListenerListTest extends NbTestCase {
     }
     
     public void testSerialization() throws Exception {
-        ListenerList<EventListener> ll = new ListenerList<EventListener>();
-        ll.add(new L());
-        ll.add(new L());
-        ll.add(new L());
+        ListenerList<MyL> ll = new ListenerList<MyL>();
+        ll.add(new MyL());
+        ll.add(new MyL());
+        ll.add(new MyL());
         
         NbMarshalledObject mo = new NbMarshalledObject(ll);
         @SuppressWarnings("unchecked")
-        ListenerList<EventListener> sll = (ListenerList<EventListener>)mo.get();
-        List<EventListener> lla = ll.getListeners();
-        List<EventListener> slla = sll.getListeners();
+        ListenerList<MyL> sll = (ListenerList<MyL>)mo.get();
+        List<MyL> lla = ll.getListeners();
+        List<MyL> slla = sll.getListeners();
         assertEquals(lla.size(), slla.size());
         for (int i = lla.size() - 1; i >= 0; i--) {
             assertEquals(lla.get(i), slla.get(i));
         }
     }
     
-    private static final class L implements EventListener, Serializable {
+    private static final class MyL implements EventListener, Serializable {
         
         static final long serialVersionUID = 12345L;
         
@@ -109,31 +109,31 @@ public class ListenerListTest extends NbTestCase {
         public boolean equals(Object o) {
             if (this == o)
                 return true;
-            if (o instanceof L)
-                return (id == ((L)o).id);
+            if (o instanceof MyL)
+                return (id == ((MyL) o).id);
             return false;
         }
         
     }
 
-    private static final class ListenerListCouple {
+    private static final class ListenerListCouple<T extends EventListener> {
         
-        ListenerList<EventListener> listenerList;
+        ListenerList<T> listenerList;
         
-        List<EventListener> imitation;
+        List<T> imitation;
         
         public ListenerListCouple() {
-            listenerList = new ListenerList<EventListener>();
-            imitation = new ArrayList<EventListener>();
+            listenerList = new ListenerList<T>();
+            imitation = new ArrayList<T>();
         }
         
-        public void add(EventListener listener) {
+        public void add(T listener) {
             listenerList.add(listener);
             imitation.add(listener);
             checkListsEqual();
         }
         
-        public void remove(EventListener listener) {
+        public void remove(T listener) {
             listenerList.remove(listener);
             imitation.remove(listener);
             checkListsEqual();
@@ -143,7 +143,7 @@ public class ListenerListTest extends NbTestCase {
             // Check the same listeners are stored in imitation
             assertEquals(imitation.size(), listenerList.getListenerCount());
             int i = 0;
-            List<EventListener> listeners = listenerList.getListeners();
+            List<T> listeners = listenerList.getListeners();
             for (EventListener l : imitation) {
                 assertSame(l, listeners.get(i++));
             }

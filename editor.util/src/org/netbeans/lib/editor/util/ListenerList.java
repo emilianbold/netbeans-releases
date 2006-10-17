@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EventListener;
 import java.util.Iterator;
 import java.util.List;
@@ -42,12 +42,12 @@ public final class ListenerList<T extends EventListener> implements Serializable
     
     /** A null array to be shared by all empty listener lists */
     private static final EventListener[] EMPTY_LISTENER_ARRAY = new EventListener[0];
-
+    
     /* The array of listeners. */
-    private transient List<T> listeners;
+    private transient ImmutableList<T> listenersList;
     
     public ListenerList() {
-        listeners = new ArrayList<T>();
+        listenersList = new ImmutableList<T>(EMPTY_LISTENER_ARRAY);
     }
     
     /**
@@ -65,17 +65,17 @@ public final class ListenerList<T extends EventListener> implements Serializable
      *      }
      * </pre>
      * 
-     * @return A list of listeners contained in this listener list.
+     * @return An immutable list of listeners contained in this listener list.
      */
     public synchronized List<T> getListeners() {
-        return new ArrayList<T>(listeners);
+        return listenersList;
     }
     
     /**
      * Returns the total number of listeners for this listener list.
      */
     public synchronized int getListenerCount() {
-        return listeners.size();
+        return listenersList.size();
     }
     
     /**
@@ -87,7 +87,13 @@ public final class ListenerList<T extends EventListener> implements Serializable
         if (listener == null)
             return;
 
-        listeners.add(listener);
+        EventListener [] arr = new EventListener[listenersList.getArray().length + 1];
+        if (arr.length > 1) {
+            System.arraycopy(listenersList.getArray(), 0, arr, 0, arr.length - 1);
+        }
+        arr[arr.length - 1] = listener;
+        
+        listenersList = new ImmutableList<T>(arr);
     }
     
     /**
@@ -99,7 +105,20 @@ public final class ListenerList<T extends EventListener> implements Serializable
         if (listener == null)
             return;
 
-        listeners.remove(listener);
+        int idx = listenersList.indexOf(listener);
+        if (idx == -1) {
+            return;
+        }
+        
+        EventListener [] arr = new EventListener[listenersList.getArray().length - 1];
+        if (arr.length > 0) {
+            System.arraycopy(listenersList.getArray(), 0, arr, 0, idx);
+        }
+        if (arr.length > idx) {
+            System.arraycopy(listenersList.getArray(), idx + 1, arr, idx, listenersList.getArray().length - idx - 1);
+        }
+        
+        listenersList = new ImmutableList<T>(arr);
     }
     
     // Serialization support.
@@ -107,7 +126,7 @@ public final class ListenerList<T extends EventListener> implements Serializable
         s.defaultWriteObject();
         
         // Write in opposite order of adding 
-        for (Iterator<T> i = listeners.iterator(); i.hasNext(); ) {
+        for (Iterator<T> i = listenersList.iterator(); i.hasNext(); ) {
             T l = i.next();
             // Save only the serializable listeners
             if (l instanceof Serializable) {
@@ -127,11 +146,40 @@ public final class ListenerList<T extends EventListener> implements Serializable
             T l = (T)listenerOrNull;
             lList.add(l);
         }
-        this.listeners = lList;
+        this.listenersList = new ImmutableList<T>((EventListener [])lList.toArray(new EventListener[lList.size()]));
     }
     
     public String toString() {
-        return listeners.toString();
+        return listenersList.toString();
     }
-    
+
+    private static final class ImmutableList<E extends EventListener> extends AbstractList<E> {
+
+        private EventListener[] array;
+        
+        public ImmutableList(EventListener[] array) {
+            super();
+            
+            assert array != null : "The array can't be null"; //NOI18N
+            this.array = array;
+        }
+        
+        public E get(int index) {
+            if (index >= 0 && index < array.length) {
+                @SuppressWarnings("unchecked") 
+                E element = (E) array[index];
+                return element;
+            } else {
+                throw new IndexOutOfBoundsException("index = " + index + ", size = " + array.length); //NOI18N
+            }
+        }
+        
+        public int size() {
+            return array.length;
+        }
+        
+        public EventListener[] getArray() {
+            return array;
+        }
+    } // End of ImmutableList class
 }
