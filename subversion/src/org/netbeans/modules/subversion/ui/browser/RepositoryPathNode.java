@@ -58,7 +58,6 @@ public class RepositoryPathNode extends AbstractNode {
     private RepositoryPathEntry entry;
     private final BrowserClient client;    
     private boolean repositoryFolder;
-    private final static Node[] EMPTY_NODES = new Node[0];        
 
     static class RepositoryPathEntry {
         private final SVNNodeKind svnNodeKind;
@@ -328,10 +327,10 @@ public class RepositoryPathNode extends AbstractNode {
 
     }    
         
-    static final String PROPERTY_NAME_REVISION = "revision"; // NOI18N    
-    static final String PROPERTY_NAME_DATE     = "date"; // NOI18N    
-    static final String PROPERTY_NAME_AUTHOR   = "author"; // NOI18N    
-    static final String PROPERTY_NAME_HISTORY  = "history"; // NOI18N    
+    static final String PROPERTY_NAME_REVISION = "revision";    // NOI18N    
+    static final String PROPERTY_NAME_DATE     = "date";        // NOI18N    
+    static final String PROPERTY_NAME_AUTHOR   = "author";      // NOI18N    
+    static final String PROPERTY_NAME_HISTORY  = "history";     // NOI18N    
 
     private final static String HISTORY_DISPLAY_NAME = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Name");
     private final static String HISTORY_SHORT_DESC = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Short_Desc");    
