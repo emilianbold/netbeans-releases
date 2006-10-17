@@ -98,6 +98,7 @@ public class CopyTest extends JellyTestCase {
         
         rso.next();
         OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.setRepositoryFolder("trunk/" + PROJECT_NAME);
@@ -112,6 +113,7 @@ public class CopyTest extends JellyTestCase {
         ProjectSupport.waitScanFinished();
         
         oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         CopyToOperator cto = CopyToOperator.invoke(projNode);
@@ -119,6 +121,7 @@ public class CopyTest extends JellyTestCase {
         cto.setCopyPurpose("New branch for project.");
         cto.checkSwitchToCopy(true);
         cto.copy();
+        Thread.sleep(2000);
         oto.waitText("Copy");
         oto.waitText("finished.");
         
@@ -174,6 +177,7 @@ public class CopyTest extends JellyTestCase {
         ProjectSupport.waitScanFinished();
         
         oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         CopyToOperator cto = CopyToOperator.invoke(projNode);
@@ -199,6 +203,7 @@ public class CopyTest extends JellyTestCase {
         
         //switch to branch
         oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         SwitchOperator so = SwitchOperator.invoke(projNode);
@@ -220,6 +225,7 @@ public class CopyTest extends JellyTestCase {
         assertEquals("Wrong annotation of node!!!", "[release01]", status);
         
         oto = new OutputTabOperator("file:///tmp/repo");
+        oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.clear();
         projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
         so = SwitchOperator.invoke(projNode);

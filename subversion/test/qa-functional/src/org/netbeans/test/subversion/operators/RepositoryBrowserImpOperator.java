@@ -6,6 +6,7 @@
 package org.netbeans.test.subversion.operators;
 
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.TreeTableOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
 
@@ -23,7 +24,7 @@ public class RepositoryBrowserImpOperator extends NbDialogOperator {
         super("Browse Repository");
     }
 
-    private JTreeOperator _tree;
+    private TreeTableOperator _tree;
     private JLabelOperator _lblSpecifyFolderToCheckout;
     private JButtonOperator _btStop;
     private JButtonOperator _btNewFolder;
@@ -39,9 +40,9 @@ public class RepositoryBrowserImpOperator extends NbDialogOperator {
     /** Tries to find null TreeView$ExplorerTree in this dialog.
      * @return JTreeOperator
      */
-    public JTreeOperator tree() {
+    public TreeTableOperator tree() {
         if (_tree==null) {
-            _tree = new JTreeOperator(this);
+            _tree = new TreeTableOperator(this);
         }
         return _tree;
     }
@@ -51,7 +52,7 @@ public class RepositoryBrowserImpOperator extends NbDialogOperator {
      */
     public JLabelOperator lblSpecifyFolderToCheckout() {
         if (_lblSpecifyFolderToCheckout==null) {
-            _lblSpecifyFolderToCheckout = new JLabelOperator(this, "Repository Folders");
+            _lblSpecifyFolderToCheckout = new JLabelOperator(this);
         }
         return _lblSpecifyFolderToCheckout;
     }
@@ -115,7 +116,7 @@ public class RepositoryBrowserImpOperator extends NbDialogOperator {
      * @param path path to folder without root (e.g. "folder|subfolder")
      */
     public void selectFolder(String path) {
-        new Node(tree(), path).select();
+        new Node(tree().tree(), path).select();
     }
     
     /** clicks on "New folder" JButton

@@ -19,7 +19,7 @@ public class CreateNewFolderOperator extends NbDialogOperator {
      * Creates new CreateNewFolderOperator that can handle it.
      */
     public CreateNewFolderOperator() {
-        super("Create a new folder");
+        super("Specify a new folder");
     }
 
     private JLabelOperator _lblFolderName;

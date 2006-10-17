@@ -99,6 +99,7 @@ public class SearchRevisionsTest extends JellyTestCase {
         OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
         oto.clear();
         SearchRevisionsOperator sro = wdso.search();
+        sro.setFrom("");
         sro.list();
         oto.waitText("Searching revisions finished.");
         sro.verify();
@@ -107,8 +108,6 @@ public class SearchRevisionsTest extends JellyTestCase {
         assertEquals("Requested repository revision is not propagated!!!", "5", wdso.getRevisionNumber());
         wdso.cancel();
         
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-        RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
         stream.flush();
         stream.close();
     }
