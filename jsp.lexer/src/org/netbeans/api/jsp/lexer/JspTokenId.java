@@ -19,7 +19,21 @@
 
 package org.netbeans.api.jsp.lexer;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Map;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.jsp.lexer.JspLexer;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  * Token Ids for JSP language
@@ -55,6 +69,72 @@ public enum JspTokenId implements TokenId {
     public String primaryCategory() {
         return primaryCategory;
     }
+
+    // Token ids declaration
+    private static final LanguageDescription<JspTokenId> language = new LanguageHierarchy<JspTokenId>() {
+        protected Collection<JspTokenId> createTokenIds() {
+            return EnumSet.allOf(JspTokenId.class);
+        }
+        
+        protected Map<String,Collection<JspTokenId>> createTokenCategories() {
+            //Map<String,Collection<JspTokenId>> cats = new HashMap<String,Collection<JspTokenId>>();
+            // Additional literals being a lexical error
+            //cats.put("error", EnumSet.of());
+            return null;
+        }
+        
+        public Lexer<JspTokenId> createLexer(
+                LexerInput input, TokenFactory<JspTokenId> tokenFactory, Object state,
+                LanguagePath languagePath, InputAttributes inputAttributes) {
+            return new JspLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        }
+        
+        public LanguageEmbedding embedding(
+                Token<JspTokenId> token, boolean tokenComplete,
+                LanguagePath languagePath, InputAttributes inputAttributes) {
+            switch(token.id()) {
+                case TEXT:
+                    return new LanguageEmbedding() {
+                        public LanguageDescription<? extends TokenId> language() {
+                            return HTMLTokenId.language();
+                        }
+                        
+                        public int startSkipLength() {
+                            return 0;
+                        }
+                        
+                        public int endSkipLength() {
+                            return 0;
+                        }
+                    };
+                    //                case SCRIPTLET:
+                    //                    return new LanguageEmbedding() {
+                    //                        public LanguageDescription language() {
+                    //                            return JavaLanguage.description();
+                    //                        }
+                    //
+                    //                        public int startSkipLength() {
+                    //                            return 0;
+                    //                        }
+                    //
+                    //                        public int endSkipLength() {
+                    //                            return 0;
+                    //                        }
+                    //                    };
+                default:
+                    return null;
+            }
+        }
+        
+        public String mimeType() {
+            return "text/html";
+        }
+    }.language();
+    
+    public static LanguageDescription<JspTokenId> language() {
+        return language;
+    }
+    
 
 }
 

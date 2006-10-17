@@ -19,7 +19,21 @@
 
 package org.netbeans.api.java.lexer;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.java.lexer.JavaLexer;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  * Token ids of java language defined as enum.
@@ -173,6 +187,106 @@ public enum JavaTokenId implements TokenId {
 
     public String primaryCategory() {
         return primaryCategory;
+    }
+
+    private static final LanguageDescription<JavaTokenId> language = new LanguageHierarchy<JavaTokenId>() {
+
+        protected String mimeType() {
+            return "text/x-java";
+        }
+
+        protected Collection<JavaTokenId> createTokenIds() {
+            return EnumSet.allOf(JavaTokenId.class);
+        }
+        
+        protected Map<String,Collection<JavaTokenId>> createTokenCategories() {
+            Map<String,Collection<JavaTokenId>> cats = new HashMap<String,Collection<JavaTokenId>>();
+            // Incomplete tokens
+            cats.put("incomplete", EnumSet.of(
+                JavaTokenId.CHAR_LITERAL_INCOMPLETE,
+                JavaTokenId.STRING_LITERAL_INCOMPLETE,
+                JavaTokenId.BLOCK_COMMENT_INCOMPLETE,
+                JavaTokenId.JAVADOC_COMMENT_INCOMPLETE
+            ));
+            // Additional literals being a lexical error
+            cats.put("error", EnumSet.of(
+                JavaTokenId.CHAR_LITERAL_INCOMPLETE,
+                JavaTokenId.STRING_LITERAL_INCOMPLETE,
+                JavaTokenId.BLOCK_COMMENT_INCOMPLETE,
+                JavaTokenId.JAVADOC_COMMENT_INCOMPLETE,
+                JavaTokenId.FLOAT_LITERAL_INVALID
+            ));
+            // Complete and incomplete literals
+            EnumSet<JavaTokenId> l = EnumSet.of(
+                JavaTokenId.INT_LITERAL,
+                JavaTokenId.LONG_LITERAL,
+                JavaTokenId.FLOAT_LITERAL,
+                JavaTokenId.DOUBLE_LITERAL,
+                JavaTokenId.CHAR_LITERAL
+
+            );
+            l.addAll(EnumSet.of(
+                JavaTokenId.CHAR_LITERAL_INCOMPLETE,
+                JavaTokenId.STRING_LITERAL,
+                JavaTokenId.STRING_LITERAL_INCOMPLETE
+            ));
+            cats.put("literal", l);
+
+            return cats;
+        }
+
+        protected Lexer<JavaTokenId> createLexer(
+        LexerInput input, TokenFactory<JavaTokenId> tokenFactory, Object state,
+        LanguagePath languagePath, InputAttributes inputAttributes) {
+            return new JavaLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        }
+
+        protected LanguageEmbedding embedding(
+        Token<JavaTokenId> token, boolean tokenComplete,
+        LanguagePath languagePath, InputAttributes inputAttributes) {
+            // Test language embedding in the block comment
+            switch (token.id()) {
+                case JAVADOC_COMMENT:
+                    return new LanguageEmbedding() {
+                        public LanguageDescription<? extends TokenId> language() {
+                            return JavadocTokenId.language();
+                        }
+                        
+                        public int startSkipLength() {
+                            return 3;
+                        }
+                        
+                        public int endSkipLength() {
+                            return 2;
+                        }
+                    };
+                case STRING_LITERAL:
+                case STRING_LITERAL_INCOMPLETE:
+                    return new LanguageEmbedding() {
+                        public LanguageDescription<? extends TokenId> language() {
+                            return JavaStringTokenId.language();
+                        }
+                        
+                        public int startSkipLength() {
+                            return 1;
+                        }
+                        
+                        public int endSkipLength() {
+                            return 1;
+                        }
+                    };
+            }
+            return null; // No embedding
+        }
+
+//        protected CharPreprocessor createCharPreprocessor() {
+//            return CharPreprocessor.createUnicodeEscapesPreprocessor();
+//        }
+
+    }.language();
+
+    public static LanguageDescription<JavaTokenId> language() {
+        return language;
     }
 
 }

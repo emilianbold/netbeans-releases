@@ -22,10 +22,8 @@ package org.netbeans.modules.web.core.syntax;
 import java.awt.event.ActionEvent;
 import java.beans.*;
 import javax.swing.Action;
-import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.text.*;
-import org.netbeans.api.jsp.lexer.JspLanguage;
 import org.netbeans.api.lexer.LanguageDescription;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -42,7 +40,6 @@ import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
@@ -66,6 +63,7 @@ import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.jsp.lexer.JspTokenId;
 
 /**
  * Editor kit implementation for JSP content type
@@ -240,7 +238,7 @@ public class JSPKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
             if (mimeType == null){
                 doc.putProperty("mimeType", getContentType()); //NOI18N
             }
-            doc.putProperty(LanguageDescription.class, JspLanguage.description());
+            doc.putProperty(LanguageDescription.class, JspTokenId.language());
             return doc;
         } else {
             return super.createDefaultDocument();

@@ -19,7 +19,18 @@
 
 package org.netbeans.api.java.lexer;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Map;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.java.lexer.JavaStringLexer;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  * Token ids for java string language
@@ -55,6 +66,30 @@ public enum JavaStringTokenId implements TokenId {
 
     public String primaryCategory() {
         return primaryCategory;
+    }
+
+    private static final LanguageDescription<JavaStringTokenId> language = new LanguageHierarchy<JavaStringTokenId>() {
+        protected Collection<JavaStringTokenId> createTokenIds() {
+            return EnumSet.allOf(JavaStringTokenId.class);
+        }
+        
+        protected Map<String, Collection<JavaStringTokenId>> createTokenCategories() {
+            return null; // no extra categories
+        }
+
+        protected Lexer<JavaStringTokenId> createLexer(
+        LexerInput input, TokenFactory<JavaStringTokenId> tokenFactory, Object state,
+        LanguagePath languagePath, InputAttributes inputAttributes) {
+            return new JavaStringLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        }
+
+        public String mimeType() {
+            return "text/x-java-string";
+        }
+    }.language();
+
+    public static LanguageDescription<JavaStringTokenId> language() {
+        return language;
     }
 
 }

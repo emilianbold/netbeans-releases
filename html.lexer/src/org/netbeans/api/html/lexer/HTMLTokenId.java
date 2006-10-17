@@ -12,7 +12,21 @@
  */
 package org.netbeans.api.html.lexer;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.html.lexer.HTMLLexer;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  * Token ids of HTML language
@@ -52,4 +66,37 @@ public enum HTMLTokenId implements TokenId {
         return primaryCategory;
     }
 
+    private static final LanguageDescription<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
+        protected Collection<HTMLTokenId> createTokenIds() {
+            return EnumSet.allOf(HTMLTokenId.class);
+        }
+        
+        protected Map<String,Collection<HTMLTokenId>> createTokenCategories() {
+            //Map<String,Collection<HTMLTokenId>> cats = new HashMap<String,Collection<HTMLTokenId>>();
+            // Additional literals being a lexical error
+            //cats.put("error", EnumSet.of());
+            return null;
+        }
+        
+        public Lexer<HTMLTokenId> createLexer(
+        LexerInput input, TokenFactory<HTMLTokenId> tokenFactory, Object state,
+        LanguagePath languagePath, InputAttributes inputAttributes) {
+            return new HTMLLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        }
+        
+        public LanguageEmbedding embedding(
+        Token<HTMLTokenId> token, boolean tokenComplete,
+        LanguagePath languagePath, InputAttributes inputAttributes) {
+            return null; // No embedding
+        }
+        
+        public String mimeType() {
+            return "text/html";
+        }
+    }.language();
+    
+    public static LanguageDescription<HTMLTokenId> language() {
+        return language;
+    }
+    
 }
