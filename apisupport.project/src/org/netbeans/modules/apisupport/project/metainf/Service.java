@@ -90,8 +90,7 @@ final class Service {
                 JarEntry entry = (JarEntry) entries.nextElement();
                 if (entry.getName().startsWith(META_INF_SERVICES)) {
                     String name = entry.getName().substring(META_INF_SERVICES.length() + 1).trim();
-                                          
-                    if (!name.equals("")) {
+                    if (!name.equals("")) { // NOI18N
                         InputStream is = jar.getInputStream(entry);
                         services.add(createService(codebase,name.intern(),is));
                         is.close();
