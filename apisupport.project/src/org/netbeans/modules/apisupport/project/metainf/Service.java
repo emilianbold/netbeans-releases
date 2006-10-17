@@ -194,37 +194,42 @@ final class Service {
         return services;
     }
 
-    void removeClass(String string,NbModuleProject project) {
-        String removedString = "-" + string;
-        removedString = removedString.intern();
-        if (containsClass(string)) {
-            removeClass(string);
-        } else if (containsClass(removedString)) {
-            removeClass(removedString);
+    void removeClass(String className,NbModuleProject project) {
+        String removedClass = "-" + className;
+        removedClass = removedClass.intern();
+        if (containsClass(className)) {
+            removeClass(className);
+        } else if (containsClass(removedClass)) {
+            removeClass(removedClass);
         } else {
-            classes.add(removedString);
+            classes.add(removedClass);
         }
         write(project);
     }
     
-    void write (NbModuleProject project) {
-        try {  
-	    FileObject mIServicesFolder = null;
-            mIServicesFolder = SUtil.getServicesFolder(project,true); 
-             FileObject serviceFo = mIServicesFolder.getFileObject(getFileName());
-             if (serviceFo == null) {
-                 serviceFo = mIServicesFolder.createData(getFileName());
-             }
-             FileLock lock = serviceFo.lock();
-             OutputStream os = serviceFo.getOutputStream(lock);
-             PrintStream ps = new PrintStream (os);
-             for (Iterator it = classes.iterator() ; it.hasNext() ; ) {
-                 Object object = it.next();
-                 ps.println(object);
-             }
-             ps.close();
-             os.close();
-             lock.releaseLock();
+    void write(NbModuleProject project) {
+        try {
+            FileObject mIServicesFolder = null;
+            mIServicesFolder = SUtil.getServicesFolder(project,true);
+            FileObject serviceFo = mIServicesFolder.getFileObject(getFileName());
+            if (classes.size() > 0) {
+                if (serviceFo == null) {
+                    serviceFo = mIServicesFolder.createData(getFileName());
+                }
+                FileLock lock = serviceFo.lock();
+                OutputStream os = serviceFo.getOutputStream(lock);
+                PrintStream ps = new PrintStream(os);
+                for (Iterator it = classes.iterator() ; it.hasNext() ; ) {
+                    Object object = it.next();
+                    ps.println(object);
+                }
+                ps.close();
+                os.close();
+                lock.releaseLock();
+            } else {
+                // no service, remove file
+                serviceFo.delete();
+            }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }

@@ -22,6 +22,7 @@ package org.netbeans.modules.apisupport.project.metainf;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.List;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -89,7 +90,7 @@ public class ServiceNodeHandlerTest extends  TestBase {
         exploreNodes(nodeHandler.moduleChild);  
         exploreNodes(nodeHandler.allInContextChild);
 
-	assertNodes("org.myservice","","");
+	    assertNodes("org.myservice","","");
         
         writeServices(prj2,"org.myservice","impl");
         assertNodes("org.myservice",
@@ -107,6 +108,17 @@ public class ServiceNodeHandlerTest extends  TestBase {
                     "",
                     "org.myservice,org.myservice,impl,impl,"
                 );
+        
+        nodeHandler = (ServiceNodeHandler) prj2.getLookup().lookup(ServiceNodeHandler.class);
+        serviceRootNode = (ServiceNodeHandler.ServiceRootNode) nodeHandler.createServiceRootNode();
+        exploreNodes(nodeHandler.moduleChild);  
+        exploreNodes(nodeHandler.allInContextChild);        
+        Service service = (Service)((List) nodeHandler.moduleServiceMap.get("org.myservice")).get(0); 
+        assertNotNull("prj2 contains org.myservice",service);
+        service.getClasses().clear();
+        service.write(prj2);
+        assertNull("org.myservice is deleted",prj2.getSourceDirectory().getFileObject("META-INF/services/org.myservice"));
+        
         //  test for NPE : service folder deleted #87049
         deleteServiceFolder(prj1);
         deleteServiceFolder(prj2);
