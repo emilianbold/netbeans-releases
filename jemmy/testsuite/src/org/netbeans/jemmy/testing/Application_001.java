@@ -68,6 +68,6 @@ public class Application_001 extends TestDialog {
     }
 
     public static void main(String[] argv) {
-	(new Application_001()).show();
+	(new Application_001()).setVisible(true);
     }
 }
