@@ -92,7 +92,7 @@ is the proper place.
             <description>
 	        <p>
                     Related to 1.12 change in Project API.
-                    <code>LookupMerger</code> implementation for<code>PrivilegedTemplates</code>  and
+                    <code>LookupMerger</code> implementation for <code>PrivilegedTemplates</code> and
                     <code>RecommendedTemplates</code> added.
 		</p>
             </description>

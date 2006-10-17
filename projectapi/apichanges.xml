@@ -93,7 +93,7 @@ is the proper place.
 	        <p>
                     Added interfaces and support classes that can be used to compose the project's lookup
                     from multiple 3rd party sources. Framework for creating merged instances included. 
-                    <code>LookupMerger</code> implementation for<code>Sources</code> added.
+                    <code>LookupMerger</code> implementation for <code>Sources</code> added.
 		</p>
             </description>
             <class package="org.netbeans.spi.project" name="LookupProvider"/>
