@@ -318,8 +318,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
             Session s = (Session) 
                 lookupProvider.lookupFirst (null, Session.class);
             DebuggerEngine de = s.getEngineForLanguage ("Java");
-            BreakpointsEngineListener bel = (BreakpointsEngineListener) 
-                de.lookupFirst (null, LazyActionsManagerListener.class);
+            BreakpointsEngineListener bel = null;
+            List lazyListeners = de.lookup(null, LazyActionsManagerListener.class);
+            for (int li = 0; li < lazyListeners.size(); li++) {
+                Object service = lazyListeners.get(li);
+                if (service instanceof BreakpointsEngineListener) {
+                    bel = (BreakpointsEngineListener) service;
+                    break;
+                }
+            }
             bel.fixBreakpointImpls ();
             
             // 2) pop obsoleted frames
