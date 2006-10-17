@@ -211,7 +211,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
         if (currentCallStackFrame == null && currentThread != null) {
             try {
-                currentCallStackFrame = currentThread.getCallStack()[0];
+                currentCallStackFrame = currentThread.getCallStack(0, 1)[0];
             } catch (Exception ex) {}
         }
         return currentCallStackFrame;
@@ -451,13 +451,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     public void popFrames (ThreadReference thread, StackFrame frame) {
         synchronized (LOCK) {
+            JPDAThreadImpl threadImpl = (JPDAThreadImpl) getThread(thread);
+            setState (STATE_RUNNING);
             try {
-                thread.popFrames (frame);
-                setState (STATE_RUNNING);
-                updateCurrentCallStackFrame (getThread (thread));
-                setState (STATE_STOPPED);
+                threadImpl.popFrames(frame);
+                updateCurrentCallStackFrame (threadImpl);
             } catch (IncompatibleThreadStateException ex) {
-                ex.printStackTrace ();
+                ErrorManager.getDefault().notify(ex);
+            } finally {
+                setState (STATE_STOPPED);
             }
         }
     }
@@ -664,7 +666,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             ThreadReference tr = getEvaluationThread();
             JPDAThreadImpl thread = (JPDAThreadImpl) getThread(tr);
             boolean threadSuspended = thread.isSuspended();
-            thread.notifyToBeRunning();
             // Remember the current stack frame, it might be necessary to re-set.
             CallStackFrameImpl csf = (CallStackFrameImpl) 
                 getCurrentCallStackFrame ();
@@ -674,6 +675,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     frameThread = csf.getThread();
                 } catch (InvalidStackFrameException isfex) {}
             }
+            thread.notifyToBeRunning();
             try {
                 return org.netbeans.modules.debugger.jpda.expr.Evaluator.
                     invokeVirtual (

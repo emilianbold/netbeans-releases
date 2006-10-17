@@ -312,6 +312,12 @@ public final class JPDAThreadImpl implements JPDAThread {
         return 0;
     }
     
+    public void popFrames(StackFrame sf) throws IncompatibleThreadStateException {
+        threadReference.popFrames(sf);
+        cleanCachedFrames();
+        setReturnVariable(null); // Clear the return var
+    }
+    
     /**
      * Suspends thread.
      */
