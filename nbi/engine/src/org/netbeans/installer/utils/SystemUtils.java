@@ -102,7 +102,7 @@ public abstract class SystemUtils {
     
     public abstract File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException, UnsupportedActionException;
     
-    public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException, UnsupportedActionException;
+    public abstract void removeShortcut(Shortcut shortcut, ShortcutLocationType locationType, boolean deleteEmptyParents) throws IOException, UnsupportedActionException;
     
     public abstract void addComponentToSystemInstallManager(ProductComponent comp);
     

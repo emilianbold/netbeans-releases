@@ -101,6 +101,8 @@ public abstract class FileUtils {
     
     public abstract void deleteFile(File file, String mask) throws IOException;
     
+    public abstract void deleteEmptyParents(File file);
+    
     public abstract void deleteFiles(List<File> files) throws IOException;
     
     public abstract File createTempFile() throws IOException;
