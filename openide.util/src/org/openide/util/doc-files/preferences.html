@@ -41,7 +41,18 @@
     <h4 align="left">How to verify that preferences work properly?</h4>
     Layout of files on disk:<br>
     <p> </p>
-<pre>config/Preferences/<br>`-- org<br>        |-- netbeans<br>        |   `-- modules<br>        |       `-- derby<br>        |           `-- prefs.properties<br>        `-- yourorghere<br>            `-- mymodule<br>                `-- prefs.properties<br>   </pre>
+    <pre>
+    config/Preferences/
+    `-- org
+        |-- apache
+        |   `-- tools
+        |       `-- ant
+        |           `-- module.properties
+        `-- netbeans
+            `-- modules
+                `-- derby.properties
+    </pre>
+
     <p> prefs.properties is regular properties file. See: </p>
     <p> </p>
 <pre>#Thu Sep 28 18:15:22 CEST 2006<br>location=/tmp/location<br>systemHome=/tmp/systemHome<br>  </pre>

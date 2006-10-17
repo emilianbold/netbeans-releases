@@ -41,7 +41,7 @@ public class TestPropertiesStorage extends TestFileStorage {
         pref = getPreferencesNode();
         assertNotNull(pref);
         storage = (PropertiesStorage)pref.fileStorage;
-        assertNotNull(storage);
+        assertNotNull(storage);        
     }
     
     protected NbPreferences.FileStorage getInstance() {
@@ -76,14 +76,12 @@ public class TestPropertiesStorage extends TestFileStorage {
     public void testNode2() throws BackingStoreException {
         testNode();
         pref.flush();
-        assertNotNull(storage.toFolder());
         assertNotNull(storage.toPropertiesFile());
     }
     
     public void testNode3() throws BackingStoreException {
         testNode();
         pref.flushTask.waitFinished();
-        assertNotNull(storage.toFolder());
         assertNotNull(storage.toPropertiesFile());                
     }
 
@@ -106,12 +104,10 @@ public class TestPropertiesStorage extends TestFileStorage {
         
         pref.put("key","value");
         pref.flush();
-        assertNotNull(storage.toFolder());
         assertNotNull(storage.toPropertiesFile());
         pref.remove("key");
         assertTrue(pref.properties.isEmpty());
         pref.flush();
-        assertNull(storage.toFolder());
         assertNull(storage.toPropertiesFile());                
     }
 
@@ -123,12 +119,10 @@ public class TestPropertiesStorage extends TestFileStorage {
         pref.put("key1","value1");
 
         pref.flush();
-        assertNotNull(storage.toFolder());
         assertNotNull(storage.toPropertiesFile());
         pref.remove("key");
         assertFalse(pref.properties.isEmpty());
         pref.flush();
-        assertNotNull(storage.toFolder());
         assertNotNull(storage.toPropertiesFile());                
     }
 
@@ -141,12 +135,10 @@ public class TestPropertiesStorage extends TestFileStorage {
         pref.put("key3","value");
         pref.put("key5","value");
         pref.flush();
-        assertNotNull(storage.toFolder());
         assertNotNull(storage.toPropertiesFile());                
 
         pref.clear();
         pref.flush();
-        assertNull(storage.toFolder());
         assertNull(storage.toPropertiesFile());                
     }
     

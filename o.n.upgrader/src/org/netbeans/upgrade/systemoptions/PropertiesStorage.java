@@ -40,11 +40,12 @@ import org.openide.filesystems.Repository;
 class PropertiesStorage  {
     private static final String USERROOT_PREFIX = "/Preferences";//NOI18N
     private static final String SYSTEMROOT_PREFIX = "/SystemPreferences";//NOI18N
-    private static final String PROPS_FILE_NAME = "prefs.properties";//NOI18N
     private final static FileObject SFS_ROOT =
             Repository.getDefault().getDefaultFileSystem().getRoot();
     
-    private String folderPath;
+    private final String folderPath;
+    private String filePath;
+    
     
     
     static PropertiesStorage instance(final String absolutePath) {
@@ -65,7 +66,7 @@ class PropertiesStorage  {
     }
         
     public final boolean existsNode() {
-        return (toFolder() != null);
+        return (toPropertiesFile() != null);
     }
     
     public String[] childrenNames() {
@@ -162,18 +163,28 @@ class PropertiesStorage  {
     }
     
     private String filePath() {
-        StringBuffer sb = new StringBuffer(folderPath());
-        sb.append("/").append(PROPS_FILE_NAME);//NOI18N
-        return sb.toString();
-    }
+        if (filePath == null) {
+            String[] all = folderPath().split("/");//NOI18N
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < all.length-1; i++) {
+                sb.append(all[i]).append("/");//NOI18N
+            }
+            if (all.length > 0) {
+                sb.append(all[all.length-1]).append(".properties");//NOI18N
+            } else {
+                sb.append("root.properties");//NOI18N
+            }
+            filePath = sb.toString();
+        }
+        return filePath;
+    }        
     
     protected FileObject toFolder()  {
         return SFS_ROOT.getFileObject(folderPath);
     }
     
     protected  FileObject toPropertiesFile() {
-        FileObject folder = toFolder();
-        return (folder != null) ? folder.getFileObject(PROPS_FILE_NAME) : null;//NOI18N
+        return SFS_ROOT.getFileObject(filePath());
     }
     
     protected FileObject toFolder(boolean create) throws IOException {
