@@ -520,7 +520,6 @@ public class CategoryList extends JList implements Autoscroll {
             if( null != next && next instanceof CategoryButton ) {
                 clearSelection();
                 next.requestFocus();
-                ((CategoryButton)next).scrollRectToVisible( next.getBounds() );
             }
         }
     }

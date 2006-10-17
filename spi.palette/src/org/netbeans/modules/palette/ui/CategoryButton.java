@@ -20,6 +20,8 @@
 package org.netbeans.modules.palette.ui;
 
 import java.awt.dnd.Autoscroll;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
@@ -80,6 +82,14 @@ class CategoryButton extends JCheckBox implements Autoscroll {
             public void actionPerformed( ActionEvent e ) {
                 boolean opened = !CategoryButton.this.descriptor.isOpened();
                 setExpanded( opened );
+            }
+        });
+        
+        addFocusListener( new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                scrollRectToVisible( getBounds() );
+            }
+            public void focusLost(FocusEvent e) {
             }
         });
         
@@ -180,7 +190,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
             return super.getForeground();
         }
     }
-    
+
     private class MoveFocusAction extends AbstractAction {
         private boolean moveDown;
         
