@@ -46,15 +46,14 @@ import org.openide.util.NbBundle;
  */
 public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
 
-    private final BrowserTreeTableView treeView;
-    private final JLabel label;
+    private final BrowserTreeTableView treeView;    
     private final ExplorerManager manager;
 
-    private JPanel buttonPanel;
+    private ControlPanel controlPanel;
     
     /** Creates new form BrowserPanel */
-    public BrowserPanel(String labelText, String browserAcsn, String browserAcsd, boolean singelSelectionOnly) {      
-        setName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_Prompt")); // NOI18N
+    public BrowserPanel(String labelText, String browserAcsn, String browserAcsd, boolean singleSelection) {      
+        setName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_Prompt"));                   // NOI18N
         
         manager = new ExplorerManager();
         
@@ -69,63 +68,77 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         treeView.setBorder(BorderFactory.createEtchedBorder());
         treeView.getAccessibleContext().setAccessibleDescription(browserAcsd);
         treeView.getAccessibleContext().setAccessibleName(browserAcsn);   
-        if(singelSelectionOnly) {
+        if(singleSelection) {
             treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         }
         treeView.setPopupAllowed(true);        
         treeView.getTree().setShowsRootHandles(true);                
-        
+
         GridBagConstraints c = new GridBagConstraints();
+        int gridY = 0;
+                
+        // title label        
+        JLabel label = new JLabel();        
+        label.setLabelFor(treeView.getTree());
+        label.setToolTipText(browserAcsd);
+        if(labelText != null && !labelText.trim().equals("")) {
+            org.openide.awt.Mnemonics.setLocalizedText(label, labelText);
+        } else {
+            org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BK2003"));                          // NOI18N
+        }        
+        c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 1;
+        c.gridy = gridY++;
+        c.insets = new Insets(4,0,4,4);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.WEST;        
+        
+        add(label, c);        
+        
+        // treetable               
+        c.gridx = 0;
+        c.gridy = gridY++;
         c.fill = GridBagConstraints.BOTH;
         c.weighty = 1;
         c.weightx = 1;
         c.anchor = GridBagConstraints.WEST;
         c.gridwidth = 1;
         add(treeView, c);
-        
-        label = new JLabel();        
-        label.setLabelFor(treeView.getTree());
-        label.setToolTipText(browserAcsd);
-        if(labelText != null && !labelText.trim().equals("")) {
-            org.openide.awt.Mnemonics.setLocalizedText(label, labelText);
-        } else {
-            org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BK2003"));            
-        }        
+                
+        // buttons
+        controlPanel = new ControlPanel();        
+        controlPanel.warningLabel.setVisible(false);
         c = new GridBagConstraints();
         c.gridx = 0;
-        c.gridy = 0;
-        c.insets = new Insets(4,0,4,4);
+        c.gridy = gridY++;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.WEST;
-        //Mnemonics.setLocalizedText(label, labelText);        
-        
-        add(label, c);
-        
-        buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        c = new GridBagConstraints();
-        c.gridx = 0;
-        c.gridy = 2;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.WEST;                
-        add(buttonPanel, c);
+        c.anchor = GridBagConstraints.EAST;                
+        add(controlPanel, c);                
         
         setBorder(BorderFactory.createEmptyBorder(12,12,0,12));
         
         setPreferredSize(new Dimension(800, 400));
     }   
     
+    void warning(String warningText) {
+        if(warningText != null) {
+            controlPanel.warningLabel.setText(warningText);
+            controlPanel.warningLabel.setVisible(true);      
+        } else {
+            controlPanel.warningLabel.setText("");   
+            controlPanel.warningLabel.setVisible(false);                  
+        }     
+    }
+    
     public void setActions(AbstractAction[] actions) {
         if(actions != null) {
-            buttonPanel.removeAll();
+            controlPanel.buttonPanel.removeAll();
             for (int i = 0; i < actions.length; i++) {
                 JButton button = new JButton(); 
                 button.setAction(actions[i]);      
-                button.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "CTL_Action_MakeDir"));
-                org.openide.awt.Mnemonics.setLocalizedText(button, org.openide.util.NbBundle.getMessage(BrowserPanel.class, "CTL_Action_MakeDir"));
-                buttonPanel.add(button);                
+                button.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "CTL_Action_MakeDir"));     // NOI18N
+                org.openide.awt.Mnemonics.setLocalizedText(button, org.openide.util.NbBundle.getMessage(BrowserPanel.class, "CTL_Action_MakeDir"));         // NOI18N
+                controlPanel.buttonPanel.add(button);                    
             }            
             revalidate();
         }                
@@ -156,10 +169,10 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         private void setupColumns() {
             ResourceBundle loc = NbBundle.getBundle(BrowserPanel.class);            
             Node.Property [] columns = new Node.Property[4];
-            columns[0] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_REVISION, String.class, loc.getString("LBL_BrowserTree_Column_Revision"), loc.getString("LBL_BrowserTree_Column_Revision_Desc"));
-            columns[1] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_DATE,     String.class, loc.getString("LBL_BrowserTree_Column_Date"),     loc.getString("LBL_BrowserTree_Column_Date_Desc"));
-            columns[2] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_AUTHOR,   String.class, loc.getString("LBL_BrowserTree_Column_Author"),   loc.getString("LBL_BrowserTree_Column_Author_Desc"));
-            columns[3] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_HISTORY,  String.class, loc.getString("LBL_BrowserTree_Column_History"),  loc.getString("LBL_BrowserTree_Column_History_Desc"));            
+            columns[0] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_REVISION, String.class, loc.getString("LBL_BrowserTree_Column_Revision"), loc.getString("LBL_BrowserTree_Column_Revision_Desc"));        // NOI18N
+            columns[1] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_DATE,     String.class, loc.getString("LBL_BrowserTree_Column_Date"),     loc.getString("LBL_BrowserTree_Column_Date_Desc"));            // NOI18N
+            columns[2] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_AUTHOR,   String.class, loc.getString("LBL_BrowserTree_Column_Author"),   loc.getString("LBL_BrowserTree_Column_Author_Desc"));          // NOI18N
+            columns[3] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_HISTORY,  String.class, loc.getString("LBL_BrowserTree_Column_History"),  loc.getString("LBL_BrowserTree_Column_History_Desc"));         // NOI18N    
             
             setProperties(columns);
         }    

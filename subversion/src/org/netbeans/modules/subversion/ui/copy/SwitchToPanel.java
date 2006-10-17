@@ -39,31 +39,27 @@ public class SwitchToPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Message")); // NOI18N
+
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Folder")); // NOI18N
-        urlLabel.getAccessibleContext().setAccessibleDescription("Repository Folder");
 
         org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Browse")); // NOI18N
-        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Fodlers");
 
         urlComboBox.setEditable(true);
 
         jLabel5.setLabelFor(revisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Revision")); // NOI18N
-        jLabel5.getAccessibleContext().setAccessibleDescription("Repository Revision");
 
         org.openide.awt.Mnemonics.setLocalizedText(searchRevisionButton, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Search")); // NOI18N
-        searchRevisionButton.getAccessibleContext().setAccessibleDescription("Search Revisions");
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_EmptyHint")); // NOI18N
-        jLabel6.getAccessibleContext().setAccessibleDescription("(empty means repository HEAD)");
 
         warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/ui/resources/warning.png")));
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Warning")); // NOI18N
-        warningLabel.getAccessibleContext().setAccessibleDescription("Warning - there are locally modified files!");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -108,6 +104,13 @@ public class SwitchToPanel extends javax.swing.JPanel {
                 .add(warningLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        urlLabel.getAccessibleContext().setAccessibleDescription("Repository Folder");
+        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Fodlers");
+        jLabel5.getAccessibleContext().setAccessibleDescription("Repository Revision");
+        searchRevisionButton.getAccessibleContext().setAccessibleDescription("Search Revisions");
+        jLabel6.getAccessibleContext().setAccessibleDescription("(empty means repository HEAD)");
+        warningLabel.getAccessibleContext().setAccessibleDescription("Warning - there are locally modified files!");
     }// </editor-fold>//GEN-END:initComponents
     
     

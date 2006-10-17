@@ -318,7 +318,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         RepositoryFile repoFile = new RepositoryFile(repositoryUrl, SVNRevision.HEAD);
         int browserMode;
         if(roots[0].isFile()) {
-            browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY | Browser.BROWSER_SHOW_FILES | Browser.BROWSER_SELECT_FOLDERS;                        
+            browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY | Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;                        
         } else {
             browserMode = Browser.BROWSER_SHOW_FILES;                        
         }        

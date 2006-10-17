@@ -48,11 +48,11 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 public class Browser implements VetoableChangeListener, BrowserClient {
         
     
-    public final static int BROWSER_SHOW_FILES = 1;
-    public final static int BROWSER_SINGLE_SELECTION_ONLY = 2;
-    public final static int BROWSER_SELECT_FILES = 4;
-    public final static int BROWSER_SELECT_FOLDERS = 8;
-    public final static int BROWSER_SELECT_ANYTHING = BROWSER_SELECT_FOLDERS | BROWSER_SELECT_FILES;
+    public final static int BROWSER_SHOW_FILES                  = 1;
+    public final static int BROWSER_SINGLE_SELECTION_ONLY       = 2;
+    public final static int BROWSER_FILES_SELECTION_ONLY        = 4;
+    public final static int BROWSER_FOLDERS_SELECTION_ONLY      = 8;
+    public final static int BROWSER_SELECT_ANYTHING = BROWSER_FOLDERS_SELECTION_ONLY | BROWSER_FILES_SELECTION_ONLY;
 
     private final int mode;
     
@@ -82,10 +82,11 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         this.mode = mode;       
         
         panel = new BrowserPanel(title,           
-                                 org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSN_RepositoryTree"),         // NOI18N
-                                 org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "ACSD_RepositoryTree"),         // NOI18N
+                                 org.openide.util.NbBundle.getMessage(Browser.class, "ACSN_RepositoryTree"),                                            // NOI18N
+                                 org.openide.util.NbBundle.getMessage(Browser.class, "ACSD_RepositoryTree"),                                            // NOI18N
                                  (mode & BROWSER_SINGLE_SELECTION_ONLY) == BROWSER_SINGLE_SELECTION_ONLY);
-        panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Browser_Prompt"));
+        
+        panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Browser_Prompt"));    // NOI18N
         getExplorerManager().addVetoableChangeListener(this);                
         
         if(nodeActions!=null) {
@@ -103,14 +104,14 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         Node[] selectedNodes = getSelectedNodes(rootNode, repositoryRoot, select);   
         getExplorerManager().setRootContext(rootNode);
         
-        if(selectedNodes!=null) {
-            try {
-                getExplorerManager().setSelectedNodes(selectedNodes);    
-            } catch (PropertyVetoException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }    
+        if(selectedNodes==null) {
+            selectedNodes = new Node[] {};
         }
-        
+        try {
+            getExplorerManager().setSelectedNodes(selectedNodes);    
+        } catch (PropertyVetoException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }          
     }       
 
     private Node[] getSelectedNodes(RepositoryPathNode rootNode, RepositoryFile repositoryRoot, RepositoryFile[] select) {        
@@ -240,11 +241,23 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         return ret;
     }
     
+    private boolean keepWarning = false;
+    private boolean initialSelection = true;
+    
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-
+           
+            boolean initialSelectionDone = !initialSelection;
+            initialSelection = false;
+            
+            if(!keepWarning) {
+                panel.warning(null);                
+            }
+            keepWarning = false;    
+            
             Node[] newSelection = (Node[]) evt.getNewValue();
-            if(newSelection == null || newSelection.length == 0) {
+            Node[] oldSelection = (Node[]) evt.getOldValue();                                    
+            if(newSelection == null || newSelection.length == 0) {                
                 return;
             }
 
@@ -253,24 +266,27 @@ public class Browser implements VetoableChangeListener, BrowserClient {
 //                throw new PropertyVetoException("", evt); // NOI18N
 //            }
             
-            Node[] oldSelection = (Node[]) evt.getOldValue();                                    
-
-            if((mode & BROWSER_SELECT_FILES) == BROWSER_SELECT_FILES &&         // file seelction only
-                checkForNodeType(newSelection, SVNNodeKind.DIR)) 
-            {
-                    throw new PropertyVetoException("", evt); // NOI18N                
-            }        
+            if((mode & BROWSER_FILES_SELECTION_ONLY) == BROWSER_FILES_SELECTION_ONLY) {          // file selection only
+                if(checkForNodeType(newSelection, SVNNodeKind.DIR))  {
+                    panel.warning(org.openide.util.NbBundle.getMessage(Browser.class, "LBL_Warning_FileSelectionOnly"));        // NOI18N
+                    if(initialSelectionDone) keepWarning = true;
+                    throw new PropertyVetoException("", evt);                                                                   // NOI18N                
+                }       
+            }
             
-            if((mode & BROWSER_SELECT_FOLDERS) == BROWSER_SELECT_FOLDERS && 
-               checkForNodeType(newSelection, SVNNodeKind.FILE)) 
-            {         // file seelction only                
-                throw new PropertyVetoException("", evt); // NOI18N
-            }        
+            if((mode & BROWSER_FOLDERS_SELECTION_ONLY) == BROWSER_FOLDERS_SELECTION_ONLY) {     // folder selection only                
+                if(checkForNodeType(newSelection, SVNNodeKind.FILE)) {                         
+                    panel.warning(org.openide.util.NbBundle.getMessage(Browser.class, "LBL_Warning_FolderSelectionOnly"));      // NOI18N
+                    if(initialSelectionDone) keepWarning = true;
+                    throw new PropertyVetoException("", evt);                                                                   // NOI18N
+                }                    
+            }
+            
             
             // RULE: don't select nodes on a different level as the already selected 
             if(oldSelection.length == 0 && newSelection.length == 1) {
                 // it is first node selected ->
-                // -> there is nothig to check
+                // -> there is nothig to check                       
                 return;
             }   
                                     
@@ -289,12 +305,13 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 selectedNode = newSelection[0];
             }
             if(!selectionIsAtLevel(newSelection, getNodeLevel(selectedNode))) {
-                throw new PropertyVetoException("", evt); // NOI18N
-            }
-    
+                panel.warning(org.openide.util.NbBundle.getMessage(Browser.class, "LBL_Warning_NoMultiSelection"));     // NOI18N
+                if(initialSelectionDone) keepWarning = true;
+                throw new PropertyVetoException("", evt);                                                               // NOI18N
+            }                 
         }
     }    
-
+    
     private boolean checkForNodeType(Node[] newSelection, SVNNodeKind nodeKind) {
         for (int i = 0; i < newSelection.length; i++) {
             if(newSelection[i] instanceof RepositoryPathNode) {

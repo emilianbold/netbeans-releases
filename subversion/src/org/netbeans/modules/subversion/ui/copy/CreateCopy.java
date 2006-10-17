@@ -72,7 +72,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
             panel.copyToLabel.setText(org.openide.util.NbBundle.getMessage(CreateCopy.class, "CTL_CopyForm_toFolder"));                 // NOI18N
         }        
         
-        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title"));        
+        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title"));           // NOI18N
         
         repositoryPaths = 
             new CopyRepositoryPaths(
@@ -85,9 +85,9 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
                 
         String browserPurposeMessage = "";
         if(localeFile.isFile()) {
-            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFile");    
+            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFile");               // NOI18N
         } else {
-            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFolder");
+            browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageCopyFolder");             // NOI18N
         }
 
         String defaultFolderName = localeFile.isFile() ? "" : localeFile.getName();
