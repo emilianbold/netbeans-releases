@@ -86,6 +86,10 @@ public abstract class StringUtils {
     
     public abstract String asString(List<? extends Object> objects, String separator);
     
+    public abstract String asString(String [] strings);
+    
+    public abstract String asString(String [] strings, String separator);
+    
     public abstract String formatSize(long longBytes);
     
     public abstract String asHexString(byte[] bytes);
@@ -225,6 +229,24 @@ public abstract class StringUtils {
             
             return result.toString();
         }
+        
+        public String asString(String [] strings) {
+            return asString(strings, ", ");
+        }
+        public String asString(String [] strings, String separator) {
+            StringBuilder result = new StringBuilder();
+            
+            for (int i = 0; i < strings.length; i++) {
+                result.append(strings[i].toString());
+                
+                if (i != strings.length - 1) {
+                    result.append(separator);
+                }
+            }
+            
+            return result.toString();
+        }
+        
         
         public String formatSize(long longBytes) {
             StringBuffer result = new StringBuffer();
@@ -396,5 +418,5 @@ public abstract class StringUtils {
             
             return builder.toString();
         }
-    }   
+    }
 }
