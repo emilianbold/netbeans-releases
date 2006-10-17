@@ -133,7 +133,25 @@ public class Utils {
                 if ((fi.getStatus() & includingFileStatus) == 0) return Context.Empty;
             }
         }
-        return context;
+        // if there are no exclusions, we may safely return this context because filtered files == root files
+        if (context.getExclusions().size() == 0) return context;
+
+        // in this code we remove files from filteredFiles to NOT include any files that do not have required status
+        // consider a freeform project that has 'build' in filteredFiles, the Branch action would try to branch it
+        // so, it is OK to have BranchAction enabled but the context must be a bit adjusted here
+        List<File> filteredFiles = new ArrayList<File>(Arrays.asList(context.getFiles()));
+        List<File> rootFiles = new ArrayList<File>(Arrays.asList(context.getRootFiles()));
+        List<File> rootFileExclusions = new ArrayList<File>(context.getExclusions());
+
+        for (Iterator<File> i = filteredFiles.iterator(); i.hasNext(); ) {
+            File file = i.next();
+            if (file.isDirectory()) {
+                if ((cache.getStatus(file).getStatus() & includingFolderStatus) == 0) i.remove();          
+            } else {
+                if ((cache.getStatus(file).getStatus() & includingFileStatus) == 0) i.remove();          
+            }
+        }
+        return new Context(filteredFiles, rootFiles, rootFileExclusions);
     }
 
     /**
