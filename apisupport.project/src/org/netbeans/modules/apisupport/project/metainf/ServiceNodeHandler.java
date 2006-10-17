@@ -95,6 +95,9 @@ public final class ServiceNodeHandler  {
                     public String getDisplayName() {
                         return NbBundle.getMessage(ServiceNodeHandler.class,"LBL_ServiceNode_please_wait");
                     }
+                    public Action[] getActions(boolean context) {
+                        return new Action[0];
+                    } 
                 }};
             } else if (key instanceof String ) {
                 Node parent = getNode(); 
@@ -513,10 +516,23 @@ public final class ServiceNodeHandler  {
         ServiceNodeHandler getNodeHandler() {
             return ServiceNodeHandler.this;
         }
+
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+    }
+    
+    static class ServiceFolderNode extends AbstractNode {
+        ServiceFolderNode(Children children) {
+            super(children);
+        }
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
     }
     private Node createServiceFolderNode(boolean bProjectServices) {
         ServiceRootChildren children = new ServiceRootChildren(bProjectServices);
-        AbstractNode node = new AbstractNode(children);
+        AbstractNode node = new ServiceFolderNode(children);
         if (bProjectServices) {
             node.setDisplayName(THIS_SERVICES);
             node.setName(THIS_SERVICES);
