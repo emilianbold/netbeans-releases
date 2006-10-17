@@ -326,8 +326,8 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
         PropertyEditor editor = getPropertyEditor();
         Object result;
 
-        if (editor instanceof EnhancedCustomPropertyEditor) {
-            result = ((EnhancedCustomPropertyEditor) editor).getPropertyValue();
+        if (customEditor  instanceof EnhancedCustomPropertyEditor) {
+            result = ((EnhancedCustomPropertyEditor) customEditor ).getPropertyValue();
         } else {
             result = editor.getValue(); //editor.getAsText(); //XXX getValue?
         }
