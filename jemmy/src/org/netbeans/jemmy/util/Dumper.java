@@ -215,12 +215,12 @@ public class Dumper {
                 String name, value;
                 for(int i = 0; i < keys.length; i++) {
                     name = (String)keys[i];
-                    value = ((String)componentDump.get(keys[i])).replace('"', '\'');
+                    value = ((String)componentDump.get(keys[i]));
                     if(listener.onPropertyDump(component, name, value)) {
                         printEmptyTagOpening(writer, "property", tab + tabIncrease);
                         writer.print(" name=\"" +
-                                name + "\" value=\"" +
-                                value + "\"");
+                                escape(name) + "\" value=\"" +
+                                escape(value) + "\"");
                         printEmptyTagClosing(writer, "property");
                     }
                 }
@@ -229,7 +229,7 @@ public class Dumper {
                 printTagStart(writer, "component", tab);
                 printEmptyTagOpening(writer, "exception", tab + tabIncrease);
                 writer.print(" toString=\"" +
-                        e.toString().replace('"', '\'') + "\"");
+                        escape(e.toString()) + "\"");
                 printEmptyTagClosing(writer, "exception");
             }
         }
@@ -263,5 +263,10 @@ public class Dumper {
         writer.println(tab + "<!ATTLIST property");
         writer.println(tab + "          name  CDATA #REQUIRED");
         writer.println(tab + "          value CDATA #REQUIRED>");
+    }
+    
+    public static String escape(String str) {
+        return str.replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace("\"", "&quot;");
     }
 }
