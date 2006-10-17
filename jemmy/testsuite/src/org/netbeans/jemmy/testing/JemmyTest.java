@@ -6,8 +6,6 @@ import org.netbeans.jemmy.util.*;
 
 import java.awt.*;
 
-import org.netbeans.jemmy.util.Dumper;
-
 public class JemmyTest extends org.netbeans.jemmy.Test {
     public void finalize() {
         PNGEncoder.captureScreen(System.getProperty("user.dir") +

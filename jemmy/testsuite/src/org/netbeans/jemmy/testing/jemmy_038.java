@@ -20,7 +20,6 @@ import javax.swing.text.JTextComponent;
 import java.lang.reflect.InvocationTargetException;
 
 import org.netbeans.jemmy.demo.Demonstrator;
-import org.netbeans.jemmy.util.Dumper;
 
 public class jemmy_038 extends JemmyTest {
     public int runIt(Object obj) {
