@@ -115,8 +115,10 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
                 DataObject dObj = DataObject.find(hItem.getFile());
                 icon = dObj.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
             } catch (DataObjectNotFoundException ex) {
+                // should not happen, log and skip to next
                 Logger.getLogger(RecentFiles.class.getName()).log(
-                        Level.WARNING, ex.getMessage(), ex);
+                        Level.INFO, ex.getMessage(), ex);
+                continue;
             }
             // create and configure menu item
             JMenuItem jmi = null;

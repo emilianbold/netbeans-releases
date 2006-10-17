@@ -121,6 +121,35 @@ public class RecentFilesTest extends TestCase {
             assertTrue("File #" + (i + 1) + " differs", fileObject.equals(loaded.get(i--).getFile()));
         }
     }
+    
+    public void test87252 () throws Exception {
+        System.out.println("Testing fix for 87252...");
+        URL url = RecentFilesTest.class.getResource("resources/recent_files/");
+        assertNotNull("url not found.", url);
+        
+        FileObject folder = URLMapper.findFileObject(url);
+        FileObject fo = folder.createData("ToBeDeleted.txt");
+        
+        RecentFiles.getPrefs().clear();
+        RecentFiles.init();
+        
+        EditorLikeTC tc = new EditorLikeTC(fo);
+        tc.open();
+        tc.close();
+        
+        // delete file and check that recent files *doesn't* contain the file
+        fo.delete();
+        List<HistoryItem> recentFiles = RecentFiles.getRecentFiles();
+        boolean contained = false;
+        for (HistoryItem historyItem : recentFiles) {
+            if (fo.equals(historyItem.getFile())) {
+                contained = true;
+                break;
+            }
+        }
+        assertFalse("Deleted file should not be in recent files", contained);
+    }
+    
 
     /** Special TopComponent subclass which imitates TopComponents used for documents, editors */
     private static class EditorLikeTC extends CloneableTopComponent {

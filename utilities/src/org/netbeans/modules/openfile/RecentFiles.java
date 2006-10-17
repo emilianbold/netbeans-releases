@@ -93,6 +93,7 @@ public final class RecentFiles {
     /** Returns read-only list of recently closed files */
     public static List<HistoryItem> getRecentFiles () {
         synchronized (HISTORY_LOCK) {
+            checkHistory();
             return Collections.unmodifiableList(history);
         }
     }
@@ -272,6 +273,20 @@ public final class RecentFiles {
     private static void fireChange (Object obj) {
         if (listener != null) {
             listener.stateChanged(new ChangeEvent(obj));
+        }
+    }
+    
+    /** Checks recent files history and removes non-valid entries */
+    private static void checkHistory () {
+        // note, code optimized for the frequent case that there are no invalid entries
+        List<HistoryItem> invalidEntries = new ArrayList<HistoryItem>(3);
+        for (HistoryItem historyItem : history) {
+            if (!historyItem.getFile().isValid()) {
+                invalidEntries.add(historyItem);
+            }
+        }
+        for (HistoryItem historyItem : invalidEntries) {
+            history.remove(historyItem);
         }
     }
 
