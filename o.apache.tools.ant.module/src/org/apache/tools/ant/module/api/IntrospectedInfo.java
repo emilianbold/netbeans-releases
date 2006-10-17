@@ -447,7 +447,6 @@ public final class IntrospectedInfo {
         Set<Class> nueAttrTypeClazzes = new HashSet<Class>();
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> attrs...");
         if (e.hasMoreElements ()) {
-            info.attrs = new TreeMap<String,String>();
             while (e.hasMoreElements ()) {
                 String name = e.nextElement();
                 //if (dbg) AntModule.err.log ("\tname=" + name);
@@ -467,6 +466,9 @@ public final class IntrospectedInfo {
                     }
                     // XXX also handle subclasses of DataType and its standard attrs
                     // incl. creating nicely-named node props for description, refid, etc.
+                    if (info.attrs == null) {
+                        info.attrs = new TreeMap<String,String>();
+                    }
                     info.attrs.put (name, type);
                     nueAttrTypeClazzes.add(attrType);
                 } catch (RuntimeException re) { // i.e. BuildException; but avoid loading this class
@@ -480,13 +482,15 @@ public final class IntrospectedInfo {
         e = helper.getNestedElements ();
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> subels...");
         if (e.hasMoreElements ()) {
-            info.subs = new TreeMap<String,String>();
             while (e.hasMoreElements ()) {
                 String name = e.nextElement();
                 //if (dbg) AntModule.err.log ("\tname=" + name);
                 try {
                     Class subclazz = helper.getElementType (name);
                     //if (dbg) AntModule.err.log ("\ttype=" + subclazz.getName ());
+                    if (info.subs == null) {
+                        info.subs = new TreeMap<String,String>();
+                    }
                     info.subs.put (name, subclazz.getName ());
                     nueClazzes.add (subclazz);
                 } catch (RuntimeException re) { // i.e. BuildException; but avoid loading this class
@@ -598,13 +602,7 @@ public final class IntrospectedInfo {
         
         @Override
         public String toString () {
-            String tags;
-            if (enumTags != null) {
-                tags = Arrays.asList(enumTags).toString();
-            } else {
-                tags = "null"; // NOI18N
-            }
-            return "IntrospectedClass[text=" + supportsText + ",attrs=" + attrs + ",subs=" + subs + ",enumTags=" + tags + "]"; // NOI18N
+            return "IntrospectedClass[text=" + supportsText + ",attrs=" + attrs + ",subs=" + subs + ",enumTags=" + Arrays.toString(enumTags) + "]"; // NOI18N
         }
         
         @Override
@@ -706,11 +704,7 @@ public final class IntrospectedInfo {
                             Matcher m = p.matcher(ss[1]);
                             assert m.matches() : k;
                             String c = m.group(1);
-                            IntrospectedClass ic = ii.clazzes.get(c);
-                            if (ic == null) {
-                                ic = new IntrospectedClass();
-                                ii.clazzes.put(c, ic);
-                            }
+                            IntrospectedClass ic = assureDefined(ii, c);
                             String tail = m.group(2);
                             if (tail.equals("supportsText")) {
                                 assert v.equals("true") : k;
@@ -722,12 +716,14 @@ public final class IntrospectedInfo {
                                     ic.attrs = new TreeMap<String,String>();
                                 }
                                 ic.attrs.put(m.group(3), v);
+                                //assureDefined(ii, v);
                             } else {
                                 assert m.group(4) != null : k;
                                 if (ic.subs == null) {
                                     ic.subs = new TreeMap<String,String>();
                                 }
                                 ic.subs.put(m.group(4), v);
+                                //assureDefined(ii, v);
                             }
                         } else {
                             Map<String,String> m = ii.namedefs.get(ss[0]);
@@ -736,6 +732,7 @@ public final class IntrospectedInfo {
                                 ii.namedefs.put(ss[0], m);
                             }
                             m.put(ss[1], v);
+                            //assureDefined(ii, v);
                         }
                     }
                 } catch (BackingStoreException x) {
@@ -747,6 +744,14 @@ public final class IntrospectedInfo {
                     }
                 }
                 return ii;
+            }
+            private IntrospectedClass assureDefined(IntrospectedInfo ii, String clazz) {
+                IntrospectedClass ic = ii.clazzes.get(clazz);
+                if (ic == null) {
+                    ic = new IntrospectedClass();
+                    ii.clazzes.put(clazz, ic);
+                }
+                return ic;
             }
             public void store(Preferences node, IntrospectedInfo info) {
                 try {
@@ -787,7 +792,8 @@ public final class IntrospectedInfo {
                         node.put(c + ".enumTags", b.toString());
                     }
                 }
-                assert equiv(info, load(node)) : info + " vs. " + load(node);
+                // Exact equivalence is unlikely to happen; there may be unanalyzed Java classes, etc.
+                //assert equiv(info, load(node)) : info + " vs. " + load(node);
             }
             private boolean equiv(IntrospectedInfo ii1, IntrospectedInfo ii2) {
                 return ii1.clazzes.equals(ii2.clazzes) && ii1.namedefs.equals(ii2.namedefs);
