@@ -74,12 +74,13 @@ public class ListenerListTest extends NbTestCase {
         ll.add(new L());
         
         NbMarshalledObject mo = new NbMarshalledObject(ll);
-        ListenerList sll = (ListenerList)mo.get();
-        EventListener[] lla = ll.getListeners();
-        EventListener[] slla = sll.getListeners();
-        assertEquals(lla.length, slla.length);
-        for (int i = lla.length - 1; i >= 0; i--) {
-            assertEquals(lla[i], slla[i]);
+        @SuppressWarnings("unchecked")
+        ListenerList<EventListener> sll = (ListenerList<EventListener>)mo.get();
+        List<EventListener> lla = ll.getListeners();
+        List<EventListener> slla = sll.getListeners();
+        assertEquals(lla.size(), slla.size());
+        for (int i = lla.size() - 1; i >= 0; i--) {
+            assertEquals(lla.get(i), slla.get(i));
         }
     }
     
@@ -141,10 +142,10 @@ public class ListenerListTest extends NbTestCase {
         public void checkListsEqual() {
             // Check the same listeners are stored in imitation
             assertEquals(imitation.size(), listenerList.getListenerCount());
-            int i = listenerList.getListenerCount() - 1;
-            EventListener[] listeners = listenerList.getListeners();
+            int i = 0;
+            List<EventListener> listeners = listenerList.getListeners();
             for (EventListener l : imitation) {
-                assertSame(l, listeners[i--]);
+                assertSame(l, listeners.get(i++));
             }
         }
         

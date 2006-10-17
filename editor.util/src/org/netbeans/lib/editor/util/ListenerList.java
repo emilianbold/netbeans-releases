@@ -24,7 +24,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventListener;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -37,45 +39,43 @@ import java.util.List;
 public final class ListenerList<T extends EventListener> implements Serializable {
 
     static final long serialVersionUID = 0L;
-
+    
     /** A null array to be shared by all empty listener lists */
     private static final EventListener[] EMPTY_LISTENER_ARRAY = new EventListener[0];
 
     /* The array of listeners. */
-    private transient T[] listeners;
+    private transient List<T> listeners;
     
     public ListenerList() {
-        listeners = emptyTArray();
+        listeners = new ArrayList<T>();
     }
     
     /**
-     * Returns array of the listeners.
-     * <br/>
-     * The listener added as the last one is at index 0
-     * so for firing in the order of how the listeners were added use:
+     * Returns a list of listeners.
+     * 
+     * <p>The listeners are returned in exactly the same order
+     * as they were added to this list. Use the following code
+     * for firing events to all the listeners you get from this
+     * method.
+     * 
      * <pre>
-     *      MyListener[] listeners = listenerList.getListeners();
-     *      for (int i = listeners.length - 1; i >= 0; i--) {
-     *          listeners[i].notify(evt);
+     *      List<MyListener> listeners = listenerList.getListeners();
+     *      for (MyListener l : listeners) {
+     *          l.notify(evt);
      *      }
      * </pre>
      * 
-     * <p>
-     * <b>Note</b>: Absolutely NO modification of
-     * the data contained in the returned array should be made.
-     * </p>
-     * 
-     * @return non-null array of listeners contained in this listener list.
+     * @return A list of listeners contained in this listener list.
      */
-    public T[] getListeners() {
-        return listeners;
+    public synchronized List<T> getListeners() {
+        return new ArrayList<T>(listeners);
     }
     
     /**
      * Returns the total number of listeners for this listener list.
      */
-    public int getListenerCount() {
-        return listeners.length;
+    public synchronized int getListenerCount() {
+        return listeners.size();
     }
     
     /**
@@ -87,22 +87,11 @@ public final class ListenerList<T extends EventListener> implements Serializable
         if (listener == null)
             return;
 
-        T[] tmp;
-        if (listeners == EMPTY_LISTENER_ARRAY) {
-            tmp = allocateTArray(1);
-        } else { // non-empty
-            tmp = allocateTArray(listeners.length + 1);
-            System.arraycopy(listeners, 0, tmp, 1, listeners.length);
-        }
-        tmp[0] = listener;
-        listeners = tmp;
+        listeners.add(listener);
     }
     
     /**
      * Removes the given listener from this listener list.
-     * <br/>
-     * The existing listeners are compared by "==" to the given listener
-     * from the last existing listener till the first one.
      * 
      * @param listener the listener to be removed. If null is passed it is ignored (nothing gets removed).
      */
@@ -110,29 +99,16 @@ public final class ListenerList<T extends EventListener> implements Serializable
         if (listener == null)
             return;
 
-        // Search from 0 - suppose that later added will sooner be removed
-        for (int i = 0; i < listeners.length; i++) {
-            if (listeners[i] == listener) {
-                if (listeners.length > 1) {
-                    T[] tmp = allocateTArray(listeners.length - 1);
-                    System.arraycopy(listeners, 0, tmp, 0, i);
-                    System.arraycopy(listeners, i + 1, tmp, i, tmp.length - i);
-                    listeners = tmp;
-                } else { // Only one listener was in the array
-                    listeners = emptyTArray();
-                }
-            }
-        }
+        listeners.remove(listener);
     }
     
     // Serialization support.
     private void writeObject(ObjectOutputStream s) throws IOException {
-        T[] listeners = this.listeners; // Ignore possible mods during this method
         s.defaultWriteObject();
         
         // Write in opposite order of adding 
-        for (int i = 0; i < listeners.length; i++) {
-            T l = listeners[i];
+        for (Iterator<T> i = listeners.iterator(); i.hasNext(); ) {
+            T l = i.next();
             // Save only the serializable listeners
             if (l instanceof Serializable) {
                 s.writeObject(l);
@@ -151,23 +127,11 @@ public final class ListenerList<T extends EventListener> implements Serializable
             T l = (T)listenerOrNull;
             lList.add(l);
         }
-        @SuppressWarnings("unchecked")
-        T[] lArr = (T[])lList.toArray(new EventListener[lList.size()]);
-        this.listeners = lArr;
+        this.listeners = lList;
     }
     
     public String toString() {
-        return ArrayUtilities.toString(listeners);
+        return listeners.toString();
     }
     
-    @SuppressWarnings("unchecked")
-    private T[] allocateTArray(int length) {
-        return (T[])new EventListener[length];
-    }
-    
-    @SuppressWarnings("unchecked")
-    private T[] emptyTArray() {
-        return (T[])EMPTY_LISTENER_ARRAY;
-    }
-
 }
