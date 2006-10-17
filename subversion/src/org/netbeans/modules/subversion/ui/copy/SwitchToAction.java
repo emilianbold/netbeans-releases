@@ -25,7 +25,6 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.FileStatusProvider;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.ExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
