@@ -32,15 +32,15 @@ import java.util.*;
  */
 public class Context implements Serializable {
 
-    public static final Context Empty = new Context(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+    public static final Context Empty = new Context(Collections.EMPTY_SET, Collections.EMPTY_SET, Collections.EMPTY_SET);
     
     private static final long serialVersionUID = 1L;
     
-    private final List filteredFiles;
-    private final List rootFiles;
-    private final List exclusions;
+    private final Set filteredFiles;
+    private final Set rootFiles;
+    private final Set exclusions;
 
-    public Context(List filteredFiles, List rootFiles, List exclusions) {
+    public Context(Set filteredFiles, Set rootFiles, Set exclusions) {
         this.filteredFiles = filteredFiles;
         this.rootFiles = rootFiles;
         this.exclusions = exclusions;
@@ -64,7 +64,7 @@ public class Context implements Serializable {
         return false;
     }
 
-    private void removeDuplicates(List files) {
+    private void removeDuplicates(Set files) {
         List newFiles = new ArrayList();
         outter: for (Iterator i = files.iterator(); i.hasNext();) {
             File file = (File) i.next();
@@ -92,11 +92,7 @@ public class Context implements Serializable {
         }
     }
 
-    public List getRoots() {
-        return rootFiles;
-    }
-
-    public List getExclusions() {
+    public Set<File> getExclusions() {
         return exclusions;
     }
 
@@ -129,5 +125,25 @@ public class Context implements Serializable {
             }
         }
         return false;
+    }
+
+    /**
+     * Joins this context and the parameter context.
+     * 
+     * @param ctx
+     * @return
+     */
+    public Context union(Context ctx) {
+        Set<File> newfilteredFiles = new HashSet<File>(filteredFiles);
+        Set<File> newrootFiles = new HashSet<File>(rootFiles);
+        Set<File> newexclusions = new HashSet<File>(exclusions);
+        
+        // TODO: postprocess filetered file list? it may be larger than necessary  
+        newfilteredFiles.addAll(ctx.filteredFiles);
+        newrootFiles.addAll(ctx.rootFiles);
+        newexclusions.addAll(ctx.exclusions);
+        
+        Context nc = new Context(newfilteredFiles, newrootFiles, newexclusions);
+        return nc;
     }
 }

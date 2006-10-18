@@ -359,7 +359,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     }
     
     private void executeUpdateCommand(boolean doNoChanges) {
-        if (context == null || context.getRoots().size() == 0) return;
+        if (context == null || context.getRootFiles().length == 0) return;
         UpdateCommand cmd = new UpdateCommand();
         String msg;
         if (doNoChanges) {

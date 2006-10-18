@@ -71,7 +71,7 @@ public final class UpdateWithDependenciesAction extends SystemAction {
             group.progress(NbBundle.getMessage(UpdateWithDependenciesAction.class, "BK2002"));
 
             Set projects = new HashSet();
-            Set contexts = new LinkedHashSet();
+            Set<Context> contexts = new LinkedHashSet<Context>();
 
             for (int i = 0; i < nodes.length; i++) {
                 Node node = nodes[i];
@@ -80,22 +80,21 @@ public final class UpdateWithDependenciesAction extends SystemAction {
             }
 
             if (contexts.size() > 0) {
-                Iterator it = contexts.iterator();
-                while (it.hasNext()) {
-                    Context ctx = (Context) it.next();
-
-                    UpdateCommand updateCommand = new UpdateCommand();
-                    updateCommand.setBuildDirectories(true);
-                    updateCommand.setPruneDirectories(true);
-                    updateCommand.setFiles(ctx.getFiles());
-
-                    GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
-                    gtx.setExclusions((File[]) ctx.getExclusions().toArray(new File[0]));
-                    group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx));
+                Context context = new Context(new HashSet(), new HashSet(), new HashSet());
+                for (Context cx : contexts) {
+                    context = context.union(cx);
                 }
-            }
+                UpdateCommand updateCommand = new UpdateCommand();
+                updateCommand.setBuildDirectories(true);
+                updateCommand.setPruneDirectories(true);
+                updateCommand.setFiles(context.getFiles());
 
-            group.execute();
+                GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
+                gtx.setExclusions((File[]) context.getExclusions().toArray(new File[0]));
+                group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx));
+
+                group.execute();
+            }
         } finally {
             setEnabled(true);
         }
@@ -145,9 +144,9 @@ public final class UpdateWithDependenciesAction extends SystemAction {
     }
 
     private static Context createProjectContext(Project project) {
-        List files = new LinkedList();
-        List roots = new LinkedList();
-        List excludes = new LinkedList();
+        Set files = new HashSet();
+        Set roots = new HashSet();
+        Set excludes = new HashSet();
 
         // remove nonversioned files
         Utils.addProjectFiles(files, roots, excludes, project);

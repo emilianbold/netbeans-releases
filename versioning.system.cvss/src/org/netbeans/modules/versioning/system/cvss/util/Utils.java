@@ -84,9 +84,9 @@ public class Utils {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
         if (Arrays.equals((Node[]) contextNodesCached.get(), nodes)) return contextCached;
-        List files = new ArrayList(nodes.length);
-        List rootFiles = new ArrayList(nodes.length);
-        List rootFileExclusions = new ArrayList(5);
+        Set files = new HashSet(nodes.length);
+        Set rootFiles = new HashSet(nodes.length);
+        Set rootFileExclusions = new HashSet(5);
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             CvsFileNode cvsNode = node.getLookup().lookup(CvsFileNode.class);
@@ -139,9 +139,9 @@ public class Utils {
         // in this code we remove files from filteredFiles to NOT include any files that do not have required status
         // consider a freeform project that has 'build' in filteredFiles, the Branch action would try to branch it
         // so, it is OK to have BranchAction enabled but the context must be a bit adjusted here
-        List<File> filteredFiles = new ArrayList<File>(Arrays.asList(context.getFiles()));
-        List<File> rootFiles = new ArrayList<File>(Arrays.asList(context.getRootFiles()));
-        List<File> rootFileExclusions = new ArrayList<File>(context.getExclusions());
+        Set<File> filteredFiles = new HashSet<File>(Arrays.asList(context.getFiles()));
+        Set<File> rootFiles = new HashSet<File>(Arrays.asList(context.getRootFiles()));
+        Set<File> rootFileExclusions = new HashSet<File>(context.getExclusions());
 
         for (Iterator<File> i = filteredFiles.iterator(); i.hasNext(); ) {
             File file = i.next();
@@ -192,7 +192,7 @@ public class Utils {
         return false;
     }
 
-    private static void addFileObjects(Node node, List files, List rootFiles) {
+    private static void addFileObjects(Node node, Set files, Set rootFiles) {
         Collection folders = node.getLookup().lookup(new Lookup.Template(NonRecursiveFolder.class)).allInstances();
         List nodeFiles = new ArrayList();
         if (folders.size() > 0) {
@@ -274,9 +274,9 @@ public class Utils {
      * @return Context context that defines list of supplied projects
      */ 
     public static Context getProjectsContext(Project [] projects) {
-        List filtered = new ArrayList(); 
-        List roots = new ArrayList();
-        List exclusions = new ArrayList(); 
+        Set filtered = new HashSet(); 
+        Set roots = new HashSet();
+        Set exclusions = new HashSet(); 
         for (int i = 0; i < projects.length; i++) {
             addProjectFiles(filtered, roots, exclusions, projects[i]);
         }
