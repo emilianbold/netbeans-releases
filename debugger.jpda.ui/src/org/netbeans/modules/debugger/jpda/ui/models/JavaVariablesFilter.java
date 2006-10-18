@@ -335,7 +335,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                columnID == Constants.WATCH_VALUE_COLUMN_ID)
         ) {
             try {
-                return ov.getToStringValue ();
+                return "\""+ov.getToStringValue ()+"\"";
             } catch (InvalidExpressionException ex) {
                 if ( (ex.getTargetException () != null) &&
                      (ex.getTargetException () instanceof 
@@ -350,6 +350,55 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         return original.getValueAt (variable, columnID);
     }
 
+    public void setValueAt(TableModel original, Variable variable,
+                           String columnID, Object value) throws UnknownTypeException {
+        String type = variable.getType();
+        if (isToStringValueType(type) &&
+            (columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
+             columnID == Constants.WATCH_VALUE_COLUMN_ID)) {
+            String expression = (String) value;
+            if (expression.startsWith("\"") && expression.endsWith("\"") && expression.length() > 1) {
+                // Create a new StringBuffer object with the desired content:
+                expression = "new " + type + "(\"" + convertToStringInitializer(expression.substring(1, expression.length() - 1)) + "\")";
+                original.setValueAt(variable, columnID, expression);
+                return ;
+            }
+        }
+        original.setValueAt(variable, columnID, value);
+    }
+    
+    private static String convertToStringInitializer (String s) {
+        StringBuffer sb = new StringBuffer ();
+        int i, k = s.length ();
+        for (i = 0; i < k; i++)
+            switch (s.charAt (i)) {
+                case '\b':
+                    sb.append ("\\b");
+                    break;
+                case '\f':
+                    sb.append ("\\f");
+                    break;
+                case '\\':
+                    sb.append ("\\\\");
+                    break;
+                case '\t':
+                    sb.append ("\\t");
+                    break;
+                case '\r':
+                    sb.append ("\\r");
+                    break;
+                case '\n':
+                    sb.append ("\\n");
+                    break;
+                case '\"':
+                    sb.append ("\\\"");
+                    break;
+                default:
+                    sb.append (s.charAt (i));
+            }
+        return sb.toString();
+    }
+    
     
     // other methods ...........................................................
     

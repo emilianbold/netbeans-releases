@@ -135,8 +135,20 @@ class AbstractVariable implements JDIObjectVariable, Customizer, Cloneable {
     * @param value string representation of value of this variable.
     */
     public void setValue (String expression) throws InvalidExpressionException {
-        // evaluate expression to Value
-        Value value = debugger.evaluateIn (expression);
+        String oldValue = getValue();
+        if (expression.equals(oldValue)) {
+            return ; // Do nothing, since the values are identical
+        }
+        Value value;
+        Value oldV = getInnerValue();
+        if (oldV instanceof CharValue && expression.startsWith("'") && expression.endsWith("'") && expression.length() > 1) {
+            value = oldV.virtualMachine().mirrorOf(expression.charAt(1));
+        } else if (oldV instanceof StringReference && expression.startsWith("\"") && expression.endsWith("\"") && expression.length() > 1) {
+            value = oldV.virtualMachine().mirrorOf(expression.substring(1, expression.length() - 1));
+        } else {
+            // evaluate expression to Value
+            value = debugger.evaluateIn (expression);
+        }
         // set new value to remote veriable
         setValue (value);
         // set new value to this model
