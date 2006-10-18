@@ -118,7 +118,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements AbstractFileS
     
     /** finds whether there already is this name */
     private boolean isValidEntry(String n, Boolean expectedResult) {
-        boolean retval = false;
+        boolean retval = (n.length() == 0) ? true : false;
         
         if ((n.length() > 0) && (n.charAt(0) == '/')) {
             n = n.substring(1);

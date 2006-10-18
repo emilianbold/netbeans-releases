@@ -45,5 +45,15 @@ public class MemoryFSTestHid extends TestBaseHid {
         fo.isFolder(); 
         p.createData(n);
     }
-    
+
+    public void testRootAttributes () throws Exception {
+        FileObject file = FileUtil.createData(this.testedFS.getRoot(), "/folder/file");
+        assertNotNull(file);
+        FileObject root = this.testedFS.getRoot();
+        assertNotNull(root);
+        file.setAttribute("name", "value");
+        assertEquals(file.getAttribute("name"), "value");
+        root.setAttribute("rootName", "rootValue");
+        assertEquals(root.getAttribute("rootName"), "rootValue");        
+    }        
 }
