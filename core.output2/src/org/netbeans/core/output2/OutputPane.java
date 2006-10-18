@@ -239,8 +239,34 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         // we don't want the background to be gray even though the text there is not editable
         result.setDisabledTextColor(result.getBackground());
         
+        //#83118 - remove the "control shift 0" from editor pane to lt the Open Project action through
+        InputMap map = result.getInputMap();
+        MyInputMap myMap = new MyInputMap();
+        myMap.setParent(map);
+        result.setInputMap(result.WHEN_FOCUSED, myMap);
+        
         return result;
     }
+    
+    //#83118 - remove the "control shift 0" from editor pane to lt the Open Project action through
+    protected class MyInputMap extends  InputMap {
+        
+        public MyInputMap() {
+            super();
+        }
+        
+        public Object get(KeyStroke keyStroke) {
+            KeyStroke stroke = KeyStroke.getKeyStroke("control shift O");
+            if (keyStroke.equals(stroke)) {
+                return null;
+            }
+            Object retValue;
+            retValue = super.get(keyStroke);
+            return retValue;
+        }
+        
+    }
+    
 
     private int prevW = -1;
     public void componentResized(ComponentEvent e) {
