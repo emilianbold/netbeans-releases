@@ -25,8 +25,14 @@ Microsystems, Inc. All Rights Reserved.
     <target name="common-init" depends="default.init"/>
     <target name="init" depends="basic-init,files-init,build-init,-init-proxy"/>
     
-    <target name="-init-proxy" if="proxy.host">
-        <property name="proxy.port" value="3128"/>
+    <condition property="proxy.host+port">
+        <and>
+            <isset property="proxy.host"/>
+            <isset property="proxy.port"/>
+        </and>
+    </condition>
+    
+    <target name="-init-proxy" if="proxy.host+port">
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
     </target>
 
