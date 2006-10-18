@@ -9,11 +9,5 @@
     
     <component class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel"/>
     
-    <component class="org.netbeans.installer.wizard.components.panels.PreInstallSummaryPanel"/>
-    
-    <component class="org.netbeans.installer.wizard.components.sequences.UninstallSequence"/>
-    
     <component class="org.netbeans.installer.wizard.components.sequences.InstallSequence"/>
-    
-    <component class="org.netbeans.installer.wizard.components.panels.PostInstallSummaryPanel"/>
 </wizard>
