@@ -31,39 +31,47 @@ import org.netbeans.spi.lexer.TokenFactory;
 /**
  * Token ids of HTML language
  *
- * @author Jan Lahoda, Miloslav Metelka
+ * @author Jan Lahoda, Miloslav Metelka, Marek Fukala
  */
 public enum HTMLTokenId implements TokenId {
     
-    TEXT("html-text"),
-    SCRIPT("html-script"),
+    /** HTML text */
+    TEXT("html-text"), 
+    /** HTML script e.g. javascript. */
+    SCRIPT("html-script"), 
+    /** Whitespace in a tag: <code> &lt;BODY" "bgcolor=red&gt;</code>. */
     WS("html-ws"),
+    /** Error token - returned in various erroneous situations. */
     ERROR("html-error"),
+    /** HTML open tag name: <code>&lt;"BODY"/&gt;</code>.*/
     TAG_OPEN("html-tag"),
+    /** HTML close tag name: <code>&lt;/"BODY"&gt;</code>.*/
     TAG_CLOSE("html-tag"),
+    /** HTML tag attribute name: <code> &lt;BODY "bgcolor"=red&gt;</code>.*/
     ARGUMENT("html-argument"),
+    /** Equals sign in HTML tag: <code> &lt;BODY bgcolor"="red&gt;</code>.*/
     OPERATOR("html-operator"),
+    /** Attribute value in HTML tag: <code> &lt;BODY bgcolor="red"&gt;</code>.*/
     VALUE("html-value"),
+    /** HTML block comment: <code> &lt;!-- xxx --&gt; </code>.*/
     BLOCK_COMMENT("html-block-comment"),
+    /** HTML/SGML comment.*/
     SGML_COMMENT("html-sgml-comment"),
+    /** HTML/SGML declaration: <code> &lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"&gt; </code>.*/
     DECLARATION("html-sgml-declaration"),
+    /** Character reference: <code> &amp;amp; </code>.*/
     CHARACTER("html-character"),
+    /** End of line.*/
     EOL("html-text"),
+    /** HTML open tag symbol: <code> "&lt;"BODY&gt; </code>.*/
     TAG_OPEN_SYMBOL("html-tag"),
+    /** HTML close tag symbol: <code> "&lt;/"BODY&gt; </code>.*/
     TAG_CLOSE_SYMBOL("html-tag");
     
     private final String primaryCategory;
 
-    HTMLTokenId() {
-        this(null);
-    }
-
     HTMLTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
-    }
-
-    public String primaryCategory() {
-        return primaryCategory;
     }
 
     private static final LanguageDescription<HTMLTokenId> language = new LanguageHierarchy<HTMLTokenId>() {
@@ -95,8 +103,25 @@ public enum HTMLTokenId implements TokenId {
         }
     }.language();
     
+    /** Gets a LanguageDescription describing a set of token ids
+     * that comprise the given language.
+     *
+     * @return non-null LanguageDescription
+     */
     public static LanguageDescription<HTMLTokenId> language() {
         return language;
+    }
+    
+    /**
+     * Get name of primary token category into which this token belongs.
+     * <br/>
+     * Other token categories for this id can be defined in the language hierarchy.
+     *
+     * @return name of the primary token category into which this token belongs
+     *  or null if there is no primary category for this token.
+     */
+    public String primaryCategory() {
+        return primaryCategory;
     }
     
 }
