@@ -21,7 +21,6 @@
 package org.netbeans.installer.wizard.components.panels;
 
 import org.netbeans.installer.wizard.components.sequences.InstallSequence;
-import org.netbeans.installer.wizard.components.sequences.UninstallSequence;
 
 /**
  *
@@ -34,12 +33,7 @@ public class PostInstallSummaryPanel extends TextPanel {
         
         String text = "We honestly hope that everything completed successfully as no actual checks are performed for the prototype. Sorry for any inconvenience caused.";
         
-        boolean uninstallSuccessful = new Boolean(System.getProperty(UninstallSequence.LAST_UNINSTALLATION_ACTION_SUCCESSFUL_PROPERTY));
         boolean installSuccessful = new Boolean(System.getProperty(InstallSequence.LAST_INSTALLATION_ACTION_SUCCESSFUL_PROPERTY));
-        
-        if (!uninstallSuccessful) {
-            text += "\n\nSome errors were encountered during uninstallation process. Uninstallation was not completed.";
-        }
         
         if (!installSuccessful) {
             text += "\n\nSome errors were encountered during installation process. Installation was not completed.";
