@@ -27,6 +27,7 @@
                 <containsregex pattern="^platform.active=|^deployment.method=|^deployment.instance="/>
             </filterchain>
         </loadproperties>
+        <property name="deployment.instance" value="default"/>
         <loadproperties srcfile="${{user.properties.file}}">
             <filterchain>
                 <replaceregex pattern="^platforms\.${{platform.active}}\." replace="platform."/>
