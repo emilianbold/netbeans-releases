@@ -638,7 +638,14 @@ else System.err.println( "Inside token " + item.getTokenID() );
     
     public static class AutocompleteEndTagItem extends EndTagItem {
         public AutocompleteEndTagItem(String baseText, int offset) {
+            this(baseText, offset, true);
+        }
+        
+        public AutocompleteEndTagItem(String baseText, int offset, boolean changeCase) {
             super(baseText, offset, 0);
+            if(!changeCase) {
+                this.baseText = baseText; //#87218 hotfix - set the original value
+            }
         }
         
         @Override()

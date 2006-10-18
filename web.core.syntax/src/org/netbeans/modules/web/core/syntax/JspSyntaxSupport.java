@@ -1712,7 +1712,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             SyntaxElement elem = getElementChain( offset - 1);
             if(elem != null && elem instanceof SyntaxElement.Tag) {
                 String tagName = ((SyntaxElement.Tag)elem).getName();
-                HTMLCompletionQuery.ResultItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset);
+                HTMLCompletionQuery.ResultItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset, false);
                 l.add(eti);
             }
         }catch(BadLocationException e) {
