@@ -73,7 +73,7 @@ public class SimpleLanguageProvider extends LanguageProvider {
                     return 0;
                 }
                 public LanguageDescription<? extends TokenId> language() {
-                    return SimpleCharLanguage.description();
+                    return SimpleCharTokenId.language();
                 }
                 public int startSkipLength() {
                     return 0;
@@ -97,9 +97,5 @@ public class SimpleLanguageProvider extends LanguageProvider {
             return LanguageManagerTest.MIME_TYPE_KNOWN;
         }
 
-        protected LanguageEmbedding embedding(Token<TokenId> token, boolean tokenComplete, LanguagePath languagePath, InputAttributes inputAttributes) {
-            return null;
-        }
-        
     } // End of LD class
 }

@@ -104,12 +104,6 @@ public class LanguagePathTest extends NbTestCase {
             return null;
         }
 
-        protected LanguageEmbedding embedding(
-        Token<TestTokenId> token, boolean tokenComplete,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
-            return null;
-        }
-
         protected Collection<TestTokenId> createTokenIds() {
             return EnumSet.allOf(TestTokenId.class);
         }

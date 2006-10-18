@@ -20,7 +20,6 @@
 package org.netbeans.lib.lexer;
 
 import java.lang.ref.WeakReference;
-import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.lexer.LanguageDescription;
 import org.netbeans.api.lexer.Token;
@@ -28,7 +27,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.lexer.test.simple.SimpleCharLanguage;
+import org.netbeans.lib.lexer.test.simple.SimpleCharTokenId;
 import org.netbeans.lib.lexer.test.simple.SimpleLanguageProvider;
 import org.netbeans.lib.lexer.test.simple.SimplePlainLanguage;
 import org.netbeans.lib.lexer.test.simple.SimplePlainTokenId;
@@ -124,7 +123,7 @@ public class LanguageManagerTest extends NbTestCase {
             } else if (id == SimplePlainTokenId.WORD) {
                 assertNotNull("Word should have an embedded token sequence", embedded);
                 assertNotNull("Word should have an embedded language", embedded.language());
-                assertEquals("Wrong embedded language", SimpleCharLanguage.MIME_TYPE, embedded.language().mimeType());
+                assertEquals("Wrong embedded language", SimpleCharTokenId.MIME_TYPE, embedded.language().mimeType());
             }
         }
     }
@@ -158,7 +157,8 @@ public class LanguageManagerTest extends NbTestCase {
         tokens = null;
         th = null;
         
-        assertGC("The embedded language has not been GCed", refLang);
+        // This no longer works after the language is statically held in the xxTokenId by the new convention
+        //assertGC("The embedded language has not been GCed", refLang);
         assertGC("The token with embedded language has not been GCed", refToken);
     }
     
