@@ -20,6 +20,7 @@
 package org.netbeans.core.startup.preferences;
 
 import java.io.IOException;
+import java.lang.Boolean;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -141,5 +142,42 @@ public class TestPropertiesStorage extends TestFileStorage {
         pref.flush();
         assertNull(storage.toPropertiesFile());                
     }
-    
+
+    public void testRemoveNode() throws BackingStoreException {
+        assertNull(storage.toFolder());
+        assertNull(storage.toPropertiesFile());                
+
+        pref.put("key","value");
+        pref.node("subnode").put("key","value");
+        pref.flush();
+        assertNotNull(storage.toPropertiesFile());
+        assertNotNull(storage.toFolder());
+        pref.removeNode();
+        pref.flush();
+        assertNull(storage.toPropertiesFile());
+        assertNull(storage.toFolder());
+        assertFalse(storage.existsNode());
+        try {
+            pref.sync();
+            fail();
+        } catch (IllegalStateException ise) {}
+    }
+
+    public void testRemoveParentNode() throws BackingStoreException {
+        assertNull(storage.toFolder());
+        assertNull(storage.toPropertiesFile());                
+
+        Preferences subnode = pref.node("subnode");
+        assertNull(storage.toFolder());
+        assertNull(storage.toPropertiesFile());                
+        subnode.put("key","value");
+        subnode.flush();
+        assertNotNull(storage.toFolder());
+        assertNull(storage.toPropertiesFile());                
+        subnode.removeNode();        
+        pref.flush();
+        assertNull(storage.toPropertiesFile());
+        assertNull(storage.toFolder());
+        assertFalse(storage.existsNode());
+    }    
 }

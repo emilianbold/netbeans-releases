@@ -66,7 +66,7 @@ class PropertiesStorage  {
     }
         
     public final boolean existsNode() {
-        return (toPropertiesFile() != null);
+        return (toPropertiesFile() != null) || (toFolder() != null);
     }
     
     public String[] childrenNames() {
@@ -90,10 +90,10 @@ class PropertiesStorage  {
     
     public final void removeNode() throws IOException {
         try {
-            FileObject folder = toFolder();
-            if (folder != null && folder.isValid()) {
-                folder.delete();
-                folder = folder.getParent();
+            FileObject propertiesFile = toPropertiesFile();
+            if (propertiesFile != null && propertiesFile.isValid()) {
+                propertiesFile.delete();
+                FileObject folder = propertiesFile.getParent();
                 while (folder != null && folder != preferencesRoot() && folder.getChildren().length == 0) {
                     folder.delete();
                     folder = folder.getParent();
