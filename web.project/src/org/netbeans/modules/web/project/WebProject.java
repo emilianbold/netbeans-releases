@@ -29,10 +29,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.jaxws.WebJAXWSMetadataFinder;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
@@ -100,7 +98,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -667,9 +664,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 }
             });
             try {
-                //Check libraries and add them to classpath automatically
-                String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.LIBRARIES_DIR);
-                
                 //DDDataObject initialization to be ready to listen on changes (#45771)
                 try {
                     FileObject ddFO = webModule.getDeploymentDescriptor();
@@ -680,20 +674,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     //PENDING
                 }
                 
-                if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
-                    libFolder = helper.resolveFileObject(libFolderName);
-                    FileObject children [] = libFolder.getChildren ();
-                    List libs = new LinkedList();
-                    for (int i = 0; i < children.length; i++) {
-                        if (FileUtil.isArchiveFile(children[i]))
-                            libs.add(children[i]);
-                    }
-                    FileObject[] libsArray = new FileObject[libs.size()];
-                    libs.toArray(libsArray);
-                    classPathExtender.addArchiveFiles(WebProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
-                    libFolder.addFileChangeListener (WebProject.this);
-                }
-
                 // Register copy on save support
                 css.initialize();
                 

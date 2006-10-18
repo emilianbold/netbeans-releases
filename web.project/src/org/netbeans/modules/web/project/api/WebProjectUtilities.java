@@ -50,8 +50,12 @@ import org.w3c.dom.Element;
 
 import java.io.*;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.customizer.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.modules.SpecificationVersion;
@@ -413,9 +417,25 @@ public class WebProjectUtilities {
         }
 
         if (libFolder != null) {
-            ep.setProperty(WebProjectProperties.LIBRARIES_DIR,
-            createFileReference(referenceHelper, fo, wmFO, libFolder));
+            ep.setProperty(WebProjectProperties.LIBRARIES_DIR, createFileReference(referenceHelper, fo, wmFO, libFolder));
+            
+            //add libraries from the specified folder in the import wizard
+            if (libFolder.isFolder()) {
+                FileObject children [] = libFolder.getChildren ();
+                List libs = new LinkedList();
+                for (int i = 0; i < children.length; i++) {
+                    if (FileUtil.isArchiveFile(children[i]))
+                        libs.add(children[i]);
+                }
+                FileObject[] libsArray = new FileObject[libs.size()];
+                libs.toArray(libsArray);
+                WebProjectClassPathExtender classPathExtender = (WebProjectClassPathExtender) p.getLookup().lookup(WebProjectClassPathExtender.class);
+                classPathExtender.addArchiveFiles(WebProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                //do we really need to add the listener? commenting it out
+                //libFolder.addFileChangeListener(p);
+            }
         }
+        
         if (!GeneratedFilesHelper.BUILD_XML_PATH.equals(buildfile)) {
             ep.setProperty(WebProjectProperties.BUILD_FILE, buildfile);
         }
@@ -452,7 +472,7 @@ public class WebProjectUtilities {
         Utils.updateProperties(antProjectHelper, AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         ProjectManager.getDefault().saveProject(p);
-
+        
         return antProjectHelper;
     }
 
