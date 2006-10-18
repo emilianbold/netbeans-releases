@@ -136,6 +136,13 @@ public class TokenSequenceTest extends NbTestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "hi", 11);
         assertFalse(ts.moveNext());
+        assertEquals(3, ts.tokenCount());
+        assertTrue(ts.moveFirst());
+        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "abc", 1);
+        assertTrue(ts.moveNext());
+        assertTrue(ts.moveLast());
+        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.IDENTIFIER, "hi", 11);
+        assertFalse(ts.moveNext());
 
         // Check movePrevious()
         assertTrue(ts.movePrevious()); // over "defg"
@@ -163,6 +170,14 @@ public class TokenSequenceTest extends NbTestCase {
         LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "abc", 1);
         assertTrue(sub.moveNext());
         LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "defg", 5);
+        assertFalse(sub.moveNext());
+        
+        // Test moveFirst() and moveLast() on subsequence
+        sub = ts.subSequence(1, 6);
+        assertTrue(sub.moveLast());
+        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "defg", 5);
+        assertTrue(sub.moveFirst());
+        LexerTestUtilities.assertTokenEquals(sub, SimpleTokenId.IDENTIFIER, "abc", 1);
         
         sub = ts.subSequence(4);
         assertTrue(sub.moveNext());
@@ -181,6 +196,9 @@ public class TokenSequenceTest extends NbTestCase {
 
         sub = ts.subSequence(13, 15);
         assertFalse(sub.moveNext());
+        assertFalse(sub.moveFirst());
+        assertFalse(sub.moveLast());
+        assertEquals(0, sub.tokenCount());
 
         sub = ts.subSequence(-3, 1);
         assertFalse(sub.moveNext());
