@@ -18,7 +18,6 @@
  */
 package org.netbeans.lib.java.lexer;
 
-import org.netbeans.api.java.lexer.JavaStringLanguage;
 import org.netbeans.api.java.lexer.JavaStringTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -41,7 +40,7 @@ public class JavaStringLexerTest extends NbTestCase {
     public void testNextToken1() {
         String text = "t";
         
-        TokenHierarchy hi = TokenHierarchy.create(text, JavaStringLanguage.description());
+        TokenHierarchy hi = TokenHierarchy.create(text, JavaStringTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaStringTokenId.TEXT, "t");
     }
@@ -49,7 +48,7 @@ public class JavaStringLexerTest extends NbTestCase {
     public void testNextToken2() {
         String text = "\\t\\b\\b\\t \\tsddfdsffffffffff";
         
-        TokenHierarchy hi = TokenHierarchy.create(text, JavaStringLanguage.description());
+        TokenHierarchy hi = TokenHierarchy.create(text, JavaStringTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaStringTokenId.TAB, "\\t");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaStringTokenId.BACKSPACE, "\\b");
