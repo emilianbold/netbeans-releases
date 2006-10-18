@@ -385,12 +385,12 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             synchronized (this) {
                 Object existing = getCachedInstance();
                 if (existing != null) {
-                    if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("Cached instance2: " + existing); // NOI18N
+                    if (XMLSettingsSupport.err.isLoggable(Level.FINER)) XMLSettingsSupport.err.finer("Cached instance2: " + existing); // NOI18N
                     return existing;
                 }
                 setCachedInstance(inst);
             }
-            if (XMLSettingsSupport.err.isLoggable(Level.FINE)) XMLSettingsSupport.err.fine("Attached to instance: " + inst); // NOI18N
+            if (XMLSettingsSupport.err.isLoggable(Level.FINER)) XMLSettingsSupport.err.finer("Attached to instance: " + inst); // NOI18N
             attachToInstance(inst);
             
             return inst;
@@ -757,8 +757,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             FileLock lock;
             OutputStream los;
             synchronized (READWRITE_LOCK) {
-                if (XMLSettingsSupport.err.isLoggable(Level.FINE)) {
-                    XMLSettingsSupport.err.fine("saving " + getDataObject()); // NOI18N
+                if (XMLSettingsSupport.err.isLoggable(Level.FINER)) {
+                    XMLSettingsSupport.err.finer("saving " + getDataObject()); // NOI18N
                 }
                 lock = getScheduledRequest().getFileLock();
                 if (lock == null) return;
@@ -767,8 +767,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                 OutputStream os = new BufferedOutputStream(los, 1024);
                 try {
                     buf.writeTo(os);
-                    if (XMLSettingsSupport.err.isLoggable(Level.FINE)) {
-                        XMLSettingsSupport.err.fine("saved " + dobj); // NOI18N
+                    if (XMLSettingsSupport.err.isLoggable(Level.FINER)) {
+                        XMLSettingsSupport.err.finer("saved " + dobj); // NOI18N
                     }
                 } finally {
                     os.close();

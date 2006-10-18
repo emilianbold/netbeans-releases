@@ -742,7 +742,7 @@ final class XMLSettingsSupport {
                             throw new IOException ("Could not read " + arr.length + " bytes from " + source + " just " + len); // NOI18N
                         }
                         
-                        err.fine("Parsing:" + new String (arr));
+                        err.finer("Parsing:" + new String (arr));
                         
                         temp.close ();
                         
