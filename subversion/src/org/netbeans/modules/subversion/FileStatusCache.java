@@ -255,18 +255,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         return files != null ? files.get(file) : null;
     }    
 
-    /**
-     * Refreshes the status of the file given the repository status. Repository status is filled
-     * in when this method is called while processing server output. 
-     *
-     * <p>Note: it's not necessary if you use Subversion.getClient(), it
-     * updates the cache automatically using onNotify(). It's not
-     * fully reliable for removed files.
-     *
-     * @param file
-     * @param repositoryStatus
-     */ 
-    public FileInformation refresh(File file, ISVNStatus repositoryStatus) {
+    private FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
         File dir = file.getParentFile();
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
@@ -294,9 +283,13 @@ public class FileStatusCache implements ISVNNotifyListener {
             }
         }
         FileInformation fi = createFileInformation(file, status, repositoryStatus);
-        if (equivalent(fi, current)) return fi;
+        if (equivalent(fi, current)) {
+            if (forceChangeEvent) fireFileStatusChanged(file, current, fi);
+            return fi;
+        }
         // do not include uptodate files into cache, missing directories must be included
         if (current == null && !fi.isDirectory() && fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
+            if (forceChangeEvent) fireFileStatusChanged(file, current, fi);
             return fi;
         }
 
@@ -325,6 +318,21 @@ public class FileStatusCache implements ISVNNotifyListener {
         return fi;
     }
 
+    /**
+     * Refreshes the status of the file given the repository status. Repository status is filled
+     * in when this method is called while processing server output. 
+     *
+     * <p>Note: it's not necessary if you use Subversion.getClient(), it
+     * updates the cache automatically using onNotify(). It's not
+     * fully reliable for removed files.
+     *
+     * @param file
+     * @param repositoryStatus
+     */ 
+    public FileInformation refresh(File file, ISVNStatus repositoryStatus) {
+        return refresh(file, repositoryStatus, false);
+    }
+    
     /**
      * Two FileInformation objects are equivalent if their status contants are equal AND they both reperesent a file (or
      * both represent a directory) AND Entries they cache, if they can be compared, are equal. 
@@ -784,7 +792,8 @@ public class FileStatusCache implements ISVNNotifyListener {
 
         // ISVNNotifyListener event
         // invalidate cached status
-        refresh(path, REPOSITORY_STATUS_UNKNOWN);
+        // force event: an updated file changes status from uptodate to uptodate but its entry changes
+        refresh(path, REPOSITORY_STATUS_UNKNOWN, true);
 
         // collect the filesystems to notify them in logCompleted() about the external change
         for (;;) {
