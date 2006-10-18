@@ -166,6 +166,7 @@ public abstract class NbPreferences extends AbstractPreferences {
         if (fileStorage.isReadOnly()) {
             throw new BackingStoreException("Unsupported operation: read-only storage");//NOI18N
         } else {
+            properties().clear();
             super.removeNode();
         }
     }
