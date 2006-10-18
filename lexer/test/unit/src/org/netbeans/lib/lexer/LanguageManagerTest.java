@@ -29,7 +29,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.simple.SimpleCharTokenId;
 import org.netbeans.lib.lexer.test.simple.SimpleLanguageProvider;
-import org.netbeans.lib.lexer.test.simple.SimplePlainLanguage;
 import org.netbeans.lib.lexer.test.simple.SimplePlainTokenId;
 
 /**
@@ -107,11 +106,11 @@ public class LanguageManagerTest extends NbTestCase {
     /*
      * SimplePlainLanguage does not define any embedding. The SimpleLanguageProvider
      * however defines the SimpleCharLanguage as an embedded language for the SimplePlainTokenId.WORD.
-     * Therefore SimplePlainTokeId.WHITESPACE should not have any embedded language and
-     * SimplePlainTokeId.WORD should have the SimpleCharLanguage.
+     * Therefore SimplePlainTokenId.WHITESPACE should not have any embedded language and
+     * SimplePlainTokenId.WORD should have the SimpleCharLanguage.
      */
     public void testEmbedding() {
-        TokenHierarchy th = TokenHierarchy.create("abc xyz 012 0xFF00 0-1-2-3-4-5-6-7-8-9", SimplePlainLanguage.description());
+        TokenHierarchy th = TokenHierarchy.create("abc xyz 012 0xFF00 0-1-2-3-4-5-6-7-8-9", SimplePlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
         
         for( ; tokens.moveNext(); ) {
@@ -129,7 +128,7 @@ public class LanguageManagerTest extends NbTestCase {
     }
     
     public void testCachingE() {
-        TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainLanguage.description());
+        TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
         tokens.moveFirst();
         
@@ -143,7 +142,7 @@ public class LanguageManagerTest extends NbTestCase {
     }
 
     public void testGCedE() {
-        TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainLanguage.description());
+        TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
         tokens.moveFirst();
         
@@ -163,7 +162,7 @@ public class LanguageManagerTest extends NbTestCase {
     }
     
     public void testCacheRefreshedE() {
-        TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainLanguage.description());
+        TokenHierarchy th = TokenHierarchy.create("abc", SimplePlainTokenId.language());
         TokenSequence tokens = th.tokenSequence();
         tokens.moveFirst();
         

@@ -21,7 +21,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.lib.lexer.test.simple.SimpleLanguage;
 import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
 
 /**
@@ -47,7 +46,7 @@ public class TokenListUpdaterTest extends TestCase {
         String text = "abc+uv-xy";
         doc.insertString(0, text, null);
 
-        doc.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
         TokenSequence ts = hi.tokenSequence();
@@ -85,7 +84,7 @@ public class TokenListUpdaterTest extends TestCase {
         String text = "a+b";
         doc.insertString(0, text, null);
 
-        doc.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         TokenSequence ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -114,7 +113,7 @@ public class TokenListUpdaterTest extends TestCase {
         String text = "a+b";
         doc.insertString(0, text, null);
 
-        doc.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         TokenSequence ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -141,7 +140,7 @@ public class TokenListUpdaterTest extends TestCase {
         String text = "a+b+";
         doc.insertString(0, text, null);
 
-        doc.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         TokenSequence ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -172,7 +171,7 @@ public class TokenListUpdaterTest extends TestCase {
         String text = "a+";
         doc.insertString(0, text, null);
 
-        doc.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         TokenSequence ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -205,7 +204,7 @@ public class TokenListUpdaterTest extends TestCase {
         String text = "a+";
         doc.insertString(0, text, null);
 
-        doc.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         TokenSequence ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -236,7 +235,7 @@ public class TokenListUpdaterTest extends TestCase {
         String text = "a+";
         doc.insertString(0, text, null);
 
-        doc.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         
         // Insert "-"

@@ -39,7 +39,7 @@ public class CharPreprocessingTest extends TestCase {
 
     public void testMaxFlySequenceLength() {
         String text = " \\u0020 public";
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleLanguage.description());
+        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
 //        LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.WHITESPACE, " \\u0020 ", 0);

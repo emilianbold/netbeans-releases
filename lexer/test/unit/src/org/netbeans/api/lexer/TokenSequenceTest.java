@@ -45,7 +45,7 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testMove() {
         String text = "abc+defg";
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleLanguage.description());
+        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         
         // Fail if no "move*" method called yet
@@ -118,7 +118,7 @@ public class TokenSequenceTest extends NbTestCase {
         assertFalse(skipTokenIds.contains(SimpleTokenId.IDENTIFIER));
 
         TokenHierarchy hi = TokenHierarchy.create(text, false,
-                SimpleLanguage.description(), skipTokenIds, null);
+                SimpleTokenId.language(), skipTokenIds, null);
         TokenSequence ts = hi.tokenSequence();
         
         // Fail if no "move*" method called yet
@@ -228,7 +228,7 @@ public class TokenSequenceTest extends NbTestCase {
         Reader r = new StringReader(text);
         
         try {
-            TokenHierarchy hi = TokenHierarchy.create(r, SimpleLanguage.description(), skipTokenIds, null);
+            TokenHierarchy hi = TokenHierarchy.create(r, SimpleTokenId.language(), skipTokenIds, null);
             TokenSequence ts = hi.tokenSequence();
             
             ts.tokenCount();
@@ -239,7 +239,7 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testMoveEmpty() {
         String text = "";
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleLanguage.description());
+        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
         TokenSequence ts = hi.tokenSequence();
 
         // Expect no tokens
@@ -274,7 +274,7 @@ public class TokenSequenceTest extends NbTestCase {
     
     public void testTokenSize() {
         String text = "abc+";
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleLanguage.description());
+        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         
         assertTrue(ts.moveNext());

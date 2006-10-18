@@ -42,7 +42,7 @@ public class SimpleLexerIncTest extends TestCase {
     public void test() throws Exception {
         Document doc = new ModificationTextDocument();
         // Assign a language to the document
-        doc.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
         TokenSequence ts = hi.tokenSequence();

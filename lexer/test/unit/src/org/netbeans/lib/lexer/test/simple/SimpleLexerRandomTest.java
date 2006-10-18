@@ -50,7 +50,7 @@ public class SimpleLexerRandomTest extends TestCase {
     
     private void test(long seed) throws Exception {
         TestRandomModify randomModify = new TestRandomModify(seed);
-        randomModify.setLanguage(SimpleLanguage.description());
+        randomModify.setLanguage(SimpleTokenId.language());
         
         //randomModify.setDebugOperation(true);
         //randomModify.setDebugDocumentText(true);

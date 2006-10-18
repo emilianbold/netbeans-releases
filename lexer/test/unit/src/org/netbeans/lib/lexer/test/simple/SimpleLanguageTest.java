@@ -45,7 +45,7 @@ public class SimpleLanguageTest extends TestCase {
 
     public void testTokenIds() {
         // Check that token ids are all present and correctly ordered
-        LanguageDescription<SimpleTokenId> language  = SimpleLanguage.description();
+        LanguageDescription<SimpleTokenId> language  = SimpleTokenId.language();
         Set ids = language.tokenIds();
         assertEquals("Invalid ids.size()", IDS_SIZE, ids.size());
         

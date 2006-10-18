@@ -41,7 +41,7 @@ public class FlyTokensTest extends TestCase {
         // Both "public" and " " are flyweight
         String text = "public public public public public public public ";
         int commentTextStartOffset = 5;
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleLanguage.description());
+        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         int firstNonFlyIndex = -1;
         int secondNonFlyIndex = -1;

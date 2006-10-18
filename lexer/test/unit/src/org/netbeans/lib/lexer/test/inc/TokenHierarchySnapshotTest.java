@@ -20,7 +20,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.lib.lexer.test.simple.SimpleLanguage;
 import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
 
 /**
@@ -43,7 +42,7 @@ public class TokenHierarchySnapshotTest extends TestCase {
     public void testSnapshot() throws Exception {
         Document doc = new ModificationTextDocument();
         // Assign a language to the document
-        doc.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        doc.putProperty(LanguageDescription.class, SimpleTokenId.language());
         TokenHierarchy hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
         TokenSequence ts = hi.tokenSequence();
@@ -69,7 +68,7 @@ public class TokenHierarchySnapshotTest extends TestCase {
 
         // Create snapshot1 and check hierarchy
         String hi1text = doc.getText(0, doc.getLength());
-        TokenHierarchy hi1 = TokenHierarchy.create(hi1text, SimpleLanguage.description());
+        TokenHierarchy hi1 = TokenHierarchy.create(hi1text, SimpleTokenId.language());
         TokenHierarchy snapshot1 = hi.createSnapshot();
         assertEquals(snapshot1.snapshotOf(), hi);
         assertFalse(snapshot1.isSnapshotReleased());
@@ -95,7 +94,7 @@ public class TokenHierarchySnapshotTest extends TestCase {
 
         // Create snapshot2 and check hierarchy
         String hi2text = doc.getText(0, doc.getLength());
-        TokenHierarchy hi2 = TokenHierarchy.create(hi2text, SimpleLanguage.description());
+        TokenHierarchy hi2 = TokenHierarchy.create(hi2text, SimpleTokenId.language());
         TokenHierarchy snapshot2 = hi.createSnapshot();
         assertEquals(snapshot2.snapshotOf(), hi);
 

@@ -20,7 +20,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 import org.netbeans.lib.lexer.test.simple.SimpleJavadocTokenId;
-import org.netbeans.lib.lexer.test.simple.SimpleLanguage;
 import org.netbeans.lib.lexer.test.simple.SimpleTokenId;
 
 /**
@@ -39,7 +38,7 @@ public class SnapshotTokenListTest extends NbTestCase {
     public void testInputAttributes() throws Exception {
         Document d = new ModificationTextDocument();
         
-        d.putProperty(LanguageDescription.class, SimpleLanguage.description());
+        d.putProperty(LanguageDescription.class, SimpleTokenId.language());
         
         d.insertString(0, "ident ident /** @see X */", null);
         

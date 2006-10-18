@@ -34,9 +34,9 @@ public class InputAttributesTest extends TestCase {
     protected void tearDown() throws java.lang.Exception {
     }
     
-    LanguagePath simpleLP = LanguagePath.get(SimpleLanguage.description());
-    LanguagePath jdLP = LanguagePath.get(SimpleJavadocLanguage.description());
-    LanguagePath nestedJDLP  = LanguagePath.get(simpleLP, SimpleJavadocLanguage.description());
+    LanguagePath simpleLP = LanguagePath.get(SimpleTokenId.language());
+    LanguagePath jdLP = LanguagePath.get(SimpleJavadocTokenId.language());
+    LanguagePath nestedJDLP  = LanguagePath.get(simpleLP, SimpleJavadocTokenId.language());
 
     public void testGetSetValue() {
         InputAttributes attrs = new InputAttributes();
@@ -63,7 +63,7 @@ public class InputAttributesTest extends TestCase {
         String text = "public static private";
 
         // Default version recognizes "static" keyword
-        TokenHierarchy hi = TokenHierarchy.create(text, SimpleLanguage.description());
+        TokenHierarchy hi = TokenHierarchy.create(text, SimpleTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PUBLIC, "public", 0);
@@ -79,8 +79,8 @@ public class InputAttributesTest extends TestCase {
 
         // Version 1 recognizes "static" as identifier
         InputAttributes attrs = new InputAttributes();
-        attrs.setValue(SimpleLanguage.description(), "version", Integer.valueOf(1), false);
-        hi = TokenHierarchy.create(text, false, SimpleLanguage.description(), null, attrs);
+        attrs.setValue(SimpleTokenId.language(), "version", Integer.valueOf(1), false);
+        hi = TokenHierarchy.create(text, false, SimpleTokenId.language(), null, attrs);
         ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts, SimpleTokenId.PUBLIC, "public", 0);
