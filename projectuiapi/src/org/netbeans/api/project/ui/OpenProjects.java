@@ -50,6 +50,13 @@ public final class OpenProjects {
      */
     public static final String PROPERTY_OPEN_PROJECTS = "openProjects"; // NOI18N
     
+    /**
+     * Property representing main project.
+     * @see #getMainProject
+     * @since org.netbeans.modules.projectuiapi/1 1.20
+     */
+    public static final String PROPERTY_MAIN_PROJECT = "MainProject"; // NOI18N
+    
     private static OpenProjects INSTANCE = new OpenProjects();
     
     private OpenProjectsTrampoline trampoline;

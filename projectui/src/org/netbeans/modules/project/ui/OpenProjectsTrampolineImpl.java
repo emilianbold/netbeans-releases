@@ -80,6 +80,9 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
         if ( e.getPropertyName().equals( OpenProjectList.PROPERTY_OPEN_PROJECTS ) ) {        
             pchSupport.firePropertyChange( OpenProjects.PROPERTY_OPEN_PROJECTS, e.getOldValue(), e.getNewValue() );
         }
+        if ( e.getPropertyName().equals( OpenProjectList.PROPERTY_MAIN_PROJECT ) ) {        
+            pchSupport.firePropertyChange( OpenProjects.PROPERTY_MAIN_PROJECT, e.getOldValue(), e.getNewValue() );
+        }
     }
         
     public Project getMainProject() {

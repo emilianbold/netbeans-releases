@@ -72,6 +72,22 @@ public class OpenProjectsTest extends NbTestCase {
         
         assertEquals(OpenProjects.PROPERTY_OPEN_PROJECTS, e.getPropertyName());
         
+        OpenProjects.getDefault().setMainProject(testProject);
+        
+        assertEquals(1, l.events.size());
+        
+        e = l.events.remove(0);
+        
+        assertEquals(OpenProjects.PROPERTY_MAIN_PROJECT, e.getPropertyName());
+        
+        OpenProjects.getDefault().setMainProject(null);
+        
+        assertEquals(1, l.events.size());
+        
+        e = l.events.remove(0);
+        
+        assertEquals(OpenProjects.PROPERTY_MAIN_PROJECT, e.getPropertyName());
+        
         OpenProjects.getDefault().close(new Project[] {testProject});
         
         assertEquals(1, l.events.size());
@@ -80,6 +96,7 @@ public class OpenProjectsTest extends NbTestCase {
         
         assertEquals(OpenProjects.PROPERTY_OPEN_PROJECTS, e.getPropertyName());
     }
+    
     
     private static final class PropertyChangeListenerImpl implements PropertyChangeListener {
         

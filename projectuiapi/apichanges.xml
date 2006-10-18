@@ -81,6 +81,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="PROPERTY_MAIN_PROJECT">
+            <api name="general"/>
+            <summary>Added OpenProjects.PROPERTY_MAIN_PROJECT property</summary>
+            <version major="1" minor="20"/>
+            <date day="16" month="10" year="2006"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="yes" semantic="compatible" source="compatible">
+            </compatibility>
+            <description>
+                Added <code>OpenProjects.PROPERTY_MAIN_PROJECT</code> property and firing changes in main project property value
+                to listeners attached to OpenProjects.
+            </description>
+             <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <issue number="64491"/>
+        </change>
+        
         <change id="lookup-provider">
             <api name="general"/>
             <summary>Added LookupMerger implementations for PrivilegedTemplates and RecommendedTemplates</summary>
