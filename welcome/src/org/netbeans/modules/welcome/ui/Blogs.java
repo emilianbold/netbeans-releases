@@ -25,6 +25,7 @@ import java.awt.Insets;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.RSSFeedReaderPanel;
 import org.netbeans.modules.welcome.content.WebLink;
 
@@ -44,6 +45,7 @@ public class Blogs extends RSSFeedReaderPanel {
     protected JComponent buildBottomContent() {
         WebLink allBlogs = new WebLink( "AllBlogs", false ); // NOI18N
         allBlogs.setFont( HEADER_FONT );
+        BundleSupport.setAccessibilityProperties( allBlogs, "AllBlogs" ); //NOI18N
 
         JPanel panel = new JPanel( new GridBagLayout() );
         panel.setOpaque( false );

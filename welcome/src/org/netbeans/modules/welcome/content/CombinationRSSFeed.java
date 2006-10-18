@@ -52,7 +52,7 @@ public class CombinationRSSFeed extends RSSFeed {
         this.url2 = url2;
     }
 
-    protected ArrayList/*FeedItem*/ buildItemList() throws SAXException, ParserConfigurationException, IOException {
+    protected ArrayList<FeedItem> buildItemList() throws SAXException, ParserConfigurationException, IOException {
         XMLReader reader = XMLUtil.createXMLReader( false, true );
         FeedHandler handler = new FeedHandler();
         reader.setContentHandler( handler );
@@ -60,7 +60,7 @@ public class CombinationRSSFeed extends RSSFeed {
         reader.setErrorHandler( new ErrorCatcher() );
         reader.parse( new InputSource(url1) );
 
-        ArrayList res = new ArrayList( 2*NEWS_COUNT );
+        ArrayList<FeedItem> res = new ArrayList<FeedItem>( 2*NEWS_COUNT );
         res.addAll( handler.getItemList() );
 
         handler = new FeedHandler();
@@ -72,19 +72,16 @@ public class CombinationRSSFeed extends RSSFeed {
         return sortNodes( res );
     }
 
-    private ArrayList sortNodes( ArrayList res ) {
+    private ArrayList<FeedItem> sortNodes( ArrayList<FeedItem> res ) {
         Collections.sort( res, new DateFeedItemComparator() );
         return res;
     }
 
-    private static class DateFeedItemComparator implements Comparator {
+    private static class DateFeedItemComparator implements Comparator<FeedItem> {
     private static DateFormat dateFormat = new SimpleDateFormat( "EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH ); // NOI18N
     private static DateFormat dateFormatShort = new SimpleDateFormat( "EEE, dd MMM yyyy", Locale.ENGLISH ); // NOI18N
         
-    public int compare(Object o1, Object o2) {
-            FeedItem item1 = (FeedItem)o1;
-            FeedItem item2 = (FeedItem)o2;
-
+    public int compare(FeedItem item1, FeedItem item2) {
             Date date1 = extractDate( item1 );
             Date date2 = extractDate( item2 );
 

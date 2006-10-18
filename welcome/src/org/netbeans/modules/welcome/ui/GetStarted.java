@@ -105,6 +105,9 @@ public class GetStarted extends ContentPanel {
         if( null != oc ) {
             LinkAction la = new LinkAction( dob );
             ActionButton lb = new ActionButton( la, true, getUrlString( dob ) );
+            lb.getAccessibleContext().setAccessibleName( lb.getText() );
+            lb.getAccessibleContext().setAccessibleDescription( 
+                    BundleSupport.getAccessibilityDescription( "GettingStarted", lb.getText() ) ); //NOI18N
             panel.add( lb, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE,
                 new Insets(row==1? UNDER_HEADER_MARGIN : ROW_MARGIN,TEXT_INSETS_LEFT+3,0,2*TEXT_INSETS_RIGHT), 0, 0 ) );
@@ -120,7 +123,7 @@ public class GetStarted extends ContentPanel {
         try {
             Method m = dob.getClass().getDeclaredMethod( "getURLString", new Class[] {} );
             m.setAccessible( true );
-            Object res = m.invoke( dob, new Class[] {} );
+            Object res = m.invoke( dob );
             if( null != res ) {
                 return res.toString();
             }

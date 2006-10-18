@@ -147,6 +147,7 @@ public class Samples extends ContentPanel implements Constants {
     private static class NewProjectButton extends LinkButton {
         public NewProjectButton() {
             super( BundleSupport.getLabel( "NewProject" ), false ); // NOI18N
+            BundleSupport.setAccessibilityProperties( this, "NewProject" ); //NOI18N
             setFont( HEADER_FONT );
         }
 

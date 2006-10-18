@@ -182,6 +182,10 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
                         }
 
                         WebLink linkButton = new WebLink( item.title, item.link, true );
+                        linkButton.getAccessibleContext().setAccessibleName( 
+                                BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
+                        linkButton.getAccessibleContext().setAccessibleDescription( 
+                                BundleSupport.getAccessibilityDescription( "WebLink", item.link ) ); //NOI18N
                         linkButton.setFont( HEADER_FONT );
                         panel.add( linkButton, new GridBagConstraints(0,row++,1,1,1.0,1.0,
                                 GridBagConstraints.WEST,GridBagConstraints.NONE,
@@ -399,7 +403,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     static class FeedHandler implements ContentHandler {
         private FeedItem currentItem;
         private StringBuffer textBuffer;
-        private ArrayList /*FeedItem*/ itemList = new ArrayList( 10 );
+        private ArrayList<FeedItem> itemList = new ArrayList<FeedItem>( 10 );
 
         public void setDocumentLocator(Locator locator) {
         }
@@ -471,7 +475,7 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         public void skippedEntity(String name) throws SAXException {
         }
 
-        public ArrayList/*FeedItem*/ getItemList() {
+        public ArrayList<FeedItem> getItemList() {
             return itemList;
         }
     }

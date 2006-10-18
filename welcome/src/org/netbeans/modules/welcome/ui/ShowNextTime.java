@@ -50,6 +50,7 @@ public class ShowNextTime extends JPanel implements ActionListener, Constants {
         button.setForeground( Utils.getColor(BUTTON_TEXT_COLOR) );
         button.setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
         button.setOpaque( false );
+        BundleSupport.setAccessibilityProperties( button, "ShowOnStartup" ); //NOI18N
         add( button, BorderLayout.CENTER );
         button.addActionListener( this );
     }

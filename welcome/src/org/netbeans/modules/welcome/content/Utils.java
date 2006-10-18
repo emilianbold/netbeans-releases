@@ -116,8 +116,8 @@ public class Utils {
             loader = ClassLoader.getSystemClassLoader();
         try {
             Class clazz = Class.forName( "org.netbeans.modules.project.ui.actions.NewProject", true, loader ); // NOI18N
-            Method getDefault = clazz.getMethod( "newSample", null ); // NOI18N
-            Object newSample = getDefault.invoke( null, null );
+            Method getDefault = clazz.getMethod( "newSample"); // NOI18N
+            Object newSample = getDefault.invoke( null );
             if( newSample instanceof Action )
                 return (Action)newSample;
         } catch( Exception e ) {

@@ -99,12 +99,12 @@ class HttpProxySettings {
             ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
             Class clazz = l.loadClass("org.netbeans.core.IDESettings"); // NOI18N
             settingsInstance = SharedClassObject.findObject(clazz, true);
-            mGetProxyType = clazz.getMethod ("getProxyType", null); // NOI18N
-            mSetProxyType = clazz.getMethod ("setProxyType", new Class[] {Integer.TYPE}); // NOI18N
-            mGetProxyHost = clazz.getMethod("getUserProxyHost", null); // NOI18N
-            mSetProxyHost = clazz.getMethod("setUserProxyHost", new Class[] {String.class}); // NOI18N
-            mGetProxyPort = clazz.getMethod("getUserProxyPort", null); // NOI18N
-            mSetProxyPort = clazz.getMethod("setUserProxyPort", new Class[] {String.class}); // NOI18N
+            mGetProxyType = clazz.getMethod ("getProxyType"); // NOI18N
+            mSetProxyType = clazz.getMethod ("setProxyType", Integer.TYPE); // NOI18N
+            mGetProxyHost = clazz.getMethod("getUserProxyHost"); // NOI18N
+            mSetProxyHost = clazz.getMethod("setUserProxyHost", String.class); // NOI18N
+            mGetProxyPort = clazz.getMethod("getUserProxyPort"); // NOI18N
+            mSetProxyPort = clazz.getMethod("setUserProxyPort", String.class); // NOI18N
             //listen to proxy changes made elsewhere in the gui
             settingsInstance.addPropertyChangeListener( new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {

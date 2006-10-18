@@ -36,6 +36,9 @@ public class SampleProjectLink extends LinkButton {
         super( title, true );
         this.category = category;
         this.template = template;
+        getAccessibleContext().setAccessibleName( title );
+        getAccessibleContext().setAccessibleDescription( 
+                BundleSupport.getAccessibilityDescription( "SampleProject", title ) );
     }
 
     public void actionPerformed( ActionEvent e ) {

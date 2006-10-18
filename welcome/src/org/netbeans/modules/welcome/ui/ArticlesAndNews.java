@@ -69,8 +69,11 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
     protected JComponent buildBottomContent() {
         WebLink news = new WebLink( "AllNews", false ); // NOI18N
         news.setFont( HEADER_FONT );
+        BundleSupport.setAccessibilityProperties( news, "AllNews" ); //NOI18N
+        
         WebLink articles = new WebLink( "AllArticles", false ); // NOI18N
         articles.setFont( HEADER_FONT );
+        BundleSupport.setAccessibilityProperties( articles, "AllArticles" ); //NOI18N
 
         JPanel panel = new JPanel( new GridBagLayout() );
         panel.setOpaque( false );

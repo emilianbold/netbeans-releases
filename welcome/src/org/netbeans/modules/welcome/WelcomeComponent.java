@@ -35,8 +35,8 @@ import org.openide.nodes.Node;
  */
 public class WelcomeComponent extends TopComponent {
     static final long serialVersionUID=6021472310161712674L;
-    private static WeakReference/*<WelcomeComponent>*/ component =
-                new WeakReference(null); 
+    private static WeakReference<WelcomeComponent> component =
+                new WeakReference<WelcomeComponent>(null); 
     private JComponent content;
 
     private boolean initialized = false;
@@ -73,13 +73,13 @@ public class WelcomeComponent extends TopComponent {
      * from window system. "Welcome" is name of settings file defined in module layer.
      */
     public static WelcomeComponent findComp() {
-        WelcomeComponent wc = (WelcomeComponent)component.get();
+        WelcomeComponent wc = component.get();
         if (wc == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("Welcome"); // NOI18N
             if (tc != null) {
                 if (tc instanceof WelcomeComponent) {
                     wc = (WelcomeComponent)tc;
-                    component = new WeakReference(wc); 
+                    component = new WeakReference<WelcomeComponent>(wc); 
                 } else {
                     //Incorrect settings file?
                     IllegalStateException exc = new IllegalStateException
@@ -106,7 +106,7 @@ public class WelcomeComponent extends TopComponent {
         WelcomeComponent wc = (WelcomeComponent)component.get();
         if(wc == null) {
             wc = new WelcomeComponent();
-            component = new WeakReference(wc);
+            component = new WeakReference<WelcomeComponent>(wc);
         }
         return wc;
     }

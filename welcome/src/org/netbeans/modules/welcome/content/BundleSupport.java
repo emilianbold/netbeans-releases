@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.welcome.content;
 
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import org.openide.util.NbBundle;
@@ -59,6 +60,14 @@ public class BundleSupport {
 
     public static String getAccessibilityName(String bundleKey) {
         return resources.getString(ACN_PREFIX + bundleKey);
+    }
+    
+    public static String getAccessibilityName(String bundleKey, String param) {
+        return MessageFormat.format( resources.getString(ACN_PREFIX + bundleKey), param );
+    }
+    
+    public static String getAccessibilityDescription(String bundleKey, String param) {
+        return MessageFormat.format( resources.getString(ACD_PREFIX + bundleKey), param );
     }
     
     public static void setAccessibilityProperties(JComponent component, String bundleKey) {
