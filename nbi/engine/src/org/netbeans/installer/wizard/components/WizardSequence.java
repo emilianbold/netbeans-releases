@@ -20,9 +20,15 @@
  */
 package org.netbeans.installer.wizard.components;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.wizard.SubWizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 
@@ -31,17 +37,18 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  * @author Kirill Sorokin
  */
 public class WizardSequence implements WizardComponent {
-    private boolean active = true;
+    private SubWizard wizard;
+    private boolean   active = true;
     
-    private List<WizardComponent> wizardComponents =
-            new ArrayList<WizardComponent>();
+    private List<WizardComponent> wizardComponents = new ArrayList<WizardComponent>();
     
-    private List<WizardCondition> wizardConditions =
-            new ArrayList<WizardCondition>();
+    private List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
     
     private Properties properties = new Properties();
     
-    public void executeComponent(SubWizard wizard) {
+    public void executeComponent(final SubWizard wizard) {
+        this.wizard = wizard;
+        
         wizard.createSubWizard(wizardComponents).next();
     }
     
@@ -61,6 +68,10 @@ public class WizardSequence implements WizardComponent {
     
     public void addCondition(WizardCondition aCondition) {
         wizardConditions.add(aCondition);
+    }
+    
+    public SubWizard getWizard() {
+        return wizard;
     }
     
     public boolean isActive() {
@@ -84,7 +95,17 @@ public class WizardSequence implements WizardComponent {
     }
     
     public final String getProperty(String name) {
-        return properties.getProperty(name);
+        return getProperty(name, true);
+    }
+    
+    public final String getProperty(String name, boolean parse) {
+        String value = properties.getProperty(name);
+        
+        if (parse) {
+            return value != null ? parseString(value) : null;
+        } else {
+            return value;
+        }
     }
     
     public final void setProperty(String name, String value) {
@@ -94,4 +115,40 @@ public class WizardSequence implements WizardComponent {
     public final Properties getProperties() {
         return properties;
     }
+    
+    // helper methods for SystemUtils and ResourceUtils /////////////////////////////
+    public String parseString(String string) {
+        return systemUtils.parseString(string, getCorrectClassLoader());
+    }
+    
+    public File parsePath(String path) {
+        return systemUtils.parsePath(path, getCorrectClassLoader());
+    }
+    
+    public String getString(String baseName, String key) {
+        return resourceUtils.getString(baseName, key, getCorrectClassLoader());
+    }
+    
+    public String getString(String baseName, String key, Object... arguments) {
+        return resourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
+    }
+    
+    public InputStream getResource(String path) {
+        return resourceUtils.getResource(path, getCorrectClassLoader());
+    }
+    
+    // private stuff ////////////////////////////////////////////////////////////////
+    private ClassLoader getCorrectClassLoader() {
+        if (getWizard().getProductComponent() != null) {
+            return getWizard().getProductComponent().getClassLoader();
+        } else {
+            return getClass().getClassLoader();
+        }
+    }
+    
+    // protected area ///////////////////////////////////////////////////////////////
+    protected static final SystemUtils   systemUtils   = SystemUtils.getInstance();
+    protected static final StringUtils   stringUtils   = StringUtils.getInstance();
+    protected static final ResourceUtils resourceUtils = ResourceUtils.getInstance();
+    protected static final FileUtils     fileUtils     = FileUtils.getInstance();
 }

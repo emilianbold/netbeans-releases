@@ -41,7 +41,7 @@ import org.netbeans.installer.utils.system.WindowsSystemUtils;
  * @author Kirill Sorokin
  */
 public abstract class SystemUtils {
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static SystemUtils instance;
     
@@ -55,11 +55,11 @@ public abstract class SystemUtils {
                 case SOLARIS_X86:
                 case SOLARIS_SPARC:
                     instance = new UnixSystemUtils();
-                    break;                
+                    break;
                 case MACOS_X_PPC:
-                case MACOS_X_X86:                    
+                case MACOS_X_X86:
                     instance = new MacosxSystemUtils();
-                    break;                
+                    break;
                 default:
                     instance = new GenericSystemUtils();
                     break;
@@ -68,7 +68,7 @@ public abstract class SystemUtils {
         return instance;
     }
     
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Instance
     public abstract String parseString(String string, ClassLoader loader);
     
@@ -98,6 +98,8 @@ public abstract class SystemUtils {
     
     public abstract boolean isPortAvailable(int port);
     
+    public abstract int getAvailablePort(int basePort);
+    
     public abstract File getShortcutLocation(Shortcut shortcut, ShortcutLocationType locationType);
     
     public abstract File createShortcut(Shortcut shortcut, ShortcutLocationType locationType) throws IOException, UnsupportedActionException;
@@ -114,7 +116,7 @@ public abstract class SystemUtils {
     
     public abstract String setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
     
-        // some helper overloaded implementations //////////////////////////////////
+    // some helper overloaded implementations ///////////////////////////////////////
     public String parseString(String string) {
         return parseString(string, getClass().getClassLoader());
     }
@@ -135,7 +137,7 @@ public abstract class SystemUtils {
         setEnvironmentVariable(name, value, EnvironmentVariableScope.CURRENT_USER);
     }
     
-    // helper cross-platform methods ///////////////////////////////////////////
+    // helper cross-platform methods ////////////////////////////////////////////////
     public void sleep(long millis) {
         try {
             Thread.sleep(millis);
@@ -145,7 +147,7 @@ public abstract class SystemUtils {
         }
     }
     
-    ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static enum Platform {
         WINDOWS("windows", "Windows"),
@@ -358,7 +360,7 @@ public abstract class SystemUtils {
         public void removeDescription(final Locale locale) {
             descriptions.remove(locale);
         }
-
+        
         public String getRelativePath() {
             return relativePath;
         }
@@ -394,15 +396,15 @@ public abstract class SystemUtils {
         public String getArgumentsString() {
             if (arguments.size() == 0) {
                 StringBuilder builder = new StringBuilder();
-
+                
                 for (int i = 0; i < arguments.size(); i++) {
                     builder.append(arguments.get(i));
-
+                    
                     if (i != arguments.size() - 1) {
                         builder.append(" ");
                     }
                 }
-
+                
                 return builder.toString();
             } else {
                 return null;

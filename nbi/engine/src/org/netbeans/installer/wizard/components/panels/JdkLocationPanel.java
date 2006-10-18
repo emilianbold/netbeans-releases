@@ -61,8 +61,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     }
     
     public void initialize() {
-        minimumVersion = new Version(systemUtils.parseString(getProperty(MINIMUM_JDK_VERSION_PROPERTY), getClassLoader()));
-        maximumVersion = new Version(systemUtils.parseString(getProperty(MAXIMUM_JDK_VERSION_PROPERTY), getClassLoader()));
+        minimumVersion = new Version(getProperty(MINIMUM_JDK_VERSION_PROPERTY));
+        maximumVersion = new Version(getProperty(MAXIMUM_JDK_VERSION_PROPERTY));
         
         super.initialize();
     }
@@ -109,33 +109,33 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         File file = new File(path);
         
         if (path.equals("")) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NULL_PROPERTY), getClassLoader()));
+            return stringUtils.formatMessage(getProperty(ERROR_NULL_PROPERTY));
         }
         
         if (!systemUtils.isPathValid(path)) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NOT_VALID_PATH_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_NOT_VALID_PATH_PROPERTY), path);
         }
         
         if (!jdkUtils.isJavaHome(file)) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NOT_JAVAHOME_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_NOT_JAVAHOME_PROPERTY), path);
         }
         
         if (!jdkUtils.isJDK(file)) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NOT_JDK_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_NOT_JDK_PROPERTY), path);
         }
         
         Version version = JDKUtils.getInstance().getVersion(file);
         
         if (version == null) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_UNKNOWN_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_UNKNOWN_PROPERTY), path);
         }
         
         if (version.olderThan(minimumVersion)) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_WRONG_VERSION_OLDER_PROPERTY), getClassLoader()), path, version, minimumVersion);
+            return stringUtils.formatMessage(getProperty(ERROR_WRONG_VERSION_OLDER_PROPERTY), path, version, minimumVersion);
         }
         
         if (version.newerThan(maximumVersion)) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_WRONG_VERSION_NEWER_PROPERTY), getClassLoader()), path, version, maximumVersion);
+            return stringUtils.formatMessage(getProperty(ERROR_WRONG_VERSION_NEWER_PROPERTY), path, version, maximumVersion);
         }
         
         return null;
@@ -165,9 +165,6 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     }
     
     private static JDKUtils      jdkUtils      = JDKUtils.getInstance();
-    private static ResourceUtils resourceUtils = ResourceUtils.getInstance();
-    private static StringUtils   stringUtils   = StringUtils.getInstance();
-    private static SystemUtils   systemUtils   = SystemUtils.getInstance();
     
     public static final String JDK_LOCATION_PROPERTY = "jdk.location";
     

@@ -84,21 +84,21 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
     }
     
     public void initialize() {
-        final String messageContentType = systemUtils.parseString(getProperty(MESSAGE_CONTENT_TYPE_PROPERTY), getClassLoader());
+        final String messageContentType = getProperty(MESSAGE_CONTENT_TYPE_PROPERTY);
         messagePane.setContentType(messageContentType);
         
-        final String messageText = systemUtils.parseString(getProperty(MESSAGE_TEXT_PROPERTY), getClassLoader());
+        final String messageText = getProperty(MESSAGE_TEXT_PROPERTY);
         messagePane.setText(messageText);
         
-        final String locationLabelText = systemUtils.parseString(getProperty(LOCATION_LABEL_TEXT_PROPERTY), getClassLoader());
+        final String locationLabelText = getProperty(LOCATION_LABEL_TEXT_PROPERTY);
         locationLabel.setText(stringUtils.stripMnemonic(locationLabelText));
         locationLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(locationLabelText));
         
-        final String locationButtonText = systemUtils.parseString(getProperty(LOCATION_BUTTON_TEXT_PROPERTY), getClassLoader());
+        final String locationButtonText = getProperty(LOCATION_BUTTON_TEXT_PROPERTY);
         locationButton.setText(stringUtils.stripMnemonic(locationButtonText));
         locationButton.setMnemonic(stringUtils.fetchMnemonic(locationButtonText));
         
-        final String listLabelText = systemUtils.parseString(getProperty(LIST_LABEL_TEXT_PROPERTY), getClassLoader());
+        final String listLabelText = getProperty(LIST_LABEL_TEXT_PROPERTY);
         listLabel.setText(stringUtils.stripMnemonic(listLabelText));
         listLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(listLabelText));
         
@@ -285,10 +285,6 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         listReplacement.setVisible(!state);
         listReplacement.setEnabled(!state);
     }
-    
-    private static StringUtils   stringUtils   = StringUtils.getInstance();
-    private static SystemUtils   systemUtils   = SystemUtils.getInstance();
-    private static ResourceUtils resourceUtils = ResourceUtils.getInstance();
     
     public static final String MESSAGE_TEXT_PROPERTY = "message.text";
     public static final String MESSAGE_TEXT_NOTHING_FOUND_PROPERTY = "message.text.nothing.found";

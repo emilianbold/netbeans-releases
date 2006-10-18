@@ -101,13 +101,13 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
     }
     
     public void initialize() {
-        final String messageContentType = systemUtils.parseString(getProperty(MESSAGE_CONTENT_TYPE_PROPERTY), getClassLoader());
+        final String messageContentType = getProperty(MESSAGE_CONTENT_TYPE_PROPERTY);
         messagePane.setContentType(messageContentType);
         
-        final String messageText = systemUtils.parseString(getProperty(MESSAGE_TEXT_PROPERTY), getClassLoader());
+        final String messageText = getProperty(MESSAGE_TEXT_PROPERTY);
         messagePane.setText(messageText);
         
-        final String descriptionContentType = systemUtils.parseString(getProperty(DESCRIPTION_CONTENT_TYPE_PROPERTY), getClassLoader());
+        final String descriptionContentType = getProperty(DESCRIPTION_CONTENT_TYPE_PROPERTY);
         descriptionPane.setContentType(descriptionContentType);
         
         updateDescription();
@@ -221,19 +221,19 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         }
         
         if ((componentsToInstall.size() == 0) && (componentsToUninstall.size() == 0)) {
-            return systemUtils.parseString(getProperty(ERROR_NO_CHANGES_PROPERTY), getClassLoader());
+            return getProperty(ERROR_NO_CHANGES_PROPERTY);
         }
         
         for (ProductComponent component: componentsToInstall) {
             for (ProductComponent requirement: component.getRequirements()) {
                 if ((requirement.getStatus() != Status.TO_BE_INSTALLED) && (requirement.getStatus() != Status.INSTALLED)) {
-                    return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY), getClassLoader()), component.getDisplayName(), requirement.getDisplayName());
+                    return stringUtils.formatMessage(getProperty(ERROR_REQUIREMENT_INSTALL_PROPERTY), component.getDisplayName(), requirement.getDisplayName());
                 }
             }
             
             for (ProductComponent conflict: component.getConflicts()) {
                 if ((conflict.getStatus() == Status.TO_BE_INSTALLED) || (conflict.getStatus() == Status.INSTALLED)) {
-                    return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_CONFLICT_INSTALL_PROPERTY), getClassLoader()), component.getDisplayName(), conflict.getDisplayName());
+                    return stringUtils.formatMessage(getProperty(ERROR_CONFLICT_INSTALL_PROPERTY), component.getDisplayName(), conflict.getDisplayName());
                 }
             }
         }
@@ -241,7 +241,7 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         for (ProductComponent component: componentsToUninstall) {
             for (ProductComponent dependent: ProductRegistry.getInstance().getProductComponentsAsList()) {
                 if (dependent.requires(component) && ((dependent.getStatus() == Status.INSTALLED) || (dependent.getStatus() == Status.TO_BE_INSTALLED))) {
-                    return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY), getClassLoader()), component.getDisplayName(), dependent.getDisplayName());
+                    return stringUtils.formatMessage(getProperty(ERROR_REQUIREMENT_UNINSTALL_PROPERTY), component.getDisplayName(), dependent.getDisplayName());
                 }
             }
         }
@@ -252,39 +252,39 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
     private void updateDescription() {
         int selectedRow = componentsTreeTable.getSelectedRow();
         if (selectedRow == -1) {
-            displayNameLabel.setText(systemUtils.parseString(EMPTY_DISPLAY_NAME_LABEL_TEXT, getClassLoader()) + " ");
+            displayNameLabel.setText(parseString(EMPTY_DISPLAY_NAME_LABEL_TEXT) + " ");
             displayNameLabel.setEnabled(false);
             
-            descriptionPane.setText(systemUtils.parseString(EMPTY_DESCRIPTION_TEXT, getClassLoader()) + " ");
+            descriptionPane.setText(parseString(EMPTY_DESCRIPTION_TEXT) + " ");
             descriptionPane.setEnabled(false);
             
-            requirementsLabel.setText(systemUtils.parseString(EMPTY_REQUIREMENTS_LABEL_TEXT, getClassLoader()) + " ");
+            requirementsLabel.setText(parseString(EMPTY_REQUIREMENTS_LABEL_TEXT) + " ");
             requirementsLabel.setEnabled(false);
             
-            conflictsLabel.setText(systemUtils.parseString(EMPTY_CONFLICTS_LABEL_TEXT, getClassLoader()) + " ");
+            conflictsLabel.setText(parseString(EMPTY_CONFLICTS_LABEL_TEXT) + " ");
             conflictsLabel.setEnabled(false);
         } else {
             ProductTreeNode node = (ProductTreeNode) componentsTreeTable.getModel().getValueAt(selectedRow, 0);
             
-            displayNameLabel.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY), getClassLoader()), node.getDisplayName()) + " ");
+            displayNameLabel.setText(stringUtils.formatMessage(getProperty(DISPLAY_NAME_LABEL_TEXT_PROPERTY), node.getDisplayName()) + " ");
             displayNameLabel.setEnabled(true);
             
-            descriptionPane.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(DESCRIPTION_TEXT_PROPERTY), getClassLoader()), node.getDescription()) + " ");
+            descriptionPane.setText(stringUtils.formatMessage(getProperty(DESCRIPTION_TEXT_PROPERTY), node.getDescription()) + " ");
             descriptionPane.setEnabled(true);
             
             if ((node instanceof ProductComponent) && (((ProductComponent) node).getRequirements().size() > 0)) {
-                requirementsLabel.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), getClassLoader()), stringUtils.asString(((ProductComponent) node).getRequirements())) + " ");
+                requirementsLabel.setText(stringUtils.formatMessage(getProperty(REQUIREMENTS_LABEL_TEXT_PROPERTY), stringUtils.asString(((ProductComponent) node).getRequirements())) + " ");
                 requirementsLabel.setEnabled(true);
             } else {
-                requirementsLabel.setText(systemUtils.parseString(EMPTY_REQUIREMENTS_LABEL_TEXT, getClassLoader()) + " ");
+                requirementsLabel.setText(parseString(EMPTY_REQUIREMENTS_LABEL_TEXT) + " ");
                 requirementsLabel.setEnabled(false);
             }
             
             if ((node instanceof ProductComponent) && (((ProductComponent) node).getConflicts().size() > 0)) {
-                conflictsLabel.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(CONFLICTS_LABEL_TEXT_PROPERTY), getClassLoader()), stringUtils.asString(((ProductComponent) node).getConflicts())) + " ");
+                conflictsLabel.setText(stringUtils.formatMessage(getProperty(CONFLICTS_LABEL_TEXT_PROPERTY), stringUtils.asString(((ProductComponent) node).getConflicts())) + " ");
                 conflictsLabel.setEnabled(true);
             } else {
-                conflictsLabel.setText(systemUtils.parseString(EMPTY_CONFLICTS_LABEL_TEXT, getClassLoader()) + " ");
+                conflictsLabel.setText(parseString(EMPTY_CONFLICTS_LABEL_TEXT) + " ");
                 conflictsLabel.setEnabled(false);
             }
         }
@@ -300,8 +300,8 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         }
         
         if (components.size() == 0) {
-            totalDownloadSizeLabel.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), getClassLoader()), systemUtils.parseString(DEFAULT_TOTAL_DOWNLOAD_SIZE, getClassLoader())) + " ");
-            totalDiskSpaceLabel.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), getClassLoader()), systemUtils.parseString(DEFAULT_TOTAL_DISK_SPACE, getClassLoader())) + " ");
+            totalDownloadSizeLabel.setText(stringUtils.formatMessage(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DOWNLOAD_SIZE)) + " ");
+            totalDiskSpaceLabel.setText(stringUtils.formatMessage(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), parseString(DEFAULT_TOTAL_DISK_SPACE)) + " ");
         } else {
             long totalDownloadSize = 0;
             long totalDiskSpace = 0;
@@ -310,8 +310,8 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
                 totalDiskSpace += component.getRequiredDiskSpace();
             }
             
-            totalDownloadSizeLabel.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), getClassLoader()), stringUtils.formatSize(totalDownloadSize)) + " ");
-            totalDiskSpaceLabel.setText(stringUtils.formatMessage(systemUtils.parseString(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), getClassLoader()), stringUtils.formatSize(totalDiskSpace)) + " ");
+            totalDownloadSizeLabel.setText(stringUtils.formatMessage(getProperty(TOTAL_DOWNLOAD_SIZE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(totalDownloadSize)) + " ");
+            totalDiskSpaceLabel.setText(stringUtils.formatMessage(getProperty(TOTAL_DISK_SPACE_LABEL_TEXT_PROPERTY), stringUtils.formatSize(totalDiskSpace)) + " ");
         }
     }
     
@@ -588,10 +588,6 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
             }
         }
     }
-    
-    private static StringUtils   stringUtils   = StringUtils.getInstance();
-    private static SystemUtils   systemUtils   = SystemUtils.getInstance();
-    private static ResourceUtils resourceUtils = ResourceUtils.getInstance();
     
     private static final String MESSAGE_TEXT_PROPERTY = "message.text";
     private static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";

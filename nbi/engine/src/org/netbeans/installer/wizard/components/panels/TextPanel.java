@@ -41,10 +41,10 @@ public class TextPanel extends DefaultWizardPanel {
     }
     
     public void initialize() {
-        final String contentType = systemUtils.parseString(getProperty(CONTENT_TYPE_PROPERTY), getClassLoader());
+        final String contentType = getProperty(CONTENT_TYPE_PROPERTY);
         textPane.setContentType(contentType);
         
-        final String text = systemUtils.parseString(getProperty(TEXT_PROPERTY), getClassLoader());
+        final String text = getProperty(TEXT_PROPERTY);
         textPane.setText(text);
     }
     
@@ -56,10 +56,6 @@ public class TextPanel extends DefaultWizardPanel {
         
         add(textPane, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 11, 11), 0, 0));
     }
-    
-    private static StringUtils   stringUtils   = StringUtils.getInstance();
-    private static SystemUtils   systemUtils   = SystemUtils.getInstance();
-    private static ResourceUtils resourceUtils = ResourceUtils.getInstance();
     
     public static final String TEXT_PROPERTY = "text";
     public static final String CONTENT_TYPE_PROPERTY = "content.type";

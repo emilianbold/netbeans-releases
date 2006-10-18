@@ -78,27 +78,28 @@ public class DestinationPanel extends DefaultWizardPanel {
     }
     
     public void initialize() {
-        final String messageContentType = systemUtils.parseString(getProperty(MESSAGE_CONTENT_TYPE_PROPERTY), getClassLoader());
+        final String messageContentType = getProperty(MESSAGE_CONTENT_TYPE_PROPERTY);
         messagePane.setContentType(messageContentType);
         
-        final String messageText = systemUtils.parseString(getProperty(MESSAGE_TEXT_PROPERTY), getClassLoader());
+        final String messageText = getProperty(MESSAGE_TEXT_PROPERTY);
         messagePane.setText(messageText);
         
-        final String destinationLabelText = systemUtils.parseString(getProperty(DESTINATION_LABEL_TEXT_PROPERTY), getClassLoader());
+        final String destinationLabelText = getProperty(DESTINATION_LABEL_TEXT_PROPERTY);
         destinationLabel.setText(stringUtils.stripMnemonic(destinationLabelText));
         destinationLabel.setDisplayedMnemonic(stringUtils.fetchMnemonic(destinationLabelText));
         
-        final String destinationButtonText = systemUtils.parseString(getProperty(DESTINATION_BUTTON_TEXT_PROPERTY), getClassLoader());
+        final String destinationButtonText = getProperty(DESTINATION_BUTTON_TEXT_PROPERTY);
         destinationButton.setText(stringUtils.stripMnemonic(destinationButtonText));
         destinationButton.setMnemonic(stringUtils.fetchMnemonic(destinationButtonText));
         
         String destination = getWizard().getProductComponent().getProperty(INSTALLATION_LOCATION_PROPERTY);
         if (destination == null) {
             final String defaultDestination = getWizard().getProductComponent().getProperty(DEFAULT_INSTALLATION_LOCATION_PROPERTY);
+            
             if (defaultDestination != null) {
-                destination = SystemUtils.getInstance().parsePath(defaultDestination).getAbsolutePath();
+                destination = parsePath(defaultDestination).getAbsolutePath();
             } else {
-                destination = SystemUtils.getInstance().parsePath(DEFAULT_DESTINATION).getAbsolutePath();
+                destination = parsePath(DEFAULT_DESTINATION).getAbsolutePath();
             }
         }
         
@@ -196,36 +197,31 @@ public class DestinationPanel extends DefaultWizardPanel {
         final String path   = file.getAbsolutePath();
         
         if (string.equals("")) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NULL_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_NULL_PROPERTY), path);
         }
         
         if (!systemUtils.isPathValid(path)) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NOT_VALID_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_NOT_VALID_PROPERTY), path);
         }
         
         if (file.exists() && !file.isDirectory()) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NOT_DIRECTORY_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_NOT_DIRECTORY_PROPERTY), path);
         }
         
         if (!fileUtils.canRead(file)) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NOT_READABLE_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_NOT_READABLE_PROPERTY), path);
         }
         
         if (!fileUtils.canWrite(file)) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NOT_WRITABLE_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_NOT_WRITABLE_PROPERTY), path);
         }
         
         if (!fileUtils.isEmpty(file)) {
-            return stringUtils.formatMessage(systemUtils.parseString(getProperty(ERROR_NOT_EMPTY_PROPERTY), getClassLoader()), path);
+            return stringUtils.formatMessage(getProperty(ERROR_NOT_EMPTY_PROPERTY), path);
         }
         
         return null;
     }
-    
-    private static SystemUtils   systemUtils   = SystemUtils.getInstance();
-    private static StringUtils   stringUtils   = StringUtils.getInstance();
-    private static ResourceUtils resourceUtils = ResourceUtils.getInstance();
-    private static FileUtils     fileUtils     = FileUtils.getInstance();
     
     private static final String MESSAGE_TEXT_PROPERTY = "message.text";
     private static final String MESSAGE_CONTENT_TYPE_PROPERTY = "message.content.type";

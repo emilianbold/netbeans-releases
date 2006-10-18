@@ -20,11 +20,17 @@
  */
 package org.netbeans.installer.wizard.components;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
 
 import org.netbeans.installer.wizard.SubWizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
@@ -35,11 +41,10 @@ import org.netbeans.installer.wizard.conditions.WizardCondition;
  */
 public abstract class WizardPanel extends JPanel implements WizardComponent {
     private SubWizard  wizard;
-    private boolean active      = true;
-    private boolean initialized = false;
+    private boolean    active      = true;
+    private boolean    initialized = false;
     
-    private List<WizardCondition> wizardConditions =
-            new ArrayList<WizardCondition>();
+    private List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
     
     private Properties properties = new Properties();
     
@@ -139,7 +144,17 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
     }
     
     public final String getProperty(String name) {
-        return properties.getProperty(name);
+        return getProperty(name, true);
+    }
+    
+    public final String getProperty(String name, boolean parse) {
+        String value = properties.getProperty(name);
+        
+        if (parse) {
+            return value != null ? parseString(value) : null;
+        } else {
+            return value;
+        }
     }
     
     public final void setProperty(String name, String value) {
@@ -149,4 +164,40 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
     public final Properties getProperties() {
         return properties;
     }
+    
+    // helper methods for SystemUtils and ResourceUtils /////////////////////////////
+    public String parseString(String string) {
+        return systemUtils.parseString(string, getCorrectClassLoader());
+    }
+    
+    public File parsePath(String path) {
+        return systemUtils.parsePath(path, getCorrectClassLoader());
+    }
+    
+    public String getString(String baseName, String key) {
+        return resourceUtils.getString(baseName, key, getCorrectClassLoader());
+    }
+    
+    public String getString(String baseName, String key, Object... arguments) {
+        return resourceUtils.getString(baseName, key, getCorrectClassLoader(), arguments);
+    }
+    
+    public InputStream getResource(String path) {
+        return resourceUtils.getResource(path, getCorrectClassLoader());
+    }
+    
+    // private stuff ////////////////////////////////////////////////////////////////
+    private ClassLoader getCorrectClassLoader() {
+        if (getWizard().getProductComponent() != null) {
+            return getWizard().getProductComponent().getClassLoader();
+        } else {
+            return getClass().getClassLoader();
+        }
+    }
+    
+    // protected area ///////////////////////////////////////////////////////////////
+    protected static final SystemUtils   systemUtils   = SystemUtils.getInstance();
+    protected static final StringUtils   stringUtils   = StringUtils.getInstance();
+    protected static final ResourceUtils resourceUtils = ResourceUtils.getInstance();
+    protected static final FileUtils     fileUtils     = FileUtils.getInstance();
 }
