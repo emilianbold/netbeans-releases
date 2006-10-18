@@ -23,7 +23,12 @@ Microsystems, Inc. All Rights Reserved.
     <import file="common.xml"/>
 
     <target name="common-init" depends="default.init"/>
-    <target name="init" depends="basic-init,files-init,build-init"/>
+    <target name="init" depends="basic-init,files-init,build-init,-init-proxy"/>
+    
+    <target name="-init-proxy" if="proxy.host">
+        <property name="proxy.port" value="3128"/>
+        <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
+    </target>
 
     <target name="build-init" depends="basic-init">
         <property name="public.package.jar.dir" location="${nb_all}/nbbuild/build/public-package-jars"/>
