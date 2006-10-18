@@ -86,9 +86,9 @@ public abstract class StringUtils {
     
     public abstract String asString(List<? extends Object> objects, String separator);
     
-    public abstract String asString(String [] strings);
+    public abstract String asString(Object [] strings);
     
-    public abstract String asString(String [] strings, String separator);
+    public abstract String asString(Object [] strings, String separator);
     
     public abstract String formatSize(long longBytes);
     
@@ -230,14 +230,15 @@ public abstract class StringUtils {
             return result.toString();
         }
         
-        public String asString(String [] strings) {
+        public String asString(Object [] strings) {
             return asString(strings, ", ");
         }
-        public String asString(String [] strings, String separator) {
+        public String asString(Object [] strings, String separator) {
             StringBuilder result = new StringBuilder();
             
             for (int i = 0; i < strings.length; i++) {
-                result.append(strings[i].toString());
+                result.append((strings[i]==null) ? ""+null :
+                    strings[i].toString());
                 
                 if (i != strings.length - 1) {
                     result.append(separator);

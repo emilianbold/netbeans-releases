@@ -20,6 +20,10 @@
  */
 package org.netbeans.installer.utils.system.windows;
 
+import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.StringUtils;
+
 /**
  *
  * @author Dmitry Lipin
@@ -41,21 +45,61 @@ public class WindowsRegistry {
     public static WindowsRegistry getInstance() {
         return registry;
     };
-    
+    private void logStartJNI(Object args[]) {
+        LogManager.getInstance().log(ErrorLevel.DEBUG,"[JNI] [" +
+                new Exception().getStackTrace()[1].getMethodName() +
+                "] Starting with args: {" +
+                StringUtils.getInstance().asString(args,"; ") + "}");
+    }
+    private void logEndJNI() {
+        LogManager.getInstance().log(ErrorLevel.DEBUG,"[JNI] [" +
+                new Exception().getStackTrace()[1].getMethodName() +
+                "] ... end");
+    }
+    private void logErrJNI(Error ex) {
+        LogManager.getInstance().log(ErrorLevel.DEBUG,"[JNI] [" +
+                new Exception().getStackTrace()[1].getMethodName() +
+                "] !! Error !!");
+        LogManager.getInstance().log(ErrorLevel.DEBUG, ex);
+    }
     /** Checks if the specified value exists in the registry.
      * @param registrySection The section of the registry
      * @param key The specified key
      * @param value The specified value
      * @return <i>true</i> if the specified value exists, <i>false</i> otherwise
      */
-    public native boolean isValueExists(int registrySection, String key, String value);
+    public boolean isValueExists(int registrySection, String key, String value) {
+        logStartJNI(new Object [] {registrySection,key,value});
+        boolean result = false;
+        try {
+            result = isValueExists0(registrySection,key,value);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean isValueExists0(int registrySection, String key, String value);
     
     /** Checks if the specified key exists in the registry.
      * @param registrySection The section of the registry
      * @param key The specified key
      * @return <i>true</i> if the specified key exists, <i>false</i> otherwise
      */
-    public native boolean isKeyExists(int registrySection, String key) ;
+    public boolean isKeyExists(int registrySection, String key) {
+        logStartJNI(new Object [] {registrySection,key});
+        boolean result = false;
+        try {
+            result = isKeyExists0(registrySection,key);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean isKeyExists0(int registrySection, String key) ;
     
     /** Checks if the specified value exists in the registry.
      * @param registrySection The section of the registry
@@ -63,7 +107,20 @@ public class WindowsRegistry {
      * @param value The specified value
      * @return <i>true</i> if the specified value exists, <i>false</i> otherwise
      */
-    public native boolean isKeyEmpty(int registrySection, String key) ;
+    public boolean isKeyEmpty(int registrySection, String key) {
+        logStartJNI(new Object [] {registrySection,key});
+        boolean result = false;
+        try {
+            result = isKeyEmpty0(registrySection,key);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+            throw ex;
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean isKeyEmpty0(int registrySection, String key) ;
     
     /** Delete the specified key exists in the registry.
      * Note that if the key contains subkeys then it would not be deleted.
@@ -73,14 +130,24 @@ public class WindowsRegistry {
      */
     public boolean deleteKey(int registrySection, String key) {
         String keyString = key;
-        int index = keyString.lastIndexOf("\\");
-        if(index==keyString.length()) {
-            keyString = keyString.substring(0,index - 1);
+        String parent = null;
+        String child = null;
+        if(keyString==null) {
+            return false;
         }
-        index = keyString.lastIndexOf("\\");
+        int index = keyString.lastIndexOf("\\");
+        if(index!=-1) {
+            if(index==keyString.length()) {
+                keyString = keyString.substring(0,index - 1);
+            }
+            index = keyString.lastIndexOf("\\");
+            parent = key.substring(0,index);
+            child = key.substring(index + 1);
+        } else {
+            parent = null;
+            child = key;
+        }
         
-        String parent = key.substring(0,index);
-        String child = key.substring(index + 1);
         
         return deleteKey(registrySection,parent,child);
     }
@@ -91,7 +158,19 @@ public class WindowsRegistry {
      * @param childKey The specified child key
      * @return <i>true</i> if the specified key was deleted, <i>false</i> otherwise
      */
-    public native boolean deleteKey(int registrySection, String parentKey, String childKey);
+    public boolean deleteKey(int registrySection, String parentKey, String childKey) {
+        logStartJNI(new Object [] {registrySection,parentKey,childKey});
+        boolean result = false;
+        try {
+            result = deleteKey0(registrySection,parentKey,childKey);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean deleteKey0(int registrySection, String parentKey, String childKey);
     
     /** Delete the specified value exists in the registry.
      * @param registrySection The section of the registry
@@ -99,8 +178,19 @@ public class WindowsRegistry {
      * @param value The specified value
      * @return <i>true</i> if the specified value was deleted, <i>false</i> otherwise
      */
-    public native boolean deleteValue(int registrySection, String key,String value);
-    
+    public boolean deleteValue(int registrySection, String key,String value) {
+        logStartJNI(new Object [] {registrySection,key,value});
+        boolean result = false;
+        try {
+            result = deleteValue0(registrySection,key,value);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean deleteValue0(int registrySection, String key,String value);
     /** Returns the type of the value.
      * @param registrySection The section of the registry
      * @param key The specified key
@@ -120,7 +210,19 @@ public class WindowsRegistry {
      * <code>REG_RESOURCE_REQUIREMENTS_LIST</code><br>
      * <code>REG_QWORD</code>=<code>REG_QWORD_LITTLE_ENDIAN</code>
      */
-    public native int getValueType(int registrySection,String key,String value);
+    public int getValueType(int registrySection,String key,String value) {
+        logStartJNI(new Object [] {registrySection,key,value});
+        int result = REG_NONE;
+        try {
+            result = getValueType0(registrySection,key,value);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native int getValueType0(int registrySection,String key,String value);
     
     /** Get the number of the subkeys of the specified key.
      * @param registrySection The section of the registry
@@ -128,7 +230,19 @@ public class WindowsRegistry {
      * @return If the key doesn`t exist or can`t be accessed then return -1.
      * <br>Otherwise return the number of subkeys
      */
-    public native int getSubKeysNumber(int registrySection, String key);
+    public int getSubKeysNumber(int registrySection, String key) {
+        logStartJNI(new Object [] {registrySection,key});
+        int result = -1;
+        try {
+            result = getSubKeysNumber0(registrySection,key);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native int getSubKeysNumber0(int registrySection, String key);
     
     /** Get the number of the values of the specified key.
      * @param registrySection The section of the registry
@@ -136,7 +250,19 @@ public class WindowsRegistry {
      * @return If the key doesn`t exist or can`t be accessed then return -1.
      * <br>Otherwise return the number of values
      */
-    public native int getValuesInKeyNumber(int registrySection, String key);
+    public int getValuesInKeyNumber(int registrySection, String key) {
+        logStartJNI(new Object [] {registrySection,key});
+        int result = -1;
+        try {
+            result = getValuesInKeyNumber0(registrySection,key);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native int getValuesInKeyNumber0(int registrySection, String key);
     
     /** Get the array of values names of the specified key.
      * @param registrySection The section of the registry
@@ -144,7 +270,19 @@ public class WindowsRegistry {
      * @return If the key doesn`t exist or can`t be accessed then return <i>null</i>
      * <br>Otherwise return the array of value names
      */
-    public native String[] getValueNames  (int registrySection, String key);
+    public String[] getValueNames  (int registrySection, String key) {
+        logStartJNI(new Object [] {registrySection,key});
+        String [] result = null;
+        try {
+            result = getValueNames0(registrySection,key);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native String[] getValueNames0  (int registrySection, String key);
     
     /** Get the array of subkey names of the specified key.
      * @param registrySection The section of the registry
@@ -152,7 +290,20 @@ public class WindowsRegistry {
      * @return If the key doesn`t exist or can`t be accessed then return <i>null</i>
      * <br>Otherwise return the array of subkey names
      */
-    public native String[] getSubkeyNames(int registrySection, String key);
+    public String[] getSubkeyNames(int registrySection, String key) {
+        logStartJNI(new Object [] {registrySection,key});
+        String [] result = null;
+        try {
+            result = getSubkeyNames0(registrySection,key);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native String[] getSubkeyNames0(int registrySection, String key);
+    
     
     /** Create the new key in the registry.
      * @param registrySection The section of the registry
@@ -160,7 +311,19 @@ public class WindowsRegistry {
      * @return <i>true</i> if the key was successfully created,
      * <br> <i>false</i> otherwise
      */
-    public native boolean createKey(int registrySection, String parent, String child);
+    public boolean createKey(int registrySection, String parent, String child) {
+        logStartJNI(new Object [] {registrySection,parent, child});
+        boolean result = false;
+        try {
+            result = createKey0(registrySection,parent,child);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean createKey0(int registrySection, String parent, String child);
     
     /** Set string value.
      * @param registrySection The section of the registry
@@ -173,7 +336,19 @@ public class WindowsRegistry {
      * @return <i>true</i> if the value was successfully set
      * <br> <i>false</i> otherwise
      */
-    public native boolean setStringValue(int registrySection, String key, String valueName, String value, boolean expandable);
+    public boolean setStringValue(int registrySection, String key, String valueName, String value, boolean expandable) {
+        logStartJNI(new Object [] {registrySection, key, valueName, value, expandable});
+        boolean result = false;
+        try {
+            result = setStringValue0(registrySection, key, valueName, value, expandable);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean setStringValue0(int registrySection, String key, String valueName, String value, boolean expandable);
     
     
     /** Set REG_DWORD value.
@@ -184,8 +359,19 @@ public class WindowsRegistry {
      * @return <i>true</i> if the value was successfully set
      * <br> <i>false</i> otherwise
      */
-    public native boolean set32BitValue  (int registrySection, String key, String valueName, int value);
-    
+    public boolean set32BitValue(int registrySection, String key, String valueName, int value) {
+        logStartJNI(new Object [] {registrySection, key, valueName, value});
+        boolean result = false;
+        try {
+            result = set32BitValue0(registrySection, key, valueName, value);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean set32BitValue0(int registrySection, String key, String valueName, int value);
     /** Set REG_MULTI_SZ value.
      * @param registrySection The section of the registry
      * @param key The specified key
@@ -194,7 +380,19 @@ public class WindowsRegistry {
      * @return <i>true</i> if the value was successfully set
      * <br> <i>false</i> otherwise
      */
-    public native boolean setMultiStringValue(int registrySection, String key, String valueName, String [] value);
+    public boolean setMultiStringValue(int registrySection, String key, String valueName, String [] value) {
+        logStartJNI(new Object [] {registrySection, key, valueName, value});
+        boolean result = false;
+        try {
+            result = setMultiStringValue0(registrySection, key, valueName, value);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean setMultiStringValue0(int registrySection, String key, String valueName, String [] value);
     
     
     /** Set binary (REG_BINARY) value.
@@ -205,8 +403,19 @@ public class WindowsRegistry {
      * @return <i>true</i> if the value was successfully set
      * <br> <i>false</i> otherwise
      */
-    public native boolean setBinaryValue(int registrySection, String key, String valueName, byte [] value);
-    
+    public boolean setBinaryValue(int registrySection, String key, String valueName, byte [] value) {
+        logStartJNI(new Object [] {registrySection, key, valueName, value});
+        boolean result = false;
+        try {
+            result = setBinaryValue0(registrySection, key, valueName, value);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native boolean setBinaryValue0(int registrySection, String key, String valueName, byte [] value);
     
     
     /** Get string value.
@@ -218,7 +427,19 @@ public class WindowsRegistry {
      *      the type of the value is REG_EXPAND_SZ the value would be expanded
      * @return The value of the valueName, <i>null</i> in case of any error
      */
-    public native String   getStringValue(int registrySection, String key, String valueName, boolean expand);
+    public String getStringValue(int registrySection, String key, String valueName, boolean expand) {
+        logStartJNI(new Object [] {registrySection, key, valueName, expand});
+        String result = null;
+        try {
+            result = getStringValue0(registrySection, key, valueName, expand);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native String getStringValue0(int registrySection, String key, String valueName, boolean expand);
     
     /** Get integer value.
      * @param registrySection The section of the registry
@@ -226,7 +447,19 @@ public class WindowsRegistry {
      * @param valueName The specified value
      * @return The value of the valueName, <i>-1</i> in case of any error
      */
-    public native int      get32BitValue(int registrySection, String key, String valueName);
+    public int get32BitValue(int registrySection, String key, String valueName) {
+        logStartJNI(new Object [] {registrySection, key, valueName});
+        int result = -1;
+        try {
+            result = get32BitValue0(registrySection, key, valueName);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private  native int    get32BitValue0(int registrySection, String key, String valueName);
     
     /** Get the array of strings of the specified value
      * @param registrySection The section of the registry
@@ -234,8 +467,19 @@ public class WindowsRegistry {
      * @param valueName The specified value
      * @return The multri-string value of the valueName, <i>null</i> in case of any error
      */
-    public native String[] getMultiStringValue(int registrySection, String key, String valueName);
-    
+    public String[] getMultiStringValue(int registrySection, String key, String valueName) {
+        logStartJNI(new Object [] {registrySection, key, valueName});
+        String [] result = null;
+        try {
+            result = getMultiStringValue0(registrySection, key, valueName);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native String[] getMultiStringValue0(int registrySection, String key, String valueName);
     /** Get binary value.
      * @param registrySection The section of the registry
      * @param key The specified key
@@ -243,7 +487,19 @@ public class WindowsRegistry {
      * @return The binary value of the valueName, <i>null</i> in case of any error
      */
     
-    public native byte  [] getBinaryValue(int registrySection, String key, String valueName);
+    public byte  [] getBinaryValue(int registrySection, String key, String valueName) {
+        logStartJNI(new Object [] {registrySection, key, valueName});
+        byte [] result = null;
+        try {
+            result = getBinaryValue0(registrySection, key, valueName);
+        } catch(UnsatisfiedLinkError ex) {
+            logErrJNI(ex);
+        } finally {
+            logEndJNI();
+        }
+        return result;
+    }
+    private native byte  [] getBinaryValue0(int registrySection, String key, String valueName);
     
     public boolean setStringValue(int registrySection, String key, String valueName, String value) {
         return setStringValue(registrySection, key, valueName, value, false);
