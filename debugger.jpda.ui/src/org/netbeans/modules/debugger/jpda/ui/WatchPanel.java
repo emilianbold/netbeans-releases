@@ -35,6 +35,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -94,7 +95,8 @@ public class WatchPanel {
         ResourceBundle bundle = NbBundle.getBundle(WatchPanel.class);
 
         panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
-        JLabel textLabel = new JLabel (bundle.getString ("CTL_Watch_Name")); // NOI18N
+        JLabel textLabel = new JLabel();
+        Mnemonics.setLocalizedText(textLabel, bundle.getString ("CTL_Watch_Name")); // NOI18N
         editorPane = new JEditorPane("text/x-java", expression); // NOI18N
         editorPane.setKeymap(new FilteredKeymap(editorPane.getKeymap()));
         
@@ -118,9 +120,6 @@ public class WatchPanel {
         editorPane.setBorder (
             new CompoundBorder (editorPane.getBorder (),
             new EmptyBorder (2, 0, 2, 0))
-        );
-        textLabel.setDisplayedMnemonic (
-            bundle.getString ("CTL_Watch_Name_Mnemonic").charAt (0) // NOI18N
         );
         editorPane.setText (expression);
         editorPane.selectAll ();

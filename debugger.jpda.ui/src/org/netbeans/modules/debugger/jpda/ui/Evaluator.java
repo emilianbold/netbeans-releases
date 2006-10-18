@@ -65,6 +65,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -95,11 +96,11 @@ public class Evaluator extends javax.swing.JPanel {
         initCombo();
         initResult();
         expressionLabel.setLabelFor(expressionComboBox);
-        expressionLabel.setDisplayedMnemonic(
-                NbBundle.getMessage(Evaluator.class, "Evaluator.Expression_Mnc").charAt(0));
+        Mnemonics.setLocalizedText(expressionLabel,
+                NbBundle.getMessage(Evaluator.class, "Evaluator.Expression"));
         resultLabel.setLabelFor(resultPanel);
-        resultLabel.setDisplayedMnemonic(
-                NbBundle.getMessage(Evaluator.class, "Evaluator.Result_Mnc").charAt(0));
+        Mnemonics.setLocalizedText(resultLabel,
+                NbBundle.getMessage(Evaluator.class, "Evaluator.Result"));
         sessionListener = new SessionListener();
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION, sessionListener);

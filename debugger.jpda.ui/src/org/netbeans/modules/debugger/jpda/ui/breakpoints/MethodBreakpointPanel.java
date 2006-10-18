@@ -138,30 +138,27 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
 
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_BorderTitle")));
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_L_Method_Breakpoint_Package_Name").charAt(0));
+        pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_BorderTitle"))); // NOI18N
         jLabel2.setLabelFor(tfPackageName);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Package_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Package_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Package_Name"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Package_Name")); // NOI18N
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_L_Method_Breakpoint_Class_Name").charAt(0));
         jLabel3.setLabelFor(tfClassName);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Class_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Class_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel3, gridBagConstraints);
-        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Class_Name"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Class_Name")); // NOI18N
 
-        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_L_Method_Breakpoint_Condition").charAt(0));
         jLabel5.setLabelFor(tfCondition);
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Condition"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Condition")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -169,18 +166,18 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Condition"));
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Condition")); // NOI18N
 
-        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Condition"));
+        tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Condition")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfCondition, gridBagConstraints);
-        tfCondition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Condition"));
+        tfCondition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Condition")); // NOI18N
 
-        tfPackageName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Package_Name"));
+        tfPackageName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Package_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -188,9 +185,9 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfPackageName, gridBagConstraints);
-        tfPackageName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Package_Name"));
+        tfPackageName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Package_Name")); // NOI18N
 
-        tfClassName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Class_Name"));
+        tfClassName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Class_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -198,11 +195,10 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfClassName, gridBagConstraints);
-        tfClassName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Class_Name"));
+        tfClassName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Class_Name")); // NOI18N
 
-        cbAllMethods.setMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_CB_Method_Breakpoint_All_Methods").charAt(0));
-        cbAllMethods.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "CB_Method_Breakpoint_All_Methods"));
-        cbAllMethods.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_CB_Method_Breakpoint_All_Methods"));
+        org.openide.awt.Mnemonics.setLocalizedText(cbAllMethods, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "CB_Method_Breakpoint_All_Methods")); // NOI18N
+        cbAllMethods.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_CB_Method_Breakpoint_All_Methods")); // NOI18N
         cbAllMethods.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbAllMethods.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -218,11 +214,10 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(cbAllMethods, gridBagConstraints);
-        cbAllMethods.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_CB_Method_Breakpoint_All_Methods"));
+        cbAllMethods.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_CB_Method_Breakpoint_All_Methods")); // NOI18N
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MN_L_Method_Breakpoint_Method_Name").charAt(0));
         jLabel1.setLabelFor(tfMethodName);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Method_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "L_Method_Breakpoint_Method_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -230,9 +225,9 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Method_Name"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_L_Method_Breakpoint_Method_Name")); // NOI18N
 
-        tfMethodName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Method_Name"));
+        tfMethodName.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_TF_Method_Breakpoint_Method_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -240,11 +235,10 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(tfMethodName, gridBagConstraints);
-        tfMethodName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Method_Name"));
+        tfMethodName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_TF_Method_Breakpoint_Method_Name")); // NOI18N
 
-        cbStopOnEntry.setMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MNC_CB_MethodEntry").charAt(0));
-        cbStopOnEntry.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "LBL_CB_MethodEntry"));
-        cbStopOnEntry.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_CB_MethodEntry"));
+        org.openide.awt.Mnemonics.setLocalizedText(cbStopOnEntry, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "LBL_CB_MethodEntry")); // NOI18N
+        cbStopOnEntry.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_CB_MethodEntry")); // NOI18N
         cbStopOnEntry.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbStopOnEntry.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -260,9 +254,8 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         pSettings.add(cbStopOnEntry, gridBagConstraints);
 
-        cbStopOnExit.setMnemonic(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "MNC_CB_MethodExit").charAt(0));
-        cbStopOnExit.setText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "LBL_CB_MethodExit"));
-        cbStopOnExit.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_CB_MethodExit"));
+        org.openide.awt.Mnemonics.setLocalizedText(cbStopOnExit, org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "LBL_CB_MethodExit")); // NOI18N
+        cbStopOnExit.setToolTipText(org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "TTT_CB_MethodExit")); // NOI18N
         cbStopOnExit.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbStopOnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
