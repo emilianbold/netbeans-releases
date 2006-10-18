@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -36,6 +35,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
@@ -46,11 +46,14 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+
 /**
- * representation of a record in manifest-inf/services
+ * Representation of a record in META-INF/services.
+ *
  * @author pzajac
  */
 final class Service {
+    
     private final String codebase;
     private final String fileName;
     private final List classes;
@@ -64,7 +67,6 @@ final class Service {
         this.classes = classes;
     }
     
-   
     static Service createService(String codebase,String fileName, InputStream jarIs) throws IOException {
         List list = new ArrayList();
         BufferedReader reader = new BufferedReader(new InputStreamReader(jarIs));
@@ -76,7 +78,6 @@ final class Service {
             }
         } 
         return new Service(codebase,fileName,list);
-        
     }
     
     static List /*Service*/ readServices(File jarFile) {
@@ -92,8 +93,11 @@ final class Service {
                     String name = entry.getName().substring(META_INF_SERVICES.length() + 1).trim();
                     if (!name.equals("")) { // NOI18N
                         InputStream is = jar.getInputStream(entry);
-                        services.add(createService(codebase,name.intern(),is));
-                        is.close();
+                        try {
+                            services.add(createService(codebase,name.intern(),is));
+                        } finally {
+                            is.close();
+                        }
                     }
                 }
             }
@@ -106,27 +110,29 @@ final class Service {
     static List /*Service*/ getOnlyProjectServices(NbModuleProject project) {
         List /*Service */ services = new ArrayList();
         try {
-	   FileObject mIServicesFolder = null;
-           mIServicesFolder = SUtil.getServicesFolder(project,false);
-//           // get META-INF.services folder
-           if (mIServicesFolder != null) {
+            FileObject mIServicesFolder = null;
+            mIServicesFolder = SUtil.getServicesFolder(project,false);
+            // get META-INF.services folder
+            if (mIServicesFolder != null) {
                 String codebase = project.getCodeNameBase();
                 FileObject servicesFOs [] = mIServicesFolder.getChildren();
                 for (int foIt = 0 ; foIt < servicesFOs.length ; foIt++ ) {
-                    if (servicesFOs[foIt].isData()) {
+                    if (servicesFOs[foIt].isData() && VisibilityQuery.getDefault().isVisible(servicesFOs[foIt])) {
                         InputStream is = servicesFOs[foIt].getInputStream();
-                        services.add(createService(codebase,servicesFOs[foIt].getNameExt(),is)); 
-                        is.close();
+                        try {
+                            services.add(createService(codebase,servicesFOs[foIt].getNameExt(),is));
+                        } finally {
+                            is.close();
+                        }
                     }
                 }
-           }
+            }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR,ioe);
         }
         return services;
-        
     }
-
+    
     public String getCodebase() {
         return codebase;
     }
@@ -138,46 +144,48 @@ final class Service {
     public List getClasses() {
         return classes;
     }
-    public boolean  containsClass (String name ) {
+
+    public boolean containsClass(String name) {
         return classes.indexOf(name)  != -1;
     }
     
     public void removeClass(String name) {
         classes.remove(name);
     }
-    private  static Set /*File*/ getJars(NbModuleProject p) throws IOException { 
-	if (p == null) {
-	    // testing 
-	    return SUtil.getPlatformJars(); 
-	} else {
-	    NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
-	    if (type == NbModuleTypeProvider.STANDALONE) {
-		return LayerUtils.getPlatformJarsForStandaloneProject(p);
-	    } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
-		SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
-		assert suiteProv != null : p;
-		File suiteDir = suiteProv.getSuiteDirectory();
-		if (suiteDir == null || !suiteDir.isDirectory()) {
-		    throw new IOException("Could not locate suite for " + p); // NOI18N
-		}
-		Project suite = ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
-		if (suite == null || ! (suite instanceof SuiteProject) ) {
-		    throw new IOException("Could not load suite for " + p + " from " + suiteDir); // NOI18N
-		}
-		return LayerUtils.getPlatformJarsForSuiteComponentProject(p,(SuiteProject)suite);
-	    } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
-		/// Is it really correct? 
-		// [TODO]
-		return LayerUtils.getPlatformJarsForStandaloneProject(p);
-	    } else {
-		throw new AssertionError(type);
-	    }
-	}
+    
+    private  static Set /*File*/ getJars(NbModuleProject p) throws IOException {
+        if (p == null) {
+            // testing
+            return SUtil.getPlatformJars();
+        } else {
+            NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
+            if (type == NbModuleTypeProvider.STANDALONE) {
+                return LayerUtils.getPlatformJarsForStandaloneProject(p);
+            } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
+                SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
+                assert suiteProv != null : p;
+                File suiteDir = suiteProv.getSuiteDirectory();
+                if (suiteDir == null || !suiteDir.isDirectory()) {
+                    throw new IOException("Could not locate suite for " + p); // NOI18N
+                }
+                Project suite = ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
+                if (!(suite instanceof SuiteProject)) {
+                    throw new IOException("Could not load suite for " + p + " from " + suiteDir); // NOI18N
+                }
+                return LayerUtils.getPlatformJarsForSuiteComponentProject(p,(SuiteProject)suite);
+            } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+                /// Is it really correct?
+                // [TODO]
+                return LayerUtils.getPlatformJarsForStandaloneProject(p);
+            } else {
+                throw new AssertionError(type);
+            }
+        }
     }
     
-     static List/*Service*/ getPlatfromServices(NbModuleProject p) throws IOException {
+    static List/*Service*/ getPlatfromServices(NbModuleProject p) throws IOException {
         NbModuleTypeProvider.NbModuleType type = Util.getModuleType(p);
-        List services = new ArrayList();
+        List/*<Service>*/ services = new ArrayList();
         if (type == NbModuleTypeProvider.NETBEANS_ORG) {
             // special case fro nborg modules
             Set/*<NbModuleProject>*/ projects = LayerUtils.getProjectsForNetBeansOrgProject(p);
@@ -217,15 +225,16 @@ final class Service {
                     serviceFo = mIServicesFolder.createData(getFileName());
                 }
                 FileLock lock = serviceFo.lock();
-                OutputStream os = serviceFo.getOutputStream(lock);
-                PrintStream ps = new PrintStream(os);
-                for (Iterator it = classes.iterator() ; it.hasNext() ; ) {
-                    Object object = it.next();
-                    ps.println(object);
+                try {
+                    PrintStream ps = new PrintStream(serviceFo.getOutputStream(lock));
+                    for (Iterator it = classes.iterator() ; it.hasNext() ; ) {
+                        Object object = it.next();
+                        ps.println(object);
+                    }
+                    ps.close();
+                } finally {
+                    lock.releaseLock();
                 }
-                ps.close();
-                os.close();
-                lock.releaseLock();
             } else {
                 // no service, remove file
                 serviceFo.delete();
@@ -234,4 +243,5 @@ final class Service {
             ErrorManager.getDefault().notify(ioe);
         }
     }
+    
 }
