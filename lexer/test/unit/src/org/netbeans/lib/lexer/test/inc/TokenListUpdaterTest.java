@@ -13,6 +13,7 @@
 
 package org.netbeans.lib.lexer.test.inc;
 
+import java.util.ConcurrentModificationException;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.LanguageDescription;
@@ -60,7 +61,7 @@ public class TokenListUpdaterTest extends TestCase {
         try {
             ts.moveNext();
             fail("Should not get there");
-        } catch (IllegalStateException e) {
+        } catch (ConcurrentModificationException e) {
             // Expected
         }
 
@@ -97,7 +98,7 @@ public class TokenListUpdaterTest extends TestCase {
         try {
             ts.moveNext();
             fail("Should not get there");
-        } catch (IllegalStateException e) {
+        } catch (ConcurrentModificationException e) {
             // Expected
         }
 
@@ -124,7 +125,7 @@ public class TokenListUpdaterTest extends TestCase {
         try {
             ts.moveNext();
             fail("Should not get there");
-        } catch (IllegalStateException e) {
+        } catch (ConcurrentModificationException e) {
             // Expected
         }
 
@@ -151,7 +152,7 @@ public class TokenListUpdaterTest extends TestCase {
         try {
             ts.moveNext();
             fail("Should not get there");
-        } catch (IllegalStateException e) {
+        } catch (ConcurrentModificationException e) {
             // Expected
         }
 
@@ -184,7 +185,7 @@ public class TokenListUpdaterTest extends TestCase {
         try {
             ts.moveNext();
             fail("Should not get there");
-        } catch (IllegalStateException e) {
+        } catch (ConcurrentModificationException e) {
             // Expected
         }
 
@@ -215,7 +216,7 @@ public class TokenListUpdaterTest extends TestCase {
         try {
             ts.moveNext();
             fail("Should not get there");
-        } catch (IllegalStateException e) {
+        } catch (ConcurrentModificationException e) {
             // Expected
         }
 

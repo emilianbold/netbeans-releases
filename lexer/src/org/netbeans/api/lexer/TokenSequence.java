@@ -19,6 +19,7 @@
 
 package org.netbeans.api.lexer;
 
+import java.util.ConcurrentModificationException;
 import org.netbeans.lib.lexer.BranchTokenList;
 import org.netbeans.lib.lexer.SubSequenceTokenList;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
@@ -129,6 +130,8 @@ public final class TokenSequence<T extends TokenId> {
      *
      * @return non-null token instance.
      * @see #offsetToken()
+     * @throws IllegalStateException if this token sequence was not positioned
+     *  to any token yet.
      */
     public Token<T> token() {
         checkToken();
@@ -148,6 +151,8 @@ public final class TokenSequence<T extends TokenId> {
      * to get the appropriate offset from the token itself
      * later when a token sequence will not be available.
      * </p>
+     * @throws IllegalStateException if this token sequence was not positioned
+     *  to any token yet.
      */
     public Token<T> offsetToken() {
         checkToken();
@@ -169,6 +174,8 @@ public final class TokenSequence<T extends TokenId> {
      * best performance with a constant time complexity.
      *
      * @return &gt;=0 absolute offset of the current token in the underlying input.
+     * @throws IllegalStateException if this token sequence was not positioned
+     *  to any token yet.
      */
     public int offset() {
         checkToken();
@@ -194,6 +201,8 @@ public final class TokenSequence<T extends TokenId> {
      * has a language embedding.
      *
      * @return embedded sequence or null if no embedding exists for this token.
+     * @throws IllegalStateException if this token sequence was not positioned
+     *  to any token yet.
      */
     public TokenSequence<? extends TokenId> embedded() {
         checkToken();
@@ -238,6 +247,8 @@ public final class TokenSequence<T extends TokenId> {
      * @return true if the sequence was successfully moved to the next token
      *  or false if stays on the original token because there are no more tokens
      *  in the forward direction.
+     * @throws ConcurrentModificationException if this token sequence
+     *  is no longer valid because of an underlying mutable input source modification.
      */
     public boolean moveNext() {
         checkModCount();
@@ -272,6 +283,8 @@ public final class TokenSequence<T extends TokenId> {
      * @return true if the sequence was successfully moved to the previous token
      *  or false if stayed on the original token because there are no more tokens
      *  in the backward direction.
+     * @throws ConcurrentModificationException if this token sequence
+     *  is no longer valid because of an underlying mutable input source modification.
      */
     public boolean movePrevious() {
         checkModCount();
@@ -307,6 +320,8 @@ public final class TokenSequence<T extends TokenId> {
      *   with the given index. Returns <code>false</code>
      *   if <code>index < 0</code> or <code>index < tokenCount</code>.
      *   In such case the current token sequence's position stays unchanged.
+     * @throws ConcurrentModificationException if this token sequence
+     *  is no longer valid because of an underlying mutable input source modification.
      */
     public boolean moveIndex(int index) {
         checkModCount();
@@ -383,6 +398,9 @@ public final class TokenSequence<T extends TokenId> {
      *  <br>
      *  Returns {@link Integer#MAX_VALUE} if there are no tokens in the sequence.
      *  In such case there is no active token.
+     * 
+     * @throws ConcurrentModificationException if this token sequence
+     *  is no longer valid because of an underlying mutable input source modification.
      */
     public int move(int offset) {
         checkModCount();
@@ -567,7 +585,7 @@ public final class TokenSequence<T extends TokenId> {
     
     private void checkModCount() {
         if (tokenList.modCount() != this.modCount) {
-            throw new IllegalStateException(
+            throw new ConcurrentModificationException(
                 "This token sequence is no longer valid. Underlying token hierarchy" // NOI18N
               + " has been modified: " + this.modCount + " != " + tokenList.modCount() // NOI18N
             );

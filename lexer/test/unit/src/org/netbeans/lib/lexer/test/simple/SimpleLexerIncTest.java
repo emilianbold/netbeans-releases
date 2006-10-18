@@ -13,10 +13,10 @@
 
 package org.netbeans.lib.lexer.test.simple;
 
+import java.util.ConcurrentModificationException;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.LanguageDescription;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -58,7 +58,7 @@ public class SimpleLexerIncTest extends TestCase {
         try {
             ts.moveNext();
             fail("TokenSequence.moveNext() did not throw exception as expected.");
-        } catch (IllegalStateException e) {
+        } catch (ConcurrentModificationException e) {
             // Expected exception
         }
         
@@ -111,7 +111,7 @@ public class SimpleLexerIncTest extends TestCase {
         try {
             ts.moveNext();
             fail("TokenSequence.moveNext() did not throw exception as expected.");
-        } catch (IllegalStateException e) {
+        } catch (ConcurrentModificationException e) {
             // Expected exception
         }
         
