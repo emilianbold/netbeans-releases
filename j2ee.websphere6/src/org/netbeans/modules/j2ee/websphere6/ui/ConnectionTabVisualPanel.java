@@ -312,14 +312,16 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_LocalRemote"));
 
         serverTypeCombo.setEnabled(false);
-        serverTypeCombo.getAccessibleContext().setAccessibleName("Access Method");
+        serverTypeCombo.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_AccessMethod"));
+        serverTypeCombo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_AccessMethodDescription"));
 
         jLabel3.setLabelFor(localInstancesCombo);
         jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_LocalInstances"));
         jLabel3.getAccessibleContext().setAccessibleName("Local Instances Label");
 
         localInstancesCombo.setEnabled(false);
-        localInstancesCombo.getAccessibleContext().setAccessibleName("Local Instances");
+        localInstancesCombo.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_LocalInstances"));
+        localInstancesCombo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_LocalInstances"));
 
         jLabel4.setLabelFor(hostField);
         jLabel4.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_Host"));
@@ -330,7 +332,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         jLabel5.getAccessibleContext().setAccessibleName("Port Label");
 
         hostField.setEditable(false);
-        hostField.getAccessibleContext().setAccessibleName("Host");
+        hostField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_Host"));
+        hostField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_Host"));
 
         jLabel6.setLabelFor(userNameField);
         jLabel6.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_Username"));
@@ -340,9 +343,15 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         jLabel7.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_Password"));
         jLabel7.getAccessibleContext().setAccessibleName("Password Label");
 
-        userNameField.getAccessibleContext().setAccessibleName("Username");
+        userNameField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_Username"));
+        userNameField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_Username"));
+
+        passwordField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_Password"));
+        passwordField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_Password"));
 
         profilePathField.setEditable(false);
+        profilePathField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_ProfilePath"));
+        profilePathField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_ProfilePath"));
 
         jLabel1.setLabelFor(profilePathField);
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("LBL_ProfilePath"));
@@ -353,6 +362,9 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 portFieldFocusLost(evt);
             }
         });
+
+        portField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_Port"));
+        portField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_Port"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

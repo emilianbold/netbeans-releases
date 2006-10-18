@@ -208,6 +208,11 @@ public class ServerLocationPanel extends JPanel
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(0, 10, 0, 10);
+        locationField.getAccessibleContext().setAccessibleName(
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").getString("TTL_Location"));
+        locationField.getAccessibleContext().setAccessibleDescription(
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").getString("MSG_Location"));
+        
         add(locationField, gridBagConstraints);
         
         // add server installation directory field browse button
@@ -220,6 +225,11 @@ public class ServerLocationPanel extends JPanel
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
+        locationBrowseButton.getAccessibleContext().setAccessibleName(
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").getString("TTL_Browse"));
+        locationBrowseButton.getAccessibleContext().setAccessibleDescription(
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").getString("MSG_Browse"));
+        
         add(locationBrowseButton, gridBagConstraints);
         
         // add the empty panel, that will take up all the remaining space

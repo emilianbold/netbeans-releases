@@ -263,7 +263,7 @@ public class ServerPropertiesPanel extends JPanel
                 wizardServerProperties.getServerInstances(
                 instantiatingIterator.getServerRoot())));
         remoteWarningLabel = new JTextArea(NbBundle.getMessage(
-                ServerPropertiesPanel.class, 
+                ServerPropertiesPanel.class,
                 "LBL_remoteIncompatibilityWarning"));                  // NOI18N
         
         // set the desired layout
@@ -289,6 +289,8 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
+        serverTypeCombo.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_AccessMethod"));
+        serverTypeCombo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_AccessMethodDescription"));
         add(serverTypeCombo, gridBagConstraints);
         
         // add local instances field label
@@ -310,6 +312,8 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
+        localInstancesCombo.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_LocalInstances"));
+        localInstancesCombo.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_LocalInstances"));
         add(localInstancesCombo, gridBagConstraints);
         
         // add domain path field label
@@ -331,6 +335,8 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
+        domainPathField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_ProfilePath"));
+        domainPathField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_ProfilePath"));
         add(domainPathField, gridBagConstraints);
         
         // add host field label
@@ -351,6 +357,8 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
+        hostField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_Host"));
+        hostField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_Host"));
         add(hostField, gridBagConstraints);
         hostField.setEditable(false);
         
@@ -377,6 +385,8 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
+        portField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_Port"));
+        portField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_Port"));
         add(portField, gridBagConstraints);
         portField.setEditable(false);
         
@@ -399,6 +409,8 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
+        usernameField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_Username"));
+        usernameField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_Username"));
         add(usernameField, gridBagConstraints);
         
         // add password field label
@@ -419,6 +431,8 @@ public class ServerPropertiesPanel extends JPanel
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 10, 5, 0);
+        passwordField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("TTL_Password"));
+        passwordField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/websphere6/ui/Bundle").getString("MSG_Password"));
         add(passwordField, gridBagConstraints);
         
         // remote warning label
@@ -426,6 +440,15 @@ public class ServerPropertiesPanel extends JPanel
         remoteWarningLabel.setWrapStyleWord(true);
         remoteWarningLabel.setLineWrap(true);
         remoteWarningLabel.setOpaque(false);
+        remoteWarningLabel.getAccessibleContext().setAccessibleName(
+                java.util.ResourceBundle.getBundle(
+                "org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").
+                getString("TTL_RemoteWarningA11Name"));
+        remoteWarningLabel.getAccessibleContext().setAccessibleDescription(
+                java.util.ResourceBundle.getBundle(
+                "org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").
+                getString("MSG_RemoteWarningA11Description"));
+        
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -437,17 +460,17 @@ public class ServerPropertiesPanel extends JPanel
         add(remoteWarningLabel, gridBagConstraints);
         
         setMnemonics(domainPathLabel);
-        domainPathLabel.setLabelFor(domainPathField);        
+        domainPathLabel.setLabelFor(domainPathField);
         setMnemonics(serverTypeLabel);
-        serverTypeLabel.setLabelFor(serverTypeCombo);        
+        serverTypeLabel.setLabelFor(serverTypeCombo);
         setMnemonics(localInstanceLabel);
-        localInstanceLabel.setLabelFor(localInstancesCombo);        
+        localInstanceLabel.setLabelFor(localInstancesCombo);
         setMnemonics(hostLabel);
-        hostLabel.setLabelFor(hostField);        
+        hostLabel.setLabelFor(hostField);
         setMnemonics(portLabel);
-        portLabel.setLabelFor(portField);        
+        portLabel.setLabelFor(portField);
         setMnemonics(userNameLabel);
-        userNameLabel.setLabelFor(usernameField);        
+        userNameLabel.setLabelFor(usernameField);
         setMnemonics(passwordLabel);
         passwordLabel.setLabelFor(passwordField);
     }
@@ -457,10 +480,10 @@ public class ServerPropertiesPanel extends JPanel
         String name = label.getText();
         int index = Mnemonics.findMnemonicAmpersand(name);
         if(index < 0) {
-            Mnemonics.setLocalizedText(label,name);            
+            Mnemonics.setLocalizedText(label,name);
             label.setDisplayedMnemonic(name.charAt(0));
         } else {
-            Mnemonics.setLocalizedText(label,name.substring(0,index) +  name.substring(index+1));  
+            Mnemonics.setLocalizedText(label,name.substring(0,index) +  name.substring(index+1));
             label.setDisplayedMnemonic(name.charAt(index+1));
         }
     }
