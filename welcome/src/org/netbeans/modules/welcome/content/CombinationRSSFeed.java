@@ -47,7 +47,8 @@ public class CombinationRSSFeed extends RSSFeed {
     private String url2;
 
     /** Creates a new instance of CombinationRSSFeed */
-    public CombinationRSSFeed( String url1, String url2 ) {
+    public CombinationRSSFeed( String url1, String url2, boolean showProxyButton ) {
+        super( showProxyButton );
         this.url1 = url1;
         this.url2 = url2;
     }

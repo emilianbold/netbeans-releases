@@ -31,15 +31,15 @@ import javax.swing.JComponent;
 public abstract class RSSFeedReaderPanel extends ContentPanel {
 
     /** Creates a new instance of AbstractFeedReaderPanel */
-    public RSSFeedReaderPanel( String key ) {
+    public RSSFeedReaderPanel( String key, boolean showProxyButton ) {
         super( BundleSupport.getLabel( key ) );
         setOpaque( true );
         setBackground( Utils.getColor(DEFAULT_BACKGROUND_COLOR) );
-        setContent( buildContent( BundleSupport.getURL( key ) ) );
+        setContent( buildContent( BundleSupport.getURL( key ), showProxyButton ) );
     }
 
-    protected JComponent buildContent( String url ) {
-        RSSFeed feed = new RSSFeed( url );
+    protected JComponent buildContent( String url, boolean showProxyButton ) {
+        RSSFeed feed = new RSSFeed( url, showProxyButton );
         feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
         return feed;
     }

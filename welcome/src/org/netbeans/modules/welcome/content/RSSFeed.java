@@ -66,6 +66,8 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     protected static final int NEWS_COUNT = 10;
     
     private String url;
+    
+    private boolean showProxyButton = true;
 
     private RequestProcessor.Task reloadTimer;
     private long lastReload = 0;
@@ -77,8 +79,9 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
     private static DateFormat printingDateFormat = DateFormat.getDateTimeInstance( DateFormat.SHORT, DateFormat.SHORT );
     private static DateFormat printingDateFormatShort = DateFormat.getDateInstance( DateFormat.SHORT );
 
-    public RSSFeed( String url ) {
+    public RSSFeed( String url, boolean showProxyButton ) {
         this.url = url;
+        this.showProxyButton = showProxyButton;
         setBorder(null);
         setOpaque(false);
 
@@ -91,8 +94,8 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         HttpProxySettings.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, HttpProxySettings.getDefault() ) );
     }
     
-    RSSFeed() {
-        this( null );
+    public RSSFeed( boolean showProxyButton ) {
+        this( null, showProxyButton );
     }
     
     public void setContent( Component content ) {
@@ -333,16 +336,18 @@ public class RSSFeed extends JScrollPane implements Constants, PropertyChangeLis
         panel.add( new JLabel(BundleSupport.getLabel("ErrCannotConnect")),  // NOI18N
                 new GridBagConstraints(0,row++,1,1,0.0,0.0,
                 GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(5,10,10,5),0,0 ) );
-        JButton button = new JButton();
-        Mnemonics.setLocalizedText( button, BundleSupport.getLabel( "ProxyConfig" ) );  // NOI18N
-        button.setOpaque( false );
-        button.addActionListener( new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                HttpProxySettings.getDefault().showConfigurationDialog();
-            }
-        });
-        panel.add( button, new GridBagConstraints(0,row++,1,1,0.0,0.0,
-                GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(5,10,10,5),0,0 ) );
+        if( showProxyButton ) {
+            JButton button = new JButton();
+            Mnemonics.setLocalizedText( button, BundleSupport.getLabel( "ProxyConfig" ) );  // NOI18N
+            button.setOpaque( false );
+            button.addActionListener( new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    HttpProxySettings.getDefault().showConfigurationDialog();
+                }
+            });
+            panel.add( button, new GridBagConstraints(0,row++,1,1,0.0,0.0,
+                    GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(5,10,10,5),0,0 ) );
+        }
         return panel;
     }
 

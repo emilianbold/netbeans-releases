@@ -37,7 +37,7 @@ public class Blogs extends RSSFeedReaderPanel {
 
     /** Creates a new instance of NbNews */
     public Blogs() {
-        super( "Blogs" ); // NOI18N
+        super( "Blogs", false ); // NOI18N
 
         setBottomContent( buildBottomContent() );
     }

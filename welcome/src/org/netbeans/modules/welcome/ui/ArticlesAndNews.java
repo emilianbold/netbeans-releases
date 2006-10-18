@@ -46,14 +46,14 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
     private static final boolean firstTimeStart = WelcomeOptions.getDefault().isFirstTimeStart();
 
     public ArticlesAndNews() {
-        super( "ArticlesAndNews" ); // NOI18N
+        super( "ArticlesAndNews", true ); // NOI18N
 
         WelcomeOptions.getDefault().setFirstTimeStart( false );
 
         setBottomContent( buildBottomContent() );
     }
 
-    protected JComponent buildContent(String url) {
+    protected JComponent buildContent(String url, boolean showProxyButton) {
         Settings autoUpdateSettings = ((Settings)Settings.findObject( Settings.class ));
         if( null != autoUpdateSettings ) {
             String ideId = autoUpdateSettings.getIdeIdentity();
@@ -61,7 +61,7 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
                 url +=  "?unique=" + ideId; // NOI18N
             }
         }
-        feed = new ArticlesAndNewsRSSFeed( url, BundleSupport.getURL("News") ); // NOI18N
+        feed = new ArticlesAndNewsRSSFeed( url, BundleSupport.getURL("News"), showProxyButton ); // NOI18N
         feed.addPropertyChangeListener( RSSFeed.FEED_CONTENT_PROPERTY, this );
         return feed;
     }
@@ -102,8 +102,8 @@ public class ArticlesAndNews extends RSSFeedReaderPanel {
 
     private class ArticlesAndNewsRSSFeed extends CombinationRSSFeed {
         private JPanel contentHeader;
-        public ArticlesAndNewsRSSFeed( String url1, String url2 ) {
-            super( url1, url2 );
+        public ArticlesAndNewsRSSFeed( String url1, String url2, boolean showProxyButton ) {
+            super( url1, url2, showProxyButton );
         }
 
         protected Component getContentHeader() {
