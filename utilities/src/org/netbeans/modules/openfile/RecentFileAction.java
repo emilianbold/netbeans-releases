@@ -22,19 +22,19 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.util.List;
-import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -46,7 +46,7 @@ import org.openide.util.actions.Presenter;
  *
  * @author Dafe Simonek
  */
-public class RecentFileAction extends AbstractAction implements Presenter.Menu, PopupMenuListener, ChangeListener {
+public class RecentFileAction extends AbstractAction implements Presenter.Menu, PopupMenuListener {
 
     /** property of menu items where we store fileobject to open */
     private static final String FO_PROP = "RecentFileAction.Recent_FO";
@@ -64,17 +64,10 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
     
     public JMenuItem getMenuPresenter() {
         if (menu == null) {
-                menu = new JMenu(this);
-                menu.setMnemonic(NbBundle.getMessage(RecentFileAction.class,
-                                                     "MNE_RecentFileAction_Name").charAt(0));
-                menu.getPopupMenu().addPopupMenuListener(this);
-                menu.setEnabled(!RecentFiles.getRecentFiles().isEmpty());
-            try {
-                RecentFiles.addChangeListener(this);
-            } catch (TooManyListenersException ex) {
-                Logger.getLogger(RecentFileAction.class.getName()).log(
-                        Level.WARNING, ex.getMessage(), ex);
-            }
+            menu = new UpdatingMenu(this);
+            menu.setMnemonic(NbBundle.getMessage(RecentFileAction.class,
+                                                 "MNE_RecentFileAction_Name").charAt(0));
+            menu.getPopupMenu().addPopupMenuListener(this);
         }
         return menu;
     }
@@ -90,13 +83,6 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
     }
     
     public void popupMenuCanceled(PopupMenuEvent arg0) {
-    }
-    
-    /********** Change listener impl ********/
-    
-    /** handles enable/disable logic of the menu item */
-    public void stateChanged(ChangeEvent evt) {
-        menu.setEnabled(!RecentFiles.getRecentFiles().isEmpty());
     }
     
     /** Fills submenu with recently closed files got from RecentFiles support */
@@ -143,6 +129,25 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
         FileObject fo = (FileObject) source.getClientProperty(FO_PROP);
         if (fo != null) {
             OpenFile.open(fo);
+        }
+    }
+    
+    /** Menu that checks its enabled state just before is populated */
+    private static class UpdatingMenu extends JMenu implements DynamicMenuContent {
+        
+        private final JComponent[] content = new JComponent[] { this };
+        
+        public UpdatingMenu (Action action) {
+            super(action);
+        }
+    
+        public JComponent[] getMenuPresenters() {
+            setEnabled(!RecentFiles.getRecentFiles().isEmpty());
+            return content;
+        }
+
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            return getMenuPresenters();
         }
     }
     

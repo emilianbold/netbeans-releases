@@ -32,12 +32,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbPreferences;
@@ -52,9 +49,6 @@ public final class RecentFiles {
 
     /** List of recently closed files */
     private static List<HistoryItem> history = new ArrayList<HistoryItem>();
-    
-    /** Listener which listen to changes in recent files list */
-    private static ChangeListener listener;
     
     /** Preferences node for storing history info */
     private static Preferences prefs;
@@ -82,10 +76,6 @@ public final class RecentFiles {
                     history.addAll(0, loaded);
                 }
                 TopComponent.getRegistry().addPropertyChangeListener(new WindowRegistryL());
-                // let UI know about change 
-                if (!loaded.isEmpty()) {
-                    fireChange(loaded);
-                }
             }
         });
     }
@@ -98,13 +88,6 @@ public final class RecentFiles {
         }
     }
 
-    /** Adds listener to the changes of recently closed list. Supports
-     * only one listener.
-     */
-    public static void addChangeListener (ChangeListener l) throws TooManyListenersException {
-        listener = l;
-    }
-    
     /** Loads list of recent files stored in previous system sessions.
      * @return list of stored recent files
      */
@@ -228,9 +211,6 @@ public final class RecentFiles {
                         }
                     }
                 }
-                if (added) {
-                    fireChange(fo);
-                }
             }
         }
     }
@@ -249,9 +229,6 @@ public final class RecentFiles {
                         removed = true;
                     }
                 }
-                if (removed) {
-                    fireChange(fo);
-                }
             }
         }
     }
@@ -268,12 +245,6 @@ public final class RecentFiles {
             }
         }
         return null;
-    }
-    
-    private static void fireChange (Object obj) {
-        if (listener != null) {
-            listener.stateChanged(new ChangeEvent(obj));
-        }
     }
     
     /** Checks recent files history and removes non-valid entries */
