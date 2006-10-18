@@ -289,6 +289,17 @@ public class ConnectionWidget extends Widget {
     public List<Point> getControlPoints () {
         return controlPointsUm;
     }
+    
+    /**
+     * Returns the Point of control point at the specified position in this list.
+     *
+     * @param index index of control point to return.
+     * @return the Point of control point at the specified position in this list; or null if control point doesn't exist.
+     */
+    public Point getControlPoint (int index) {
+        if (controlPoints.size () <= 0)return null;
+        return controlPointsUm.get(index);
+    }
 
     /**
      * Sets control points.
