@@ -777,10 +777,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         Set<FileSystem> filesystems = getFilesystemsToRefresh();
         FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
         synchronized (filesystems) {
-            int i = 0;
-            for(FileSystem filesystem : filesystems) {
-                filesystemsToRefresh[i++] = filesystem;                
-            }
+            filesystemsToRefresh = filesystems.toArray(new FileSystem[filesystems.size()]);
         }
         for (int i = 0; i < filesystemsToRefresh.length; i++) {            
             // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
