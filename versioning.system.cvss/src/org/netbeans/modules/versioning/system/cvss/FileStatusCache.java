@@ -205,15 +205,16 @@ public class FileStatusCache {
             return new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
         }
     }
-
+    
     /**
      * Refreshes the status of the file given the repository status. Repository status is filled
      * in when this method is called while processing server output. 
      * 
      * @param file
      * @param repositoryStatus
+     * @param forceChangeEvent true to force the cache to fire the change event even if the status of the file has not changed
      */ 
-    public FileInformation refresh(File file, int repositoryStatus) {
+    public FileInformation refresh(File file, int repositoryStatus, boolean forceChangeEvent) {
         File dir = file.getParentFile();
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
@@ -229,9 +230,13 @@ public class FileStatusCache {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         FileInformation fi = createFileInformation(file, entry, repositoryStatus);
-        if (equivalent(fi, current)) return fi;
+        if (equivalent(fi, current)) {
+            if (forceChangeEvent) fireFileStatusChanged(file, current, fi);
+            return fi;
+        }
         // do not include uptodate files into cache, missing directories must be included
         if (current == null && !fi.isDirectory() && fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
+            if (forceChangeEvent) fireFileStatusChanged(file, current, fi);
             return fi;
         }
 
@@ -257,6 +262,17 @@ public class FileStatusCache {
         }
         fireFileStatusChanged(file, current, fi);
         return fi;
+    }
+    
+    /**
+     * Refreshes the status of the file given the repository status. Repository status is filled
+     * in when this method is called while processing server output. 
+     * 
+     * @param file
+     * @param repositoryStatus
+     */ 
+    public FileInformation refresh(File file, int repositoryStatus) {
+        return refresh(file, repositoryStatus, false);
     }
 
     /**

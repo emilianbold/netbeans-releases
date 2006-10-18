@@ -136,7 +136,7 @@ public class UpdateExecutor extends ExecutorSupport {
                 if (c == 'G') c = FileStatusCache.REPOSITORY_STATUS_MODIFIED;
                 if (c == 'C') hasConflict = true;
             }
-            cache.refreshCached(file, c);
+            cache.refresh(file, c, true);
             refreshedFiles.add(file);
         }
                 
@@ -170,10 +170,6 @@ public class UpdateExecutor extends ExecutorSupport {
             } finally {
                 CvsVersioningSystem.ignoreFilesystemEvents(false);
             }
-        }
-        
-        if (ucmd.getUpdateByRevision() != null || ucmd.isResetStickyOnes()) {
-            FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
         }
     }
 
