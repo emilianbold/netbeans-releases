@@ -482,6 +482,9 @@ public class TreeTableView extends BeanTreeView {
                             if (mevt.getY() > treeTable.getHeight()) {
                                 // clear selection, if click under the table
                                 treeTable.clearSelection();
+                            } else {
+                                int selRow = treeTable.rowAtPoint( mevt.getPoint() );
+                                tree.setSelectionRow( selRow );
                             }
 
                             createPopup(mevt);
