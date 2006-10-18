@@ -12,12 +12,14 @@
  */
 package org.netbeans.modules.visual.anchor;
 
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.anchor.Anchor;
 
-import java.awt.*;
 import org.netbeans.api.visual.anchor.Anchor.Direction;
-import org.netbeans.api.visual.widget.FreeConnectionWidget;
 
 /**
  * @author Alex
@@ -32,11 +34,11 @@ public final class FreeRectangularAnchor extends Anchor {
     }
     
     public Result compute(Entry entry) {
-        assert entry.getAttachedConnectionWidget()instanceof FreeConnectionWidget;
+        assert entry.getAttachedConnectionWidget()instanceof ConnectionWidget;
         Point relatedLocation = getRelatedSceneLocation();
         
         Widget widget = (Widget)getRelatedWidget();
-        FreeConnectionWidget fcw=(FreeConnectionWidget)entry.getAttachedConnectionWidget();
+        ConnectionWidget fcw=entry.getAttachedConnectionWidget();
         Point oppositeLocation =fcw.getControlPoint(1);
         if(oppositeLocation==null){
             oppositeLocation=getOppositeSceneLocation(entry);
