@@ -314,6 +314,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                     setValid(false, NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", number)); // NOI18N
                     return null;
                 }
+            } else {
+                revision = SVNRevision.HEAD;
             }
             urlString = urlString.substring(0, idx);
         } else {

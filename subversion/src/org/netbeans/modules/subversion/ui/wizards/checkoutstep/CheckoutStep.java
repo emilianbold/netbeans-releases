@@ -93,6 +93,8 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         workdirPanel.repositoryPathTextField.setText(repositoryFile.getPath());
         if(!repositoryFile.getRevision().equals(SVNRevision.HEAD)) {
             workdirPanel.revisionTextField.setText(repositoryFile.getRevision().toString());
+        } else {
+            workdirPanel.revisionTextField.setText("");
         }
     }    
      
