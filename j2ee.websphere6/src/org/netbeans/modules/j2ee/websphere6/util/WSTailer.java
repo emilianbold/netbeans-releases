@@ -83,6 +83,9 @@ public class WSTailer extends Thread {
      */
     public void run() {
         try {
+            if(io.isClosed()) {
+                io.getOut().reset();
+            }
             this.io.select();
             
             // check the source for the tailing, if it is a file we create a 
@@ -112,6 +115,7 @@ public class WSTailer extends Thread {
                 while (reader.ready()) {
                     io.getOut().println(new String(chars, 0, 
                             reader.read(chars)));
+                    io.getOut().flush();
                 }
                 
                 // when the stream is empty - sleep for a while
