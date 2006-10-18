@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.modules.websvc.wsitmodelext</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.wsdl.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <friend-packages>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <package>org.netbeans.modules.websvc.wsitmodelext.addressing</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.mex</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.mtom</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.policy</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.rm</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.security</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.security.algosuite</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.security.parameters</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.security.proprietary</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.security.tokens</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.transport</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.trust</package>
+                <package>org.netbeans.modules.websvc.wsitmodelext.tx</package>
+            </friend-packages>
+        </data>
+    </configuration>
+</project>
