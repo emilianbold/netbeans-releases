@@ -59,7 +59,7 @@ public class BranchesMenu extends AbstractAction implements DynamicMenuContent {
         menu.add(new Actions.MenuItem(SystemAction.get(BranchAction.class), true));
         menu.add(new Actions.MenuItem(SystemAction.get(SwitchBranchAction.class), true));
         menu.add(new Actions.MenuItem(SystemAction.get(MergeBranchAction.class), true));
-        menu.setMnemonic(NbBundle.getMessage(BranchesMenu.class, "MNE_MenuItem_BranchesMenu").charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(BranchesMenu.class, "CTL_MenuItem_BranchesMenu"));
         return menu;
     }
 }

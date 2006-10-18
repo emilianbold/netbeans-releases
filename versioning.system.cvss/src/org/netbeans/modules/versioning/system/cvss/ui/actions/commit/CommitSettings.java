@@ -144,23 +144,11 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
 
     public void setCommand(CommitCommand cmd) {
         taMessage.setText(cmd.getMessage());
-        if (cmd.getToRevisionOrBranch() != null) {
-            tfRevision.setText(cmd.getToRevisionOrBranch());
-            cbRevision.setSelected(true);
-        } else {
-            cbRevision.setSelected(false);            
-        }
-        cbLocally.setSelected(!cmd.isRecursive());
     }
 
     public void updateCommand(CommitCommand cmd) {
         cmd.setMessage(taMessage.getText());
-        cmd.setRecursive(!cbLocally.isSelected());
-        if (cbRevision.isSelected()) {
-            cmd.setToRevisionOrBranch(tfRevision.getText());
-        } else {
-            cmd.setToRevisionOrBranch(null);            
-        }
+        cmd.setToRevisionOrBranch(null);            
     }
     
     /** This method is called from within the constructor to
@@ -172,25 +160,18 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        cbLocally = new javax.swing.JCheckBox();
-        cbRevision = new javax.swing.JCheckBox();
-        tfRevision = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         taMessage = new org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea();
         jLabel3 = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
 
-        cbLocally.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("MNE_CommitForm_Locally").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbLocally, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("CTL_CommitForm_Locally"));
-        cbRevision.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("MNE_CommitForm_Revision").charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(cbRevision, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("CTL_CommitForm_Revision"));
-
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 0, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 0, 11));
         jLabel2.setLabelFor(taMessage);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("CTL_CommitForm_Message"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("CTL_CommitForm_Message")); // NOI18N
         jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -206,7 +187,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         taMessage.setTabSize(4);
         taMessage.setWrapStyleWord(true);
         jScrollPane1.setViewportView(taMessage);
-        taMessage.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("TT_CommitForm_Message"));
+        taMessage.getAccessibleContext().setAccessibleDescription(bundle.getString("TT_CommitForm_Message")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -217,7 +198,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         gridBagConstraints.weightx = 1.0;
         add(jScrollPane1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("CTL_CommitForm_FilesToCommit"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("CTL_CommitForm_FilesToCommit")); // NOI18N
         jLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -235,19 +216,15 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
         add(errorLabel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbLocally;
-    private javax.swing.JCheckBox cbRevision;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea taMessage;
-    private javax.swing.JTextField tfRevision;
     // End of variables declaration//GEN-END:variables
     
     public void tableChanged(TableModelEvent e) {

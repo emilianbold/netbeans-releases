@@ -132,18 +132,18 @@ class BranchSettings extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         tfBaseTagName = new javax.swing.JTextField();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         cbTagBase.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(cbTagBase, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_TagBase"));
-        cbTagBase.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BranchForm_TagBase"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbTagBase, bundle.getString("CTL_BranchForm_TagBase")); // NOI18N
+        cbTagBase.setToolTipText(bundle.getString("TT_BranchForm_TagBase")); // NOI18N
         cbTagBase.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbTagBaseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -154,8 +154,8 @@ class BranchSettings extends javax.swing.JPanel {
         add(cbTagBase, gridBagConstraints);
 
         cbCheckoutBranch.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(cbCheckoutBranch, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_UpdateToBranch"));
-        cbCheckoutBranch.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BranchForm_UpdateToBranch"));
+        org.openide.awt.Mnemonics.setLocalizedText(cbCheckoutBranch, bundle.getString("CTL_BranchForm_UpdateToBranch")); // NOI18N
+        cbCheckoutBranch.setToolTipText(bundle.getString("TT_BranchForm_UpdateToBranch")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -166,9 +166,8 @@ class BranchSettings extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(cbCheckoutBranch, gridBagConstraints);
 
-        nameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("MNE_BranchForm_BranchName").charAt(0));
         nameLabel.setLabelFor(tfName);
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BranchName"));
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, bundle.getString("CTL_BranchForm_BranchName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -182,7 +181,6 @@ class BranchSettings extends javax.swing.JPanel {
                 branchNameChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -192,35 +190,32 @@ class BranchSettings extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(tfName, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BrowseBranch"));
-        jButton1.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BranchForm_Browse"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, bundle.getString("CTL_BranchForm_BrowseBranch")); // NOI18N
+        jButton1.setToolTipText(bundle.getString("TT_BranchForm_Browse")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseBranches(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         add(jButton1, gridBagConstraints);
 
         jLabel1.setLabelFor(tfBaseTagName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BaseTagName"));
-        jLabel1.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("TT_BranchForm_BaseTagName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_BranchForm_BaseTagName")); // NOI18N
+        jLabel1.setToolTipText(bundle.getString("TT_BranchForm_BaseTagName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 21, 0, 5);
         add(jLabel1, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(tfBaseTagName, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseBranches(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseBranches
