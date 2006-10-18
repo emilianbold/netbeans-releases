@@ -94,6 +94,10 @@ cause it to fail.
         <property name="javadoc.check.external.links" value="false"/>
             <property name="javadoc.check.failonerror" value="false"/>
         <property name="javadoc.header" value="&amp;nbsp;"/>
+        <mkdir dir="../build/tmp/javadoc-colors"/>
+        <arch answers="${javadoc.arch}" xsl="export2color.xsl" output="../build/tmp/javadoc-colors/${javadoc.name}.txt"/>
+        <loadfile property="stability.color" srcfile="../build/tmp/javadoc-colors/${javadoc.name}.txt"/>
+        
         <mkdir dir="${javadoc.out.dir}"/>
         
         <condition property="javadoc.files.provided">
@@ -226,6 +230,11 @@ cause it to fail.
         <copy todir="${javadoc.out.dir}">
             <fileset refid="javadoc.css.files"/>
         </copy>
+        <replace dir="${javadoc.out.dir}" >
+            <include name="javadoc*.css"/>
+            <replacefilter token="background-color: #FFFFFF" value="background-color: ${stability.color}"/>
+            <replacefilter token="background: #FFFFFF" value="background: ${stability.color}"/>
+        </replace>
     </target>
     
     <target name="javadoc-exec-condition" depends="javadoc-check-timestamps" >

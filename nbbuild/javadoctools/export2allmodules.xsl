@@ -84,17 +84,28 @@ Microsystems, Inc. All Rights Reserved.
     </xsl:template>
     
     <xsl:template name="module">
-        <a>
-            <xsl:attribute name="href"><xsl:value-of select="substring-before(@target,'/')" />/allclasses-frame.html</xsl:attribute>
-            <xsl:attribute name="target">packageFrame</xsl:attribute>
-            
-            <xsl:value-of select="@name" />
-        </a>
-        (<a>
-           <xsl:attribute name="href"><xsl:value-of select="substring-before(@target,'/')" />/overview-summary.html</xsl:attribute>
-            <xsl:attribute name="target">classFrame</xsl:attribute>
-            javadoc
-        </a>)
+        <span>
+            <xsl:attribute name="style">
+                <xsl:choose>
+                    <xsl:when test="descendant::api[@category='stable' and @group='java']">background:#ffffff</xsl:when>
+                    <xsl:when test="descendant::api[@category='official' and @group='java']">background:#ffffff</xsl:when>
+                    <xsl:when test="descendant::api[@category='devel' and @group='java']">background:#dfdfdf</xsl:when>
+                    <xsl:when test="descendant::api[@category='deprecated' and @group='java']">text-decoration: line-through</xsl:when>
+                    <xsl:otherwise>background:#c00000</xsl:otherwise>
+                </xsl:choose>
+            </xsl:attribute>
+            <a>
+                <xsl:attribute name="href"><xsl:value-of select="substring-before(@target,'/')" />/allclasses-frame.html</xsl:attribute>
+                <xsl:attribute name="target">packageFrame</xsl:attribute>
+
+                <xsl:value-of select="@name" />
+            </a>
+            (<a>
+               <xsl:attribute name="href"><xsl:value-of select="substring-before(@target,'/')" />/overview-summary.html</xsl:attribute>
+                <xsl:attribute name="target">classFrame</xsl:attribute>
+                javadoc
+            </a>)
+        </span>
         <br/>
     </xsl:template>
     

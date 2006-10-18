@@ -55,10 +55,13 @@ Microsystems, Inc. All Rights Reserved.
         of what they are used for, and a table describing different types of interfaces
         (see <a href="http://openide.netbeans.org/tutorial/api-design.html#api">What is
         an API?</a> to understand why we list DTDs, file formats, etc.) and with
-        a stability category (see <a
+        a stability category (<span style="background:#ffffff">stable and official</span>,
+        <span style="background:#efefef">under development</span>,
+        <span style="background:#efefef;text-decoration:line-through">deprecated</span>,
+        <span style="background:#c00000">friend or private</span>;
+        see <a
         href="http://openide.netbeans.org/tutorial/api-design.html#life">API
-        life-cycle</a> for a list of possible API stability 
-        categories and their meaning).
+        life-cycle</a> for more info).
         The aim is to provide as detailed a definition of NetBeans module 
         external interfaces as possible and give other developers a chance to decide
         whether they want to depend on a particular API or not.
@@ -74,6 +77,14 @@ Microsystems, Inc. All Rights Reserved.
         (usually via autoupdate). Basically when building an application based on
         <em>NetBeans</em> one is free to choose the set of modules and their APIs 
         to satisfy one's needs.
+        <p>
+        This is a list of APIs for development version, if you want to see
+        a list of APIs for a particular version, you may want to go to:
+        </p>
+        <ul>
+            <li><a href="http://www.netbeans.org/download/5_5/javadoc/" target="_top">5.5</a> - Javadoc as released for NetBeans IDE 5.5</li>
+            <li><a href="http://www.netbeans.org/download/5_0/javadoc/" target="_top">5.0</a> - Javadoc as released for NetBeans IDE 5.0</li>
+        </ul>
         <p/>
         To get the API of your module listed here, see the documentation for the 
         Javadoc building
@@ -113,6 +124,16 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:choose>
                     <xsl:when test="api" >
                        <li>
+                        <span>
+                            <xsl:attribute name="style">
+                                <xsl:choose>
+                                    <xsl:when test="descendant::api[@category='stable' and @group='java']">background:#ffffff</xsl:when>
+                                    <xsl:when test="descendant::api[@category='official' and @group='java']">background:#ffffff</xsl:when>
+                                    <xsl:when test="descendant::api[@category='devel' and @group='java']">background:#dfdfdf</xsl:when>
+                                    <xsl:when test="descendant::api[@category='deprecated' and @group='java']">text-decoration: line-through</xsl:when>
+                                    <xsl:otherwise>background:#c00000</xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:attribute>
                            <a>
                              <xsl:attribute name="href"><xsl:value-of select="substring-before(@target,'/')" />/overview-summary.html</xsl:attribute>
                              <xsl:attribute name="target">classFrame</xsl:attribute>
@@ -128,6 +149,7 @@ Microsystems, Inc. All Rights Reserved.
                           <xsl:comment>Begin of first sentenece</xsl:comment>
                           <xsl:apply-templates mode="first-sentence" select="description" />
                           <xsl:comment>End of first sentenece</xsl:comment>.
+                        </span>
                         </li>
                     </xsl:when>
                     <xsl:otherwise>
