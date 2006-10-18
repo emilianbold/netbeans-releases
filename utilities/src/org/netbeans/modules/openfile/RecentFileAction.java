@@ -106,7 +106,7 @@ public class RecentFileAction extends AbstractAction implements Presenter.Menu, 
         int counter = 0;
         for (HistoryItem hItem : files) {
             // allow only up to max items
-            if (++counter >= MAX_COUNT) {
+            if (++counter > MAX_COUNT) {
                 break;
             }
             // obtain icon for fileobject
