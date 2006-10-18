@@ -22,11 +22,11 @@ import java.util.List;
  * It also to add and remove control points on specific locations.
  * <p>
  * WARNING: This class is meant to be redesigned later.
-
+ * @deprecated
  * @author Alex
  */
 // TODO - control points can be modified by accessing: getControlPoints ().get (0).x or y
-public class FreeConnectionWidget extends ConnectionWidget {
+@Deprecated public class FreeConnectionWidget extends ConnectionWidget {
 
     private double createSensitivity=1.00, deleteSensitivity=5.00;
 
