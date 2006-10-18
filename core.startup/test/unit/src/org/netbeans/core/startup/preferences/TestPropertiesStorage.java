@@ -20,7 +20,9 @@
 package org.netbeans.core.startup.preferences;
 
 import java.io.IOException;
-import java.lang.Boolean;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -180,4 +182,19 @@ public class TestPropertiesStorage extends TestFileStorage {
         assertNull(storage.toFolder());
         assertFalse(storage.existsNode());
     }    
+
+    public void testChildrenNames() throws Exception {
+        Preferences subnode = pref.node("c1");
+        subnode.put("k","v");
+        subnode.flush();
+        subnode = pref.node("c2");
+        subnode.put("k","v");
+        subnode.flush();
+        subnode = pref.node("c3/c4");
+        subnode.put("k","v");
+        subnode.flush();
+        Set<String> names = new TreeSet<String>(Arrays.asList(storage.childrenNames()));
+        assertEquals(new TreeSet<String>(Arrays.asList("c1", "c2", "c3")), names);
+    }
+
 }

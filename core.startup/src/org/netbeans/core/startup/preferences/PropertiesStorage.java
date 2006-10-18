@@ -127,10 +127,13 @@ class PropertiesStorage implements NbPreferences.FileStorage {
             List<String> folderNames = new ArrayList<String>();
             
             if (folder != null) {
-                List<? extends FileObject> folders = Collections.list(folder.getFolders(false));
-                
-                for (FileObject fo : folders) {
+                for (FileObject fo : Collections.list(folder.getFolders(false))) {
                     folderNames.add(fo.getNameExt());
+                }
+                for (FileObject fo : Collections.list(folder.getData(false))) {
+                    if (fo.hasExt("properties")) { // NOI18N
+                        folderNames.add(fo.getName());
+                    }
                 }
             }
             
