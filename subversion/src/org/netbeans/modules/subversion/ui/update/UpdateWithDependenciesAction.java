@@ -28,6 +28,7 @@ import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
 import java.util.*;
+import org.netbeans.modules.subversion.FileInformation;
 
 /**
  * Updates selected projects and all projects they depend on.
@@ -38,6 +39,16 @@ public class UpdateWithDependenciesAction extends ContextAction {
     
     private boolean running;
 
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_IN_REPOSITORY;
+    }
+
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_MANAGED 
+             & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED 
+             & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    }
+    
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_UpdateWithDependencies";    // NOI18N
     }
@@ -49,7 +60,7 @@ public class UpdateWithDependenciesAction extends ContextAction {
                 return false;
             }
         }
-        return !running && nodes.length > 0;
+        return !running && super.enable(nodes);
     }
     
     protected void performContextAction(final Node[] nodes) {
