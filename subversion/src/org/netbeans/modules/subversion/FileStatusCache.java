@@ -37,6 +37,7 @@ import org.openide.ErrorManager;
 
 import java.util.*;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 
@@ -774,10 +775,16 @@ public class FileStatusCache implements ISVNNotifyListener {
 
     public void logCompleted(String message) {
         Set<FileSystem> filesystems = getFilesystemsToRefresh();
+        FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];
         synchronized (filesystems) {
+            int i = 0;
             for(FileSystem filesystem : filesystems) {
-                filesystem.refresh(true);
+                filesystemsToRefresh[i++] = filesystem;                
             }
+        }
+        for (int i = 0; i < filesystemsToRefresh.length; i++) {            
+            // don't call refresh() in synchronized (filesystems). It may lead to a deadlock.
+            filesystemsToRefresh[i].refresh(true);            
         }
     }
 
