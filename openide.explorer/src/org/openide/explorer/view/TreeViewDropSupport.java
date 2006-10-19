@@ -442,6 +442,10 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
     private Node getNodeForDrop(Point p) {
         if (p != null) {
             TreePath tp = tree.getPathForLocation(p.x, p.y);
+            if( null == tp ) {
+                //make the drop area a bit bigger at the end of the tree
+                tp = tree.getPathForLocation(p.x, p.y-tree.getRowHeight()/2);
+            }
 
             if (tp != null) {
                 return DragDropUtilities.secureFindNode(tp.getLastPathComponent());
@@ -820,6 +824,10 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         // check location
         Point location = dtde.getLocation();
         TreePath tp = tree.getPathForLocation(location.x, location.y);
+        if( null == tp ) {
+            //make the drop area a bit bigger at the end of the tree
+            tp = tree.getPathForLocation(location.x, location.y-tree.getRowHeight()/2);
+        }
 
         return ((tp != null) && (DragDropUtilities.secureFindNode(tp.getLastPathComponent()) != null)) ? tp : null;
     }
