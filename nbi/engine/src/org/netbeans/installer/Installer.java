@@ -32,7 +32,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.downloader.DownloadManager;
 import org.netbeans.installer.downloader.DownloaderConsts;
 import org.netbeans.installer.product.ProductRegistry;
-import org.netbeans.installer.util.FileProxy;
+import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;

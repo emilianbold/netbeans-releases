@@ -36,7 +36,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathFactory;
 import org.netbeans.installer.download.DownloadOptions;
-import org.netbeans.installer.util.FileProxy;
+import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.exceptions.DownloadException;
