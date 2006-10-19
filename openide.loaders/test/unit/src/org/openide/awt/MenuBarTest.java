@@ -94,7 +94,7 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         public Object instanceCreate() throws IOException, ClassNotFoundException {
             if (throwing) {
                 Exception e = new Exception("original");
-                throw new IOException("inited", e);
+                throw (IOException) new IOException("inited").initCause(e);
             }
             return new Object();
         }
