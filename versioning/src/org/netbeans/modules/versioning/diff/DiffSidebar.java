@@ -72,7 +72,10 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     private Color colorBorder =     new Color(102, 102, 102);
     
     private final DiffSidebarProvider.OriginalContent originalContent;
-    private String                              originalContentBuffer;
+
+    private int     originalContentSerial;
+    private int     originalContentBufferSerial = -1;
+    private String  originalContentBuffer;
 
     private RequestProcessor.Task   refreshDiffTask;
 
@@ -171,14 +174,6 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             if (diff == currentDiff[i]) return i;
         }
         return -1;
-    }
-
-    private void onRollbackAll() {
-        try {
-            document.replace(0, document.getLength(), originalContentBuffer, null);
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-        }
     }
 
     void onRollback(Difference diff) {
@@ -515,10 +510,8 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
                 hideSidebar();
             }
         } else if (DiffSidebarProvider.OriginalContent.PROP_CONTENT_CHANGED.equals(id)) {
-            synchronized(this) {
-                originalContentBuffer = null;
-                refreshDiff();
-            }
+            originalContentSerial++;
+            refreshDiff();
         }
     }
 
@@ -564,11 +557,9 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     public class RefreshDiffTask implements Runnable {
 
         public void run() {
-            synchronized(DiffSidebar.this) {
-                computeDiff();
-                repaint();
-                markProvider.refresh();
-            }
+            computeDiff();
+            repaint();
+            markProvider.refresh();
         }
 
         private void computeDiff() {
@@ -599,7 +590,10 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         }
 
         private void fetchOriginalContent() {
-            if (originalContentBuffer != null) return;
+            int serial = originalContentSerial;
+            if (originalContentBuffer != null && originalContentBufferSerial == serial) return;
+            originalContentBufferSerial = serial;
+
             Reader r = originalContent.getText();
             if (r == null) return;
 
@@ -629,7 +623,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
             if (isFirst) {
                 return "Original";
             } else {
-                return "Working Copy (editable)";
+                return "Working Copy";
             }
         }
 
