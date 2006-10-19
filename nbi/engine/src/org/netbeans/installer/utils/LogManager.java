@@ -152,6 +152,10 @@ public class LogManager {
         log(exception);
     }
     
+    public File getLogFile() {
+        return logFile;
+    }
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String LOG_FILE_PROPERTY       = "nbi.utils.log.file";
