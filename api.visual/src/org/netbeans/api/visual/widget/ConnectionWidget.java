@@ -33,7 +33,7 @@ import java.util.List;
 
 /**
  * This class represents a connection between two location. The locations are resolved by Anchors.
- * The path of the connection is specified by control points which are resolved by Routers.
+ * The path of the connection is specified by control points which are resolved by Routers (DirectRouter is used by default).
  * <p>
  * The connection is rendered using the foreground color and a specified stroke. It also renders control points,
  * end points (first and last control points) and anchors. The shape of points are defined by assigned AnchorShape and PointShape.
@@ -291,14 +291,15 @@ public class ConnectionWidget extends Widget {
     }
     
     /**
-     * Returns the Point of control point at the specified position in this list.
+     * Returns a location of control point at the specified index in the list of control points.
      *
-     * @param index index of control point to return.
-     * @return the Point of control point at the specified position in this list; or null if control point doesn't exist.
+     * @param index index of the control point to return
+     * @return the point; null if the control point does not exist
      */
     public Point getControlPoint (int index) {
-        if (controlPoints.size () <= 0)return null;
-        return controlPointsUm.get(index);
+        if (index < 0  &&  index >= controlPoints.size ())
+            return null;
+        return new Point (controlPoints.get(index));
     }
 
     /**

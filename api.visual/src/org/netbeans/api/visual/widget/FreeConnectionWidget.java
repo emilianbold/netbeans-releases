@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * This class is an extension of the ConnectionWidget. Primarily it is used with FreeRouter and optionally Free*Anchor.
- * It also to add and remove control points on specific locations.
+ * It has a method for adding and removing control points on specific locations.
  * <p>
  * WARNING: This class is meant to be redesigned later.
  * @deprecated
