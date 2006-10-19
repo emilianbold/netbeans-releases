@@ -44,6 +44,8 @@ public abstract class SystemUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static SystemUtils instance;
+    protected static boolean isUserAdmin = false;
+    protected static boolean isUserAdminSet = false;
     
     public static synchronized SystemUtils getInstance() {
         if (instance == null) {
@@ -77,6 +79,8 @@ public abstract class SystemUtils {
     public abstract File getUserHomeDirectory();
     
     public abstract String getUserName();
+    
+    public abstract boolean isCurrentUserAdmin();
     
     public abstract File getCurrentDirectory();
     
