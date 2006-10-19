@@ -142,11 +142,14 @@ public abstract class NbPreferences extends AbstractPreferences {
     }
     
     protected void syncSpi() throws BackingStoreException {
-        try {
-            properties.clear();
-            properties().putAll(fileStorage.load());
-        } catch (IOException ex) {
-            throw new BackingStoreException(ex);
+        if (properties != null) {            
+            try {
+                properties.clear();
+                properties().putAll(fileStorage.load());
+                
+            } catch (IOException ex) {
+                throw new BackingStoreException(ex);
+            }
         }
     }
     
