@@ -38,7 +38,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
 
 /**
  * Tests for SourceLevelQueryImpl
@@ -46,18 +45,18 @@ import org.openide.util.Lookup;
  * @author David Konecny
  */
 public class SourceLevelQueryImplTest extends NbTestCase {
-    
+
     public SourceLevelQueryImplTest(String testName) {
         super(testName);
     }
-    
+
     private FileObject scratch;
     private FileObject projdir;
     private FileObject sources;
     private FileObject tests;
     private ProjectManager pm;
     private Project pp;
-    
+
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.setLookup(new Object[] {
@@ -78,8 +77,8 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         pm = null;
         super.tearDown();
     }
-    
-    
+
+
     private void prepareProject (String platformName) throws IOException {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
@@ -89,15 +88,15 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("javac.source", "${def}");
         props.setProperty ("platform.active",platformName);
-        props.setProperty("def", "1.2.3.4");
+        props.setProperty("def", "1.2");
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
         props = PropertyUtils.getGlobalProperties();
-        props.put("default.javac.source","4.3.2.1");
+        props.put("default.javac.source", "4.3");
         PropertyUtils.putGlobalProperties(props);
         sources = projdir.createFolder("src");
         tests = projdir.createFolder("test");
     }
-    
+
     public void testGetSourceLevelWithValidPlatform() throws Exception {
         this.prepareProject("TestPlatform");
         FileObject file = scratch.createData("some.java");
@@ -105,9 +104,9 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         assertEquals("Non-project Java file does not have any source level", null, sl);
         file = sources.createData("a.java");
         sl = SourceLevelQuery.getSourceLevel(file);
-        assertEquals("Project's Java file must have project's source", "1.2.3.4", sl);        
+        assertEquals("Project's Java file must have project's source", "1.2", sl);
     }
-    
+
     public void testGetSourceLevelWithBrokenPlatform() throws Exception {
         this.prepareProject("BrokenPlatform");
         FileObject file = scratch.createData("some.java");
@@ -115,15 +114,15 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         assertEquals("Non-project Java file does not have any source level", null, sl);
         file = sources.createData("a.java");
         sl = SourceLevelQuery.getSourceLevel(file);
-        assertEquals("Project's Java file must have project's source", "4.3.2.1", sl);        
+        assertEquals("Project's Java file must have project's source", "4.3", sl);
     }
-    
-    
-    
+
+
+
     private static class TestPlatformProvider implements JavaPlatformProvider {
-        
+
         private JavaPlatform platform;
-        
+
         public void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
         }
 
@@ -141,17 +140,17 @@ public class SourceLevelQueryImplTest extends NbTestCase {
                 this.platform = new TestPlatform ();
             }
             return this.platform;
-        }                                
+        }
     }
-    
+
     private static class TestPlatform extends JavaPlatform {
-        
+
         public FileObject findTool(String toolName) {
             return null;
         }
 
         public String getVendor() {
-            return "me";    
+            return "me";
         }
 
         public ClassPath getStandardLibraries() {
@@ -185,7 +184,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         public ClassPath getBootstrapLibraries() {
             return null;
         }
-        
+
     }
-    
+
 }
