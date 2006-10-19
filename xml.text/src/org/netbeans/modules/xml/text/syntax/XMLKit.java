@@ -29,6 +29,9 @@ import javax.swing.text.TextAction;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.*;
+import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.xml.lexer.XMLLanguage;
+import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
 import org.openide.awt.StatusDisplayer;
 
 // we depend on NetBeans editor stuff
@@ -50,7 +53,7 @@ import org.netbeans.modules.xml.text.completion.XMLCompletion;
  * @author Petr Kuzel
  * @author Sandeep
  */
-public class XMLKit extends UniKit implements org.openide.util.HelpCtx.Provider {
+public class XMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.Provider {
 
     /** Serial Version UID */
     private static final long serialVersionUID =5326735092324267367L;
@@ -67,6 +70,9 @@ public class XMLKit extends UniKit implements org.openide.util.HelpCtx.Provider 
     // hack to be settings browseable //??? more info needed
     public static Map settings;
     
+    //temporary - will be removed when lexer is stabilized
+    private static final boolean J2EE_LEXER_COLORING = Boolean.getBoolean("j2ee_lexer_coloring"); //NOI18N
+    
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(XMLKit.class);
     }
@@ -82,7 +88,17 @@ public class XMLKit extends UniKit implements org.openide.util.HelpCtx.Provider 
     }
 
     public Document createDefaultDocument() {
-        return new NbEditorDocument (this.getClass());
+        if(J2EE_LEXER_COLORING) {
+            Document doc = new XMLEditorDocument(this.getClass());
+            Object mimeType = doc.getProperty("mimeType"); //NOI18N
+            if (mimeType == null){
+                doc.putProperty("mimeType", getContentType()); //NOI18N
+            }
+            doc.putProperty(LanguageDescription.class, XMLLanguage.description());
+            return doc;
+        } else {
+            return new NbEditorDocument (this.getClass());
+        }
     }
 
 
@@ -315,4 +331,18 @@ public class XMLKit extends UniKit implements org.openide.util.HelpCtx.Provider 
         
     }
     
+    public class XMLEditorDocument extends NbEditorDocument {
+        public XMLEditorDocument(Class kitClass) {
+            super(kitClass);
+        }
+        
+        public boolean addLayer(DrawLayer layer, int visibility) {
+            //filter out the syntax layer adding
+            if(!(layer instanceof DrawLayerFactory.SyntaxLayer)) {
+                return super.addLayer(layer, visibility);
+            } else {
+                return false;
+            }
+        }
+    }
 }
