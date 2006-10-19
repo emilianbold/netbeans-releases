@@ -39,17 +39,14 @@ import org.openide.filesystems.Repository;
  */
 class PropertiesStorage  {
     private static final String USERROOT_PREFIX = "/Preferences";//NOI18N
-    private static final String SYSTEMROOT_PREFIX = "/SystemPreferences";//NOI18N
     private final static FileObject SFS_ROOT =
             Repository.getDefault().getDefaultFileSystem().getRoot();
     
     private final String folderPath;
     private String filePath;
-    
-    
-    
+            
     static PropertiesStorage instance(final String absolutePath) {
-        return new PropertiesStorage(absolutePath, true);
+        return new PropertiesStorage(absolutePath);
     }
     
     FileObject preferencesRoot() throws IOException {
@@ -58,50 +55,12 @@ class PropertiesStorage  {
     
     
     /** Creates a new instance */
-    private PropertiesStorage(final String absolutePath, boolean userRoot) {
+    private PropertiesStorage(final String absolutePath) {
         StringBuffer sb = new StringBuffer();
-        String prefix = (userRoot) ? USERROOT_PREFIX : SYSTEMROOT_PREFIX;
-        sb.append(prefix).append(absolutePath);
+        sb.append(USERROOT_PREFIX).append(absolutePath);
         folderPath = sb.toString();
     }
         
-    public final boolean existsNode() {
-        return (toPropertiesFile() != null) || (toFolder() != null);
-    }
-    
-    public String[] childrenNames() {
-        try {
-            FileObject folder = toFolder();
-            List folderNames = new ArrayList();
-            
-            if (folder != null) {
-                List folders = Collections.list(folder.getFolders(false));
-                
-                for (Iterator it = folders.iterator(); it.hasNext();) {
-                    FileObject fo = (FileObject) it.next();
-                    folderNames.add(fo.getNameExt());
-                }
-            }
-            
-            return (String[])folderNames.toArray(new String[folderNames.size()]);
-        } finally {
-        }
-    }
-    
-    public final void removeNode() throws IOException {
-        try {
-            FileObject propertiesFile = toPropertiesFile();
-            if (propertiesFile != null && propertiesFile.isValid()) {
-                propertiesFile.delete();
-                FileObject folder = propertiesFile.getParent();
-                while (folder != null && folder != preferencesRoot() && folder.getChildren().length == 0) {
-                    folder.delete();
-                    folder = folder.getParent();
-                }
-            }
-        } finally {
-        }
-    }
     
     public Properties load() throws IOException {
         try {
