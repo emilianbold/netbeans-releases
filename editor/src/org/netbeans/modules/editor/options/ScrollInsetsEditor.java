@@ -21,6 +21,8 @@ package org.netbeans.modules.editor.options;
 
 import java.awt.Insets;
 import java.util.StringTokenizer;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 import org.openide.util.NbBundle;
 
@@ -31,14 +33,14 @@ import org.openide.util.NbBundle;
  * @author   Petr Nejedly
  * @author   Petr Hamernik
  */
-public class ScrollInsetsEditor extends java.beans.PropertyEditorSupport {
+public class ScrollInsetsEditor extends java.beans.PropertyEditorSupport implements ExPropertyEditor {
 
     public boolean supportsCustomEditor () {
         return true;
     }
 
     public java.awt.Component getCustomEditor () {
-        return new ScrollInsetsCustomEditor( this );
+        return new ScrollInsetsCustomEditor( this, env );
     }
 
     //  public Object getValue() {
@@ -125,5 +127,9 @@ public class ScrollInsetsEditor extends java.beans.PropertyEditorSupport {
         }
     }
 
-
+    private PropertyEnv env;
+    
+    public void attachEnv(PropertyEnv env) {
+        this.env = env;
+    }
 }
