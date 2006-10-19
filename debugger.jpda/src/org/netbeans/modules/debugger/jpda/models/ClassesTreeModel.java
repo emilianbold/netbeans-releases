@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -57,6 +58,9 @@ public class ClassesTreeModel implements TreeModel {
     private static boolean      verbose = 
         (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
         (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('s') >= 0);
+    
+    private Properties classesProperties = Properties.getDefault().
+            getProperties("debugger").getProperties("classesView"); // NOI18N
     
     
     private JPDADebuggerImpl    debugger;
@@ -238,6 +242,7 @@ public class ClassesTreeModel implements TreeModel {
             (Object[]) cache.get (NULL_CLASS_LOADER) :
             (Object[]) cache.get (clr);
         if (ch != null) return ch;
+        boolean flat = classesProperties.getBoolean("flat", true);
         List<String> names = getNames ();
         Set objects = new TreeSet (comparator);
         int i, k = names.size ();
@@ -245,7 +250,12 @@ public class ClassesTreeModel implements TreeModel {
             String name = names.get (i);
             ReferenceType rt = classes.get (i);
             if (rt.classLoader () != clr) continue;
-            int end = name.lastIndexOf ('.');
+            int end;
+            if (flat) {
+                end = name.lastIndexOf ('.');
+            } else {
+                end = name.indexOf ('.');
+            }
             if (end < 0) {
                 // ReferenceType found
                 if (name.indexOf ('$') < 0) {
@@ -269,6 +279,7 @@ public class ClassesTreeModel implements TreeModel {
         List<String> names = getNames ();
         Set objects = new TreeSet (comparator);
         int i, k = names.size ();
+        boolean flat = classesProperties.getBoolean("flat", true);
         for (i = 0; i < k; i++) {
             String name = names.get (i);
             ReferenceType rt = classes.get (i);
@@ -276,14 +287,15 @@ public class ClassesTreeModel implements TreeModel {
             String parentN = ((String) parent [0]) + '.';
             if (!name.startsWith (parentN)) continue;
             int start = (parentN).length ();
-            //int end = name.indexOf ('.', start);
-            //if (end < 0) {
+            int end = name.indexOf ('.', start);
+            if (end < 0) {
                 // ReferenceType found
                 if (name.indexOf ('$', start) < 0) {
                     objects.add (rt);
                 }
-            //} else
-            //    objects.add (new Object[] {name.substring (0, end), rt.classLoader ()});
+            } else if (!flat) {
+                objects.add (new Object[] {name.substring (0, end), rt.classLoader ()});
+            }
         }
         ch = objects.toArray ();
         cache.put (parent, ch);
