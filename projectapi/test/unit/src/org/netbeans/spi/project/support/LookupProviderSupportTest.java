@@ -17,17 +17,13 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.spi.project.support;
 
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -38,40 +34,24 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
- *
  * @author mkleint
  */
 public class LookupProviderSupportTest extends NbTestCase {
     
     public LookupProviderSupportTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
     }
 
     /**
@@ -195,6 +175,12 @@ public class LookupProviderSupportTest extends NbTestCase {
         grps = srcs.getSourceGroups("java");
         assertEquals(3, grps.length);
         
+    }
+    
+    public void testNonexistentPath() throws Exception {
+        // #87544: don't choke on a nonexistent path! Just leave it empty.
+        Lookup l = LookupProviderSupport.createCompositeLookup(Lookup.EMPTY, "nowhere");
+        assertEquals(Collections.<Object>emptySet(), new HashSet<Object>(l.lookupAll(Object.class)));
     }
     
     private class ChangeListenerImpl implements ChangeListener {

@@ -87,8 +87,12 @@ public final class LookupProviderSupport {
     //TODO maybe have just one single instance for a given path?
     private static Lookup createLookup(String folderPath) {
         FileObject root = Repository.getDefault().getDefaultFileSystem().findResource(folderPath);
-        DataFolder folder = DataFolder.findFolder(root);
-        return new FolderLookup(folder).getLookup();
+        if (root != null) {
+            DataFolder folder = DataFolder.findFolder(root);
+            return new FolderLookup(folder).getLookup();
+        } else { // #87544
+            return Lookup.EMPTY;
+        }
     }
     
     static class DelegatingLookupImpl extends ProxyLookup implements LookupListener {
