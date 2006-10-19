@@ -423,10 +423,10 @@ public class PostInstallSummaryPanel extends TextPanel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             ProductComponent component = components.get(rowIndex);
             
-            boolean installationErrors = component.getInstallationErrors().size() == 0;
-            boolean installationWarnings = component.getInstallationWarnings().size() == 0;
-            boolean uninstallationErrors = component.getUninstallationErrors().size() == 0;
-            boolean uninstallationWarnings = component.getUninstallationWarnings().size() == 0;
+            boolean installationErrors = component.getInstallationErrors().size() > 0;
+            boolean installationWarnings = component.getInstallationWarnings().size() > 0;
+            boolean uninstallationErrors = component.getUninstallationErrors().size() > 0;
+            boolean uninstallationWarnings = component.getUninstallationWarnings().size() > 0;
             
             switch (columnIndex) {
                 case 0:
@@ -566,9 +566,9 @@ public class PostInstallSummaryPanel extends TextPanel {
     public static final String COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY = "components.failed.to.install.label.text";
     public static final String COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY = "components.failed.to.install.text";
     public static final String COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY = "components.failed.to.install.content.type";
-    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY = "successfully.installed.components.label.text";
-    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY = "successfully.installed.components.text";
-    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY = "successfully.installed.components.content.type";
+    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_LABEL_TEXT_PROPERTY = "successfully.uninstalled.components.label.text";
+    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_TEXT_PROPERTY = "successfully.uninstalled.components.text";
+    public static final String SUCCESSFULLY_UNINSTALLED_COMPONENTS_CONTENT_TYPE_PROPERTY = "successfully.uninstalled.components.content.type";
     public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_LABEL_TEXT_PROPERTY = "components.uninstalled.with.warnings.label.text";
     public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_TEXT_PROPERTY = "components.uninstalled.with.warnings.text";
     public static final String COMPONENTS_UNINSTALLED_WITH_WARNINGS_CONTENT_TYPE_PROPERTY = "components.uninstalled.with.warnings.content.type";
