@@ -110,11 +110,23 @@ public abstract class SystemUtils {
     
     public abstract void removeComponentFromSystemInstallManager(ProductComponent comp);
     
-    public abstract String getEnvironmentVariable(String name, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
     
-    public abstract String getRawEnvironmentVariable(String name, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
+    /** Get value of environment variable <i>name</i>.<br>
+     *  If <b>scope</b> is PROCESS and <b>flag</b> is <i>true</i> then return value for the new process creating<br>
+     *  If <b>scope</b> is PROCESS and <b>flag</b> is <i>false</i> then return value for the current process<br>
+     *  If <b>scope</b> is CURRENT_USER then return value for the current user scope<br>
+     *  If <b>scope</b> is ALL_USERS then return value for the system scope<br>
+     *  <br>CURRENT_USER & ALL_USERS are not used by GenericSystemUtils, only by Windows/Unix/MacOSX implementations<br>
+     */
+    public abstract String getEnvironmentVariable(String name, EnvironmentVariableScope scope, boolean flag) throws IOException, UnsupportedActionException;
     
-    public abstract String setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope) throws IOException, UnsupportedActionException;
+    /** Get value of environment variable <i>name</i>.<br>
+     *  If <b>scope</b> is PROCESS then the variable would be set for new process createing <br>
+     *  If <b>scope</b> is CURRENT_USER then set value for the current user scope<br>
+     *  If <b>scope</b> is ALL_USERS then set value for the system scope<br>
+     *  <br>CURRENT_USER & ALL_USERS are not used by GenericSystemUtils, only by Windows/Unix/MacOSX implementations<br>
+     */
+    public abstract boolean setEnvironmentVariable(String name, String value, EnvironmentVariableScope scope, boolean flag) throws IOException, UnsupportedActionException;
     
     // some helper overloaded implementations ///////////////////////////////////////
     public String parseString(String string) {
@@ -130,11 +142,11 @@ public abstract class SystemUtils {
     }
     
     public String getEnvironmentVariable(String name) throws IOException, UnsupportedActionException {
-        return getEnvironmentVariable(name, EnvironmentVariableScope.CURRENT_USER);
+        return getEnvironmentVariable(name, EnvironmentVariableScope.PROCESS, false);
     }
     
-    public void setEnvironmentVariable(String name, String value) throws IOException, UnsupportedActionException {
-        setEnvironmentVariable(name, value, EnvironmentVariableScope.CURRENT_USER);
+    public boolean setEnvironmentVariable(String name, String value) throws IOException, UnsupportedActionException {
+        return setEnvironmentVariable(name, value, EnvironmentVariableScope.PROCESS,false);
     }
     
     // helper cross-platform methods ////////////////////////////////////////////////
@@ -245,7 +257,8 @@ public abstract class SystemUtils {
     
     public static enum EnvironmentVariableScope {
         CURRENT_USER,
-        ALL_USERS
+        ALL_USERS,
+        PROCESS
     }
     
     public static class ExecutionResults {
