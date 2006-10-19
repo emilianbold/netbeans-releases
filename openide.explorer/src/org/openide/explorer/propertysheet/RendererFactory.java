@@ -30,6 +30,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentListener;
@@ -38,6 +39,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.HierarchyBoundsListener;
 import java.awt.event.HierarchyListener;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
@@ -96,6 +99,20 @@ final class RendererFactory {
         this.tableUI = tableUI;
         this.env = env;
         this.mdl = mdl;
+
+        
+        //reset renderers when windows theme is changing (classic <-> xp)
+        Toolkit.getDefaultToolkit().addPropertyChangeListener( "win.xpstyle.themeActive", new PropertyChangeListener() { //NOI18N
+            public void propertyChange(PropertyChangeEvent evt) {
+                stringRenderer = null;
+                checkboxRenderer = null;
+                comboboxRenderer = null;
+                radioRenderer = null;
+                textFieldRenderer = null;
+                buttonPanel = null;
+                iconPanel = null;
+            }
+        });
     }
 
     public void setRadioButtonMax(int i) {

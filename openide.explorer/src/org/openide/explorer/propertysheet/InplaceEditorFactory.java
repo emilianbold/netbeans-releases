@@ -23,6 +23,9 @@
  */
 package org.openide.explorer.propertysheet;
 
+import java.awt.Toolkit;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JTextField;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.nodes.Node.Property;
@@ -31,7 +34,6 @@ import java.beans.PropertyEditor;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-
 
 /** Factory providing inplace editor implementations.  Provides appropriate
  *  InplaceEditor implementations, depending on the type of the property, the
@@ -54,6 +56,17 @@ final class InplaceEditorFactory {
     InplaceEditorFactory(boolean tableUI, ReusablePropertyEnv env) {
         this.tableUI = tableUI;
         this.reusableEnv = env;
+        
+        //reset editors when windows theme is changing (classic <-> xp)
+        Toolkit.getDefaultToolkit().addPropertyChangeListener( "win.xpstyle.themeActive", new PropertyChangeListener() { //NOI18N
+            public void propertyChange(PropertyChangeEvent evt) {
+                checkbox = null;
+                text = null;
+                combo = null;
+                radio = null;
+            }
+        });
+
     }
 
     /** Set a threshold number of tags below which a radio button, not a
