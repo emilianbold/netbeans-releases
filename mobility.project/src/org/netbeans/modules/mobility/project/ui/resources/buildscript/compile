@@ -27,7 +27,7 @@
 
     <target name="post-compile"/>
 
-    <target name="compile" depends="__DEPENDS__,pre-compile,do-compile,extract-libs,post-compile" description="Compile project classes."/>
+    <target name="compile" depends="__DEPENDS__,pre-compile,extract-libs,do-compile,post-compile" description="Compile project classes."/>
 
 <xsl:comment>compile-single</xsl:comment>    
     
