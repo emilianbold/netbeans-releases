@@ -29,6 +29,20 @@
 <body>
 --%>
 
+<%-- completion for body HTML endtag --%>
+<%--CC
+<body>|
+...
+<body></body>
+--%>
+
+<%-- completion for body HTML endtag --%>
+<%--CC
+<body></b|
+...
+<body></body>
+--%>
+
 <html>
     <head><title>HTML Code Completion Page</title></head>
     <body>
