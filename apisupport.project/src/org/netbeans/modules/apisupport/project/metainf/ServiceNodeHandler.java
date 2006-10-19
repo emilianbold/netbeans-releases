@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 import javax.swing.Action;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.openide.DialogDisplayer;
@@ -492,7 +493,13 @@ public final class ServiceNodeHandler  {
     public ServiceNodeHandler(NbModuleProject project) {
         this.project = project;
         if (!registeredListener) {
-          registerFileObjectListener();
+            // #87269 deadlock when file is modified externally on project initialization
+            // for example cvs update can cause it 
+            ProjectManager.mutex().postWriteRequest(new Runnable() {
+                public void run() {
+                  registerFileObjectListener();
+                }
+            });
         }
         
     }
