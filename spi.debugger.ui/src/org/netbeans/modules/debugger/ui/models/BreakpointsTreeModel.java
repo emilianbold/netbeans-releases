@@ -65,11 +65,16 @@ public class BreakpointsTreeModel implements TreeModel {
                 getBreakpoints ();
             ArrayList l = new ArrayList();
             int i, k = bs.length;
-            for (i = 0; i < k; i++)
-                if (bs [i].getGroupName ().equals (""))
+            for (i = 0; i < k; i++) {
+                String gn = bs[i].getGroupName();
+                if (gn.equals("")) {
                     l.add (bs [i]);
-                else
-                    l.add (bs [i].getGroupName ());
+                } else {
+                    if (!l.contains(gn)) {
+                        l.add(gn);
+                    }
+                }
+            }
             if (listener == null)
                 listener = new Listener (this);
             if (to == 0)
