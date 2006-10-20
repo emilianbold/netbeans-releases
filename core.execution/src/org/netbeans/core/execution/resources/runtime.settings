@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.core.execution/1"/>
+    <instanceof class="org.openide.windows.TopComponent"/>
+    <instanceof class="org.openide.explorer.ExplorerPanel"/>
+    <instanceof class="org.netbeans.core.NbMainExplorer$ExplorerTab"/>
+    <instanceof class="org.netbeans.core.NbMainExplorer$MainTab"/>
+    <instance class="org.netbeans.core.NbMainExplorer$MainTab" method="createEnvironmentTab"/>
+</settings>

@@ -89,13 +89,13 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Modes">
             
             <folder name="explorer">
-                <file name="runtime.wstcref" url="windowmanager/explorer/runtime.wstcref" />
+                <file name="runtime.wstcref" url="runtime.wstcref" />
             </folder>
 
         </folder>
         
         <folder name="Components">            
-            <file name="runtime.settings" url="components/runtime.settings" />
+            <file name="runtime.settings" url="runtime.settings" />
         </folder>
         
     </folder>
