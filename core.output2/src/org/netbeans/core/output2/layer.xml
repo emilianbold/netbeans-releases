@@ -59,8 +59,4 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
-    <folder name="Services">
-      <file name="org.netbeans.core.output2.settings.OutputSettings.settings" url="resources/OutputSettings.xml">
-    </file>
-  </folder>
 </filesystem>

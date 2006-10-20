@@ -22,7 +22,6 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
-import org.netbeans.core.output2.settings.OutputSettings;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 
 import javax.swing.*;
@@ -31,6 +30,7 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import org.openide.util.NbPreferences;
 
 
 class OutputPane extends AbstractOutputPane implements ComponentListener {
@@ -182,7 +182,7 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
     
     public void setWrapped (boolean val) {
         if (val != isWrapped() || !(getEditorKit() instanceof OutputEditorKit)) {
-            OutputSettings.getDefault().setWrap(val);
+            NbPreferences.forModule(OutputPane.class).putBoolean("wrap", val); //NOI18N
             final int pos = textView.getCaret().getDot();
             Cursor cursor = textView.getCursor();
             try {
@@ -227,7 +227,7 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
             return getEditorKit() instanceof OutputEditorKit 
               && ((OutputEditorKit) getEditorKit()).isWrapped();
         } else {
-            return OutputSettings.getDefault().isWrap();
+            return NbPreferences.forModule(OutputPane.class).getBoolean("wrap", false); //NOI18N
         }
     }
     
