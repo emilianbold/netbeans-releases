@@ -67,7 +67,7 @@ public class ParserServletContext implements ServletContext {
     /**
      * Servlet context attributes.
      */
-    protected Hashtable myAttributes;
+    protected Hashtable<String, Object> myAttributes;
 
 
     /**
@@ -96,7 +96,7 @@ public class ParserServletContext implements ServletContext {
      */
     public ParserServletContext(FileObject wmRoot, JspParserAPI.WebModule wm, boolean useEditor) {
 
-        myAttributes = new Hashtable();
+        myAttributes = new Hashtable<String, Object>();
         this.wmRoot = wmRoot;
         this.myWm = wm;
         this.useEditorVersion = useEditor;
@@ -112,16 +112,16 @@ public class ParserServletContext implements ServletContext {
      * @param name Name of the requested attribute
      */
     public Object getAttribute(String name) {
-        return (myAttributes.get(name));
+        return myAttributes.get(name);
     }
 
 
     /**
      * Return an enumeration of context attribute names.
      */
-    public Enumeration getAttributeNames() {
+    public Enumeration<String> getAttributeNames() {
 
-        return (myAttributes.keys());
+        return myAttributes.keys();
 
     }
 
@@ -314,9 +314,9 @@ public class ParserServletContext implements ServletContext {
      *
      * @param path Context-relative base path
      */
-    public Set getResourcePaths(String path) {
+    public Set<String> getResourcePaths(String path) {
 
-        Set thePaths = new HashSet();
+        Set<String> thePaths = new HashSet<String>();
         if (!path.endsWith("/"))
             path += "/";
         String basePath = getRealPath(path);
@@ -333,7 +333,7 @@ public class ParserServletContext implements ServletContext {
             else if (testFile.isDirectory())
                 thePaths.add(path + theFiles[i] + "/");
         }
-        return (thePaths);
+        return thePaths;
 
     }
 

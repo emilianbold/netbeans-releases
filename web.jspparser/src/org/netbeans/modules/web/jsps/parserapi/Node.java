@@ -601,7 +601,7 @@ public abstract class Node {
      */
     public static class PageDirective extends Node {
 
-	private Vector imports;
+	private Vector<String> imports;
 
 	public PageDirective(Attributes attrs, Mark start, Node parent) {
 	    this(JSP_PAGE_DIRECTIVE_ACTION, attrs, null, null, start, parent);
@@ -612,7 +612,7 @@ public abstract class Node {
 			     Attributes taglibAttrs, Mark start, Node parent) {
 	    super(qName, PAGE_DIRECTIVE_ACTION, attrs, nonTaglibXmlnsAttrs,
 		  taglibAttrs, start, parent);
-	    imports = new Vector();
+	    imports = new Vector<String>();
 	}
 
 	public void accept(Visitor v) throws JspException {
@@ -640,7 +640,7 @@ public abstract class Node {
 	    }
 	}
 
-	public List getImports() {
+	public List<String> getImports() {
 	    return imports;
 	}
     }
@@ -687,7 +687,7 @@ public abstract class Node {
      * Represents a tag directive
      */
     public static class TagDirective extends Node {
-        private Vector imports;
+        private Vector<String> imports;
 
 	public TagDirective(Attributes attrs, Mark start, Node parent) {
 	    this(JSP_TAG_DIRECTIVE_ACTION, attrs, null, null, start, parent);
@@ -698,7 +698,7 @@ public abstract class Node {
 			    Attributes taglibAttrs, Mark start, Node parent) {
 	    super(qName, TAG_DIRECTIVE_ACTION, attrs, nonTaglibXmlnsAttrs,
 		  taglibAttrs, start, parent);
-            imports = new Vector();
+            imports = new Vector<String>();
 	}
 
 	public void accept(Visitor v) throws JspException {
@@ -726,7 +726,7 @@ public abstract class Node {
             }
         }
  
-        public List getImports() {
+        public List<String> getImports() {
             return imports;
 	}
     }
@@ -2156,20 +2156,20 @@ public abstract class Node {
      */
     public static class Nodes {
 
-	private List list;
+	private List<Node> list;
 	private Node.Root root;		// null if this is not a page
 
 	public Nodes() {
-	    list = new Vector();
+	    list = new Vector<Node>();
 	}
 
-	public Nodes(List l) {
+	public Nodes(List<Node> l) {
 	    list = l;
 	}
 
 	public Nodes(Node.Root root) {
 	    this.root = root;
-	    list = new Vector();
+	    list = new Vector<Node>();
 	    list.add(root);
 	}
 
@@ -2195,9 +2195,7 @@ public abstract class Node {
 	 * @param v The visitor used
 	 */
 	public void visit(Visitor v) throws JspException {
-	    Iterator iter = list.iterator();
-	    while (iter.hasNext()) {
-		Node n = (Node) iter.next();
+            for (Node n : list) {
 		n.accept(v);
 	    }
 	}
@@ -2209,7 +2207,7 @@ public abstract class Node {
 	public Node getNode(int index) {
 	    Node n = null;
 	    try {
-		n = (Node) list.get(index);
+		n = list.get(index);
 	    } catch (ArrayIndexOutOfBoundsException e) {
 	    }
 	    return n;

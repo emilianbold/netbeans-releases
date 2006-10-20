@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
  */
 public class JspParserImpl implements JspParserAPI {
     
-    private HashMap parseSupports;
+    private HashMap<JspParserImpl.WAParseSupportKey, WebAppParseProxy> parseSupports;
     
     private static Constructor webAppParserImplConstructor;
     
@@ -59,7 +59,7 @@ public class JspParserImpl implements JspParserAPI {
         initializeLogger();
         // PENDING - we are preventing the garbage collection of
         // Project-s and FileObject-s (wmRoots)
-        parseSupports = new HashMap();
+        parseSupports = new HashMap<JspParserImpl.WAParseSupportKey, WebAppParseProxy>();
     }
     
     private static void initReflection() {
@@ -77,7 +77,7 @@ public class JspParserImpl implements JspParserAPI {
                     urls[i] = files[i].toURI().toURL();
                 }
                 ExtClassLoader urlCL = new ExtClassLoader(urls, JspParserImpl.class.getClassLoader());
-                Class cl = urlCL.loadClass("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport");
+                Class<?> cl = urlCL.loadClass("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport");
                 
                 webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {WebModule.class});
             } catch (NoSuchMethodException e) {
@@ -160,7 +160,7 @@ public class JspParserImpl implements JspParserAPI {
     
     private synchronized WebAppParseProxy getParseProxy(WebModule wm) {
         JspParserImpl.WAParseSupportKey key = new JspParserImpl.WAParseSupportKey(wm);
-        WebAppParseProxy pp = (WebAppParseProxy)parseSupports.get(key);
+        WebAppParseProxy pp = parseSupports.get(key);
         if (pp == null) {
             pp = createParseProxy(wm);
             parseSupports.put(key, pp);

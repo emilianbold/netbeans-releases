@@ -171,10 +171,10 @@ public abstract class ELNode {
 	   EL expression, for communication to Generator.
 	 */
 	String mapName = null;
-	private List list;
+	private List<ELNode> list;
 
 	public Nodes() {
-	    list = new ArrayList();
+	    list = new ArrayList<ELNode>();
 	}
 
 	public void add(ELNode en) {
@@ -186,14 +186,12 @@ public abstract class ELNode {
 	 * @param v The visitor used
 	 */
 	public void visit(Visitor v) throws JspException {
-	    Iterator iter = list.iterator();
-	    while (iter.hasNext()) {
-		ELNode n = (ELNode) iter.next();
+            for (ELNode n: list) {
 		n.accept(v);
 	    }
 	}
 
-	public Iterator iterator() {
+	public Iterator<ELNode> iterator() {
 	    return list.iterator();
 	}
 
@@ -205,9 +203,9 @@ public abstract class ELNode {
 	 * @return true if the expression contains a ${...}
 	 */
 	public boolean containsEL() {
-	    Iterator iter = list.iterator();
+	    Iterator<ELNode> iter = list.iterator();
 	    while (iter.hasNext()) {
-		ELNode n = (ELNode) iter.next();
+		ELNode n = iter.next();
 		if (n instanceof Root) {
 		    return true;
 		}

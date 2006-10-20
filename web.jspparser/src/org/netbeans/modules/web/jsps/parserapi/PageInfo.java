@@ -43,14 +43,14 @@ public abstract class PageInfo {
 
     public static final String JSP_SERVLET_BASE = "org.apache.jasper.runtime.HttpJspBase";
     
-    private List imports;
-    private List dependants;
+    private List<String> imports;
+    private List<String> dependants;
 
 //    private BeanRepository beanRepository;
     private BeanData[] beans;
-    private Map taglibsMap;
-    private Map jspPrefixMapper;
-    private Map xmlPrefixMapper;
+    private Map<String, TagLibraryInfo> taglibsMap;
+    private Map<String, String> jspPrefixMapper;
+    private Map<String, LinkedList<String>> xmlPrefixMapper;
     /** Approximate XML prefix mapper. Same as xmlPrefixMapper, but does not "forget" mappings (by popping them). */
     private Map approxXmlPrefixMapper;
     private String defaultLanguage = "java";
@@ -84,25 +84,25 @@ public abstract class PageInfo {
     private boolean isJspPrefixHijacked;
 
     // Set of all element and attribute prefixes used in this translation unit
-    private Set prefixes;
+    private Set<String> prefixes;
 
     private boolean hasJspRoot = false;
     private List includePrelude;
     private List includeCoda;
-    private List pluginDcls;		// Id's for tagplugin declarations
+    private List<String> pluginDcls;		// Id's for tagplugin declarations
 
 
     public PageInfo(/*BeanRepository beanRepository*/
-            Map taglibsMap,
-            Map jspPrefixMapper,
-            Map xmlPrefixMapper,
+            Map<String, TagLibraryInfo> taglibsMap,
+            Map<String, String> jspPrefixMapper,
+            Map<String, LinkedList<String>> xmlPrefixMapper,
             Map approxXmlPrefixMapper,
-            List imports,
-            List dependants,
+            List<String> imports,
+            List<String> dependants,
             List includePrelude,
             List includeCoda,
-            List pluginDcls,
-            Set prefixes
+            List<String> pluginDcls,
+            Set<String> prefixes
         ) {
 	//this.beanRepository = beanRepository;
 	this.taglibsMap = taglibsMap;
@@ -129,7 +129,7 @@ public abstract class PageInfo {
 	return false;
     }
 
-    public void addImports(List imports) {
+    public void addImports(List<String> imports) {
 	this.imports.addAll(imports);
     }
 
@@ -137,7 +137,7 @@ public abstract class PageInfo {
 	this.imports.add(imp);
     }
 
-    public List getImports() {
+    public List<String> getImports() {
 	return imports;
     }
 
@@ -146,7 +146,7 @@ public abstract class PageInfo {
             dependants.add(d);
     }
      
-    public List getDependants() {
+    public List<String> getDependants() {
         return dependants;
     }
 
@@ -269,7 +269,7 @@ public abstract class PageInfo {
      * @return Tag library corresponding to the given URI
      */
     public TagLibraryInfo getTaglib(String uri) {
-	return (TagLibraryInfo) taglibsMap.get(uri);
+	return taglibsMap.get(uri);
     }
 
     /*
@@ -277,7 +277,7 @@ public abstract class PageInfo {
      *
      * @return Collection of tag libraries that are associated with a URI
      */
-    public Collection getTaglibs() {
+    public Collection<TagLibraryInfo> getTaglibs() {
 	return taglibsMap.values();
     }
 
@@ -311,9 +311,9 @@ public abstract class PageInfo {
      * @param uri The URI to be pushed onto the stack
      */
     public void pushPrefixMapping(String prefix, String uri) {
-	LinkedList stack = (LinkedList) xmlPrefixMapper.get(prefix);
+	LinkedList<String> stack = xmlPrefixMapper.get(prefix);
 	if (stack == null) {
-	    stack = new LinkedList();
+	    stack = new LinkedList<String>();
         xmlPrefixMapper.put(prefix, stack);
 	}
 	stack.addFirst(uri);
@@ -326,7 +326,7 @@ public abstract class PageInfo {
      * @param prefix The prefix whose stack of URIs is to be popped
      */
     public void popPrefixMapping(String prefix) {
-	LinkedList stack = (LinkedList) xmlPrefixMapper.get(prefix);
+	LinkedList<String> stack = xmlPrefixMapper.get(prefix);
 	if (stack == null || stack.size() == 0) {
 	    // XXX throw new Exception("XXX");
 	}
@@ -344,11 +344,11 @@ public abstract class PageInfo {
 
 	String uri = null;
 
-	LinkedList stack = (LinkedList) xmlPrefixMapper.get(prefix);
+	LinkedList<String> stack = xmlPrefixMapper.get(prefix);
 	if (stack == null || stack.size() == 0) {
-	    uri = (String) jspPrefixMapper.get(prefix);
+	    uri = jspPrefixMapper.get(prefix);
 	} else {
-	    uri = (String) stack.getFirst();
+	    uri = stack.getFirst();
 	}
 
 	return uri;
@@ -624,7 +624,7 @@ public abstract class PageInfo {
         return taglibsMap;
     }
     
-    public Map getJspPrefixMapper() {
+    public Map<String, String> getJspPrefixMapper() {
         return jspPrefixMapper;
     }
     
@@ -655,7 +655,7 @@ public abstract class PageInfo {
     //public abstract FunctionMapper getFunctionMapper(String currentPrefix);
         
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String nl = "\n"; // NOI18N
         String indent = "      ";  // NOI18N
         String nlIndent = nl + indent;
@@ -668,24 +668,24 @@ public abstract class PageInfo {
         // PENDING -xmlPrefixMapper
         // sb.append(indent).append("xmlprefixMapper:\n").append(mapToString(xmlPrefixMapper, indent + "  "));
         sb.append(indent).append("approxXmlPrefixMapper :\n").append(mapToString(approxXmlPrefixMapper, indent + "  "));  // NOI18N
-        sb.append(indent).append("language            : ").append(language).append("\n");  // NOI18N
-        sb.append(indent).append("xtends              : ").append(xtends).append("\n");  // NOI18N
-        sb.append(indent).append("contentType         : ").append(contentType).append("\n");  // NOI18N
-        sb.append(indent).append("session             : ").append(isSession).append("\n");  // NOI18N
-        sb.append(indent).append("buffer              : ").append(buffer).append("\n");  // NOI18N
-        sb.append(indent).append("autoFlush           : ").append(isAutoFlush).append("\n");  // NOI18N
-        sb.append(indent).append("threadSafe          : ").append(isThreadSafe).append("\n");  // NOI18N
-        sb.append(indent).append("isErrorPage         : ").append(isErrorPage).append("\n");  // NOI18N
-        sb.append(indent).append("errorPage           : ").append(errorPage).append("\n");  // NOI18N
-        sb.append(indent).append("scriptless          : ").append(scriptless).append("\n");  // NOI18N
-        sb.append(indent).append("scriptingInvalid    : ").append(scriptingInvalid).append("\n");  // NOI18N
-        sb.append(indent).append("elIgnored           : ").append(isELIgnored).append("\n");  // NOI18N
-        sb.append(indent).append("omitXmlDecl         : ").append(omitXmlDecl).append("\n");  // NOI18N
-        sb.append(indent).append("isJspPrefixHijacked : ").append(isJspPrefixHijacked).append("\n");  // NOI18N
-        sb.append(indent).append("doctypeName         : ").append(doctypeName).append("\n");  // NOI18N
-        sb.append(indent).append("doctypeSystem       : ").append(doctypeSystem).append("\n");  // NOI18N
-        sb.append(indent).append("doctypePublic       : ").append(doctypePublic).append("\n");  // NOI18N
-        sb.append(indent).append("hasJspRoot          : ").append(hasJspRoot).append("\n");  // NOI18N
+        sb.append(indent).append("language            : ").append(language).append('\n');  // NOI18N
+        sb.append(indent).append("xtends              : ").append(xtends).append('\n');  // NOI18N
+        sb.append(indent).append("contentType         : ").append(contentType).append('\n');  // NOI18N
+        sb.append(indent).append("session             : ").append(isSession).append('\n');  // NOI18N
+        sb.append(indent).append("buffer              : ").append(buffer).append('\n');  // NOI18N
+        sb.append(indent).append("autoFlush           : ").append(isAutoFlush).append('\n');  // NOI18N
+        sb.append(indent).append("threadSafe          : ").append(isThreadSafe).append('\n');  // NOI18N
+        sb.append(indent).append("isErrorPage         : ").append(isErrorPage).append('\n');  // NOI18N
+        sb.append(indent).append("errorPage           : ").append(errorPage).append('\n');  // NOI18N
+        sb.append(indent).append("scriptless          : ").append(scriptless).append('\n');  // NOI18N
+        sb.append(indent).append("scriptingInvalid    : ").append(scriptingInvalid).append('\n');  // NOI18N
+        sb.append(indent).append("elIgnored           : ").append(isELIgnored).append('\n');  // NOI18N
+        sb.append(indent).append("omitXmlDecl         : ").append(omitXmlDecl).append('\n');  // NOI18N
+        sb.append(indent).append("isJspPrefixHijacked : ").append(isJspPrefixHijacked).append('\n');  // NOI18N
+        sb.append(indent).append("doctypeName         : ").append(doctypeName).append('\n');  // NOI18N
+        sb.append(indent).append("doctypeSystem       : ").append(doctypeSystem).append('\n');  // NOI18N
+        sb.append(indent).append("doctypePublic       : ").append(doctypePublic).append('\n');  // NOI18N
+        sb.append(indent).append("hasJspRoot          : ").append(hasJspRoot).append('\n');  // NOI18N
         sb.append(indent).append("prefixes:\n").append(collectionToString(prefixes, indent + "  "));  // NOI18N
         sb.append(indent).append("includePrelude:\n").append(collectionToString(includePrelude, indent + "  "));  // NOI18N
         sb.append(indent).append("includeCoda:\n").append(collectionToString(includeCoda, indent + "  "));  // NOI18N
@@ -695,34 +695,34 @@ public abstract class PageInfo {
         return sb.toString();
     }
     
-    private String collectionToString(Collection c, String indent) {
-        StringBuffer sb = new StringBuffer();
+    private String collectionToString(Collection c, String indent) { // XXX Arrays.toString() can be sufficient
+        StringBuilder sb = new StringBuilder();
         Iterator it = c.iterator();
         while (it.hasNext()) {
-            sb.append(indent).append(it.next()).append("\n");  // NOI18N
+            sb.append(indent).append(it.next()).append('\n');  // NOI18N
         }
         return sb.toString();
     }
     
     private String taglibsMapToString(Map m, String indent) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Iterator it = m.keySet().iterator();
         while (it.hasNext()) {
             Object key = it.next();
-            sb.append(indent).append("tag library: ").append(key).append("\n");  // NOI18N
+            sb.append(indent).append("tag library: ").append(key).append('\n');  // NOI18N
             sb.append(tagLibraryInfoToString((TagLibraryInfo)m.get(key), indent + "    "));  // NOI18N
         }
         return sb.toString();
     }
     
     public String tagLibraryInfoToString(TagLibraryInfo info, String indent) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(indent).append("tlibversion : ").append(getFieldByReflection("tlibversion", info)).append("\n");  // NOI18N
-        sb.append(indent).append("jspversion  : ").append(info.getRequiredVersion()).append("\n");  // NOI18N
-        sb.append(indent).append("shortname   : ").append(info.getShortName()).append("\n");  // NOI18N
-        sb.append(indent).append("urn         : ").append(info.getReliableURN()).append("\n");  // NOI18N
-        sb.append(indent).append("info        : ").append(info.getInfoString()).append("\n");  // NOI18N
-        sb.append(indent).append("uri         : ").append(info.getURI()).append("\n");  // NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append(indent).append("tlibversion : ").append(getFieldByReflection("tlibversion", info)).append('\n');  // NOI18N
+        sb.append(indent).append("jspversion  : ").append(info.getRequiredVersion()).append('\n');  // NOI18N
+        sb.append(indent).append("shortname   : ").append(info.getShortName()).append('\n');  // NOI18N
+        sb.append(indent).append("urn         : ").append(info.getReliableURN()).append('\n');  // NOI18N
+        sb.append(indent).append("info        : ").append(info.getInfoString()).append('\n');  // NOI18N
+        sb.append(indent).append("uri         : ").append(info.getURI()).append('\n');  // NOI18N
         
         TagInfo tags[] = info.getTags();
         if (tags != null) {
@@ -746,10 +746,10 @@ public abstract class PageInfo {
     }
     
     public String tagInfoToString(TagInfo tag, String indent) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (tag != null) {
-            sb.append(indent).append("tag name     : ").append(tag.getTagName()).append("\n");  // NOI18N
-            sb.append(indent).append("    class    : ").append(tag.getTagClassName()).append("\n");  // NOI18N
+            sb.append(indent).append("tag name     : ").append(tag.getTagName()).append('\n');  // NOI18N
+            sb.append(indent).append("    class    : ").append(tag.getTagClassName()).append('\n');  // NOI18N
             sb.append(indent).append("    attribs  : [");  // NOI18N
             TagAttributeInfo attrs[] = tag.getAttributes();
             for (int i = 0; i < attrs.length; i++) {
@@ -767,11 +767,11 @@ public abstract class PageInfo {
     }
     
     public String functionInfoToString(FunctionInfo function, String indent) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (function != null) {
-            sb.append(indent).append("function name     : ").append(function.getName()).append("\n");  // NOI18N
-            sb.append(indent).append("         class    : ").append(function.getFunctionClass()).append("\n");  // NOI18N
-            sb.append(indent).append("         signature: ").append(function.getFunctionSignature()).append("\n");  // NOI18N
+            sb.append(indent).append("function name     : ").append(function.getName()).append('\n');  // NOI18N
+            sb.append(indent).append("         class    : ").append(function.getFunctionClass()).append('\n');  // NOI18N
+            sb.append(indent).append("         signature: ").append(function.getFunctionSignature()).append('\n');  // NOI18N
         }
         else {
             sb.append(indent).append("functioninfo is null\n");  // NOI18N
@@ -780,8 +780,8 @@ public abstract class PageInfo {
     }
     
     public String tagFileToString(TagFileInfo tagFile, String indent) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(indent).append("tagfile path : ").append(tagFile.getPath()).append("\n");  // NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append(indent).append("tagfile path : ").append(tagFile.getPath()).append('\n');  // NOI18N
         sb.append(tagInfoToString(tagFile.getTagInfo(), indent));
         return sb.toString();
     }
@@ -802,11 +802,11 @@ public abstract class PageInfo {
     }
     
     private String beansToString(BeanData beans[], String indent) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < beans.length; i++) {
             sb.append(indent).append("bean : ").append(beans[i].getId()).append(",    ").  // NOI18N
                 append(scopeToString(beans[i].getScope())).append(",    ").  // NOI18N
-                append(beans[i].getClassName()).append("\n");  // NOI18N
+                append(beans[i].getClassName()).append('\n');  // NOI18N
         }
         return sb.toString();
     }
@@ -837,11 +837,11 @@ public abstract class PageInfo {
 
     // helper methods for help implement toString() 
     private static String mapToString(Map m, String indent) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Iterator it = m.keySet().iterator();
         while (it.hasNext()) {
             Object key = it.next();
-            sb.append(indent).append(key).append(" -> ").append(m.get(key)).append("\n");
+            sb.append(indent).append(key).append(" -> ").append(m.get(key)).append('\n');
         }
         return sb.toString();
     }
