@@ -30,6 +30,7 @@ package org.netbeans.modules.xml.schema.ui.nodes.categorized;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
@@ -60,7 +61,8 @@ public class DummySchemaNode extends FilterNode implements Node.Cookie
 		@Override
 		protected void removeNotify()
 		{
-			setKeys(Collections.emptyList());
+			List<? extends Node> emptyList = Collections.emptyList();
+			setKeys(emptyList);
 		}
 		
 		@Override
@@ -92,10 +94,9 @@ public class DummySchemaNode extends FilterNode implements Node.Cookie
 			super(original, new FilterNode.Children(original)
 			{
 				@Override
-				protected Node[] createNodes(Object key)
+				protected Node[] createNodes(Node key)
 				{
-					Node n = (Node) key;
-					if (n.getCookie(CategoryNode.class) != null)
+					if (key.getCookie(CategoryNode.class) != null)
 						return new Node[]{};
 					return super.createNodes(key);
 				}
