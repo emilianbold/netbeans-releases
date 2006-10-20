@@ -87,7 +87,7 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         this.document = editorUI.getDocument();
         this.markProvider = new DiffMarkProvider();
         setToolTipText("");
-        refreshDiffTask = RequestProcessor.getDefault().create(new RefreshDiffTask());
+        refreshDiffTask = DiffSidebarManager.getInstance().createDiffSidebarTask(new RefreshDiffTask());
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
     }
 

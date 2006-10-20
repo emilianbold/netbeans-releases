@@ -23,6 +23,7 @@ import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -48,6 +49,11 @@ class DiffSidebarManager {
         return instance;
     }
 
+    /**
+     * Allow 2 sidebars to be updated simultaneously.
+     */
+    private final RequestProcessor diffSidebarRequestprocessor = new RequestProcessor("DiffSidebar", 2);
+   
     private boolean sidebarEnabled = false;
 
     /**
@@ -56,6 +62,16 @@ class DiffSidebarManager {
     private final Map<DiffSidebar, Object> sideBars = new WeakHashMap<DiffSidebar, Object>();
 
     private DiffSidebarManager() {
+    }
+
+    /**
+     * Creates a new task needed by a diff sidebar to update its structures (compute diff). 
+     * 
+     * @param runnable a runnable task
+     * @return RP task
+     */
+    RequestProcessor.Task createDiffSidebarTask(Runnable runnable) {
+        return diffSidebarRequestprocessor.create(runnable);
     }
 
     JComponent createSideBar(JTextComponent target) {
