@@ -115,9 +115,8 @@ public class ExternalReferenceDataNode extends FilterNode
             this.decorator = decorator;
         }
 
-        protected Node[] createNodes(Object key) {
-            Node n = (Node) key;
-            DataObject dobj = (DataObject) n.getLookup().lookup(DataObject.class);
+        protected Node[] createNodes(Node key) {
+            DataObject dobj = (DataObject) key.getLookup().lookup(DataObject.class);
             FileObject fobj = dobj.getPrimaryFile();
             if (fobj.isFolder() && fobj.getNameExt().equals("nbproject")) {
                 // May be the NetBeans project folder, see if it contains a

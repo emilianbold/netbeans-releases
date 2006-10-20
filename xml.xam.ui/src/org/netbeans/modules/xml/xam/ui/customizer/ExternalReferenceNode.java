@@ -37,7 +37,7 @@ public interface ExternalReferenceNode {
      * @return  a cookie assignable to that class, or null if this node
      *          has no such cookie.
      */
-    Node.Cookie getCookie(Class type);
+    <T extends Node.Cookie> T getCookie(Class<T> type);
 
     /**
      * Returns the Model associated with this node, if it has one.
