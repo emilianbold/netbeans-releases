@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="performance" executor="ide" name="Testing lookup in whole IDE">
+    <testbag testattribs="performance" executor="ide" name="Testing some performance aspects in whole IDE">
         <testset dir="unit/src">
             <patternset>
                 <!-- this includes all tests testing layers -->
