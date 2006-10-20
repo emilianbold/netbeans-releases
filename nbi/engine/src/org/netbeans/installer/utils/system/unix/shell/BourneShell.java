@@ -25,7 +25,6 @@ package org.netbeans.installer.utils.system.unix.shell;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.SystemUtils.EnvironmentVariableScope;
 
 /**
@@ -34,18 +33,18 @@ import org.netbeans.installer.utils.SystemUtils.EnvironmentVariableScope;
  */
 public class BourneShell extends Shell{
     
-    private String [] SYSTEM_PROFILE_FILES = {        
+    private String [] SYSTEM_PROFILE_FILES = {
         "bashrc",
         "profile"
     };
     private String [] USER_PROFILE_HOMEDIRFILES = {
         ".bashrc",
-        ".profile",        
+        ".profile",
         ".bash_profile",
         ".bash_login",
         ".login"
     };
-    private String EXPORT = "export ";
+    
     
     /** Creates a new instance of Bash */
     public BourneShell() {
@@ -56,7 +55,8 @@ public class BourneShell extends Shell{
         if(file==null)  {
             return false;
         }
-        List <String> strings = FileUtils.getInstance().readStringList(file);
+        List <String> strings = getList(file);
+        
         boolean exist = false;
         String str;
         String substr;
@@ -75,24 +75,34 @@ public class BourneShell extends Shell{
                     }
                     
                     if(substr.startsWith(name + sg)) {
-                        strings.set(i, EXPORT + name + sg + pr + value + pr);
+                        if(value==null) {
+                            strings.remove(i);
+                        } else {
+                            strings.set(i, EXPORT + name + sg + pr + value + pr);
+                        }
+                        
                         exist = true;
                         break;
                     }
                 }
                 
                 if(str.startsWith(name + sg)) {
-                    strings.set(i,name + sg + pr + value + pr);
+                    if(value==null) {
+                        strings.remove(i);
+                    } else {
+                        strings.set(i,name + sg + pr + value + pr);
+                    }
                     exist = true;
                 }
-                break;
             }
         }
-        if(!exist) {
-            strings.add(name + sg + pr + value + pr);
-            strings.add(EXPORT + name);
+        if(!exist && value!=null) {
+            int index = getSetEnvIndex(strings);
+            strings.add(index,name + sg + pr + value + pr);
+            strings.add(index+1,EXPORT + name);
         }
-        return true;
+        
+        return writeList(strings,file);
     }
     
     public String [] getSystemShellFileNames() {
@@ -102,7 +112,7 @@ public class BourneShell extends Shell{
     public String[] getUserShellFileNames() {
         return USER_PROFILE_HOMEDIRFILES;
     }
-    public String [] getAvailableNames () {
+    public String [] getAvailableNames() {
         return new String [] { "bash", "sh", "zsh", "sh5", "jsh" };
     }
 }

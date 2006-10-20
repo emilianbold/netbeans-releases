@@ -24,6 +24,11 @@ package org.netbeans.installer.utils.system.unix.shell;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.installer.utils.ErrorLevel;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.SystemUtils.EnvironmentVariableScope;
 
@@ -35,19 +40,25 @@ public abstract class Shell {
     protected String sp = " ";
     protected String sg = "=";
     protected String pr = "\"";
+    protected String SETENV = "setenv" + sp;
+    protected String EXPORT = "export ";
+    protected String SET = "set ";
     
     protected  File getShellScript(EnvironmentVariableScope scope) {
-        if(scope==null || EnvironmentVariableScope.PROCESS == scope) {
-            return null;
+        File file =  null;
+        if(scope!=null && EnvironmentVariableScope.PROCESS != scope) {
+            
+            
+            if(EnvironmentVariableScope.ALL_USERS==scope) {
+                file = getSystemShellScript();
+            }
+            
+            if(EnvironmentVariableScope.CURRENT_USER==scope || file==null) {
+                file = getUserShellScript();
+            }
         }
-        File file = null;
-        if(EnvironmentVariableScope.ALL_USERS==scope) {
-            file = getSystemShellScript();
-        }
-        
-        if(EnvironmentVariableScope.CURRENT_USER==scope || file==null) {
-            file = getUserShellScript();
-        }
+        LogManager.getInstance().log(ErrorLevel.DEBUG,
+                "Used shell file for setting environment variable : " + file);
         return file;
     }
     
@@ -59,7 +70,7 @@ public abstract class Shell {
     public boolean isCurrentShell(String name) {
         String [] names = getAvailableNames();
         boolean result = false;
-        if(names==null && name!=null) {
+        if(names!=null && name!=null) {
             for(String shname:names) {
                 if(shname.equals(name)) {
                     result = true;
@@ -83,18 +94,51 @@ public abstract class Shell {
         if(locations == null) {
             return null;
         }
-        for(String prof: locations) {
-            if(prof!=null) {
-                File file = new File(!prof.startsWith(File.separator) ?
-                    root + File.separator + prof :
-                    prof);
+        File file = null;
+        File firstFile = null;
+        for(String loc: locations) {
+            if(loc!=null) {
+                file = new File(!loc.startsWith(File.separator) ?
+                    root + File.separator + loc :
+                    loc);
+                if(firstFile == null) {
+                    firstFile = file;
+                }
+                
                 if(file.exists()) {
                     return file;
                 }
             }
         }
-        return null;
+        return firstFile;
         
     }
-    
+    protected int getSetEnvIndex(List <String> strings) {
+        int idx = 0 ;
+        int index = strings.size() ;
+        for(String str:strings) {
+            idx ++ ;
+            if(str.startsWith(SET) || str.startsWith(EXPORT) || str.startsWith(SETENV)) {
+                index = idx;
+            }
+        }
+        return index;
+    }
+    protected List<String> getList(File file) throws IOException {
+        return (file.canRead()) ?
+            FileUtils.getInstance().readStringList(file) :
+            new LinkedList<String> ();
+    }
+    protected boolean writeList(List <String> strings, File file) throws IOException{
+        if(!file.exists()) {
+            if(!file.createNewFile()) {
+                return false;
+            };
+        }
+        if(file.canWrite()) {
+            FileUtils.getInstance().writeStringList(file,strings);
+            return true;
+        }
+        return false;
+    }
 }
