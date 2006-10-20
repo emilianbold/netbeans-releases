@@ -21,21 +21,16 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Component;
 import java.awt.Image;
-import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
@@ -43,10 +38,11 @@ import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
-import org.netbeans.modules.java.project.PackageViewSettings;
+import org.netbeans.modules.java.project.JavaProjectSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
@@ -203,33 +199,30 @@ public class PackageView {
     private static final class RootNode extends FilterNode implements PropertyChangeListener {
         
         private SourceGroup sourceGroup;
-        private PackageViewSettings settings;
         
         private RootNode (SourceGroup group) {
-            super (getOriginalNode (group, PackageViewSettings.getDefault()));
+            super(getOriginalNode(group));
             this.sourceGroup = group;
-            this.settings = PackageViewSettings.getDefault();
-            this.settings.addPropertyChangeListener(WeakListeners.propertyChange(this, this.settings));
+            JavaProjectSettings.addPropertyChangeListener(WeakListeners.propertyChange(this, JavaProjectSettings.class));
         }
         
         public void propertyChange (PropertyChangeEvent event) {
-            if (PackageViewSettings.PROP_PACKAGE_VIEW_TYPE.equals(event.getPropertyName())) {
-                changeOriginal(getOriginalNode (this.sourceGroup, this.settings), true);
+            if (JavaProjectSettings.PROP_PACKAGE_VIEW_TYPE.equals(event.getPropertyName())) {
+                changeOriginal(getOriginalNode(sourceGroup), true);
             }
         }
         
-        private static Node getOriginalNode (SourceGroup group, PackageViewSettings settings) {            
-            assert settings != null : "PackageViewSettings can't be null"; //NOI18N
+        private static Node getOriginalNode(SourceGroup group) {
             FileObject root = group.getRootFolder();
             //Guard condition, if the project is (closed) and deleted but not yet gced
             // and the view is switched, the source group is not valid.
             if ( root == null || !root.isValid()) {
                 return new AbstractNode (Children.LEAF);
             }
-            switch (settings.getPackageViewType()) {
-                case PackageViewSettings.TYPE_PACKAGE_VIEW:
+            switch (JavaProjectSettings.getPackageViewType()) {
+                case JavaProjectSettings.TYPE_PACKAGE_VIEW:
                     return new PackageRootNode(group);
-                case PackageViewSettings.TYPE_TREE:
+                case JavaProjectSettings.TYPE_TREE:
                     return new TreeRootNode(group);
                 default:
                     assert false : "Unknown PackageView Type"; //NOI18N

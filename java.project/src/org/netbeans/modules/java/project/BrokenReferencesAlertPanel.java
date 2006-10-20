@@ -20,13 +20,12 @@
 package org.netbeans.modules.java.project;
 
 import javax.swing.JPanel;
-import javax.swing.event.ChangeListener;
 
 public class BrokenReferencesAlertPanel extends JPanel {
 
     public BrokenReferencesAlertPanel() {
         initComponents();
-        notAgain.setSelected(!JavaSettings.getDefault().isShowAgainBrokenRefAlert());
+        notAgain.setSelected(!JavaProjectSettings.isShowAgainBrokenRefAlert());
     }
 
     /** This method is called from within the constructor to
@@ -96,7 +95,7 @@ public class BrokenReferencesAlertPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void notAgainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_notAgainActionPerformed
-        JavaSettings.getDefault().setShowAgainBrokenRefAlert(!notAgain.isSelected());
+        JavaProjectSettings.setShowAgainBrokenRefAlert(!notAgain.isSelected());
     }//GEN-LAST:event_notAgainActionPerformed
 
 

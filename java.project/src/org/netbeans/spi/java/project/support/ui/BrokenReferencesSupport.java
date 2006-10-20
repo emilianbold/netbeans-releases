@@ -31,15 +31,13 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.project.BrokenReferencesAlertPanel;
 import org.netbeans.modules.java.project.BrokenReferencesCustomizer;
 import org.netbeans.modules.java.project.BrokenReferencesModel;
-import org.netbeans.modules.java.project.JavaSettings;
+import org.netbeans.modules.java.project.JavaProjectSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -145,9 +143,9 @@ public class BrokenReferencesSupport {
         // Do not show alert if it is already shown or if it was shown
         // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
         if (brokenAlertShown || 
-            brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
-            !JavaSettings.getDefault().isShowAgainBrokenRefAlert()) {
-                return;
+                brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
+                !JavaProjectSettings.isShowAgainBrokenRefAlert()) {
+            return;
         }
         brokenAlertShown = true;
         final Runnable task = new Runnable() {

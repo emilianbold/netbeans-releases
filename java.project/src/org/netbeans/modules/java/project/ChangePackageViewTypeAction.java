@@ -44,18 +44,18 @@ public final class ChangePackageViewTypeAction extends AbstractAction implements
     public JMenuItem getPopupPresenter() {
         JMenu menu = new JMenu();
         Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ChangePackageViewTypeAction.class, "LBL_change_package_type"));
-        menu.add(createChoice(PackageViewSettings.TYPE_PACKAGE_VIEW, NbBundle.getMessage(ChangePackageViewTypeAction.class, "ChangePackageViewTypeAction_list")));
-        menu.add(createChoice(PackageViewSettings.TYPE_TREE, NbBundle.getMessage(ChangePackageViewTypeAction.class, "ChangePackageViewTypeAction_tree")));
+        menu.add(createChoice(JavaProjectSettings.TYPE_PACKAGE_VIEW, NbBundle.getMessage(ChangePackageViewTypeAction.class, "ChangePackageViewTypeAction_list")));
+        menu.add(createChoice(JavaProjectSettings.TYPE_TREE, NbBundle.getMessage(ChangePackageViewTypeAction.class, "ChangePackageViewTypeAction_tree")));
         return menu;
     }
     
     private JMenuItem createChoice(final int type, String label) {
         JRadioButtonMenuItem item = new JRadioButtonMenuItem();
         Mnemonics.setLocalizedText(item, label);
-        item.setSelected(PackageViewSettings.getDefault().getPackageViewType() == type);
+        item.setSelected(JavaProjectSettings.getPackageViewType() == type);
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                PackageViewSettings.getDefault().setPackageViewType(type);
+                JavaProjectSettings.setPackageViewType(type);
             }
         });
         return item;
