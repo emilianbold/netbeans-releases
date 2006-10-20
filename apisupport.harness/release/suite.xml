@@ -38,6 +38,13 @@ Microsystems, Inc. All Rights Reserved.
         <property name="disabled.modules" value=""/>
         <property name="enabled.clusters" value=""/>
         <property name="disabled.clusters" value=""/>
+        <property name="branding.dir" location="branding"/>
+        <condition property="run.branding"> <!-- #84689 -->
+            <and>
+                <available file="${branding.dir}" type="dir"/>
+                <isset property="branding.token"/>
+            </and>
+        </condition>
     </target>
 
     <target name="build" depends="-init,branding" description="Build all modules in the suite.">
@@ -242,8 +249,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="dist"/>
     </target>
 
-    <target name="branding" depends="-init" if="branding.token">
-        <property name="branding.dir" location="branding"/>
+    <target name="branding" depends="-init" if="run.branding">
         <mkdir dir="${cluster}"/>
         <branding cluster="${cluster}" overrides="${branding.dir}" token="${branding.token}"/>
     </target>
