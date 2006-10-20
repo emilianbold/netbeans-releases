@@ -144,7 +144,12 @@ public abstract class SystemUtils {
     public ExecutionResults executeCommand(String... command) throws IOException {
         return executeCommand(null, command);
     }
-    
+    /** Get value of environment variable <i>name</i> and expand it.<br><br>
+     *  The search is performed in sersies in the following scopes:
+     *  <ul> <li> Current process </li><br>
+     *  <li> Current user scope </li><br>
+     *  <li> System scope </li></ul>
+     */    
     public String getEnvironmentVariable(String name) throws IOException, UnsupportedActionException {
         return getEnvironmentVariable(name, EnvironmentVariableScope.PROCESS, false);
     }
