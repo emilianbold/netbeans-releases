@@ -39,18 +39,18 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="org/netbeans/modules/settings/*Test.class"/>
 		<include name="org/netbeans/modules/settings/convertors/*Test.class"/>
 		<include name="org/netbeans/spi/settings/*Test.class"/>
+		<exclude name="org/netbeans/modules/settings/convertors/LayersTest.class"/>
            </patternset>
         </testset>
     </testbag>
 
-    <!-- testbag with failing test (just one method)  -->
-<!--    <testbag testattribs="failing" executor="code" name="failing tests (no ide)" resultsprocessor="unit">-->
-<!--        <testset dir="unit/src">-->
-<!--            <patternset>-->
-<!--                <include name="HelloWorldTest.class/testGreeting2"/>-->
-<!--            </patternset>-->
-<!--        </testset>-->
-<!--    </testbag>-->
+    <testbag testattribs="performance" executor="ide" name="Performance tests for setting support">
+        <testset dir="unit/src">
+            <patternset>
+		<include name="org/netbeans/modules/settings/convertors/LayersTest.class"/>
+           </patternset>
+        </testset>
+    </testbag>
 
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->

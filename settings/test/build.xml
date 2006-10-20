@@ -29,5 +29,6 @@ Microsystems, Inc. All Rights Reserved.
      <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable,all,code,ide"/>
+    <property name="xtest.ide.use.classloader" value="org.netbeans.modules.settings"/>
 </project>
 

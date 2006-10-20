@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Components">
-            <file name="navigatorTC.settings" url="navigatorTC.settings"/>
+            <file name="navigatorTC.settings" url="navigatorTC.xml"/>
         </folder>
 
     </folder>
