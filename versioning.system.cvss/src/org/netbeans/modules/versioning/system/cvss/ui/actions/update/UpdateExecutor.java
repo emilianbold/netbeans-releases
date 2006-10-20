@@ -171,6 +171,11 @@ public class UpdateExecutor extends ExecutorSupport {
                 CvsVersioningSystem.ignoreFilesystemEvents(false);
             }
         }
+
+        // special case: switching to a branch/tag changes textual annotations on nodes that are NOT changed during this operation, typically folders 
+        if (ucmd.getUpdateByRevision() != null || ucmd.isResetStickyOnes()) {
+            FileStatusProvider.getInstance().refreshAllAnnotations(false, true);
+        }        
     }
 
     private void addFileSystem(Set filesystems, File file) {
