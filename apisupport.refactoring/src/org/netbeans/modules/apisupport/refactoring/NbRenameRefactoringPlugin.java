@@ -470,7 +470,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                     clazz = null;
                 }
                 longName = longName.replaceAll("[.]", "\\."); // NOI18N
-                content = content.replaceAll("^" + longName + "[ \\\n]?", newName + "\n"); // NOI18N
+                content = content.replaceAll("^" + longName + "[ \\\r\\\n]*", newName + System.getProperty("line.separator")); // NOI18N
                 Utility.writeFileFromString(parentFile, content);
             }
         }
