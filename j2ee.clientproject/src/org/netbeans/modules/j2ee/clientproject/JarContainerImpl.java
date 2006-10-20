@@ -23,8 +23,11 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AntArtifactChooser;
+import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -128,7 +131,7 @@ public class JarContainerImpl extends EnterpriseReferenceContainer {
             resourceRefName = getUniqueName(ac, "ResourceRef", "ResRefName", ref.getResRefName()); //NOI18N
             ref.setResRefName(resourceRefName);
             getAppClient().addResourceRef(ref);
-            writeDD();
+            writeDD(referencingClass);
         }
         return resourceRefName;
     }
@@ -139,7 +142,7 @@ public class JarContainerImpl extends EnterpriseReferenceContainer {
      * @see #addEjbReference(EjbRef, String, AntArtifact)
      */
     public String addEjbLocalReference(EjbLocalRef localRef, String referencedClassName, AntArtifact target) throws IOException {
-        return addReference(localRef, target);
+        return addReference(localRef, referencedClassName, target);
     }
     
     /**
@@ -162,7 +165,7 @@ public class JarContainerImpl extends EnterpriseReferenceContainer {
      * @return actual jndi name used in deployment descriptor
      */
     public String addEjbReferernce(EjbRef ref, String referenceClassName, AntArtifact target) throws IOException {
-        return addReference(ref, target);
+        return addReference(ref, referenceClassName, target);
     }
     
     /**
@@ -178,7 +181,7 @@ public class JarContainerImpl extends EnterpriseReferenceContainer {
         ref.setMessageDestinationRefName(refName);
         try {
             getAppClient().addMessageDestinationRef(ref);
-            writeDD();
+            writeDD(referencingClass);
         } catch (VersionNotSupportedException ex){}
         return refName;
     }
@@ -214,15 +217,16 @@ public class JarContainerImpl extends EnterpriseReferenceContainer {
         return proposedValue;
     }
     
-    private void writeDD() throws IOException {
+    private void writeDD(String referencingClassName) throws IOException {
         CarImplementation jp = (CarImplementation) webProject.getLookup().lookup(CarImplementation.class);
-        if (isDescriptorMandatory(jp.getJ2eePlatformVersion())) {
+        JavaClass jc = JMIUtils.findClass(referencingClassName);
+        if (isDescriptorMandatory(jp.getJ2eePlatformVersion()) || !InjectionTargetQuery.isInjectionTarget(jc)) {
             FileObject fo = jp.getDeploymentDescriptor();
             getAppClient().write(fo);
         }
     }
     
-    private String addReference(Object ref, AntArtifact target) throws IOException {
+    private String addReference(Object ref, String referencingClass, AntArtifact target) throws IOException {
         String refName = null;
         AppClient webApp = getAppClient();
         if (ref instanceof EjbRef) {
@@ -282,7 +286,7 @@ public class JarContainerImpl extends EnterpriseReferenceContainer {
             ErrorManager.getDefault().log("WebProjectClassPathExtender not found in the project lookup of project: "+webProject.getProjectDirectory().getPath());    //NOI18N
         }
         
-        writeDD();
+        writeDD(referencingClass);
         return refName;
     }
 
