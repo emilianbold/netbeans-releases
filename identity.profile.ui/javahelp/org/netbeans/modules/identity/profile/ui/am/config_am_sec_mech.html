@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Configuring Security Mechanism Profiles for Sun Java System Access Manager Instances</title>
+</head>
+<body>
+<h2>Configuring Security Mechanism Profiles for Sun Java System Access Manager Instances</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>For each security mechanism, the IDE includes a predefined profile for that mechanism. You can modify these predefined profiles to suit your implementation.</p>
+<ul class="note">
+<li>The configuration changes you make in the <a href="../csh/csh_amserverinstance.html">Edit <i>security-mechanism</i> Profile dialog box</a> are applied in real-time to the server instance.</li>
+</ul>
+<p><b>To configure a security mechanism profile for a Sun Java System Access Manager instance:</b></p>
+<ol>
+<li>In the Runtime window, expand the the <tt>Sun Java System Access Managers</tt> node.</li>
+<li>Expand the <i>server-instance</i> node for which you want to configure a security mechanism profile and then expand the <tt>Profiles</tt> node.<br>
+A subnode appears for each security mechanism profile that you can configure.</li>
+<li>Right-click the <tt><i>security-mechanism-profile</i></tt> node and choose Edit.<br>
+The <a href="../csh/csh_amserverinstance.html">Edit <i>security-mechanism</i> Profile dialog box</a> opens.</li>
+<li>Select the Sign Response checkbox.<br>
+<ul class="note">
+<li>If you clear this checkbox for the UserNameToken profile, the settings under Existing&nbsp;Certificate&nbsp;Settings are disabled.</li>
+</ul></li>
+<li>Under Existing&nbsp;Certificate&nbsp;Settings, to use a custom keystore, clear the Use Default Key Store checkbox and enter the required information in each of the following fields:<br>
+<ul>
+<li><b>Keystore Location.</b> Specifies the location of the keystore file that contains the key alias.
+<ul class="note">
+<li>The Browse button for the Keystore Location field is only enabled for local Access Manager instances.</li>
+</ul></li>
+<li><b>Keystore Password.</b> Specifies the password needed to access the keystore file.</li>
+<li><b>Key Alias.</b> Specifies the key alias for the entry in the keystore. Each entry in a keystore file is identified by an alias string.</li>
+<li><b>Key Alias Password.</b> Specifies the password needed to access the key alias for the entry in the keystore.</li>
+</ul>
+<ul class="note">
+<li>If you are using the Liberty security mechanism, you must perform the steps described in <a href="config_liberty_customkeystore.html">Using a Custom Keystore for the Liberty Token Profile</a> to prevent failure at runtime.</li>
+</ul></li>
+
+<li>For the UserNameToken profile, create an entry for each web service client by doing the following:
+<ol type="a">
+<li>Click Add.</li>
+<li>In the Add User dialog box, type the user name and password for the web service client.<br>
+The user name must be unique.</li>
+<li>Click OK.</li>
+</ol></li>
+<li>At the Edit <i>security-mechanism-profile</i> Profile dialog box, click OK.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="ww_am_instances.html" title="Working with Sun Java System Access Manager Instances">Working with Sun Java System Access Manager Instances</a></dd>
+<dd><a href="config_support_libertysaml.html" title="Configuring Support for the Liberty SAML Token Profile">Configuring Support for the Liberty SAML Token Profile</a></dd>
+<dd><a href="../csh/csh_amserverinstance.html">Edit <i>security-mechanism</i> Profile dialog box</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

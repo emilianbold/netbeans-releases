@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.JSeparator" name="jSeparator2">
+    </Component>
+  </NonVisualComponents>
+  <Properties>
+    <Property name="enabled" type="boolean" value="false"/>
+  </Properties>
+  <Events>
+    <EventHandler event="ancestorAdded" listener="javax.swing.event.AncestorListener" parameters="javax.swing.event.AncestorEvent" handler="formAncestorAdded"/>
+  </Events>
+  <AuxValues>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="secMechLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="requestLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="requestSecMechCB" pref="322" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="passwordLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="userNameLabel" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="passwordTF" pref="302" max="32767" attributes="0"/>
+                                  <Component id="userNameTF" alignment="0" pref="302" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="responseLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="signResponseCB" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                  </Group>
+                  <Component id="certSettingsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="keystoreLocationLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <Component id="keystoreLocationTF" pref="197" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="useDefaultKeyStoreCB" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="keystorePasswordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="keyAliasLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="keyAliasPasswordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="keyPasswordTF" pref="197" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="keyAliasTF" pref="197" max="32767" attributes="0"/>
+                                  <Component id="keystorePasswordTF" alignment="0" pref="197" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="browseButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="enableSecurityCB" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="serverLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="serverCB" pref="340" max="32767" attributes="0"/>
+                  </Group>
+                  <Component id="jSeparator1" alignment="0" pref="380" max="32767" attributes="0"/>
+                  <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jSeparator3" alignment="1" pref="380" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="enableSecurityCB" min="-2" pref="15" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="secMechLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="requestLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="requestSecMechCB" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="userNameTF" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
+                  <Component id="userNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordTF" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="responseLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="signResponseCB" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="certSettingsLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="useDefaultKeyStoreCB" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="keystoreLocationTF" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keystoreLocationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="keystorePasswordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keystorePasswordTF" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="keyAliasLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keyAliasTF" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="keyAliasPasswordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keyPasswordTF" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+              <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="serverLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="serverCB" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
+              <Component id="errorLabel" min="-2" pref="14" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Component class="javax.swing.JCheckBox" name="enableSecurityCB">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_EnableSecurity" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
+        <Property name="opaque" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="enableSecurityCBActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="secMechLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_SecurityMechanisms" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="requestLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="requestSecMechCB"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_Request" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="requestSecMechCB">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="requestSecMechCBActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="userNameLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="userNameTF"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_UserName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="userNameTF">
+    </Component>
+    <Component class="javax.swing.JLabel" name="passwordLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="passwordTF"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_Password" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="responseLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_Response" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="signResponseCB">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_VerifyResponse" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
+        <Property name="opaque" type="boolean" value="false"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="certSettingsLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_CertificateSettings" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="keystoreLocationLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="keystoreLocationTF"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_KeyStoreLocation" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="keystoreLocationTF">
+    </Component>
+    <Component class="javax.swing.JLabel" name="keystorePasswordLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="keystorePasswordTF"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_KeystorePassword" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="keyAliasLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="keyAliasTF"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_KeyAlias" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JTextField" name="keyAliasTF">
+    </Component>
+    <Component class="javax.swing.JLabel" name="keyAliasPasswordLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="keyPasswordTF"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_KeyAliasPassword" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator1">
+    </Component>
+    <Component class="javax.swing.JLabel" name="serverLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="serverCB"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_Server" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="serverCB">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="browseButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_Browse" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseButtonActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JPasswordField" name="keystorePasswordTF">
+    </Component>
+    <Component class="javax.swing.JPasswordField" name="keyPasswordTF">
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="useDefaultKeyStoreCB">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/identity/profile/ui/Bundle.properties" key="LBL_UseDefaultKeyStore" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
+        <Property name="opaque" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="useDefaultKeyStoreCBActionPerformed"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JPasswordField" name="passwordTF">
+    </Component>
+    <Component class="javax.swing.JLabel" name="errorLabel">
+      <Properties>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="0" green="0" id="red" palette="1" red="ff" type="palette"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Error:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator3">
+    </Component>
+  </SubComponents>
+</Form>

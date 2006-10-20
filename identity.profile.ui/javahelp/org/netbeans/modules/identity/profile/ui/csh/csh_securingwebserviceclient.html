@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Web Service Attributes Editor: Web Service Client Security Configuration</title>
+</head>
+<body>
+<h2>Web Service Attributes Editor: Web Service Client Security Configuration</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Security tab of the Web Service Attributes Editor lets you configure message-level security for web service clients.</p>
+<p>You can configure the following settings:</p>
+<ul>
+<li><b>Enable Message Level Security.</b> Specifies whether message-level security is enabled.</li>
+<li><b>Security Mechanism.</b>
+<ul>
+<li><b>Request.</b> Specifies the security mechanism for the requests: <tt>SAML-HolderOfKey</tt>, <tt>SAML-SenderVouches</tt>, <tt>X509Token</tt>, <tt>UserNameToken</tt>, or <tt>LibertyDiscoverySecurity</tt>.
+<ul>
+<li><b>UserNameToken information</b>: For <tt>UserNameToken</tt> security mechanism, two additional fields let you define the <b>Username</b> and <b>Password</b> for the token profile for the Access Manager server instance you select in the Server drop-down list.
+<ul class="note">
+<li>The user name and password values for each client must have equivalent entries in the <b>User Name Token Profile Information</b> table of the <a href="csh_amserverinstance.html">Edit <i>security-mechanism</i> Profile dialog box</a>.</li>
+</ul></li>
+</ul>
+</li>
+<li><b>Response, Verify Response checkbox.</b> Specifies whether response verification is enabled.</li>
+</ul></li>
+<li><b>Existing&nbsp;Certificate&nbsp;Settings.</b>
+<ul>
+<li><b>Use Default Key Store.</b> Lets you use the default key store. When selected, the other fields in this area are disabled.</li>
+<li><b>Keystore Location.</b> Specifies the location of the keystore file that contains the key alias.</li>
+<li><b>Keystore Password.</b> Specifies the password needed to access the keystore file.</li>
+<li><b>Key Alias to Use.</b> Specifies the key alias for the entry in the keystore. Each entry in a keystore file is identified by an alias string.</li>
+<li><b>Key Alias Password.</b> Specifies the password needed to access the key alias for the entry in the keystore.</li>
+</ul>
+<ul class="note">
+<li>If you want to use a custom keystore and you are using the Liberty security mechanism, you must complete the steps in <a href="../am/config_liberty_customkeystore.html">Using a Custom Keystore for the Liberty Token Profile</a>.</li>
+</ul></li>
+<li><b>Server.</b> Specifies the Access Manager server instance.</li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/csh/editor/EditWSAttributesCookieImpl.html" title="About the Web Service Attributes Editor">About the Web Service Attributes Editor</a></dd>
+<dd><a href="../clients/wsc_enable_liberty.html">Enabling the Liberty Security Mechanism for Web Service Clients</a></dd>
+<dd><a href="../clients/wsc_enable_saml.html">Enabling a SAML Security Mechanism for Web Service Clients</a></dd>
+<dd><a href="../clients/wsc_enable_usernamepw.html">Enabling the UserNameToken Security Mechanism for Web Service Clients</a></dd>
+<dd><a href="../clients/wsc_enable_x509.html">Enabling the X509 Security Mechanism for Web Service Clients</a></dd>
+<dd><a href="../about.html" title="About Identity Management Tools">About Identity Management Tools</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

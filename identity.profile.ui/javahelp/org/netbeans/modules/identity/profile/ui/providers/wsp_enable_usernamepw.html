@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Enabling the UserNameToken Security Mechanism for Web Service Providers</title>
+</head>
+<body>
+<h2>Enabling the UserNameToken Security Mechanism for Web Service Providers</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>You use the Security tab of the Web Service Attributes Editor to enable and configure the UserNameToken security mechanism for web service providers.</p>
+<p><b>To enable the Liberty security mechanism for a web service provider:</b></p>
+<ol>
+<li>In the Projects window, expand the project node for the project where your web service provider is defined.</li>
+<li>Expand the <tt>Web&nbsp;Services</tt> node, right-click the <tt><i>web-service</i></tt> node, and choose Edit Web Service Attributes from the pop-up menu.<br>
+The Web Service Attributes Editor opens with the Security tab open.</li>
+<li>Select the Enable Message Level Security checkbox.</li>
+<li>Under Security Mechanism, from the Request drop-down list, select UserNameToken.</li>
+<li>From the Server drop-down list, select the Access Manager server instance that is associated with the Sun Java System Application Server for your project.</li>
+<li>Click OK.</li>
+</ol>
+<ul class="note">
+<li>You must configure the list of username and password combinations of the web service clients that access this provider. For instructions, see <a href="../am/config_am_sec_mech.html">Configuring Security Mechanisms for Sun Java System Access Manager Instances</a>.</li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../csh/csh_securingwebserviceprovider.html" title="Web Service Attributes Editor: Web Service Provider Security Configuration">Web Service Attributes Editor: Web Service Provider Security Configuration</a></dd>
+<dd><a href="../about.html" title="About Identity Management Tools">About Identity Management Tools</a></dd>
+<dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+   <param name="content" value="http://www.oasis-open.org/committees/download.php/5532/oasis-200401-wss-username-token-profile-1.0.pdf">
+   <param name="text" value="<html><u>UserName Token Profile (OASIS WSS UserName Token Profile 1.0, pdf)</u></html>">
+   <param name="textFontSize" value="medium">
+   <param name="textColor" value="blue">
+</object></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Edit security-mechanism Profile Dialog Box</title>
+</head>
+<body>
+<h2>Edit <i>security-mechanism</i> Profile Dialog Box</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The Edit <i>security-mechanism</i> Profile dialog box lets you configure message-level security for an instance of the Sun Java System Access Manager server.</p>
+<p>You can configure the following settings:</p>
+<ul>
+<li><b>Sign Response.</b> Specifies whether responses should be signed.</li>
+<li><b>Existing&nbsp;Certificate&nbsp;Settings.</b>
+<ul>
+<li><b>Use Default Key Store.</b> Lets you use the default key store. When selected, the other fields in this area are disabled.</li>
+<li><b>Keystore Location.</b> Specifies the location of the keystore file that contains the key alias.</li>
+<li><b>Keystore Password.</b> Specifies the password needed to access the keystore file.</li>
+<li><b>Key Alias.</b> Specifies the key alias for the entry in the keystore. Each entry in a keystore file is identified by an alias string.</li>
+<li><b>Key Alias Password.</b> Specifies the password needed to access the key alias for the entry in the keystore.</li>
+</ul></li>
+<li><b>Username Token Profile Info.</b> These settings appear <i>only</i> when the <tt>UserNameToken</tt> security mechanism is in effect.<br>
+For each web service client that is granted access to the server, specifies the <b>Username</b> and <b>Password</b> for the token profile. 
+<ul class="note">
+<li>The values in each row of this table must match the values defined for the individual web service clients in the <a href="csh_securingwebserviceclient.html" title="Security tab of the Web Service Attributes Editor">Security tab of the Web Service Attributes Editor</a>.</li>
+</ul></li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../am/config_am_sec_mech.html">Configuring Security Mechanisms for Sun Java System Access Manager Instances</a></dd>
+<dd><a href="../am/ww_am_instances.html">Working with Sun Java System Access Manager Instances</a></dd>
+<dd><a href="../about.html" title="About Identity Management Tools">About Identity Management Tools</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

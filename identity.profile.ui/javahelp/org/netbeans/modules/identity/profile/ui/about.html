@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>About Identity Management Tools</title>
+</head>
+<body>
+<h2>About Identity Management Tools</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Identity Management tools provide security and identity support for the Java Platform, Enterprise Edition (Java EE) modules in the NetBeans IDE. This includes support for development of interoperable web services via the use of WSI-BSP (Basic Security Profile) token profiles. In this release, the following token profiles are supported:</p>
+<ul>
+<li><b>UserNameToken.</b> Securing the web service is accomplished using a user name and password, and optionally signing the request. In this profile, a web service consumer can supply a UserNameToken as a means of identifying the requester by &quot;username&quot; and optionally using a password (or shared secret, or password equivalent) to authenticate that identity to the web service provider.</li>
+<li><b>X509Token.</b> Securing the web service is accomplished using PKI (public key infrastructure), in which the web service consumer and the web service provider trust each other's public keys or have a common trusted certificate authority. In this profile, a web service consumer would supply his public key as a means of identifying the requester to authenticate itself to the web service provider.</li>
+<li><b>SAML-HolderOfKey.</b> Securing the web service is accomplished using SAML (Security Assertions Markup Language) using holder-of-key confirmation method. In this profile, a web service consumer would supply a SAML assertion with confirmation method to be holder-of-key as a means of identifying the requester to authenticate itself to the web service provider.</li>
+<li><b>SAML-SenderVouches.</b> Securing the web service is accomplished using SAML using sender-vouches as the confirmation method. In this profile, a web service consumer would supply a SAML assertion with confirmation method to be sender-vouches to assert that it is acting on behalf of the subject of the SAML subject statement, as a means of identifying the requester to authenticate itself to the web service provider.</li>
+<li><b>LibertyX509Token.</b> Securing the web service is accomplished using Web Service Security X.509 Certificate Token Profile (X509Token described above), but using Liberty-defined processing rules.</li>
+<li><b>LibertyBearerToken.</b> Securing the web service is accomplished using Web Service Security SAML Token Profile (SAML-HolderOfKey described above), but using Liberty-defined processing rules.</li>
+<li><b>LibertySAMLToken.</b> Securing the web service is accomplished using Web Service Security SAML Token Profile (SAML-SenderVouches described above), but using Liberty-defined processing rules.</li>
+</ul>
+
+<p>You can enable message-level security for web service clients:</p>
+<ul>
+<li><a href="clients/wsc_enable_liberty.html">Enabling the Liberty Security Mechanism for Web Service Clients</a></li>
+<li><a href="clients/wsc_enable_saml.html">Enabling a SAML Security Mechanism for Web Service Clients</a></li>
+<li><a href="clients/wsc_enable_usernamepw.html">Enabling the UserNameToken Security Mechanism for Web Service Clients</a></li>
+<li><a href="clients/wsc_enable_x509.html">Enabling the X509 Security Mechanism for Web Service Clients</a></li>
+</ul>
+<p>You can enable message-level security for web service providers:</p>
+<ul>
+<li><a href="providers/wsp_enable_liberty.html">Enabling the Liberty Security Mechanism for Web Service Providers</a></li>
+<li><a href="providers/wsp_enable_saml.html">Enabling a SAML Security Mechanism for Web Service Providers</a></li>
+<li><a href="providers/wsp_enable_usernamepw.html">Enabling the UserNameToken Security Mechanism for Web Service Providers</a></li>
+<li><a href="providers/wsp_enable_x509.html">Enabling the X509 Security Mechanism for Web Service Providers</a></li>
+</ul>
+<p>When you enable message-level security for web service providers and clients, the security is enabled when you deploy to your application server. At deployment, the application server communicates with the Access Manager server instance you select during the configuration of the message-level security.</p>
+<p>If you enable message-level security for web service clients and providers, you must also configure a security mechanism for the Sun Java System Access Manager server instance associated with your web service clients and providers. For an overview of server instance tasks, see <a href="am/ww_am_instances.html">Working with Sun Java System Access Manager Instances</a>.</p>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/config_ejb_dd.html" title="Configuring EJB Deployment Descriptors">Configuring EJB Deployment Descriptors</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/web/configure/configure_webapp_dd.html" title="Configuring Web Application Deployment Descriptors">Configuring Web Application Deployment Descriptors</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/csh/editor/EditWSAttributesCookieImpl.html" title="About the Web Service Attributes Editor">About the Web Service Attributes Editor</a></dd>
+<dd><a href="am/config_liberty_customkeystore.html">Using a Custom Keystore for the Liberty Token Profile</a></dd>
+</dl>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

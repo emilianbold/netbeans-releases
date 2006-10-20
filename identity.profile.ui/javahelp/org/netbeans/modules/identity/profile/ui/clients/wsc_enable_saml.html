@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2006 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Enabling a SAML Security Mechanism for Web Service Clients</title>
+</head>
+<body>
+<h2>Enabling a SAML Security Mechanism for Web Service Clients</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>You use the Security tab of the Web Service Attributes Editor to enable and configure a SAML security mechanism for web service clients.</p>
+<p><b>To enable a SAML security mechanism for a web service client:</b></p>
+<ol>
+<li>In the Projects window, expand the project node for the project where your web service client is defined.</li>
+<li>Expand the <tt>Web Service References</tt> node and right-click the <tt><i>web-service-information</i></tt> node and choose Edit Web Service Attributes from the pop-up menu.<br>
+The Web Service Attributes Editor opens with the Security tab open.</li>
+<li>Select the Enable Message Level Security checkbox.</li>
+<li>Under Security Mechanism, from the Request drop-down list, select SAML-HolderOfKey or SAML-SenderVouches.</li>
+<li>To specify that response verification is required, select the Verify Response checkbox.</li>
+<li>Under Existing&nbsp;Certificate&nbsp;Settings, to use a custom keystore, clear the Use Default Key Store checkbox and enter the required information.<br>
+You can use the Browse button to navigate to and select a different location for the keystore file.<br>
+<ul class="note">
+<li>If you use the default keystore for the web service client, you must also use the default keystore for the web service provider.</li>
+</ul></li>
+<li>From the Server drop-down list, select the Access Manager server instance that is associated with the Sun Java System Application Server for your project.</li>
+<li>Click OK.</li>
+</ol>
+<ul class="note">
+<li>To be able to deploy the client and the provider to two different Access Manager instances, the public key or the certificate authority (CA) of the web service client must be added to the trusted list of certificates or certificate authorities of the web service providers respectively.<br>
+If you are using the configuration wizards in the IDE and the web service client and web service provider both point to the same Access Manager, this manual step is not needed.</li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../csh/csh_securingwebserviceclient.html" title="Web Service Attributes Editor: Web Service Client Security Configuration">Web Service Attributes Editor: Web Service Client Security Configuration</a></dd>
+<dd><a href="../about.html" title="About Identity Management Tools">About Identity Management Tools</a></dd>
+<dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+   <param name="content" value="http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.0.pdf">
+   <param name="text" value="<html><u>SAML Token Profile (OASIS SAML Token Profile 1.0, pdf)</u></html>">
+   <param name="textFontSize" value="medium">
+   <param name="textColor" value="blue">
+</object></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>

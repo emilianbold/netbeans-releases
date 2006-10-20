@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+
+<map version="1.0">
+<mapID target="idmtools_about" url="about.html"/>
+<mapID target="idmtools_credits" url="credits.html"/>
+<mapID target="idmtools_am_about_am" url="am/about_am.html" />
+<mapID target="idmtools_am_ww_am_instances" url="am/ww_am_instances.html" />
+<mapID target="idmtools_am_adding_am_instance" url="am/adding_am_instance.html" />
+<mapID target="idmtools_am_accessing_am_console" url="am/accessing_am_console.html" />
+<mapID target="idmtools_am_config_am_sec_mech" url="am/config_am_sec_mech.html" />
+<mapID target="idmtools_am_removing_am_instance" url="am/removing_am_instance.html" />
+<mapID target="idmtools_am_changing_props_am_instance" url="am/changing_props_am_instance.html" />
+<mapID target="idmtools_am_config_liberty_customkeystore" url="am/config_liberty_customkeystore.html"/>
+<mapID target="idmtools_am_config_support_libertysaml" url="am/config_support_libertysaml.html"/>
+<mapID target="idmtools_clients_wsc_enable_liberty" url="clients/wsc_enable_liberty.html" />
+<mapID target="idmtools_clients_wsc_enable_x509" url="clients/wsc_enable_x509.html" />
+<mapID target="idmtools_clients_wsc_enable_usernamepw" url="clients/wsc_enable_usernamepw.html" />
+<mapID target="idmtools_clients_wsc_enable_saml" url="clients/wsc_enable_saml.html" />
+<mapID target="idmtools_providers_wsp_enable_liberty" url="providers/wsp_enable_liberty.html" />
+<mapID target="idmtools_providers_wsp_enable_x509" url="providers/wsp_enable_x509.html" />
+<mapID target="idmtools_providers_wsp_enable_usernamepw" url="providers/wsp_enable_usernamepw.html" />
+<mapID target="idmtools_providers_wsp_enable_saml" url="providers/wsp_enable_saml.html" />
+<mapID target="idmtools_csh_amserverinstance" url="csh/csh_amserverinstance.html"/>
+<mapID target="idmtools_csh_securingwebserviceclient" url="csh/csh_securingwebserviceclient.html"/>
+<mapID target="idmtools_csh_securingwebserviceprovider" url="csh/csh_securingwebserviceprovider.html"/>
+</map>

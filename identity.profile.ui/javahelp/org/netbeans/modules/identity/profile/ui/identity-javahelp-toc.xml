@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+
+<!--
+                 Sun Public License Notice
+ 
+ The contents of this file are subject to the Sun Public License
+ Version 1.0 (the "License"). You may not use this file except in
+ compliance with the License. A copy of the License is available at
+ http://www.sun.com/
+ 
+ The Original Code is NetBeans. The Initial Developer of the Original
+ Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+
+<toc version="2.0">
+	<tocitem text="Identity Management Tools">
+		<tocitem text="About Identity Management Tools" target="idmtools_about" />
+		<tocitem text="Web Service Providers">
+			<tocitem text="Enabling the Liberty Security Mechanism for Web Service Providers" target="idmtools_providers_wsp_enable_liberty" />
+			<tocitem text="Enabling the X509 Security Mechanism for Web Service Providers" target="idmtools_providers_wsp_enable_x509" />
+			<tocitem text="Enabling the UserNameToken Security Mechanism for Web Service Providers" target="idmtools_providers_wsp_enable_usernamepw" />
+			<tocitem text="Enabling a SAML Security Mechanism for Web Service Providers" target="idmtools_providers_wsp_enable_saml" />
+		</tocitem>
+		<tocitem text="Web Service Clients">
+			<tocitem text="Enabling the Liberty Security Mechanism for Web Service Clients" target="idmtools_clients_wsc_enable_liberty" />
+			<tocitem text="Enabling the X509 Security Mechanism for Web Service Clients" target="idmtools_clients_wsc_enable_x509" />
+			<tocitem text="Enabling the UserNameToken Security Mechanism for Web Service Clients" target="idmtools_clients_wsc_enable_usernamepw" />
+			<tocitem text="Enabling a SAML Security Mechanism for Web Service Clients" target="idmtools_clients_wsc_enable_saml" />
+		</tocitem>
+		<tocitem text="Sun Java System Access Manager">
+			<tocitem text="About the Sun Java System Access Manager" target="idmtools_am_about_am" />
+			<tocitem text="Working with Sun Java System Access Manager Instances" target="idmtools_am_ww_am_instances" />
+			<tocitem text="Adding Sun Java System Access Manager Instances" target="idmtools_am_adding_am_instance" />
+			<tocitem text="Changing the Properties of Sun Java System Access Manager Instances" target="idmtools_am_changing_props_am_instance" />
+			<tocitem text="Accessing the Java System Access Manager Instance Admin Console" target="idmtools_am_accessing_am_console" />
+			<tocitem text="Configuring Security Mechanism Profiles for Sun Java System Access Manager Instances" target="idmtools_am_config_am_sec_mech" />
+			<tocitem text="Using a Custom Keystore for the Liberty Token Profile" target="idmtools_am_config_liberty_customkeystore" />
+			<tocitem text="Configuring Support for the Liberty SAML Token Profile" target="idmtools_am_config_support_libertysaml" />
+		</tocitem>
+	</tocitem>
+</toc>
