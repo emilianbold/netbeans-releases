@@ -56,18 +56,16 @@ final class XMLSettingsSupport {
      * @param classes everything what class extends or implements
      * @param pw output
      */
-    private static void storeInstanceOf (Set classes, PrintWriter pw) throws IOException {
-        SortedSet clazzNames = new TreeSet(); // sort them: #24661
-        Iterator it = classes.iterator();
-        while (it.hasNext()) {
-            clazzNames.add(((Class)it.next()).getName());
+    private static void storeInstanceOf (Set<Class> classes, PrintWriter pw) throws IOException {
+        SortedSet<String> clazzNames = new TreeSet<String>(); // sort them: #24661
+        for (Class clz: classes) {
+            clazzNames.add(clz.getName());
         }
-        it = clazzNames.iterator();
-        StringBuffer sb = new StringBuffer (200);  // XXX estimate right capacity
-        while (it.hasNext()) {
+        StringBuilder sb = new StringBuilder (200);  // XXX estimate right capacity
+        for (String s: clazzNames) {
             sb.append("    <instanceof class=\""). // NOI18N
-            append((String)it.next()).
-            append("\"/>"+LINE_SEPARATOR); // NOI18N
+            append(s).
+            append("\"/>").append(LINE_SEPARATOR); // NOI18N
         }
         pw.print(sb.toString());
     }
@@ -271,9 +269,9 @@ final class XMLSettingsSupport {
     }
     
     /** Get everything what class extends or implements. */
-    private static Set getSuperClasses(Class clazz, Set classes) {
+    private static Set<Class> getSuperClasses(Class clazz, Set<Class> classes) {
         if (classes == null) {
-            classes = new HashSet();
+            classes = new HashSet<Class>();
         }
         
         if (clazz == null || !classes.add(clazz)) {
@@ -334,12 +332,12 @@ final class XMLSettingsSupport {
         //private static final String VERSION = "1.0"; // NOI18N
         
         private boolean header;
-        private Stack stack;
+        private Stack<String> stack;
         
         private String version;
         private String instanceClass;
         private String instanceMethod;
-        private Set instanceOf = new HashSet();
+        private Set<String> instanceOf = new HashSet<String>();
         
         private byte[] serialdata;
         private CharArrayWriter chaos = null;
@@ -395,7 +393,7 @@ final class XMLSettingsSupport {
         }
         
         /** Set of names. */
-        public Set getInstanceOf() {
+        public Set<String> getInstanceOf() {
             return instanceOf;
         }
         
@@ -421,7 +419,7 @@ final class XMLSettingsSupport {
         
         public void characters(char[] values, int start, int length) throws SAXException {
             if (header) return;
-            String element = (String) stack.peek();
+            String element = stack.peek();
             if (ELM_SERIALDATA.equals(element)) {
                 // [PENDING] should be optimized to do not read all chars to memory
                 if (chaos == null) chaos = new CharArrayWriter(length);
@@ -489,7 +487,7 @@ final class XMLSettingsSupport {
         
         public void endElement(String uri, String localName, String qName) throws SAXException {
             //if (header) return;
-            String element = (String) stack.pop();
+            String element = stack.pop();
             if (ELM_SERIALDATA.equals(element)) {
                 if (chaos != null) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream(chaos.size() >> 1);
@@ -559,9 +557,9 @@ final class XMLSettingsSupport {
                     inst = createFromMethod(instanceClass, instanceMethod);
                 } else {
                     // use default constructor
-                    Class clazz = instanceClass();
+                    Class<?> clazz = instanceClass();
                     if (SharedClassObject.class.isAssignableFrom(clazz)) {
-                        inst = SharedClassObject.findObject(clazz, false);
+                        inst = SharedClassObject.findObject(clazz.asSubclass(SharedClassObject.class), false);
                         if (null != inst) {
                             // instance already exists -> reset it to defaults
                             try {
@@ -572,7 +570,7 @@ final class XMLSettingsSupport {
                                 Exceptions.printStackTrace(e);
                             }
                         } else {
-                            inst = SharedClassObject.findObject(clazz, true);
+                            inst = SharedClassObject.findObject(clazz.asSubclass(SharedClassObject.class), true);
                         }
                     } else {
                         try {
@@ -634,16 +632,16 @@ final class XMLSettingsSupport {
                 targetMethod = srcMethod;
             }
 
-            Class clazz = loadClass(targetClass);
+            Class<?> clazz = loadClass(targetClass);
 
             try {
                 Object instance;
                 try {
                     Method method = clazz.getMethod(targetMethod, new Class[]{FileObject.class});
                     method.setAccessible(true);
-                    instance = method.invoke(null, new FileObject[] {source});
+                    instance = method.invoke(null, source);
                 } catch (NoSuchMethodException ex) {
-                    Method method = clazz.getMethod(targetMethod, null);
+                    Method method = clazz.getMethod(targetMethod);
                     method.setAccessible(true);
                     instance = method.invoke(null, new Object[0]);
                 }
@@ -683,8 +681,8 @@ final class XMLSettingsSupport {
         }
         
         /** try to load class from system and current classloader. */
-        private Class loadClass(String clazz) throws ClassNotFoundException {
-            return ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass(clazz);
+        private Class<?> loadClass(String clazz) throws ClassNotFoundException {
+            return Lookup.getDefault().lookup(ClassLoader.class).loadClass(clazz);
         }
         
         /** get class name of instance */
@@ -750,7 +748,7 @@ final class XMLSettingsSupport {
                     } else {
                         in = source.getInputStream ();
                     }
-                    Set iofs = quickParse(new BufferedInputStream(in));
+                    Set<String> iofs = quickParse(new BufferedInputStream(in));
                     if (iofs != null) {
                         instanceOf = iofs;
                         return;
@@ -761,7 +759,7 @@ final class XMLSettingsSupport {
             } finally {
                 if (in != null) in.close();
             }
-            stack = new Stack();
+            stack = new Stack<String>();
             try {
                 in = source.getInputStream();
                 XMLReader reader = org.openide.xml.XMLUtil.createXMLReader();
@@ -793,7 +791,7 @@ final class XMLSettingsSupport {
         
         /** Parse setting from source. */
         public void parse(Reader source) throws IOException {
-            stack = new Stack();
+            stack = new Stack<String>();
             
             try {
                 XMLReader reader = org.openide.xml.XMLUtil.createXMLReader();
@@ -832,8 +830,8 @@ final class XMLSettingsSupport {
          * you have to use a real parser.
          * @see "#36718"
          */
-        private Set quickParse(InputStream is) throws IOException {
-            Set iofs = new HashSet();   // <String>
+        private Set<String> quickParse(InputStream is) throws IOException {
+            Set<String> iofs = new HashSet<String>();
 
             if (!expect(is, MODULE_SETTINGS_INTRO)) {
                 err.fine("Could not read intro "+source); // NOI18N

@@ -20,6 +20,7 @@
 package org.netbeans.spi.settings;
 
 import java.io.IOException;
+import java.util.Map;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.xml.XMLUtil;
@@ -55,9 +56,10 @@ public abstract class DOMConvertor extends Convertor {
 
     private final static String ELM_DELEGATE = "domconvertor"; // NOI18N
     
-    private final static java.util.Map refsCache = new java.util.HashMap();
+    private final static java.util.Map<Document, Map<Object,CacheRec>> refsCache = 
+            new java.util.HashMap<Document, Map<Object,CacheRec>>();
     /** cache of contexts <Document, Lookup>*/
-    private final static java.util.Map ctxCache = new java.util.HashMap();
+    private final static java.util.Map<Document, Lookup> ctxCache = new java.util.HashMap<Document, Lookup>();
     
     private String publicID;
     private String systemID;
@@ -273,7 +275,7 @@ public abstract class DOMConvertor extends Convertor {
      */
     protected static org.openide.util.Lookup findContext(org.w3c.dom.Document doc) {
         synchronized (ctxCache) {
-            Lookup ctx = (Lookup) ctxCache.get(doc);
+            Lookup ctx = ctxCache.get(doc);
             return ctx == null? Lookup.EMPTY: ctx;
         }
     }
@@ -328,13 +330,13 @@ public abstract class DOMConvertor extends Convertor {
      */
     private static CacheRec setCache(org.w3c.dom.Document key, Object obj) {
         synchronized (refsCache) {
-            java.util.Map refs = (java.util.Map) refsCache.get(key);
+            Map<Object, CacheRec> refs = refsCache.get(key);
             if (refs == null) {
-                refs = new java.util.HashMap();
+                refs = new java.util.HashMap<Object, CacheRec>();
                 refsCache.put(key, refs);
             }
             
-            CacheRec cr = (CacheRec) refs.get(obj);
+            CacheRec cr = refs.get(obj);
             if (cr == null) {
                 cr = new CacheRec();
                 cr.key = obj;
@@ -353,13 +355,13 @@ public abstract class DOMConvertor extends Convertor {
      */
     private static CacheRec setCache(org.w3c.dom.Document key, Object id, Object obj) {
         synchronized (refsCache) {
-            java.util.Map refs = (java.util.Map) refsCache.get(key);
+            Map<Object, CacheRec> refs = refsCache.get(key);
             if (refs == null) {
-                refs = new java.util.HashMap();
+                refs = new java.util.HashMap<Object, CacheRec>();
                 refsCache.put(key, refs);
             }
             
-            CacheRec cr = (CacheRec) refs.get(id);
+            CacheRec cr = refs.get(id);
             if (cr == null) {
                 cr = new CacheRec();
                 cr.key = id;

@@ -33,11 +33,11 @@ final class ModuleInfoManager {
     private final static ModuleInfoManager mim = new ModuleInfoManager();;
 
     /** all modules <code bas name, ModuleInfo> */
-    private HashMap modules = null;
+    private HashMap<String, ModuleInfo> modules = null;
     /** lookup query to find out all modules */
-    private Lookup.Result modulesResult = null;
+    private Lookup.Result<ModuleInfo> modulesResult = null;
     /** <ModuleInfo, PCL> */
-    private HashMap mapOfListeners;
+    private HashMap<ModuleInfo, PCL> mapOfListeners;
     /** Creates a new instance of ModuleInfoManager */
     private ModuleInfoManager() {
     }
@@ -51,7 +51,7 @@ final class ModuleInfoManager {
      * @return module info or null
      */
     public ModuleInfo getModule(String codeBaseName) {
-        Collection l = null;
+        Collection<? extends ModuleInfo> l = null;
         if (modules == null) {
             l = getModulesResult().allInstances();
         }
@@ -61,15 +61,15 @@ final class ModuleInfoManager {
         }
     }
 
-    private Lookup.Result getModulesResult() {
+    private Lookup.Result<ModuleInfo> getModulesResult() {
         synchronized (this) {
             if (modulesResult == null) {
                 Lookup lookup = org.netbeans.core.NbTopManager.getModuleLookup();
                 modulesResult = lookup.
-                    lookup(new Lookup.Template(ModuleInfo.class));
+                    lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
                 modulesResult.addLookupListener(new LookupListener() {
                     public void resultChanged(LookupEvent ev) {
-                        Collection l = getModulesResult().allInstances();
+                        Collection<? extends ModuleInfo> l = getModulesResult().allInstances();
                         XMLSettingsSupport.err.fine("Modules changed: " + l); // NOI18N
                         List reloaded;
                         synchronized (this) {
@@ -99,11 +99,9 @@ final class ModuleInfoManager {
     /** recompute accessible modules.
      * @param l a collection of module infos
      */
-    private void fillModules(Collection l) {
-        HashMap m = new HashMap((l.size() << 2) / 3 + 1);
-        Iterator it = l.iterator();
-        while (it.hasNext()) {
-            ModuleInfo mi = (ModuleInfo) it.next();
+    private void fillModules(Collection<? extends ModuleInfo> l) {
+        HashMap<String, ModuleInfo> m = new HashMap<String, ModuleInfo>((l.size() << 2) / 3 + 1);
+        for (ModuleInfo mi: l) {
             m.put(mi.getCodeNameBase(), mi);
         }
         modules = m;
@@ -112,17 +110,17 @@ final class ModuleInfoManager {
     /** replace old MIs of reloaded modules with new ones
      * @return the list of PCLs of reloaded modules
      */
-    private List replaceReloadedModules() {
-        if (mapOfListeners == null) return Collections.EMPTY_LIST;
+    private List<PCL> replaceReloadedModules() {
+        if (mapOfListeners == null) return Collections.emptyList();
         
-        Iterator it = new ArrayList(mapOfListeners.keySet()).iterator();
-        List reloaded = new ArrayList();
+        Iterator<ModuleInfo> it = new ArrayList<ModuleInfo>(mapOfListeners.keySet()).iterator();
+        List<PCL> reloaded = new ArrayList<PCL>();
         
         while (it.hasNext()) {
-            ModuleInfo mi = (ModuleInfo) it.next();
-            ModuleInfo miNew = (ModuleInfo) modules.get(mi.getCodeNameBase());
+            ModuleInfo mi = it.next();
+            ModuleInfo miNew = modules.get(mi.getCodeNameBase());
             if (mi != miNew && miNew != null) {
-                PCL lsnr = (PCL) mapOfListeners.remove(mi);
+                PCL lsnr = mapOfListeners.remove(mi);
                 lsnr.setModuleInfo(miNew);
                 reloaded.add(lsnr);
                 mapOfListeners.put(miNew, lsnr);
@@ -151,10 +149,10 @@ final class ModuleInfoManager {
      */
     public synchronized void registerPropertyChangeListener(SerialDataConvertor sdc, ModuleInfo mi) {
         if (mapOfListeners == null) {
-            mapOfListeners = new HashMap(modules.size());
+            mapOfListeners = new HashMap<ModuleInfo,PCL>(modules.size());
         }
         
-        PCL lsnr = (PCL) mapOfListeners.get(mi);
+        PCL lsnr = mapOfListeners.get(mi);
         if (lsnr == null) {
             lsnr = new PCL(mi);
             mapOfListeners.put(mi, lsnr);
@@ -206,7 +204,7 @@ final class ModuleInfoManager {
         private ModuleInfo mi;
         private PropertyChangeSupport changeSupport;
         /** map of registered listeners <SerialDataConvertor, PropertyChangeListener> */
-        private Map origs;
+        private Map<SerialDataConvertor, PropertyChangeListener> origs;
         
         public PCL(ModuleInfo mi) {
             this.mi = mi;
@@ -263,7 +261,7 @@ final class ModuleInfoManager {
             synchronized (this) {
                 if (changeSupport == null) {
                     changeSupport = new PropertyChangeSupport(this);
-                    origs = new WeakHashMap();
+                    origs = new WeakHashMap<SerialDataConvertor, PropertyChangeListener>();
                 }
                 
                 PropertyChangeListener old = (PropertyChangeListener) origs.get(sdc);

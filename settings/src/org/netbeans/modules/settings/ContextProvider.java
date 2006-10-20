@@ -143,7 +143,7 @@ public final class ContextProvider {
             return fo.getAttribute(attrName);
         }
         
-        public java.util.Enumeration getAttributes() {
+        public java.util.Enumeration<String> getAttributes() {
             return fo.getAttributes();
         }
         

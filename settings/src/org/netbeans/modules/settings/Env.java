@@ -95,17 +95,17 @@ public final class Env implements Environment.Provider {
      * @param attr String value can be null; used delimiter is ","
      * @return set of items
      */
-    public static java.util.Set parseAttribute(Object attr) {
+    public static java.util.Set<String> parseAttribute(Object attr) {
         if (attr != null && attr instanceof String) {
             java.util.StringTokenizer s = 
                 new java.util.StringTokenizer((String) attr, ","); //NOI18N
-            java.util.Set set = new java.util.HashSet(10);
+            java.util.Set<String> set = new java.util.HashSet<String>(10);
             while (s.hasMoreTokens()) {
                 set.add(s.nextToken().trim());
             }
             return set;
         } else {
-            return java.util.Collections.EMPTY_SET;
+            return java.util.Collections.emptySet();
         }
     }
     

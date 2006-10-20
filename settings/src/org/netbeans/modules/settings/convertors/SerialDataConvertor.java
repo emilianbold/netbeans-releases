@@ -52,6 +52,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.ModuleInfo;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.AbstractLookup;
@@ -325,7 +326,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     private final class SettingsInstance implements InstanceCookie.Of {
         
         /** created instance   */
-        private SoftReference inst;
+        private SoftReference<Object> inst;
         
         /* Lifecycle of SettingsRecognizer:
          * Initially: settings = null
@@ -407,7 +408,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             return recog.instanceClass();
         }
         
-        public boolean instanceOf(Class type) {
+        public boolean instanceOf(Class<?> type) {
             try {
                 if (
                     moduleCodeBase != null && 
@@ -422,7 +423,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                         return false;
                     }
                     // otherwise really try to load
-                    Class instanceType = instanceClass ();
+                    Class<?> instanceType = instanceClass ();
                     return type.isAssignableFrom (instanceType);
                 }
                 
@@ -465,7 +466,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         }
         
         private void setCachedInstance(Object o) {
-            inst = new SoftReference(o);
+            inst = new SoftReference<Object>(o);
             settings = null; // clear reference to settings
         }
         // called by InstanceDataObject to set new object
@@ -499,7 +500,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         /** file containing persisted setting */
         private final FileObject file;
         /** weak reference to setting object */
-        private final WeakReference instance;
+        private final WeakReference<Object> instance;
         /** remember whether the DataObject is a template or not; calling isTemplate() is slow  */
         private Boolean knownToBeTemplate = null;
         /** the setting object is serialized, if true ignore prop. change
@@ -511,7 +512,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         
         /** Creates a new instance of SaveSupport  */
         public SaveSupport(Object inst) {
-            this.instance = new WeakReference(inst);
+            this.instance = new WeakReference<Object>(inst);
             file = getDataObject().getPrimaryFile();
         }
         
@@ -840,24 +841,23 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
 ////////////////////////////////////////////////////////////////////////////
     
     /** allow to postpone the node creation */
-    private static final class NodeConvertor implements InstanceContent.Convertor {
+    private static final class NodeConvertor implements InstanceContent.Convertor<SerialDataConvertor, Node> {
         NodeConvertor() {}
      
-        public Object convert(Object o) {
-            SerialDataConvertor convertor = (SerialDataConvertor) o;
-            return new SerialDataNode(convertor);
+        public Node convert(SerialDataConvertor o) {
+            return new SerialDataNode(o);
         }
      
-        public Class type(Object o) {
-            return org.openide.nodes.Node.class;
+        public Class<Node> type(SerialDataConvertor o) {
+            return Node.class;
         }
      
-        public String id(Object o) {
+        public String id(SerialDataConvertor o) {
             // Generally irrelevant in this context.
             return o.toString();
         }
      
-        public String displayName(Object o) {
+        public String displayName(SerialDataConvertor o) {
             // Again, irrelevant here.
             return o.toString();
         }

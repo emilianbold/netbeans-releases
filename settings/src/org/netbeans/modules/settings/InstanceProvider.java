@@ -24,10 +24,12 @@ import java.lang.ref.SoftReference;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.settings.convertors.SerialDataNode;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.InstanceCookie;
@@ -56,7 +58,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
     private SaveSupport saver;
     private SaveCookie scCache;
     private boolean wasReportedProblem = false;
-    private java.util.Set instanceOfSet;
+    private java.util.Set<String> instanceOfSet;
     private String instanceClassName;
     /** lock used to sync read/write operations for .settings file */
     final Object READWRITE_LOCK = new Object();
@@ -251,7 +253,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
     
     /** InstanceCookie implementation. */
     final class InstanceCookieImpl implements InstanceCookie.Of {
-        private SoftReference cachedInstance;// = new SoftReference(null);
+        private SoftReference<Object> cachedInstance;// = new SoftReference(null);
         
         public InstanceCookieImpl(Object inst) {
             setCachedInstance(inst);
@@ -320,14 +322,14 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
             return "Unknown"; // NOI18N
         }
 
-        public boolean instanceOf(Class type) {
+        public boolean instanceOf(Class<?> type) {
             synchronized (InstanceProvider.this) {
                 if (instanceOfSet == null) {
                     instanceOfSet = Env.parseAttribute(providerFO.getAttribute(Env.EA_INSTANCE_OF));
-                    java.util.Iterator it = instanceOfSet.iterator();
-                    instanceOfSet = new java.util.HashSet(instanceOfSet.size() * 5 / 4);
+                    java.util.Iterator<String> it = instanceOfSet.iterator();
+                    instanceOfSet = new java.util.HashSet<String>(instanceOfSet.size() * 5 / 4);
                     while (it.hasNext()) {
-                        instanceOfSet.add(org.openide.util.Utilities.translate((String) it.next()));
+                        instanceOfSet.add(org.openide.util.Utilities.translate(it.next()));
                     }
                 }
             }
@@ -364,7 +366,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
             return cachedInstance.get();
         }
         private void setCachedInstance(Object inst) {
-            cachedInstance = new SoftReference(inst);
+            cachedInstance = new SoftReference<Object>(inst);
         }
     }
     
@@ -373,24 +375,24 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
 ////////////////////////////////////////////////////////////////////////////
     
     /** allow to postpone the node creation */
-    private static final class NodeConvertor implements org.openide.util.lookup.InstanceContent.Convertor {
+    private static final class NodeConvertor 
+            implements org.openide.util.lookup.InstanceContent.Convertor<InstanceProvider, Node> {
         NodeConvertor() {}
      
-        public Object convert(Object o) {
-            InstanceProvider ip = (InstanceProvider) o;
-            return new org.netbeans.modules.settings.convertors.SerialDataNode(ip.getDataObject());
+        public Node convert(InstanceProvider o) {
+            return new SerialDataNode(o.getDataObject());
         }
      
-        public Class type(Object o) {
-            return org.openide.nodes.Node.class;
+        public Class<Node> type(InstanceProvider o) {
+            return Node.class;
         }
      
-        public String id(Object o) {
+        public String id(InstanceProvider o) {
             // Generally irrelevant in this context.
             return o.toString();
         }
      
-        public String displayName(Object o) {
+        public String displayName(InstanceProvider o) {
             // Again, irrelevant here.
             return o.toString();
         }

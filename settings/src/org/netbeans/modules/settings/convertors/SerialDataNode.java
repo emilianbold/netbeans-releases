@@ -85,7 +85,7 @@ public final class SerialDataNode extends DataNode {
      */
     private boolean noBeanInfo = false;
     private final SerialDataConvertor convertor;
-    private WeakReference settingInstance = new WeakReference(null);
+    private WeakReference<Object> settingInstance = new WeakReference<Object>(null);
     private boolean isNameChanged = false;
     /** true after passing the constructors code
      * @see #getName
@@ -159,7 +159,7 @@ public final class SerialDataNode extends DataNode {
     private void setSettingsInstance(Object obj) {
         if (obj == settingInstance.get()) return;
         isNameChanged = false;
-        settingInstance = new WeakReference(obj);
+        settingInstance = new WeakReference<Object>(obj);
     }
     
     /** Find an icon for this node (in the closed state).
@@ -240,8 +240,8 @@ public final class SerialDataNode extends DataNode {
         }
     }
 
-    private Collection createSupportedPropertyNames(BeanNode.Descriptor descr) {
-        ArrayList supportedPropertyNames = new ArrayList();
+    private Collection<String> createSupportedPropertyNames(BeanNode.Descriptor descr) {
+        ArrayList<String> supportedPropertyNames = new ArrayList<String>();
         if (descr.property != null) {
             for (int i = 0; i < descr.property.length; i++) {
                 Node.Property property = descr.property[i];
@@ -264,7 +264,7 @@ public final class SerialDataNode extends DataNode {
         try {
             InstanceCookie ic = ic();
             if (ic == null) return null;
-            Class clazz = ic.instanceClass();
+            Class<?> clazz = ic.instanceClass();
             //Fixed bug #5610
             //Class javax.swing.JToolBar$Separator does not have icon
             //we will use temporarily icon from javax.swing.JSeparator
@@ -290,7 +290,7 @@ public final class SerialDataNode extends DataNode {
             }
             // Also specially handle SystemAction's.
             if (SystemAction.class.isAssignableFrom (clazz)) {
-                SystemAction action = SystemAction.get (clazz);
+                SystemAction action = SystemAction.get (clazz.asSubclass(SystemAction.class));
                 if (beanInfoIcon == null) {
                     Icon icon = action.getIcon ();
                     if (icon != null) {
@@ -316,7 +316,7 @@ public final class SerialDataNode extends DataNode {
                 return NbBundle.getMessage(SerialDataNode.class,
                     "LBL_BrokenSettings"); //NOI18N
             }
-            Class clazz = ic.instanceClass();
+            Class<?> clazz = ic.instanceClass();
             Method nameGetter;
             Class[] param = new Class [0];
             try {
@@ -332,7 +332,7 @@ public final class SerialDataNode extends DataNode {
             }
             Object bean = ic.instanceCreate();
             setSettingsInstance(bean);
-            return (String) nameGetter.invoke (bean, null);
+            return (String) nameGetter.invoke (bean);
         } catch (Exception ex) {
             // ignore
             return null;
@@ -345,7 +345,7 @@ public final class SerialDataNode extends DataNode {
         try {
             InstanceCookie ic = ic();
             if (ic == null) return null;
-            Class clazz = ic.instanceClass();
+            Class<?> clazz = ic.instanceClass();
             Class[] param = new Class[] {String.class};
             // find the setter for the name
             try {
@@ -518,7 +518,7 @@ public final class SerialDataNode extends DataNode {
      * @param ido provides task to invoke when a property changes
      */
     private static final void convertProps (
-        Sheet.Set set, Node.Property[] arr, SerialDataNode ido
+        Sheet.Set set, Node.Property<?>[] arr, SerialDataNode ido
     ) {
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] instanceof Node.IndexedProperty) {
@@ -705,7 +705,7 @@ public final class SerialDataNode extends DataNode {
             return del.getDisplayName();
         }
 
-        public Enumeration attributeNames() {
+        public Enumeration<String> attributeNames() {
             return del.attributeNames();
         }
 
@@ -817,7 +817,7 @@ public final class SerialDataNode extends DataNode {
             return del.getDisplayName();
         }
 
-        public Enumeration attributeNames() {
+        public Enumeration<String> attributeNames() {
             return del.attributeNames();
         }
 
@@ -902,7 +902,7 @@ public final class SerialDataNode extends DataNode {
                 ((BeanContext) bean).removeBeanContextMembershipListener (contextL);
             contextL = null;
             
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.emptySet());
         }
         
         private void init() {
@@ -933,7 +933,7 @@ public final class SerialDataNode extends DataNode {
         
         private void updateKeys() {
             if (bean == null) {
-                setKeys(Collections.EMPTY_SET);
+                setKeys(Collections.emptySet());
             } else {
                 setKeys(((BeanContext) bean).toArray());
             }
@@ -972,11 +972,11 @@ public final class SerialDataNode extends DataNode {
         */
         private static final class ContextL implements BeanContextMembershipListener {
             /** weak reference to the BeanChildren object */
-            private final Reference ref;
+            private final Reference<InstanceChildren> ref;
 
             /** Constructor */
             ContextL (InstanceChildren bc) {
-                ref = new WeakReference (bc);
+                ref = new WeakReference<InstanceChildren> (bc);
             }
 
             /** Listener method that is called when a bean is added to
@@ -984,7 +984,7 @@ public final class SerialDataNode extends DataNode {
             * @param bcme event describing the action
             */
             public void childrenAdded (BeanContextMembershipEvent bcme) {
-                InstanceChildren bc = (InstanceChildren)ref.get ();
+                InstanceChildren bc = ref.get ();
                 if (bc != null) {
                     bc.updateKeys();
                 }
@@ -995,7 +995,7 @@ public final class SerialDataNode extends DataNode {
             * @param bcme event describing the action
             */
             public void childrenRemoved (BeanContextMembershipEvent bcme) {
-                InstanceChildren bc = (InstanceChildren)ref.get ();
+                InstanceChildren bc = ref.get ();
                 if (bc != null) {
                     bc.updateKeys ();
                 }
@@ -1017,7 +1017,7 @@ public final class SerialDataNode extends DataNode {
         }
     }
     
-    private static class BeanContextNode extends BeanNode {
+    private static class BeanContextNode extends BeanNode<Object> {
         public BeanContextNode(Object bean, SerialDataNode task) throws IntrospectionException {
             super(bean, getChildren(bean, task));
             changeSheet(getSheet(), task);
@@ -1056,13 +1056,13 @@ public final class SerialDataNode extends DataNode {
         
         private static Action[] removeActions(Action[] allActions, Action[] toDeleteActions) {
             Action[] retVal = allActions;
-            List actions = Arrays.asList(allActions);
+            List<Action> actions = Arrays.asList(allActions);
             for (int i = 0; i < toDeleteActions.length; i++) {
                 Action a = toDeleteActions[i];
                 if(actions.contains(a)) {
-                    actions = new ArrayList(actions); // to be mutable
+                    actions = new ArrayList<Action>(actions); // to be mutable
                     actions.remove(a);
-                    retVal = (Action[]) actions.toArray(new Action[0]);
+                    retVal = actions.toArray(new Action[0]);
                 }                
             }            
             return retVal;
@@ -1073,8 +1073,8 @@ public final class SerialDataNode extends DataNode {
     * also the name of the node (sometimes)
     */
     private final class PropL extends Object implements PropertyChangeListener {
-        private Collection supportedPropertyNames;        
-        PropL(Collection supportedPropertyNames) {
+        private Collection<String> supportedPropertyNames;        
+        PropL(Collection<String> supportedPropertyNames) {
             this.supportedPropertyNames = supportedPropertyNames;
         }
         

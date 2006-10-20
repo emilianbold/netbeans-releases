@@ -59,7 +59,7 @@ final class SaveSupport {
     /** .settings file */
     private final FileObject file;
     /** reference to setting object */
-    private final java.lang.ref.SoftReference instance;
+    private final java.lang.ref.SoftReference<Object> instance;
     private final InstanceProvider ip;
     /** remember whether the DataObject is a template or not; calling isTemplate() is slow  */
     private Boolean knownToBeTemplate = null;
@@ -70,7 +70,7 @@ final class SaveSupport {
      */
     public SaveSupport(InstanceProvider ip, Object inst) {
         this.ip = ip;
-        this.instance = new java.lang.ref.SoftReference(inst);
+        this.instance = new java.lang.ref.SoftReference<Object>(inst);
         this.file = ip.getFile();
     }
     
@@ -269,9 +269,9 @@ final class SaveSupport {
             java.lang.reflect.Method getter;
             try {
                 try {
-                    getter = inst.getClass().getMethod("getDisplayName", null); // NOI18N
+                    getter = inst.getClass().getMethod("getDisplayName"); // NOI18N
                 } catch (NoSuchMethodException me) {
-                    getter = inst.getClass().getMethod("getName", null); // NOI18N
+                    getter = inst.getClass().getMethod("getName"); // NOI18N
                 }
             } catch (Exception ex) { // do nothing
                 return;
@@ -279,7 +279,7 @@ final class SaveSupport {
             if (!getter.isAccessible()) return;
             
             try {
-                String name = (String) getter.invoke(inst, null);
+                String name = (String) getter.invoke(inst);
                 String oldName = ip.getDataObject().getName();
                 if (!name.equals(oldName)) {
                     file.setAttribute(EA_NAME, name);
