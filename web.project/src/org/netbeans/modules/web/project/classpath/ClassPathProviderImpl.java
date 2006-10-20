@@ -113,6 +113,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 return 0;
             }
         }        
+        srcPath = getTestSrcDir();
+        for (int i=0; i< srcPath.length; i++) {
+            FileObject root = srcPath[i];
+            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+                return 1;
+            }
+        }
         FileObject dir = getDocumentBaseDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
             return 5;
@@ -125,13 +132,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
             // XXX check whether this is really the root
             return 4;
-        }
-        srcPath = getTestSrcDir();
-        for (int i=0; i< srcPath.length; i++) {
-            FileObject root = srcPath[i];
-            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
-                return 1;
-            }
         }
         dir = getBuildTestClassesDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {

@@ -49,14 +49,26 @@ import org.openide.filesystems.FileUtil;
 public class ClassPathProviderImplTest extends NbTestCase {
     
     private Project project;
+    private Project project59055;
     private AntProjectHelper helper;
+    private AntProjectHelper helper59055;
     private FileObject sourceRoot;
+    private FileObject sourceRoot59055_1;
+    private FileObject sourceRoot59055_2;
     private FileObject testRoot;
+    private FileObject testRoot59055_1;
+    private FileObject testRoot59055_2;
     private FileObject webRoot;
+    private FileObject webRoot59055;
     private FileObject bootPlatformRoot;
     private FileObject sourceClass;
+    private FileObject sourceClass59055_1;
+    private FileObject sourceClass59055_2;
     private FileObject testClass;
+    private FileObject testClass59055_1;
+    private FileObject testClass59055_2;
     private FileObject jspPage;
+    private FileObject jspPage59055;
 
     public ClassPathProviderImplTest(String testName) {
         super(testName);
@@ -95,9 +107,42 @@ public class ClassPathProviderImplTest extends NbTestCase {
         String web = helper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
         webRoot = helper.resolveFileObject(web);
         jspPage = webRoot.getFileObject("index.jsp");
+        
+        //===========================================================
+        // setup the project for issue #59055
+        //===========================================================
+        File f59055 = new File(getDataDir().getAbsolutePath(), "projects/WebApplication59055");
+        project59055 = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f59055));
+        Sources src59055 = (Sources) project59055.getLookup().lookup(Sources.class);
+        SourceGroup[] groups59055 = src59055.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        
+        sourceRoot59055_1 = findSourceRoot(groups59055, "${src.dir}");
+        assertNotNull(sourceRoot59055_1);
+        sourceRoot59055_2 = findSourceRoot(groups59055, "${src.src2.dir}");
+        assertNotNull(sourceRoot59055_2);
+        testRoot59055_1 = findSourceRoot(groups59055, "${test.src.dir}");
+        assertNotNull(testRoot59055_1);
+        testRoot59055_2 = findSourceRoot(groups59055, "${test.test2.dir}");
+        assertNotNull(testRoot59055_2);
+        
+        sourceClass59055_1 = sourceRoot59055_1.getFileObject("org/wa59055/Class1.java");
+        assertNotNull(sourceClass59055_1);
+        sourceClass59055_2 = sourceRoot59055_2.getFileObject("org/wa59055/extra/Class2.java");
+        assertNotNull(sourceClass59055_2);
+        testClass59055_1 = testRoot59055_1.getFileObject("org/wa59055/Class1Test.java");
+        assertNotNull(testClass59055_1);
+        testClass59055_2 = testRoot59055_2.getFileObject("org/wa59055/extra/Class2Test.java");
+        assertNotNull(testClass59055_2);
+        
+        // XXX should not cast to WebProject
+        helper59055 = ((WebProject) project59055).getAntProjectHelper();
+        String web59055 = helper59055.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
+        webRoot59055 = helper59055.resolveFileObject(web59055);
+        jspPage59055 = webRoot59055.getFileObject("index.jsp");
     }
     
     public void testClassPaths() throws Exception {
+        System.out.println("ClassPathProviderImplTest - WebApplication1");
         ClassPathProvider cpp = (ClassPathProvider)project.getLookup().lookup(ClassPathProvider.class);
         assertTrue("No ClassPathProvider in project lookup!", cpp != null);
         
@@ -155,12 +200,54 @@ public class ClassPathProviderImplTest extends NbTestCase {
         checkJSPSourceClassPath(cp);
         cp = cpp.findClassPath(jspPage, ClassPath.SOURCE);
         checkJSPSourceClassPath(cp);
+        
+        //===========================================================
+        //test special source structure described in issue #59055
+        //===========================================================
+        //TODO: test also ClassPath.COMPILE, ClassPath.EXECUTE, ClassPath.BOOT for WebApplication59055
+        System.out.println("ClassPathProviderImplTest - WebApplication59055");
+        cpp = (ClassPathProvider) project59055.getLookup().lookup(ClassPathProvider.class);
+        assertTrue("No ClassPathProvider in project lookup!", cpp != null);
+        
+        //ordinary sources
+        cp = cpp.findClassPath(sourceClass59055_1, ClassPath.SOURCE);
+        checkSourceSourceClassPath59055(cp);
+        cp = cpp.findClassPath(sourceClass59055_1, ClassPath.SOURCE);
+        checkSourceSourceClassPath59055(cp);
+        //sources under web pages directory
+        cp = cpp.findClassPath(sourceClass59055_2, ClassPath.SOURCE);
+        checkSourceSourceClassPath59055(cp);
+        cp = cpp.findClassPath(sourceClass59055_2, ClassPath.SOURCE);
+        checkSourceSourceClassPath59055(cp);
+        
+        //ordinary test sources
+        cp = cpp.findClassPath(testClass59055_1, ClassPath.SOURCE);
+        checkTestSourceClassPath59055(cp);
+        cp = cpp.findClassPath(testClass59055_1, ClassPath.SOURCE);
+        checkTestSourceClassPath59055(cp);
+        //test sources under web pages directory
+        cp = cpp.findClassPath(testClass59055_2, ClassPath.SOURCE);
+        checkTestSourceClassPath59055(cp);
+        cp = cpp.findClassPath(testClass59055_2, ClassPath.SOURCE);
+        checkTestSourceClassPath59055(cp);
+        
+        cp = cpp.findClassPath(jspPage59055, ClassPath.SOURCE);
+        checkJSPSourceClassPath59055(cp);
+        cp = cpp.findClassPath(jspPage59055, ClassPath.SOURCE);
+        checkJSPSourceClassPath59055(cp);
     }
     
     private void checkSourceSourceClassPath(ClassPath cp) {
         FileObject[] roots = cp.getRoots();
         assertEquals(1, roots.length);
         assertTrue(cp.getRoots()[0].equals(sourceRoot));
+    }
+    
+    private void checkSourceSourceClassPath59055(ClassPath cp) {
+        FileObject[] roots = cp.getRoots();
+        assertEquals(2, roots.length);
+        assertTrue(cp.getRoots()[0].equals(sourceRoot59055_1));
+        assertTrue(cp.getRoots()[1].equals(sourceRoot59055_2));
     }
     
     private void checkSourceExecuteClassPath(ClassPath cp) throws Exception {
@@ -174,6 +261,13 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertTrue(cp.getRoots()[0].equals(testRoot));
     }
     
+    private void checkTestSourceClassPath59055(ClassPath cp) {
+        FileObject[] roots = cp.getRoots();
+        assertEquals(2, roots.length);
+        assertTrue(cp.getRoots()[0].equals(testRoot59055_1));
+        assertTrue(cp.getRoots()[1].equals(testRoot59055_2));
+    }
+    
     private void checkTestExecuteClassPath(ClassPath cp) throws Exception {
         // this jar is on run.test.classpath
         // this test fails!
@@ -185,6 +279,14 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertEquals(2, roots.length);
         assertTrue(cp.getRoots()[0].equals(webRoot));
         assertTrue(cp.getRoots()[1].equals(sourceRoot));
+    }
+
+    private void checkJSPSourceClassPath59055(ClassPath cp) {
+        FileObject[] roots = cp.getRoots();
+        assertEquals(3, roots.length);
+        assertTrue(cp.getRoots()[0].equals(webRoot59055));
+        assertTrue(cp.getRoots()[1].equals(sourceRoot59055_1));
+        assertTrue(cp.getRoots()[2].equals(sourceRoot59055_2));
     }
     
     private void checkCompileClassPath(ClassPath cp) throws Exception {
