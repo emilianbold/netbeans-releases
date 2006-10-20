@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The contents of this file are subject to the terms of the Common Development
+  and Distribution License (the License). You may not use this file except in
+  compliance with the License.
+
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+  or http://www.netbeans.org/cddl.txt.
+
+  When distributing Covered Code, include this CDDL Header Notice in each file
+  and include the License file at http://www.netbeans.org/cddl.txt.
+  If applicable, add the following below the CDDL Header, with the fields
+  enclosed by brackets [] replaced by your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
+-->
+<project name="org.netbeans.modules.identity.samples" default="netbeans" basedir=".">
+
+    <import file="nbproject/build-impl.xml"/>
+    <!-- import file="../../nbbuild/default.xml"/ -->
+    <!--import file="../../nbbuild/templates/projectized.xml"/>
+
+    <target name="jar" depends="zip-project,projectized-common.jar"/-->
+
+    <!-- Uncomment only during development to prevent build from breaking. -->
+    <!--
+    <target name="clean" depends="init-zip-samples">
+         <delete file="${identity.samples.resources}/StockClient.zip"/>
+         <delete file="${identity.samples.resources}/StockService.zip"/>
+         
+        <antcall target="projectized-common.clean"/>
+    </target>
+    -->
+
+    <!-- 
+    netbeans-extra is a hook provided to plug in file copying. 
+    If you're adding compile dependencies on 3rd party jars 
+    (jgraph, jdom, etc.), uncomment this section ...
+    -->
+    <target name="jar" depends="zip-identity-stock-client,
+                                zip-identity-stock-server,
+                                zip-identity-calendar-client,
+                                zip-identity-calendar-server,
+                                projectized-common.jar"/>
+
+    <!-- initialize necessary properties for Identity sample targets-->
+    <target name="init-zip-samples">
+        <property name="identity.samples" value="org/netbeans/modules/identity/samples"/>
+        <property name="identity.samples.resources" value="src/${identity.samples}/resources"/>
+        <property name="build.identity.samples.resources" value="build/classes/${identity.samples}/resources"/>
+    </target>
+
+    <!-- Target for Stock Client sample -->
+    <target name="zip-identity-stock-client" depends="init-zip-samples">
+        <property name="identity.samples.stockclient" value="src/${identity.samples}/StockClient"/>
+        <zip destfile="${identity.samples.resources}/StockClient.zip"
+            update="true">
+        <zipfileset dir="StockClient"/>
+        </zip>
+    </target>
+    
+    <!-- Target for Stock Service sample -->
+    <target name="zip-identity-stock-server" depends="init-zip-samples">
+        <property name="identity.samples.stockserver" value="src/${identity.samples}/StockService"/>
+        <zip destfile="${identity.samples.resources}/StockService.zip"
+            update="true">
+        <zipfileset dir="StockService"/>
+        </zip>
+    </target>
+
+    <!-- Target for Calendar Client sample -->
+    <target name="zip-identity-calendar-client" depends="init-zip-samples">
+        <property name="identity.samples.calendarclient" value="src/${identity.samples}/CalendarClient"/>
+        <zip destfile="${identity.samples.resources}/CalendarClient.zip"
+            update="true">
+        <zipfileset dir="CalendarClient"/>
+        </zip>
+    </target>
+    
+    <!-- Target for Calendar Service sample -->
+    <target name="zip-identity-calendar-server" depends="init-zip-samples">
+        <property name="identity.samples.calendarserver" value="src/${identity.samples}/CalendarService"/>
+        <zip destfile="${identity.samples.resources}/CalendarService.zip"
+            update="true">
+        <zipfileset dir="CalendarService"/>
+        </zip>
+    </target>
+</project>
