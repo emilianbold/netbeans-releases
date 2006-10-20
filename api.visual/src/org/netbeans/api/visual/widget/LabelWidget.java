@@ -20,6 +20,8 @@ import java.awt.geom.Rectangle2D;
 /**
  * A widget representing a text. The widget is not opaque and is checking clipping for by default.
  *
+ * It allows to set 4 types of horizontal and vertical alignments (by default LEFT as horizontal and BASELINE as vertical).
+ *
  * @author David Kaspar
  */
 public class LabelWidget extends Widget {
@@ -28,11 +30,19 @@ public class LabelWidget extends Widget {
      * The text alignment
      */
     public enum Alignment {
-        LEFT, RIGHT, CENTER
+        LEFT, RIGHT, CENTER, BASELINE
+    }
+
+    /**
+     * The text vertical alignment
+     */
+    public enum VerticalAlignment {
+        TOP, BOTTOM, CENTER, BASELINE
     }
 
     private String label;
     private Alignment alignment = Alignment.LEFT;
+    private VerticalAlignment verticalAlignment = VerticalAlignment.BASELINE;
 
     /**
      * Creates a label widget.
@@ -75,19 +85,36 @@ public class LabelWidget extends Widget {
     }
 
     /**
-     * Returns a text alignment.
-     * @return the text alignment
+     * Returns a text horizontal alignment.
+     * @return the text horizontal alignment
      */
     public Alignment getAlignment () {
         return alignment;
     }
 
     /**
-     * Sets a text alignment
-     * @param alignment the text alignment
+     * Sets a text horizontal alignment.
+     * @param alignment the text horizontal alignment
      */
     public void setAlignment (Alignment alignment) {
         this.alignment = alignment;
+        repaint ();
+    }
+
+    /**
+     * Gets a text vertical alignment.
+     * @return the text vertical alignment
+     */
+    public VerticalAlignment getVerticalAlignment () {
+        return verticalAlignment;
+    }
+
+    /**
+     * Sets a text vertical alignment.
+     * @param verticalAlignment the text vertical alignment
+     */
+    public void setVerticalAlignment (VerticalAlignment verticalAlignment) {
+        this.verticalAlignment = verticalAlignment;
         repaint ();
     }
 
@@ -114,16 +141,46 @@ public class LabelWidget extends Widget {
         gr.setColor (getForeground ());
         gr.setFont (getFont ());
 
-        int x = 0;
-        if (alignment == Alignment.RIGHT) {
-            int textWidth = gr.getFontMetrics ().stringWidth (label);
-            x = getBounds ().width - textWidth;
-        } else if (alignment == Alignment.CENTER) {
-            int halfWidth = gr.getFontMetrics ().stringWidth (label) / 2;
-            x = getBounds ().width / 2 - halfWidth;
+        FontMetrics fontMetrics = gr.getFontMetrics ();
+        Rectangle clientArea = getClientArea ();
+
+        int x;
+        switch (alignment) {
+            case BASELINE:
+                x = 0;
+                break;
+            case LEFT:
+                x = clientArea.x;
+                break;
+            case CENTER:
+                x = clientArea.x + (clientArea.width - fontMetrics.stringWidth (label)) / 2;
+                break;
+            case RIGHT:
+                x = clientArea.x + clientArea.width - fontMetrics.stringWidth (label);
+                break;
+            default:
+                return;
         }
 
-        gr.drawString (label, x, 0);
+        int y;
+        switch (verticalAlignment) {
+            case BASELINE:
+                y = 0;
+                break;
+            case TOP:
+                y = clientArea.y + fontMetrics.getAscent ();
+                break;
+            case CENTER:
+                y = clientArea.y + (clientArea.height + fontMetrics.getAscent () - fontMetrics.getDescent ()) / 2;
+                break;
+            case BOTTOM:
+                y = clientArea.y + fontMetrics.getAscent () + clientArea.height - fontMetrics.getDescent ();
+                break;
+            default:
+                return;
+        }
+
+        gr.drawString (label, x, y);
     }
 
 }
