@@ -64,14 +64,16 @@ public abstract class ResourceUtils {
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private static class GenericResourceUtils extends ResourceUtils {
-        private Map<Object, ResourceBundle> loadedBundles = new HashMap<Object, ResourceBundle>();
+        private Map<String, ResourceBundle> loadedBundles = new HashMap<String, ResourceBundle>();
         
         private ResourceBundle loadBundle(String baseName, Locale locale, ClassLoader loader) {
-            ResourceBundle bundle = (ResourceBundle) loadedBundles.get(baseName);
+            String bundleId = loader.toString() + baseName;
+            
+            ResourceBundle bundle = (ResourceBundle) loadedBundles.get(bundleId);
             
             if (bundle == null) {
                 bundle = ResourceBundle.getBundle(baseName, locale, loader);
-                loadedBundles.put(baseName, bundle);
+                loadedBundles.put(bundleId, bundle);
             }
             
             return bundle;
