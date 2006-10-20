@@ -20,64 +20,62 @@
  */
 package org.netbeans.installer.wizard.components.panels;
 
-import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.wizard.InstallationDetailsDialog;
+import org.netbeans.installer.utils.wizard.InstallationLogDialog;
 
 /**
  *
  * @author Kirill Sorokin
  */
 public class PostInstallSummaryPanel extends TextPanel {
-    private JTextPane   messagePane;
+    private JTextPane messagePane;
     
-    private JLabel      successfullyInstalledComponentsLabel;
-    private JTextPane   successfullyInstalledComponentsPane;
-    private JLabel      componentsInstalledWithWarningsLabel;
-    private JTextPane   componentsInstalledWithWarningsPane;
-    private JLabel      componentsFailedToInstallLabel;
-    private JTextPane   componentsFailedToInstallPane;
+    private JLabel    successfullyInstalledComponentsLabel;
+    private JTextPane successfullyInstalledComponentsPane;
+    private JLabel    componentsInstalledWithWarningsLabel;
+    private JTextPane componentsInstalledWithWarningsPane;
+    private JLabel    componentsFailedToInstallLabel;
+    private JTextPane componentsFailedToInstallPane;
     
-    private JLabel      successfullyUninstalledComponentsLabel;
-    private JTextPane   successfullyUninstalledComponentsPane;
-    private JLabel      componentsUninstalledWithWarningsLabel;
-    private JTextPane   componentsUninstalledWithWarningsPane;
-    private JLabel      componentsFailedToUninstallLabel;
-    private JTextPane   componentsFailedToUninstallPane;
+    private JLabel    successfullyUninstalledComponentsLabel;
+    private JTextPane successfullyUninstalledComponentsPane;
+    private JLabel    componentsUninstalledWithWarningsLabel;
+    private JTextPane componentsUninstalledWithWarningsPane;
+    private JLabel    componentsFailedToUninstallLabel;
+    private JTextPane componentsFailedToUninstallPane;
     
-    private JButton     viewDetailsButton;
-    private JButton     viewLogButton;
-    private JButton     sendLogButton;
+    private JButton   viewDetailsButton;
+    private JButton   viewLogButton;
+    private JButton   sendLogButton;
     
-    private JPanel      spacer;
+    private JPanel    spacer;
     
-    private JDialog detailsDialog;
-    private JDialog logDialog;
+    private InstallationDetailsDialog detailsDialog;
+    private InstallationLogDialog     logDialog;
     
     public PostInstallSummaryPanel() {
         setProperty(MESSAGE_SUCCESS_TEXT_PROPERTY, DEFAULT_MESSAGE_SUCCESS_TEXT);
@@ -111,6 +109,9 @@ public class PostInstallSummaryPanel extends TextPanel {
     }
     
     public void initialize() {
+        getBackButton().setEnabled(false);
+        getCancelButton().setEnabled(false);
+        
         ProductRegistry registry = ProductRegistry.getInstance();
         
         if (registry.wereErrorsEncountered()) {
@@ -154,15 +155,15 @@ public class PostInstallSummaryPanel extends TextPanel {
         
         components = registry.getComponentsFailedToInstallDuringThisSession();
         if (components.size() > 0) {
-            componentsInstalledWithWarningsLabel.setVisible(true);
-            componentsInstalledWithWarningsPane.setVisible(true);
+            componentsFailedToInstallLabel.setVisible(true);
+            componentsFailedToInstallPane.setVisible(true);
             
-            componentsInstalledWithWarningsLabel.setText(getProperty(COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
-            componentsInstalledWithWarningsPane.setContentType(getProperty(COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY));
-            componentsInstalledWithWarningsPane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsFailedToInstallLabel.setText(getProperty(COMPONENTS_FAILED_TO_INSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
+            componentsFailedToInstallPane.setContentType(getProperty(COMPONENTS_FAILED_TO_INSTALL_CONTENT_TYPE_PROPERTY));
+            componentsFailedToInstallPane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_INSTALL_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
-            componentsInstalledWithWarningsLabel.setVisible(false);
-            componentsInstalledWithWarningsPane.setVisible(false);
+            componentsFailedToInstallLabel.setVisible(false);
+            componentsFailedToInstallPane.setVisible(false);
         }
         
         components = registry.getComponentsUninstalledSuccessfullyDuringThisSession();
@@ -193,15 +194,15 @@ public class PostInstallSummaryPanel extends TextPanel {
         
         components = registry.getComponentsFailedToUninstallDuringThisSession();
         if (components.size() > 0) {
-            componentsUninstalledWithWarningsLabel.setVisible(true);
-            componentsUninstalledWithWarningsPane.setVisible(true);
+            componentsFailedToUninstallLabel.setVisible(true);
+            componentsFailedToUninstallPane.setVisible(true);
             
-            componentsUninstalledWithWarningsLabel.setText(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
-            componentsUninstalledWithWarningsPane.setContentType(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY));
-            componentsUninstalledWithWarningsPane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
+            componentsFailedToUninstallLabel.setText(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_WARNINGS_LABEL_TEXT_PROPERTY));
+            componentsFailedToUninstallPane.setContentType(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_CONTENT_TYPE_PROPERTY));
+            componentsFailedToUninstallPane.setText(stringUtils.formatMessage(getProperty(COMPONENTS_FAILED_TO_UNINSTALL_TEXT_PROPERTY), stringUtils.asString(components, getProperty(COMPONENTS_LIST_SEPARATOR_PROPERTY))));
         } else {
-            componentsUninstalledWithWarningsLabel.setVisible(false);
-            componentsUninstalledWithWarningsPane.setVisible(false);
+            componentsFailedToUninstallLabel.setVisible(false);
+            componentsFailedToUninstallPane.setVisible(false);
         }
         
         final String viewDetailsButtonText = getProperty(VIEW_DETAILS_BUTTON_TEXT_PROPERTY);
@@ -288,6 +289,7 @@ public class PostInstallSummaryPanel extends TextPanel {
                 sendLogButtonClicked();
             }
         });
+        sendLogButton.setEnabled(false);
         
         spacer = new JPanel();
         spacer.setOpaque(false);
@@ -324,231 +326,41 @@ public class PostInstallSummaryPanel extends TextPanel {
                 logDialog = new InstallationLogDialog(getWizard().getFrame());
             }
             logDialog.setVisible(true);
+            logDialog.loadLogFile();
         } else {
             ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Log file is not available.");
         }
     }
     
     private void sendLogButtonClicked() {
-        // doing nothing for now
-    }
-    
-    private static class InstallationDetailsDialog extends JDialog {
-        private int dialogWidth  = DIALOG_WIDTH;
-        private int dialogHeight = DIALOG_HEIGHT;
-        
-        private JTable      detailsTable;
-        private JScrollPane detailsScrollPane;
-        
-        public InstallationDetailsDialog(Frame owner) {
-            super(owner);
-            
-            initComponents();
-        }
-        
-        private void initComponents() {
-            setSize(dialogWidth, dialogHeight);
-            setLayout(new GridBagLayout());
-            
-            detailsTable = new JTable();
-            detailsTable.setModel(new InstallationDetailsTableModel());
-            
-            detailsScrollPane = new JScrollPane(detailsTable);
-            detailsScrollPane.setOpaque(false);
-            detailsScrollPane.getViewport().setOpaque(false);
-            detailsScrollPane.setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
-            detailsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            detailsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            
-            add(detailsScrollPane, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 11, 11), 0, 0));
-        }
-        
-        public void setVisible(boolean visible) {
-            int screenWidth  = Toolkit.getDefaultToolkit().getScreenSize().width;
-            int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
-            
-            setLocation((screenWidth - dialogWidth) / 2, (screenHeight - dialogHeight) / 2);
-            
-            super.setVisible(visible);
-        }
-        
-        public static final int DIALOG_WIDTH  = 500;
-        public static final int DIALOG_HEIGHT = 400;
-    }
-    
-    private static class InstallationDetailsTableModel implements TableModel {
-        List<ProductComponent> components = new ArrayList<ProductComponent>();
-        
-        public InstallationDetailsTableModel() {
-            ProductRegistry registry = ProductRegistry.getInstance();
-            
-            components.addAll(registry.getComponentsInstalledSuccessfullyDuringThisSession());
-            components.addAll(registry.getComponentsInstalledWithWarningsDuringThisSession());
-            components.addAll(registry.getComponentsFailedToInstallDuringThisSession());
-            
-            components.addAll(registry.getComponentsUninstalledSuccessfullyDuringThisSession());
-            components.addAll(registry.getComponentsUninstalledWithWarningsDuringThisSession());
-            components.addAll(registry.getComponentsFailedToUninstallDuringThisSession());
-        }
-        
-        public int getRowCount() {
-            return components.size();
-        }
-        
-        public int getColumnCount() {
-            return 3;
-        }
-        
-        public String getColumnName(int columnIndex) {
-            switch (columnIndex) {
-                case 0:
-                    return "Component";
-                case 1:
-                    return "Status";
-                case 2:
-                    return "Extra";
-                default:
-                    return null;
-            }
-        }
-        
-        public Class<?> getColumnClass(int columnIndex) {
-            return String.class;
-        }
-        
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return false;
-        }
-        
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            ProductComponent component = components.get(rowIndex);
-            
-            boolean installationErrors = component.getInstallationErrors().size() > 0;
-            boolean installationWarnings = component.getInstallationWarnings().size() > 0;
-            boolean uninstallationErrors = component.getUninstallationErrors().size() > 0;
-            boolean uninstallationWarnings = component.getUninstallationWarnings().size() > 0;
-            
-            switch (columnIndex) {
-                case 0:
-                    return component.getDisplayName();
-                case 1:
-                    switch (component.getStatus()) {
-                        case INSTALLED:
-                            if (installationWarnings) {
-                                return "Installed with warnings";
-                            } else {
-                                if (uninstallationErrors) {
-                                    return "Failed to uninstall";
-                                } else {
-                                    return "Successfully installed";
-                                }
-                            }
-                        case NOT_INSTALLED:
-                            if (uninstallationWarnings) {
-                                return "Uninstalled with warnings";
-                            } else {
-                                if (installationErrors) {
-                                    return "Failed to install";
-                                } else {
-                                    return "Successfully uninstalled";
-                                }
-                            }
-                        default:
-                            return null;
-                    }
-                case 2:
-                    if (installationWarnings || uninstallationWarnings) {
-                        return "View warnings";
-                    }
-                    if (installationErrors || uninstallationErrors) {
-                        return "View errors";
-                    }
-                    return null;
-                default:
-                    return null;
-            }
-        }
-        
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            // do nothing, we're read-only
-        }
-
-        public void addTableModelListener(TableModelListener listener) {
-            // the data won't change, thus need no listeners
-        }
-
-        public void removeTableModelListener(TableModelListener listener) {
-            // the data won't change, thus need no listeners
-        }
-    }
-    
-    private static class InstallationLogDialog extends JDialog {
-        private int dialogWidth  = DIALOG_WIDTH;
-        private int dialogHeight = DIALOG_HEIGHT;
-        
-        private JTextPane logPane;
-        private JScrollPane logScrollPane;
-        
-        private JLabel errorLabel;
-        
-        public InstallationLogDialog(Frame owner) {
-            super(owner);
-            
-            initComponents();
-            initialize();
-        }
-        
-        private void initialize() {
-            File logFile = LogManager.getInstance().getLogFile();
-            
-            setTitle(logFile.getAbsolutePath());
-            
-            try {
-                logPane.setText(FileUtils.getInstance().readFile(logFile));
-                
-                logScrollPane.setVisible(true);
-                errorLabel.setVisible(false);
-            } catch (IOException e) {
-                ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Cannot read log file.", e);
-                
-                errorLabel.setText("Log contents are not available.");
-                
-                logScrollPane.setVisible(false);
-                errorLabel.setVisible(true);
-            }
-        }
-        
-        private void initComponents() {
-            setSize(dialogWidth, dialogHeight);
-            setLayout(new GridBagLayout());
-            
-            logPane = new JTextPane();
-            logPane.setFont(new Font("Monospace", logPane.getFont().getStyle(), logPane.getFont().getSize()));
-            
-            logScrollPane = new JScrollPane();
-            logScrollPane.setOpaque(false);
-            logScrollPane.getViewport().setOpaque(false);
-            logScrollPane.setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
-            logScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-            logScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            
-            errorLabel = new JLabel();
-            
-            add(logScrollPane, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 11, 11), 0, 0));
-            add(errorLabel,  new GridBagConstraints(0, 1, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(11, 11, 11, 11), 0, 0));
-        }
-        
-        public void setVisible(boolean visible) {
-            int screenWidth  = Toolkit.getDefaultToolkit().getScreenSize().width;
-            int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
-            
-            setLocation((screenWidth - dialogWidth) / 2, (screenHeight - dialogHeight) / 2);
-            
-            super.setVisible(visible);
-        }
-        
-        public static final int DIALOG_WIDTH  = 500;
-        public static final int DIALOG_HEIGHT = 400;
+//        try {
+//            URL url = new URL("http://glass.russia.sun.com:8080/nbi/SendLogServlet");
+//            
+//            File logFile = LogManager.getInstance().getLogFile();
+//            String logContents = fileUtils.readFile(logFile);
+//            
+//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//            
+//            connection.setRequestMethod("POST");
+//            connection.setDoOutput(true);
+//            connection.setDoInput(true);
+//            
+//            connection.connect();            
+//            
+//            OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+//            writer.write(URLEncoder.encode("log", "UTF-8") + "=" + URLEncoder.encode(logContents, "UTF-8"));
+//            writer.close();
+//            
+//            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//            while (reader.ready()) {
+//                System.out.println(reader.readLine());
+//            }
+//            reader.close();
+//        } catch (IOException e) {
+//            ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Cannot send log file.", e);
+//        } catch (Throwable e) {
+//            ErrorManager.getInstance().notify(ErrorLevel.ERROR, "Cannot send log file.", e);
+//        }
     }
     
     public static final String MESSAGE_SUCCESS_TEXT_PROPERTY = "message.success.text";

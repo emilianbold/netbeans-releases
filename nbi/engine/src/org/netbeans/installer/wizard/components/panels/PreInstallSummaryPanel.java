@@ -62,6 +62,9 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
     }
     
     public void initialize() {
+        getNextButton().setText(stringUtils.stripMnemonic("&Install"));
+        getNextButton().setMnemonic(stringUtils.fetchMnemonic("&Install"));
+        
         final String messageContentType = getProperty(MESSAGE_CONTENT_TYPE_PROPERTY);
         messagePane.setContentType(messageContentType);
         
