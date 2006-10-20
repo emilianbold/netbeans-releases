@@ -142,6 +142,10 @@ public final class XTestProjectMenuItem extends AbstractAction implements Presen
     /** Returns array of actions for all test types in selected project. */
     private Action[] actions() {
         Project project = (Project)context.lookup(Project.class);
+        // It should not happen but issue 86977 claims it happens.
+        if(project == null) {
+            return null;
+        }
         if(project.getLookup().lookup(ModuleActions.class) == null) {
             // do not create sub menu for non-NbModuleProject
             return null;
