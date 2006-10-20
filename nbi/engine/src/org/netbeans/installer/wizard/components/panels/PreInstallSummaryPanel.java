@@ -21,31 +21,29 @@
 package org.netbeans.installer.wizard.components.panels;
 
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.List;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductRegistry;
+import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import org.netbeans.installer.utils.helper.swing.NbiPanel;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 
 /**
  *
  * @author Kirill Sorokin
  */
 public class PreInstallSummaryPanel extends DefaultWizardPanel {
-    private JTextPane   messagePane;
-    private JLabel      componentsToInstallLabel;
-    private JTextPane   componentsToInstallPane;
-    private JLabel      componentsToUninstallLabel;
-    private JTextPane   componentsToUninstallPane;
-    private JLabel      downloadSizeLabel;
-    private JLabel      requiredDiskSpaceLabel;
+    private NbiTextPane   messagePane;
+    private NbiLabel      componentsToInstallLabel;
+    private NbiTextPane   componentsToInstallPane;
+    private NbiLabel      componentsToUninstallLabel;
+    private NbiTextPane   componentsToUninstallPane;
+    private NbiLabel      downloadSizeLabel;
+    private NbiLabel      requiredDiskSpaceLabel;
     
-    private JPanel      spacer;
+    private NbiPanel      spacer;
     
     public PreInstallSummaryPanel() {
         setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
@@ -130,31 +128,27 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
     }
     
     public void initComponents() {
-        messagePane = new JTextPane();
-        messagePane.setOpaque(false);
-        messagePane.setEditable(false);
-        messagePane.setBorder(new EmptyBorder(0, 0, 0, 0));
+        messagePane = new NbiTextPane();
         
-        componentsToUninstallLabel = new JLabel();
+        componentsToUninstallLabel = new NbiLabel();
         
-        componentsToUninstallPane = new JTextPane();
+        componentsToUninstallPane = new NbiTextPane();
         componentsToUninstallPane.setOpaque(false);
         componentsToUninstallPane.setEditable(false);
         componentsToUninstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        componentsToInstallLabel = new JLabel();
+        componentsToInstallLabel = new NbiLabel();
         
-        componentsToInstallPane = new JTextPane();
+        componentsToInstallPane = new NbiTextPane();
         componentsToInstallPane.setOpaque(false);
         componentsToInstallPane.setEditable(false);
         componentsToInstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        downloadSizeLabel = new JLabel();
+        downloadSizeLabel = new NbiLabel();
         
-        requiredDiskSpaceLabel = new JLabel();
+        requiredDiskSpaceLabel = new NbiLabel();
         
-        spacer = new JPanel();
-        spacer.setOpaque(false);
+        spacer = new NbiPanel();
         
         add(messagePane, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(componentsToUninstallLabel, new GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));

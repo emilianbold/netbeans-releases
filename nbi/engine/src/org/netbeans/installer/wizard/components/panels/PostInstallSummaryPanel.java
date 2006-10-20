@@ -21,29 +21,20 @@
 package org.netbeans.installer.wizard.components.panels;
 
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.List;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.product.ProductComponent;
 import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.helper.swing.NbiButton;
+import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import org.netbeans.installer.utils.helper.swing.NbiPanel;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.utils.wizard.InstallationDetailsDialog;
 import org.netbeans.installer.utils.wizard.InstallationLogDialog;
 
@@ -52,27 +43,27 @@ import org.netbeans.installer.utils.wizard.InstallationLogDialog;
  * @author Kirill Sorokin
  */
 public class PostInstallSummaryPanel extends TextPanel {
-    private JTextPane messagePane;
+    private NbiTextPane messagePane;
     
-    private JLabel    successfullyInstalledComponentsLabel;
-    private JTextPane successfullyInstalledComponentsPane;
-    private JLabel    componentsInstalledWithWarningsLabel;
-    private JTextPane componentsInstalledWithWarningsPane;
-    private JLabel    componentsFailedToInstallLabel;
-    private JTextPane componentsFailedToInstallPane;
+    private NbiLabel    successfullyInstalledComponentsLabel;
+    private NbiTextPane successfullyInstalledComponentsPane;
+    private NbiLabel    componentsInstalledWithWarningsLabel;
+    private NbiTextPane componentsInstalledWithWarningsPane;
+    private NbiLabel    componentsFailedToInstallLabel;
+    private NbiTextPane componentsFailedToInstallPane;
     
-    private JLabel    successfullyUninstalledComponentsLabel;
-    private JTextPane successfullyUninstalledComponentsPane;
-    private JLabel    componentsUninstalledWithWarningsLabel;
-    private JTextPane componentsUninstalledWithWarningsPane;
-    private JLabel    componentsFailedToUninstallLabel;
-    private JTextPane componentsFailedToUninstallPane;
+    private NbiLabel    successfullyUninstalledComponentsLabel;
+    private NbiTextPane successfullyUninstalledComponentsPane;
+    private NbiLabel    componentsUninstalledWithWarningsLabel;
+    private NbiTextPane componentsUninstalledWithWarningsPane;
+    private NbiLabel    componentsFailedToUninstallLabel;
+    private NbiTextPane componentsFailedToUninstallPane;
     
-    private JButton   viewDetailsButton;
-    private JButton   viewLogButton;
-    private JButton   sendLogButton;
+    private NbiButton   viewDetailsButton;
+    private NbiButton   viewLogButton;
+    private NbiButton   sendLogButton;
     
-    private JPanel    spacer;
+    private NbiPanel    spacer;
     
     private InstallationDetailsDialog detailsDialog;
     private InstallationLogDialog     logDialog;
@@ -220,68 +211,65 @@ public class PostInstallSummaryPanel extends TextPanel {
     }
     
     public void initComponents() {
-        messagePane = new JTextPane();
-        messagePane.setOpaque(false);
-        messagePane.setEditable(false);
-        messagePane.setBorder(new EmptyBorder(0, 0, 0, 0));
+        messagePane = new NbiTextPane();
         
-        successfullyInstalledComponentsLabel = new JLabel();
+        successfullyInstalledComponentsLabel = new NbiLabel();
         
-        successfullyInstalledComponentsPane = new JTextPane();
+        successfullyInstalledComponentsPane = new NbiTextPane();
         successfullyInstalledComponentsPane.setOpaque(false);
         successfullyInstalledComponentsPane.setEditable(false);
         successfullyInstalledComponentsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        componentsInstalledWithWarningsLabel = new JLabel();
+        componentsInstalledWithWarningsLabel = new NbiLabel();
         
-        componentsInstalledWithWarningsPane = new JTextPane();
+        componentsInstalledWithWarningsPane = new NbiTextPane();
         componentsInstalledWithWarningsPane.setOpaque(false);
         componentsInstalledWithWarningsPane.setEditable(false);
         componentsInstalledWithWarningsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        componentsFailedToInstallLabel = new JLabel();
+        componentsFailedToInstallLabel = new NbiLabel();
         
-        componentsFailedToInstallPane = new JTextPane();
+        componentsFailedToInstallPane = new NbiTextPane();
         componentsFailedToInstallPane.setOpaque(false);
         componentsFailedToInstallPane.setEditable(false);
         componentsFailedToInstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        successfullyUninstalledComponentsLabel = new JLabel();
+        successfullyUninstalledComponentsLabel = new NbiLabel();
         
-        successfullyUninstalledComponentsPane = new JTextPane();
+        successfullyUninstalledComponentsPane = new NbiTextPane();
         successfullyUninstalledComponentsPane.setOpaque(false);
         successfullyUninstalledComponentsPane.setEditable(false);
         successfullyUninstalledComponentsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        componentsUninstalledWithWarningsLabel = new JLabel();
+        componentsUninstalledWithWarningsLabel = new NbiLabel();
         
-        componentsUninstalledWithWarningsPane = new JTextPane();
+        componentsUninstalledWithWarningsPane = new NbiTextPane();
         componentsUninstalledWithWarningsPane.setOpaque(false);
         componentsUninstalledWithWarningsPane.setEditable(false);
         componentsUninstalledWithWarningsPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        componentsFailedToUninstallLabel = new JLabel();
+        componentsFailedToUninstallLabel = new NbiLabel();
         
-        componentsFailedToUninstallPane = new JTextPane();
+        componentsFailedToUninstallPane = new NbiTextPane();
         componentsFailedToUninstallPane.setOpaque(false);
         componentsFailedToUninstallPane.setEditable(false);
         componentsFailedToUninstallPane.setBorder(new EmptyBorder(0, 0, 0, 0));
         
-        viewDetailsButton = new JButton();
+        viewDetailsButton = new NbiButton();
         viewDetailsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 viewDetailsButtonClicked();
             }
         });
         
-        viewLogButton = new JButton();
+        viewLogButton = new NbiButton();
         viewLogButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 viewLogButtonClicked();
             }
         });
         
-        sendLogButton = new JButton();
+        sendLogButton = new NbiButton();
         sendLogButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 sendLogButtonClicked();
@@ -289,8 +277,7 @@ public class PostInstallSummaryPanel extends TextPanel {
         });
         sendLogButton.setEnabled(false);
         
-        spacer = new JPanel();
-        spacer.setOpaque(false);
+        spacer = new NbiPanel();
         
         add(messagePane, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(successfullyInstalledComponentsLabel, new GridBagConstraints(0, 1, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(15, 11, 0, 11), 0, 0));

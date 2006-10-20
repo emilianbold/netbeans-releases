@@ -21,11 +21,10 @@
 package org.netbeans.installer.wizard.components.panels;
 
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import org.netbeans.installer.utils.helper.swing.NbiLabel;
 
 /**
  *
@@ -35,12 +34,12 @@ public abstract class ErrorMessagePanel extends DefaultWizardPanel {
     private Icon errorIcon = new ImageIcon(getClass().getClassLoader().getResource(ERROR_ICON));
     private Icon emptyIcon = new ImageIcon(getClass().getClassLoader().getResource(EMPTY_ICON));
     
-    private JLabel errorLabel;
+    private NbiLabel errorLabel;
     
     public void defaultInitComponents() {
         super.defaultInitComponents();
         
-        errorLabel = new JLabel();
+        errorLabel = new NbiLabel();
         
         add(errorLabel, new GridBagConstraints(0, 99, 99, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 11, 11), 0, 0));
     }

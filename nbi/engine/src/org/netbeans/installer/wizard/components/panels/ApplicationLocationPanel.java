@@ -29,18 +29,11 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -50,22 +43,28 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.swing.NbiButton;
+import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import org.netbeans.installer.utils.helper.swing.NbiList;
+import org.netbeans.installer.utils.helper.swing.NbiPanel;
+import org.netbeans.installer.utils.helper.swing.NbiTextField;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 
 /**
  *
  * @author ks152834
  */
 public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
-    private JTextPane    messagePane;
-    private JLabel       locationLabel;
-    private JTextField   locationField;
-    private JButton      locationButton;
+    private NbiTextPane    messagePane;
+    private NbiLabel       locationLabel;
+    private NbiTextField   locationField;
+    private NbiButton      locationButton;
     
-    private JLabel       listLabel;
-    private JList        list;
+    private NbiLabel       listLabel;
+    private NbiList        list;
     
-    private JPanel       spacer;
-    private JPanel       listReplacement;
+    private NbiPanel       spacer;
+    private NbiPanel       listReplacement;
     
     private JFileChooser fileChooser;
     
@@ -122,12 +121,9 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     }
     
     public void initComponents() {
-        messagePane = new JTextPane();
-        messagePane.setContentType("text/plain");
-        messagePane.setOpaque(false);
-        messagePane.setEditable(false);
+        messagePane = new NbiTextPane();
         
-        locationField = new JTextField();
+        locationField = new NbiTextField();
         locationField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent event) {
                 locationChanged();
@@ -142,26 +138,19 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             }
         });
         
-        locationLabel = new JLabel();
+        locationLabel = new NbiLabel();
         locationLabel.setLabelFor(locationField);
         
-        locationButton = new JButton();
-        if (SystemUtils.Platform.isMacOS()) {
-            locationButton.setOpaque(false);
-        }
+        locationButton = new NbiButton();
         locationButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 browseButtonPressed();
             }
         });
         
-        spacer = new JPanel();
-        spacer.setOpaque(false);
+        spacer = new NbiPanel();
         
-        list = new JList();
-        list.setOpaque(false);
-        list.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list = new NbiList();
         list.setCellRenderer(new LocationsListCellRenderer());
         list.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent event) {
@@ -171,11 +160,10 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             }
         });
         
-        listLabel = new JLabel();
+        listLabel = new NbiLabel();
         listLabel.setLabelFor(list);
         
-        listReplacement = new JPanel();
-        listReplacement.setOpaque(false);
+        listReplacement = new NbiPanel();
         
         add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(locationLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));

@@ -25,12 +25,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.swing.NbiButton;
 
 import org.netbeans.installer.wizard.SubWizard;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
@@ -88,31 +88,31 @@ public abstract class WizardPanel extends JPanel implements WizardComponent {
     
     public abstract String getDialogTitle();
     
-    public final JButton getHelpButton() {
+    public final NbiButton getHelpButton() {
         return wizard.getFrame().getContentPane().getHelpButton();
     }
     
     public abstract void evaluateHelpButtonClick();
     
-    public final JButton getBackButton() {
+    public final NbiButton getBackButton() {
         return wizard.getFrame().getContentPane().getBackButton();
     }
     
     public abstract void evaluateBackButtonClick();
     
-    public final JButton getNextButton() {
+    public final NbiButton getNextButton() {
         return wizard.getFrame().getContentPane().getNextButton();
     }
     
     public abstract void evaluateNextButtonClick();
     
-    public final JButton getCancelButton() {
+    public final NbiButton getCancelButton() {
         return wizard.getFrame().getContentPane().getCancelButton();
     }
     
     public abstract void evaluateCancelButtonClick();
     
-    public abstract JButton getDefaultButton();
+    public abstract NbiButton getDefaultButton();
     
     public final SubWizard getWizard() {
         return wizard;

@@ -20,12 +20,10 @@
  */
 package org.netbeans.installer.wizard.components.panels;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,11 +33,8 @@ import java.util.List;
 import java.util.Vector;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextPane;
 import javax.swing.JTree;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -57,9 +52,9 @@ import org.netbeans.installer.product.ProductRegistry;
 import org.netbeans.installer.product.ProductTreeNode;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.utils.helper.swing.treetable.TreeColumnCellRenderer;
 import org.netbeans.installer.utils.helper.swing.treetable.TreeTable;
 import org.netbeans.installer.utils.helper.swing.treetable.TreeTableModel;
@@ -69,17 +64,17 @@ import org.netbeans.installer.utils.helper.swing.treetable.TreeTableModel;
  * @author ks152834
  */
 public class ComponentsSelectionPanel extends ErrorMessagePanel {
-    private JTextPane   messagePane;
+    private NbiTextPane   messagePane;
     private TreeTable   componentsTreeTable;
-    private JScrollPane treeTableScrollPane;
+    private NbiScrollPane treeTableScrollPane;
     
-    private JLabel      displayNameLabel;
-    private JTextPane   descriptionPane;
-    private JLabel      requirementsLabel;
-    private JLabel      conflictsLabel;
+    private NbiLabel      displayNameLabel;
+    private NbiTextPane   descriptionPane;
+    private NbiLabel      requirementsLabel;
+    private NbiLabel      conflictsLabel;
     
-    private JLabel      totalDownloadSizeLabel;
-    private JLabel      totalDiskSpaceLabel;
+    private NbiLabel      totalDownloadSizeLabel;
+    private NbiLabel      totalDiskSpaceLabel;
     
     public ComponentsSelectionPanel() {
         setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
@@ -115,8 +110,7 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
     }
     
     public void initComponents() {
-        messagePane = new JTextPane();
-        messagePane.setOpaque(false);
+        messagePane = new NbiTextPane();
         
         componentsTreeTable = new TreeTable(new ComponentsTreeTableModel());
         componentsTreeTable.setShowVerticalLines(false);
@@ -140,26 +134,20 @@ public class ComponentsSelectionPanel extends ErrorMessagePanel {
             }
         });
         
-        treeTableScrollPane = new JScrollPane(componentsTreeTable);
-        treeTableScrollPane.setOpaque(false);
-        treeTableScrollPane.getViewport().setOpaque(false);
-        treeTableScrollPane.setViewportBorder(new EmptyBorder(new Insets(0, 0, 0, 0)));
-        treeTableScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        treeTableScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        treeTableScrollPane = new NbiScrollPane(componentsTreeTable);
         
-        displayNameLabel = new JLabel();
+        displayNameLabel = new NbiLabel();
         displayNameLabel.setFont(displayNameLabel.getFont().deriveFont(Font.BOLD));
         
-        descriptionPane = new JTextPane();
-        descriptionPane.setOpaque(false);
+        descriptionPane = new NbiTextPane();
         
-        requirementsLabel = new JLabel();
+        requirementsLabel = new NbiLabel();
         
-        conflictsLabel = new JLabel();
+        conflictsLabel = new NbiLabel();
         
-        totalDownloadSizeLabel = new JLabel();
+        totalDownloadSizeLabel = new NbiLabel();
         
-        totalDiskSpaceLabel = new JLabel();
+        totalDiskSpaceLabel = new NbiLabel();
         
         add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(treeTableScrollPane, new GridBagConstraints(0, 1, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 11, 0, 11), 0, 0));

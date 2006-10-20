@@ -21,19 +21,15 @@
 package org.netbeans.installer.wizard.components.panels;
 
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
-import javax.swing.JTextPane;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 
 /**
  *
  * @author ks152834
  */
 public class TextPanel extends DefaultWizardPanel {
-    private JTextPane textPane;
+    private NbiTextPane textPane;
     
     public TextPanel() {
         setProperty(TEXT_PROPERTY, DEFAULT_TEXT);
@@ -49,9 +45,7 @@ public class TextPanel extends DefaultWizardPanel {
     }
     
     public void initComponents() {
-        textPane = new JTextPane();
-        textPane.setOpaque(false);
-        textPane.setEditable(false);
+        textPane = new NbiTextPane();
         
         add(textPane, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 11, 11), 0, 0));
     }

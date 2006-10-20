@@ -20,46 +20,35 @@
  */
 package org.netbeans.installer.wizard.components.panels;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
-
-import static org.netbeans.installer.product.ProductComponent.INSTALLATION_LOCATION_PROPERTY;
-import static org.netbeans.installer.product.ProductComponent.DEFAULT_INSTALLATION_LOCATION_PROPERTY;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.helper.swing.NbiButton;
+import org.netbeans.installer.utils.helper.swing.NbiLabel;
+import static org.netbeans.installer.product.ProductComponent.INSTALLATION_LOCATION_PROPERTY;
+import static org.netbeans.installer.product.ProductComponent.DEFAULT_INSTALLATION_LOCATION_PROPERTY;
+import org.netbeans.installer.utils.helper.swing.NbiPanel;
+import org.netbeans.installer.utils.helper.swing.NbiTextField;
+import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 
 /**
  *
  * @author Kirill Sorokin
  */
 public class DestinationPanel extends ErrorMessagePanel {
-    private JTextPane    messagePane;
-    private JLabel       destinationLabel;
-    private JTextField   destinationField;
-    private JButton      destinationButton;
+    private NbiTextPane    messagePane;
+    private NbiLabel       destinationLabel;
+    private NbiTextField   destinationField;
+    private NbiButton      destinationButton;
     
-    private JLabel       errorLabel;
-    
-    private JPanel       spacer;
+    private NbiPanel       spacer;
     
     private JFileChooser fileChooser;
     
@@ -107,11 +96,9 @@ public class DestinationPanel extends ErrorMessagePanel {
     }
     
     public void initComponents() {
-        messagePane = new JTextPane();
-        messagePane.setOpaque(false);
-        messagePane.setEditable(false);
+        messagePane = new NbiTextPane();
         
-        destinationField = new JTextField();
+        destinationField = new NbiTextField();
         destinationField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 updateErrorMessage();
@@ -124,21 +111,17 @@ public class DestinationPanel extends ErrorMessagePanel {
             }
         });
         
-        destinationLabel = new JLabel();
+        destinationLabel = new NbiLabel();
         destinationLabel.setLabelFor(destinationField);
         
-        destinationButton = new JButton();
-        if (SystemUtils.Platform.isMacOS()) {
-            destinationButton.setOpaque(false);
-        }
+        destinationButton = new NbiButton();
         destinationButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 browseButtonPressed();
             }
         });
         
-        spacer = new JPanel();
-        spacer.setOpaque(false);
+        spacer = new NbiPanel();
         
         add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(destinationLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
