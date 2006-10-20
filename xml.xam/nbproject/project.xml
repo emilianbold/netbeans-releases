@@ -47,6 +47,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>
+                <friend>org.netbeans.modules.websvc.clientapi</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.websvc.wsitmodelext</friend>
