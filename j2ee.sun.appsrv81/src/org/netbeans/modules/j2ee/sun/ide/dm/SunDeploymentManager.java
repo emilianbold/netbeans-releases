@@ -990,9 +990,9 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             // long current=System.currentTimeMillis();
             mmm=null;
             try{
-                if(isGlassFish)
-                    secure=PortDetector.isSecurePortGlassFish(getHost(),getPort());
-                else
+                //if(isGlassFish)
+                //    secure=PortDetector.isSecurePortGlassFish(getHost(),getPort());
+                //else
                     secure=PortDetector.isSecurePort(getHost(),getPort());
                 
                 if (secure==true){
