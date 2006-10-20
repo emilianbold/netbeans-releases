@@ -130,8 +130,6 @@ public class PreInstallSummaryPanel extends DefaultWizardPanel {
     }
     
     public void initComponents() {
-        setLayout(new GridBagLayout());
-        
         messagePane = new JTextPane();
         messagePane.setOpaque(false);
         messagePane.setEditable(false);

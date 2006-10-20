@@ -22,7 +22,6 @@ package org.netbeans.installer.wizard.components.panels;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,15 +49,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 
 /**
  *
  * @author ks152834
  */
-public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
+public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     private JTextPane    messagePane;
     private JLabel       locationLabel;
     private JTextField   locationField;
@@ -69,8 +66,6 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
     
     private JPanel       spacer;
     private JPanel       listReplacement;
-    
-    private JLabel       errorLabel;
     
     private JFileChooser fileChooser;
     
@@ -127,8 +122,6 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
     }
     
     public void initComponents() {
-        setLayout(new GridBagLayout());
-        
         messagePane = new JTextPane();
         messagePane.setContentType("text/plain");
         messagePane.setOpaque(false);
@@ -184,10 +177,6 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         listReplacement = new JPanel();
         listReplacement.setOpaque(false);
         
-        errorLabel = new JLabel();
-        errorLabel.setIcon(emptyIcon);
-        errorLabel.setText(" ");
-        
         add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(locationLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
         add(locationField, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 11, 0, 4), 0, 0));
@@ -196,7 +185,6 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         add(listLabel, new GridBagConstraints(0, 4, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
         add(list, new GridBagConstraints(0, 5, 2, 1, 1.0, 0.5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 11, 11), 0, 0));
         add(listReplacement, new GridBagConstraints(0, 6, 2, 1, 1.0, 0.5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(4, 11, 0, 11), 0, 0));
-        add(errorLabel, new GridBagConstraints(0, 7, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 11, 11, 11), 0, 0));
         
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -243,25 +231,13 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
                 locationField.setText(location);
             }
         }
-        
     }
     
     private void locationChanged() {
+        updateErrorMessage();
+        
         final LocationsListModel model = (LocationsListModel) list.getModel();
         final String value = locationField.getText().trim();
-        
-        final String errorMessage = validateLocation(value);
-        if (errorMessage == null) {
-            errorLabel.setIcon(emptyIcon);
-            errorLabel.setText(" ");
-            
-            getNextButton().setEnabled(true);
-        } else {
-            errorLabel.setIcon(errorIcon);
-            errorLabel.setText(errorMessage);
-            
-            getNextButton().setEnabled(false);
-        }
         
         for (int i = 0; i < model.getSize(); i++) {
             final String element = (String) model.getLocationAt(i).getAbsolutePath();
@@ -273,6 +249,13 @@ public abstract class ApplicationLocationPanel extends DefaultWizardPanel {
         }
         
         list.clearSelection();
+    }
+    
+    public String validateInput() {
+        final LocationsListModel model = (LocationsListModel) list.getModel();
+        final String value = locationField.getText().trim();
+        
+        return validateLocation(value);
     }
     
     private void setListVisibility(boolean state) {

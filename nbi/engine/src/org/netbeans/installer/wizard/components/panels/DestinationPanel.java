@@ -51,7 +51,7 @@ import org.netbeans.installer.utils.FileUtils;
  *
  * @author Kirill Sorokin
  */
-public class DestinationPanel extends DefaultWizardPanel {
+public class DestinationPanel extends ErrorMessagePanel {
     private JTextPane    messagePane;
     private JLabel       destinationLabel;
     private JTextField   destinationField;
@@ -107,8 +107,6 @@ public class DestinationPanel extends DefaultWizardPanel {
     }
     
     public void initComponents() {
-        setLayout(new GridBagLayout());
-        
         messagePane = new JTextPane();
         messagePane.setOpaque(false);
         messagePane.setEditable(false);
@@ -116,13 +114,13 @@ public class DestinationPanel extends DefaultWizardPanel {
         destinationField = new JTextField();
         destinationField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
-                destinationFieldChanged();
+                updateErrorMessage();
             }
             public void insertUpdate(DocumentEvent e) {
-                destinationFieldChanged();
+                updateErrorMessage();
             }
             public void removeUpdate(DocumentEvent e) {
-                destinationFieldChanged();
+                updateErrorMessage();
             }
         });
         
@@ -142,17 +140,11 @@ public class DestinationPanel extends DefaultWizardPanel {
         spacer = new JPanel();
         spacer.setOpaque(false);
         
-        errorLabel = new JLabel();
-        errorLabel.setForeground(Color.RED);
-        errorLabel.setIcon(emptyIcon);
-        errorLabel.setText(" ");
-        
         add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.3, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(destinationLabel, new GridBagConstraints(0, 1, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(7, 11, 0, 11), 0, 0));
         add(destinationField, new GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 11, 0, 4), 0, 0));
         add(destinationButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(4, 0, 0, 11), 0, 0));
         add(spacer, new GridBagConstraints(0, 3, 2, 1, 1.0, 0.7, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 11, 0, 11), 0, 0));
-        add(errorLabel, new GridBagConstraints(0, 4, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 11, 11, 11), 0, 0));
         
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -160,7 +152,7 @@ public class DestinationPanel extends DefaultWizardPanel {
     }
     
     public void evaluateNextButtonClick() {
-        String errorMessage = validateLocation();
+        String errorMessage = validateInput();
         
         if (errorMessage == null) {
             getWizard().getProductComponent().setProperty(INSTALLATION_LOCATION_PROPERTY, destinationField.getText());
@@ -178,20 +170,7 @@ public class DestinationPanel extends DefaultWizardPanel {
         }
     }
     
-    private void destinationFieldChanged() {
-        String errorMessage = validateLocation();
-        if (errorMessage != null) {
-            errorLabel.setIcon(errorIcon);
-            errorLabel.setText(errorMessage);
-            getNextButton().setEnabled(false);
-        } else {
-            errorLabel.setIcon(emptyIcon);
-            errorLabel.setText(" ");
-            getNextButton().setEnabled(true);
-        }
-    }
-    
-    private String validateLocation() {
+    public String validateInput() {
         final String string = destinationField.getText().trim();
         final File   file   = new File(string);
         final String path   = file.getAbsolutePath();

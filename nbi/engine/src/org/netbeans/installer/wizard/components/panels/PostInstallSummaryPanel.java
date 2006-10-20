@@ -220,8 +220,6 @@ public class PostInstallSummaryPanel extends TextPanel {
     }
     
     public void initComponents() {
-        setLayout(new GridBagLayout());
-        
         messagePane = new JTextPane();
         messagePane.setOpaque(false);
         messagePane.setEditable(false);

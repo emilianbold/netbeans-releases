@@ -49,10 +49,9 @@ public class TextPanel extends DefaultWizardPanel {
     }
     
     public void initComponents() {
-        setLayout(new GridBagLayout());
-        
         textPane = new JTextPane();
         textPane.setOpaque(false);
+        textPane.setEditable(false);
         
         add(textPane, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 11, 11), 0, 0));
     }

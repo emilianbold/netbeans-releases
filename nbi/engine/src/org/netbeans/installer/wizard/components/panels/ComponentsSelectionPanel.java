@@ -68,7 +68,7 @@ import org.netbeans.installer.utils.helper.swing.treetable.TreeTableModel;
  *
  * @author ks152834
  */
-public class ComponentsSelectionPanel extends DefaultWizardPanel {
+public class ComponentsSelectionPanel extends ErrorMessagePanel {
     private JTextPane   messagePane;
     private TreeTable   componentsTreeTable;
     private JScrollPane treeTableScrollPane;
@@ -80,8 +80,6 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
     
     private JLabel      totalDownloadSizeLabel;
     private JLabel      totalDiskSpaceLabel;
-    
-    private JLabel      errorLabel;
     
     public ComponentsSelectionPanel() {
         setProperty(MESSAGE_TEXT_PROPERTY, DEFAULT_MESSAGE_TEXT);
@@ -113,12 +111,10 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         updateDescription();
         updateTotalSizes();
         
-        evaluateErrors();
+        updateErrorMessage();
     }
     
     public void initComponents() {
-        setLayout(new GridBagLayout());
-        
         messagePane = new JTextPane();
         messagePane.setOpaque(false);
         
@@ -135,7 +131,7 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         componentsTreeTable.getModel().addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent event) {
                 updateTotalSizes();
-                evaluateErrors();
+                updateErrorMessage();
             }
         });
         componentsTreeTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -165,11 +161,6 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         
         totalDiskSpaceLabel = new JLabel();
         
-        errorLabel = new JLabel();
-        errorLabel.setForeground(Color.RED);
-        errorLabel.setIcon(emptyIcon);
-        errorLabel.setText(" ");
-        
         add(messagePane, new GridBagConstraints(0, 0, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(11, 11, 0, 11), 0, 0));
         add(treeTableScrollPane, new GridBagConstraints(0, 1, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 11, 0, 11), 0, 0));
         
@@ -180,12 +171,10 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         
         add(totalDownloadSizeLabel, new GridBagConstraints(0, 6, 1, 1, 0.5, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 11, 0, 0), 0, 0));
         add(totalDiskSpaceLabel, new GridBagConstraints(1, 6, 1, 1, 0.5, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 6, 0, 11), 0, 0));
-        
-        add(errorLabel, new GridBagConstraints(0, 99, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(7, 11, 11, 11), 0, 0));
     }
     
     public void evaluateNextButtonClick() {
-        String errorMessage = validateChanges();
+        String errorMessage = validateInput();
         
         if (errorMessage == null) {
             super.evaluateNextButtonClick();
@@ -194,20 +183,7 @@ public class ComponentsSelectionPanel extends DefaultWizardPanel {
         }
     }
     
-    private void evaluateErrors() {
-        String errorMessage = validateChanges();
-        if (errorMessage != null) {
-            errorLabel.setIcon(errorIcon);
-            errorLabel.setText(errorMessage);
-            getNextButton().setEnabled(false);
-        } else {
-            errorLabel.setIcon(emptyIcon);
-            errorLabel.setText(" ");
-            getNextButton().setEnabled(true);
-        }
-    }
-    
-    private String validateChanges() {
+    public String validateInput() {
         List<ProductComponent> componentsToInstall = new ArrayList<ProductComponent>();
         List<ProductComponent> componentsToUninstall = new ArrayList<ProductComponent>();
         
