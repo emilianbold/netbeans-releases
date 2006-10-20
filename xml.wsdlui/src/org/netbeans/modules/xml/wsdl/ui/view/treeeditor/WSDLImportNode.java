@@ -199,9 +199,8 @@ public class WSDLImportNode extends ImportNode {
         }
         
         @Override
-        protected Node[] createNodes(Object key) {
-             Node n = (Node)key;
-             return new Node[] {new ReadOnlyNode(n)};
+        protected Node[] createNodes(Node key) {
+             return new Node[] {new ReadOnlyNode(key)};
         }
     } 
     

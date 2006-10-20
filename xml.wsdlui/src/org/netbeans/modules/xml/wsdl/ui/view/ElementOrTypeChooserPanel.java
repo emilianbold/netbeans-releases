@@ -331,8 +331,8 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         }
         
         @Override
-        protected Node[] createNodes(Object key) {
-            return new Node[] {new CategoryFilterNode((Node)key)};
+        protected Node[] createNodes(Node key) {
+            return new Node[] {new CategoryFilterNode(key)};
         }
         
     }
@@ -353,8 +353,8 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
          }
          
          @Override
-         protected Node[] createNodes(Object key) {
-             return new Node[] {new ChildLessNode((Node)key)};
+         protected Node[] createNodes(Node key) {
+             return new Node[] {new ChildLessNode(key)};
          }
          
      }
