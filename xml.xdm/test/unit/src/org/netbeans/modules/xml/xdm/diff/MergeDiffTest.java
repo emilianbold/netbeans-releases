@@ -7,6 +7,7 @@
 
 package org.netbeans.modules.xml.xdm.diff;
 
+import java.util.Iterator;
 import java.util.List;
 import junit.framework.*;
 import org.netbeans.modules.xml.xdm.Util;
@@ -73,6 +74,8 @@ public class MergeDiffTest extends TestCase {
         suite.addTest(new MergeDiffTest("testPosChange3"));
         suite.addTest(new MergeDiffTest("testPosChange3_2"));
         suite.addTest(new MergeDiffTest("testPosChange3_3"));
+        suite.addTest(new MergeDiffTest("testMergeVenetianBlindPO"));
+        suite.addTest(new MergeDiffTest("testForwardReorderNodeWithChangesOnChildren"));
         return suite;
     }
     
@@ -450,6 +453,7 @@ public class MergeDiffTest extends TestCase {
     public static void merge(XDMModel model, List<Difference> diffs) {
         XDMTreeDiff treeDiff = new XDMTreeDiff(Util.getDefaultElementIdentity());
         treeDiff.mergeDiff(model, diffs);
+        model.flush();
     }
     
     public void testSelfClosing() throws Exception {
@@ -691,6 +695,41 @@ public class MergeDiffTest extends TestCase {
         List<Difference> zeroDiffs = Util.diff(m1, m2);
         assertTrue("before:"+diffs.toString()+"\nafter:"+zeroDiffs.toString(), zeroDiffs.isEmpty());
     }
+
+    public void testMergeVenetianBlindPO() throws Exception {
+        javax.swing.text.Document doc1 = Util.getResourceAsDocument("resources/po_venetian.xsd");
+        XDMModel mod1 = Util.loadXDMModel(doc1);
+        javax.swing.text.Document doc2 = Util. getResourceAsDocument("resources/po.xsd");
+        XDMModel mod2 = Util.loadXDMModel(doc2);
+        List<Difference> diffs = Util.diff(mod1, mod2);
+        for (Iterator<Difference> i = diffs.iterator(); i.hasNext();) {
+            Difference d = i.next();
+            if (d instanceof Change) {
+                Change c = (Change) d;
+                if (c.isPositionChanged() && c.getOldNodeInfo().getParent().getId() == 1) {
+                    //FIXME assertFalse("There should be no position changes", true);
+                    //i.remove();
+                }
+            }
+        }
+        merge(mod1, diffs);
+        String text1 = doc1.getText(0, doc1.getLength());
+        String text2 = doc1.getText(0, doc2.getLength());
+        assertEquals(text2, text1);
+    }
+    
+    public void testForwardReorderNodeWithChangesOnChildren() throws Exception {
+        javax.swing.text.Document doc1 = Util.getResourceAsDocument("diff/posChange4.xml");
+        XDMModel mod1 = Util.loadXDMModel(doc1);
+        javax.swing.text.Document doc2 = Util.getResourceAsDocument("diff/posChange4_WithChildrenChanges.xml");
+        XDMModel mod2 = Util.loadXDMModel(doc2);
+        List<Difference> diffs = Util.diff(mod1, mod2);
         
+        merge(mod1, diffs);
+        String text1 = doc1.getText(0, doc1.getLength());
+        String text2 = doc1.getText(0, doc2.getLength());
+        assertEquals(text2, text1);
+    }
+    
     DefaultElementIdentity eID = createEid();
 }

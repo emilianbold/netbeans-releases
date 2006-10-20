@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -34,6 +34,10 @@ import java.awt.Stroke;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -50,7 +54,7 @@ import org.netbeans.modules.xml.schema.abe.nodes.ABEAbstractNode;
  *
  * @author  Todd Fast, todd.fast@sun.com
  */
-public abstract class TagPanel extends ABEBaseDropPanel {
+public abstract class TagPanel extends ABEBaseDropPanel implements ComponentListener{
     
     private static final int X_OFFSET = 0;
     private static final int Y_OFFSET = 0;
@@ -92,6 +96,16 @@ public abstract class TagPanel extends ABEBaseDropPanel {
         setPreferredSize(new Dimension(100,height));
 //        setMinimumSize(new Dimension(100,height));
         initMouseListener();
+        addContainerListener(new ContainerListener() {
+            public void componentAdded(ContainerEvent e) {
+                e.getComponent().addComponentListener(TagPanel.this);
+                forceSizeRecalculate();
+            }
+            public void componentRemoved(ContainerEvent e) {
+                e.getComponent().removeComponentListener(TagPanel.this);
+                forceSizeRecalculate();
+            }
+        });
     }
     
     
@@ -434,17 +448,18 @@ public abstract class TagPanel extends ABEBaseDropPanel {
     }
     
     //Following set of methods needed for the tag size calculation and horizontal bar display logic
-    public Dimension getPreferredSize() {
+    public Dimension _getPreferredSize() {
         int width = 0;
         int maxWidth = 0;
         int propsWidth = 0;
         for(Component child: this.getComponents()){
             if(!child.isVisible())
                 continue;
-            width += child.getPreferredSize().width + getInterComponentSpacing();
-            maxWidth = maxWidth > child.getPreferredSize().width ? maxWidth : child.getPreferredSize().width;
+            Dimension dim = child.getPreferredSize();
+            width += dim.width + getInterComponentSpacing();
+            maxWidth = maxWidth > dim.width ? maxWidth : dim.width;
             if(child instanceof ElementPropertiesPanel)
-                propsWidth = child.getPreferredSize().width;
+                propsWidth = dim.width;
         }
         if(getRowCount() > 1){
             width = maxWidth * StartTagPanel.NO_OF_ATTRS_PER_ROW +
@@ -456,6 +471,18 @@ public abstract class TagPanel extends ABEBaseDropPanel {
                 10 : 0;
         }
         return new Dimension(width, ((TAG_HEIGHT - BOTTOM_PAD) * getRowCount())+BOTTOM_PAD );
+    }
+    
+    boolean recalculateRequired = true;
+    Dimension myDim;
+    public Dimension getPreferredSize() {
+        synchronized(this){
+            if(recalculateRequired){
+                myDim = _getPreferredSize();
+                recalculateRequired = false;
+            }
+            return myDim;
+        }
     }
     
     public Dimension getMinimumSize() {
@@ -548,5 +575,25 @@ public abstract class TagPanel extends ABEBaseDropPanel {
     
     public JLabel getEndSlash() {
         return null;
+    }
+    
+    public void componentShown(ComponentEvent e) {
+        forceSizeRecalculate();
+    }
+    
+    public void componentResized(ComponentEvent e) {
+        forceSizeRecalculate();
+    }
+    
+    public void componentMoved(ComponentEvent e) {
+        forceSizeRecalculate();
+    }
+    
+    public void componentHidden(ComponentEvent e) {
+        forceSizeRecalculate();
+    }
+    
+    public void forceSizeRecalculate(){
+        recalculateRequired = true;
     }
 }

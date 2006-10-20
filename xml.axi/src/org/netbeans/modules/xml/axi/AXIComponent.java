@@ -647,7 +647,7 @@ public abstract class AXIComponent extends AbstractComponent<AXIComponent>
             //Ideally it shouldn't come here. Remove this as listener
             //and make shared as null, so that it'll be GCed.
             source.removeListener(this);
-            setSharedComponent(null);
+            //setSharedComponent(null);
             return;
         }
         //if(evt.getOldValue() == null && evt.getNewValue() != null) {

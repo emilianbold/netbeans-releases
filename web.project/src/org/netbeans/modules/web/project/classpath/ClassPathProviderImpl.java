@@ -44,7 +44,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
-    private final ClassPath[] cache = new ClassPath[9];
+    private final ClassPath[] cache = new ClassPath[10];
 
     private final Map/*<String,FileObject>*/ dirCache = new HashMap();
 
@@ -244,6 +244,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (cp == null ) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
             cache[7] = cp;
+        }
+        return cp;
+    }
+    
+    public ClassPath getJ2eePlatformClassPath() {
+        ClassPath cp = cache[9];
+        if (cp == null) {
+                cp = ClassPathFactory.createClassPath(
+                new ProjectClassPathImplementation(helper,  "${" + //NOI18N
+                        WebProjectProperties.J2EE_PLATFORM_CLASSPATH  +  
+                        "}", evaluator, false));  //NOI18N
+            cache[9] = cp;
         }
         return cp;
     }

@@ -85,7 +85,6 @@ public class AXIModelImpl extends AXIModel {
         }
         Util.updateAXIDocument(doc);
         isAXIDocumentInitialized = true;
-        updateReferencedModelListener();
 				
         //initialize schema design pattern
         SchemaGenerator.Pattern dp = null;
@@ -178,19 +177,29 @@ public class AXIModelImpl extends AXIModel {
     }
     
     /**
+     * Overwrite sync.
+     */
+    public void sync() {
+        try {
+            synchronized(getSchemaModel()) {
+                super.sync();
+            }
+        } catch(IOException ex) {
+            setState(Model.State.NOT_SYNCED);
+        }
+    }
+
+    /**
      * This is where the actual sync starts.
      * Returns true if success, false if failed.
      */
-    public synchronized boolean doSync() {        
-        //update the referenced AXIModels
-        updateReferencedModelListener();
-        
+    public synchronized boolean doSync() {
         //finally sync itself.
         AXIModelUpdater updater = new AXIModelUpdater(this);
         return updater.doSync();        
     }
     
-    private void updateReferencedModelListener() {
+    void updateReferencedModelListener() {
         for(AXIModel m: getReferencedModels()) {
             listenToReferencedModel(m);
         }
@@ -255,11 +264,12 @@ public class AXIModelImpl extends AXIModel {
      * Returns other AXIModels this model refers to.
      */
     public List<AXIModel> getReferencedModels() {
-        List<AXIModel> models = null;
-        Collection<SchemaModelReference> refs = getSchemaModel().
-                getSchema().getSchemaReferences();
+        List<AXIModel> models = Collections.emptyList();
+        Schema schema = getSchemaModel().getSchema();
+        if(schema == null)
+            return models;
+        Collection<SchemaModelReference> refs = schema.getSchemaReferences();
         if(refs == null || refs.size() == 0) {
-            models = Collections.emptyList();
             return models;
         }
         models = new ArrayList<AXIModel>();

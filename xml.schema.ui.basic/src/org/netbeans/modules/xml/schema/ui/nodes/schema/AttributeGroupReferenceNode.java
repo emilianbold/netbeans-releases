@@ -60,11 +60,10 @@ public class AttributeGroupReferenceNode extends SchemaComponentNode<AttributeGr
 	 */
 	protected void updateDisplayName()
 	{
-		GlobalAttributeGroup ref = getSuperDefinition(); 
-		String name = ref==null?null:ref.getName();
-		if(name==null||name.equals(""))
-			name = NAME;
-		setDisplayName(name);
+            String name = getSuperDefinitionName();
+            if(name==null||name.equals(""))
+                name = NAME;
+            setDisplayName(name);
 	}
 
 
@@ -99,6 +98,20 @@ public class AttributeGroupReferenceNode extends SchemaComponentNode<AttributeGr
 			gt = sc.getGroup().get();
 		return gt;
 	}
+        
+        private String getSuperDefinitionName()
+        {
+            String rawString = null;
+            AttributeGroupReference sc = getReference().get();
+            GlobalAttributeGroup gt = null;
+            if(sc.getGroup()!=null)
+                rawString = sc.getGroup().getRefString();
+            int i = rawString!=null?rawString.indexOf(':'):-1;
+            if (i != -1 && i < rawString.length()) {
+                rawString = rawString.substring(i);
+            }
+            return rawString;
+        }
     
 	@Override
     protected Sheet createSheet() {

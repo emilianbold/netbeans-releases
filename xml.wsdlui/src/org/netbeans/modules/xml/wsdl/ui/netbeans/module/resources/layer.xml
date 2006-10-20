@@ -38,10 +38,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <folder name="text">
             <folder name="xml-wsdl">
                 <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance"/>
-                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    <file name="org-openide-actions-FileSystemAction.instance"/>
-                    <attr name="org-openide-actions-FileSystemAction.instance/sep-0.instance" boolvalue="true"/>
+		    <file name="org-openide-actions-EditAction.instance_hidden"/>
+		    <file name="org-openide-actions-FileSystemAction.instance_hidden"/>
+                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance"/>                 
+                    <file name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance"/>
+                    <attr name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLViewOpenAction.instance/org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-xml-wsdl-ui-actions-WSDLSourceViewOpenAction.instance/sep-0.instance" boolvalue="true"/>
                     <file name="sep-0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>

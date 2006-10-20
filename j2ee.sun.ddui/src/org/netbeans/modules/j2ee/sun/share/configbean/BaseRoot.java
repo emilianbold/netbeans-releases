@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.spi.DConfigBeanRoot;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
@@ -64,36 +62,6 @@ public abstract class BaseRoot extends Base implements DConfigBeanRoot {
 		// initialize reference if we can
 		findRefDCB(dDBeanRoot);
 	}
-	
-    /** IZ 78686, 84549 - cache all security-role-mapping definitions in the
-     *  loaded graph, then remove them when matching SecurityRoleMapping DConfigBeans
-     *  are created.  Any remaining mappings should be rolled back into the graph
-     *  on save, as they reflect unbounded mappings that would otherwise be lost.
-     */
-    /** List of security-role-mappings read from sun-[application|ejb-jar|web-app].xml */
-    protected Map savedRoleMappings;
-    
-    public org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping removeSavedRoleMapping(String name) {
-        org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping result = null;
-        if(savedRoleMappings != null && savedRoleMappings.size() > 0 && Utils.notEmpty(name)) {
-            result = (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) savedRoleMappings.remove(name);
-        }
-        return result;
-    }
-    
-    /** IZ 78686, 84549 - save any security-role-mappings in graph.
-     */
-    protected void saveMappingsToCache(org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping[] mappings) {
-        if(mappings != null && mappings.length > 0) {
-            savedRoleMappings = new HashMap(mappings.length*3);
-            for(int i = 0; i < mappings.length; i++) {
-                String roleName = mappings[i].getRoleName();
-                if(Utils.notEmpty(roleName)) {
-                    savedRoleMappings.put(roleName, mappings[i]);
-                }
-            }
-        }    
-    }
 	
     /** Retrieve a DConfigBeanRoot bound to a secondary descriptor file, e.g. 
      *  webservices.xml.  This method is overloaded in EjbJarRoot and WebAppRoot

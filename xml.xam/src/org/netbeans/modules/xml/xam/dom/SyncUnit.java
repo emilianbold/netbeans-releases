@@ -40,6 +40,7 @@ public class SyncUnit {
     private Map<String, Attr> removedAttributes = new HashMap<String, Attr>();
     private Map<String, Attr> addedAttributes = new HashMap<String, Attr>();
     private boolean componentChanged;
+    private boolean hasTextContentChanges = false;
     
     public SyncUnit(DocumentComponent syncTarget) {
         assert syncTarget != null;
@@ -56,6 +57,10 @@ public class SyncUnit {
             } else {
                 addToRemovedAttributes(attr);
             }
+        } else if (change.getChangedNode() != null &&
+                ! (change.getChangedNode() instanceof Element)) {
+            // should be text, cdata, comment...
+            setHasTextContentChanges(true);
         }
     }
     
@@ -139,5 +144,13 @@ public class SyncUnit {
         } else {
             return getLastChange().getParentToRootPath();
         }
+    }
+    
+    public boolean hasTextContentChanges() {
+        return hasTextContentChanges;
+    }
+
+    public void setHasTextContentChanges(boolean val) {
+        hasTextContentChanges = val;
     }
 }

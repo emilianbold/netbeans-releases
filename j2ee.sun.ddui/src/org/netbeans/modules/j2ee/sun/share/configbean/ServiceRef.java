@@ -114,6 +114,8 @@ public class ServiceRef extends Base {
 		
 		serviceRefNameDD = getNameDD("service-ref-name");       //NOI18N
 		
+        updateNamedBeanCache(SunWebApp.SERVICE_REF);
+		
 		loadFromPlanFile(getConfig());		
 	}
 	
@@ -140,6 +142,8 @@ public class ServiceRef extends Base {
 			// name changed...
 			getPCS().firePropertyChange(SERVICE_REF_NAME, "", getServiceRefName());
 			getPCS().firePropertyChange(DISPLAY_NAME, "", getDisplayName());
+
+            updateNamedBeanCache(SunWebApp.SERVICE_REF);
 		}
 	}	
 

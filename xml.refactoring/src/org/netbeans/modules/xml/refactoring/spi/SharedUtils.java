@@ -129,6 +129,7 @@ public class SharedUtils {
             request.getTargetModel().getModelSource().getLookup().lookup(CatalogModel.class);
         FileObject fo = request.getFileObject();
         String systemId = getURI(fo);
+        RefactoringUtil.saveTargetFile(request);
         fo = renameFile(fo, request.getNewFileName());
         refreshCatalogModel(cat, systemId, fo);
     }

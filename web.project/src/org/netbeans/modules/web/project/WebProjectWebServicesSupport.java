@@ -707,7 +707,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl {
                 ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
                 projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                    cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                    cpProvider.getJ2eePlatformClassPath(),
                 });
             }
             return projectSourcesClassPath;

@@ -285,8 +285,8 @@ public class AdvancedGlobalSimpleTypeNode extends GlobalSimpleTypeNode
 	
 	public String getHtmlDisplayName()
 	{
-		GlobalSimpleType gst = getSuperDefinition();
-		if(gst==null) return super.getHtmlDisplayName();
+		String gstName = getSuperDefinitionName();
+		if(gstName==null) return super.getHtmlDisplayName();
 
 		String retValue = getDefaultDisplayName();
 		SimpleTypeDefinition definition = getReference().get().getDefinition();
@@ -295,12 +295,12 @@ public class AdvancedGlobalSimpleTypeNode extends GlobalSimpleTypeNode
 		if(definition instanceof SimpleTypeRestriction)
 		{
 			supertypeLabel = NbBundle.getMessage(AdvancedGlobalSimpleTypeNode.class,
-					"LBL_SimpleTypeChildren_RestrictionOf",gst.getName());
+					"LBL_SimpleTypeChildren_RestrictionOf",gstName);
 		}
 		if(definition instanceof List)
 		{
 			supertypeLabel = NbBundle.getMessage(AdvancedGlobalSimpleTypeNode.class,
-					"LBL_SimpleTypeChildren_ListOf",gst.getName());
+					"LBL_SimpleTypeChildren_ListOf",gstName);
 		}
 		if(supertypeLabel!=null)
 		{

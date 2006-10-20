@@ -21,19 +21,15 @@ package org.netbeans.modules.j2ee.sun.share.configbean;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.text.MessageFormat;
-
-import org.netbeans.modules.schema2beans.BaseBean;
-
-import javax.enterprise.deploy.spi.DConfigBean;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.XpathEvent;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
+import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 
 
 /**
@@ -67,6 +63,8 @@ public class EjbRef extends Base {
 //		initGroup(dDBean, parent);
 		
 		ejbRefNameDD = getNameDD("ejb-ref-name");
+		
+        updateNamedBeanCache(SunWebApp.EJB_REF);
 		
 		loadFromPlanFile(getConfig());
 	}
@@ -137,6 +135,8 @@ public class EjbRef extends Base {
 			// name changed...
 			getPCS().firePropertyChange(EJB_REF_NAME, "", getEjbRefName());
 			getPCS().firePropertyChange(DISPLAY_NAME, "", getDisplayName());
+            
+            updateNamedBeanCache(SunWebApp.EJB_REF);
 		}
 	}	
 

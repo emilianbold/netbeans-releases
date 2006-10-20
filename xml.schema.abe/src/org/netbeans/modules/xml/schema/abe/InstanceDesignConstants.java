@@ -86,4 +86,6 @@ public interface InstanceDesignConstants {
     static String NEW_ATTRIBUTE_NAME = "newAttribute";
 
     static String NEW_COMPLEXTYPE_NAME = "newComplexType";
+
+    static String PROP_SHUTDOWN = "shutdown";
 }

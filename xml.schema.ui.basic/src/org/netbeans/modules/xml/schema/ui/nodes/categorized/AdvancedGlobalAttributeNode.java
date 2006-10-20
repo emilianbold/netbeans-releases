@@ -80,17 +80,21 @@ public class AdvancedGlobalAttributeNode extends GlobalAttributeNode
 	
 	public String getHtmlDisplayName()
 	{
-		String retValue = getDefaultDisplayName();
-                GlobalAttribute ga = getReference().get();
-                NamedComponentReference<GlobalSimpleType> ref = ga.getType();
-		if (((AbstractDocumentComponent)ga).isInDocumentModel() && 
-                   ref != null && ref.get() != null)
-		{
-			String supertypeLabel = NbBundle.getMessage(
-					AdvancedGlobalAttributeNode.class, "LBL_InstanceOf",
-					ref.get().getName());
-			retValue = retValue+"<font color='#999999'> ("+supertypeLabel+")</font>";
-		}
-		return applyHighlights(retValue);
+            String retValue = getDefaultDisplayName();
+            String rawString = null;
+            GlobalAttribute ga = getReference().get();
+            if(((AbstractDocumentComponent)ga).isInDocumentModel() &&
+                    ga.getType()!=null &&
+                    (rawString = ga.getType().getRefString()) !=null) {
+                int i = rawString!=null?rawString.indexOf(':'):-1;
+                if (i != -1 && i < rawString.length()) {
+                    rawString = rawString.substring(i);
+                }
+                String supertypeLabel = NbBundle.getMessage(
+                        AdvancedGlobalAttributeNode.class, "LBL_InstanceOf",
+                        rawString);
+                retValue = retValue+"<font color='#999999'> ("+supertypeLabel+")</font>";
+            }
+            return applyHighlights(retValue);
 	}
 }

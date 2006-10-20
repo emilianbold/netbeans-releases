@@ -76,11 +76,16 @@ public class ImportSchemaCustomizer extends ExternalReferenceCustomizer<Import> 
             _import.setNamespace(namespace);
         }
 
-        if (mustNamespaceDiffer() && isPrefixChanged()) {
-            // Save the prefix.
-            String prefix = getEditedPrefix();
-            if (prefix.length() > 0) {
-                ((AbstractDocumentComponent) mModel.getDefinitions()).addPrefix(prefix, namespace);
+        // Save the prefix.
+        String prefix = getEditedPrefix();
+        if (prefix.length() > 0) {
+            if (mModel != null) {
+                AbstractDocumentComponent def = (AbstractDocumentComponent)mModel.getDefinitions();
+                Map prefixes = def.getPrefixes();
+                if (!prefixes.containsKey(prefix)) {
+                    def.addPrefix(prefix, namespace);
+                }
+                
             }
         }
     }

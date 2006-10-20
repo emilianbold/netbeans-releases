@@ -390,17 +390,9 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				// Cache snippet is retrieved below and added to the snippet list
 				// for WebAppRoot.
 				
-                /* IZ 84549 - add remaining saved role mappings here.  All entries that are represented
+                /* IZ 84549, etc - add remaining saved named beans here.  All entries that are represented
                  * by real DConfigBeans should have been removed by now. */
-                if(savedRoleMappings != null && savedRoleMappings.size() > 0) {
-                    for (Iterator iter = savedRoleMappings.entrySet().iterator(); iter.hasNext();) {
-                        Map.Entry entry = (Map.Entry) iter.next();
-                        org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping mapping = 
-                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) entry.getValue();
-                        swa.addSecurityRoleMapping(
-                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) mapping.cloneVersion(version));
-                    }
-                }                
+                restoreAllNamedBeans(swa, version);
                 
 				return swa;
 			}
@@ -529,8 +521,8 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				localeInfo = (LocaleCharsetInfo) info.clone();
 			}
             
-            // For IZ 84549 - save any security-role-mappings in graph.
-            saveMappingsToCache(beanGraph.getSecurityRoleMapping());
+            // IZ 84549, etc - cache the data for all named beans.
+            saveAllNamedBeans(beanGraph);
 		} else {
 			setDefaultProperties();
 		}
@@ -588,6 +580,22 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		// errorUrl is required for SJSAS 8.1
 		errorUrl = "";
 	}	
+    
+    private static Collection sunWebAppBeanSpecs = new ArrayList();
+    
+    static {
+        sunWebAppBeanSpecs.addAll(getCommonNamedBeanSpecs());
+//        sunWebAppBeanSpecs.add(new NamedBean(SunWebApp.MESSAGE_DESTINATION, 
+//                org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination.MESSAGE_DESTINATION_NAME));
+        sunWebAppBeanSpecs.add(new NamedBean(SunWebApp.SECURITY_ROLE_MAPPING, 
+                org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping.ROLE_NAME));
+        sunWebAppBeanSpecs.add(new NamedBean(SunWebApp.SERVLET, 
+                org.netbeans.modules.j2ee.sun.dd.api.web.Servlet.SERVLET_NAME));
+    }
+    
+    protected Collection getNamedBeanSpecs() {
+        return sunWebAppBeanSpecs;
+    }
 	
 	/* ------------------------------------------------------------------------
 	 * XPath to Factory mapping support

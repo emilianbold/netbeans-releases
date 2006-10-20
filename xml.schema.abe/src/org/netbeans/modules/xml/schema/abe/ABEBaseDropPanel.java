@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -55,6 +55,15 @@ public abstract class ABEBaseDropPanel extends JPanel {
     public ABEBaseDropPanel(InstanceUIContext context) {
         super();
         this.context = context;
+        this.context.addPropertyChangeListener(new PropertyChangeListener(){
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals(InstanceDesignConstants.
+                        PROP_SHUTDOWN)){
+                    ABEBaseDropPanel.this.context.removePropertyChangeListener(this);
+                    ABEBaseDropPanel.this.context = null;
+                }
+            }
+        });
         initialize();
     }
     
@@ -214,15 +223,14 @@ public abstract class ABEBaseDropPanel extends JPanel {
     public void setSelected(boolean selected){
         if(selected == this.selected)
             return;
-        PropertyChangeListener[] pcs = getPropertyChangeListeners();
-        PropertyChangeEvent pce = new PropertyChangeEvent(this, PROP_SELECTED,
-                this.selected, selected);
+        firePropertyChange(PROP_SELECTED, this.selected, selected);
         this.selected = selected;
-        for(PropertyChangeListener pc: pcs){
-            pc.propertyChange(pce);
-        }
     }
-    
+
+    public void removeNotify() {
+        super.removeNotify();
+        firePropertyChange(PROP_COMPONENT_REMOVED, " ", this);
+    }
     
     public ABEBaseDropPanel getUIComponentFor(AXIComponent axiComponent){
         if(getAXIComponent() == axiComponent)
@@ -246,6 +254,8 @@ public abstract class ABEBaseDropPanel extends JPanel {
     
     public static final String PROP_ACTIVE="active";
     public static final String PROP_SELECTED="SELECTED";
+    public static final String PROP_COMPONENT_REMOVED="COMPONENT_REMOVED";
+    
     
     
     

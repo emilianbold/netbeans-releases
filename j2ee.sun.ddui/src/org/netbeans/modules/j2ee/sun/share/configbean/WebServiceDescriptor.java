@@ -159,6 +159,8 @@ public class WebServiceDescriptor extends Base {
         dDBean.addXpathListener(dDBean.getXpath(), this);
 		webServiceDescriptionNameDD = getNameDD("webservice-description-name"); // NOI18N
 
+        updateNamedBeanCache(SunWebApp.WEBSERVICE_DESCRIPTION);
+
 		loadFromPlanFile(getConfig());
 	}
 
@@ -595,6 +597,8 @@ public class WebServiceDescriptor extends Base {
 			// name changed...
 			getPCS().firePropertyChange(WEBSERVICE_DESCRIPTION_NAME, GenericOldValue, getWebServiceDescriptionName());
 			getPCS().firePropertyChange(DISPLAY_NAME, GenericOldValue, getDisplayName());
+
+            updateNamedBeanCache(SunWebApp.WEBSERVICE_DESCRIPTION);
 		} else if(xpath.endsWith("port-component-name")) {
             // port-component-name changed
             DDBean [] parents = eventBean.getChildBean("..");

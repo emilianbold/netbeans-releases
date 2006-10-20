@@ -87,6 +87,31 @@ public class GlobalSimpleTypeNode extends SchemaComponentNode<GlobalSimpleType>
 		}
 		return gt;
 	}
+        
+    protected String getSuperDefinitionName()
+    {
+        String rawString = null;
+        SimpleTypeDefinition definition = getReference().get().getDefinition();
+        GlobalSimpleType gt = null;
+        if(definition instanceof SimpleTypeRestriction) {
+            SimpleTypeRestriction str = (SimpleTypeRestriction)definition;
+            if(str.getBase()!=null) {
+                rawString = str.getBase().getRefString();
+            }
+        }
+        if(definition instanceof List) {
+            List list = (List)definition;
+            GlobalSimpleType gst = null;
+            if(list.getType()!=null) {
+                rawString = list.getType().getRefString();
+            }
+        }
+        int i = rawString!=null?rawString.indexOf(':'):-1;
+        if (i != -1 && i < rawString.length()) {
+            rawString = rawString.substring(i);
+        }
+        return rawString;
+    }        
 	
     @Override
     protected Sheet createSheet() {

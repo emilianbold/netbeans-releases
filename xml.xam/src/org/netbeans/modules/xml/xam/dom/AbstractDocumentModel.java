@@ -292,6 +292,10 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
     }
     
     protected void firePropertyChangedEvents(SyncUnit unit) {
+        firePropertyChangedEvents(unit, null);
+    }
+    
+    protected void firePropertyChangedEvents(SyncUnit unit, Element oldElement) {
         Set<String> propertyNames = new HashSet(unit.getRemovedAttributes().keySet());
         propertyNames.addAll(unit.getAddedAttributes().keySet());
         for (String name : propertyNames) {
@@ -303,6 +307,13 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
                     oldAttr == null ? null : oldAttr.getValue(),
                     newAttr == null ? null : newAttr.getValue()));
         }
+        if (unit.hasTextContentChanges()) {
+            super.firePropertyChangeEvent(
+                    new PropertyChangeEvent(
+                    unit.getTarget(), DocumentComponent.TEXT_CONTENT_PROPERTY,
+                    oldElement == null ? "" : getAccess().getXmlFragment(oldElement),
+                    getAccess().getXmlFragment(unit.getTarget().getPeer())));
+        }
     }
     
     public void processSyncUnit(SyncUnit syncOrder) {
@@ -313,11 +324,12 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
             return;
         }
         
+        Element oldElement = syncOrder.getTarget().getPeer();
         syncOrder.updateTargetReference();
         if (syncOrder.isComponentChanged()) {
             ComponentEvent.EventType changeType = ComponentEvent.EventType.VALUE_CHANGED;
             fireComponentChangedEvent(new ComponentEvent(targetComponent, changeType));
-            firePropertyChangedEvents(syncOrder);
+            firePropertyChangedEvents(syncOrder, oldElement);
         }
         
         for (DocumentComponent c : syncOrder.getToRemoveList()) {

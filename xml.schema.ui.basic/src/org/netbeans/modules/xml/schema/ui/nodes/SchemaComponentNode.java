@@ -66,6 +66,7 @@ import org.netbeans.modules.xml.schema.ui.basic.editors.StringEditor;
 import org.netbeans.modules.xml.schema.ui.nodes.schema.properties.BaseSchemaProperty;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
+import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -106,13 +107,9 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public abstract class SchemaComponentNode<T extends SchemaComponent>
         extends AbstractNode
-        implements Node.Cookie,
-        ComponentListener,
-        PropertyChangeListener,
-        Highlighted,
-        ReferenceableProvider,
-		GetSuperCookie
-                                        {
+        implements Node.Cookie, ComponentListener, PropertyChangeListener,
+        Highlighted, ReferenceableProvider, CountChildrenCookie, GetSuperCookie {
+
     /**
      *
      *
@@ -474,7 +471,11 @@ public abstract class SchemaComponentNode<T extends SchemaComponent>
     protected ReferenceableSchemaComponent getSuperDefinition() {
         return null;
     }
- 
+
+    public int getChildCount() {
+        return getReference().get().getChildren().size();
+    }
+
 	// implementation of get super cookie
 	public SchemaComponent getSuper()
 	{

@@ -36,6 +36,7 @@ import org.netbeans.modules.xml.wsdl.ui.netbeans.module.ComponentPasteType;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlighted;
@@ -56,7 +57,7 @@ import org.openide.util.datatransfer.PasteType;
  * @author skini
  */
 public abstract class FolderNode extends AbstractNode
-        implements Highlighted, Node.Cookie {
+        implements Highlighted, Node.Cookie, CountChildrenCookie {
     private Set<Component> referenceSet;
     /** Ordered list of highlights applied to this node. */
     private List<Highlight> highlights;
@@ -129,6 +130,10 @@ public abstract class FolderNode extends AbstractNode
      */
     public Class<? extends WSDLComponent> getChildType() {
         return childType;
+    }
+
+    public int getChildCount() {
+        return mElement.getChildren(getChildType()).size();
     }
 
     /**

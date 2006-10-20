@@ -69,8 +69,20 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
         super(wsdlDataObject.getWSDLEditorSupport());
         this.wsdlDataObject = wsdlDataObject;
         
-       
+        // XXX: Please explain why this is being done.
         setActivatedNodes(new Node[] {wsdlDataObject.getNodeDelegate()});
+
+        // Initialize the editor support properly, which only needs to be
+        // done when the editor is created (deserialization is working
+        // due to CloneableEditor.readResolve() initializing the editor).
+        // Note that this relies on the source view being the first in the
+        // array of MultiViewDescription instances in WSDLMultiViewFactory,
+        // since that results in the source view being created and opened
+        // by default, only to be hidden when the DataObject default action
+        // makes the tree view appear.
+        // This initialization fixes CR 6380287 by ensuring that the Node
+        // listener is registered with the DataObject Node delegate.
+        wsdlDataObject.getWSDLEditorSupport().initializeCloneableEditor(this);
         initialize();
     }
     

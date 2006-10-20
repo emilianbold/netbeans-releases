@@ -266,6 +266,10 @@ public class AppClientRoot extends BaseRoot {
                         sac.setMessageDestination(msgDests);
                 }
 
+                /* IZ 84549, etc - add remaining saved named beans here.  All entries that are represented
+                 * by real DConfigBeans should have been removed by now. */
+                restoreAllNamedBeans(sac, version);
+
                 return sac;
             }
         };
@@ -332,6 +336,9 @@ public class AppClientRoot extends BaseRoot {
             }
             
             messageDestinations = Utils.arrayToList(beanGraph.getMessageDestination());
+            
+            // IZ 84549, etc - cache the data for all named beans.
+            saveAllNamedBeans(beanGraph);
         } else {
             setDefaultProperties();
         }
@@ -349,6 +356,18 @@ public class AppClientRoot extends BaseRoot {
     protected void setDefaultProperties() {
     }
 
+    private static Collection appClientBeanSpecs = new ArrayList();
+    
+    static {
+        appClientBeanSpecs.addAll(getCommonNamedBeanSpecs());
+//        sunWebAppBeanSpecs.add(new NamedBean(SunWebApp.MESSAGE_DESTINATION, 
+//                org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination.MESSAGE_DESTINATION_NAME));
+    }
+    
+    protected Collection getNamedBeanSpecs() {
+        return appClientBeanSpecs;
+    }
+    
     /* ------------------------------------------------------------------------
      * XPath to Factory mapping support
      */

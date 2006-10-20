@@ -92,7 +92,7 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                         int start = schema.findPosition();
                         int lineNumber = getLineNumber(start, linePositions); //where the schema starts in the wsdl document
                         String schemaString = schema.getContentFragment(); // get inner text content of schema.
-                        int index = text.indexOf(schemaString);
+                        int index = text.indexOf(schemaString, start);
                         if (schemaString != null && schemaString.trim().length() > 0) { //else if its schema with no contents
                             assert index != -1 : "the text content under schema couldnt be found in the wsdl document";
                             String schemaTop = text.substring(start, index); //get the schema definition.

@@ -83,22 +83,11 @@ public class SecurityRoleMapping extends Base {
 		
 		securityRoleNameDD = getNameDD("role-name"); // NOI18N
 
-        // IZ 78686, 84549 - if inside an EAR, WAR, or EJB, remove this mapping from the loaded mappings.
-        if(parent instanceof BaseRoot) {
-            rootParent = (BaseRoot) parent;
-            updateRootMappings();
-        }
+        updateNamedBeanCache(SunWebApp.SECURITY_ROLE_MAPPING);
         
 		loadFromPlanFile(getConfig());
 	}
     
-    private void updateRootMappings() {
-		if(rootParent != null) {
-            org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping mapping = 
-                    rootParent.removeSavedRoleMapping(getRoleName());
-        }
-    }
-	
 	protected String getComponentName() {
 		return getRoleName();
 	}
@@ -123,8 +112,7 @@ public class SecurityRoleMapping extends Base {
 			getPCS().firePropertyChange(ROLE_NAME, "", getRoleName());
 			getPCS().firePropertyChange(DISPLAY_NAME, "", getDisplayName());
 
-            // IZ 78686, 84549 - if inside an EAR, WAR, or EJB, remove from loaded mappings on name change.
-            updateRootMappings();
+            updateNamedBeanCache(SunWebApp.SECURITY_ROLE_MAPPING);
 		}
 	}
 

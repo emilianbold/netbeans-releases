@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -31,6 +31,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,7 +62,6 @@ import org.openide.windows.TopComponent;
  */
 public class InstanceDesignerPanel extends ABEBaseDropPanel {
     private static final long serialVersionUID = 7526472295622776147L;
-    
     /**
      *
      *
@@ -73,7 +73,6 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
     private InstanceDesignerPanel(AXIModel axiModel, DataObject schemaDataObject, TopComponent tc, InstanceUIContext context) {
         super(context);
         this.axiModel = axiModel;
-        this.context = context;
         this.context.instanceDesignerPanel = this;
         this.context.paletteController = getPaletteController();
         context.setTopComponent(tc);
@@ -95,17 +94,17 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
         wrapperPanel.setOpaque(true);
         wrapperPanel.setBackground(new Color(252, 250, 245));
         
-        wrapperPanel.addMouseListener(new MouseAdapter() {
+        /*wrapperPanel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                InstanceDesignerPanel.this.dispatchEvent(e);
+                weakThis.get().dispatchEvent(e);
             }
             public void mousePressed(MouseEvent e) {
-                InstanceDesignerPanel.this.dispatchEvent(e);
+                weakThis.get().dispatchEvent(e);
             }
             public void mouseReleased(MouseEvent e) {
-                InstanceDesignerPanel.this.dispatchEvent(e);
+                weakThis.get().dispatchEvent(e);
             }
-        });
+        });*/
         
         namespacePanel = new NamespacePanel(context);
         add(getNamespacePanel(), BorderLayout.NORTH);
@@ -202,28 +201,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
             return paletteController;
         
         PaletteActions actions=
-                new PaletteActions() {
-            public Action[] getImportActions() {
-                return new Action[0];
-            }
-            
-            public Action[] getCustomPaletteActions() {
-                return new Action[0];
-            }
-            
-            public Action[] getCustomCategoryActions(Lookup lookup) {
-                return new Action[0];
-            }
-            
-            public Action[] getCustomItemActions(Lookup lookup) {
-                return new Action[0];
-            }
-            
-            public Action getPreferredAction(Lookup lookup) {
-                return null;
-            }
-            
-        };
+                new PaletteActionsImpl();
         
         try {
             paletteController=
@@ -231,7 +209,6 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
-        
         return paletteController;
     }
     
@@ -381,6 +358,10 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
         getNamespacePanel().dragOver(event);
     }
     
+    public void shutdown() {
+        context.shutdown();
+    }
+    
     
 ////////////////////////////////////////////////////////////////////////////
 // Instance variables
@@ -391,14 +372,36 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
     
     private SchemaModel schemaModel;
     private AXIModel axiModel;
-    private InstanceUIContext context;
     private PaletteController paletteController;
     GlobalElementsContainerPanel globalElementsChildrenPanel;
     List<Component> childrenList = new ArrayList<Component>();
     NamespacePanel namespacePanel;
     GlobalComplextypeContainerPanel globalComplextypeChildrenPanel;
-    //private boolean userInducedEventMode;
-    //public static final String PROP_USER_INDUCED_EVENT_MODE = "user_induced_event_mode";
+//private boolean userInducedEventMode;
+//public static final String PROP_USER_INDUCED_EVENT_MODE = "user_induced_event_mode";
+}
+
+class PaletteActionsImpl extends PaletteActions {
+    public Action[] getImportActions() {
+        return new Action[0];
+    }
+    
+    public Action[] getCustomPaletteActions() {
+        return new Action[0];
+    }
+    
+    public Action[] getCustomCategoryActions(Lookup lookup) {
+        return new Action[0];
+    }
+    
+    public Action[] getCustomItemActions(Lookup lookup) {
+        return new Action[0];
+    }
+    
+    public Action getPreferredAction(Lookup lookup) {
+        return null;
+    }
+    
 }
 
 

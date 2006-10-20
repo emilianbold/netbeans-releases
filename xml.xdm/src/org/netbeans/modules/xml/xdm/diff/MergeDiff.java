@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.xdm.diff;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -183,7 +184,15 @@ public class MergeDiff {
             Difference diff = e.getValue();
             if (diff instanceof Change) {
                 Node toReorder = getReorderNodeInfo((Change)diff).getNode();
-                worksheet.remove(toReorder);
+                if (! worksheet.remove(toReorder)) {
+                    for (Iterator<Node> i = worksheet.iterator(); i.hasNext();) {
+                        Node n = i.next();
+                        if (n.getId() == toReorder.getId()) {
+                            i.remove();
+                            break;
+                        }
+                    }
+                }
             }
         }
         // calculate the final ordering on the worksheet
@@ -205,7 +214,7 @@ public class MergeDiff {
             }
         }
         //calculate array for the reorder permutation
-        assert target.getChildNodes().getLength() == worksheet.size();
+        assert target.getChildNodes().getLength() == worksheet.size() : "Failed "+toAddOrReorder.values();
         int[] permutation = new int[worksheet.size()];
         NodeList cList = target.getChildNodes();
         for (int i=0; i<cList.getLength(); i++) {

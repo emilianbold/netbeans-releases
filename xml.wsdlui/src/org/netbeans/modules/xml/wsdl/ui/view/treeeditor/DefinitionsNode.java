@@ -388,13 +388,14 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode {
             if (name != null && name.trim().length() == 0) {
                 name = null;
             }
-            if (!XMLChar.isValidNmtoken(name)) {
+            
+            if (name != null && !XMLChar.isValidNCName(name)) {
                 ErrorManager.getDefault().notify(new Exception(NbBundle.getMessage(DefinitionsNode.class, "ERR_MSG_INVALID_NMTOKEN")));
                 return;
             }
             getWSDLComponent().getModel().startTransaction();
             ((Definitions) getWSDLComponent()).setName(name);
-                getWSDLComponent().getModel().endTransaction();
+            getWSDLComponent().getModel().endTransaction();
         }
         
         public String getName() {

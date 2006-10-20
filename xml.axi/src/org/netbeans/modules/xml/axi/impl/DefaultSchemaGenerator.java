@@ -111,14 +111,14 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
     }
     
     public void visit(Element element) {
-        if(element instanceof ElementRef)
+        if(getMode() != SchemaGenerator.Mode.TRANSFORM && element instanceof ElementRef)
             prepareElementRef((ElementRef)element);
         else
             prepareLocalElement(element);
     }
     
     public void visit(Attribute attribute) {
-        if(attribute instanceof AttributeRef)
+        if(getMode() != SchemaGenerator.Mode.TRANSFORM && attribute instanceof AttributeRef)
             prepareAttributeRef((AttributeRef)attribute);
         else
             prepareLocalAttribute(attribute);

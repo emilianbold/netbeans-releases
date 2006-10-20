@@ -59,7 +59,7 @@ public class JBFindJSPServlet implements FindJSPServlet {
     
     public String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
 
-        String path = "";
+        String path = null;
         
         String extension = jspResourcePath.substring(jspResourcePath.lastIndexOf("."));
         if (".jsp".equals(extension)) { // NOI18N

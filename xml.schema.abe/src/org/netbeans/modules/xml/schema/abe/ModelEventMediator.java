@@ -26,6 +26,14 @@ public abstract class ModelEventMediator implements PropertyChangeListener{
     protected ModelEventMediator(ABEBaseDropPanel uiPeer, AXIComponent modelPeer) {
         this.uiPeer = uiPeer;
         this.modelPeer = modelPeer;
+        
+        uiPeer.addPropertyChangeListener(ABEBaseDropPanel.PROP_COMPONENT_REMOVED,
+                new PropertyChangeListener(){
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals(ABEBaseDropPanel.PROP_COMPONENT_REMOVED))
+                    cleanUp();
+            }
+        });
     }
     
     public abstract void _propertyChange(PropertyChangeEvent pce);
@@ -36,11 +44,7 @@ public abstract class ModelEventMediator implements PropertyChangeListener{
             _propertyChange(evt);
         }else{
             //Else remove myself
-            if(modelPeer != null)
-                modelPeer.removePropertyChangeListener(this);
-            else{
-                uiPeer = null;
-            }
+            cleanUp();
         }
     }
     
@@ -51,6 +55,15 @@ public abstract class ModelEventMediator implements PropertyChangeListener{
             modelPeer = null;
             return false;
         }
+    }
+    
+    protected void cleanUp(){
+        if(modelPeer != null){
+            if(modelPeer.getModel() != null)
+                modelPeer.removePropertyChangeListener(this);
+        }
+        modelPeer = null;
+        uiPeer = null;
     }
     
 }

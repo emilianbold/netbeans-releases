@@ -77,6 +77,9 @@ public abstract class BaseEjb extends Base {
 		super.init(dDBean,parent);
 
 		ejbNameDD = getNameDD("ejb-name"); // NOI18N
+        
+        updateNamedBeanCache(EnterpriseBeans.EJB);
+        
 		loadFromPlanFile(getConfig());
 	}
 	
@@ -96,6 +99,8 @@ public abstract class BaseEjb extends Base {
 			// name changed...
 			getPCS().firePropertyChange(EJB_NAME, "", getEjbName());
 			getPCS().firePropertyChange(DISPLAY_NAME, "", getDisplayName());
+
+            updateNamedBeanCache(EnterpriseBeans.EJB);
 		}
 	}
 	
@@ -138,6 +143,11 @@ public abstract class BaseEjb extends Base {
 			if(null != beanCache){
 				ejb.setBeanCache((BeanCache)beanCache.cloneVersion(version));
 			}
+            
+            /* IZ 84549, etc - add remaining saved named beans here.  All entries that are represented
+             * by real DConfigBeans should have been removed by now. */
+            restoreAllNamedBeans(ejb, version);
+
 			return ejb;
 		}
 
@@ -215,11 +225,14 @@ public abstract class BaseEjb extends Base {
 
 		Ejb ejb = (Ejb) config.getBeans(uriText, constructFileName(), getParser(), 
 			new EjbFinder(getEjbName()));
-
+            
         clearProperties();
         
 		if(null != ejb) {
 			loadEjbProperties(ejb);
+            
+            // IZ 84549, etc - cache the data for all named beans.
+            saveAllNamedBeans(ejb);
 		} else {
             setDefaultProperties();
         }
@@ -300,6 +313,16 @@ public abstract class BaseEjb extends Base {
         
         return needsJndi;
     }
+    
+    private static Collection ejbBeanSpecs = new ArrayList();
+    
+    static {
+        ejbBeanSpecs.addAll(getCommonNamedBeanSpecs());
+    }
+    
+    protected Collection getNamedBeanSpecs() {
+        return ejbBeanSpecs;
+    }    
 
 	/* ------------------------------------------------------------------------
 	 * XPath to Factory mapping support

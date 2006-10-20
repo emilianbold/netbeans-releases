@@ -47,8 +47,11 @@ public class ExtensibilityElementPropertyAdapter {
      * @return value
      */
     public String getValue() {
-
-        return element.getAttribute(attributeName);
+        String value = element.getAttribute(attributeName);
+        if (value == null) {
+            value = "";
+        }
+        return value;
     }
     
     /*
@@ -57,6 +60,9 @@ public class ExtensibilityElementPropertyAdapter {
      */
     public void setValue(String value) {
         boolean inTransaction = Utility.startTransaction(element.getModel());
+        if (value != null && value.length() == 0) {
+            value = null;
+        }
         element.setAttribute(attributeName, value);
         try {
             Utility.endTransaction(element.getModel(), inTransaction);

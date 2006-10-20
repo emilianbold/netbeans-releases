@@ -139,15 +139,25 @@ public class WebServices extends BaseRoot {
                 throw new UnsupportedOperationException();
             }
             
-            public CommonDDBean mergeIntoRootDD(CommonDDBean ddRoot) {
-//                if(ddRoot instanceof SunWebApp) {
+            public CommonDDBean mergeIntoRootDD(CommonDDBean ddParent) {
+                // If we were had data to merge, it might look something like this...
+//                if(ddParent instanceof SunWebApp) {
 //                    CommonDDBean snippet = getDDSnippet();
-//                    ddRoot.merge(snippet, CommonDDBean.MERGE_UNION);
+//                    ddParent.merge(snippet, CommonDDBean.MERGE_UNION);
 //                }
-                // This bean has no data, thus nothing to save.  However, it does
-                // need to be returned here, as this is the SunWebApp/SunEjbJar
+                // Only data to save is any web service descriptions remaining
+                // in the datacache.  Add those.  We don't need a snippet for this.
+                if(ddParent instanceof RootInterface) {
+                    /* IZ 84549, etc - add remaining saved named beans here.  All entries that are represented
+                     * by real DConfigBeans should have been removed by now. */
+                    RootInterface ddRoot = (RootInterface) ddParent;
+                    String version = ddRoot.getVersion().toString();
+                    restoreAllNamedBeans(ddRoot, version);
+                }
+                
+                // It still needs to be returned here, as this is the SunWebApp/SunEjbJar
                 // root that will used by the children to save their data.
-                return ddRoot;
+                return ddParent;
             }
         };
         
@@ -224,6 +234,9 @@ public class WebServices extends BaseRoot {
                     }
                 }
             }
+            
+            // IZ 84549, etc - cache the data for all named beans.
+            saveAllNamedBeans(beanGraph);
         } else {
             setDefaultProperties();
         }
@@ -236,6 +249,17 @@ public class WebServices extends BaseRoot {
     }
     
     protected void setDefaultProperties() {
+    }
+    
+    private static Collection webServiceBeanSpecs = new ArrayList();
+    
+    static {
+        webServiceBeanSpecs.add(new NamedBean(SunWebApp.WEBSERVICE_DESCRIPTION,
+                org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription.WEBSERVICE_DESCRIPTION_NAME));
+    }
+    
+    protected Collection getNamedBeanSpecs() {
+        return webServiceBeanSpecs;
     }
     
     protected String constructFileName() {

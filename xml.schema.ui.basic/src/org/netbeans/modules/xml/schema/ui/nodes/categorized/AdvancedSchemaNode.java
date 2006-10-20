@@ -19,19 +19,12 @@
 
 package org.netbeans.modules.xml.schema.ui.nodes.categorized;
 
-import org.netbeans.modules.xml.schema.model.GlobalGroup;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.openide.nodes.Children;
-import org.openide.util.datatransfer.NewType;
 import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaComponentReference;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalAttribute;
-import org.netbeans.modules.xml.schema.model.GlobalAttributeGroup;
-import org.netbeans.modules.xml.schema.model.GlobalComplexType;
-import org.netbeans.modules.xml.schema.model.Import;
-import org.netbeans.modules.xml.schema.model.Include;
-import org.netbeans.modules.xml.schema.ui.nodes.*;
+import org.netbeans.modules.xml.schema.ui.nodes.NewTypesFactory;
+import org.netbeans.modules.xml.schema.ui.nodes.SchemaUIContext;
 import org.netbeans.modules.xml.schema.ui.nodes.schema.SchemaNode;
 
 /**
@@ -49,7 +42,16 @@ public class AdvancedSchemaNode extends SchemaNode {
     protected NewTypesFactory getNewTypesFactory() {
         return new AdvancedNewTypesFactory();
     }
-    
+
+    public int getChildCount() {
+        int count = 0;
+        for (Class<? extends SchemaComponent> cls :
+            CategorizedChildren.UNCATEGORIZED_TYPES) {
+            count += getReference().get().getChildren(cls).size();
+        }
+        return count;
+    }
+
     protected boolean allowReordering() {
         // Disallow reordering of our category children, as they cannot
         // be in any particular order anyway.

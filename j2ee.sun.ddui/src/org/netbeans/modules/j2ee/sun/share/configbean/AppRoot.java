@@ -36,6 +36,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 
@@ -196,17 +197,9 @@ public class AppRoot extends BaseRoot {
 					sa.setRealm(realm);
 				}
                 
-                /* IZ 78686 - add remaining saved role mappings here.  All entries that are represented
+                /* IZ 78686, etc - add remaining saved named beans here.  All entries that are represented
                  * by real DConfigBeans should have been removed by now. */
-                if(savedRoleMappings != null && savedRoleMappings.size() > 0) {
-                    for (Iterator iter = savedRoleMappings.entrySet().iterator(); iter.hasNext();) {
-                        Map.Entry entry = (Map.Entry) iter.next();
-                        org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping mapping = 
-                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) entry.getValue();
-                        sa.addSecurityRoleMapping(
-                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) mapping.cloneVersion(version));
-                    }
-                }
+                restoreAllNamedBeans(sa, version);
 				
 				return sa;
 			}
@@ -262,8 +255,8 @@ public class AppRoot extends BaseRoot {
 			passByReference = beanGraph.getPassByReference();
 			realm = beanGraph.getRealm();
             
-            // For IZ 78686 - save any security-role-mappings in graph.
-            saveMappingsToCache(beanGraph.getSecurityRoleMapping());
+            // IZ 78686, etc - cache the data for all named beans.
+            saveAllNamedBeans(beanGraph);
 		} else {
 			setDefaultProperties();
 		}
@@ -271,6 +264,16 @@ public class AppRoot extends BaseRoot {
 		return (beanGraph != null);
 	}
 
+    private static Collection appRootBeanSpecs = new ArrayList();
+    
+    static {
+        appRootBeanSpecs.add(new NamedBean(SunWebApp.SECURITY_ROLE_MAPPING, 
+                org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping.ROLE_NAME));
+    }
+    
+    protected Collection getNamedBeanSpecs() {
+        return appRootBeanSpecs;
+    }
 
 	public String getHelpId() {
 		return "AS_CFG_Application"; //NOI18N

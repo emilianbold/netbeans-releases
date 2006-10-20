@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -30,6 +30,7 @@ package org.netbeans.modules.xml.schema.abe;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -446,8 +447,9 @@ public class UIUtilities {
         infoLabel.setOpaque(false);
         if(messageForComp != null){
             rect.y -= 20;
-            rect.width = infoLabel.getPreferredSize().width;
-            rect.height = infoLabel.getPreferredSize().height;
+            Dimension dim = infoLabel.getPreferredSize();
+            rect.width = dim.width;
+            rect.height = dim.height;
         }
         infoLabel.setBounds(rect);
         glass.setVisible(true);

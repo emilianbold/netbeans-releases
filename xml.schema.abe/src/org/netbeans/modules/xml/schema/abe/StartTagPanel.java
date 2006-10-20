@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -78,23 +78,23 @@ public class StartTagPanel extends TagPanel {
     public StartTagPanel(final ElementPanel elementPanel, InstanceUIContext context) {
         super(elementPanel, context);
         //add listener for name changes
-        final InstanceUIContext tmpContext = context;
         elementPanel.getAXIContainer().addPropertyChangeListener(new ModelEventMediator(this, elementPanel.getAXIContainer()) {
             public void _propertyChange(PropertyChangeEvent evt) {
                 elementPanel.getUIContext().setModelInducedEventMode(true);
                 try{
                     if(evt.getPropertyName().equals(Element.PROP_NAME)){
                         setTagName(getElementPanel().getAXIContainer().getName());
+                        forceSizeRecalculate();
                         revalidate();
                         repaint();
                     }else if(evt.getPropertyName().startsWith(Attribute.PROP_ATTRIBUTE)){
                         updateAttributes();
                         if(evt.getNewValue() != null){
                             //its a new attribute add event
-                            if((tmpContext.getUserActedComponent() == StartTagPanel.this)){
+                            if((StartTagPanel.super.context.getUserActedComponent() == StartTagPanel.this)){
                                 showAttributes();
                                 showAttributeEditFor((Attribute) evt.getNewValue());
-                                tmpContext.resetUserActedComponent();
+                                StartTagPanel.super.context.resetUserActedComponent();
                             }
                         }
                     }else if(evt.getPropertyName().equals(Element.PROP_TYPE)){
@@ -255,6 +255,8 @@ public class StartTagPanel extends TagPanel {
                         field.addActionListener(new ActionListener(){
                             public void actionPerformed(ActionEvent e) {
                                 String newName = field.getText();
+                                if(getElementPanel().getAXIContainer().getName().equals(newName))
+                                    return;
                                 //do validation
                                 if(org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(newName)){
                                     field.setCursor(new Cursor(Cursor.WAIT_CURSOR));

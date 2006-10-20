@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.PmDescriptors;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SchemaGeneratorProperties;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
@@ -444,17 +445,13 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
                 sej.setEnterpriseBeans(eb);
 
-                /* IZ 84549 - add remaining saved role mappings here.  All entries that are represented
+                /* IZ 84549, etc - add remaining saved named beans here.  All entries that are represented
                  * by real DConfigBeans should have been removed by now. */
-                if(savedRoleMappings != null && savedRoleMappings.size() > 0) {
-                    for (Iterator iter = savedRoleMappings.entrySet().iterator(); iter.hasNext();) {
-                        Map.Entry entry = (Map.Entry) iter.next();
-                        org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping mapping = 
-                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) entry.getValue();
-                        sej.addSecurityRoleMapping(
-                                (org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping) mapping.cloneVersion(version));
-                    }
-                }
+                restoreAllNamedBeans(sej, version);
+                
+                // restore ejb's separately since they are embedded in enterprise-beans
+                restoreNamedBeans(getNamedBeanMap(EnterpriseBeans.EJB), 
+                        EnterpriseBeans.EJB, eb, version);
                 
                 return sej;
             }
@@ -642,8 +639,12 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                 messageDestinations = Utils.arrayToList(eb.getMessageDestination());
             }
             
-            // For IZ 84549 - save any security-role-mappings in graph.
-            saveMappingsToCache(beanGraph.getSecurityRoleMapping());
+            // IZ 84549 - cache the data for all named beans.
+            saveAllNamedBeans(beanGraph);
+            
+            // handle ejb's separately since they are embedded in enterprise-beans
+            saveNamedBeans(EnterpriseBeans.EJB, org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb.EJB_NAME, eb.getEjb());
+            
         } else {
             setDefaultProperties();
         }
@@ -652,6 +653,22 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
         return ((beanGraph != null) || cmpMappingLoaded);
     }
+    
+    private static Collection ejbJarBeanSpecs = new ArrayList();
+    
+    static {
+//        ejbJarBeanSpecs.add(new NamedBean(SunWebApp.MESSAGE_DESTINATION, 
+//                org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination.MESSAGE_DESTINATION_NAME));
+//        ejbJarBeanSpecs.add(new NamedBean(EnterpriseBeans.EJB, 
+//                org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb.EJB_NAME));
+        ejbJarBeanSpecs.add(new NamedBean(SunWebApp.SECURITY_ROLE_MAPPING, 
+                org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping.ROLE_NAME));
+    }
+    
+    protected Collection getNamedBeanSpecs() {
+        return ejbJarBeanSpecs;
+    }
+	
 
     public MappingContext getMappingContext () {
         return getMappingContext(null, getEJBInfoHelper());

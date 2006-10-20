@@ -120,6 +120,59 @@ public class GlobalComplexTypeNode extends SchemaComponentNode<GlobalComplexType
 		return gt;
 	}
 
+        protected String getSuperDefinitionName()
+        {
+            String rawString = null;
+		ComplexTypeDefinition definition = getReference().get().getDefinition();
+		if(definition instanceof ComplexContent)
+		{
+			ComplexContentDefinition contentDef =
+					((ComplexContent)definition).getLocalDefinition();
+			if (contentDef instanceof ComplexContentRestriction)
+			{
+				ComplexContentRestriction ccr = (ComplexContentRestriction)contentDef;
+				if(ccr.getBase()!= null)
+				{
+					rawString=ccr.getBase().getRefString();
+				}
+			}
+			if (contentDef instanceof ComplexExtension)
+			{
+				ComplexExtension ce = (ComplexExtension)contentDef;
+				if(ce.getBase()!= null)
+				{
+					rawString=ce.getBase().getRefString();
+				}
+			}
+		}
+		else if(definition instanceof SimpleContent)
+		{
+			SimpleContentDefinition contentDef =
+					((SimpleContent)definition).getLocalDefinition();
+			if (contentDef instanceof SimpleContentRestriction)
+			{
+				SimpleContentRestriction scr = (SimpleContentRestriction)contentDef;
+				if(scr.getBase()!= null)
+				{
+					rawString=scr.getBase().getRefString();
+				}
+			}
+			if (contentDef instanceof SimpleExtension)
+			{
+				SimpleExtension se = (SimpleExtension)contentDef;
+				if(se.getBase()!= null)
+				{
+					rawString=se.getBase().getRefString();
+				}
+			}
+		}
+            int i = rawString!=null?rawString.indexOf(':'):-1;
+            if (i != -1 && i < rawString.length()) {
+                rawString = rawString.substring(i);
+            }
+            return rawString;
+        }
+        
     @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();

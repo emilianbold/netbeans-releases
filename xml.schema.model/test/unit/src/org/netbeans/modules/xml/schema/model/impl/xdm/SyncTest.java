@@ -7,6 +7,8 @@
 
 package org.netbeans.modules.xml.schema.model.impl.xdm;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -52,6 +54,48 @@ public class SyncTest extends TestCase {
         TestCatalogModel.getDefault().clearDocumentPool();
     }
     
+    static class TestPropertyListener implements PropertyChangeListener {
+        ArrayList<PropertyChangeEvent> events  = new ArrayList<PropertyChangeEvent>();
+        public void propertyChange(PropertyChangeEvent evt) {
+            events.add(evt);
+        }
+        
+        public void assertNoEvents(String propertyName) {
+            for (PropertyChangeEvent e : events) {
+                if (propertyName.equals(e.getPropertyName())) {
+                    assertTrue("Expect no property change events "+propertyName, false);
+                }
+            }
+            return; //matched
+        }
+        
+        public void assertEvent(String propertyName) {
+            for (PropertyChangeEvent e : events) {
+                if (propertyName.equals(e.getPropertyName())) {
+                    return; //matched
+                }
+            }
+            assertTrue("Expect property change event "+propertyName, false);
+        }
+        
+        public void assertEvent(String propertyName, Object old, Object now) {
+            for (PropertyChangeEvent e : events) {
+                if (propertyName.equals(e.getPropertyName())) {
+                    if (old != null && ! old.equals(e.getOldValue()) ||
+                        old == null && e.getOldValue() != null) {
+                        continue;
+                    }
+                    if (now != null && ! now.equals(e.getNewValue()) ||
+                        now == null && e.getNewValue() != null) {
+                        continue;
+                    }
+                    return; //matched
+                }
+            }
+            assertTrue("Expect property change event on "+propertyName+" with "+old+" and "+now, false);
+        }
+    }
+    
     class TestComponentListener implements ComponentListener {
         ArrayList<ComponentEvent> accu = new ArrayList<ComponentEvent>();
         public void valueChanged(ComponentEvent evt) {
@@ -76,6 +120,17 @@ public class SyncTest extends TestCase {
             }
             assertTrue("Expect component change event " + type +" on source " + source +
                     ". Instead received: " + accu, false);
+        }
+
+        private void assertNoEvents(ComponentEvent.EventType type, DocumentComponent source) {
+            for (ComponentEvent e : accu) {
+                if (e.getEventType().equals(type) &&
+                    e.getSource() == source) {
+                        assertTrue("Expect component no change events " + type +" on source " + source +
+                            ". Instead received: " + accu, false);
+                }
+            }
+            return;
         }
     }    
     
@@ -158,7 +213,12 @@ public class SyncTest extends TestCase {
     }
   
     public void testDocumentationText() throws Exception {
-        SchemaModel model = Util.loadSchemaModel("resources/loanApplication_annotationChanged.xsd");//"resources/loanApplication.xsd");
+        SchemaModel model = Util.loadSchemaModel("resources/loanApplication.xsd");
+        TestPropertyListener plistener = new TestPropertyListener();
+        TestComponentListener clistener = new TestComponentListener();
+        model.addPropertyChangeListener(plistener);
+        model.addComponentListener(clistener);
+        
         Annotation ann = model.getSchema().getElements().iterator().next().getAnnotation();
         Iterator<Documentation> it = ann.getDocumentationElements().iterator();
         Documentation textDoc = it.next();
@@ -169,6 +229,8 @@ public class SyncTest extends TestCase {
         Util.setDocumentContentTo(model, "resources/loanApplication_annotationChanged.xsd");
         model.sync();
         
+        clistener.assertEvent(ComponentEvent.EventType.VALUE_CHANGED, textDoc);
+        plistener.assertEvent(Documentation.CONTENT_PROPERTY);
         assertEquals("text documentation sync", "A CHANGED loan application", textDoc.getContent());
         NodeList nl = htmlDoc.getDocumentationElement().getChildNodes();
         Element n = (Element) nl.item(1);
@@ -479,9 +541,17 @@ public class SyncTest extends TestCase {
     
     public void testSyncTwoSequences() throws Exception {
         SchemaModel model = Util.loadSchemaModel("resources/Empty.xsd");
+        TestPropertyListener plistener = new TestPropertyListener();
+        model.addPropertyChangeListener(plistener);
+        TestComponentListener clistener = new TestComponentListener();
+        model.addComponentListener(clistener);
         
         Util.setDocumentContentTo(model, "resources/TwoSequences.xsd");
         model.sync();
+        
+        plistener.assertNoEvents(DocumentComponent.TEXT_CONTENT_PROPERTY);
+        clistener.assertNoEvents(ComponentEvent.EventType.VALUE_CHANGED, model.getSchema());
+        
         String xpath = "/xsd:schema/xsd:complexType";
         GlobalComplexType gct = (GlobalComplexType) Util.findComponent(model.getSchema(), xpath);
         assertEquals("Get 2 seqences from generic getChildren", 2, gct.getChildren(Sequence.class).size());

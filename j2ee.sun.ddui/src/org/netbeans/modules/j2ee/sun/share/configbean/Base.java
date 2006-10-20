@@ -18,9 +18,9 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -46,10 +46,9 @@ import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
 import org.netbeans.modules.j2ee.sun.share.Constants;
-
-import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources;
 import org.openide.ErrorManager;
 
 /** This is the base class for all DConfigBean objects in the SunONE App Server
@@ -217,6 +216,132 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
         return J2EEVersion.J2EE_1_4.compareSpecification(getJ2EEModuleVersion()) >= 0;
     }
 
+
+    /** Named child bean data cache to prevent loss of data when named beans haven't
+     *  been loaded yet and a save request comes in.
+     */
+    private Map namedBeanCache = new HashMap(11);
+
+    protected void saveNamedBeans(String type, String nameProperty, CommonDDBean [] data) {
+        if(data != null && data.length > 0) {
+            Map dataMap = new HashMap(data.length*3);
+            for(int i = 0; i < data.length; i++) {
+                String beanName = (String) data[i].getValue(nameProperty);
+                if(Utils.notEmpty(beanName)) {
+                    dataMap.put(beanName, data[i]);
+                }
+            }
+            
+            namedBeanCache.put(type, dataMap);
+        }    
+    }
+    
+    protected CommonDDBean removeNamedBean(String type, String beanName) {
+        CommonDDBean result = null;
+        Map dataMap = getNamedBeanMap(type);
+        if(dataMap != null) {
+            result = (CommonDDBean) dataMap.remove(beanName);
+        }
+        
+        return result;
+    }
+    
+    protected Map getNamedBeanMap(String type) {
+        return (Map) namedBeanCache.get(type);
+    }
+    
+    protected void saveAllNamedBeans(CommonDDBean parentBean) {
+        Iterator iter = getNamedBeanSpecs().iterator();
+        while(iter.hasNext()) {
+            NamedBean beanSpec = (NamedBean) iter.next();
+            try {
+                Object data = parentBean.getValues(beanSpec.getType());
+                if(data instanceof CommonDDBean []) {
+                    saveNamedBeans(beanSpec.getType(), beanSpec.getPropertyName(), (CommonDDBean []) data);
+                } else if(data != null) {
+//                    System.out.println("saveAllNamedBeans: unexpected datatype - " + data.getClass().getSimpleName());
+                }
+            } catch(Exception ex) {
+                // if property does not exist, we'll get a runtime exception from schema2beans.
+//                System.out.println("saveAllNamedBeans: " + ex.getLocalizedMessage());
+            }
+        }
+    }
+    
+    protected void restoreAllNamedBeans(CommonDDBean parentBean, String version) {
+        Iterator iter = getNamedBeanSpecs().iterator();
+        while(iter.hasNext()) {
+            NamedBean beanSpec = (NamedBean) iter.next();
+            Map beanMap = getNamedBeanMap(beanSpec.getType());
+            restoreNamedBeans(beanMap, beanSpec.getType(), parentBean, version);
+        }
+    }
+    
+    protected void restoreNamedBeans(Map beanMap, String parentPropertyName, CommonDDBean parentBean, String version) {
+        if(beanMap != null && beanMap.size() > 0) {
+            for (Iterator beanIter = beanMap.entrySet().iterator(); beanIter.hasNext();) {
+                try {
+                    Map.Entry entry = (Map.Entry) beanIter.next();
+                    CommonDDBean bean = (CommonDDBean) entry.getValue();
+                    parentBean.addValue(parentPropertyName, bean.cloneVersion(version));
+                } catch(Exception ex) {
+                    // if property does not exist, ignore the runtime exception from schema2beans.
+//                    System.out.println("restoreNamedBeans: " + ex.getLocalizedMessage());
+                }
+            }
+        }
+    }
+    
+    protected void updateNamedBeanCache(String type) {
+        if(parent != null) {
+            String name = getComponentName();
+            if(Utils.notEmpty(name)) {
+                parent.removeNamedBean(type, name);
+            }
+        }
+    }
+    
+    protected Collection getNamedBeanSpecs() {
+        return Collections.EMPTY_LIST;
+    }
+    
+    private static Collection commonAppBeanSpecs = new ArrayList();
+    
+    static {
+        commonAppBeanSpecs.add(new NamedBean(SunWebApp.EJB_REF, 
+                org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef.EJB_REF_NAME));
+        commonAppBeanSpecs.add(new NamedBean(SunWebApp.MESSAGE_DESTINATION_REF, 
+                org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef.MESSAGE_DESTINATION_REF_NAME));
+        commonAppBeanSpecs.add(new NamedBean(SunWebApp.RESOURCE_ENV_REF, 
+                org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef.RESOURCE_ENV_REF_NAME));
+        commonAppBeanSpecs.add(new NamedBean(SunWebApp.RESOURCE_REF, 
+                org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef.RES_REF_NAME));
+        commonAppBeanSpecs.add(new NamedBean(SunWebApp.SERVICE_REF, 
+                org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef.SERVICE_REF_NAME));
+    }
+    
+    protected static Collection getCommonNamedBeanSpecs() {
+        return commonAppBeanSpecs;
+    }
+    
+    protected static class NamedBean {
+        private final String type;
+        private final String propertyName;
+        
+        public NamedBean(final String t, final String pn) {
+            type = t;
+            propertyName = pn;
+        }
+        
+        public String getType() {
+            return type;
+        }
+        
+        public String getPropertyName() {
+            return propertyName;
+        }
+    }
+    
 
     /** -----------------------------------------------------------------------
      *  Validation implementation
@@ -402,7 +527,7 @@ public abstract class Base implements Constants, DConfigBean, XpathListener, DCo
                     if(groupHead != null) {
                         dcbResult = groupHead;
                     }
-
+                    
                     // !PW FIXME bug workaround IZ 41214
                     beanAdded(dcbResult.getDDBean().getXpath());
                 }

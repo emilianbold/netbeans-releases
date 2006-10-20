@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -42,7 +42,7 @@ import javax.swing.JLabel;
  * @author girix
  */
 public class HyperlinkLabel extends JLabel{
-    
+    private static final long serialVersionUID = -483941387931729295L;
     /** Creates a new instance of HyperlinkLabel */
     public HyperlinkLabel() {
         super();

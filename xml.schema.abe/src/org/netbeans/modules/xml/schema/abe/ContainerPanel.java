@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -83,7 +83,8 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         setLayout(new BorderLayout());
         addHeaderPanel();
         initChildrenPanel();
-        addAllChildren();
+        if(openByDefault)
+            addAllChildren();
         setupAXIComponentListener();
     }
     
@@ -296,16 +297,16 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
             }
             public void componentMoved(ComponentEvent e) {
             }
-            boolean firstTime = true;
+            int callCount = 1;
             public void componentResized(ComponentEvent e) {
-                if(firstTime && (ContainerPanel.this instanceof GlobalComplextypeContainerPanel)){
+                if( (callCount <= 2) && ( (ContainerPanel.this instanceof GlobalComplextypeContainerPanel)
+                        ||(ContainerPanel.this instanceof GlobalElementsContainerPanel) ) ){
                     //skip this event for the first time.
                     //If not done then there is a 10 sec delay in the UI after expanding
                     //many nodes in a huge schema.
-                    firstTime = false;
+                    callCount++;
                     return;
                 }
-                firstTime = false;
                 adjustChildrenPanelSize();
             }
             public void componentShown(ComponentEvent e) {
@@ -332,11 +333,12 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         for(Component child: childrenPanel.getComponents()){
             if(!child.isVisible())
                 continue;
-            int curWidth = child.getPreferredSize().width +
+            Dimension dim = child.getPreferredSize();
+            int curWidth = dim.width +
                     getChildrenIndent();//+50;
             if(curWidth > width)
                 width = curWidth;
-            height += child.getPreferredSize().height + getInterComponentVerticalSpacing();
+            height += dim.height + getInterComponentVerticalSpacing();
         }
         //add some fudge
         width += 20;
@@ -376,8 +378,9 @@ public abstract class ContainerPanel extends AnnotatedBorderPanel implements AXI
         for(Component child: this.getComponents()){
             if(!child.isVisible())
                 continue;
-            height += child.getPreferredSize().getHeight();
-            int thisW = child.getPreferredSize().width ;
+            Dimension dim = child.getPreferredSize();
+            height += dim.getHeight();
+            int thisW = dim.width ;
             width = width < thisW ? thisW : width;
         }
         return new Dimension(width, height);

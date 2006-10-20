@@ -423,7 +423,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
                 ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
                 metadataClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                    cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                    cpProvider.getJ2eePlatformClassPath(),
                 });
             }
             return metadataClassPath;

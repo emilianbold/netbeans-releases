@@ -61,9 +61,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
      *     <dt>5</dt> <dd>test sources and built test sources run classpath</dd>
      *     <dt>6</dt> <dd>XXX: todo</dd>
      *     <dt>7</dt> <dd>boot classpath</dd>
+     *     <dt>8</dt> <dd>J2EE platform classpath</dd>
      * </dl>
      */
-    private final ClassPath[] cache = new ClassPath[8];
+    private final ClassPath[] cache = new ClassPath[9];
 
     private final Map dirCache = new HashMap ();
 
@@ -245,6 +246,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cp == null) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
             cache[7] = cp;
+        }
+        return cp;
+    }
+    
+    public ClassPath getJ2eePlatformClassPath() {
+        ClassPath cp = cache[8];
+        if (cp == null) {
+                cp = ClassPathFactory.createClassPath(
+                new ProjectClassPathImplementation(helper,  "${" + //NOI18N
+                        EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH  +  
+                        "}", evaluator, false));  //NOI18N
+            cache[8] = cp;
         }
         return cp;
     }

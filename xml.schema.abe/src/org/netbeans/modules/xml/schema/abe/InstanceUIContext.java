@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.xml.schema.abe;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Iterator;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.xml.axi.AXIModel;
@@ -163,5 +165,33 @@ public class InstanceUIContext {
     
     public FocusTraversalManager getFocusTraversalManager() {
         return this.focusTraversalManager;
+    }
+
+    PropertyChangeSupport pcs;
+    public void addPropertyChangeListener(PropertyChangeListener pcl){
+        if(pcs == null)
+            pcs = new PropertyChangeSupport(this);
+        pcs.addPropertyChangeListener(pcl);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener pcl){
+        if(pcs == null)
+            return;
+        pcs.removePropertyChangeListener(pcl);
+    }
+    
+    public void shutdown() {
+        pcs.fireIndexedPropertyChange(InstanceDesignConstants.PROP_SHUTDOWN, 0, 
+                "", InstanceDesignConstants.PROP_SHUTDOWN);
+        this.paletteController = null;
+        this.instanceDesignerPanel = null;
+        this.topComponent = null;
+        this.componentSelectionManager = null;
+        this.instanceDesignerScrollPane = null;
+        this.mcaManager = null;
+        this.pcs = null;
+        this.schemaDataObject = null;
+        this.userActedComponent = null;
+        this.focusTraversalManager = null;
     }
 }

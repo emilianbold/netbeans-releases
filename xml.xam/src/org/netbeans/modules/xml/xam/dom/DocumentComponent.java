@@ -30,6 +30,7 @@ import org.w3c.dom.Node;
  * 
  */
 public interface DocumentComponent<C extends DocumentComponent> extends Component<C> {
+    public static final String TEXT_CONTENT_PROPERTY = "textContent";
 
     /**
      * Returns the DOM element corresponding to this component.

@@ -112,8 +112,8 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
     
     public synchronized void removeUndoableRefactorListener(javax.swing.event.UndoableEditListener uel) {
         ues.removeUndoableEditListener(uel);
-        ues = new ModelUndoableEditSupport();
         if (savedUndoableEditListeners != null) {
+            ues = new ModelUndoableEditSupport();
             for (UndoableEditListener saved : savedUndoableEditListeners) {
                 ues.addUndoableEditListener(saved);
             }

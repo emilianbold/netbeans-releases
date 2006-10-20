@@ -40,6 +40,7 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
+import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlighted;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
@@ -71,8 +72,9 @@ import org.openide.util.lookup.ProxyLookup;
  * @author  Todd Fast, todd.fast@sun.com
  */
 public class CategoryNode extends AbstractNode
-	implements Node.Cookie, ComponentListener, Highlighted
-{
+        implements Node.Cookie, ComponentListener, Highlighted,
+        CountChildrenCookie {
+
 	/**
 	 *
 	 *
@@ -205,6 +207,9 @@ public class CategoryNode extends AbstractNode
 		return getName().hashCode();
 	}
 
+        public int getChildCount() {
+            return getReference().get().getChildren(getChildType()).size();
+        }
 
 	/**
 	 *

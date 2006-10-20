@@ -46,7 +46,7 @@ public class WSDLMultiViewFactory {
         CloneableTopComponent multiview =
                 MultiViewFactory.createCloneableMultiView(
                 views,
-                views[1],
+                views[0],
                 new WSDLEditorSupport.CloseHandler(wsdlDataObject));
         
         //IZ 84440 - show file name with extension

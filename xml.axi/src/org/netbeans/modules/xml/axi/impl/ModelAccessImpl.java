@@ -71,6 +71,9 @@ public class ModelAccessImpl extends ModelAccess {
     }
     
     public Model.State sync() throws IOException {        
+        //update the referenced AXIModels
+        model.updateReferencedModelListener();
+            
         //run the validator
         if(!model.validate()) {
             setAutoSync(true);

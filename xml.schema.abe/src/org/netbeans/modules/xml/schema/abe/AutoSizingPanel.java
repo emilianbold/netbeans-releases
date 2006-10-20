@@ -56,8 +56,9 @@ public class AutoSizingPanel extends ABEBaseDropPanel{
         int width = 0;
         int height = 0;
         for(Component child: this.getComponents()){
-            int curW = child.getPreferredSize().width;
-            int curH = child.getPreferredSize().height;
+            Dimension dim = child.getPreferredSize();
+            int curW = dim.width;
+            int curH = dim.height;
             if(horizontalScaling)
                 width += curW + getInterComponentSpacing();
             else

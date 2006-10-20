@@ -44,20 +44,15 @@ public class OtherAttributePropertyAdapter extends CommonAttributePropertyAdapte
     
     
     public OtherAttributePropertyAdapter(QName attrQName, 
-            WSDLComponent element 
-    ) {
-        
+            WSDLComponent element) {
         super(element);                              
         this.mAttrQName = attrQName;
-        
     }
     
     
     @Override
     public void setValue(String value) {
         this.getDelegate().getModel().startTransaction();
-        if (value == null || value.length() == 0)
-            value = null;
         ((AbstractDocumentComponent) this.getDelegate()).setAnyAttribute(this.mAttrQName, value);
         this.getDelegate().getModel().endTransaction();
         

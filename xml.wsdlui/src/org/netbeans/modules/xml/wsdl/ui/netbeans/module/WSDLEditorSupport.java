@@ -97,8 +97,9 @@ public class WSDLEditorSupport extends DataEditorSupport
     protected Pane createPane() {
         TopComponent tc = WSDLMultiViewFactory.createMultiView(
                 (WSDLDataObject) getDataObject());
-        updateTitles();
-       // tc.setName(getDataObject().getPrimaryFile().getNameExt());
+        // Note that initialization of the editor happens separately,
+        // and we only need to handle that during the initial creation
+        // of the text editor.
         Mode editorMode = WindowManager.getDefault().findMode(
                 WSDLEditorSupport.EDITOR_MODE);
         if (editorMode != null) {
@@ -130,7 +131,7 @@ public class WSDLEditorSupport extends DataEditorSupport
     
     // Change method access to public
     @Override
-    protected void initializeCloneableEditor(CloneableEditor editor) {
+    public void initializeCloneableEditor(CloneableEditor editor) {
         super.initializeCloneableEditor(editor);
         // Force the title to update so the * left over from when the
         // modified data object was discarded is removed from the title.
@@ -231,6 +232,7 @@ public class WSDLEditorSupport extends DataEditorSupport
                             addUndoManagerToModel(undo);
                         }
                     }
+                    prepareTask2 = null;
                 }
             });
         }
@@ -267,6 +269,7 @@ public class WSDLEditorSupport extends DataEditorSupport
             if (doc != null) {
                 doc.removeUndoableEditListener(undo);
                 undo.endCompound();
+                undo.setDocument(null);
             }
             try {
                 WSDLModel model = getModel();
@@ -280,7 +283,6 @@ public class WSDLEditorSupport extends DataEditorSupport
                 // going to matter anyway.
             }
         }
-
         super.notifyClosed();
     }
 

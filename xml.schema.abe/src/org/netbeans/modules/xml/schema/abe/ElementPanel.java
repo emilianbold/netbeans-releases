@@ -324,8 +324,9 @@ public class ElementPanel extends ABEBaseDropPanel{
         for(Component child: this.getComponents()){
             if(!child.isVisible())
                 continue;
-            height += child.getPreferredSize().getHeight();// + getInterComponentSpacing();
-            int thisW = child.getPreferredSize().width ;
+            Dimension dim = child.getPreferredSize();
+            height += dim.height;// + getInterComponentSpacing();
+            int thisW = dim.width ;
             width = width < thisW ? thisW : width;
         }
         if( (fadeinPanel != null) && fadeinPanel.isVisible() ){

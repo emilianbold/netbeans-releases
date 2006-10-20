@@ -80,6 +80,8 @@ public class ServletRef extends Base {
 		
 		servletNameDD = getNameDD("servlet-name");
 
+        updateNamedBeanCache(SunWebApp.SERVLET);
+
 		loadFromPlanFile(getConfig());		
 	}
 
@@ -168,6 +170,8 @@ public class ServletRef extends Base {
 			// name changed...
 			getPCS().firePropertyChange(SERVLET_NAME, GenericOldValue, getServletName());
 			getPCS().firePropertyChange(DISPLAY_NAME, GenericOldValue, getDisplayName());
+            
+            updateNamedBeanCache(SunWebApp.SERVLET);
 		} else if(eventBean.getXpath().indexOf("run-as") != -1) {
 			getPCS().firePropertyChange(RUN_AS_ROLE_NAME, GenericOldValue, getRunAsRoleName());
 		}

@@ -225,8 +225,10 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
      * Visit ComplexExtension.
      */
     public void visit(SimpleExtension component) {
-        AXIComponent child = getAXIComponent(component.getBase().get(), true);
-        addChild(child);
+        if(component.getBase() != null && component.getBase().get() != null) {
+            AXIComponent child = getAXIComponent(component.getBase().get(), true);
+            addChild(child);
+        }
         visitChildren(component);
     }
     
@@ -234,8 +236,10 @@ public class AXIModelBuilder extends DeepSchemaVisitor {
      * Visit ComplexExtension.
      */
     public void visit(ComplexExtension component) {
-        AXIComponent child = getAXIComponent(component.getBase().get(), true);
-        addChild(child);
+        if(component.getBase() != null && component.getBase().get() != null) {
+            AXIComponent child = getAXIComponent(component.getBase().get(), true);
+            addChild(child);
+        }
         visitChildren(component);
     }
 

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -34,9 +34,13 @@ import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JLabel;
+import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.AbstractElement;
 import org.netbeans.modules.xml.axi.AnyElement;
+import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.axi.datatype.Datatype;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.axi.ContentModel;
 
 /**
  *
@@ -64,6 +68,18 @@ public class ElementPropertiesPanel extends ExtraPropertiesPanel{
                 //}
             }
         });
+        
+        if(element instanceof Element){
+            Element elm = ((Element)this.element);
+            AXIType at = elm.getType();
+            if((at instanceof ContentModel)){
+                ((ContentModel)at).addPropertyChangeListener(new ModelEventMediator(this, ((ContentModel)at)){
+                    public void _propertyChange(PropertyChangeEvent evt) {
+                        refreshItems();
+                    }
+                });
+            }
+        }
     }
     
     private void initialize() {

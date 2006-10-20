@@ -167,6 +167,7 @@ public class QuerySubstitutionGroupsView implements View, PropertyChangeListener
             display.addControlListener(new WheelZoomControl());
             display.addControlListener(new ToolTipControl(AnalysisConstants.TOOLTIP)); // "tooltip"
             display.addControlListener(new FocusControl());
+            display.addControlListener(new ActivatedNodesControlAdapter());
             display.addControlListener(new NeighborHighlightControl(AnalysisConstants.ACTION_UPDATE)); //NOI18N
             display.addControlListener(new PopupMouseControl());
             display.addControlListener(new NodeExpansionMouseControl(viz,

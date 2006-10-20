@@ -23,12 +23,11 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.jmi.javamodel.Annotation;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -47,15 +46,12 @@ public class WSInjectiontargetQueryImplementation implements InjectionTargetQuer
         }
         FileObject fo = JavaModel.getFileObject(jc.getResource());
         Project project = FileOwnerQuery.getOwner(fo);
-        if (Util.isJavaEE5orHigher(project)) {
-            JAXWSSupport jaxwss = JAXWSSupport.getJAXWSSupport(fo);
-            if (jaxwss != null) {
-            List services = jaxwss.getServices();
-                for (Iterator it = services.iterator(); it.hasNext();) {
-                    Service service = (Service) it.next();
-                    if (jc.getName().equals(service.getImplementationClass())) {
-                        return true;
-                    }
+        if (Util.isJavaEE5orHigher(project) && !jc.isInterface()) {
+            List l = jc.getAnnotations();
+            for (Iterator it = l.iterator(); it.hasNext();) {
+                Annotation an = (Annotation) it.next();
+                if ("WebService".equals(an.getTypeName().getName()) || "WebServiceProvider".equals(an.getTypeName().getName())) { 
+                    return true;
                 }
             }
         }
@@ -65,5 +61,5 @@ public class WSInjectiontargetQueryImplementation implements InjectionTargetQuer
     public boolean isStaticReferenceRequired(JavaClass jc) {
         return false;
     }
-    
+
 }

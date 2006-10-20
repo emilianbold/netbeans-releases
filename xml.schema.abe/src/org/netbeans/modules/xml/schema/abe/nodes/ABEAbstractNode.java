@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -43,6 +43,7 @@ import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.DeleteRefactoringUI;
 import org.netbeans.modules.xml.refactoring.ui.j.spi.ui.RenameRefactoringUI;
 import org.netbeans.modules.xml.refactoring.ui.j.ui.RefactoringPanel;
 import org.netbeans.modules.xml.refactoring.ui.views.WhereUsedView;
+import org.netbeans.modules.xml.schema.abe.InstanceDesignConstants;
 import org.netbeans.modules.xml.schema.abe.InstanceUIContext;
 import org.netbeans.modules.xml.schema.abe.StartTagPanel;
 import org.netbeans.modules.xml.schema.abe.UIUtilities;
@@ -115,7 +116,7 @@ public abstract class ABEAbstractNode extends AbstractNode
     }
     
     private ABEAbstractNode(AXIComponent axiComponent, Children children,
-            InstanceUIContext instanceUIContext, InstanceContent icont){
+            final InstanceUIContext instanceUIContext, InstanceContent icont){
         super(children, createLookup(axiComponent, icont, instanceUIContext));
         this.icont = icont;
         this.setAXIComponent(axiComponent);
@@ -123,6 +124,15 @@ public abstract class ABEAbstractNode extends AbstractNode
         if(instanceUIContext != null){
             uiNode = true;
             this.icont.add(instanceUIContext);
+            instanceUIContext.addPropertyChangeListener(new PropertyChangeListener(){
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if(evt.getPropertyName().equals(InstanceDesignConstants.PROP_SHUTDOWN)){
+                        ABEAbstractNode.this.icont.remove(instanceUIContext);
+                        ABEAbstractNode.this.context = null;
+                        ABEAbstractNode.this.axiComponent = null;
+                    }
+                }
+            });
         }
         this.icont.add(this);
     }

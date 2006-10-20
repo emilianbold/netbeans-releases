@@ -67,6 +67,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xml.xam.ui.actions.GoToAction;
+import org.netbeans.modules.xml.xam.ui.cookies.CountChildrenCookie;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlight;
 import org.netbeans.modules.xml.xam.ui.highlight.HighlightManager;
 import org.netbeans.modules.xml.xam.ui.highlight.Highlighted;
@@ -98,7 +99,8 @@ import org.openide.util.datatransfer.PasteType;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public abstract class WSDLElementNode extends AbstractNode
-        implements ComponentListener, ReferenceableProvider, Highlighted {
+        implements ComponentListener, ReferenceableProvider, Highlighted,
+        CountChildrenCookie {
     
     protected static final Logger mLogger = Logger.getLogger(WSDLElementNode.class.getName());
     
@@ -570,6 +572,10 @@ public abstract class WSDLElementNode extends AbstractNode
         return referenceSet;
     }
 
+    public int getChildCount() {
+        return getWSDLComponent().getChildren().size();
+    }
+    
     public void highlightAdded(Highlight hl) {
         highlights.add(hl);
         fireDisplayNameChange("TempName", getDisplayName());

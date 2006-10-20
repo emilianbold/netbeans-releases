@@ -41,6 +41,7 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -157,15 +158,22 @@ public class WSDLRefactoringEngine extends RefactoringEngine {
             searchRoot instanceof Definitions) {
             Definitions definitions = (Definitions) searchRoot;
             String namespace = ((WSDLModel)target).getDefinitions().getTargetNamespace();
+            UsageGroup ug = new UsageGroup(this, searchRoot.getModel(), (WSDLModel) target);
             for (Import i : definitions.getImports()) {
-                if (namespace.equals(i.getNamespace())) {
-                    UsageGroup ug = new UsageGroup(this, searchRoot.getModel(), (WSDLModel) target);
+                Model imported = null;
+                try {
+                    imported = i.getImportedWSDLModel();
+                } catch(CatalogModelException ex) {
+                    ug.addError(searchRoot, ex.getMessage());
+                }
+
+                if (namespace.equals(i.getNamespace()) && imported == target) {
                     ug.addItem(i);
-                    return Collections.singletonList(ug);
                 }
             }
+            return Collections.singletonList(ug);
         }
-        return null;
+        return Collections.emptyList();
     }
     
     private void prepareDescription(RenameRequest request) {

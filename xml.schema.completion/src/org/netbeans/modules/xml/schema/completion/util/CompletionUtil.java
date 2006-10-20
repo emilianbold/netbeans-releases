@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.StringTokenizer;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
@@ -56,6 +57,20 @@ public class CompletionUtil {
      * Creates a new instance of CompletionUtil
      */
     private CompletionUtil() {
+    }
+        
+    /**
+     * Returns the real schema location from xsi:schemaLocation attribute declaration.
+     */
+    static String getRealSchemaLocation(String xsiSchemaLocation, String defaultNamespace) {
+        StringTokenizer st = new StringTokenizer(xsiSchemaLocation, " ");
+        while(st.hasMoreTokens()) {
+            String token = st.nextToken().trim();
+            if(token.equals(defaultNamespace) && st.hasMoreTokens())
+                return st.nextToken().trim();
+        }
+        
+        return null;
     }
                 
     static List<StartTag> getPathFromRoot(SyntaxElement element) {

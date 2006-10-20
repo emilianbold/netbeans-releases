@@ -32,7 +32,7 @@ import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.XpathEvent;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
 
 /**
@@ -67,6 +67,8 @@ public class ResourceEnvRef extends Base {
 		
 		resourceEnvRefNameDD = getNameDD("resource-env-ref-name");
 		
+        updateNamedBeanCache(SunWebApp.RESOURCE_ENV_REF);
+        
 		loadFromPlanFile(getConfig());
 	}
 	
@@ -136,6 +138,8 @@ public class ResourceEnvRef extends Base {
 			// name changed...
 			getPCS().firePropertyChange(RESOURCE_ENV_REF_NAME, "", getResourceEnvRefName());
 			getPCS().firePropertyChange(DISPLAY_NAME, "", getDisplayName());
+
+            updateNamedBeanCache(SunWebApp.RESOURCE_ENV_REF);
 		}
 	}
 	
@@ -202,7 +206,7 @@ public class ResourceEnvRef extends Base {
 			}
 			
 			public String getPropertyName() {
-				return Ejb.RESOURCE_ENV_REF;
+				return SunWebApp.RESOURCE_ENV_REF;
 			}
 			
 		};

@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -234,7 +234,11 @@ public class InplaceEditableLabel extends JLabel{
             this.addHierarchyListener(new HierarchyListener() {
                 public void hierarchyChanged(HierarchyEvent e) {
                     //remove when the inplace label is taken off
-                    hideEditor();
+                    try{
+                        hideEditor();
+                    }catch (Exception ex){
+                        //ignore this
+                    }
                 }
             });
             //dont let the user scroll when the edit mode is on
@@ -287,8 +291,9 @@ public class InplaceEditableLabel extends JLabel{
         Rectangle rect = panel.getBounds();
         rect = SwingUtilities.convertRectangle(panel.getParent(), rect, glass);
         rect.y -= 20;
-        rect.width = infoLabel.getPreferredSize().width;
-        rect.height = infoLabel.getPreferredSize().height;
+        Dimension dim = infoLabel.getPreferredSize();
+        rect.width = dim.width;
+        rect.height = dim.height;
         glass.add(infoLabel);
         infoLabel.setBackground(new Color(255,255,220));
         infoLabel.setOpaque(true);

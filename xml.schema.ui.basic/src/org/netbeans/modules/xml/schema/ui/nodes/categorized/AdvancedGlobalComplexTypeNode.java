@@ -172,8 +172,8 @@ public class AdvancedGlobalComplexTypeNode extends GlobalComplexTypeNode {
     }
     
     public String getHtmlDisplayName() {
-        GlobalType gt = getSuperDefinition();
-        if(gt == null) return super.getHtmlDisplayName();
+        String gtName = getSuperDefinitionName();
+        if(gtName == null) return super.getHtmlDisplayName();
         String retValue = getDefaultDisplayName();
         ComplexTypeDefinition definition = getReference().get().getDefinition();
         String supertypeLabel = null;
@@ -184,7 +184,7 @@ public class AdvancedGlobalComplexTypeNode extends GlobalComplexTypeNode {
                 ((SimpleContent)definition).getLocalDefinition()
                 instanceof SimpleContentRestriction) {
             supertypeLabel = NbBundle.getMessage(AdvancedGlobalComplexTypeNode.class,
-                    "LBL_ComplexType_Restriction",gt.getName());
+                    "LBL_ComplexType_Restriction",gtName);
         } else if(definition instanceof ComplexContent &&
                 ((ComplexContent)definition).getLocalDefinition()
                 instanceof ComplexExtension ||
@@ -192,7 +192,7 @@ public class AdvancedGlobalComplexTypeNode extends GlobalComplexTypeNode {
                 ((SimpleContent)definition).getLocalDefinition()
                 instanceof SimpleExtension) {
             supertypeLabel = NbBundle.getMessage(AdvancedGlobalComplexTypeNode.class,
-                    "LBL_ComplexType_Extension",gt.getName());
+                    "LBL_ComplexType_Extension",gtName);
         }
         if(supertypeLabel!=null) {
             retValue = retValue+"<font color='#999999'> ("+supertypeLabel+")</font>";

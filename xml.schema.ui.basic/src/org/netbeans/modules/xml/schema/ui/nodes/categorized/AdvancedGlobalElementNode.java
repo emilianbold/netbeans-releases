@@ -79,11 +79,17 @@ public class AdvancedGlobalElementNode extends GlobalElementNode {
     
     public String getHtmlDisplayName() {
         String retValue = getDefaultDisplayName();
+        String rawString = null;
+        
         if(getReference().get().getType()!=null &&
-                getReference().get().getType().get()!=null) {
+                (rawString = getReference().get().getType().getRefString()) !=null) {
+            int i = rawString!=null?rawString.indexOf(':'):-1;
+            if (i != -1 && i < rawString.length()) {
+                rawString = rawString.substring(i);
+            }
             String supertypeLabel = NbBundle.getMessage(
                     AdvancedGlobalElementNode.class, "LBL_InstanceOf",
-                    getReference().get().getType().get().getName());
+                    rawString);
             retValue = retValue+"<font color='#999999'> ("+supertypeLabel+")</font>";
         }
         return applyHighlights(retValue);

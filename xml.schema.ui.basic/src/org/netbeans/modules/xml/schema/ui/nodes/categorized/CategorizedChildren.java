@@ -419,7 +419,7 @@ public class CategorizedChildren<C extends SchemaComponent>
 		CATEGORIZED_TYPES.put(SchemaModelReference.class,"org/netbeans/modules/xml/schema/ui/nodes/resources/referencedSchemas_badge.png"); //NOI18N
 		CATEGORIZED_TYPES.put(GlobalSimpleType.class, "org/netbeans/modules/xml/schema/ui/nodes/resources/simpleType_badge.png"); //NOI18N
 	};
-	private static final List<Class<? extends SchemaComponent>> UNCATEGORIZED_TYPES;
+	public static final List<Class<? extends SchemaComponent>> UNCATEGORIZED_TYPES;
 	static {
 		UNCATEGORIZED_TYPES = new ArrayList<Class<? extends SchemaComponent>>(2);
 		UNCATEGORIZED_TYPES.add(Annotation.class);

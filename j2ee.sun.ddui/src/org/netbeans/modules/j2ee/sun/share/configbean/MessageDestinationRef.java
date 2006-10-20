@@ -28,7 +28,7 @@ import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.model.XpathEvent;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
-import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 
 
@@ -63,6 +63,8 @@ public class MessageDestinationRef extends Base {
 //		initGroup(dDBean, parent);
 		
 		messageDestinationRefNameDD = getNameDD("message-destination-ref-name");
+		
+        updateNamedBeanCache(SunWebApp.MESSAGE_DESTINATION_REF);
 		
 		loadFromPlanFile(getConfig());
 	}
@@ -130,6 +132,8 @@ public class MessageDestinationRef extends Base {
 			// name changed...
 			getPCS().firePropertyChange(MESSAGE_DESTINATION_REF_NAME, "", getMessageDestinationRefName());
 			getPCS().firePropertyChange(DISPLAY_NAME, "", getDisplayName());
+            
+            updateNamedBeanCache(SunWebApp.MESSAGE_DESTINATION_REF);
 		}
 	}	
 
@@ -195,7 +199,7 @@ public class MessageDestinationRef extends Base {
 			}
 			
 			public String getPropertyName() {
-				return Ejb.MESSAGE_DESTINATION_REF;
+				return SunWebApp.MESSAGE_DESTINATION_REF;
 			}
 		};
 		
