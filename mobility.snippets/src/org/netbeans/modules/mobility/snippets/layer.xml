@@ -3,7 +3,8 @@
 <filesystem>
     <folder name="MobilityPalette">
         <folder name="Mobility">
-            <file name="TEST.xml" url="resources/TEST.xml"/>
+            <file name="FORM.xml" url="resources/FORM.xml"/>
+            <file name="IMAGE.xml" url="resources/IMAGE.xml"/>
         </folder>
     </folder>
 </filesystem>
