@@ -35,7 +35,6 @@ public class SearchUtilTest extends TestCase {
      * Test of checkForString method, of class org.netbeans.modules.derby.SearchUtil.
      */
     public void testCheckForString() {
-        System.out.println("checkForString");
         String searchedFor;
         int searchStart;
         char[] buf;
@@ -71,8 +70,6 @@ public class SearchUtilTest extends TestCase {
      * Test of checkPosition method, of class org.netbeans.modules.derby.SearchUtil.
      */
     public void testCheckPosition() {
-        System.out.println("checkPosition");
-        
         String searchedFor = "12345";
         int searchStart = 0;
         char[] buf = new char[] {'a', 'b', '1', '2', '3', 'x', 'x'};
