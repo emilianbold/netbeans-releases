@@ -30,9 +30,9 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
  */
 final class AnnotationMarkProvider extends MarkProvider {
 
-    private List marks = Collections.EMPTY_LIST;
+    private List<AnnotationMark> marks = Collections.emptyList();
 
-    public void setMarks(List marks) {
+    public void setMarks(List<AnnotationMark> marks) {
         List old = this.marks;
         this.marks = marks;
         firePropertyChange(PROP_MARKS, old, marks);

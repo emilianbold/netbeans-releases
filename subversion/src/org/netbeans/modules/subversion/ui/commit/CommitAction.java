@@ -179,7 +179,7 @@ public class CommitAction extends ContextAction {
     private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit) {
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         Map<SvnFileNode, CommitOptions> files = table.getCommitFiles();
-        Set stickyTags = new HashSet();
+        Set<String> stickyTags = new HashSet<String>();
         boolean conflicts = false;
         boolean tags = false;
         

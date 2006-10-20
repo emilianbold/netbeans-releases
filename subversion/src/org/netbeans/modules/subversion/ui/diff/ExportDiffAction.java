@@ -203,22 +203,22 @@ public class ExportDiffAction extends ContextAction {
             // prepare setups and common parent - root
 
             File root;
-            Collection setups;
+            Collection<Setup> setups;
 
             TopComponent activated = TopComponent.getRegistry().getActivated();
             if (activated instanceof DiffSetupSource) {
                 setups = ((DiffSetupSource) activated).getSetups();
-                List setupFiles = new ArrayList(setups.size());
+                List<File> setupFiles = new ArrayList<File>(setups.size());
                 for (Iterator i = setups.iterator(); i.hasNext();) {
                     Setup setup = (Setup) i.next();
                     setupFiles.add(setup.getBaseFile()); 
                 }
-                root = getCommonParent((File[]) setupFiles.toArray(new File[setupFiles.size()]));
+                root = getCommonParent(setupFiles.toArray(new File[setupFiles.size()]));
             } else {
                 Context context = getContext(nodes);
                 File [] files = DiffAction.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
                 root = getCommonParent(context.getRootFiles());
-                setups = new ArrayList(files.length);
+                setups = new ArrayList<Setup>(files.length);
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
                     Setup setup = new Setup(file, Setup.DIFFTYPE_LOCAL);
@@ -244,10 +244,10 @@ public class ExportDiffAction extends ContextAction {
             out.write(("# Above lines and this line are ignored by the patching process." + sep).getBytes("utf8"));  // NOI18N
 
 
-            Iterator it = setups.iterator();
+            Iterator<Setup> it = setups.iterator();
             int i = 0;
             while (it.hasNext()) {
-                Setup setup = (Setup) it.next();
+                Setup setup = it.next();
                 File file = setup.getBaseFile();
                 progress.setRepositoryRoot(SvnUtils.getRepositoryRootUrl(file));
                 progress.setDisplayName(file.getName());

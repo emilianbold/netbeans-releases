@@ -132,13 +132,13 @@ class DiffTreeTable extends TreeTableView {
         return treeTable.getRowCount();
     }
 
-    private static class ColumnDescriptor extends PropertySupport.ReadOnly {
+    private static class ColumnDescriptor<T> extends PropertySupport.ReadOnly<T> {
         
-        public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
+        public ColumnDescriptor(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public T getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
     }

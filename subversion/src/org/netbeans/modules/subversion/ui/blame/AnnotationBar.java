@@ -115,7 +115,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * @thread it is accesed from multiple threads all mutations
      * and iterations must be under elementAnnotations lock,
      */
-    private Map elementAnnotations;
+    private Map<Element, AnnotateLine> elementAnnotations;
 
     /**
      * Represents text that should be displayed in
@@ -190,8 +190,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Result computed show it...
      * Takes AnnotateLines and shows them.
      */
-    public void annotationLines(File file, List annotateLines) {
-        List lines = new LinkedList(annotateLines);
+    public void annotationLines(File file, List<AnnotateLine> annotateLines) {
+        List<AnnotateLine> lines = new LinkedList<AnnotateLine>(annotateLines);
         int lineCount = lines.size();
         /** 0 based line numbers => 1 based line numbers*/
         int ann2editorPermutation[] = new int[lineCount];
@@ -263,10 +263,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         try {
             doc.atomicLock();
             StyledDocument sd = (StyledDocument) doc;
-            Iterator it = lines.iterator();
-            elementAnnotations = Collections.synchronizedMap(new HashMap(lines.size()));
+            Iterator<AnnotateLine> it = lines.iterator();
+            elementAnnotations = Collections.synchronizedMap(new HashMap<Element, AnnotateLine>(lines.size()));
             while (it.hasNext()) {
-                AnnotateLine line = (AnnotateLine) it.next();
+                AnnotateLine line = it.next();
                 int lineNum = ann2editorPermutation[line.getLineNum() -1];
                 try {
                     int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
@@ -477,7 +477,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         if (al == null) {
             AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
             if (amp != null) {
-                amp.setMarks(Collections.EMPTY_LIST);
+                amp.setMarks(Collections.<AnnotationMark>emptyList());
             }
             clearRecentFeedback();
             if (recentRevision != null) {
@@ -497,18 +497,18 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
             if (amp != null) {
             
-                List marks = new ArrayList(elementAnnotations.size());
+                List<AnnotationMark> marks = new ArrayList<AnnotationMark>(elementAnnotations.size());
                 // I cannot affort to lock elementAnnotations for long time
                 // it's accessed from editor thread too
-                Iterator it2;
+                Iterator<Map.Entry<Element, AnnotateLine>> it2;
                 synchronized(elementAnnotations) {
-                    it2 = new HashSet(elementAnnotations.entrySet()).iterator();
+                    it2 = new HashSet<Map.Entry<Element, AnnotateLine>>(elementAnnotations.entrySet()).iterator();
                 }
                 while (it2.hasNext()) {
-                    Map.Entry next = (Map.Entry) it2.next();                        
-                    AnnotateLine annotateLine = (AnnotateLine) next.getValue();
+                    Map.Entry<Element, AnnotateLine> next = it2.next();                        
+                    AnnotateLine annotateLine = next.getValue();
                     if (revision.equals(annotateLine.getRevision())) {
-                        Element element = (Element) next.getKey();
+                        Element element = next.getKey();
                         if (elementAnnotations.containsKey(element) == false) {
                             continue;
                         }
@@ -583,9 +583,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             longestString = elementAnnotationsSubstitute;
         } else {
             synchronized(elementAnnotations) {
-                Iterator it = elementAnnotations.values().iterator();
+                Iterator<AnnotateLine> it = elementAnnotations.values().iterator();
                 while (it.hasNext()) {
-                    AnnotateLine line = (AnnotateLine) it.next();
+                    AnnotateLine line = it.next();
                     String displayName = getDisplayName(line); // NOI18N
                     if (displayName.length() > longestString.length()) {
                         longestString = displayName;
@@ -621,7 +621,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
         AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
         if (amp != null) {
-            amp.setMarks(Collections.EMPTY_LIST);
+            amp.setMarks(Collections.<AnnotationMark>emptyList());
         }
 
         clearRecentFeedback();
@@ -723,7 +723,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         StyledDocument sd = (StyledDocument) doc;
         int lineOffset = NbDocument.findLineOffset(sd, line);
         Element element = sd.getParagraphElement(lineOffset);
-        AnnotateLine al = (AnnotateLine) elementAnnotations.get(element);
+        AnnotateLine al = elementAnnotations.get(element);
 
         if (al != null) {
             int startOffset = element.getStartOffset();
@@ -877,7 +877,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
                     if (removed.length == added.length) {
                         for (int c = 0; c<removed.length; c++) {
-                            Object recent = elementAnnotations.get(removed[c]);
+                            AnnotateLine recent = elementAnnotations.get(removed[c]);
                             if (recent != null) {
                                 elementAnnotations.remove(removed[c]);
                                 elementAnnotations.put(added[c], recent);
@@ -885,7 +885,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         }
                     } else if (removed.length == 1 && added.length > 0) {
                         Element key = removed[0];
-                        Object recent = elementAnnotations.get(key);
+                        AnnotateLine recent = elementAnnotations.get(key);
                         if (recent != null) {
                             elementAnnotations.remove(key);
                             elementAnnotations.put(added[0], recent);

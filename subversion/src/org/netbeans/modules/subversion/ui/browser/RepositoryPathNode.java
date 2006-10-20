@@ -346,36 +346,36 @@ public class RepositoryPathNode extends AbstractNode {
         }
     }
 
-    private class DateProperty extends NodeProperty {
+    private class DateProperty extends NodeProperty<String> {
 
         public DateProperty() {
             super(PROPERTY_NAME_DATE, String.class, PROPERTY_NAME_DATE, PROPERTY_NAME_DATE);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             Date date = entry.getLastChangedDate();
             return date != null ? DateFormat.getDateTimeInstance().format(date) : "";
         }
     }
 
-    private class AuthorProperty extends NodeProperty {
+    private class AuthorProperty extends NodeProperty<String> {
                 
         public AuthorProperty() {
             super(PROPERTY_NAME_AUTHOR, String.class, PROPERTY_NAME_AUTHOR, PROPERTY_NAME_AUTHOR);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             return entry.getLastChangedAuthor();
         }
     }
 
-    private class HistoryProperty extends PropertySupport.ReadOnly {
+    private class HistoryProperty extends PropertySupport.ReadOnly<String> {
        
         public HistoryProperty() {
             super(PROPERTY_NAME_HISTORY, String.class, HISTORY_DISPLAY_NAME, HISTORY_SHORT_DESC);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             return "";
         }        
         
@@ -394,8 +394,8 @@ public class RepositoryPathNode extends AbstractNode {
         }                   
     }
                             
-    private abstract class NodeProperty extends PropertySupport.ReadOnly {        
-        protected NodeProperty(String name, Class type, String displayName, String shortDescription) {
+    private abstract class NodeProperty<T> extends PropertySupport.ReadOnly<T> {        
+        protected NodeProperty(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
 

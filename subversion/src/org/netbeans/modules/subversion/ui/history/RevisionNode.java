@@ -197,9 +197,9 @@ class RevisionNode extends AbstractNode {
         }
     }
     
-    private abstract class CommitNodeProperty extends PropertySupport.ReadOnly {
+    private abstract class CommitNodeProperty<T> extends PropertySupport.ReadOnly<T> {
 
-        protected CommitNodeProperty(String name, Class type, String displayName, String shortDescription) {
+        protected CommitNodeProperty(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
 

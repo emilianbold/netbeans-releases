@@ -172,19 +172,18 @@ public class SvnUtils {
     }
 
     private static void addFileObjects(Node node, List<File> files, List<File> rootFiles) {
-        Collection<NonRecursiveFolder> folders = node.getLookup().lookup(new Lookup.Template(NonRecursiveFolder.class)).allInstances();
+        Collection<? extends NonRecursiveFolder> folders = node.getLookup().lookup(new Lookup.Template<NonRecursiveFolder>(NonRecursiveFolder.class)).allInstances();
         List<File> nodeFiles = new ArrayList<File>();
         if (folders.size() > 0) {
-            for (Iterator<NonRecursiveFolder> j = folders.iterator(); j.hasNext();) {
-                NonRecursiveFolder nonRecursiveFolder = j.next();
-                nodeFiles.add(new FlatFolder(FileUtil.toFile(nonRecursiveFolder.getFolder()).getAbsolutePath()));
+            for (NonRecursiveFolder j : folders) {
+                nodeFiles.add(new FlatFolder(FileUtil.toFile(j.getFolder()).getAbsolutePath()));
             }
         } else {
-            Collection<FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template(FileObject.class)).allInstances();
+            Collection<? extends FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template<FileObject>(FileObject.class)).allInstances();
             if (fileObjects.size() > 0) {
                 nodeFiles.addAll(toFileCollection(fileObjects));
             } else {
-                DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+                DataObject dataObject = node.getCookie(DataObject.class);
                 if (dataObject instanceof DataShadow) {
                     dataObject = ((DataShadow) dataObject).getOriginal();
                 }
@@ -256,10 +255,10 @@ public class SvnUtils {
         return new Context(filtered, roots, exclusions);
     }
 
-    private static Collection<File> toFileCollection(Collection<FileObject> fileObjects) {
+    private static Collection<File> toFileCollection(Collection<? extends FileObject> fileObjects) {
         Set<File> files = new HashSet<File>(fileObjects.size()*4/3+1);
-        for (Iterator<FileObject> i = fileObjects.iterator(); i.hasNext();) {
-            files.add(FileUtil.toFile(i.next()));
+        for (FileObject f: fileObjects) {
+            files.add(FileUtil.toFile(f));
         }
         files.remove(null);
         return files;

@@ -459,7 +459,7 @@ public class Annotator {
      */ 
     public static Action [] getActions(Lookup context) {
         ResourceBundle loc = NbBundle.getBundle(Annotator.class);
-        Node [] nodes = (Node[]) context.lookup(new Lookup.Template(Node.class)).allInstances().toArray(new Node[0]);
+        Node [] nodes = context.lookup(new Lookup.Template<Node>(Node.class)).allInstances().toArray(new Node[0]);
         File [] files = SvnUtils.getCurrentContext(nodes).getRootFiles();
         if (onlyFolders(files)) {
             return new Action [] {

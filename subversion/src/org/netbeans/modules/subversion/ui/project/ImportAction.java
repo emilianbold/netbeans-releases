@@ -105,7 +105,7 @@ public final class ImportAction extends NodeAction {
     }
 
     private void performAction(final Context context,
-                               final Map commitFiles,
+                               final Map/*<SvnFileNode, CommitOptions>*/ commitFiles,
                                final String message)
     {        
         
@@ -137,11 +137,11 @@ public final class ImportAction extends NodeAction {
             }
         } else {
             FileObject fo = null;
-            Collection fileObjects = node.getLookup().lookup(new Lookup.Template(FileObject.class)).allInstances();
+            Collection<? extends FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template<FileObject>(FileObject.class)).allInstances();
             if (fileObjects.size() > 0) {
-                fo = (FileObject) fileObjects.iterator().next();
+                fo = fileObjects.iterator().next();
             } else {
-                DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+                DataObject dataObject = node.getCookie(DataObject.class);
                 if (dataObject instanceof DataShadow) {
                     dataObject = ((DataShadow) dataObject).getOriginal();
                 }

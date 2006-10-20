@@ -169,10 +169,10 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         private void setupColumns() {
             ResourceBundle loc = NbBundle.getBundle(BrowserPanel.class);            
             Node.Property [] columns = new Node.Property[4];
-            columns[0] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_REVISION, String.class, loc.getString("LBL_BrowserTree_Column_Revision"), loc.getString("LBL_BrowserTree_Column_Revision_Desc"));        // NOI18N
-            columns[1] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_DATE,     String.class, loc.getString("LBL_BrowserTree_Column_Date"),     loc.getString("LBL_BrowserTree_Column_Date_Desc"));            // NOI18N
-            columns[2] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_AUTHOR,   String.class, loc.getString("LBL_BrowserTree_Column_Author"),   loc.getString("LBL_BrowserTree_Column_Author_Desc"));          // NOI18N
-            columns[3] = new ColumnDescriptor(RepositoryPathNode.PROPERTY_NAME_HISTORY,  String.class, loc.getString("LBL_BrowserTree_Column_History"),  loc.getString("LBL_BrowserTree_Column_History_Desc"));         // NOI18N    
+            columns[0] = new ColumnDescriptor<String>(RepositoryPathNode.PROPERTY_NAME_REVISION, String.class, loc.getString("LBL_BrowserTree_Column_Revision"), loc.getString("LBL_BrowserTree_Column_Revision_Desc"));        // NOI18N
+            columns[1] = new ColumnDescriptor<String>(RepositoryPathNode.PROPERTY_NAME_DATE,     String.class, loc.getString("LBL_BrowserTree_Column_Date"),     loc.getString("LBL_BrowserTree_Column_Date_Desc"));            // NOI18N
+            columns[2] = new ColumnDescriptor<String>(RepositoryPathNode.PROPERTY_NAME_AUTHOR,   String.class, loc.getString("LBL_BrowserTree_Column_Author"),   loc.getString("LBL_BrowserTree_Column_Author_Desc"));          // NOI18N
+            columns[3] = new ColumnDescriptor<String>(RepositoryPathNode.PROPERTY_NAME_HISTORY,  String.class, loc.getString("LBL_BrowserTree_Column_History"),  loc.getString("LBL_BrowserTree_Column_History_Desc"));         // NOI18N    
             
             setProperties(columns);
         }    
@@ -191,12 +191,12 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         }            
     }     
 
-    private static class ColumnDescriptor extends PropertySupport.ReadOnly {        
-        public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
+    private static class ColumnDescriptor<T> extends PropertySupport.ReadOnly<T> {        
+        public ColumnDescriptor(String name, Class<T> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public T getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
     }    

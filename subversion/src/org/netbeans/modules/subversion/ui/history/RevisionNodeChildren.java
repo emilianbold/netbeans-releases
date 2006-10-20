@@ -28,7 +28,7 @@ import java.util.*;
  *
  * @author Maros Sandor
  */
-class RevisionNodeChildren extends Children.Keys {
+class RevisionNodeChildren extends Children.Keys<RepositoryRevision.Event> {
 
     private RepositoryRevision container;
     private SearchHistoryPanel master;
@@ -43,15 +43,14 @@ class RevisionNodeChildren extends Children.Keys {
     }
 
     protected void removeNotify() {
-        setKeys (Collections.EMPTY_SET);
+        setKeys (Collections.<RepositoryRevision.Event>emptySet());
     }
     
     private void refreshKeys() {
         setKeys(container.getEvents());
     }
     
-    protected Node[] createNodes(Object key) {
-        RepositoryRevision.Event fn = (RepositoryRevision.Event) key;
+    protected Node[] createNodes(RepositoryRevision.Event fn) {
         RevisionNode node = new RevisionNode(fn, master);
         return new Node[] { node };
     }
