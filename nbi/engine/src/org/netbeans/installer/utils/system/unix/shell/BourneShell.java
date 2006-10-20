@@ -69,15 +69,16 @@ public class BourneShell extends Shell{
                 }
                 if(str.startsWith(EXPORT)) {
                     substr = str.substring(EXPORT.length());
-                    substr = substr.trim();
+                    substr = substr.trim();                    
                     if(substr == null) {
                         continue;
                     }
                     
-                    if(substr.startsWith(name + sg)) {
+                    if(substr.startsWith(name + sg) || substr.equals(name)) {
                         if(value==null) {
-                            strings.remove(i);
-                        } else {
+                            strings.remove(i);                            
+                            i--;
+                        } else {                            
                             strings.set(i, EXPORT + name + sg + pr + value + pr);
                         }
                         
@@ -87,9 +88,10 @@ public class BourneShell extends Shell{
                 }
                 
                 if(str.startsWith(name + sg)) {
-                    if(value==null) {
+                    if(value==null) {                        
                         strings.remove(i);
-                    } else {
+                        i--;
+                    } else {                        
                         strings.set(i,name + sg + pr + value + pr);
                     }
                     exist = true;

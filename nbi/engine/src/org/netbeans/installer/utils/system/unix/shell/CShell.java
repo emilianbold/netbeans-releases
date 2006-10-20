@@ -76,10 +76,11 @@ public class CShell extends Shell{
                         continue;
                     }
                     
-                    if(substr.startsWith(name + sg) || substr.startsWith(name + sp)) {
-                        if(value==null) {
+                    if(substr.startsWith(name + sg) || substr.startsWith(name + sp) || substr.equals(name)) {
+                        if(value==null) {                            
                             strings.remove(i);
-                        } else {
+                            i--;
+                        } else {                            
                             strings.set(i, SETENV + name + sp + pr + value + pr);
                         }
                         exist = true;
@@ -88,7 +89,7 @@ public class CShell extends Shell{
                 }
             }
         }
-        if(!exist) {
+        if(!exist) {            
             strings.add(getSetEnvIndex(strings),SETENV + name + sp + pr + value + pr);
         }
         
