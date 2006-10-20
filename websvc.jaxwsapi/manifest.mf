@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.websvc.jaxwsapi
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/jaxws/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0.20
+OpenIDE-Module-Specification-Version: 1.1
 
