@@ -42,6 +42,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.xml.EntityCatalog;
@@ -70,15 +71,15 @@ public class LayersTest extends NbTestCase {
         int len = 0;
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         FileObject dir = sfs.getRoot();
-        Enumeration/*<? extends FileObject>*/ en = dir.getChildren(true);
+        Enumeration<? extends FileObject> en = dir.getChildren(true);
         while (en.hasMoreElements()) {
-            FileObject fo = (FileObject)en.nextElement();
+            FileObject fo = en.nextElement();
             if (fo.isFolder())
                 continue;
             if (!"settings".equals(fo.getExt())) {
                 continue;
             }
-            // check only settings files woithout convertors
+            // check only settings files without convertors
             String loc = fo.getURL().toExternalForm();
             Document doc = XMLUtil.parse(new InputSource(loc), false, true, null, EntityCatalog.getDefault());
             if (!"-//NetBeans//DTD Session settings 1.0//EN".equals(doc.getDoctype().getPublicId()))
@@ -90,7 +91,7 @@ public class LayersTest extends NbTestCase {
                 sr.parse();
             }
             catch (IOException ioe) {
-                log("IOException was thrown: "+ioe.getMessage());
+                fail("IOException was thrown: "+ioe.getMessage());
             }
             if (chars.length() > len) {
                 log("quickParse fails");
@@ -102,12 +103,11 @@ public class LayersTest extends NbTestCase {
         }
     }
     
-    /*
-        
+    public void testCorrectContentOfSettingsFiles() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
         
-        List<URL> urls = new ArrayList<URL>();
+        List<Module> urls = new ArrayList<Module>();
         boolean atLeastOne = false;
         Enumeration<URL> en = l.getResources("META-INF/MANIFEST.MF");
         while (en.hasMoreElements ()) {
@@ -126,18 +126,74 @@ public class LayersTest extends NbTestCase {
             
             atLeastOne = true;
             URL layerURL = new URL(u, "../" + layer);
-            urls.add(layerURL);
+            Module m = new Module();
+            m.module = module;
+            m.layer = layerURL;
+            urls.add(m);
         }
-        
-        File cacheDir;
-        File workDir = getWorkDir();
-        int i = 0;
-        do {
-            cacheDir = new File(workDir, "layercache"+i);
-        } while (!cacheDir.mkdir());
 
-        assertEquals("No errors or warnings during layer parsing: "+h.errors().toString(), 0, h.errors().size());
+//        CharSequence chars = Log.enable(XMLSettingsSupport.class.getName(), Level.FINE);
+        StringBuilder sb = new StringBuilder();
+        int len = 0;
+        for (Module m: urls) {
+            if ("org.netbeans.modules.settings.xtest/1".equals(m.module)) {
+                continue;
+            }
+            log("Checking layer of "+m.module);
+            XMLFileSystem xmlfs = new XMLFileSystem(m.layer);
+            FileObject dir = xmlfs.getRoot();
+            Enumeration<? extends FileObject> en2 = dir.getChildren(true);
+            while (en2.hasMoreElements()) {
+                FileObject fo = en2.nextElement();
+                if (fo.isFolder())
+                    continue;
+                if (!"settings".equals(fo.getExt())) {
+                    continue;
+                }
+                
+                if ("Services/org-netbeans-core-IDESettings.settings".equals(fo.getPath())) {
+                    // for some reason defined in layer of core/ui although belongs to core
+                    continue;
+                }
+                // check only settings files without convertors
+                String loc = fo.getURL().toExternalForm();
+                Document doc = XMLUtil.parse(new InputSource(loc), false, true, null, EntityCatalog.getDefault());
+                if (!"-//NetBeans//DTD Session settings 1.0//EN".equals(doc.getDoctype().getPublicId()))
+                    continue;
+                
+                log("checking "+fo.getPath());
+                try {
+                    XMLSettingsSupport.SettingsRecognizer sr = new XMLSettingsSupport.SettingsRecognizer(true, fo);
+                    sr.parse();
+//                    String cnb = m.module;
+                    String cnb = (m.module.indexOf('/') == -1)? m.module: m.module.substring(0, m.module.indexOf('/'));
+                    String cnbFromFile = sr.getCodeNameBase();
+                    if (sr.getCodeNameBase() != null && sr.getCodeNameBase().indexOf('/') != -1) {
+                        cnbFromFile = sr.getCodeNameBase().substring(0, sr.getCodeNameBase().indexOf('/'));
+                    }
+                    if (!cnb.equals(cnbFromFile)) {
+                        sb.append("Codenamebase of module in ").append(fo.getPath()).
+                                append(" does not refer to module ").append(m.module).append(" it refers to ").
+                                append(sr.getCodeNameBase()).append('\n');
+                    }
+                    // TODO check instance... attrs
+                }
+                catch (IOException ioe) {
+                    fail("IOException was thrown: "+ioe.getMessage());
+                }
+//                if (chars.length() > len) {
+//                    log("quickParse fails");
+//                    len = chars.length();
+//                }
+            }
+        }
+        if (sb.length() > 0) {
+            fail(sb.toString());
+        }
     }
-     */
 
+    private static class Module {
+        String module;
+        URL layer;
+    }
 }
