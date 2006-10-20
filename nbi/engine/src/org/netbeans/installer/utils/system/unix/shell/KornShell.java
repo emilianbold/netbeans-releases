@@ -28,14 +28,17 @@ package org.netbeans.installer.utils.system.unix.shell;
  */
 public class KornShell extends BourneShell {
       private String [] SYSTEM_PROFILE_FILES = {       
-        "profile"
+        "profile",
+        "kshrc"
+                
     };
     
     private String [] USER_PROFILE_HOMEDIRFILES = {
-        ".profile"        
+        ".profile",
+        ".kshrc"
     };
   
     public String [] getAvailableNames() {
-        return new String [] { "ksh", "rksh", "pfkh"};
+        return new String [] { "ksh", "rksh", "pfksh", "pdksh"};
     }
 }

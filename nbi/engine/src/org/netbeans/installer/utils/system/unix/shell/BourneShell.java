@@ -115,6 +115,6 @@ public class BourneShell extends Shell{
         return USER_PROFILE_HOMEDIRFILES;
     }
     public String [] getAvailableNames() {
-        return new String [] { "bash", "sh", "zsh", "sh5", "jsh" };
+        return new String [] { "bash", "sh", "zsh", "sh5", "jsh", "pfsh" };
     }
 }

@@ -104,6 +104,6 @@ public class CShell extends Shell{
         return USER_PROFILE_HOMEDIRFILES;
     }
     public String [] getAvailableNames() {
-        return new String [] { "csh"};
+        return new String [] { "csh", "pfcsh"};
     }
 }
