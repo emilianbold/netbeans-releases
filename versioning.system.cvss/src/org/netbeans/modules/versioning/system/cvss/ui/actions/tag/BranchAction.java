@@ -69,19 +69,16 @@ public class BranchAction extends AbstractSystemAction {
     public void performCvsAction(Node[] nodes) {
         Context context = getContext(nodes);
 
-        String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"),
-                                     new Object[] { getContextDisplayName(nodes) });
+        String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"), getContextDisplayName(nodes));
 
         JButton branch = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Branch"));
         branch.setToolTipText(NbBundle.getMessage(BranchAction.class,  "TT_BranchDialog_Action_Branch"));
-        JButton cancel = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Cancel"));
-        cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BranchAction.class,  "ACSD_BranchDialog_Action_Cancel"));
         BranchSettings settings = new BranchSettings(context.getFiles());
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings,
                 title,
                 true,
-                new Object [] { branch, cancel },
+                new Object [] { branch, DialogDescriptor.CANCEL_OPTION },
                 branch,
                 DialogDescriptor.DEFAULT_ALIGN,
                 new HelpCtx(BranchAction.class),

@@ -176,11 +176,6 @@ class BranchSettings extends javax.swing.JPanel {
         add(nameLabel, gridBagConstraints);
 
         tfName.setColumns(20);
-        tfName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                branchNameChanged(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -233,10 +228,6 @@ class BranchSettings extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_browseBranches
-
-    private void branchNameChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_branchNameChanged
-        refreshComponents();
-    }//GEN-LAST:event_branchNameChanged
 
     private void cbTagBaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbTagBaseActionPerformed
         refreshComponents();
