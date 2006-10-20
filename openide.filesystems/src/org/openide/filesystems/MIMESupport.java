@@ -163,7 +163,7 @@ final class MIMESupport extends Object {
                                 synchronized (CachedFileObject.class) {
                                     ERR.fine("Clearing cache"); // NOI18N
                                     Union2<MIMEResolver[],Set<Thread>> prev = resolvers;
-                                    if (prev.hasFirst()) {
+                                    if (prev != null && prev.hasFirst()) {
                                         previousResolvers = prev.first();
                                     }
                                     resolvers = null;
