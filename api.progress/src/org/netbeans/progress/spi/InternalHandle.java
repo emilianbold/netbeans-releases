@@ -220,7 +220,7 @@ public final class InternalHandle {
 
         if (workunit != NO_INCREASE) {
             if (workunit < currentUnit) {
-                throw new IllegalArgumentException("Cannot decrease processed workunit count to lower value than before");
+                throw new IllegalArgumentException("Cannot decrease processed workunit count (" + workunit + ") to lower value than before (" + currentUnit + ")");
             }
             if (workunit > totalUnits) {
                 // seems to be the by far most frequently abused contract. Record it to log file and safely handle the case
