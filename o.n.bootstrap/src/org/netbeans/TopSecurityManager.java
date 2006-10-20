@@ -497,8 +497,8 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
                 return;
             }
 
-            Class appContextClass = Class.forName ("sun.awt.AppContext"); // NOI18N
-            Method getAppContext = appContextClass.getMethod ("getAppContext", new Class[0]); // NOI18N
+            Class<?> appContextClass = Class.forName ("sun.awt.AppContext"); // NOI18N
+            Method getAppContext = appContextClass.getMethod ("getAppContext"); // NOI18N
             Object appContext = getAppContext.invoke (null, new Object[0]);
             
             Class actionClass = javax.swing.TransferHandler.getCopyAction ().getClass ();
@@ -506,7 +506,7 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
             sandboxKeyField.setAccessible (true);
             Object value = sandboxKeyField.get (null);
             
-            Method put = appContextClass.getMethod ("put", new Class[] { Object.class, Object.class }); // NOI18N
+            Method put = appContextClass.getMethod ("put", Object.class, Object.class); // NOI18N
             put.invoke (appContext, new Object[] { value, clip });
         } catch (ThreadDeath ex) {
             throw ex;

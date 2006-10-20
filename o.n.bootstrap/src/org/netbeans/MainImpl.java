@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarFile;
@@ -175,13 +174,12 @@ final class MainImpl extends Object {
 
         }
 
-
         String className = System.getProperty(
             "netbeans.mainclass", "org.netbeans.core.startup.Main" // NOI18N
         );
 
-        Class c = loader.loadClass(className);
-        Method m = c.getMethod ("main", new Class[] { String[].class }); // NOI18N
+        Class<?> c = loader.loadClass(className);
+        Method m = c.getMethod ("main", String[].class); // NOI18N
 
         if (methodToCall != null) {
             methodToCall[0] = m;
