@@ -19,6 +19,7 @@
 
 package org.openide.util;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.openide.util.PreferencesProvider;
@@ -75,8 +76,10 @@ public final class NbPreferences {
                        return Preferences.userRoot();
                   }                         
              };
+             // Avoid warning in case it is set (e.g. from NbTestCase).
              Logger.getLogger(NbPreferences.class.getName())
-                     .warning("NetBeans implementation of Preferences not found");
+                     .log(System.getProperty("java.util.prefs.PreferencesFactory") == null ? Level.WARNING : Level.FINE,
+                     "NetBeans implementation of Preferences not found");
         }
         return retval;
     }    
