@@ -75,6 +75,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import java.util.Set;
 import java.util.HashSet;
 import java.awt.RenderingHints;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -935,7 +936,7 @@ public class BaseOptions extends OptionSupport {
     private synchronized KeyBindingSettings getKeybindingSettings(){
         if (keyBindingsSettings == null){
             String mime = getContentType();
-            MimeLookup lookup = MimeLookup.getMimeLookup(mime);    
+            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
             resultKB = lookup.lookup(new Lookup.Template(KeyBindingSettings.class));
             Collection inst = resultKB.allInstances();
             lookupListenerKB = new LookupListener(){
@@ -965,7 +966,7 @@ public class BaseOptions extends OptionSupport {
     private synchronized FontColorSettings getFontColorSettings(){
         if (fontColorSettings == null){
             String mime = getContentType();
-            MimeLookup lookup = MimeLookup.getMimeLookup(mime);    
+            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
             Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
             Collection inst = result.allInstances();
             lookupListener = new LookupListener(){

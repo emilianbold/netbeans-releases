@@ -41,6 +41,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtKit;
@@ -54,7 +55,6 @@ import org.openide.windows.TopComponent;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -276,7 +276,7 @@ public class NbEditorKit extends ExtKit {
             mimeType = (mimeTypeObj instanceof String) ? 
                 (String) mimeTypeObj :
                 NbEditorKit.this.getContentType();
-            MimeLookup lookup = MimeLookup.getMimeLookup(mimeType);
+            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
             PopupActions pa = (PopupActions)lookup.lookup(PopupActions.class);
             if (pa != null){
                 l = pa.getPopupActions();

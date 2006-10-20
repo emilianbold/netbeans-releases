@@ -35,10 +35,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.MultiKeymap;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -47,6 +47,7 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -221,7 +222,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     
     /** Get default accelerator */
     protected KeyStroke getDefaultAccelerator(){
-        MimeLookup ml = MimeLookup.getMimeLookup("text/x-java"); //NOI18N
+        Lookup ml = MimeLookup.getLookup(MimePath.get("text/x-java")); //NOI18N
         KeyBindingSettings kbs = (KeyBindingSettings) ml.lookup(KeyBindingSettings.class);
         if (kbs != null){
             List lst = kbs.getKeyBindings();
