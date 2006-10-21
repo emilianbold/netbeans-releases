@@ -70,19 +70,19 @@ public class DataTypeTest extends NbTestCase{
         if(row==0)
             fail(context+": table exist but there is no data in table probably there is an error in insert sql script in file: "+TestCaseDataFactory.DB_SQLCREATE);
         Map data=context.getData();
-        assertEquals(context+": number of entries in file with data and columns in database are different for test case: "+context,count,data.size());            
+        assertEquals(context+": number of entries in file with data and columns in database are different for test case: "+context,data.size(),count);
         for(int i=0;i<count;i++){
            String column=table.getColumnName(i);
-           String value=(String)data.get(column);
-           if(value==null)
-                  value=(String)data.get(column.toLowerCase());
-           if(value==null)
+           String expected=(String)data.get(column);
+           if(expected==null)
+                  expected=(String)data.get(column.toLowerCase());
+           if(expected==null)
                fail(context+": the file with data doesn't contains entry called: "+column);
            TableCellRenderer renderer=table.getCellRenderer(0,i) ;
            
            Component c=table.prepareRenderer(renderer,0,i);
-           String  s=(String)((JLabel)c).getText();  
-           assertEquals(context+": values are different for column: "+column,s,value);
+           String actual=(String)((JLabel)c).getText();  
+           assertEquals(context+": values are different for column: "+column,expected,actual);
         }
         
         
