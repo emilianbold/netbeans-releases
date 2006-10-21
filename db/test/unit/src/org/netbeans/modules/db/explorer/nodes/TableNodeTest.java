@@ -67,7 +67,6 @@ public class TableNodeTest extends TestBase {
         for (int i = 0; i < flavors.length; i++) {
             mimeTypes.add(flavors[i].getMimeType());
         }
-        System.out.println(mimeTypes);
         assertTrue(mimeTypes.contains("application/x-java-netbeans-dbexplorer-table; class=org.netbeans.modules.db.api.explorer.DatabaseMetaDataTransfer$Table"));
         assertTrue(mimeTypes.contains("application/x-java-openide-nodednd; mask=1; class=org.openide.nodes.Node"));
     }
