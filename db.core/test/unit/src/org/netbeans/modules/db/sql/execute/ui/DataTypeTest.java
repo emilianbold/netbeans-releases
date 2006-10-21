@@ -23,12 +23,11 @@ import java.awt.Component;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.sql.Connection;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.table.TableCellRenderer;
 import junit.framework.TestSuite;
 
@@ -54,6 +53,7 @@ public class DataTypeTest extends NbTestCase{
     TestCaseContext context;
     Connection conn;
     JTable table;
+    Locale defaultLocale;
     public DataTypeTest(String s,TestCaseContext c) {
         super(s);
         context=c;
@@ -117,6 +117,8 @@ public class DataTypeTest extends NbTestCase{
         if(model==null)
             throw new RuntimeException(context+": model ResultSetTableModel is null probably there is a error in sql statement");
         table=new SQLResultTable();
+        defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.US);
         table.setModel(model);
         
         
@@ -126,6 +128,7 @@ public class DataTypeTest extends NbTestCase{
 
     protected void tearDown() throws Exception {
        debug("tearDown()");
+       Locale.setDefault(defaultLocale);
        String sql_del=context.getSqlDel();
        executeSQL(sql_del,conn);
        conn.close();
