@@ -24,7 +24,8 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Enumeration;
 import javax.swing.text.Document;
-import org.netbeans.modules.db.core.TestBase;
+import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -51,7 +52,7 @@ import org.openide.windows.CloneableTopComponent;
  *
  * @author Andrei Badea
  */
-public class SQLEditorSupportConsoleTest extends TestBase {
+public class SQLEditorSupportConsoleTest extends NbTestCase {
     
     private FileObject fileObject;
     private DataObject dataObject;
@@ -66,7 +67,7 @@ public class SQLEditorSupportConsoleTest extends TestBase {
         fileObject = folder.createData("SQL Command", "sql");
         assertEquals("nbfs", fileObject.getURL().getProtocol());
         
-        registerIntoLookup(new Pool());
+        MockServices.setServices(Pool.class);
         assertEquals(Pool.class, Lookup.getDefault().lookup(DataLoaderPool.class).getClass());
         
         dataObject = DataObject.find(fileObject);
@@ -129,7 +130,7 @@ public class SQLEditorSupportConsoleTest extends TestBase {
      * DataLoaderPool which is registered in the default lookup and loads
      * MySQLDataLoader.
      */
-    private static final class Pool extends DataLoaderPool {
+    public static final class Pool extends DataLoaderPool {
         
         public Enumeration loaders() {
             return Enumerations.singleton(new MySQLDataLoader());
