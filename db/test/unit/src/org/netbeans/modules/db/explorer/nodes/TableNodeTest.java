@@ -46,7 +46,7 @@ public class TableNodeTest extends TestBase {
     }
 
     public void testClipboardCopy() throws Exception {
-        assertNotNull(Lookup.getDefault().lookup(DbMetaDataTransferProvider.class));
+        assertNotNull("TableNode.clipboardCopy() needs an impl of DbMetaDataTransferProvider in the default lookup", Lookup.getDefault().lookup(DbMetaDataTransferProvider.class));
 
         JDBCDriver driver = JDBCDriver.create("foo", "Foo", "org.example.Foo", new URL[0]);
         JDBCDriverManager.getDefault().addDriver(driver);
