@@ -22,6 +22,7 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -200,6 +201,7 @@ public class MakeListOfNBM extends Task {
         }
         
         String include[] = ds.getIncludedFiles();
+        log("Including files " + Arrays.toString(include), Project.MSG_VERBOSE);
         for( int j=0; j < include.length; j++ ){
             try {
                 File inFile = new File( ds.getBasedir(), include[j] );

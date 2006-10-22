@@ -211,6 +211,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp,module-auto-deps,release,verify-class-linkage">
+        <property name="module.files.toString" refid="module.files"/>
+        <echo level="verbose">Basic matching module files: ${module.files.toString}</echo>
         <genlist outputfiledir="${cluster}" module="${module.jar}">
             <fileset dir="${cluster}">
                 <patternset refid="module.files"/>
@@ -288,7 +290,7 @@ Microsystems, Inc. All Rights Reserved.
                  global="${nbm.is.global}"
                  targetcluster="${nbm.target.cluster}"
                  releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}">
+                 moduleauthor="${nbm.module.author}">
             <license file="${license.file}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
