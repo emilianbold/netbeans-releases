@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- *
+ * 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -109,15 +109,6 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
         doc.addDocumentListener(new HTMLDrawLayerFactory.TagParenWatcher());
     }
     
-    /** Create caret to navigate through document */
-    public Caret createCaret() {
-        return new ExtCaret(){
-            public void requestMatchBraceUpdateSync() {
-                matchBraceUpdateSync = false;
-            }
-        };
-    }
-    
     /** Create new instance of syntax coloring scanner
      * @param doc document to operate on. It can be null in the cases the syntax
      *   creation is not related to the particular document
@@ -136,7 +127,7 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
         return null;
     }
     
-    /** used to create completion instance from completion provider
+    /** used to create completion instance from completion provider 
      * @deprecated
      */
     public Completion createCompletionForProvider(ExtEditorUI extEditorUI) {
@@ -174,15 +165,15 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
     protected Action[] createActions() {
         Action[] HTMLActions = new Action[] {
             new HTMLDefaultKeyTypedAction(),
-            new HTMLDeleteCharAction(deletePrevCharAction, false),
-            new HTMLDeleteCharAction(deleteNextCharAction, true),
-            new HTMLShiftBreakAction(),
-            // replace MatchBraceAction with HtmlEditor own
-            new MatchBraceAction(ExtKit.matchBraceAction, false),
-            new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
-            new HTMLGenerateFoldPopupAction(),
-            new CollapseAllCommentsFolds(),
-            new ExpandAllCommentsFolds()
+                    new HTMLDeleteCharAction(deletePrevCharAction, false),
+                    new HTMLDeleteCharAction(deleteNextCharAction, true),
+                    new HTMLShiftBreakAction(),
+                    // replace MatchBraceAction with HtmlEditor own
+                    new MatchBraceAction(ExtKit.matchBraceAction, false),
+                    new MatchBraceAction(ExtKit.selectionMatchBraceAction, true),
+                    new HTMLGenerateFoldPopupAction(),
+                    new CollapseAllCommentsFolds(),
+                    new ExpandAllCommentsFolds()
         };
         return TextAction.augmentList(super.createActions(), HTMLActions);
     }
@@ -264,7 +255,7 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
                                     caret.moveDot(matchBlk[1]);
                                 } else {
                                     caret.setDot(matchBlk[1]);
-                                }
+                                }                            
                             }
                         }
                     } else{   // If this is not token from HTML Syntax -> call the original action from editor.
@@ -980,4 +971,4 @@ public class HTMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.
     
     
 }
-
+ 
