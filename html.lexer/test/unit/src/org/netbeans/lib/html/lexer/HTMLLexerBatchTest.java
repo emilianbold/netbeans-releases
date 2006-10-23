@@ -45,7 +45,8 @@ public class HTMLLexerBatchTest extends TestCase {
     }
 
     public void testJspTags() {
-        String text = "<jsp:useBean name=\"pkg.myBean\"/><!--comment-->abc&gt;def";
+        String text = "<jsp:useBean name=\"pkg.myBean\"/><!--comment-->abc&gt;def<tag attr=\"value\"></tag>";
+                
         TokenHierarchy hi = TokenHierarchy.create(text, HTMLTokenId.language());
         TokenSequence ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_OPEN_SYMBOL, "<");
@@ -59,6 +60,16 @@ public class HTMLLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TEXT, "abc");
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.CHARACTER, "&gt;");
         LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TEXT, "def");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_OPEN_SYMBOL, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_OPEN, "tag");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.WS, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.ARGUMENT, "attr");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.OPERATOR, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.VALUE, "\"value\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_CLOSE_SYMBOL, ">");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_OPEN_SYMBOL, "</");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_CLOSE, "tag");
+        LexerTestUtilities.assertNextTokenEquals(ts, HTMLTokenId.TAG_CLOSE_SYMBOL, ">");
     }
     
 }
