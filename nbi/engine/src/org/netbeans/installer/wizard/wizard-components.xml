@@ -2,12 +2,18 @@
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
     <component class="org.netbeans.installer.wizard.components.panels.TextPanel">
         <properties>
-            <property name="text">$P{org.netbeans.installer.wizard.Bundle, WelcomePage.text}</property>
-            <property name="content.type">$P{org.netbeans.installer.wizard.Bundle, WelcomePage.content.type}</property>
+            <property name="dialog.title">$P{org.netbeans.installer.wizard.Bundle, WelcomePanel.dialog.title}</property>
+            
+            <property name="text">$P{org.netbeans.installer.wizard.Bundle, WelcomePanel.text}</property>
+            <property name="content.type">$P{org.netbeans.installer.wizard.Bundle, WelcomePanel.content.type}</property>
         </properties>
     </component>
     
-    <component class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel"/>
+    <component class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel">
+        <properties>
+            <property name="dialog.title">$P{org.netbeans.installer.wizard.Bundle, ComponentsSelectionPanel.dialog.title}</property>
+        </properties>
+    </component>
     
     <component class="org.netbeans.installer.wizard.components.sequences.InstallSequence"/>
 </wizard>
