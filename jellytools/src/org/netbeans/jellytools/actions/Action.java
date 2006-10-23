@@ -23,7 +23,9 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import javax.swing.tree.TreePath;
+import org.netbeans.core.NbKeymap;
 
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -41,6 +43,7 @@ import org.netbeans.jemmy.operators.Operator.ComponentVisualizer;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.jemmy.util.EmptyVisualizer;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 
@@ -92,8 +95,12 @@ public class Action {
     protected String popupPath;
     /** SystemAction class of current action or null when API_MODE is not supported */    
     protected Class systemActionClass;
-    /** array of shortcuts of current action or null when SHORTCUT_MODE is not supported */    
+    /** array of shortcuts of current action or null when SHORTCUT_MODE is not supported.
+     * @deprecated Use {@link #keystrokes} instead
+    */
     protected Shortcut[] shortcuts;
+    /** Array of key strokes or null when SHORTCUT_MODE is not supported. */
+    protected KeyStroke[] keystrokes;
 
     /** Comparator used as default for all Action instances. It is set in static clause. */
     private static StringComparator defaultComparator;
@@ -104,7 +111,7 @@ public class Action {
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
      * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
     public Action(String menuPath, String popupPath) {
-        this(menuPath, popupPath, null, (Shortcut[])null);
+        this(menuPath, popupPath, null, (KeyStroke[])null);
     }
     
     /** creates new Action instance without SHORTCUT_MODE support
@@ -112,13 +119,15 @@ public class Action {
      * @param popupPath action path in popup menu (use null value if popup mode is not supported)
      * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */    
     public Action(String menuPath, String popupPath, String systemActionClass) {
-        this(menuPath, popupPath, systemActionClass, (Shortcut[])null);
+        this(menuPath, popupPath, systemActionClass, (KeyStroke[])null);
     }
     
     /** creates new Action instance without API_MODE support
      * @param shortcuts array of Shortcut instances (use null value if shorcut mode is not supported)
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
-     * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
+     * @param popupPath action path in popup menu (use null value if popup mode shell is not supported)
+     * @deprecated Use {@link Action#Action(String menuPath, String popupPath, KeyStroke[] keystrokes)} instead.
+    */    
     public Action(String menuPath, String popupPath, Shortcut[] shortcuts) {
         this(menuPath, popupPath, null, shortcuts);
     }
@@ -126,7 +135,9 @@ public class Action {
     /** creates new Action instance without API_MODE support
      * @param shortcut Shortcut (use null value if menu mode is not supported)
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
-     * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
+     * @param popupPath action path in popup menu (use null value if popup mode shell is not supported)
+     * @deprecated Use {@link Action#Action(String menuPath, String popupPath, KeyStroke keystroke)} instead.
+     */
     public Action(String menuPath, String popupPath, Shortcut shortcut) {
         this(menuPath, popupPath, null, new Shortcut[] {shortcut});
     }
@@ -135,7 +146,9 @@ public class Action {
      * @param shortcuts array of Shortcut instances (use null value if shortcut mode is not supported)
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
      * @param popupPath action path in popup menu (use null value if popup mode is not supported)
-     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */    
+     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) 
+     * @deprecated Use {@link Action#Action(String menuPath, String popupPath, String systemActionClass, KeyStroke[] keystrokes)} instead.
+    */
     public Action(String menuPath, String popupPath, String systemActionClass, Shortcut[] shortcuts) {
         this.menuPath = menuPath;
         this.popupPath = popupPath;
@@ -145,18 +158,73 @@ public class Action {
             this.systemActionClass = Class.forName(systemActionClass);
         } catch (ClassNotFoundException e) {
             this.systemActionClass = null;
-        }            
-        this.shortcuts = shortcuts;
+        }
+        if(shortcuts != null) {
+            this.keystrokes = new KeyStroke[shortcuts.length];
+            for(int i=0;i<shortcuts.length;i++) {
+                this.keystrokes[i] = KeyStroke.getKeyStroke(shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers());
+            }
+        }
     }
-    
+     
     /** creates new Action instance
      * @param shortcut Shortcut String (use null value if menu mode is not supported)
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
      * @param popupPath action path in popup menu (use null value if popup mode is not supported)
-     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */    
+     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported)
+     * @deprecated Use {@link Action#Action(String menuPath, String popupPath, String systemActionClass, KeyStroke keystroke)} instead.
+    */
     public Action(String menuPath, String popupPath, String systemActionClass, Shortcut shortcut) {
         this(menuPath, popupPath, systemActionClass, new Shortcut[] {shortcut});
     }
+    
+    /** Creates new Action instance without API_MODE support.
+     * @param keystroke KeyStroke instance (use null value if shorcut mode is not supported)
+     * @param menuPath action path in main menu (use null value if menu mode is not supported)
+     * @param popupPath action path in popup menu (use null value if popup mode shell is not supported)
+    */
+    public Action(String menuPath, String popupPath, KeyStroke keystroke) {
+        this(menuPath, popupPath, null, keystroke);
+    }
+
+    /** Creates new Action instance without API_MODE support.
+     * @param keystrokes array of KeyStroke instances (use null value if shorcut mode is not supported)
+     * @param menuPath action path in main menu (use null value if menu mode is not supported)
+     * @param popupPath action path in popup menu (use null value if popup mode shell is not supported)
+    */
+    public Action(String menuPath, String popupPath, KeyStroke[] keystrokes) {
+        this(menuPath, popupPath, null, keystrokes);
+    }
+    
+    /** Creates new Action instance.
+     * @param keystroke KeyStroke instance (use null value if shorcut mode is not supported)
+     * @param menuPath action path in main menu (use null value if menu mode is not supported)
+     * @param popupPath action path in popup menu (use null value if popup mode is not supported)
+     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) 
+    */
+    public Action(String menuPath, String popupPath, String systemActionClass, KeyStroke keystroke) {
+        this(menuPath, popupPath, systemActionClass, new KeyStroke[] {keystroke});
+    }
+    
+    /** Creates new Action instance.
+     * @param keystrokes array of KeyStroke instances (use null value if shorcut mode is not supported)
+     * @param menuPath action path in main menu (use null value if menu mode is not supported)
+     * @param popupPath action path in popup menu (use null value if popup mode is not supported)
+     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) 
+    */
+    public Action(String menuPath, String popupPath, String systemActionClass, KeyStroke[] keystrokes) {
+        this.menuPath = menuPath;
+        this.popupPath = popupPath;
+        if (systemActionClass==null) {
+            this.systemActionClass = null;
+        } else try {
+            this.systemActionClass = Class.forName(systemActionClass);
+        } catch (ClassNotFoundException e) {
+            this.systemActionClass = null;
+        }            
+        this.keystrokes = keystrokes;
+    }
+
     
     static {
         // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
@@ -473,11 +541,12 @@ public class Action {
     /** performs action through shortcut  
      * @throws UnsupportedOperationException if no shortcut is defined */
     public void performShortcut() {
-        if (shortcuts == null) {
+        KeyStroke[] strokes = getKeyStrokes();
+        if (strokes == null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define shortcut");
         }
-        for(int i=0; i<shortcuts.length; i++) {
-            new KeyRobotDriver(null).pushKey(null, shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers(), JemmyProperties.getCurrentTimeouts().create("ComponentOperator.PushKeyTimeout"));
+        for(int i=0; i<strokes.length; i++) {
+            new KeyRobotDriver(null).pushKey(null, strokes[i].getKeyCode(), strokes[i].getModifiers(), JemmyProperties.getCurrentTimeouts().create("ComponentOperator.PushKeyTimeout"));
             JemmyProperties.getProperties().getTimeouts().sleep("Action.WaitAfterShortcutTimeout");
         }
         try {
@@ -498,7 +567,8 @@ public class Action {
      * @param nodes nodes to be action performed on 
      * @throws UnsupportedOperationException when action does not support shortcut mode */    
     public void performShortcut(Node[] nodes) {
-        if (shortcuts == null) {
+        final KeyStroke[] strokes = getKeyStrokes();
+        if (strokes == null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define shortcut");
         }
         testNodes(nodes);
@@ -620,9 +690,33 @@ public class Action {
     
     /** getter for array of shortcuts
      * @return Shortcut[] (or null if not suported)
+     * @deprecated Use {@link #getKeyStrokes} instead
      */    
     public Shortcut[] getShortcuts() {
         return shortcuts;
+    }
+
+    /** Returns an array of KeyStroke objects.
+     * If systemActionClass is defined and no keystrokes defined in constructor,
+     * it tries to find key strokes in NbKeymap.
+     * Otherwise it returns keystrokes defined in constructor, which can be null.
+     * It helps to overcome differencies on platforms (e.g. on mac).
+     * @return an array of KeyStroke objects or null if not found.
+     */
+    public KeyStroke[] getKeyStrokes() {
+        if (this.keystrokes == null && systemActionClass != null) {
+            NbKeymap keymap = (NbKeymap) Lookup.getDefault().lookup(NbKeymap.class);
+            javax.swing.Action myAction = null;
+            javax.swing.Action[] actions = keymap.getBoundActions();
+            for (int i = 0; i < actions.length; i++) {
+                if(actions[i].getClass().equals(systemActionClass)) {
+                    // Returns just first keystroke. For actions like copy can 
+                    // can exists more than one (Ctrl+C, Ctrl+Insert, Copy key).
+                    return new KeyStroke[] {keymap.getKeyStrokesForAction(actions[i])[0]};
+                }
+            }
+        }
+        return this.keystrokes;
     }
     
     /** Checks whether this action is enabled. If IDE system action class
@@ -728,7 +822,9 @@ public class Action {
         }
     }
 
-    /** This class defines keyboard shortcut for action execution */    
+    /** This class defines keyboard shortcut for action execution.
+     * @deprecated Use {@link javax.swing.KeyStroke} instead.
+    */    
     public static class Shortcut extends Object {
         /** key code of shortcut (see KeyEvent) */        
         protected int keyCode;
