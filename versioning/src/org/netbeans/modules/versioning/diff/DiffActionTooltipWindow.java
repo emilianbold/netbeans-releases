@@ -83,7 +83,7 @@ class DiffActionTooltipWindow implements AWTEventListener {
     }
 
     public void eventDispatched(AWTEvent event) {
-        if (event.getID() == MouseEvent.MOUSE_CLICKED) {
+        if (event.getID() == MouseEvent.MOUSE_PRESSED) {
             onClick(event);
 /*
         } else if (event.getID() == KeyEvent.KEY_PRESSED) {
