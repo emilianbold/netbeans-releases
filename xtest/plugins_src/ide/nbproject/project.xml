@@ -84,7 +84,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">../../../nbbuild/netbeans/platform7/lib/org-openide-util.jar;../../../nbbuild/netbeans/platform7/lib/boot.jar;../../lib/xtest.jar;../../lib/xtest-junit-testrunner.jar;../../lib/nbjunit.jar;../../../../../builds/060716/netbeans/ide8/ant/lib/ant.jar;../../../junit/external/junit-3.8.2.jar;../../../nbbuild/netbeans/platform7/core/core.jar;../../../nbbuild/netbeans/platform7/core/org-openide-filesystems.jar;../../../nbbuild/netbeans/platform7/modules/org-openide-nodes.jar;../../../nbbuild/netbeans/platform7/modules/org-openide-dialogs.jar;../../../nbbuild/netbeans/platform7/modules/org-openide-loaders.jar;../../../nbbuild/netbeans/platform7/modules/org-netbeans-core.jar;../../../nbbuild/netbeans/platform7/modules/org-netbeans-core-execution.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-projectapi.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-projectui.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-java-j2seproject.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-project-ant.jar;../../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-javacore.jar;../../../nbbuild/netbeans/ide8/modules/ext/jmiutils.jar</classpath>
+                <classpath mode="compile">${basecp}</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
             <compilation-unit>

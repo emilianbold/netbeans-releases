@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /** Simple class for executing tasks in extra threads */
@@ -87,10 +88,7 @@ final class RunClassThread extends Thread implements IOThreadIfc {
             fire = false;
         }
 
-        String ioname = java.text.MessageFormat.format(
-                            ProcessNode.getBundle().getString("CTL_ProgramIO"),
-                            new Object[] { allName }
-                        );
+        String ioname = NbBundle.getMessage(RunClassThread.class, "CTL_ProgramIO", allName);
 
         // prepare environment (threads, In/Out, atd.)
         DefaultSysProcess def;
@@ -117,7 +115,7 @@ final class RunClassThread extends Thread implements IOThreadIfc {
         ExecutionEvent ev = null;
         try {
 
-            ev = new ExecutionEvent(engine, def, isUserImportant(run));
+            ev = new ExecutionEvent(engine, def);
             if (fire) {
                 engine.fireExecutionStarted(ev);
             }
@@ -178,16 +176,8 @@ final class RunClassThread extends Thread implements IOThreadIfc {
         return finalized;
     }
     
-    /** @return false for inner processes like compilation, true otherwise */
-    private boolean isUserImportant (Runnable run) {
-        return !"org.openide.compiler.CompilerExecutor$CERunnable".equals(run.getClass().getName()); // NOI18N
-    }
-
     static String generateName() {
-        return java.text.MessageFormat.format(
-                   ProcessNode.getBundle().getString("CTL_GeneratedName"),
-                   new Object[] {new Integer(number++)}
-               );
+        return NbBundle.getMessage(RunClassThread.class, "CTL_GeneratedName", number++);
     }
     
     /**

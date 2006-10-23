@@ -19,23 +19,19 @@
 
 package org.netbeans.xtest.plugin.ide;
 
-import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestListener;
 import junit.framework.TestResult;
-import org.netbeans.core.NbPlaces;
-import org.netbeans.core.execution.ProcessNode;
+import org.netbeans.core.execution.ExecutionEngine;
 import org.netbeans.xtest.plugin.ide.services.XTestErrorManager;
 import org.netbeans.xtest.testrunner.JUnitTestRunner;
 import org.openide.ErrorManager;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.openide.execution.ExecutorTask;
 
 /**
  * Portion of Main that needs to run with access to Execution API & impl.
@@ -62,24 +58,6 @@ public class MainWithExec implements Main.MainWithExecInterface {
         }
     }
     
-    // finds terminate process action in the action array
-    private static Action findTerminateAction(Action[] actions) {
-        if (actions == null) {
-            throw new IllegalArgumentException();
-        }
-        // I need to get the string from resource bundle
-        // bundle = org.netbeans.core.execution.Bundle.properties
-        // key = terminateProcess
-        
-        String terminateString = NbBundle.getMessage(ProcessNode.class,"terminateProcess");
-        for (int i=0; i<actions.length; i++) {
-            if (terminateString.equals(actions[i].getValue(Action.NAME))) {
-                return actions[i];
-            }
-        }
-        return null;
-    }
-    
     /*
      * terminates processes shown in the Runtime/Processes node
      * return number of processes which the method was not able
@@ -94,9 +72,6 @@ public class MainWithExec implements Main.MainWithExecInterface {
             // number of processes which were terminated
             int terminatedProcesses = 0;
             
-            
-            // first - try to use ExecutionEngine ...
-            /*
             ExecutionEngine engine = ExecutionEngine.getExecutionEngine();
             Collection tasks = engine.getRunningTasks();
             Object items[] = tasks.toArray();
@@ -109,74 +84,6 @@ public class MainWithExec implements Main.MainWithExecInterface {
                     int result = task.result();
                     Main.errMan.log(ErrorManager.USER,"XTest: Task exited with result: "+result);
                     terminatedProcesses++;
-                }
-            }
-             **/
-            
-            // second - use Runtime and Processes Nodes (to be sure) ...
-            
-            // get runtime node
-            Node runtime = NbPlaces.getDefault().environment();
-            
-            // find Processes node
-            // bundle = org.netbeans.core.execution.Bundle.properties
-            // key = Processes
-            //String processesString = "Processes";
-            String processesString = NbBundle.getMessage(ProcessNode.class,"Processes");
-            if (processesString == null) {
-                processesString = "Processes";
-            }
-            Node processesNode = runtime.getChildren().findChild(processesString);
-            
-            // get all running processes
-            if (processesNode != null) {
-                Node[] runningProcesses = processesNode.getChildren().getNodes();
-                
-                if (runningProcesses != null) {
-                    for (int i=0; i<runningProcesses.length; i++) {
-                        // if process does not start with org.netbeans.xtest - these are
-                        // processes driving the tests, we should not kill them
-                        if (!runningProcesses[i].getName().startsWith("org.netbeans.xtest")) {
-                            // get actions for the processes
-                            Action[] actions = runningProcesses[i].getActions(false);
-                            if (actions != null) {
-                                final Action terminate = findTerminateAction(actions);
-                                if (terminate != null) {
-                                    final ActionEvent av = new ActionEvent(runningProcesses[i],
-                                    TERMINATE_CODE,TERMINATE_NAME);
-                                    Main.errMan.log(ErrorManager.USER,"XTest: Stopping process: (via Execution View) "+runningProcesses[i].getName());
-                                    // is there any status returned from the method ?
-                                    // need to use dispatch thread - for details see issue #35755 and #35800
-                                    try {
-                                        EventQueue.invokeAndWait(new Runnable() {
-                                            public void run() {
-                                                terminate.actionPerformed(av);
-                                            }
-                                        });
-                                    } catch (InterruptedException ie) {
-                                        // nothing
-                                    } catch (java.lang.reflect.InvocationTargetException ite) {
-                                        // nothing again (might change)
-                                    }
-                                    
-                                    terminatedProcesses++;
-                                } else {
-                                    // cannot terminate this process - does not have
-                                    // terminate action (highly unlikely)
-                                    //errMan.log(ErrorManager.USER,"XTest: Process "+runningProcesses[i].getName() + " has not terminate action. Can't terminate.");
-                                    notTerminatedProcesses++;
-                                }
-                            } else {
-                                // process does not have any actions - cannot terminate
-                                // again, this is highly unlikely
-                                //errMan.log(ErrorManager.USER,"XTest: Process "+runningProcesses[i].getName() + " has not any action. Can't terminate.");
-                                notTerminatedProcesses++;
-                            }
-                        } else {
-                            // not killing my own processes
-                            // they are not even counted
-                        }
-                    }
                 }
             }
             if (terminatedProcesses > 0) {

@@ -22,24 +22,20 @@ package org.netbeans.core.execution;
 /** Informs about process state
 *
 * @author Ales Novak
-* @version 0.10 Mar 04, 1998
 */
 public class ExecutionEvent extends java.util.EventObject {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -9181112840849353114L;
     /** the process that the event notifies about*/
     private DefaultSysProcess proc;
-    /** true if process is important for end user, false otherwise (compilation) */
-    private boolean isUserImportant;
 
     /**
     * @param source is a source of the event
     * @param proc is a Process that this event notifies about
     */
-    public ExecutionEvent(Object source, DefaultSysProcess proc, boolean isUserImportant) {
+    public ExecutionEvent(Object source, DefaultSysProcess proc) {
         super(source);
         this.proc = proc;
-        this.isUserImportant = isUserImportant;
     }
 
     /**
@@ -47,12 +43,6 @@ public class ExecutionEvent extends java.util.EventObject {
     */
     public DefaultSysProcess getProcess() {
         return proc;
-    }
-    
-    /** @return true if executed process is important for user and should
-     * trigger automatic open/close of execution view */
-    public boolean isUserImportant() {
-        return isUserImportant;
     }
     
 }

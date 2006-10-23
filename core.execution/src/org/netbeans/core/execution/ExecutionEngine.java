@@ -72,11 +72,6 @@ public final class
     /* table of window:threadgrp */
     static private WindowTable wtable = new WindowTable();
 
-    /** this class have to force consistency of nodes displaying running processes
-    * and actually running processes. This flag indicates consistency check.
-    */
-    private boolean execNodeInited = false;
-
     /** list of ExecutionListeners */
     private HashSet<ExecutionListener> executionListeners = new HashSet<ExecutionListener>();
 
@@ -130,22 +125,6 @@ public final class
         }
     }
 
-    /** ExecutionObject is responsible for displaying runnig processes in a tree
-    * so it must be created before first process is run
-    */
-    private void initExecNode() {
-        ProcessNode.getExecutionNode();
-        execNodeInited = true;
-        try {
-            if (org.openide.util.Utilities.isUnix()) {
-                // init thread "process reaper"
-                Class clz = Class.forName("java.lang.UNIXProcess"); // NOI18N
-            }
-        } catch (ClassNotFoundException e) {
-            Logger.global.log(Level.WARNING, null, e);
-        }
-    }
-
     /** Should prepare environment for Executor and start it. Is called from
     * Executor.execute method.
     *
@@ -153,7 +132,6 @@ public final class
     * @param info about class to start
     */
     public ExecutorTask execute(String name, Runnable run, InputOutput inout) { 
-        if (! execNodeInited) initExecNode();  // initiate checking processes
         TaskThreadGroup g = new TaskThreadGroup(base, "exec_" + name + "_" + number); // NOI18N
         g.setDaemon(true);
         ExecutorTaskImpl task = new ExecutorTaskImpl();
