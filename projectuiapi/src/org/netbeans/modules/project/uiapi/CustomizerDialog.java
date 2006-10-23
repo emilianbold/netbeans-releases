@@ -29,12 +29,16 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /** Implementation of standard customizer dialog.
@@ -79,7 +83,7 @@ public class CustomizerDialog {
 
 
         // RegisterListener
-        ActionListener optionsListener = new OptionListener( okOptionListener );
+        ActionListener optionsListener = new OptionListener( okOptionListener, categories );
         options[ OPTION_OK ].addActionListener( optionsListener );
         options[ OPTION_CANCEL ].addActionListener( optionsListener );
 
@@ -148,19 +152,38 @@ public class CustomizerDialog {
     private static class OptionListener implements ActionListener {
 
         private ActionListener okOptionListener;
+        private ProjectCustomizer.Category[] categories;
 
-        OptionListener( ActionListener okOptionListener ) {
+        OptionListener( ActionListener okOptionListener, ProjectCustomizer.Category[] categs) {
             this.okOptionListener = okOptionListener;
+            categories = categs;
         }
-
-        public void actionPerformed( ActionEvent e ) {
+        
+        public void actionPerformed( final ActionEvent e ) {
             String command = e.getActionCommand();
-
+            
             if ( COMMAND_OK.equals( command ) ) {
                 // Call the OK option listener
-                okOptionListener.actionPerformed( e ); // XXX maybe create new event
+                ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
+                    public Object run() {
+                        okOptionListener.actionPerformed( e ); // XXX maybe create new event
+                        actionPerformed(e, categories);
+                        return null;
+                    }
+                });
             }
-
+        }
+        
+        private void actionPerformed(ActionEvent e, ProjectCustomizer.Category[] categs) {
+            for (int i = 0; i < categs.length; i++) {
+                ActionListener list = categs[i].getOkButtonListener();
+                if (list != null) {
+                    actionPerformed(e);// XXX maybe create new event
+                }
+                if (categs[i].getSubcategories() != null) {
+                    actionPerformed(e, categs[i].getSubcategories());
+                }
+            }
         }
 
     }

@@ -21,6 +21,7 @@ package org.netbeans.spi.project.ui.support;
 
 import java.awt.Dialog;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -194,6 +195,9 @@ public final class ProjectCustomizer {
      * Interface for creation of Customizer categories and their respective UI panels.
      * Implementations are to be registered in System FileSystem via module layers. Used by the
      * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer#createCustomizerDialog(String,Lookup,String,ActionListener,HelpCtx)}
+     * The panel/category created by the provider can get notified that the customizer got
+     * closed by setting an <code>ActionListener</code> to 
+     * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer.Category#setOkButtonListener} .
      * @since org.netbeans.modules.projectuiapi/1 1.15
      */
     public static interface CompositeCategoryProvider {
@@ -209,6 +213,9 @@ public final class ProjectCustomizer {
 
         /**
          * create the UI component for given category and context.
+         * The panel/category created by the provider can get notified that the customizer got
+         * closed by setting an <code>ActionListener</code> to 
+         * {@link org.netbeans.spi.project.ui.support.ProjectCustomizer.Category#setOkButtonListener}.
          * @param category Category instance that was created in the createCategory method.
          * @param context Lookup instance passed from project The content is up to the project type, please consult documentation
          * for the project type you want to integrate your panel into.
@@ -226,6 +233,7 @@ public final class ProjectCustomizer {
         private Category[] subcategories;
         private boolean valid;
         private String errorMessage;
+        private ActionListener okListener;
         
         /** Private constructor. See the factory method.
          */
@@ -254,7 +262,6 @@ public final class ProjectCustomizer {
                                        Category... subcategories ) {
             return new Category( name, displayName, icon, subcategories );
         }
-        
         
         // Public methods ------------------------------------------------------
         
@@ -334,6 +341,26 @@ public final class ProjectCustomizer {
                 Utilities.getCategoryChangeSupport(this).firePropertyChange(
                         CategoryChangeSupport.ERROR_MESSAGE_PROPERTY, oldMessage, message);
             }
+        }
+        
+        /**
+         * Set the action listener that will get notified when the changes in the customizer 
+         * are to be applied.
+         * @param okButtonListener ActionListener to notify 
+         * @since org.netbeans.modules.projectuiapi/1 1.20
+         */ 
+        public void setOkButtonListener(ActionListener okButtonListener) {
+            okListener = okButtonListener;
+        }
+        
+        /**
+         * Returns the action listener associated with this category that gets notified 
+         * when OK button is pressed on the customizer.
+         * @returns instance of ActionListener or null if not set.
+         * @since org.netbeans.modules.projectuiapi/1 1.20
+         */ 
+        public ActionListener getOkButtonListener() {
+            return okListener;
         }
         
     }
