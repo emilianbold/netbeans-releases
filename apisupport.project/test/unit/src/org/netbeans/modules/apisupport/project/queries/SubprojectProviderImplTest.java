@@ -33,7 +33,7 @@ import org.openide.filesystems.FileObject;
  * @author Jesse Glick
  */
 public class SubprojectProviderImplTest extends TestBase {
-
+    
     public SubprojectProviderImplTest(String name) {
         super(name);
     }
@@ -47,7 +47,6 @@ public class SubprojectProviderImplTest extends TestBase {
             "openide/nodes",
             "openide/awt",
             "openide/dialogs",
-            "openide/options",
             "openide/windows",
             "openide/text",
             "openide/actions",
@@ -106,6 +105,7 @@ public class SubprojectProviderImplTest extends TestBase {
         }
         assertEquals("correct subprojects for " + project, expected.toString(), actual.toString());
     }
+    
     private Project project(String path) throws Exception {
         FileObject dir = nbroot.getFileObject(path);
         assertNotNull("have " + path, dir);
@@ -113,7 +113,7 @@ public class SubprojectProviderImplTest extends TestBase {
         assertNotNull("have project in " + path, p);
         return p;
     }
-
+    
     private void assertDepends(String parent, String child) throws Exception {
         Project p1 = project(parent);
         Project p2 = project(child);
