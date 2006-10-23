@@ -23,6 +23,7 @@ package org.netbeans.installer.utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.xml.transform.Result;
@@ -94,33 +95,95 @@ public abstract class XMLUtils {
                 }
             }
         }
+        // get an array of String from string "(Name1,Name2,Name3)"
+        private String [] getChildNamesFromString(String childname, String name) {
+            String [] result;
+            if(childname!=null && childname.equals(name)) {
+                result = new String [] { childname };
+            } else if(childname.startsWith("(") && childname.endsWith(")")) {
+                // several childs in round brackets separated by commas
+                int len = childname.length();
+                String [] names = childname.substring(1,len-1).split(",");
+                int index =0;
+                for(String n:names) {
+                    if(n!=null && name.equals(n)) {
+                        index ++;
+                    }
+                }
+                result = new String [index];
+                index  = 0 ;
+                for(String n:names) {
+                    if(n!=null && name.equals(n)) {
+                        result[index] = n;
+                        index ++;
+                    }
+                }
+            }  else {
+                result = new String [] {};
+            }
+            return result;
+        }
+        private HashMap <String,String> getAttributesFromChildName(String childname) {
+            HashMap <String,String> map = new HashMap <String,String> ();
+            
+            int start = childname.indexOf(ATTR_BEGIN);
+            int end = childname.indexOf(ATTR_END);
+            if(start!=-1 && end == (childname.length()-1 )) {
+                // child with specified attribute
+                String sub = childname.substring(start + ATTR_BEGIN.length(), end);
+                String [] attrs = sub.split(ATTRS_DELIM);
+                for(String s: attrs) {
+                    String [] nameValue = s.split(ATTRS_DELIM);
+                    if(nameValue.length==2) {
+                        if(nameValue[1].indexOf("\"")==0 && nameValue[1].lastIndexOf("\"")==(nameValue[1].length()-1)) {
+                            nameValue[1] = nameValue[1].substring(1,nameValue[1].length()-1);
+                        }
+                        map.put(nameValue[0],nameValue[1]);
+                    }
+                }
+                
+            }
+            return map;
+        }
+        private boolean hasAttributes(Node childNode, HashMap <String, String> attributes) {
+            int size = attributes.size();
+            if(size==0) {
+                return true;
+            } else {
+                Object [] keys = attributes.keySet().toArray();
+                for(int i=0;i<size;i++) {
+                    if(keys[i] instanceof String) {
+                        if(!getNodeAttribute(childNode,(String)keys[i]).equals(attributes.get(keys[i]))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        private void processChild(List <Node> result, Node childNode, String childnameString) {
+            String name =  childNode.getNodeName();
+            String [] names = getChildNamesFromString(childnameString,name);
+            HashMap <String,String> attributes = getAttributesFromChildName(childnameString);
+            for(String n:names) {
+                if(n!=null && name.equals(n) && hasAttributes(childNode,attributes)) {
+                    result.add(childNode);
+                }
+            }
+        }
         private List <Node> getChildListFromRootList(List <Node> rootlist, String childname) {
             List <Node> result = new LinkedList <Node> ();
-            String name;
             if(rootlist == null) {
                 return result;
             }
-            int length = rootlist.size();
-            
-            for(int i=0;i<length;i++) {
+            for(int i=0;i<rootlist.size();i++) {
                 Node node = rootlist.get(i);
-                if(node!=null) {
-                    NodeList childsList = node.getChildNodes();
-                    for(int j=0;j<childsList.getLength();j++) {
-                        Node childNode = childsList.item(j);
-                        name =  childNode.getNodeName();
-                        if(childname!=null && childname.equals(name)) {
-                            result.add(childNode);
-                        } else if(childname.startsWith("(") && childname.endsWith(")")) {
-                            int len = childname.length();
-                            String [] names = childname.substring(1,len-1).split(",");
-                            for(String n:names) {
-                                if(n!=null && name.equals(n)) {
-                                    result.add(childNode);
-                                }
-                            }
-                        }
-                    }
+                if(node==null) {
+                    continue;
+                }
+                NodeList childsList = node.getChildNodes();
+                for(int j=0;j<childsList.getLength();j++) {
+                    processChild(result, childsList.item(j),childname);
                 }
             }
             return result;
@@ -203,5 +266,9 @@ public abstract class XMLUtils {
             }
             return result;
         }
+        private static final String ATTR_BEGIN = "[@";
+        private static final String ATTR_END = "[@";
+        private static final String ATTR_DELIM = "=";
+        private static final String ATTRS_DELIM = " and ";
     }
 }
