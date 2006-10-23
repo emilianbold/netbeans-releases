@@ -37,8 +37,7 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LanguageProvider;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -50,14 +49,11 @@ import org.openide.util.LookupListener;
 public final class LanguageManager extends LanguageProvider implements LookupListener, PropertyChangeListener {
     
     private static final LanguageDescription<TokenId> NO_LANG = new LanguageHierarchy<TokenId>() {
-        protected Lexer<TokenId> createLexer(LexerInput input, TokenFactory<TokenId> tokenFactory, Object state, LanguagePath languagePath, InputAttributes inputAttributes) {
+        protected Lexer<TokenId> createLexer(LexerRestartInfo<TokenId> info) {
             return null;
         }
         protected Collection<TokenId> createTokenIds() {
             return Collections.emptyList();
-        }
-        protected LanguageEmbedding embedding(Token<TokenId> token, boolean tokenComplete, LanguagePath languagePath, InputAttributes inputAttributes) {
-            return null;
         }
         protected String mimeType() {
             return "obscure/no-language-marker"; //NOI18N
