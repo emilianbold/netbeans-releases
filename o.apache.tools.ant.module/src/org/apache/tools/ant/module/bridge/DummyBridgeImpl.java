@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import org.apache.tools.ant.module.AntModule;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Enumerations;
@@ -83,7 +84,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         return null;
     }
     
-    public boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err, Map<String,String> properties, int verbosity, String displayName, Runnable interestingOutputCallback) {
+    public boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err, Map<String,String> properties, int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle) {
         err.println(NbBundle.getMessage(DummyBridgeImpl.class, "ERR_cannot_run_target"));
         problem.printStackTrace(err);
         return false;

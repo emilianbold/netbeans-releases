@@ -52,11 +52,13 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -87,6 +89,13 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private final int verbosity;
     private final String displayName;
     private final Runnable interestingOutputCallback;
+    private final ProgressHandle handle;
+    private final RequestProcessor.Task sleepTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            handle.suspend("");
+        }
+    });
+    private static final int SLEEP_DELAY = 5000;
     
     private final Map<AntLogger,Object> customData = new HashMap<AntLogger,Object>();
     
@@ -126,7 +135,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
      */
     private Task lastTask = null;
     
-    public NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName, Runnable interestingOutputCallback) {
+    public NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle) {
         thisSession = LoggerTrampoline.ANT_SESSION_CREATOR.makeAntSession(this);
         this.origScript = origScript;
         this.out = out;
@@ -134,6 +143,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         this.verbosity = verbosity;
         this.displayName = displayName;
         this.interestingOutputCallback = interestingOutputCallback;
+        this.handle = handle;
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "---- Initializing build of " + origScript + " \"" + displayName + "\" at verbosity " + verbosity + " ----");
         }
@@ -144,11 +154,15 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         stop = true;
     }
     
-    /** Stop the build now if requested. */
+    /** Stop the build now if requested. Also restarts sleep timer. */
     private void checkForStop() {
         if (stop) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "MSG_stopped", displayName));
             throw new ThreadDeath();
+        }
+        if (running) {
+            handle.switchToIndeterminate();
+            sleepTask.schedule(SLEEP_DELAY);
         }
     }
 
@@ -161,6 +175,8 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         running = false;
         out.close();
         err.close();
+        handle.finish();
+        sleepTask.cancel();
     }
     
     private void verifyRunning() {
@@ -364,6 +380,8 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                     l.buildFinished(e);
                 } catch (RuntimeException x) {
                     ERR.notify(EM_LEVEL, x);
+                } catch (Error x) {
+                    ERR.notify(EM_LEVEL, x);
                 }
             }
         } finally {
@@ -386,6 +404,28 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                 } catch (RuntimeException x) {
                     ERR.notify(EM_LEVEL, x);
                 }
+            }
+            // Update progress handle label so user can see what is being run.
+            Project p = ev.getProject();
+            String projectName = null;
+            if (p != null) {
+                projectName = p.getName();
+            }
+            String targetName = e.getTargetName();
+            if (targetName != null) {
+                String message;
+                if (projectName != null) {
+                    message = NbBundle.getMessage(NbBuildLogger.class, "MSG_progress_target", projectName, targetName);
+                } else {
+                    message = targetName;
+                }
+                /*
+                if (message.equals(displayName)) {
+                    // Redundant in this case.
+                    message = "";
+                }
+                 */
+                handle.progress(message);
             }
         } finally {
             AntBridge.resumeDelegation();

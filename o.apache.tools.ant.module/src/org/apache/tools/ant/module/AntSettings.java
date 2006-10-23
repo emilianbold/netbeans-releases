@@ -238,8 +238,7 @@ public class AntSettings {
     }
 
     public static boolean getAlwaysShowOutput() {
-        // XXX #63332: prefer false if have unobtrusive progress indication
-        return prefs().getBoolean(PROP_ALWAYS_SHOW_OUTPUT, true);
+        return prefs().getBoolean(PROP_ALWAYS_SHOW_OUTPUT, /* #87801 */false);
     }
 
     public static void setAlwaysShowOutput(boolean b) {

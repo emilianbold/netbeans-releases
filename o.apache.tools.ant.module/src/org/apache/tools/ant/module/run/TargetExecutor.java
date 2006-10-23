@@ -66,9 +66,7 @@ import org.w3c.dom.Element;
 /** Executes an Ant Target asynchronously in the IDE.
  */
 public final class TargetExecutor implements Runnable {
-    
-    private static final boolean USE_PROGRESS = Boolean.getBoolean("org.apache.tools.ant.module.run.TargetExecutor.USE_PROGRESS");
-    
+
     /**
      * All tabs which were used for some process which has now ended.
      * These are closed when you start a fresh process.
@@ -287,7 +285,7 @@ public final class TargetExecutor implements Runnable {
                 stopActions.put(io, sa);
                 rerunActions.put(io, ra);
             }
-            task = ExecutionEngine.getDefault().execute(displayName, this, InputOutput.NULL);
+            task = ExecutionEngine.getDefault().execute(null, this, InputOutput.NULL);
         }
         WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
         RequestProcessor.getDefault().post(wrapper);
@@ -296,8 +294,7 @@ public final class TargetExecutor implements Runnable {
     
     public ExecutorTask execute(OutputStream outputStream) throws IOException {
         this.outputStream = outputStream;
-        ExecutorTask task = ExecutionEngine.getDefault().execute(
-            NbBundle.getMessage(TargetExecutor.class, "LABEL_execution_name"), this, InputOutput.NULL);
+        ExecutorTask task = ExecutionEngine.getDefault().execute(null, this, InputOutput.NULL);
         return new WrapperExecutorTask(task, null);
     }
     
@@ -341,8 +338,7 @@ public final class TargetExecutor implements Runnable {
      */
     synchronized public void run () {
         final Thread[] thisProcess = new Thread[1];
-        final ProgressHandle[] handle = new ProgressHandle[1];
-        StopAction sa = stopActions.get(io);
+        final StopAction sa = stopActions.get(io);
         assert sa != null;
         RerunAction ra = rerunActions.get(io);
         assert ra != null;
@@ -422,25 +418,23 @@ public final class TargetExecutor implements Runnable {
         }
         
         thisProcess[0] = Thread.currentThread();
-	if (USE_PROGRESS) { // XXX #63332: off by default
-	    // #58513: register a progress handle for the task too.
-	    handle[0] = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
-		public boolean cancel() {
-		    stopProcess(thisProcess[0]);
-		    return true;
-		}
-	    }, new AbstractAction() {
-		public void actionPerformed(ActionEvent e) {
-		    io.select();
-		}
-	    });
-	    handle[0].start();
-	}
         StopBuildingAction.registerProcess(thisProcess[0], displayName);
         sa.t = thisProcess[0];
+	    // #58513, #87801: register a progress handle for the task too.
+        ProgressHandle handle = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
+            public boolean cancel() {
+                sa.actionPerformed(null);
+                return true;
+            }
+        }, new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                io.select();
+            }
+        });
+        handle.start();
         sa.setEnabled(true);
         ra.setEnabled(false);
-        ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback);
+        ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback, handle);
         
         } finally {
             if (io != null) {
@@ -455,9 +449,6 @@ public final class TargetExecutor implements Runnable {
             sa.setEnabled(false);
             ra.setEnabled(true);
             activeDisplayNames.remove(displayName);
-            if (handle[0] != null) {
-                handle[0].finish();
-            }
         }
     }
     

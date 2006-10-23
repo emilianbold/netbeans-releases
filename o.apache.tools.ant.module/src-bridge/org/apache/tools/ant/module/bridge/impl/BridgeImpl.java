@@ -56,6 +56,7 @@ import org.apache.tools.ant.module.bridge.impl.NbBuildLogger;
 import org.apache.tools.ant.module.bridge.impl.NbInputHandler;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -126,7 +127,7 @@ public class BridgeImpl implements BridgeInterface {
     }
     
     public boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err,
-                       Map<String,String> properties, int verbosity, String displayName, Runnable interestingOutputCallback) {
+                       Map<String,String> properties, int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle) {
         if (!classpathInitialized) {
             classpathInitialized = true;
             // #46171: Ant expects this path to have itself and whatever else you loaded with it,
@@ -155,7 +156,7 @@ public class BridgeImpl implements BridgeInterface {
         
         // first use the ProjectHelper to create the project object
         // from the given build file.
-        final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, interestingOutputCallback);
+        final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, interestingOutputCallback, handle);
         Vector<String> targs;
         try {
             project = new Project();
