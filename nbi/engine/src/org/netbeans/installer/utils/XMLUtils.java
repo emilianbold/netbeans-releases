@@ -267,7 +267,7 @@ public abstract class XMLUtils {
             return result;
         }
         private static final String ATTR_BEGIN = "[@";
-        private static final String ATTR_END = "[@";
+        private static final String ATTR_END = "]";
         private static final String ATTR_DELIM = "=";
         private static final String ATTRS_DELIM = " and ";
     }
