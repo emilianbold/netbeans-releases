@@ -18,7 +18,6 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Window|Output" main menu item,
@@ -32,11 +31,9 @@ public class OutputWindowViewAction extends Action {
         "|" +
         Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle",
                                 "OutputWindow");
-    private static final Shortcut shortcut = 
-        new Shortcut(KeyEvent.VK_4, KeyEvent.CTRL_MASK);
 
     /** Creates new instance. */    
     public OutputWindowViewAction() {
-        super(menu, null, "org.netbeans.core.output2.OutputWindowAction", shortcut);
+        super(menu, null, "org.netbeans.core.output2.OutputWindowAction");
     }
 }

@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "File|New File..."  main menu item, "New|File/Folder" popup menu item,
@@ -46,12 +47,10 @@ public class NewFileAction extends ActionNoBlock {
     private  static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/File")
                                             + "|"
                                             + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_NewFileAction_Name");
-    /** Ctrl+N */
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_N, KeyEvent.CTRL_MASK);
     
     /** Creates new NewFileAction instance. */
     public NewFileAction() {
-        super(menuPath, popupPath + "|" + popupSubPath, "org.netbeans.modules.project.ui.actions.NewFile", shortcut);
+        super(menuPath, popupPath + "|" + popupSubPath, "org.netbeans.modules.project.ui.actions.NewFile");
     }
 
     /** Create new NewFileAction instance with name of template for

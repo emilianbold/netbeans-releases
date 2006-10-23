@@ -19,9 +19,9 @@
 package org.netbeans.jellytools.modules.debugger.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 
 /**
  * Used to call "Window|Debugging|Sources" main menu item or Alt+Shift+8
@@ -39,13 +39,14 @@ public class SourcesAction extends Action {
                                 "org.netbeans.modules.debugger.jpda.ui.actions.Bundle",
                                 "CTL_SourcesViewAction");
 
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_8,
-                                                          KeyEvent.VK_ALT + KeyEvent.VK_SHIFT); 
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(
+                                                        KeyEvent.VK_8,
+                                                        KeyEvent.VK_ALT + KeyEvent.VK_SHIFT); 
     
     /**
      * Creates new SourcesAction instance.
      */    
     public SourcesAction() {
-        super(menuPath, null, shortcut);
+        super(menuPath, null, keystroke);
     }
 }

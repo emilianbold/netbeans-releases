@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Cut" popup menu item, "Edit|Cut" main menu item,
@@ -30,10 +31,12 @@ public class CutAction extends Action {
     private static final String cutPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Cut");
     private static final String cutMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
                                             + "|" + cutPopup;
-    private static final Shortcut cutShortcut = new Shortcut(KeyEvent.VK_X, KeyEvent.CTRL_MASK);
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK);
 
     /** creates new CutAction instance */    
     public CutAction() {
-        super(cutMenu, cutPopup, "org.openide.actions.CutAction", cutShortcut);
+        super(cutMenu, cutPopup, "org.openide.actions.CutAction", keystroke);
     }
 }

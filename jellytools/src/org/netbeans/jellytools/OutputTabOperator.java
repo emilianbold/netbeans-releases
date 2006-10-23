@@ -25,12 +25,12 @@ import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.text.Document;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.FindAction;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
@@ -67,44 +67,55 @@ public class OutputTabOperator extends JComponentOperator {
                    Bundle.getString("org.netbeans.core.output2.Bundle", 
                                     "ACTION_FIND_NEXT"),
                    null,
-                   new Shortcut(KeyEvent.VK_F3));
+                   KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
     
     private static final Action selectAllAction = 
-        new Action(null, null, null, new Shortcut(KeyEvent.VK_A, InputEvent.CTRL_MASK));
+        new Action(null, null, null, 
+                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+                       KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_MASK) :
+                       KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK));
 
     private static final Action wrapTextAction = 
         new Action(null,
                    Bundle.getString("org.netbeans.core.output2.Bundle", 
                                     "ACTION_WRAP"),
                    null,
-                   new Shortcut(KeyEvent.VK_W, InputEvent.CTRL_MASK));
+                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+                       KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_MASK) :
+                       KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_MASK));
 
     private static final ActionNoBlock saveAsAction = 
         new ActionNoBlock(null,
                    Bundle.getString("org.netbeans.core.output2.Bundle", 
                                     "ACTION_SAVEAS"),
                    null,
-                   new Shortcut(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+                       KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.META_MASK) :
+                       KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK));
     
     private static final Action nextErrorAction = 
-        new Action(null, null, null, new Shortcut(KeyEvent.VK_F12));
+        new Action(null, null, null, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
 
     private static final Action previousErrorAction = 
-        new Action(null, null, null, new Shortcut(KeyEvent.VK_F12, InputEvent.SHIFT_MASK));
+        new Action(null, null, null, KeyStroke.getKeyStroke(KeyEvent.VK_F12, InputEvent.SHIFT_MASK));
 
     private static final Action closeAction = 
         new Action(null,
                    Bundle.getString("org.netbeans.core.output2.Bundle", 
                                     "ACTION_CLOSE"),
                    null,
-                   new Shortcut(KeyEvent.VK_F4, InputEvent.CTRL_MASK));
+                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+                       KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.META_MASK) :
+                       KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.CTRL_MASK));
 
     private static final Action clearAction = 
         new Action(null,
                    Bundle.getString("org.netbeans.core.output2.Bundle", 
                                     "ACTION_CLEAR"),
                    null,
-                   new Shortcut(KeyEvent.VK_L, InputEvent.CTRL_MASK));
+                   System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+                       KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.META_MASK) :
+                       KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_MASK));
         
     private static final CopyAction copyAction = new CopyAction();
     private static final FindAction findAction = new FindAction();

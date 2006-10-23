@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Properties" popup menu item, "Window|Properties" main menu item,
@@ -30,10 +31,12 @@ public class PropertiesAction extends Action {
     private static final String propertiesPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Properties");
     private static final String propertiesMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
                                                 + "|" + propertiesPopup;
-    private static final Shortcut propertiesShortcut = new Shortcut(KeyEvent.VK_7, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
-
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_7, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_7, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
+    
     /** creates new PropertiesAction instance */    
     public PropertiesAction() {
-        super(propertiesMenu, propertiesPopup, "org.openide.actions.PropertiesAction", propertiesShortcut);
+        super(propertiesMenu, propertiesPopup, "org.openide.actions.PropertiesAction", keystroke);
     }
 }

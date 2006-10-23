@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Window|Favorites" main menu item or CTRL+3 shortcut.
@@ -29,10 +30,12 @@ public class FavoritesAction extends Action {
     private static final String allFilesMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
                                            + "|"
                                            + Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle", "ACT_View");
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_3, KeyEvent.CTRL_MASK);
-
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_3, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_3, KeyEvent.CTRL_MASK);
+    
     /** creates new FavoritesAction instance */    
     public FavoritesAction() {
-        super(allFilesMenu, null, shortcut);
+        super(allFilesMenu, null, keystroke);
     }
 }

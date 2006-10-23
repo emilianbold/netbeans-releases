@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Build|Compile File" main menu item, "Compile File" popup menu or F9 shortcut.
@@ -30,12 +31,12 @@ public class CompileAction extends Action {
     // Build|Compile
     private static final String compileMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Build")+"|"
                                             +Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CompileSingleAction_Name");
-    private static final Shortcut compileShortcut = new Shortcut(KeyEvent.VK_F9);
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
     // Compile File
     private static final String compilePopup = Bundle.getString("org.netbeans.modules.java.project.Bundle", "LBL_CompileFile_Action");
     
     /** creates new CompileAction instance */    
     public CompileAction() {
-        super(compileMenu, compilePopup, null, compileShortcut);
+        super(compileMenu, compilePopup, keystroke);
     }
 }

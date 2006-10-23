@@ -18,32 +18,26 @@
  */
 package org.netbeans.jellytools.modules.debugger.actions;
 
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** Used to call "Run|Toggle Breakpoint" main menu item,
- * "Toggle Breakpoint" popup menu item or CTRL+F8 shortcut.
- * @see org.netbeans.jellytools.actions.Action
+/** Used to call "Run|New Breakpoint..." main menu item or CTRL+Shift+F8 shortcut.
+ * @see org.netbeans.jellytools.actions.ActionNoBlock
  * @author Jiri.Skrivanek@sun.com
  */
-public class ToggleBreakpointAction extends Action {
+public class NewBreakpointAction extends ActionNoBlock {
 
-    // "Toggle Breakpoint"
-    private static String toggleBreakpointItem = Bundle.getStringTrimmed(
+    // "New Breakpoint..."
+    private static String newBreakpointItem = Bundle.getStringTrimmed(
                                 "org.netbeans.modules.debugger.ui.actions.Bundle",
-                                "CTL_Toggle_breakpoint");
+                                "CTL_AddBreakpoint");
     // "Run"
     private static final String runItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
-    // "Run|Toggle Breakpoint"
-    private static final String mainMenuPath = runItem+"|"+toggleBreakpointItem;
-    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.META_MASK) :
-            KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.CTRL_MASK);
-
-    /** Creates new ToggleBreakpointAction instance. */
-    public ToggleBreakpointAction() {
-        super(mainMenuPath, toggleBreakpointItem, keystroke);
+    // "Run|New Breakpoint..."
+    private static final String mainMenuPath = runItem+"|"+newBreakpointItem;
+    
+    /** Creates new NewBreakpointAction instance. */
+    public NewBreakpointAction() {
+        super(mainMenuPath, null, "org.netbeans.modules.debugger.ui.actions.AddBreakpointAction");
     }
 }

@@ -18,7 +18,6 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -41,11 +40,10 @@ public class CloseViewAction extends Action {
     private static final String menuPath = windowItem+"|"+
                             Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
                                                     "CTL_CloseWindowAction");
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F4, KeyEvent.CTRL_MASK);
     
     /** Create new CloseViewAction instance. */
     public CloseViewAction() {
-        super(menuPath, popupPath, "org.openide.actions.CloseViewAction", shortcut);
+        super(menuPath, popupPath, "org.openide.actions.CloseViewAction");
     }
 
     /** Performs popup action Close Window on given component operator 

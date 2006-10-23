@@ -33,10 +33,9 @@ public class ReplaceAction extends ActionNoBlock {
     private static final String replaceMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
                                               + "|"
                                               + Bundle.getStringTrimmed("org.openide.actions.Bundle", "Replace");
-    private static final Shortcut replaceShortcut = new Shortcut(KeyEvent.VK_H, KeyEvent.CTRL_MASK);
     
     /** creates new ReplaceAction instance */
     public ReplaceAction() {
-        super(replaceMenu, null, "org.openide.actions.ReplaceAction", replaceShortcut);
+        super(replaceMenu, null, "org.openide.actions.ReplaceAction");
     }
 }

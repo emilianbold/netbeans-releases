@@ -18,7 +18,6 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.nodes.Node;
 
@@ -40,11 +39,9 @@ public class DocumentsAction extends ActionNoBlock {
                                             + Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
                                                                       "CTL_DocumentsAction");
 
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F4, KeyEvent.SHIFT_MASK);
-
     /** Create new DocumentsAction instance. */
     public DocumentsAction() {
-        super(menuPath, null, "org.netbeans.core.windows.actions.DocumentsAction", shortcut);
+        super(menuPath, null, "org.netbeans.core.windows.actions.DocumentsAction");
     }
  
     /** Throws UnsupportedOperationException because DocumentsAction doesn't have

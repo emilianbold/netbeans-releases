@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.modules.debugger.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.Action;
@@ -35,13 +36,13 @@ public class StepOverAction extends Action {
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")+
             "|"+
             Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_over_action_name");
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F8);
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
     
     /**
      * Creates new StepOverAction instance.
      */
     public StepOverAction() {
-        super(mainMenuPath, null, null, shortcut);
+        super(mainMenuPath, null, keystroke);
     }
     
     /** Performs action through main menu. */

@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.ProjectsTabOperator;
 
@@ -30,13 +31,15 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 public class FindAction extends ActionNoBlock {
     private static final String findPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Find");
     private static final String findMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
-    + "|"
-    + findPopup;
-    private static final Shortcut findShortcut = new Shortcut(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
-    
+                                            + "|"
+                                            + findPopup;
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
+ 
     /** creates new FindAction instance */
     public FindAction() {
-        super(findMenu, findPopup, "org.openide.actions.FindAction", findShortcut);
+        super(findMenu, findPopup, "org.openide.actions.FindAction", keystroke);
     }
     
     /** Performs action through API. It selects projects node first.

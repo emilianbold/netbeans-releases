@@ -18,12 +18,11 @@
  */
 package org.netbeans.jellytools.modules.form.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
 /** Used to call "Window|GUI Editor|Inspector" main menu item,
- * "org.netbeans.modules.form.actions.InspectorAction" or Ctrl+Shift+2 shortcut.
+ * "org.netbeans.modules.form.actions.InspectorAction" or shortcut.
  * @see Action
  * @author Jiri.Skrivanek@sun.com
  */
@@ -38,12 +37,9 @@ public class InspectorAction extends Action {
         "|" +
         Bundle.getStringTrimmed("org.netbeans.modules.form.actions.Bundle", 
                                 "CTL_InspectorAction");
-    
-    private static final Shortcut shortcut = 
-        new Shortcut(KeyEvent.VK_2, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
 
     /** Creates new InspectorAction instance */    
     public InspectorAction() {
-        super(inspectorMenu, null, "org.netbeans.modules.form.actions.InspectorAction", shortcut);
+        super(inspectorMenu, null, "org.netbeans.modules.form.actions.InspectorAction");
     }
 }

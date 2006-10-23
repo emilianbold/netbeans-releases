@@ -19,9 +19,9 @@
 package org.netbeans.jellytools.modules.debugger.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 
 /**
  * Used to call "Window | Debugging | Breakpoints" main menu item or Alt-Shift-F5
@@ -39,13 +39,12 @@ public class BreakpointsWindowAction extends Action {
             "|" + Bundle.getStringTrimmed(
             "org.netbeans.modules.debugger.ui.actions.Bundle",
             "CTL_BreakpointsAction");
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_5, KeyEvent.SHIFT_MASK|KeyEvent.ALT_MASK);
 
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F5,
-            KeyEvent.VK_ALT + KeyEvent.VK_SHIFT); 
     /**
      * creates new BreakpointsWindowAction instance 
      */    
     public BreakpointsWindowAction() {
-        super(menuPath, null, shortcut);
+        super(menuPath, null, keystroke);
     }
 }

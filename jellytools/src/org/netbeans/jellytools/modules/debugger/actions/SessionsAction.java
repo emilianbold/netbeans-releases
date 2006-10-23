@@ -19,9 +19,9 @@
 package org.netbeans.jellytools.modules.debugger.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 
 /**
  * Used to call "Window|Debugging|Sessions" main menu item or Alt+Shift+6
@@ -39,11 +39,11 @@ public class SessionsAction extends Action {
                                 "org.netbeans.modules.debugger.ui.actions.Bundle",
                                 "CTL_SessionsAction");
 
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_6,
+     private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_6,
                                                           KeyEvent.VK_ALT + KeyEvent.VK_SHIFT); 
     
     /** Creates new SessionsAction instance.  */    
     public SessionsAction() {
-        super(menuPath, null, shortcut);
+        super(menuPath, null, keystroke);
     }
 }

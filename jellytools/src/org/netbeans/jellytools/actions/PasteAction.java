@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Paste" popup menu item, "Edit|Paste" main menu item,
@@ -30,10 +31,12 @@ public class PasteAction extends Action {
     private static final String pastePopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Paste");
     private static final String pasteMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
                                             + "|" + pastePopup;
-    private static final Shortcut pasteShortcut = new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK);
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK);
 
     /** creates new PasteAction instance */    
     public PasteAction() {
-        super(pasteMenu, pastePopup, "org.openide.actions.PasteAction", pasteShortcut);
+        super(pasteMenu, pastePopup, "org.openide.actions.PasteAction", keystroke);
     }
 }

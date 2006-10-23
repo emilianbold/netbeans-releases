@@ -18,7 +18,6 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.nodes.Node;
 
@@ -34,11 +33,10 @@ public class SaveAction extends Action {
     private static final String saveMenu = Bundle.getStringTrimmed(
                                             "org.netbeans.core.Bundle", "Menu/File")
                                             + "|" + savePopup;
-    private static final Shortcut saveShortcut = new Shortcut(KeyEvent.VK_S, KeyEvent.CTRL_MASK);
     
     /** Creates new SaveAction instance. */
     public SaveAction() {
-        super(saveMenu, savePopup, "org.openide.actions.SaveAction", saveShortcut);
+        super(saveMenu, savePopup, "org.openide.actions.SaveAction");
     }
     
     /** Throws UnsupportedOperationException because SaveAction doesn't have

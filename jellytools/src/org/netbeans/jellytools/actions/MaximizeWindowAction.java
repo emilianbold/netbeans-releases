@@ -19,7 +19,6 @@
 
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.jellytools.Bundle;
@@ -29,7 +28,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.openide.windows.TopComponent;
 
 /** Used to call "Maximize Window" popup menu item, "Window|Maximize Window" main menu item,
- * shortcut CTRL+Back Quote (CTRL+`) or maximize window by IDE API.
+ * shortcut or maximize window by IDE API.
  * @see Action
  * @see org.netbeans.jellytools.TopComponentOperator
  * @author Jiri.Skrivanek@sun.com
@@ -49,12 +48,10 @@ public class MaximizeWindowAction extends Action {
     private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
                                                                     "CTL_MaximizeWindowAction");
     
-    private static final Action.Shortcut maximizeShortcut = new Shortcut(KeyEvent.VK_BACK_QUOTE, KeyEvent.CTRL_MASK);
-
 
     /** Creates new instance of MaximizeWindowAction. */
     public MaximizeWindowAction() {
-        super(windowMaximizePath, popupPath, maximizeShortcut);
+        super(windowMaximizePath, popupPath, "org.netbeans.core.windows.actions.MaximizeWindowAction");
     }
     
     /** Performs popup action Maximize Window on given component operator 

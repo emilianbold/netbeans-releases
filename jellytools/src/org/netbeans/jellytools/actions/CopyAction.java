@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Copy" popup menu item, "Edit|Copy" main menu item,
@@ -30,10 +31,12 @@ public class CopyAction extends Action {
     private static final String copyPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Copy");
     private static final String copyMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
                                             + "|" + copyPopup;
-    private static final Shortcut copyShortcut = new Shortcut(KeyEvent.VK_C, KeyEvent.CTRL_MASK);
-
-    /** creates new CopyAction instance */    
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK);
+    
+    /** creates new CopyAction instance */
     public CopyAction() {
-        super(copyMenu, copyPopup, "org.openide.actions.CopyAction", copyShortcut);
+        super(copyMenu, copyPopup, "org.openide.actions.CopyAction", keystroke);
     }
 }

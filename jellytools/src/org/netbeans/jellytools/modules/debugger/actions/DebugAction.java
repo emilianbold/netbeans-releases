@@ -19,9 +19,9 @@
 package org.netbeans.jellytools.modules.debugger.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.nodes.Node;
 
 /** Used to call "Run|Run File|Debug "MyClass.java"" main menu item,
@@ -38,11 +38,13 @@ public class DebugAction extends Action {
     // "Debug File"
     private static final String popupPath = 
             Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_DebugFile_Action");
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F5, KeyEvent.CTRL_MASK+KeyEvent.SHIFT_MASK);
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
     
     /** Creates new DebugAction instance. */
     public DebugAction() {
-        super(null, popupPath, null, shortcut);
+        super(null, popupPath, keystroke);
     }
     
     /** Performs action through main menu. 

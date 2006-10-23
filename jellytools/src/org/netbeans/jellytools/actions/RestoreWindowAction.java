@@ -19,16 +19,14 @@
 
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /** Used to call "Restore Window" popup menu item, "Window|Restore Window" main menu item,
- * shortcut CTRL+Back Quote (CTRL+`) or restore window by IDE API.
+ * shortcut or restore window by IDE API.
  * @see Action
  * @see org.netbeans.jellytools.TopComponentOperator
  * @author Jiri.Skrivanek@sun.com
@@ -48,12 +46,11 @@ public class RestoreWindowAction extends Action {
     private static final String popupPath = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
                                                                     "CTL_UnmaximizeWindowAction");
     
-    private static final Shortcut restoreShortcut = new Shortcut(KeyEvent.VK_BACK_QUOTE, KeyEvent.CTRL_MASK);
-
 
     /** Creates new instance of RestoreWindowAction. */
     public RestoreWindowAction() {
-        super(windowRestorePath, popupPath, restoreShortcut);
+        // action MaximizeWindowAction is no called but it is used to get shortcut
+        super(windowRestorePath, popupPath, "org.netbeans.core.windows.actions.MaximizeWindowAction");
     }
 
     

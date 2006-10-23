@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Debug Project" popup menu item on project's root node,
@@ -37,10 +38,10 @@ public class DebugProjectAction extends Action {
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")+
             "|"+
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name");
-    private static final Shortcut debugProjectShortcut = new Shortcut(KeyEvent.VK_F5);
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
 
     /** creates new DebugProjectAction instance */    
     public DebugProjectAction() {
-        super(debugProjectMenu, debugProjectPopup, null, debugProjectShortcut);
+        super(debugProjectMenu, debugProjectPopup, keystroke);
     }
 }

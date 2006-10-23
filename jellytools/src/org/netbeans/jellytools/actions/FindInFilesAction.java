@@ -18,7 +18,6 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -38,12 +37,10 @@ import org.netbeans.jemmy.operators.ComponentOperator;
     private static final String popup =
         Bundle.getStringTrimmed("org.openide.actions.Bundle",
                                 "Find");
-    private static final Shortcut shortcut =
-        new Shortcut(KeyEvent.VK_P, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
     
     /** Creates new instance. */
     public FindInFilesAction() {
-        super(menu, popup, "org.netbeans.modules.search.project.ProjectsSearchAction", shortcut);
+        super(menu, popup, "org.netbeans.modules.search.project.ProjectsSearchAction");
     }
     
     /** Throws UnsupportedOperationException because FindInFilesAction

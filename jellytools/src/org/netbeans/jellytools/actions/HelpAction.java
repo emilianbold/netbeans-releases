@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Help|Help Contents" main menu item,
@@ -33,12 +34,12 @@ public class HelpAction extends Action {
     private static final String helpMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help")
                                          + "|" 
                                          + Bundle.getStringTrimmed("org.netbeans.modules.usersguide.Bundle", "Menu/Help/org-netbeans-modules-usersguide-master.xml");
-    private static final Shortcut helpShortcut = new Shortcut(KeyEvent.VK_F1);
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0);
 
     /** Creates new HelpAction instance for master help set (Help|Contents)
      * or for generic use e.g. in property sheets.
      */
     public HelpAction() {
-        super(helpMenu, popupPath, null, helpShortcut);
+        super(helpMenu, popupPath, keystroke);
     }
 }

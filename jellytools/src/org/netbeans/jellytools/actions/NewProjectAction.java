@@ -21,7 +21,7 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "File|New Project..."  main menu item,
+/** Used to call "File|New Project..."  main menu item, "org.netbeans.modules.project.ui.actions.NewProject" action
  *  or Ctrl+Shift+N shortcut.<br>
  * Usage:
  * <pre>
@@ -38,12 +38,10 @@ public class NewProjectAction extends ActionNoBlock {
     private  static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/File")
                                             + "|"
                                             + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_NewProjectAction_Name");
-    /** Ctrl+Shift+N*/
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_N, KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK);
     
     /** Creates new NewProjectAction instance. */
     public NewProjectAction() {
-        super(menuPath, null, null, shortcut);
+        super(menuPath, null, "org.netbeans.modules.project.ui.actions.NewProject");
     }
     
 }

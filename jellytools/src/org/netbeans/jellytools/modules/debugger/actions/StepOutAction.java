@@ -19,6 +19,7 @@
 package org.netbeans.jellytools.modules.debugger.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.Action;
@@ -35,13 +36,15 @@ public class StepOutAction extends Action {
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")+
             "|"+
             Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_out_action_name");
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F7, KeyEvent.CTRL_MASK);
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.CTRL_MASK);
     
     /**
      * Creates new StepOutAction instance.
      */
     public StepOutAction() {
-        super(mainMenuPath, null, null, shortcut);
+        super(mainMenuPath, null, keystroke);
     }
     
     /** Performs action through main menu. */

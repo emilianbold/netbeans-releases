@@ -18,7 +18,6 @@
  */
 package org.netbeans.jellytools.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -42,11 +41,10 @@ public class CloseAllDocumentsAction extends Action {
     private static final String menuPath = windowItem+"|"+
                             Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
                                                     "CTL_CloseAllDocumentsAction");
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F4, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
     
     /** Create new CloseAllDocumentsAction instance. */
     public CloseAllDocumentsAction() {
-        super(menuPath, popupPath, "org.netbeans.core.windows.actions.CloseAllDocumentsAction", shortcut);
+        super(menuPath, popupPath, "org.netbeans.core.windows.actions.CloseAllDocumentsAction");
     }
 
     /** Performs popup action Close All Documents on given component operator 

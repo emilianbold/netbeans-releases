@@ -19,10 +19,10 @@
 package org.netbeans.jellytools.modules.debugger.actions;
 
 import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jemmy.EventTool;
 
 /** Used to call "Run|Finish Debugger Session" main menu item or Shift+F5 shortcut.
@@ -36,11 +36,11 @@ public class FinishDebuggerAction extends Action {
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")+
             "|"+
             Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_KillAction_name");
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F5, KeyEvent.SHIFT_MASK);
+    private static final KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.SHIFT_MASK);
     
     /** Creates new FinishDebuggerAction instance. */
     public FinishDebuggerAction() {
-        super(mainMenuPath, null, null, shortcut);
+        super(mainMenuPath, null, keystroke);
     }
     
     /** Performs action through main menu. */
