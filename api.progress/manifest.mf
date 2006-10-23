@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.api.progress/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/progress/module/resources/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/progress/module/resources/layer.xml
 OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Needs: org.netbeans.progress.spi.ProgressUIWorkerProvider
+OpenIDE-Module-Recommends: org.netbeans.progress.spi.ProgressUIWorkerProvider
 

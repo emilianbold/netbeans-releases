@@ -153,7 +153,7 @@ public final class InternalHandle {
     
     public synchronized void toIndeterminate() {
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
-            assert false : "cannot switch to indeterminate mode when not running";
+            assert false : "cannot switch to indeterminate mode when not running: " + state;
         }
         totalUnits = 0;
         currentUnit = 0;
@@ -319,8 +319,11 @@ public final class InternalHandle {
     
     private void createExtractedWorker() {
         if (component == null) {
-            ProgressUIWorkerProvider prov = (ProgressUIWorkerProvider)Lookup.getDefault().lookup(ProgressUIWorkerProvider.class); 
-            assert prov != null;
+            ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class);
+            if (prov == null) {
+                Logger.getLogger(InternalHandle.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
+                prov = new TrivialProgressUIWorkerProvider();
+            }
             component = prov.getExtractedComponentWorker();
             controller = new Controller(component);
         }

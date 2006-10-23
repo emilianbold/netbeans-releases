@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -77,8 +79,11 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
 
     public static synchronized Controller getDefault() {
         if (defaultInstance == null) {
-            ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class); 
-            assert prov != null : "Cannot find implementation for ProgressUIWorkerProvider, please make sure you have the org.netbeans.modules.progress.ui module enabled.";
+            ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class);
+            if (prov == null) {
+                Logger.getLogger(Controller.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
+                prov = new TrivialProgressUIWorkerProvider();
+            }
             ProgressUIWorkerWithModel component = prov.getDefaultWorker();
             defaultInstance = new Controller(component);
             component.setModel(defaultInstance.getModel());
