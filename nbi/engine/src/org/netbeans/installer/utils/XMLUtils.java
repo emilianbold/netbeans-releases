@@ -23,6 +23,8 @@ package org.netbeans.installer.utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -32,7 +34,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.netbeans.installer.utils.exceptions.ParseException;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -55,6 +61,17 @@ public abstract class XMLUtils {
     // Instance
     public abstract void saveXMLDocument(Document doc, File file,File xsltTransformFile) throws TransformerConfigurationException, TransformerException, IOException;
     
+    public abstract List <Node> getChildList(Node root, String ... childs);
+    
+    public abstract Node getChildNode(Node root, String ... childs) throws ParseException;
+    
+    public abstract String getChildNodeTextContent(Node root, String ... childs) throws ParseException;
+    
+    public abstract String getNodeAttribute(Node node, String attrName);
+    
+    public abstract String getNodeTextContent(Node node);
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     private static class GenericXMLUtils extends XMLUtils {
@@ -76,5 +93,99 @@ public abstract class XMLUtils {
                 }
             }
         }
+        private List <Node> getChildListFromRootList(List <Node> rootlist, String childname) {
+            List <Node> result = new LinkedList <Node> ();
+            String name;
+            if(rootlist == null) {
+                return result;
+            }
+            int length = rootlist.size();
+            
+            for(int i=0;i<length;i++) {
+                Node node = rootlist.get(i);
+                if(node!=null) {
+                    NodeList childsList = node.getChildNodes();
+                    for(int j=0;j<childsList.getLength();j++) {
+                        Node childNode = childsList.item(j);
+                        name =  childNode.getNodeName();
+                        if(childname!=null && childname.equals(name)) {
+                            result.add(childNode);
+                        } else if(childname.startsWith("(") && childname.endsWith(")")) {
+                            int len = childname.length();
+                            String [] names = childname.substring(1,len-1).split(",");
+                            for(String n:names) {
+                                if(n!=null && name.equals(n)) {
+                                    result.add(childNode);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+        
+        public List <Node> getChildList(Node root, String ... childs) {
+            
+            List <Node> resultList = null;
+            NodeList nodeList = null;
+            String name;
+            if(root != null)  {
+                resultList = new LinkedList <Node> ();
+                resultList.add(root);
+                if(childs!=null) {
+                    if(childs.length==1) {
+                        if(childs[0].startsWith("./")) {
+                            childs [0] = childs [0].substring("./".length());
+                        }
+                        childs = childs [0].split("/");
+                    }
+                    
+                    for(String child: childs) {
+                        resultList = getChildListFromRootList(resultList,child);
+                    }
+                }
+            }
+            return resultList;
+        }
+        
+        public Node getChildNode(Node root, String ... childs) throws ParseException {
+            List <Node> list = getChildList(root,childs);
+            if(list == null) {
+                return null;
+            }
+            if(list.size()>1) {
+                throw new ParseException("Requested single node, returned " +
+                        list.size() + " nodes");
+            }
+            return list.get(0);
+        }
+        public String getNodeAttribute(Node node, String attrName) {
+            String str = null;
+            
+            if(node!=null && attrName!=null) {
+                NamedNodeMap map = node.getAttributes();
+                if(map!=null) {
+                    if(attrName.startsWith("./@")) {
+                        attrName = attrName.substring("./@".length());
+                    }
+                    Node attr = map.getNamedItem(attrName);
+                    if(attr!=null && attr.getNodeType() == Node.ATTRIBUTE_NODE) {
+                        str = attr.getNodeValue();
+                    }
+                }
+            }
+            
+            return  str;
+        }
+        
+        public String getNodeTextContent(Node node) {
+            return (node==null) ? null : node.getTextContent();
+            
+        }
+        public String getChildNodeTextContent(Node root, String ... childs) throws ParseException {
+            return getNodeTextContent(getChildNode(root,childs));
+        }
+        
     }
 }
