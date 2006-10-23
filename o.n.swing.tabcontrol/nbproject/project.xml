@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core.windows</friend>
+                <friend>org.netbeans.modules.jellytools</friend>
                 <package>org.netbeans.swing.popupswitcher</package>
                 <package>org.netbeans.swing.tabcontrol</package>
                 <package>org.netbeans.swing.tabcontrol.event</package>
