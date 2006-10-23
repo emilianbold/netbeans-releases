@@ -542,7 +542,16 @@ public class JMenuBarOperator extends JComponentOperator
         } else {
             menuCont = this;
         }
-        JMenuItemOperator result = new JMenuItemOperator(menuCont, path[path.length - 1]);
+        JMenuItemOperator result;
+        // isVisible() on items returns false on mac, so we need a special searcher. 
+        if(System.getProperty("os.name").toLowerCase().indexOf("mac") > -1) { // NOI18N
+            ComponentSearcher searcher = new ComponentSearcher((Container)menuCont.getSource());
+            searcher.setOutput(output);
+            Component c = searcher.findComponent(new JMenuItemOperator.JMenuItemByLabelFinder(path[path.length-1], getComparator()));
+            result = new JMenuItemOperator((JMenuItem)c);
+        } else { 
+            result = new JMenuItemOperator(menuCont, path[path.length - 1]);
+        }
         result.copyEnvironment(this);
         return(result);
     }
