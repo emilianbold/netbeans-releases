@@ -31,6 +31,7 @@ public final class ProgressEvent {
     public static final int TYPE_REQUEST_STOP = 3;
     public static final int TYPE_PROGRESS = 1;
     public static final int TYPE_SWITCH = 5;
+    public static final int TYPE_SILENT = 6;
 
      private InternalHandle source;
      private long estimatedCompletion;
@@ -41,6 +42,7 @@ public final class ProgressEvent {
      private boolean watched;
      private boolean switched;
      private String displayName;
+
     /** Creates a new instance of ProgressEvent 
      * @param type one of TYPE_START, TYPE_REQUEST_STOP, TYPE_FINISH, TYPE_SWITCHED
      */
@@ -53,6 +55,14 @@ public final class ProgressEvent {
         this.type = type;
         watched = isWatched;
         switched = (type == TYPE_SWITCH);
+    }
+    
+    /** Creates a new instance of ProgressEvent 
+     * @param type one of TYPE_SILENT
+     */
+    public ProgressEvent(InternalHandle src, int type, boolean isWatched, String msg) {
+        this(src, type, isWatched);
+        message = msg;
     }
     /**
      * @param percentage completed work percentage

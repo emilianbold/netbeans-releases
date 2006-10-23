@@ -206,7 +206,8 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         if (event.getType() == ProgressEvent.TYPE_START) {
             createListItem(event.getSource());
         } else if (event.getType() == ProgressEvent.TYPE_PROGRESS || 
-                   event.getType() == ProgressEvent.TYPE_SWITCH) {
+                   event.getType() == ProgressEvent.TYPE_SWITCH || 
+                   event.getType() == ProgressEvent.TYPE_SILENT) {
             ListComponent comp = (ListComponent)handleComponentMap.get(event.getSource());
             if (comp == null) {
                 createListItem(event.getSource());
@@ -216,7 +217,12 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         } else if (event.getType() == ProgressEvent.TYPE_FINISH) {
             removeListItem(event.getSource());
             if (model.getSelectedHandle() != null && handle != model.getSelectedHandle()) {
-                initiateComponent(model.getSelectedHandle().requestStateSnapshot());
+                ProgressEvent snap = model.getSelectedHandle().requestStateSnapshot();
+                initiateComponent(snap);
+                if (snap.getSource().isInSleepMode()) {
+                    bar.setString(snap.getMessage());
+                }
+                
             }
         }
         
@@ -235,7 +241,10 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             repaint();
             return;
         } else {
-            if (event.getSource() != handle || event.isSwitched()) {
+            if (event.getSource() != handle || event.isSwitched() || 
+                event.getType() == ProgressEvent.TYPE_SILENT ||
+                    // the following condition re-initiates the bar when going from/to sleep mode..
+                    (event.getSource().isInSleepMode() != (bar.getClientProperty(NbProgressBar.SLEEPY) != null))) { //NIO18N
                 initiateComponent(event);
             }
             if (event.getWorkunitsDone() > 0) {
@@ -245,6 +254,10 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             if (event.getDisplayName() != null) {
                 label.setText(event.getDisplayName());
             }
+            if (event.getSource().isInSleepMode()) {
+                bar.setString(event.getMessage());
+            }
+            
         } 
     }
     
@@ -273,6 +286,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
             toShow = true;
         }
         NbProgressBar.setupBar(event.getSource(), bar);
+        
         if (bar.getParent() == null) {
             add(bar);
             toShow = true;

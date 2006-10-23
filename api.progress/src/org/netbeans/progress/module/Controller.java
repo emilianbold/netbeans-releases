@@ -119,6 +119,12 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         postEvent(event);
     }
     
+    public void toSilent(InternalHandle handle, String message) {
+        ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SILENT, isWatched(handle), message);
+        postEvent(event);
+    }
+    
+    
     public void toDeterminate(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SWITCH, isWatched(handle));
         postEvent(event);
@@ -132,15 +138,18 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     
     public ProgressEvent snapshot(InternalHandle handle, String msg, 
                   int units, int percentage, long estimate) {
+        if (handle.isInSleepMode()) {
+            return new ProgressEvent(handle, ProgressEvent.TYPE_SILENT, isWatched(handle), msg);
+        }
         return new ProgressEvent(handle, msg, units, percentage, estimate, isWatched(handle));
     }
     
     
-    public void explicitSelection(InternalHandle handle, int units, int percentage, long estimate) {
+    public void explicitSelection(InternalHandle handle) {
         InternalHandle old = model.getExplicitSelection();
         model.explicitlySelect(handle);
         Collection<ProgressEvent> evnts = new ArrayList<ProgressEvent>();
-        evnts.add(new ProgressEvent(handle, null, units, percentage, estimate, isWatched(handle)));
+        evnts.add(handle.requestStateSnapshot());
         if (old != null && old != handle) {
             // refresh the old one, results in un-bodling the text.
             evnts.add(old.requestStateSnapshot());
@@ -307,6 +316,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
         run();
     }
+
     
 
 }

@@ -203,7 +203,8 @@ public class ListComponent extends JPanel {
     
     void processProgressEvent(ProgressEvent event) {
         if (event.getType() == ProgressEvent.TYPE_PROGRESS || 
-                event.getType() == ProgressEvent.TYPE_SWITCH) {
+                event.getType() == ProgressEvent.TYPE_SWITCH || 
+                event.getType() == ProgressEvent.TYPE_SILENT) {
             if (event.getSource() != handle) {
                 throw new IllegalStateException();
             }

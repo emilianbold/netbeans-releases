@@ -82,6 +82,17 @@ public final class ProgressHandle {
     }
     
     /**
+     * Currently running task can switch to silent suspend mode where the progress bar 
+     * stops moving, hides completely or partially. Useful to make progress in status bar less intrusive 
+     * for very long running tasks, eg. running an ant script that executes user application, debugs user application etc.
+     * Any incoming progress wakes up the progress bar to previous state.
+     * @since org.netbeans.api.progress/1 1.9
+     */
+    public void suspend(String message) {
+        internal.toSilent(message);
+    }
+    
+    /**
      * Currently indeterminate task can be switched to show percentage completed.
      * A common usecase is to calculate the amount of work in the beginning showing 
      * in indeterminate mode and later switch to the progress with known steps

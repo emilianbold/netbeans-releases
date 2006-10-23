@@ -37,6 +37,8 @@ import org.netbeans.progress.spi.ProgressEvent;
  * @author mkleint
  */
 public class NbProgressBar extends JProgressBar implements ExtractedProgressUIWorker {
+    
+    static final String SLEEPY = "sleepy"; //NOI18N
     boolean isSetup = false;
     boolean usedInStatusBar = false;
     //TODO these two ought to be created only when the the bar is used externally..
@@ -112,8 +114,16 @@ public class NbProgressBar extends JProgressBar implements ExtractedProgressUIWo
     
     
     static void setupBar(InternalHandle handle, NbProgressBar bar) {
+        bar.putClientProperty(SLEEPY, null); //NIO18N
         int total = handle.getTotalUnits();
-        if (total < 1) {
+        if (handle.isInSleepMode()) {
+            bar.setStringPainted(true);
+            bar.setIndeterminate(false);
+            bar.setMaximum(1);
+            bar.setMinimum(0);
+            bar.setValue(0);
+            bar.putClientProperty(SLEEPY, new Object()); //NIO18N
+        } else if (total < 1) {
             // macosx workaround..            
             bar.setValue(bar.getMaximum());
             bar.setIndeterminate(true);

@@ -55,6 +55,7 @@ public final class InternalHandle {
     private long initialEstimate;
     private long timeStarted;
     private long timeLastProgress;
+    private long timeSleepy = 0;
     private String lastMessage;
     private final Cancellable cancelable;
     private final Action viewAction;
@@ -132,6 +133,22 @@ public final class InternalHandle {
     
     public int getInitialDelay() {
         return initialDelay;
+    }
+    
+    public synchronized void toSilent(String message) {
+        if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
+            assert false : "cannot switch to silent mode when not running";
+        }
+        timeLastProgress = System.currentTimeMillis();
+        timeSleepy = timeLastProgress;
+        if (message != null) {
+            lastMessage = message;
+        }
+        controller.toSilent(this, message);
+    }
+    
+    public boolean isInSleepMode() {
+        return timeSleepy == timeLastProgress;
     }
     
     public synchronized void toIndeterminate() {
@@ -273,10 +290,10 @@ public final class InternalHandle {
     
    // XXX - called from UI, threading
     public synchronized void requestExplicitSelection() {
-        timeLastProgress = System.currentTimeMillis();
-        controller.explicitSelection(this, currentUnit, 
-                            totalUnits > 0 ? getPercentageDone() : -1, 
-                            (initialEstimate == -1 ? -1 : calculateFinishEstimate()));
+        if (!isInSleepMode()) {
+            timeLastProgress = System.currentTimeMillis();
+        }
+        controller.explicitSelection(this);
     }
     
     public synchronized void requestDisplayNameChange(String newDisplayName) {
@@ -292,7 +309,9 @@ public final class InternalHandle {
     
 // XXX - called from UI, threading 
     public synchronized ProgressEvent requestStateSnapshot() {
-        timeLastProgress = System.currentTimeMillis();
+        if (!isInSleepMode()) {
+            timeLastProgress = System.currentTimeMillis();
+        }
         return controller.snapshot(this, lastMessage, currentUnit, 
                             totalUnits > 0 ? getPercentageDone() : -1, 
                             (initialEstimate == -1 ? -1 : calculateFinishEstimate()));
@@ -374,6 +393,7 @@ public final class InternalHandle {
     public long getTimeStampStarted() {
         return timeStarted;
     }
+
 
 
 }
