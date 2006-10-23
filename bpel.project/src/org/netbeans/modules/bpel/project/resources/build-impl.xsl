@@ -118,7 +118,7 @@ is divided into following sections:
                 <condition property="no.javadoc.preview">
                     <isfalse value="${{javadoc.preview}}"/>
                 </condition>
- 		    <available file="${{src.dir}}/../retrieved" property="retrieved.exists"/>                
+            <available file="${{src.dir}}/../retrieved" property="retrieved.exists"/>                
             </target>
 
             <target name="post-init">
@@ -267,51 +267,51 @@ is divided into following sections:
             </target>
 //B20050104 -->            
             <target name="init-taskdefs"   if="from.commandline">
-		
-		<!-- we need to seperate bpel model into standalone jars so that we
-		can use them in ant tasks. for now we need to add the jars of this modules 
-		-->
+        
+        <!-- we need to seperate bpel model into standalone jars so that we
+        can use them in ant tasks. for now we need to add the jars of this modules 
+        -->
         <path id="ant.task.classpath.models">
             <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
             <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
             <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-model.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-xam.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-schema-model.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-            <pathelement location="${{netbeans.home}}/../platform6/lib/org-openide-util.jar"/>
-            <pathelement location="${{netbeans.home}}/../platform6/modules/org-openide-loaders.jar"/>                       
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+            <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+            <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
             <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-apache-xml-resolver.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-retriever.jar"/> 
-            <pathelement location="${{netbeans.home}}/../ide7/modules/ext/resolver-1_1_nb.jar"/> 
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/> 
+            <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/> 
             
         </path>
         <path id="ant.task.classpath.validation">
-        	
-        	<pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-core.jar"/>
+            
+            <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-core.jar"/>
             <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
             <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
             <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-model.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-xam.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-schema-model.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-            <pathelement location="${{netbeans.home}}/../platform6/lib/org-openide-util.jar"/>
-            <pathelement location="${{netbeans.home}}/../platform6/modules/org-openide-loaders.jar"/>                       
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+            <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+            <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
             <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
             <pathelement location="${{netbeans.home}}/../xmltools1/modules/org-netbeans-modules-xml-xpath.jar"/>
             <pathelement location="${{netbeans.home}}/../xmltools1/modules/ext/jxpath/jxpath1.1.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-apache-xml-resolver.jar"/>
-            <pathelement location="${{netbeans.home}}/../ide7/modules/org-netbeans-modules-xml-retriever.jar"/>      
-	    <pathelement location="${{netbeans.home}}/../ide7/modules/ext/resolver-1_1_nb.jar"/>            
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
+            <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/>      
+        <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/>            
             
             
         </path>        
                 
                 <!--
-		<taskdef name="generate-portmap-descriptors" classname="org.netbeans.modules.bpel.project.anttasks.GeneratePortmapDescriptors">
+        <taskdef name="generate-portmap-descriptors" classname="org.netbeans.modules.bpel.project.anttasks.GeneratePortmapDescriptors">
                         <classpath refid="ant.task.classpath" />
-		</taskdef>
-		-->
+        </taskdef>
+        -->
                 
                 <taskdef name="BpelProjectJBIGen" classname="org.netbeans.modules.bpel.project.anttasks.GenerateJBIDescriptorTask">
                     <classpath refid="ant.task.classpath.models"/>
@@ -319,10 +319,10 @@ is divided into following sections:
                 
 
                 <!--
-		<taskdef name="validate-project" classname="org.netbeans.modules.bpel.project.anttasks.ValidationTask">
+        <taskdef name="validate-project" classname="org.netbeans.modules.bpel.project.anttasks.ValidationTask">
                        <classpath refid="ant.task.classpath" />
-		</taskdef>
-		-->
+        </taskdef>
+        -->
                  
                 <taskdef name="BpelProjectValidate" classname="org.netbeans.modules.bpel.project.anttasks.ValidateBPELProjectTask">
                     <classpath refid="ant.task.classpath.validation"/>
@@ -349,14 +349,14 @@ is divided into following sections:
             </xsl:call-template>
 
             <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service|/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
-				<target name="wscompile-init">
-					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
-					  <classpath path="${{wscompile.classpath}}"/>
-					</taskdef>
-					<mkdir dir="${{build.classes.dir}}/META-INF/wsdl"/>
-					<mkdir dir="${{build.generated.dir}}/wssrc"/>
-				</target>
-			</xsl:if>
+                <target name="wscompile-init">
+                    <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
+                      <classpath path="${{wscompile.classpath}}"/>
+                    </taskdef>
+                    <mkdir dir="${{build.classes.dir}}/META-INF/wsdl"/>
+                    <mkdir dir="${{build.generated.dir}}/wssrc"/>
+                </target>
+            </xsl:if>
 
             <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
               <xsl:variable name="wsname">
@@ -380,31 +380,31 @@ is divided into following sections:
               </target>
             </xsl:for-each>
 
-			<xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
-				<xsl:variable name="wsclientname">
-					<xsl:value-of select="ejb:web-service-client-name"/>
-				</xsl:variable>
+            <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
+                <xsl:variable name="wsclientname">
+                    <xsl:value-of select="ejb:web-service-client-name"/>
+                </xsl:variable>
 
-				<target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
-					<copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
-						tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
-						<filterset>
-							<!-- replace token with reference to WSDL file in source tree, not build tree, since the
-							     the file probably has not have been copied to the build tree yet. -->
-							<filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
-						</filterset>
-					</copy>
-					<wscompile
-						xPrintStackTrace="true" verbose="true"
-						fork="true" keep="true" import="true" features="norpcstructures"
-						base="${{build.classes.dir}}"
-						sourceBase="${{build.generated.dir}}/wssrc"
-						classpath="${{wscompile.classpath}}"
-						mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
-						config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
-					</wscompile>
-				</target>
-			</xsl:for-each>
+                <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
+                    <copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
+                        tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
+                        <filterset>
+                            <!-- replace token with reference to WSDL file in source tree, not build tree, since the
+                                 the file probably has not have been copied to the build tree yet. -->
+                            <filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
+                        </filterset>
+                    </copy>
+                    <wscompile
+                        xPrintStackTrace="true" verbose="true"
+                        fork="true" keep="true" import="true" features="norpcstructures"
+                        base="${{build.classes.dir}}"
+                        sourceBase="${{build.generated.dir}}/wssrc"
+                        classpath="${{wscompile.classpath}}"
+                        mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
+                        config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
+                    </wscompile>
+                </target>
+            </xsl:for-each>
 
             <target name="pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
@@ -488,16 +488,16 @@ is divided into following sections:
 
             <target name="post-compile">
                 <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
-					<xsl:attribute name="depends">
-						<xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
-							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-							<xsl:variable name="wsname2">
-								<xsl:value-of select="ejb:web-service-name"/>
-							</xsl:variable>
-							<xsl:value-of select="ejb:web-service-name"/><xsl:text>_wscompile</xsl:text>
-						</xsl:for-each>
-					</xsl:attribute>
-				</xsl:if>
+                    <xsl:attribute name="depends">
+                        <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                            <xsl:variable name="wsname2">
+                                <xsl:value-of select="ejb:web-service-name"/>
+                            </xsl:variable>
+                            <xsl:value-of select="ejb:web-service-name"/><xsl:text>_wscompile</xsl:text>
+                        </xsl:for-each>
+                    </xsl:attribute>
+                </xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
@@ -543,14 +543,14 @@ is divided into following sections:
                 <mkdir dir="${{build.dir}}"/>
                 
                 <xsl:comment> run the validation task here. </xsl:comment>
-				<!--
+                <!--
                                 <validate-project buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" />
-				-->
+                -->
                 <BpelProjectValidate buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" classpathRef="ant.task.classpath.validation" allowBuildWithError="${{allow.build.with.error}}"/>    
-				
+                
                 <xsl:comment> copy all files from project source directory to build directory. </xsl:comment>
                 <copy todir="${{build.dir}}" preservelastmodified="true" >
-                	<fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd" dir="${{src.dir}}"/>
+                    <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd" dir="${{src.dir}}"/>
                 </copy>
                 <antcall target="PackageRetrievedFiles" inheritAll="true"/>
                 <!--
@@ -571,11 +571,11 @@ is divided into following sections:
                 <dependent-project-file-extractor buildDirectory="${{basedir}}/${{build.dir}}/dependentProjectFiles" sourceDirectory="${{basedir}}/${{src.dir}}" projectDirectory="${{basedir}}" projectClassPath="${{javac.classpath}}"/>
                 -->
             </target>
-	    <target name="PackageRetrievedFiles" if="retrieved.exists">
-		   <copy todir="${{build.dir}}/META-INF" preservelastmodified="true" failonerror="false">
-			    <fileset dir="${{src.dir}}/../retrieved"/>
-			</copy>    
-	    </target>
+        <target name="PackageRetrievedFiles" if="retrieved.exists">
+           <copy todir="${{build.dir}}/META-INF" preservelastmodified="true" failonerror="false">
+                <fileset dir="${{src.dir}}/../retrieved"/>
+            </copy>    
+        </target>
             <target name="dist_se">
                 <xsl:attribute name="depends">init,pre-dist</xsl:attribute>
                 <jar compress="${{jar.compress}}" jarfile="${{build.dir}}/SEDeployment.jar">

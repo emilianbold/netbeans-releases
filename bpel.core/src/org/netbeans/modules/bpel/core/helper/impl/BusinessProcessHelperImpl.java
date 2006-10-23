@@ -82,7 +82,7 @@ public class BusinessProcessHelperImpl extends Object implements
         // Enumeration<FileObject> filesInProject =
         // projectDir.getChildren(true);
         for (int i = 0; i < sourceGroup.length; i++) {
-            Enumeration<FileObject> filesInProject = sourceGroup[i]
+            Enumeration<FileObject> filesInProject = (Enumeration<FileObject>) sourceGroup[i]
                     .getRootFolder().getChildren(true);
 
             while (filesInProject.hasMoreElements()) {
@@ -116,7 +116,7 @@ public class BusinessProcessHelperImpl extends Object implements
         // Enumeration<FileObject> filesInProject =
         // projectDir.getChildren(true);
         for (int i = 0; i < sourceGroup.length; i++) {
-            Enumeration<FileObject> filesInProject = sourceGroup[i]
+            Enumeration<FileObject> filesInProject = (Enumeration<FileObject>) sourceGroup[i]
                     .getRootFolder().getChildren(true);
 
             while (filesInProject.hasMoreElements()) {
