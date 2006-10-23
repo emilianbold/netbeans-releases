@@ -208,7 +208,7 @@ public final class SubSequenceTokenList implements TokenList {
             // As limitEndIndex is inited it will no longer use lastToken caching
             // because TokenSequence will use its own similar caching for token offsets.
             return (index < limitEndIndex)
-                ? tokenList.tokenOrBranch(limitStartIndex + index)
+                ? tokenList.tokenOrBranch(index)
                 : null;
         }
     }
