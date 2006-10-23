@@ -30,7 +30,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.*;
 import org.netbeans.api.lexer.LanguageDescription;
-import org.netbeans.api.xml.lexer.XMLLanguage;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.lexer.editorbridge.LexerEditorKit;
 import org.openide.awt.StatusDisplayer;
 
@@ -94,7 +94,7 @@ public class XMLKit extends LexerEditorKit implements org.openide.util.HelpCtx.P
             if (mimeType == null){
                 doc.putProperty("mimeType", getContentType()); //NOI18N
             }
-            doc.putProperty(LanguageDescription.class, XMLLanguage.description());
+            doc.putProperty(LanguageDescription.class, XMLTokenId.language());
             return doc;
         } else {
             return new NbEditorDocument (this.getClass());

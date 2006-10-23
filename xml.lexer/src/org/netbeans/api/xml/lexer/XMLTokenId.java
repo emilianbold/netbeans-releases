@@ -12,7 +12,21 @@
  */
 package org.netbeans.api.xml.lexer;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.LanguageDescription;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.xml.lexer.XMLLexer;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  * Token ids of XML language
@@ -66,4 +80,41 @@ public enum XMLTokenId implements TokenId {
         return primaryCategory;
     }
 
+    private static final LanguageDescription<XMLTokenId> language = new LanguageHierarchy<XMLTokenId>() {
+        protected Collection<XMLTokenId> createTokenIds() {
+            return EnumSet.allOf(XMLTokenId.class);
+        }
+        
+        protected Map<String,Collection<XMLTokenId>> createTokenCategories() {
+            Map<String,Collection<XMLTokenId>> cats = new HashMap<String,Collection<XMLTokenId>>();
+            
+            // Incomplete literals
+            //cats.put("incomplete", EnumSet.of());
+            // Additional literals being a lexical error
+            //cats.put("error", EnumSet.of());
+            
+            return cats;
+        }
+        
+        public Lexer<XMLTokenId> createLexer(
+        LexerInput input, TokenFactory<XMLTokenId> tokenFactory, Object state,
+        LanguagePath languagePath, InputAttributes inputAttributes) {
+            return new XMLLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        }
+        
+        public LanguageEmbedding embedding(
+        Token<XMLTokenId> token, boolean tokenComplete,
+        LanguagePath languagePath, InputAttributes inputAttributes) {
+            return null; // No embedding
+        }
+        
+        public String mimeType() {
+            return "text/XML";
+        }
+    }.language();
+    
+    public static LanguageDescription<XMLTokenId> language() {
+        return language;
+    }
+    
 }
