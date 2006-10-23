@@ -59,8 +59,6 @@ public final class VistaLFCustoms extends LFCustoms {
     private static final String TAB_SEL_BORDER = "tab_sel_border"; //NOI18N
     private static final String TAB_BORDER_INNER = "tab_border_inner"; //NOI18N      
     
-    private static final String TAHOMA_FONT_NAME = "Tahoma";
-    
     static final String SCROLLPANE_BORDER_COLOR = "scrollpane_border"; //NOI18N
 
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
