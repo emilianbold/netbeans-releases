@@ -155,7 +155,10 @@ public abstract class XMLUtils {
             if(list == null) {
                 return null;
             }
-            if(list.size()>1 || list.size() <= 0 ) {
+            if(list.size()==0) {
+                return null;
+            }
+            if(list.size()>1 ) {
                 throw new ParseException("Requested single node, returned " +
                         list.size() + " nodes");
             }
