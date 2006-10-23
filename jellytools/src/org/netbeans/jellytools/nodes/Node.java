@@ -229,6 +229,18 @@ public class Node {
     /** selects node */
     public void select() {
         tree().selectPath(getTreePath());
+        // We need to click on path on Mac because selectPath doesn't fire selection change event
+        if(System.getProperty("os.name").toLowerCase().indexOf("mac") > -1) { // NOI18N
+            try {
+                // sleep to workaround IDE's behavior. IDE consider as double click
+                // two single clicks on the same position with delay shorter than 300 ms.
+                // See org.openide.awt.MouseUtils.isDoubleClick().
+                Thread.sleep(300);
+            } catch (Exception e) {
+                throw new JemmyException("Sleeping interrupted", e);
+            }
+            tree().clickOnPath(getTreePath());
+        }
         // sleep to workaround IDE's behavior. IDE consider as double click
         // two single clicks on the same position with delay shorter than 300 ms.
         // See org.openide.awt.MouseUtils.isDoubleClick().
