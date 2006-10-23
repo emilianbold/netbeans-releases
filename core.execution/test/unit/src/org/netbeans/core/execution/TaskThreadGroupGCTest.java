@@ -22,9 +22,10 @@ package org.netbeans.core.execution;
 import java.awt.Frame;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
+import org.netbeans.junit.NbTestCase;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 
@@ -42,39 +43,39 @@ public class TaskThreadGroupGCTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-	        f = new Frame();
-		f.setVisible(true);
+                f = new Frame();
+                f.setVisible(true);
             }
         });
     }
-    
+
     protected void tearDown() throws Exception {
-        
+
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-	        f.setVisible(false);
-		f.dispose();
-		f = null;
+                f.setVisible(false);
+                f.dispose();
+                f = null;
             }
         });
         super.tearDown();
     }
-    
+
 
     protected int timeOut() {
-        return 5000;
+        return 60000;
     }
-	
-	
+
+
     public void testTTGGC() throws Exception {
-        final Reference/*<Thread>*/[] t = new Reference[4];
+        final List<Reference<Thread>> t = new ArrayList<Reference<Thread>>();
         Runnable r = new Runnable() {
             public void run() {
                 System.out.println("Running a task in the execution engine...");
-                t[0] = new WeakReference(Thread.currentThread());
+                t.add(new WeakReference<Thread>(Thread.currentThread()));
                 Runnable r1 = new Runnable() {
                     public void run() {
                         System.out.println("Ran second thread.");
@@ -87,7 +88,7 @@ public class TaskThreadGroupGCTest extends NbTestCase {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                t[1] = new WeakReference(nue1);
+                t.add(new WeakReference<Thread>(nue1));
                 Runnable r2 = new Runnable() {
                     public void run() {
                         System.out.println("Ran third thread.");
@@ -95,29 +96,31 @@ public class TaskThreadGroupGCTest extends NbTestCase {
                 };
                 Thread nue2 = new Thread(r2);
                 nue2.start();
-                t[2] = new WeakReference(nue2);
+                t.add(new WeakReference<Thread>(nue2));
                 Runnable r3 = new Runnable() {
                     public void run() {
                         fail("Should not have even run.");
                     }
                 };
                 Thread nue3 = new Thread(r3);
-                t[3] = new WeakReference(nue3);
+                t.add(new WeakReference<Thread>(nue3));
                 System.out.println("done.");
             }
         };
         ExecutorTask task = ExecutionEngine.getDefault().execute("foo", r, null);
         assertEquals(0, task.result());
-        assertNotNull(t[0]);
-        assertNotNull(t[1]);
-        assertNotNull(t[2]);
-        assertNotNull(t[3]);
+        assertFalse(t.toString(), t.contains(null));
         r = null;
         task = null;
-        assertGC("Collected task thread", t[0]);
-        assertGC("Collected secondary task thread too", t[1]);
-        assertGC("Collected forked task thread too", t[2]);
-        assertGC("Collected unstarted task thread too", t[3]);
+        Thread main = t.get(0).get();
+        if (main != null) {
+            assertFalse(main.isAlive());
+            main = null;
+        }
+        assertGC("Collected secondary task thread too", t.get(1));
+        assertGC("Collected forked task thread too", t.get(2));
+        assertGC("Collected unstarted task thread too", t.get(3));
+        assertGC("Collected task thread " + t.get(0).get(), t.get(0));
     }
-    
+
 }
