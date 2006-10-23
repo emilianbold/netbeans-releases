@@ -19,22 +19,28 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.io.File;
+import java.util.prefs.Preferences;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.filesystems.FileUtil;
-import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.NbPreferences;
 
 /** SystemOption to store the list of open projects
  *  XXX Should be removed later and changed either to registry
  *      or something else
  */
-public class OpenProjectListSettings extends SystemOption {
+public class OpenProjectListSettings {
 
+    private static OpenProjectListSettings INSTANCE = new OpenProjectListSettings();
+    
     private static final String OPEN_PROJECTS_URLS = "OpenProjectsURLs"; //NOI18N
     private static final String LAST_OPEN_PROJECT_DIR = "LastOpenProjectDir"; //NOI18N
     private static final String OPEN_SUBPROJECTS = "OpenSubprojects"; //NOI18N
@@ -48,55 +54,165 @@ public class OpenProjectListSettings extends SystemOption {
     private static final String PROP_PROJECT_CATEGORY = "lastSelectedProjectCategory"; //NOI18N
     private static final String PROP_PROJECT_TYPE = "lastSelectedProjectType"; //NOI18N
     
-    // PERSISTENCE
-    private static final long serialVersionUID = 8754987489474L;
     
+    private OpenProjectListSettings() {
+    }
     
     public static OpenProjectListSettings getInstance() {
-        return SystemOption.findObject(OpenProjectListSettings.class, true);
+        return INSTANCE;
     }
     
     public String displayName() {
         return NbBundle.getMessage (OpenProjectListSettings.class,"TXT_UISettings"); //NOI18N
     }        
+    
+    protected final String putProperty(String key, String value, boolean notify) {
+        String retval = getProperty(key);
+        if (value != null) {
+            getPreferences().put(key, value);
+        } else {
+            getPreferences().remove(key);
+        }
+        return retval;
+    }
+
+    protected final String getProperty(String key) {
+        return getPreferences().get(key, null);
+    }    
+    
+    protected final List<URL> getURLList(String key) {
+        List<String> strs = getStringList(key);
+        List<URL> toRet = new ArrayList<URL>();
+        for (String val : strs) {
+            try {
+                toRet.add(new URL(val));
+            } catch (MalformedURLException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return toRet;
+    }
+    
+    protected final List<String> getStringList(String key) {
+        Preferences pref = getPreferences();
+        int count = 0;
+        String val = pref.get(key + "." + count, null);
+        List<String> toRet = new ArrayList<String>();
+        while (val != null) {
+            toRet.add(val);
+            count = count + 1;
+            val = pref.get(key + "." + count, null);
+        }
+        return toRet;
+    }
+    
+    protected final List<ExtIcon> getIconList(String key) {
+        Preferences pref = getPreferences();
+        int count = 0;
+        byte[] val = pref.getByteArray(key + "." + count, null);
+        List<ExtIcon> toRet = new ArrayList<ExtIcon>();
+        while (val != null) {
+            toRet.add(new ExtIcon(val));
+            count = count + 1;
+            val = pref.getByteArray(key + "." + count, null);
+        }
+        return toRet;
+    }
+    
+    protected final void setIconList(String basekey, List<ExtIcon> list) throws IOException {
+        assert list != null;
+        Preferences pref = getPreferences();
+        int count = 0;
+        String key = basekey + "." + count;
+        String val = pref.get(key, null);
+        Iterator<ExtIcon> it = list.iterator();
+        while (val != null || it.hasNext()) {
+            if (it.hasNext()) {
+                pref.putByteArray(key, it.next().getBytes());
+            } else {
+                pref.remove(key);
+            }
+            count = count + 1;
+            key = basekey + "." + count;
+            val = pref.get(key, null);
+        }
+    }
+    
+    
+    protected final void setStringList(String basekey, List<String> list) {
+        assert list != null;
+        Preferences pref = getPreferences();
+        int count = 0;
+        String key = basekey + "." + count;
+        String val = pref.get(key, null);
+        Iterator<String> it = list.iterator();
+        while (val != null || it.hasNext()) {
+            if (it.hasNext()) {
+                pref.put(key, it.next());
+            } else {
+                pref.remove(key);
+            }
+            count = count + 1;
+            key = basekey + "." + count;
+            val = pref.get(key, null);
+        }
+    }
+    
+    protected final void setURLList(String basekey, List<URL> list) {
+        assert list != null;
+        List<String> strs = new ArrayList<String>(list.size());
+        for (URL url : list) {
+            strs.add(url.toExternalForm());
+        }
+        setStringList(basekey, strs);
+    }
+    
+    protected final Preferences getPreferences() {
+        return NbPreferences.forModule(OpenProjectListSettings.class);
+    }
 
     public List<URL> getOpenProjectsURLs() {
-        List list = (List) getProperty(OPEN_PROJECTS_URLS);
-        return list == null ? new ArrayList<URL>(3) : NbCollections.checkedListByCopy(list, URL.class, true);
+        return getURLList(OPEN_PROJECTS_URLS);
     }
 
     public void setOpenProjectsURLs( List<URL> list ) {
-        putProperty( OPEN_PROJECTS_URLS, list, true  );
+        setURLList( OPEN_PROJECTS_URLS, list);
     }
     
     public boolean isOpenSubprojects() {        
-        Boolean value = (Boolean)getProperty( OPEN_SUBPROJECTS );        
-        return value == null ? true : value;
+        return getPreferences().getBoolean( OPEN_SUBPROJECTS, true);
     }
     
     public void setOpenSubprojects( boolean openSubprojects ) {
-        putProperty(OPEN_SUBPROJECTS, openSubprojects, true);
+        getPreferences().putBoolean(OPEN_SUBPROJECTS, openSubprojects);
     }
     
     public boolean isOpenAsMain() {        
-        Boolean value = (Boolean)getProperty( OPEN_AS_MAIN );        
-        return value == null ? true : value;
+        return getPreferences().getBoolean( OPEN_AS_MAIN, true);
     }
     
     public void setOpenAsMain( boolean openAsMain ) {
-        putProperty(OPEN_AS_MAIN, openAsMain, true);
+        getPreferences().putBoolean(OPEN_AS_MAIN, openAsMain);
     }
     
     public URL getMainProjectURL() {
-        return (URL)getProperty( MAIN_PROJECT_URL );
+        String str = getProperty(MAIN_PROJECT_URL);
+        if (str != null) {
+            try {
+                return new URL(str);
+            } catch (MalformedURLException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return null;
     }
     
     public void setMainProjectURL( URL mainProjectURL ) {
-        putProperty( MAIN_PROJECT_URL, mainProjectURL, true  );
+        putProperty( MAIN_PROJECT_URL, mainProjectURL != null ? mainProjectURL.toString() : null, true );
     }
     
     public String getLastOpenProjectDir() {
-        String result = (String)getProperty( LAST_OPEN_PROJECT_DIR );
+        String result = getProperty( LAST_OPEN_PROJECT_DIR );
         if (result == null) {
             result = getProjectsFolder().getAbsolutePath();
         }
@@ -108,34 +224,35 @@ public class OpenProjectListSettings extends SystemOption {
     }
     
     public List<URL> getRecentProjectsURLs() {
-        List list = (List) getProperty(RECENT_PROJECTS_URLS);
-        return list == null ? new ArrayList<URL>(5) : NbCollections.checkedListByCopy(list, URL.class, true);
+        return getURLList(RECENT_PROJECTS_URLS);
     }
     
     public List<String> getRecentProjectsDisplayNames() {
-        List list = (List) getProperty(RECENT_PROJECTS_DISPLAY_NAMES);
-        return list == null ? new ArrayList<String>(5) : NbCollections.checkedListByCopy(list, String.class, true);
+        return getStringList(RECENT_PROJECTS_DISPLAY_NAMES);
     }
     
     public List<ExtIcon> getRecentProjectsIcons() {
-        List list = (List) getProperty(RECENT_PROJECTS_DISPLAY_ICONS);
-        return list == null ? new ArrayList<ExtIcon>(5) : NbCollections.checkedListByCopy(list, ExtIcon.class, true);
+        return getIconList(RECENT_PROJECTS_DISPLAY_ICONS);
     }
     
     public void setRecentProjectsURLs( List<URL> list ) {
-        putProperty( RECENT_PROJECTS_URLS, list, true  );
+        setURLList(RECENT_PROJECTS_URLS, list);
     }
     
     public void setRecentProjectsDisplayNames(List<String> list) {
-        putProperty(RECENT_PROJECTS_DISPLAY_NAMES, list, true);
+        setStringList(RECENT_PROJECTS_DISPLAY_NAMES, list);
     }
     
     public void setRecentProjectsIcons(List<ExtIcon> list) {
-        putProperty(RECENT_PROJECTS_DISPLAY_ICONS, list, true);
+        try {
+            setIconList(RECENT_PROJECTS_DISPLAY_ICONS, list);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
     
     public File getProjectsFolder () {
-        String result = (String) this.getProperty (PROP_PROJECTS_FOLDER);
+        String result = getProperty (PROP_PROJECTS_FOLDER);
         if (result == null) {
             // property for overriding default projects dir location
             String userPrjDir = System.getProperty("netbeans.projects.dir"); // NOI18N
@@ -163,24 +280,23 @@ public class OpenProjectListSettings extends SystemOption {
 
     public void setProjectsFolder (File folder) {
         if (folder == null) {
-            this.putProperty(PROP_PROJECTS_FOLDER,null);
+            putProperty(PROP_PROJECTS_FOLDER, (String)null, true);
         }
         else {
-            this.putProperty(PROP_PROJECTS_FOLDER, folder.getAbsolutePath());
+            putProperty(PROP_PROJECTS_FOLDER, folder.getAbsolutePath(), true);
         }
     }
     
     public List<String> getRecentTemplates() {        
-        List list = (List) getProperty(RECENT_TEMPLATES);
-        return list == null ? new ArrayList<String>(100) : NbCollections.checkedListByCopy(list, String.class, true);
+        return getStringList(RECENT_TEMPLATES);
     }
     
     public void setRecentTemplates( List<String> templateNames ) {
-        putProperty( RECENT_TEMPLATES, templateNames, true  );
+        setStringList( RECENT_TEMPLATES, templateNames );
     }
     
     public String getLastSelectedProjectCategory () {
-        return (String) getProperty (PROP_PROJECT_CATEGORY);
+        return getProperty (PROP_PROJECT_CATEGORY);
     }
     
     public void setLastSelectedProjectCategory (String category) {
@@ -188,7 +304,7 @@ public class OpenProjectListSettings extends SystemOption {
     }
     
     public String getLastSelectedProjectType () {
-        return (String) getProperty (PROP_PROJECT_TYPE);
+        return getProperty (PROP_PROJECT_TYPE);
     }
     
     public void setLastSelectedProjectType (String type) {

@@ -23,72 +23,76 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.ImageConsumer;
 import java.awt.image.ImageObserver;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
+import java.io.ByteArrayOutputStream;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Hashtable;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import org.openide.util.Utilities;
 
 /**
  * Class for persisting icons
  * @author Milan Kubec
  */
-public class ExtIcon implements Externalizable {
-    
-    private static final long serialVersionUID = -8800765296866762961L;
+public class ExtIcon  {
     
     private Image image;
-    private int width;
-    private int height;
     
     public ExtIcon() {
     }
+    
+    public ExtIcon(byte[] content) {
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        ColorModel cm = ColorModel.getRGBdefault();
+        image = toolkit.createImage(new MemoryImageSource(16, 16, cm, content, 0, 16 * 4));
+    }
         
     public void setIcon(Icon icn) {
-        width = icn.getIconWidth();
-        height = icn.getIconHeight();
-        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        icn.paintIcon(new JPanel(), image.getGraphics(), 0, 0);
+        image = Utilities.icon2Image(icn);
     }
     
     public Icon getIcon() {
         return new ImageIcon(image);
     }
     
-    public void writeExternal(ObjectOutput out) throws IOException {
-        int[] pixels = new int[width * height];
-        if (image != null) {
-            try {
-                PixelGrabber pg = new PixelGrabber(image, 0, 0, width, height, pixels, 0, width);
-                pg.grabPixels();
-                if ((pg.getStatus() & ImageObserver.ABORT) != 0) {
-                    throw new IOException("Cannot load image data");
-                }
-            } catch (InterruptedException e) {
-                throw new IOException("Loading image interrupted");
+    
+    public byte[] getBytes() throws IOException {
+        PixelGrabber pg = new PixelGrabber(image, 0, 0, 16, 16, false);
+        try {
+            pg.grabPixels();
+            if ((pg.getStatus() & ImageObserver.ABORT) != 0) {
+                throw new IOException("Cannot load image data");
             }
+        } catch (InterruptedException e) {
+            throw new IOException("Loading image interrupted");
         }
-        out.writeInt(width);
-        out.writeInt(height);
-        out.writeObject(pixels);
-    }
-    
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        width = in.readInt();
-        height = in.readInt();
-        int[] pixels = (int[]) (in.readObject());
-        if (pixels != null) {
-            Toolkit toolkit = Toolkit.getDefaultToolkit();
-            ColorModel cm = ColorModel.getRGBdefault();
-            image = toolkit.createImage(new MemoryImageSource(width, height, cm, pixels, 0, width));
+        Object obj = pg.getPixels();
+        if (obj instanceof byte[]) {
+            return (byte[])obj;
+        } else {
+            return intToByteArray((int[])obj);
         }
     }
     
+    public static byte[] intToByteArray(int[] value) {
+        byte[] b = new byte[value.length * 4];
+        for (int j = 0; j < b.length; j = j + 4) {
+            int val = value[j / 4];
+            b[j] = (byte)(val >>> 24);
+            b[j + 1] = (byte)(val >> 16 & 0xff);
+            b[j + 2] = (byte)(val >> 8 & 0xff);
+            b[j + 3] = (byte)(val & 0xff);
+        }
+        return b;
+    }
 }
