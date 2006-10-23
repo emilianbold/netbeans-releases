@@ -20,7 +20,9 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
@@ -37,7 +39,7 @@ import java.util.*;
  * 
  * @author Maros Sandor
  */
-class FilesystemHandler implements FileChangeListener, InterceptionListener {
+class FilesystemHandler extends ProvidedExtensions implements FileChangeListener, InterceptionListener {
         
     private static final RequestProcessor  eventProcessor = new RequestProcessor("CVS-Event", 1); // NOI18N
 
@@ -63,7 +65,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      *
      * <p>It assumes that filesystem operations fire
      * synchronous events.
-     * @see http://javacvs.netbeans.org/nonav/issues/show_bug.cgi?id=68961
+     * @see {http://javacvs.netbeans.org/nonav/issues/show_bug.cgi?id=68961}
      */
     static void ignoreEvents(boolean ignore) {
         if (ignore) {
@@ -237,8 +239,8 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         }
     }
 
-    private Set getRootFilesystems() {
-        Set filesystems = new HashSet();
+    private Set<FileSystem> getRootFilesystems() {
+        Set<FileSystem> filesystems = new HashSet<FileSystem>();
         File [] roots = File.listRoots();
         for (int i = 0; i < roots.length; i++) {
             File root = roots[i];
@@ -319,6 +321,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             try {
                 entry = sah.getEntry(file);
             } catch (IOException e) {
+                // the Entry is not available, continue with no Entry
             }
             if (entry != null && !entry.isDirectory() && entry.isUserFileToBeRemoved()) {
                 cvsUndoRemoveLocally(sah, file, entry);    
@@ -356,6 +359,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         try {
             entry = sah.getEntry(file);
         } catch (IOException e) {
+            // the Entry is not available, continue with no Entry
         }
         if (entry != null && !entry.isDirectory() && !entry.isUserFileToBeRemoved()) {
             cvsRemoveLocally(sah, file, entry);    
@@ -397,6 +401,85 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         }
     }
     
+    // BEGIN #73042 ProvidedExtensions ~~~~~~~~~~~~~~~~~~~~
+    public ProvidedExtensions.IOHandler getRenameHandler(final File from, final String newName) {
+        final File to = new File(from.getParentFile(), newName);
+        if (shouldHandleRename(from, to)) {
+            return new ProvidedExtensions.IOHandler() {
+                public void handle() throws IOException {
+                    handleRename(from, to);
+                }
+            };
+        };
+        return null;
+    }
+
+    /**
+     * We handle directory renames that are managed by CVS.
+     */
+    private boolean shouldHandleRename(File from, File to) {
+        File destDir = to.getParentFile();
+        if (from != null && destDir != null && from.isDirectory()) {
+            FileInformation info = cache.getStatus(from);
+            return (info.getStatus() & FileInformation.STATUS_MANAGED) != 0;
+        }
+        return false;
+    }
+
+    /**
+     * We only handle directories, file renames are handled just fine via change listener. Both directories 
+     * share the same parent.
+     * 
+     * @param from source directory to be renamed
+     * @param to new directory to be created 
+     */
+    private void handleRename(File from, File to) {
+        saveRecursively(from);
+        deleteMetadataRecursively(from);
+        List<File> renamedFiles = new ArrayList<File>();
+        getAllFilesRecursively(renamedFiles, from);
+        from.renameTo(to);
+
+        refresh(renamedFiles);
+        renamedFiles.clear();
+        getAllFilesRecursively(renamedFiles, to);
+        refresh(renamedFiles);
+    }
+
+    private void refresh(List<File> files) {
+        for (File file : files) {
+            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);          
+        }
+    }
+
+    private void getAllFilesRecursively(List<File> files, File from) {
+        File [] children = from.listFiles();
+        if (children == null) return;
+        for (File child : children) {
+            files.add(child);
+            getAllFilesRecursively(files, child);
+        }
+    }
+
+    /**
+     * Deletes all CVS metadata from this directory and all its subdirectories.
+     * 
+     * @param from directory to clean
+     */
+    private void deleteMetadataRecursively(File from) {
+        File [] children = from.listFiles();
+        if (children == null) return;
+        for (File child : children) {
+            if (child.isDirectory()) {
+                if (child.getName().equals("CVS")) {
+                    Utils.deleteRecursively(child);
+                } else {
+                    deleteMetadataRecursively(child);
+                }
+            }
+        }
+    }
+
     /**
      * The folder's metadata is about to be deleted. We have to save all metadata information.
      * 
@@ -407,7 +490,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
         if (MetadataAttic.getMetadata(dir) != null) return;
         MetadataAttic.setMetadata(dir, null);
         try {
-            CvsMetadata data = CvsMetadata.readAndRemove(dir);
+            CvsMetadata data = CvsMetadata.read(dir);
             MetadataAttic.setMetadata(dir, data);
         } catch (IOException e) {
             // cannot read folder metadata, the folder is most probably not versioned
