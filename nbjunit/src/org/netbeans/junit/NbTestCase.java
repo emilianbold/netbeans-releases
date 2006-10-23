@@ -44,6 +44,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
@@ -155,7 +157,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     public void run(final TestResult result) {
         if (canRun()) {
             System.setProperty("java.util.prefs.PreferencesFactory",
-                    MemoryPreferencesFactory.class.getName());//NOI18N            
+                    MemoryPreferencesFactory.class.getName());//NOI18N
+            try {
+                Preferences.userRoot().sync();
+            } catch(BackingStoreException bex) {}
             Level lev = logLevel();
             if (lev != null) {
                 Log.configure(lev, NbTestCase.this);

@@ -22,7 +22,6 @@ package org.netbeans.junit;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import junit.framework.TestResult;
 
 /** Regular test of the behaviour.
@@ -34,7 +33,7 @@ public class NbTestCaseTest extends NbTestCase {
     public NbTestCaseTest(String testName) {
         super(testName);
     }
-
+    
     protected void setUp() throws Exception {
     }
 
@@ -60,15 +59,6 @@ public class NbTestCaseTest extends NbTestCase {
         assertEquals("One error", 1, res.errorCount());
 
 
-    }
-
-    public void testNotPersistentPreferences() throws Exception {
-        Preferences pref = Preferences.userNodeForPackage(getClass());
-        assertNotNull(pref);
-        pref.put("key", "value");
-        assertEquals("value", pref.get("key", null));
-        pref.sync();
-        assertEquals(null, pref.get("key", null));
     }
 
     public void testLoggingUtil() throws Exception {
