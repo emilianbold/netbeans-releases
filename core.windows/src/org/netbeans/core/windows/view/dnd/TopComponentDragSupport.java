@@ -187,6 +187,10 @@ implements AWTEventListener, DragSourceListener {
         if(startingPoint == null) {
             return;
         }
+        if( evt.getSource() instanceof JButton ) {
+            //do not initiate topcomponent drag when the mouse is dragged out of a tabcontrol button
+            return;
+        }
 
         Component srcComp = startingComponent;
         if(srcComp == null) {
@@ -251,13 +255,7 @@ implements AWTEventListener, DragSourceListener {
         Point ppp = new Point(point);
         Point p = SwingUtilities.convertPoint(srcComp, ppp, tabbed.getComponent());
         
-        // #38362 Don't start DnD when closing tab.
-        String cmd = tabbed.getCommandAtPoint(p);
-        
-        if (TabbedAdapter.COMMAND_SELECT.equals(cmd)) {
-            tc = tabbed.getTopComponentAt(tabbed.tabForCoordinate(p));
-        }
-
+        tc = tabbed.getTopComponentAt(tabbed.tabForCoordinate(p));
         if (tc == null) {
             return;
         }

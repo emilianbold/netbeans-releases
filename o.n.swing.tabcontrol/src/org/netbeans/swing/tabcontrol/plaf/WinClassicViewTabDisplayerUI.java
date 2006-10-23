@@ -19,13 +19,24 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
-import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.UIManager;
 import org.openide.awt.HtmlRenderer;
 
 /**
@@ -50,14 +61,10 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
     private static final int TXT_X_PAD = isGenericUI ? 3 : BUMP_X_PAD + BUMP_WIDTH + 5;
     private static final int TXT_Y_PAD = 3;
 
-    private static final int ICON_X_PAD = 1;
+    private static final int ICON_X_PAD = 2;
+    
+    private static Map<Integer, String[]> buttonIconPaths;
 
-
-    /**
-     * ******** static fields *********
-     */
-
-    private static IconLoader closeIcon;
 
     /**
      * ******** instance fields ********
@@ -81,10 +88,6 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
 
     public static ComponentUI createUI(JComponent c) {
         return new WinClassicViewTabDisplayerUI((TabDisplayer) c);
-    }
-
-    protected AbstractViewTabDisplayerUI.Controller createController() {
-        return new OwnController();
     }
 
     public Dimension getPreferredSize(JComponent c) {
@@ -144,42 +147,11 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         g.setFont(getTxtFont());
         int txtWidth = width;
         if (isSelected(index)) {
-            // paint text and close icon
-            // close icon has the bigger space priority then text
-            PinButton pin = configurePinButton (index);
-            boolean showPin = pin != null && pin.getOrientation() != TabDisplayer.ORIENTATION_INVISIBLE;
-            int space4Pin = showPin ? pinButton.getWidth() + 1 : 0;
-            if (displayer.isShowCloseButton()) {
-                if (closeIcon == null) {
-                    closeIcon = new IconLoader();
-                }
-                String iconPath = findIconPath(index);
-                Icon icon = closeIcon.obtainIcon(iconPath);
-                int iconWidth = icon.getIconWidth();
-                int space4Icon = iconWidth + (2 * ICON_X_PAD) + space4Pin;
-                txtWidth = width - space4Icon - TXT_X_PAD;
-                getCloseIconRect(tempRect, index);
-                icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
-            } else {
-                tempRect.x = x + (width - 2);
-                
-                tempRect.y = !showPin ? 0 : ((displayer.getHeight() / 2) -
-                    (pinButton.getPreferredSize().height / 2));
-                txtWidth = width - 2 * TXT_X_PAD;
-                
-            }
-            if (showPin) {
-                // don't activate and draw pin button if tab is too narrow
-                if (tempRect.x - space4Pin < x + TXT_X_PAD - 1) {
-                    pinButton.setVisible(false);
-                } else {
-                    pinButton.setVisible(true);
-                    pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
-                }
-            } else {
-                if (pinButton != null) {
-                    pinButton.setVisible(false);
-                }
+            Component buttons = getControlButtons();
+            if( null != buttons ) {
+                Dimension buttonsSize = buttons.getPreferredSize();
+                txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
+                buttons.setLocation( x + txtWidth+2*TXT_X_PAD, y + (height-buttonsSize.height)/2+1 );
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
@@ -253,30 +225,12 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
     }
 
     /**
-     * Returns path of icon which is correct for currect state of tab at given
-     * index
-     */
-    private String findIconPath(int index) {
-        if (controller.isClosePressed() == index) {
-            return "org/netbeans/swing/tabcontrol/resources/win_bigclose-pressed.gif"; // NOI18N
-        }
-        if (controller.isMouseInCloseButton() == index) {
-            return "org/netbeans/swing/tabcontrol/resources/win_bigclose-rollover.gif"; // NOI18N
-        }
-        /*if (isFocused(index)) {
-            return "org/netbeans/swing/tabcontrol/resources/win_bigclose-focus.gif"; // NOI18N
-        }*/
-        return "org/netbeans/swing/tabcontrol/resources/win_bigclose-normal.gif"; // NOI18N
-    }
-
-    /**
      * Paints dragger in given rectangle
      */
     private void drawBump(Graphics g, int index, int x, int y, int width,
                           int height) {
         if (isGenericUI) {
             //This look and feel is also used as the default UI on non-JDS
-            //GTK L&F
             return;
         }
                               
@@ -309,50 +263,6 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         }
     }
 
-    /**
-     * Computes rectangle occupied by close icon and fill values in given
-     * rectangle.
-     */
-    private Rectangle getCloseIconRect(Rectangle rect, int index) {
-        TabLayoutModel tlm = getLayoutModel();
-        int x = tlm.getX(index);
-        int w = tlm.getW(index);
-        String iconPath = findIconPath(index);
-        if (closeIcon == null) {
-            //Tab control can be asked to process mouse motion events that
-            //occured during startup - this causes an NPE here
-            closeIcon = new IconLoader();
-        }
-        Icon icon = closeIcon.obtainIcon(iconPath);
-        int iconWidth = icon.getIconWidth();
-        int iconHeight = icon.getIconHeight();
-        rect.x = x + w - iconWidth - 2 * ICON_X_PAD;
-        rect.y = getCenteredIconY(icon, index) - 1;
-        rect.width = iconWidth;
-        rect.height = iconHeight;
-        return rect;
-    }
-
-    /** Creates pin button with specialized icons for Win classic LF */
-    protected PinButton createPinButton() {
-        Map normalIcons = new HashMap(6);
-        normalIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-east.gif");
-        normalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-west.gif");
-        normalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-south.gif");
-        normalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-center.gif");
-        Map pressedIcons = new HashMap(6);
-        pressedIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-east.gif");
-        pressedIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-west.gif");
-        pressedIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-south.gif");
-        pressedIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-center.gif");
-        Map rolloverIcons = new HashMap(6);
-        rolloverIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-east.gif");
-        rolloverIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-west.gif");
-        rolloverIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-south.gif");
-        rolloverIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-center.gif");
-        return new PinButton(normalIcons, pressedIcons, rolloverIcons);
-    }
-    
     private static final Color getSelGradientColor() {
         if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
             return GTK_TABBED_PANE_BACKGROUND_1; // #68200
@@ -364,35 +274,73 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
     private static final Color getSelGradientColor2() {
         return UIManager.getColor("TabbedPane.background"); // NOI18N
     }
-    
-    /**
-     * Own close icon button controller
-     */
-    private class OwnController extends Controller {
-        //TODO - add a method to AbstractViewTabDisplayerUI to get the close button rect and implement everything
-        //on the parent class
 
-        protected int inCloseIconRect(Point point) {
-            if (!displayer.isShowCloseButton()) {
-                return -1;
-            }
-            int index = getLayoutModel().indexOfPoint(point.x, point.y);
-            if (index < 0 || !isSelected(index)) {
-                return -1;
-            }
-            return getCloseIconRect(tempRect, index).contains(point) ?
-                    index : -1;
+    private static void initIcons() {
+        if( null == buttonIconPaths ) {
+            buttonIconPaths = new HashMap<Integer, String[]>(7);
+            
+            //close button
+            String[] iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_bigclose_normal.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_bigclose_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_bigclose_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_bigclose_enabled.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
+            
+            //slide/pin button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win-pin-normal-east.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-east.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-east.gif"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_RIGHT_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win-pin-normal-west.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-west.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-west.gif"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_LEFT_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win-pin-normal-south.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-south.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-south.gif"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_DOWN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win-pin-normal-center.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-center.gif"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-center.gif"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            //TODO add more icons
+            //maximize/restore button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_maximize_normal.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_maximize_normal.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_maximize_normal.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
+
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_restore_normal.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_restore_normal.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_titlebar_restore_normal.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
         }
-        
-        protected boolean inPinButtonRect(Point p) {
-            if (pinButton == null || !pinButton.isVisible()) {
-                return false;
-            }
-            Point p2 = SwingUtilities.convertPoint(displayer, p, pinButton);
-            return pinButton.contains(p2);
+    }
+
+    public Icon getButtonIcon(int buttonId, int buttonState) {
+        Icon res = null;
+        initIcons();
+        String[] paths = buttonIconPaths.get( buttonId );
+        if( null != paths && buttonState >=0 && buttonState < paths.length ) {
+            res = TabControlButtonFactory.getIcon( paths[buttonState] );
         }
-        
-
-    } // end of OwnController
-
+        return res;
+    }
 }

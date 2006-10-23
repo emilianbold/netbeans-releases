@@ -20,6 +20,7 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -31,7 +32,9 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JPanel;
 import javax.swing.event.ListDataEvent;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
@@ -41,7 +44,6 @@ import org.netbeans.swing.tabcontrol.TabDisplayerUI;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -50,15 +52,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.KeyStroke;
@@ -66,10 +60,8 @@ import javax.swing.SingleSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
-import org.netbeans.swing.tabcontrol.LocationInformer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
@@ -93,17 +85,19 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     private FontMetrics fm;
 
     private Font txtFont;
+    
+    private Component controlButtons;
 
     protected Controller controller;
     
-    protected static IconLoader iconCache = new IconLoader();
+    private TabControlButton btnClose;
+    private TabControlButton btnAutoHidePin;
+    private TabControlButton btnMaximizeRestore;
     
-    protected PinButton pinButton;
-
     /** Pin action */
     private final Action pinAction = new PinAction();
     private static final String PIN_ACTION = "pinAction";
-
+    
     public AbstractViewTabDisplayerUI (TabDisplayer displayer) {
         super (displayer);
         displayer.setLayout(null);
@@ -121,18 +115,69 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         selectionModel.addChangeListener (controller);
         displayer.addMouseListener(controller);
         displayer.addMouseMotionListener(controller);
-        LocationInformer locInfo = displayer.getLocationInformer();
-        if (locInfo != null) {
-            pinButton = createPinButton();
-        }
-        installPinButton();
+        installControlButtons();
     }
     
-    protected void installPinButton() {
-        if (pinButton != null) {
-            displayer.add(pinButton);
-            pinButton.addActionListener(controller);
+    protected void installControlButtons() {
+        if( null != getControlButtons() )
+            displayer.add( getControlButtons() );
+    }
+    
+    private static final int ICON_X_PAD = 1;
+    
+    /**
+     * @return A component that holds all control buttons (maximize/restor, 
+     * slide/pin, close) that are displayed in the active tab or null if
+     * control buttons are not supported.
+     */
+    protected Component getControlButtons() {
+        if( null == controlButtons ) {
+            JPanel buttonsPanel = new JPanel( null );
+            buttonsPanel.setOpaque( false );
+
+            int width = 0;
+            int height = 0;
+            //create maximize/restore button
+//            if( null != displayer.getWinsysInfo() ) {
+//                btnMaximizeRestore = TabControlButtonFactory.createMaximizeRestoreButton( displayer );
+//                buttonsPanel.add( btnMaximizeRestore );
+//                Icon icon = btnMaximizeRestore.getIcon();
+//                btnMaximizeRestore.setBounds( 0, 0, icon.getIconWidth(), icon.getIconHeight() );
+//                width += icon.getIconWidth();
+//            }
+
+            //create autohide/pin button
+            if( null != displayer.getWinsysInfo() ) {
+                btnAutoHidePin = TabControlButtonFactory.createSlidePinButton( displayer );
+                buttonsPanel.add( btnAutoHidePin );
+                
+                Icon icon = btnAutoHidePin.getIcon();
+                if( 0 != width )
+                    width += ICON_X_PAD;
+                btnAutoHidePin.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+                width += icon.getIconWidth();
+            }
+
+            //create close button
+            btnClose = TabControlButtonFactory.createCloseButton( displayer );
+            buttonsPanel.add( btnClose );
+
+            Icon icon = btnClose.getIcon();
+            if( 0 != width )
+                width += ICON_X_PAD;
+            btnClose.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+            width += icon.getIconWidth();
+            height = icon.getIconHeight();
+            
+            Dimension size = new Dimension( width, height );
+            buttonsPanel.setMinimumSize( size );
+            buttonsPanel.setSize( size );
+            buttonsPanel.setPreferredSize( size );
+            buttonsPanel.setMaximumSize( size );
+            
+            controlButtons = buttonsPanel;
         }
+        return controlButtons;
     }
 
     public void uninstallUI(JComponent c) {
@@ -144,10 +189,9 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         selectionModel.removeChangeListener(controller);
         displayer.removeMouseListener(controller);
         displayer.removeMouseMotionListener(controller);
-        if (pinButton != null) {
-            displayer.remove(pinButton);
-            pinButton.removeActionListener(controller);
-            pinButton = null;
+        if (controlButtons != null) {
+            displayer.remove(controlButtons);
+            controlButtons = null;
         }
         layoutModel = null;
         selectionModel = null;
@@ -155,7 +199,9 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         controller = null;
     }
 
-    protected abstract Controller createController();
+    protected Controller createController() {
+        return new Controller();
+    }
 
     public void paint(Graphics g, JComponent c) {
 
@@ -218,11 +264,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return new DefaultTabSelectionModel (displayer.getModel());
     }
 
-    public String getCommandAtPoint(Point p) {
-        return controller.inCloseIconRect(p) != -1 ? TabDisplayer.COMMAND_CLOSE :
-                TabDisplayer.COMMAND_SELECT;
-    }
-
     public int dropIndexOfPoint(Point p) {
         int result = 0;
         for (int i=0; i < displayer.getModel().size(); i++) {
@@ -283,73 +324,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
 
 
-    /**
-     * Utility to return y-axis centered icon position in given tab
-     */
-    protected final int getCenteredIconY(Icon icon, int index) {
-        TabLayoutModel tlm = getLayoutModel();
-        int y = tlm.getY(index);
-        int h = tlm.getH(index);
-        int iconHeight = icon.getIconHeight();
-        return y + (Math.max(0, h / 2 - iconHeight / 2));
-    }
-    
-    
-    /** Utility method to access pin button instance conveniently */
-    protected final PinButton configurePinButton (int index) {
-        if (pinButton == null) {
-            return null;
-        }
-        LocationInformer locInfo = getDisplayer().getLocationInformer();
-        if (locInfo == null) {
-            return null;
-        }
-        Object orientation = locInfo.getOrientation(getDisplayer().getModel().getTab(index).getComponent());
-        pinButton.setOrientation(orientation);
-        return pinButton;
-    }
-    
-    /** Subclasses should create and return pin button instance, parametrized
-     * to given orientation
-     * @see PinButton
-     */ 
-    // XXX - change back to abstract after implementing in all LFs
-    protected /*abstract*/ PinButton createPinButton () {
-        Map normalIcons = new HashMap(6);
-        normalIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-east.gif");
-        normalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-west.gif");
-        normalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-south.gif");
-        normalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-normal-center.gif");
-        Map pressedIcons = new HashMap(6);
-        pressedIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-east.gif");
-        pressedIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-west.gif");
-        pressedIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-south.gif");
-        pressedIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-pressed-center.gif");
-        Map rolloverIcons = new HashMap(6);
-        rolloverIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-east.gif");
-        rolloverIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-west.gif");
-        rolloverIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-south.gif");
-        rolloverIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/win-pin-rollover-center.gif");
-        return new PinButton(normalIcons, pressedIcons, rolloverIcons);
-    }
-
-    /** Reaction to pin button / pin shortcut toggle. Does nothing itself,but
-     * produces event for outer window system.
-     */
-    protected void performPinAction() {
-        // pin button only active on selected index, so this is safe here
-        int index = getSelectionModel().getSelectedIndex();
-        PinButton pinB = configurePinButton(index);
-        if (pinB != null) {
-            if (TabDisplayer.ORIENTATION_CENTER.equals(pinB.getOrientation())) {
-                shouldPerformAction(TabDisplayer.COMMAND_DISABLE_AUTO_HIDE, index, null);
-            } else {
-                shouldPerformAction(TabDisplayer.COMMAND_ENABLE_AUTO_HIDE, index, null);
-            }
-            // XXX - what to do if action was not consumed? nothing?
-        }
-    }
-    
     /** Registers shortcut for enable/ disable auto-hide functionality */
     public void unregisterShortcuts(JComponent comp) {
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
@@ -421,55 +395,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         indication.lineTo(tabXEnd, height - 1);
         indication.lineTo(tabXStart, height - 1);
         return indication;
-    }
-
-    /**
-     * Loader for icons. Caches loaded icons using hash map.
-     */
-    final static class IconLoader {
-        /* mapping <String, Icon> from resource paths to icon objects, used as cache */
-        private Map paths2Icons;
-
-        /**
-         * Finds and returns icon instance from cache, if present. Otherwise
-         * loads icon using given resource path and stores icon into cache for
-         * next access.
-         *
-         * @return icon image
-         */
-        public Icon obtainIcon(String iconPath) {
-            if (paths2Icons == null) {
-                paths2Icons = new HashMap(6);
-            }
-            Icon icon = (Icon) paths2Icons.get(iconPath);
-            if (icon == null) {
-                // not yet in cache, load and store
-                Image image = loadImage(iconPath);
-                if (image == null) {
-                    throw new IllegalArgumentException("Icon with resource path: "
-                                                       + iconPath
-                                                       + " can't be loaded, probably wrong path.");
-                }
-                icon = new ImageIcon(image);
-                paths2Icons.put(iconPath, icon);
-            }
-            return icon;
-        }
-
-    } // end of IconLoader
-
-    private static Image loadImage(String path) {
-        try {
-            URL url = AbstractViewTabDisplayerUI.class.getResource("/"+path);
-            //Apple Bug ID# 3737894 - some transparent gifs incorrectly loaded 
-            //with ImageIO
-
-            //return ImageIO.read(url);
-            return Toolkit.getDefaultToolkit().createImage(url);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     /** Paints the rectangle occupied by a tab into an image and returns the result */
@@ -578,57 +503,19 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected void cancelRequestAttention (int tab) {
         tabState.removeAlarmTab(tab);
     }
-    
-    public String getTooltipForButtons(Point point) {
-        if (getController().inPinButtonRect(point)) {
-            if (pinButton != null) {
-                return pinButton.getPinToolTipText();
-            }
-            return null;
-        }
-        if (getController().inCloseIconRect(point) != -1) {
-            return NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "CloseButton.tooltip");
-        }
-        return null;
-    }    
 
     /**
      * Listen to mouse events and handles selection behaviour and close icon
      * button behaviour.
      */
-    abstract class Controller extends MouseAdapter
-            implements MouseMotionListener, ChangeListener, PropertyChangeListener, ActionListener, ComplexListDataListener {
+    class Controller extends MouseAdapter
+            implements MouseMotionListener, ChangeListener, PropertyChangeListener, ComplexListDataListener {
 
-        //XXX should be able to replace most of this class with 
-        //tabState - we're already using it to manage the blinking state
-                
-        /**
-         * index of tab whose close icon currently pressed, -1 otherwise
-         */
-        // TBD - should be part of model, not controller
-        private int closePressed = -1;
-        /**
-         * index of tab whose close icon active area contains current mouse
-         * pointer, false otherwise
-         */
-        // TBD - should be part of model, not controller
-        private int mouseInCloseButton = -1;
         /**
          * true when selection is changed as a result of mouse press
          */
         private boolean selectionChanged;
 
-        /**
-         * Subclasses should override this method by detecting if given point is
-         * contained in close icon.
-         *
-         * @return index of tab which close icon area contains given point, -1
-         *         if point is outside any close icon area.
-         */
-        protected abstract int inCloseIconRect(Point point);
-
-        protected abstract boolean inPinButtonRect(Point point);
-        
         protected boolean shouldReact(MouseEvent e) {
             boolean isLeft = SwingUtilities.isLeftMouseButton(e);
             return isLeft;
@@ -643,23 +530,18 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 displayer.repaint();
             }
         }
-
+        
         /**
-         * Performs button action, default impl removes the tab. Subclasses can
-         * alter this by overriding.
+         * @param p Mouse point location
+         * @return True if the point is in the control buttons panel.
          */
-        protected void performAction(MouseEvent e) {
-            if (shouldPerformAction (TabDisplayer.COMMAND_CLOSE, mouseInCloseButton, e)) {
-                //In NetBeans winsys, this should never be called - TabbedHandler will
-                //consume the event when it is re-propagated from the TabbedContainer
-                // #87565: somehow on Mac randomly we can get here with
-                // mouseInCloseButton = -1 so be defensive
-                if (mouseInCloseButton != -1) {
-                    getDataModel().removeTab(mouseInCloseButton);
-                }
+        public boolean inControlButtonsRect( Point p ) {
+            if( null != controlButtons ) {
+                Point p2 = SwingUtilities.convertPoint(displayer, p, controlButtons);
+                return controlButtons.contains(p2);
             }
+            return false;
         }
-
 
         public void mousePressed(MouseEvent e) {
             Point p = e.getPoint();
@@ -681,10 +563,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                     }
                 }
             } 
-            // update pressed state
-            if (shouldReact(e) && !selectionChanged) {
-                setClosePressed(inCloseIconRect(e.getPoint()));
-            }
             if ((i != -1) && e.isPopupTrigger()) {
                 //Post a popup menu show request
                 shouldPerformAction(TabDisplayer.COMMAND_POPUP_REQUEST, i, e);
@@ -716,120 +594,12 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             // close button must not be active when selection change was
             // triggered by mouse press
             tabState.setPressed(-1);
-            if (shouldReact(e) && !selectionChanged) {
-                setClosePressed(-1);
-                Point point = e.getPoint();
-                if ((mouseInCloseButton = inCloseIconRect(point)) >= 0) {
-                    performAction(e);
-                    // reset rollover effect after action is complete
-                    setMouseInCloseButton(point);
-                }
-            }
             Point p = e.getPoint();
             int i = getLayoutModel().indexOfPoint(p.x, p.y);
             if ((i != -1) && e.isPopupTrigger()) {
                 //Post a popup menu show request
                 shouldPerformAction(TabDisplayer.COMMAND_POPUP_REQUEST, i, e);
             }
-        }
-
-        public void mouseMoved(MouseEvent e) {
-            setMouseInCloseButton(e.getPoint());
-        }
-
-        public void mouseDragged(MouseEvent e) {
-            setClosePressed(inCloseIconRect(e.getPoint()));
-            setMouseInCloseButton(e.getPoint());
-        }
-
-        public void mouseExited(MouseEvent e) {
-            setMouseInCloseButton(e.getPoint());
-        }
-
-        /**
-         * @return true if close icon is pressed at the time of calling this
-         *         method, false otherwise
-         */
-        public int isClosePressed() {
-            return closePressed;
-        }
-
-        /**
-         * @return true if mouse pointer is in close icon active area at the
-         *         time of calling this method, false otherwise
-         */
-        public int isMouseInCloseButton() {
-            return mouseInCloseButton;
-        }
-        
-
-        /**
-         * Sets state of close button to pressed or released. Updates visual
-         * state properly.
-         */
-        protected void setClosePressed(int pressed) {
-            if (closePressed == pressed) {
-                return;
-            }
-            int oldValue = closePressed;
-            closePressed = pressed;
-            if (closePressed == -1) {
-                // press ended
-                TabLayoutModel tlm = getLayoutModel();
-                getDisplayer().repaint(tlm.getX(oldValue),
-                                     tlm.getY(oldValue),
-                                     tlm.getW(oldValue),
-                                     tlm.getH(oldValue));
-
-            } else if (oldValue == -1) {
-                // press started
-                TabLayoutModel tlm = getLayoutModel();
-                getDisplayer().repaint(tlm.getX(closePressed),
-                                     tlm.getY(closePressed),
-                                     tlm.getW(closePressed),
-                                     tlm.getH(closePressed));
-            } else {
-                // rare situation, two tabs need repaint, so repaint all
-                getDisplayer().repaint();
-            }
-        }
-
-        /**
-         * Sets state of mouse in close button value. Requests repaint of visual
-         * state properly.
-         */
-        protected void setMouseInCloseButton(Point location) {
-            int isNow = inCloseIconRect(location);
-            if (mouseInCloseButton == isNow || dataModel.size() == 0) {
-                return;
-            }
-            // sync of indexes
-            int oldValue = mouseInCloseButton;
-            mouseInCloseButton = isNow;
-            tabState.setCloseButtonContainsMouse(isNow);
-            if (isNow == -1) {
-                // exit from close area
-                TabLayoutModel tlm = getLayoutModel();
-                getDisplayer().repaint(tlm.getX(oldValue),
-                                     tlm.getY(oldValue),
-                                     tlm.getW(oldValue),
-                                     tlm.getH(oldValue));
-
-            } else if (oldValue == -1) {
-                // enter into close area
-                TabLayoutModel tlm = getLayoutModel();
-                getDisplayer().repaint(tlm.getX(isNow), tlm.getY(isNow),
-                                     tlm.getW(isNow), tlm.getH(isNow));
-            } else {
-                // rare situation, two tabs need repaint, so repaint all
-                getDisplayer().repaint();
-            }
-        }
-        
-        /** Implementation of ActionListener. Reacts to pin button clicks
-         */
-        public void actionPerformed(ActionEvent e) {
-            performPinAction();
         }
 
         public void indicesAdded(ComplexListDataEvent e) {
@@ -869,79 +639,19 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         public void contentsChanged(ListDataEvent evt) {
             tabState.contentsChanged(evt);
         }
+
+        public void mouseDragged(MouseEvent e) {
+        }
+
+        public void mouseMoved(MouseEvent e) {
+        }
     } // end of Controller
     
-
-    /** Implementation of Pin button, its look is dependent on orientation
-     * and can be set using setOrientation method.
-     */
-    protected static class PinButton extends JButton {
-        
-        private Map pressedIcons, rolloverIcons, regularIcons;
-        
-        private Object orientation;
-        
-        public PinButton (Map regularIcons, Map pressedIcons, Map rolloverIcons) {
-            super();
-            this.regularIcons = regularIcons;
-            this.pressedIcons = pressedIcons;
-            this.rolloverIcons = rolloverIcons;
-            setFocusable(false);
-            setContentAreaFilled(false);
-            setRolloverEnabled(rolloverIcons != null);
-            setOrientation(TabDisplayer.ORIENTATION_CENTER);
-        }
-        
-        public void updateUI() {
-            super.updateUI();
-            setFocusable(false);
-            setContentAreaFilled(false);
-            setBorder (BorderFactory.createEmptyBorder());
-        }
-        
-        public Object getOrientation () {
-            return orientation;
-        }
-        
-        public void setOrientation (Object orientation) {
-            this.orientation = orientation;
-            if (orientation != TabDisplayer.ORIENTATION_INVISIBLE) {
-                Icon icon = iconCache.obtainIcon((String)regularIcons.get(orientation));
-                setIcon(icon);
-                setSize(icon.getIconWidth(), icon.getIconHeight());
-                if (pressedIcons != null) {
-                    setPressedIcon(iconCache.obtainIcon((String)regularIcons.get(orientation)));
-                }
-                if (rolloverIcons != null) {
-                    setRolloverIcon(iconCache.obtainIcon((String)rolloverIcons.get(orientation)));
-                }
-                setToolTipText(getPinToolTipText());
-            } else {
-                setIcon(null);
-                setPressedIcon(null);
-                setSize(0,0);
-                setRolloverIcon(null);
-                setToolTipText(null);
-            }
-        }
-        
-        private String getPinToolTipText () {
-            if (orientation != TabDisplayer.ORIENTATION_CENTER) {
-                return NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "AutoHideButton.tooltip"); //NOI18N
-            }
-            return NbBundle.getMessage(AbstractViewTabDisplayerUI.class, "AutoHideButton.restore.tooltip"); //NOI18N
-        }
-        
-    } // end of PinButton
-
-    /** Executes enable / disable auto-hide mode */
-    private final class PinAction extends AbstractAction {
-	public PinAction () {} 
-	
+    private class PinAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
-            performPinAction();
+            if( null != btnAutoHidePin ) {
+                btnAutoHidePin.performAction( null );
+            }
         }
-    } // end of PinAction
-    
-    
+    }
 }

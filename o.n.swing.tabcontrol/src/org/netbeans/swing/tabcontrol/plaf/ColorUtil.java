@@ -34,8 +34,8 @@ import java.util.Map;
  * @author Dafe Simonek, Tim Boudreau
  */
 final class ColorUtil {
-    private static Map gpCache = null;
-    private static Map hintsMap = null;
+    private static Map<Integer, GradientPaint> gpCache = null;
+    private static Map<RenderingHints.Key, Object> hintsMap = null;
     private static final boolean noGpCache = Boolean.getBoolean(
             "netbeans.winsys.nogpcache");  //NOI18N
     private static final boolean noAntialias = 
@@ -130,7 +130,7 @@ final class ColorUtil {
         }
         
         if (gpCache == null) {
-            gpCache = new HashMap(20);
+            gpCache = new HashMap<Integer, GradientPaint>(20);
         }
         //Normalize any non-repeating gradients
         boolean horizontal = x1 == x2;
@@ -156,7 +156,7 @@ final class ColorUtil {
         int hash = ((((int) bits) ^ ((int) (bits >> 32)))
                 ^ upper.hashCode() ^ (lower.hashCode() * 17)) * (repeats ? 31 : 1);
 
-        Object key = new Integer(hash);
+        Integer key = new Integer(hash);
         GradientPaint result = (GradientPaint) gpCache.get(key);
         if (result == null) {
             result =
@@ -172,9 +172,9 @@ final class ColorUtil {
     private static Map getHints() {
         if (hintsMap == null) {
             //Thanks to Phil Race for making this possible
-            hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+            hintsMap = (Map<RenderingHints.Key, Object>)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
-                hintsMap = new HashMap();
+                hintsMap = new HashMap<RenderingHints.Key, Object>();
                 if (shouldAntialias()) {
                     hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
                             RenderingHints.VALUE_TEXT_ANTIALIAS_ON);

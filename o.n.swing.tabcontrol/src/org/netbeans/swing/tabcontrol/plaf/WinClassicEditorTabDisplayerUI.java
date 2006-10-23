@@ -24,12 +24,23 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.UIManager;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
-import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
-import java.awt.*;
-import org.netbeans.swing.tabcontrol.TabListPopupAction;
 
 /**
  * Windows classic impl of tabs ui
@@ -37,9 +48,9 @@ import org.netbeans.swing.tabcontrol.TabListPopupAction;
  * @author Tim Boudreau
  */
 public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
-    private static final int[] xpoints = new int[20];
-    private static final int[] ypoints = new int[20];
+    
     private static final Rectangle scratch5 = new Rectangle();
+    private static Map<Integer, String[]> buttonIconPaths;
     
     private static boolean isGenericUI = !"Windows".equals( //NOI18N
         UIManager.getLookAndFeel().getID());
@@ -83,41 +94,9 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
         return new Dimension(displayer.getWidth(), prefHeight);
     }
 
-    protected AbstractButton[] createControlButtons() {
-        JButton[] result = new JButton[3];
-        result[0] = new TimerButton(scroll().getBackwardAction());
-        result[1] = new TimerButton(scroll().getForwardAction());
-        result[2] = new OnPressButton(new TabListPopupAction(displayer));
-        configureButton(result[0], new LeftIcon());
-        configureButton(result[2], new DownIcon());
-        configureButton(result[1], new RightIcon());
-        result[0].setPreferredSize(new Dimension(15, 14));
-        result[2].setPreferredSize(new Dimension(16, 14));
-        result[1].setPreferredSize(new Dimension(15, 14));
-
-        scroll().getBackwardAction().putValue("control", displayer); //NOI18N
-        scroll().getForwardAction().putValue("control", displayer); //NOI18N
-
-        return result;
-    }
-
-    private static void configureButton(JButton button, Icon icon) {
-        button.setIcon(icon);
-        button.setMargin(null);
-        button.setText(null);
-        //undocumented (?) call to hide action text - see JButton line 234
-        button.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
-        button.setFocusable(false);
-        if( isGenericUI ) {
-            button.setBorder( BorderFactory.createEmptyBorder() );
-        }
-    }
-
     private void genericPaintAfterTabs (Graphics g) {
         g.setColor (UIManager.getColor("controlShadow")); //NOI18N
         Insets ins = displayer.getInsets();
-//        g.drawLine (ins.left, displayer.getHeight()-1, displayer.getWidth() - (ins.right + ins.left),
-//            displayer.getHeight()-1);  
         Rectangle r = new Rectangle();
         getTabsVisibleArea(r);
         r.width = displayer.getWidth();
@@ -129,6 +108,7 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
                 displayer.getWidth() - (ins.left + ins.right) - 4, 
                 displayer.getHeight() - 1);
             g.drawLine (0, displayer.getHeight() - 2, 2, displayer.getHeight() -2);
+            //TODO remove when a specific GTK l&f UI class is available
             if ("GTK".equals(UIManager.getLookAndFeel().getID())) {
                 boolean sel = last == displayer.getSelectionModel().getSelectedIndex();
                 //paint a fading shadow to match the view tabs
@@ -232,133 +212,70 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
         return new WinClassicEditorTabCellRenderer();
     }
 
-    protected LayoutManager createLayout() {
-        return new WCLayout();
+    private static void initIcons() {
+        if( null == buttonIconPaths ) {
+            buttonIconPaths = new HashMap<Integer, String[]>(7);
+            
+            //TODO add 'pressed' icons
+            //left button
+            String[] iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_left_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_left_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_left_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_left_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_LEFT_BUTTON, iconPaths );
+            
+            //right button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_right_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_right_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_right_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_right_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_RIGHT_BUTTON, iconPaths );
+            
+            //drop down button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_down_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_down_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_down_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_down_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_DROP_DOWN_BUTTON, iconPaths );
+            
+            //maximize/restore button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_maximize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_maximize_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_maximize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_maximize_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win_editor_restore_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/win_editor_restore_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_editor_restore_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win_editor_restore_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
+        }
     }
 
-    public java.awt.Insets getTabAreaInsets() {
-        return new Insets(0, 0, 0, 55);
+    public Icon getButtonIcon(int buttonId, int buttonState) {
+        Icon res = null;
+        initIcons();
+        String[] paths = buttonIconPaths.get( buttonId );
+        if( null != paths && buttonState >=0 && buttonState < paths.length ) {
+            res = TabControlButtonFactory.getIcon( paths[buttonState] );
+        }
+        return res;
     }
     
-    private class WCLayout implements LayoutManager {
-
-        public void addLayoutComponent(String name, Component comp) {
-        }
-
-        public void layoutContainer(java.awt.Container parent) {
-            Insets in = getTabAreaInsets();
-            Component[] c = parent.getComponents();
-            int x = parent.getWidth() - in.right + 4;
-            int y = 0;
-            Dimension psize;
-            for (int i = 0; i < c.length; i++) {
-                psize = c[i].getPreferredSize();
-                y = in.top + 4; //hardcoded to spec
-                int w = Math.min(psize.width, parent.getWidth() - x);
-                if (i == 2) {
-                    x += 2;
-                }
-                c[i].setBounds(x, y, w, Math.min(psize.height,
-                                                 parent.getHeight()));
-                x += psize.width;
-            }
-        }
-
-        public Dimension minimumLayoutSize(Container parent) {
-            return getPreferredSize((JComponent) parent);
-        }
-
-        public Dimension preferredLayoutSize(Container parent) {
-            return getPreferredSize((JComponent) parent);
-        }
-
-        public void removeLayoutComponent(java.awt.Component comp) {
-        }
+    protected Rectangle getControlButtonsRectangle( Container parent ) {
+        Component c = getControlButtons();
+        return new Rectangle( parent.getWidth()-c.getWidth()-4, 4, c.getWidth(), c.getHeight() );
     }
 
-    private static final int ICON_WIDTH = 17;
-    private static final int ICON_HEIGHT = 14;
-
-    private static class LeftIcon implements Icon {
-        protected boolean enabled = false;
-
-        public int getIconHeight() {
-            return ICON_HEIGHT;
-        }
-
-        public int getIconWidth() {
-            return ICON_WIDTH;
-        }
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            y += 1;
-            x -= 1;
-            xpoints[0] = x + 5;
-            ypoints[0] = y + 6;
-
-            xpoints[1] = x + 9;
-            ypoints[1] = y + 2;
-
-            xpoints[2] = x + 9;
-            ypoints[2] = y + 10;
-            g.setColor(c.isEnabled() ?
-                       c.getForeground() :
-                       UIManager.getColor("controlShadow")); //NOI18N
-            g.fillPolygon(xpoints, ypoints, 3);
-        }
-    }
-
-    private static class RightIcon extends LeftIcon {
-        public int getIconHeight() {
-            return ICON_HEIGHT;
-        }
-
-        public int getIconWidth() {
-            return ICON_WIDTH;
-        }
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            y += 1;
-
-            xpoints[0] = x + 5;
-            ypoints[0] = y + 2;
-
-            xpoints[1] = x + 5;
-            ypoints[1] = y + 10;
-
-            xpoints[2] = x + 9;
-            ypoints[2] = y + 6;
-            g.setColor(c.isEnabled() ?
-                       c.getForeground() :
-                       UIManager.getColor("controlShadow")); //NOI18N
-            g.fillPolygon(xpoints, ypoints, 3);
-        }
-    }
-
-    private static class DownIcon extends LeftIcon {
-        public int getIconHeight() {
-            return ICON_HEIGHT;
-        }
-
-        public int getIconWidth() {
-            return ICON_WIDTH;
-        }
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            y += 1;
-            xpoints[0] = x + 4;
-            ypoints[0] = y + 5;
-
-            xpoints[1] = x + 11;
-            ypoints[1] = y + 5;
-
-            xpoints[2] = x + 7;
-            ypoints[2] = y + 9;
-            g.setColor(c.isEnabled() ?
-                       c.getForeground() :
-                       UIManager.getColor("controlShadow")); //NOI18N
-            g.fillPolygon(xpoints, ypoints, 3);
-
-        }
+    public Insets getTabAreaInsets() {
+        Insets retValue = super.getTabAreaInsets();
+        retValue.right += 4;
+        return retValue;
     }
 }

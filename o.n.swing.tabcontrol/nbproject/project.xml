@@ -48,12 +48,13 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.swing.tabcontrol</package>
-                <package>org.netbeans.swing.tabcontrol.plaf</package>
-                <package>org.netbeans.swing.tabcontrol.event</package>
+            <friend-packages>
+                <friend>org.netbeans.core.windows</friend>
                 <package>org.netbeans.swing.popupswitcher</package>
-            </public-packages>
+                <package>org.netbeans.swing.tabcontrol</package>
+                <package>org.netbeans.swing.tabcontrol.event</package>
+                <package>org.netbeans.swing.tabcontrol.plaf</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -64,36 +64,6 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
         return "ToggleButton.";
     }
 
-//    /** Overridden to not install keyboard actions (the buttons aren't focusable
-//     * anyway) and not invoke the overhead of BasicHTML */
-//    public void installUI(JComponent c) {
-//        super.
-//        installDefaults((AbstractButton) c);
-//        installListeners((AbstractButton) c);
-//        installBorder((AbstractButton) c);
-//    }
-//    
-//    /** Install a border on the button */
-//    protected void installBorder (AbstractButton b) {
-//        // XXX
-////        b.setBorder (BorderFactory.createEtchedBorder());
-//    }
-//    
-//    /** Overridden to not uninstall keyboard actions (the buttons aren't focusable
-//     * anyway) and not invoke the overhead of BasicHTML */
-//    public void uninstallUI(JComponent c) {
-//        uninstallListeners((AbstractButton) c);
-//        uninstallDefaults((AbstractButton) c);
-//    }
-//    
-//    /** Overridden to not call super.installDefaults() and only set the button
-//     * to be non-focusable */
-//    public void installDefaults (AbstractButton b) {
-////        b.setFocusable (false);
-//        super.installDefaults(b);
-//        
-//    }
-    
     public void paint(Graphics g, JComponent c) {
        AbstractButton b = (AbstractButton) c;
         ButtonModel model = b.getModel();

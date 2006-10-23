@@ -106,13 +106,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
 
     private Point lastKnownMouseLocation = new Point();
 
-    int pixelsToAdd = 0;
-
-    /** Command string renderers use to indicate they should be unhidden leftwards */
-    static final String UNHIDE_LEFT = "unhideMeLeft"; //NOI18N
-    /** Command string renderers use to indicate they should be unhidden rightwards */
-    static final String UNHIDE_RIGHT = "unhideMeRight"; //NOI18N
-    
+    int pixelsToAdd = 0;   
     
     public BasicTabDisplayerUI(TabDisplayer displayer) {
         super(displayer);
@@ -199,8 +193,8 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         Insets ins = getTabAreaInsets();
         rect.x = ins.left;
         rect.y = ins.top;
-        rect.width = displayer.getWidth() - ins.right;
-        rect.height = displayer.getHeight() - ins.bottom;
+        rect.width = displayer.getWidth() - ins.right - ins.left;
+        rect.height = displayer.getHeight() - ins.bottom - ins.top;
     }
 
     protected MouseListener createMouseListener() {
@@ -292,20 +286,6 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
         
         
         return image;
-    }
-
-    public String getCommandAtPoint(Point p) {
-        getTabsVisibleArea(scratch);
-        if (scratch.contains(p)) {
-            int idx = tabForCoordinate(p);
-            if (idx != -1) {
-                TabCellRenderer tcr = getTabCellRenderer (idx);
-                getTabRect (idx, scratch);
-                String action = tcr.getCommandAtPoint(p, tabState.getState(idx), scratch);
-                return action;
-            }
-        }
-        return super.getCommandAtPoint (p);
     }
 
     public int dropIndexOfPoint(Point p) {

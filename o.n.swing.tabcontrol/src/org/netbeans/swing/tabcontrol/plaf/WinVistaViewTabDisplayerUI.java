@@ -19,16 +19,27 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
-import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
-import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.UIManager;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 
 
 import org.openide.awt.HtmlRenderer;
@@ -48,8 +59,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
     private static final int TXT_X_PAD = 9;
     private static final int TXT_Y_PAD = 3;
 
-    private static final int ICON_X_PAD = 1;
-    private static final int ICON_Y_PAD = 7;
+    private static final int ICON_X_PAD = 4;
 
     private static final int BUMP_X_PAD = 3;
     private static final int BUMP_Y_PAD_UPPER = 6;
@@ -80,8 +90,8 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
             selBorderC, 
             borderInnerC;
 
-    private static AbstractViewTabDisplayerUI.IconLoader closeIcon;
-
+    private static Map<Integer, String[]> buttonIconPaths;
+    
     /**
      * ******** instance fields ********
      */
@@ -134,40 +144,11 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
             x++;
         int txtWidth = width;
         if (isSelected(index)) {
-            // paint text, dragger and close icon
-            // close icon has the biggest space priority, text the smallest one
-            PinButton pin = configurePinButton(index);
-            boolean showPin = pin != null && pin.getOrientation() != TabDisplayer.ORIENTATION_INVISIBLE;
-            int space4pin = showPin ? pinButton.getWidth() + 1 : 0;
-            if (displayer.isShowCloseButton()) {
-                if (closeIcon == null) {
-                    closeIcon = new IconLoader();
-                }
-                String iconPath = findIconPath(index);
-                Icon icon = closeIcon.obtainIcon(iconPath);
-                int iconWidth = icon.getIconWidth();
-                int space4Icon = iconWidth + 2 * ICON_X_PAD + space4pin;
-                txtWidth = width - TXT_X_PAD - space4Icon;
-                getCloseIconRect(tempRect, index);
-                icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
-            } else {
-                txtWidth = width - 2 * TXT_X_PAD - space4pin;
-                tempRect.x = x + (width - 2);
-                tempRect.y = !showPin ? 0 : ((displayer.getHeight() / 2) -
-                    (pinButton.getPreferredSize().height / 2));
-                
-            }
-            
-            if (showPin) {
-                // don't activate and draw pin button if tab is too narrow
-                if (tempRect.x - space4pin < x + TXT_X_PAD - 1) {
-                    pinButton.setVisible(false);
-                } else {
-                    pinButton.setVisible(true);
-                    pinButton.setLocation(tempRect.x - space4pin, tempRect.y);
-                }
-            } else {
-                pinButton.setVisible(false);
+            Component buttons = getControlButtons();
+            if( null != buttons ) {
+                Dimension buttonsSize = buttons.getPreferredSize();
+                txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
+                buttons.setLocation( x + txtWidth+2*TXT_X_PAD, y + (height-buttonsSize.height)/2 );
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
@@ -265,22 +246,6 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
     }
 
     /**
-     * Returns path of icon which is correct for currect state of tab at given
-     * index
-     */
-    private String findIconPath(int index) {
-        if (((OwnController) getController()).isClosePressed()
-                == index) {
-            return "org/netbeans/swing/tabcontrol/resources/vista_close_pressed.png"; // NOI18N
-        }
-        if (((OwnController) getController()).isMouseInCloseButton()
-                == index) {
-            return "org/netbeans/swing/tabcontrol/resources/vista_close_over.png"; // NOI18N
-        }
-        return "org/netbeans/swing/tabcontrol/resources/vista_close_enabled.png"; // NOI18N       
-    }
-
-    /**
      * @return true if tab with given index should have highlighted border, false otherwise.
      */
     private boolean isTabHighlighted(int index) {
@@ -330,73 +295,86 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
         }
     }
 
-    /**
-     * Computes rectangle occupied by close icon and fill values in given
-     * rectangle.
-     */
-    private Rectangle getCloseIconRect(Rectangle rect, int index) {
-        TabLayoutModel tlm = getLayoutModel();
-        int x = tlm.getX(index);
-        int y = tlm.getY(index);
-        int w = tlm.getW(index);
-        int h = tlm.getH(index);
-        String iconPath = findIconPath(index);
-        if (closeIcon == null) {
-            //Tab control can be asked to process mouse motion events that
-            //occured during startup - this causes an NPE here
-            closeIcon = new IconLoader();
+    private static void initIcons() {
+        if( null == buttonIconPaths ) {
+            buttonIconPaths = new HashMap<Integer, String[]>(7);
+            
+            //close button
+            String[] iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_close_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_close_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_close_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
+            
+            //slide/pin button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_slideright_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_slideright_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_slideright_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_RIGHT_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_slideleft_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_slideleft_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_slideleft_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_LEFT_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_slidedown_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_slidedown_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_slidedown_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_DOWN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_pin_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_pin_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_pin_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            //TODO add icons for maximize/restore
+            //maximize/restore button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_ maximize_normal.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_pressed_notselected.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_over_notselected.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
+
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_normal.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_pressed_notselected.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_over_noteselected.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
         }
-        Icon icon = closeIcon.obtainIcon(iconPath);
-        int iconWidth = icon.getIconWidth();
-        int iconHeight = icon.getIconHeight();
-        rect.x = x + w - iconWidth - 2 * ICON_X_PAD;
-        rect.y = getCenteredIconY(icon, index);
-        rect.width = iconWidth;
-        rect.height = iconHeight;
-        return rect;
     }
 
-    protected PinButton createPinButton() {
-        Map normalIcons = new HashMap(6);
-        normalIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/vista_slideright_enabled.png");
-        normalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/vista_slideleft_enabled.png");
-        normalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/vista_slidedown_enabled.png");
-        normalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/vista_pin_enabled.png");
-        Map pressedIcons = new HashMap(6);
-        pressedIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/vista_slideright_pressed.png");
-        pressedIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/vista_slideleft_pressed.png");
-        pressedIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/vista_slidedown_pressed.png");
-        pressedIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/vista_pin_pressed.png");
-        Map rolloverIcons = new HashMap(6);
-        rolloverIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/vista_slideright_over.png");
-        rolloverIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/vista_slideleft_over.png");
-        rolloverIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/vista_slidedown_over.png");
-        rolloverIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/vista_pin_over.png");
-        Map focusNormalIcons = new HashMap(6);
-        focusNormalIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/vista_slideright_enabled.png");
-        focusNormalIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/vista_slideleft_enabled.png");
-        focusNormalIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/vista_slidedown_enabled.png");
-        focusNormalIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/vista_pin_enabled.png");
-        Map focusPressedIcons = new HashMap(6);
-        focusPressedIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/vista_slideright_pressed.png");
-        focusPressedIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/vista_slideleft_pressed.png");
-        focusPressedIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/vista_slidedown_pressed.png");
-        focusPressedIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/vista_pin_pressed.png");
-        Map focusRolloverIcons = new HashMap(6);
-        focusRolloverIcons.put(TabDisplayer.ORIENTATION_EAST, "org/netbeans/swing/tabcontrol/resources/vista_slideright_over.png");
-        focusRolloverIcons.put(TabDisplayer.ORIENTATION_WEST, "org/netbeans/swing/tabcontrol/resources/vista_slideleft_over.png");
-        focusRolloverIcons.put(TabDisplayer.ORIENTATION_SOUTH, "org/netbeans/swing/tabcontrol/resources/vista_slidedown_over.png");
-        focusRolloverIcons.put(TabDisplayer.ORIENTATION_CENTER, "org/netbeans/swing/tabcontrol/resources/vista_pin_over.png");
-        
-        return new VistaPinButton(displayer, focusNormalIcons, focusPressedIcons, focusRolloverIcons, normalIcons, pressedIcons, rolloverIcons);
+    public Icon getButtonIcon(int buttonId, int buttonState) {
+        Icon res = null;
+        initIcons();
+        String[] paths = buttonIconPaths.get( buttonId );
+        if( null != paths && buttonState >=0 && buttonState < paths.length ) {
+            res = TabControlButtonFactory.getIcon( paths[buttonState] );
+        }
+        return res;
+    }
+
+    public void postTabAction(TabActionEvent e) {
+        super.postTabAction(e);
+        if( TabDisplayer.COMMAND_MAXIMIZE.equals( e.getActionCommand() ) ) {
+            ((OwnController)getController()).updateHighlight( -1 );
+        }
     }
 
     /**
      * Own close icon button controller
      */
     private class OwnController extends Controller {
-        //TODO - add a method to AbstractViewTabDisplayerUI to get the close button rect and implement everything
-        //on the parent class
 
         /**
          * holds index of tab in which mouse pointer was lastly located. -1
@@ -412,26 +390,6 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
             return lastIndex;
         }
 
-        protected int inCloseIconRect(Point point) {
-            if (!displayer.isShowCloseButton()) {
-                return -1;
-            }
-            int index = getLayoutModel().indexOfPoint(point.x, point.y);
-            if (index < 0 || !isSelected(index)) {
-                return -1;
-            }
-            return getCloseIconRect(tempRect, index).contains(point) ?
-                    index : -1;
-        }
-        
-        protected boolean inPinButtonRect(Point p) {
-            if (!pinButton.isVisible()) {
-                return false;
-            }
-            Point p2 = SwingUtilities.convertPoint(displayer, p, pinButton);
-            return pinButton.contains(p2);
-        }
-        
         /**
          * Triggers visual tab header change when mouse enters/leaves tab in
          * advance to superclass functionality.
@@ -447,8 +405,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
          */
         public void mouseExited(MouseEvent e) {
             super.mouseExited(e);
-            // #72459: don't reset highlight if mouse exited into pin button
-            if (!inPinButtonRect(e.getPoint())) {
+            if( !inControlButtonsRect(e.getPoint())) {
                 updateHighlight(-1);
             }
         }
@@ -490,56 +447,5 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
             }
             lastIndex = curIndex;
         }
-
-
     } // end of OwnController
-    
-    protected static class VistaPinButton extends PinButton {
-        private Map focusedNormal;
-        private Map focusedRollover;
-        private Map focusedPressed;
-
-        private TabDisplayer displayer;
-        
-        
-        protected VistaPinButton(TabDisplayer displayer,
-                              Map focusedNormal, Map focusedPressed, Map focusedRollover,
-                              Map selectNormal, Map selectPressed, Map selectRollover) {
-            super(selectNormal, selectPressed, selectRollover);
-            this.focusedPressed = focusedPressed;
-            this.focusedRollover = focusedRollover;
-            this.focusedNormal = focusedNormal;
-            this.displayer = displayer;
-        }
-        
-        
-        public Icon getIcon() {
-            if (displayer == null) {
-                //superclass constructor - UI is asking for icon
-                return null;
-            }
-            if (displayer.isActive()) {
-                return iconCache.obtainIcon((String)focusedNormal.get(getOrientation()));
-            } else {
-                return super.getIcon();
-            }
-        }
-
-        public Icon getRolloverIcon() {
-            if (displayer.isActive()) {
-                return iconCache.obtainIcon((String)focusedRollover.get(getOrientation()));
-            } else {
-                return super.getRolloverIcon();
-            }
-            
-        }
-        
-        public Icon getPressedIcon() {
-            if (displayer.isActive()) {
-                return iconCache.obtainIcon((String)focusedPressed.get(getOrientation()));
-            } else {
-                return super.getPressedIcon();
-            }
-        }
-    }
 }

@@ -86,8 +86,6 @@ public interface Tabbed {
     
     public Image createImageOfTab (int tabIndex);
 
-    public String getCommandAtPoint (Point p);
-    
     /** Accessor for visual component holding components */
     public Component getComponent();
     

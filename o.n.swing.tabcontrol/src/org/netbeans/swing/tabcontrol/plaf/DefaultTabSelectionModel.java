@@ -23,6 +23,8 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.util.ArrayList;
+import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.event.ArrayDiff;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
@@ -50,7 +52,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
     /**
      * Utility field holding list of ChangeListeners.
      */
-    private transient java.util.ArrayList changeListenerList;
+    private transient ArrayList<ChangeListener> changeListenerList;
 
     /**
      * Creates a new instance of DefaultTabSelectionModel
@@ -204,8 +206,8 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
             }
             
             //Get the deleted and added indices
-            Set deleted = dif.getDeletedIndices();
-            Set added = dif.getAddedIndices();
+            Set<Integer> deleted = dif.getDeletedIndices();
+            Set<Integer> added = dif.getAddedIndices();
             
             //create an Integer to compare
             Integer idx = new Integer(getSelectedIndex());
@@ -220,11 +222,11 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
             //Iterate all of the deleted items, and count how many were
             //removed at indices lower than the selection, so we can subtract
             //that from the selected index to keep selection on the same tab
-            Iterator i = deleted.iterator();
+            Iterator<Integer> i = deleted.iterator();
             int offset = 0;
             Integer curr;
             while (i.hasNext()) {
-                curr = (Integer) i.next();
+                curr = i.next();
                 if (curr.compareTo(idx) <= 0) {
                     offset++;
                 }
@@ -235,7 +237,7 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
             //index
             i = added.iterator();
             while (i.hasNext()) {
-                curr = (Integer) i.next();
+                curr = i.next();
                 if (curr.compareTo(idx) >= 0) {
                     offset--;
                 }
@@ -261,16 +263,14 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
         //do nothing
     }
 
-    public synchronized void addChangeListener(
-            javax.swing.event.ChangeListener listener) {
+    public synchronized void addChangeListener(ChangeListener listener) {
         if (changeListenerList == null) {
-            changeListenerList = new java.util.ArrayList();
+            changeListenerList = new ArrayList<ChangeListener>();
         }
         changeListenerList.add(listener);
     }
 
-    public synchronized void removeChangeListener(
-            javax.swing.event.ChangeListener listener) {
+    public synchronized void removeChangeListener(ChangeListener listener) {
         if (changeListenerList != null) {
             changeListenerList.remove(listener);
         }
@@ -279,15 +279,15 @@ final class DefaultTabSelectionModel implements SingleSelectionModel,
     ChangeEvent ce = new ChangeEvent(this);
 
     private void fireStateChanged() {
-        java.util.ArrayList list;
+        ArrayList<ChangeListener> list;
         synchronized (this) {
             if (changeListenerList == null) {
                 return;
             }
-            list = (java.util.ArrayList) changeListenerList.clone();
+            list = new ArrayList<ChangeListener>( changeListenerList );
         }
-        for (int i = 0; i < list.size(); i++) {
-            ((javax.swing.event.ChangeListener) list.get(i)).stateChanged(ce);
+        for( ChangeListener l : list ) {
+            l.stateChanged(ce);
         }
     }
 

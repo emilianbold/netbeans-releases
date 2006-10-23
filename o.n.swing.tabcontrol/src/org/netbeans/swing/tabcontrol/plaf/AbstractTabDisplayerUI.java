@@ -280,15 +280,6 @@ public abstract class AbstractTabDisplayerUI extends TabDisplayerUI {
         return new DefaultTabSelectionModel(displayer.getModel());
     }
 
-    /** Default implementation always returns COMMAND_SELECT */
-    public String getCommandAtPoint(Point p) {
-        if (tabForCoordinate(p) != -1) {
-            return TabDisplayer.COMMAND_SELECT;
-        } else {
-            return null;
-        }
-    }
-
     /**
      * A very basic implementation of dropIndexOfPoint, which simply iterates
      * all of the tab rectangles to see if they contain the point.  It is

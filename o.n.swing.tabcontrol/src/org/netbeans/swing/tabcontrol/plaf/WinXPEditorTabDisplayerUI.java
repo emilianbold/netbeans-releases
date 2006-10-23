@@ -19,15 +19,19 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
-import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.net.URL;
-import org.netbeans.swing.tabcontrol.TabListPopupAction;
-import org.openide.util.Utilities;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.UIManager;
 
 /**
  * Windows xp impl of tabs ui
@@ -35,7 +39,9 @@ import org.openide.util.Utilities;
  * @author Tim Boudreau
  */
 public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
+    
     private static final Rectangle scratch5 = new Rectangle();
+    private static Map<Integer, String[]> buttonIconPaths;
 
     public WinXPEditorTabDisplayerUI(TabDisplayer displayer) {
         super (displayer);
@@ -44,36 +50,6 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
     public static ComponentUI createUI(JComponent c) {
         return new WinXPEditorTabDisplayerUI ((TabDisplayer) c);
     }    
-
-    private static final String[] iconNames = new String[]{
-        "org/netbeans/swing/tabcontrol/resources/xp-right-enabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-right-disabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-right-enabled-selected.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-left-enabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-left-disabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-left-enabled-selected.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-down-enabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-down-disabled.gif",
-        "org/netbeans/swing/tabcontrol/resources/xp-down-enabled-selected.gif"}; //NOI18N
-
-    protected AbstractButton[] createControlButtons() {
-        //XXX probably this can be moved into superclass?
-        JButton[] result = new JButton[3];
-        result[0] = new TimerButton(scroll().getBackwardAction());
-        result[1] = new TimerButton(scroll().getForwardAction());
-        result[2] = new OnPressButton(new TabListPopupAction(displayer));
-        configureButton(result[0], 0);
-        configureButton(result[2], 1);
-        configureButton(result[1], 2);
-        result[0].setPreferredSize(new Dimension(15, 14));
-        result[2].setPreferredSize(new Dimension(16, 14));
-        result[1].setPreferredSize(new Dimension(15, 14));
-
-        scroll().getBackwardAction().putValue("control", displayer); //NOI18N
-        scroll().getForwardAction().putValue("control", displayer); //NOI18N
-
-        return result;
-    }
 
     public Dimension getPreferredSize(JComponent c) {
         int prefHeight = 24;
@@ -84,39 +60,6 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
             prefHeight = fm.getHeight() + ins.top + ins.bottom + 8;
         }
         return new Dimension(displayer.getWidth(), prefHeight);
-    }
-    
-    private static final Icon createIcon(int i) {
-        return new ImageIcon(Utilities.loadImage(iconNames[i]));
-    }
-
-    private static final Dimension controlButtonSize(int index) {
-        Dimension result = new Dimension(index == 1 ? 13 : 14, 15);
-        return result;
-    }
-
-
-    private static void configureButton(JButton button, int idx) {
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-
-        Icon normal = createIcon((idx * 3));
-        Icon disabled = createIcon((idx * 3) + 1);
-        Icon rollover = createIcon((idx * 3) + 2);
-
-        button.setIcon(normal);
-        button.setRolloverEnabled(true);
-        button.setRolloverIcon(rollover);
-        button.setDisabledIcon(disabled);
-        button.setPreferredSize(new Dimension(normal.getIconWidth() + 1,
-                                              normal.getIconHeight() + 1));
-
-        button.setMargin(null);
-        button.setText(null);
-        //undocumented (?) call to hide action text - see JButton line 234
-        button.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
-        button.setFocusable(false);
     }
     
     public void paintBackground (Graphics g) {
@@ -211,51 +154,59 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
         return new WinXPEditorTabCellRenderer();
     }
 
-    protected LayoutManager createLayout() {
-        return new WCLayout();
+    private static void initIcons() {
+        if( null == buttonIconPaths ) {
+            buttonIconPaths = new HashMap<Integer, String[]>(7);
+            
+            //TODO add 'pressed' icons
+            //left button
+            String[] iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_left_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/xp_left_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_left_selected.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_ROLLOVER];
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_LEFT_BUTTON, iconPaths );
+            
+            //right button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_right_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/xp_right_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_right_selected.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_ROLLOVER];
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_RIGHT_BUTTON, iconPaths );
+            
+            //drop down button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_down_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/xp_down_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_down_selected.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_ROLLOVER];
+            buttonIconPaths.put( TabControlButton.ID_DROP_DOWN_BUTTON, iconPaths );
+            
+            //maximize/restore button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_max_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/xp_max_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_max_selected.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_ROLLOVER];
+            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_restored_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/xp_restored_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_restored_selected.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_ROLLOVER];
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
+        }
     }
 
-    public java.awt.Insets getTabAreaInsets() {
-        return new Insets(0, 0, 0, 55);
-    }
-
-    private class WCLayout implements LayoutManager {
-
-        public void addLayoutComponent(String name, Component comp) {
+    public Icon getButtonIcon(int buttonId, int buttonState) {
+        Icon res = null;
+        initIcons();
+        String[] paths = buttonIconPaths.get( buttonId );
+        if( null != paths && buttonState >=0 && buttonState < paths.length ) {
+            res = TabControlButtonFactory.getIcon( paths[buttonState] );
         }
-
-        public void layoutContainer(java.awt.Container parent) {
-            Insets in = getTabAreaInsets();
-            Component[] c = parent.getComponents();
-            int x = parent.getWidth() - 49;
-            int y = 0;
-            Dimension psize;
-            for (int i = 0; i < c.length; i++) {
-                y = in.top;
-                if (c[i] instanceof JButton) {
-                    int w = Math.min(
-                            ((JButton) c[i]).getIcon().getIconWidth(),
-                            parent.getWidth() - x);
-                    c[i].setBounds(x, y, w, Math.min(
-                            ((JButton) c[i]).getIcon().getIconHeight(),
-                            parent.getHeight()));
-                    x += ((JButton) c[i]).getIcon().getIconWidth();
-                    if (i == 1) {
-                        x += 3;
-                    }
-                }
-            }
-        }
-
-        public Dimension minimumLayoutSize(Container parent) {
-            return getPreferredSize((JComponent) parent);
-        }
-
-        public Dimension preferredLayoutSize(Container parent) {
-            return getPreferredSize((JComponent) parent);
-        }
-
-        public void removeLayoutComponent(java.awt.Component comp) {
-        }
+        return res;
     }
 }

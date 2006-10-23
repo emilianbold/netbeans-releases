@@ -19,14 +19,24 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.openide.awt.HtmlRenderer;
 
-import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
-import java.awt.*;
 import java.awt.event.MouseEvent;
-import org.openide.windows.TopComponent;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.UIManager;
 
 /**
  * A view tabs ui for OS-X adapted from the view tabs UI for Metal.
@@ -35,18 +45,12 @@ import org.openide.windows.TopComponent;
  */
 public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
-    /**
-     * *********** constants ******************
-     */
     private static final int TXT_X_PAD = 5;
+    private static final int ICON_X_PAD = 2;
 
-    private static final int ICON_X_LEFT_PAD = 5;
-    private static final int ICON_X_RIGHT_PAD = 2;
-
-    private static final int BUMP_X_PAD = 5;
-    private static final int BUMP_Y_PAD = 4;
-    
     /********* static fields ***********/
+    
+    private static Map<Integer, String[]> buttonIconPaths;
     
     /**
      * ******* instance fields *********
@@ -75,10 +79,6 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return new OwnController();
     }
     
-    protected void installPinButton() {
-        //do nothing
-    }    
-
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
@@ -102,10 +102,8 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      * Paints bottom "activation" line
      */
     private void paintBottomBorder(Graphics g, JComponent c) {
-
     }
 
-    private Rectangle pinButtonRect = new Rectangle();
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();
@@ -114,80 +112,19 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         g.setFont(getTxtFont());
         int textW = width;
 
-        if (isContainsMouse()) {
-            int iconWidth = 5;
-            int iconHeight = 5;
+        if (isSelected(index)) {
+            Component buttons = getControlButtons();
+            if( null != buttons ) {
+                Dimension buttonsSize = buttons.getPreferredSize();
 
-            int iconY;
-            int iconX;
-            JButton pinButton = configurePinButton(index);
-            int gap = 2;
-            
-            if (displayer.isShowCloseButton()) {
-                if (iconHeight > height) {
-                    //It's too tall, try to center it
-                    iconY = -1 * ((iconHeight - height) / 2);
-                } else {
-                    iconY = (height / 2) - (iconHeight / 2);
-                }
-
-                iconX = x + width - (iconWidth + gap);
-
+                textW = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
                 if (index == getDataModel().size() - 1) {
-                    iconX -= 3;
                     textW -= 3;
                 }
-
-                g.setColor(isSelected(index) && isActive() ?
-                           new Color(80, 80, 123) : new Color(110, 120, 120));
-                iconY -= 1; //Only if we're painting, not using a bitmap
-                iconX -= 2; //Only if we're painting, not using a bitmap
-
-                g.drawLine(iconX, iconY, iconX + iconWidth, iconY + iconHeight);
-                g.drawLine(iconX, iconY + iconHeight, iconX + iconWidth, iconY);
-
-                iconY++;
-                g.drawLine(iconX, iconY, iconX + iconWidth, iconY + iconHeight);
-                g.drawLine(iconX, iconY + iconHeight, iconX + iconWidth, iconY);
-            } else {
-                iconWidth = 0;
-                iconX = x + width - gap;
-                if (iconHeight > height) {
-                    //It's too tall, try to center it
-                    iconY = -1 * ((iconHeight - height) / 2);
-                } else {
-                    iconY = ((height / 2) - (iconHeight / 2)) - 1;
-                }
-                tempRect.x = iconX;
+                buttons.setLocation( x + textW+2*TXT_X_PAD, y + (height-buttonsSize.height)/2 );
             }
-
-            // pin button
-            int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
-            if (pinButton != null && isSelected(index)) {
-//                pinButton.setLocation(iconX - space4Pin, iconY - 1);
-                
-                //Ugly for now - really we should get rid of the button 
-                //entirely
-                
-                // don't activate and draw pin button if tab is too narrow
-                if (tempRect.x - space4Pin <= x) {
-                    pinButtonRect.setBounds(0, 0, 0, 0);
-                } else {
-                    Icon ic = pinButton.getIcon();
-
-                    if (ic != null) {
-                        pinButtonRect.setBounds(iconX - space4Pin, iconY - 4, 
-                                ic.getIconWidth(), ic.getIconHeight());
-                        ic.paintIcon(displayer, g, pinButtonRect.x, pinButtonRect.y);
-                    } else {
-                        pinButtonRect.setBounds(0, 0, 0, 0);
-                    }
-                }
-                
-
-            }
-
-            textW = textW - (iconWidth + 7 + space4Pin);
+        } else {
+            textW = width - 2 * TXT_X_PAD;
         }
 
         if (text.length() == 0) {
@@ -196,12 +133,9 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
         int textHeight = fm.getHeight();
         int textY;
-        int textX;
+        int textX = x + TXT_X_PAD;
 	if (index == 0)
-	    textX = x + 10;
-	else
 	    textX = x + 5;
-        textW = textW -  5;
 
         if (textHeight > height) {
             textY = (-1 * ((textHeight - height) / 2)) + fm.getAscent()
@@ -214,8 +148,6 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                           UIManager.getColor("textText"),
                           HtmlRenderer.STYLE_TRUNCATE, true);
     }
-    
-    //private static final JButton jb = new JButton();
     
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
@@ -251,49 +183,6 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         g.translate (-x, -y);
     }
 
-
-    /**
-     * Computes rectangle occupied by close icon and fill values in given
-     * rectangle.
-     */
-    private Rectangle getCloseIconRect(Rectangle rect, int index) {
-        if (!displayer.isShowCloseButton()) {
-            rect.x = -2;
-            rect.y = -2;
-            rect.width = 0;
-            rect.height = 0;
-            return rect;
-        }
-        FontMetrics fm = getTxtFontMetrics();
-        String text2Paint = null;
-        // setting font already here to compute string width correctly
-        int width = getLayoutModel().getW(index);
-        int x = getLayoutModel().getX(index);
-        int height = getLayoutModel().getH(index);
-        int iconWidth = 5;
-        int iconHeight = 5;
-
-        int iconY;
-        if (iconHeight > height) {
-            //It's too tall, try to center it
-            iconY = -1 * ((iconHeight - height) / 2);
-        } else {
-            iconY = (height / 2) - (iconHeight / 2) - 1;
-        }
-
-        int gap = 2;
-
-        int iconX = x + width - (iconWidth + gap);
-        if (index == getDataModel().size() - 1) {
-            iconX -= 3;
-        }
-        rect.x = iconX;
-        rect.y = iconY;
-        rect.width = 5;
-        rect.height = 5;
-        return rect;
-    }
-
     private boolean containsMouse = false;
 
     private void setContainsMouse(boolean val) {
@@ -306,109 +195,91 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     private boolean isContainsMouse() {
         return containsMouse;
     }
-    
-    protected PinButton createPinButton() {
-        // XXX - TBD - change to own specialized pin button with proper icons
-        return super.createPinButton();
+
+    private static void initIcons() {
+        //TODO add icons for aqua l&f
+        
+        if( null == buttonIconPaths ) {
+            buttonIconPaths = new HashMap<Integer, String[]>(7);
+            
+            //close button
+            String[] iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_close_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_close_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_close_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
+            
+            //slide/pin button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_slideright_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_slideright_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_slideright_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_RIGHT_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_slideleft_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_slideleft_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_slideleft_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_LEFT_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_slidedown_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_slidedown_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_slidedown_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_DOWN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_pin_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_pin_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_pin_over.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            //TODO add icons for maximize/restore
+            //maximize/restore button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_ maximize_normal.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_pressed_notselected.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_maximize_over_notselected.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
+
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_normal.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_pressed_notselected.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_titlebar_restore_over_noteselected.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
+        }
+    }
+
+    public Icon getButtonIcon(int buttonId, int buttonState) {
+        Icon res = null;
+        initIcons();
+        String[] paths = buttonIconPaths.get( buttonId );
+        if( null != paths && buttonState >=0 && buttonState < paths.length ) {
+            res = TabControlButtonFactory.getIcon( paths[buttonState] );
+        }
+        return res;
     }
     
     /**
      * Own close icon button controller
      */
     private class OwnController extends Controller {
-        //TODO - add a method to AbstractViewTabDisplayerUI to get the close button rect and implement everything
-        //on the parent class
-
-        protected int inCloseIconRect(Point point) {
-            if (!displayer.isShowCloseButton()) {
-                return -1;
-            }
-            int index = getLayoutModel().indexOfPoint(point.x, point.y);
-            if (index < 0) {
-                return -1;
-            }
-            Rectangle rect = getCloseIconRect(tempRect, index);
-            rect.width += 6;
-            rect.height += 6;
-            rect.x -= 3;
-            rect.y -= 3;
-            int result = rect.contains(point) ? index : -1;
-            return result;
-        }
         
-        protected boolean inPinButtonRect(Point p) {
-            return pinButtonRect.contains(p);
-        }
-
-        public void mousePressed(MouseEvent e) {
-            Point p = e.getPoint();
-            int i = getLayoutModel().indexOfPoint(p.x, p.y);
-            int closeRectIdx = inCloseIconRect(p);
-            tabState.setPressed(i);
-            tabState.setCloseButtonContainsMouse(closeRectIdx);
-            tabState.setMousePressedInCloseButton(closeRectIdx);            
-            // invoke possible selection change
-            if ((i != -1) && closeRectIdx == -1) {
-                if (shouldPerformAction (TabDisplayer.COMMAND_SELECT, i, e)) {
-                    getSelectionModel().setSelectedIndex(i);
-                    tabState.setSelected(i);
-                    Component tc = getDataModel().getTab(i).getComponent();
-                    if( null != tc && tc instanceof TopComponent
-                        && !((TopComponent)tc).isAncestorOf( KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner() ) ) {
-                        ((TopComponent)tc).requestActive();
-                    }
-                }
-            }
-            if (shouldReact(e) && closeRectIdx != -1) {
-                setClosePressed(closeRectIdx);
-                return;
-            } 
-            
-            if (pinButton != null && inPinButtonRect (p)) {
-                //XXX better to do on mouse release
-                performPinAction();
-            }
-            if ((i != -1) && e.isPopupTrigger()) {
-                //Post a popup menu show request
-                shouldPerformAction(TabDisplayer.COMMAND_POPUP_REQUEST, i, e);
-                // mkleint need to consume otherwise the evil DefaultTabbedContainerUI.ForwardListener 
-                // causes the menu to disappear immediately
-                e.consume();
-            }
-            
-            // update pressed state
-        }
-
-        public void mouseReleased(MouseEvent e) {
-            tabState.setMousePressedInCloseButton(-1);
-            tabState.setPressed(-1);
-            // close button must not be active when selection change was
-            // triggered by mouse press
-            if (shouldReact(e)) {
-                //Double check that the mouse wasn't pressed over one
-                //close button and released over another
-                int currClosePressed = isClosePressed();
-                setClosePressed(-1);
-                Point point = e.getPoint();
-                if (inCloseIconRect(point) >= 0) {
-                    int i = getLayoutModel().indexOfPoint(point.x, point.y);
-                    if (i == currClosePressed) {
-                        performAction(e);
-                    } 
-                    // reset rollover effect after action is complete
-                    setMouseInCloseButton(point);
-                }
-            }
-        }
-
         public void mouseEntered(MouseEvent me) {
+            super.mouseEntered(me);
             setContainsMouse(true);
-            tabState.setMouseInTabsArea(true);
         }
 
         public void mouseExited(MouseEvent me) {
+            super.mouseExited(me);
             setContainsMouse(false);
-            tabState.setMouseInTabsArea(false);
         }
     } // end of OwnController
 

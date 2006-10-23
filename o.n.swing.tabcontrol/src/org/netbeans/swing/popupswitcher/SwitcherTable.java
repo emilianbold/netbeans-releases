@@ -201,7 +201,7 @@ public class SwitcherTable extends JTable {
         setRowHeight(rowHeight);
     }
     
-    private static SoftReference ctx = null;
+    private static SoftReference<BufferedImage> ctx = null;
     
     /**
      * Provides an offscreen graphics context so that widths based on character
@@ -212,11 +212,11 @@ public class SwitcherTable extends JTable {
         // XXX multi-monitors w/ different resolution may have problems; Better
         // to call Toolkit to create a screen graphics
         if (ctx != null) {
-            result = (BufferedImage) ctx.get();
+            result = ctx.get();
         }
         if (result == null) {
             result = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
-            ctx = new SoftReference(result);
+            ctx = new SoftReference<BufferedImage>(result);
         }
         return (Graphics2D) result.getGraphics();
     }

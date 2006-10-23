@@ -49,14 +49,15 @@ import javax.swing.event.ListDataEvent;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.Tabbed;
+import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
-import org.netbeans.swing.tabcontrol.LocationInformer;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
@@ -73,7 +74,7 @@ import org.openide.windows.TopComponent;
  * @author Dafe Simonek
  */
 public final class SlideBar extends Box implements ComplexListDataListener,
-    SlideBarController, Tabbed.Accessor, LocationInformer, ChangeListener {
+    SlideBarController, Tabbed.Accessor, WinsysInfoForTabbed, ChangeListener {
     
     /** Command indicating request for slide in (appear) of sliding component */
     public static final String COMMAND_SLIDE_IN = "slideIn"; //NOI18N
@@ -348,7 +349,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         return tabbed;
     }
     
-    /********* implementation of LocationInformer **************/
+    /********* implementation of WinsysInfoForTabbed **************/
     
     public Object getOrientation(Component comp) {
         if (WindowManagerImpl.getInstance().getEditorAreaState() != Constants.EDITOR_AREA_JOINED) {
@@ -356,6 +357,11 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         }
         return TabDisplayer.ORIENTATION_CENTER;
     }
+    
+    public boolean inMaximizedMode(Component comp) {
+        return TabbedAdapter.isInMaximizedMode(comp);
+    }
+    
     
     /*************** non public stuff **************************/
     
@@ -441,8 +447,6 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         //#48318 - repaint when changing name -> can change the width of buttons.
         repaint();
     }
-    
-    
     
 }
 

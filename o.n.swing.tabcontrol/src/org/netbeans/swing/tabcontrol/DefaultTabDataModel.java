@@ -23,6 +23,7 @@
 
 package org.netbeans.swing.tabcontrol;
 
+import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.netbeans.swing.tabcontrol.event.VeryComplexListDataEvent;
@@ -41,9 +42,9 @@ public class DefaultTabDataModel implements TabDataModel {
     /**
      * Utility field holding list of ChangeListeners.
      */
-    private transient java.util.ArrayList listenerList;
+    private transient ArrayList<ComplexListDataListener> listenerList;
 
-    private class L extends ArrayList {
+    private class L extends ArrayList<TabData> {
         public void removeRange(int fromIndex, int toIndex) {
             super.removeRange(fromIndex, toIndex);
         }
@@ -54,7 +55,7 @@ public class DefaultTabDataModel implements TabDataModel {
     /**
      * Utility field holding list of ChangeListeners.
      */
-    private transient java.util.ArrayList changeListenerList;
+    private transient ArrayList<ChangeListener> changeListenerList;
 
     /**
      * Creates a new instance of DefaultTabDataModel
@@ -69,7 +70,7 @@ public class DefaultTabDataModel implements TabDataModel {
         list.addAll(Arrays.asList(data));
     }
 
-    public java.util.List getTabs() {
+    public java.util.List<TabData> getTabs() {
         return Collections.unmodifiableList(list);
     }
 
@@ -231,8 +232,8 @@ public class DefaultTabDataModel implements TabDataModel {
                 //merge of the change data and fire that
                 int size = (iconsToFire != null ? iconsToFire.length : 0)
                         + (txtToFire != null ? txtToFire.length : 0);
-                Set allIndicesToFire = new HashSet(size);
-                Object[] o;
+                Set<Integer> allIndicesToFire = new HashSet<Integer>(size);
+                Integer[] o;
                 if (iconsToFire != null) {
                     o = toObjectArray(iconsToFire);
                     allIndicesToFire.addAll(Arrays.asList(o));
@@ -352,14 +353,14 @@ public class DefaultTabDataModel implements TabDataModel {
     }
 
     public void addTabs(int[] indices, TabData[] data) {
-        Map m = new HashMap(data.length);
+        Map<Integer,TabData> m = new HashMap<Integer,TabData>(data.length);
         for (int i = 0; i < data.length; i++) {
             m.put(new Integer(indices[i]), data[i]);
         }
         Arrays.sort(indices);
         for (int i = 0; i < indices.length; i++) {
             Integer key = new Integer(indices[i]);
-            TabData currData = (TabData) m.get(key);
+            TabData currData = m.get(key);
             list.add(indices[i], currData);
         }
         ComplexListDataEvent clde = new ComplexListDataEvent(this,
@@ -389,7 +390,7 @@ public class DefaultTabDataModel implements TabDataModel {
     public synchronized void addComplexListDataListener(
             ComplexListDataListener listener) {
         if (listenerList == null) {
-            listenerList = new ArrayList();
+            listenerList = new ArrayList<ComplexListDataListener>();
         }
         listenerList.add(listener);
     }
@@ -498,10 +499,9 @@ public class DefaultTabDataModel implements TabDataModel {
      *
      * @param listener The listener to register.
      */
-    public synchronized void addChangeListener(
-            javax.swing.event.ChangeListener listener) {
+    public synchronized void addChangeListener(ChangeListener listener) {
         if (changeListenerList == null) {
-            changeListenerList = new java.util.ArrayList();
+            changeListenerList = new ArrayList<ChangeListener>();
         }
         changeListenerList.add(listener);
     }

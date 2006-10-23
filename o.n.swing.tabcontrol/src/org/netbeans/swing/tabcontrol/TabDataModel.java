@@ -176,7 +176,7 @@ public interface TabDataModel {
      *
      * @return a List of TabData objects
      */
-    public java.util.List /* < TabData > */ getTabs();
+    public java.util.List<TabData> getTabs();
 
     /**
      * Fetch the index of a tab matching the passed TabData object.  Note that

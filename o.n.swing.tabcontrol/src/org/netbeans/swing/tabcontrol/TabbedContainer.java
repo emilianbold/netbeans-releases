@@ -224,7 +224,7 @@ public class TabbedContainer extends JComponent implements Accessible {
     /**
      * Utility field holding list of ActionListeners.
      */
-    private transient List actionListenerList;
+    private transient List<ActionListener> actionListenerList;
 
     /**
      * Content policy in which all components contained in the data model should immediately
@@ -263,10 +263,11 @@ public class TabbedContainer extends JComponent implements Accessible {
      * components. */
     private ComponentConverter converter = null;
     
-    /** Info about global positioning of this tab control 
-     * or null if no global location info is needed */
-    private LocationInformer locationInformer = null;
+    /** Winsys info needed for tab control or null if not available */
+    private WinsysInfoForTabbed winsysInfo = null;
 
+    @Deprecated
+    private LocationInformer locationInformer = null;
 
     /**
      * Create a new pane with the default model and tabs displayer
@@ -292,16 +293,23 @@ public class TabbedContainer extends JComponent implements Accessible {
      * @param model The model
      */
     public TabbedContainer(TabDataModel model, int type) {
-        this (model, type, null);
+        this (model, type, (WinsysInfoForTabbed)null);
     }
-    
 
     /**
-     * Create a new pane with the specified model and displayer type
-     *
-     * @param model The model
+     * Deprecated, please use constructor with WinsysInfoForTabbed instead.
      */
+    @Deprecated
     public TabbedContainer(TabDataModel model, int type, LocationInformer locationInformer) {
+        this (model, type, (WinsysInfoForTabbed)null);
+        this.locationInformer = locationInformer;
+    }
+        
+    /**
+     * Create a new pane with the specified model, displayer type and extra
+     * information from winsys
+     */
+    public TabbedContainer(TabDataModel model, int type, WinsysInfoForTabbed winsysInfo) {
         switch (type) {
             case TYPE_VIEW:
             case TYPE_EDITOR:
@@ -316,13 +324,15 @@ public class TabbedContainer extends JComponent implements Accessible {
         }
         this.model = model;
         this.type = Boolean.getBoolean("nb.tabcontrol.alltoolbar") ? TYPE_TOOLBAR : type;
-        this.locationInformer = locationInformer;
+        this.winsysInfo = winsysInfo;
         initialized = true;
         updateUI();
         //A few borders and such will check this
         //@see org.netbeans.swing.plaf.gtk.AdaptiveMatteBorder
         putClientProperty ("viewType", new Integer(type)); //NOI18N
     }
+    
+    
 
     /**
      * Overridden as follows:  When called by the superclass constructor (before
@@ -406,9 +416,9 @@ public class TabbedContainer extends JComponent implements Accessible {
         ComponentConverter old = converter;
         converter = cc;
         if (old instanceof ComponentConverter.Fixed && cc instanceof ComponentConverter.Fixed) {
-            List l = getModel().getTabs();
+            List<TabData> l = getModel().getTabs();
             if (!l.isEmpty()) {
-                TabData[] td = (TabData[]) l.toArray (new TabData[0]);
+                TabData[] td = l.toArray (new TabData[0]);
                 getModel().setTabs (new TabData[0]);
                 getModel().setTabs(td);
             }
@@ -603,7 +613,7 @@ public class TabbedContainer extends JComponent implements Accessible {
      */
     public final synchronized void addActionListener(ActionListener listener) {
         if (actionListenerList == null) {
-            actionListenerList = new ArrayList();
+            actionListenerList = new ArrayList<ActionListener>();
         }
         actionListenerList.add(listener);
     }
@@ -632,14 +642,14 @@ public class TabbedContainer extends JComponent implements Accessible {
      * @param event The event to be fired
      */
     protected final void postActionEvent(TabActionEvent event) {
-        List list;
+        List<ActionListener> list;
         synchronized (this) {
             if (actionListenerList == null)
                 return;
             list = Collections.unmodifiableList(actionListenerList);
         }
-        for (int i = 0; i < list.size(); i++) {
-            ((ActionListener) list.get(i)).actionPerformed(event);
+        for( ActionListener l : list ) {
+            l.actionPerformed(event);
         }
     }
 
@@ -693,32 +703,6 @@ public class TabbedContainer extends JComponent implements Accessible {
         }
         return -1;
     }
-
-    /**
-     * Fetch the command that will be performed if the default (left) mouse buttton is clicked on this point.
-     * This will typically be <code>COMMAND_CLOSE</code> or <code>COMMAND_SELECT</code>.  Client code can
-     * use this method to determine if it is safe to, for instance, initiate a drag and drop action for
-     * a mouse event - if the return value is <code>COMMAND_SELECT</code>, it is.
-     * <p>
-     * Alternate UIs can implement their own commands which are passed to client code via action events
-     * in this way.  With the exception (XXX should it be an exception?) of COMMAND_SELECT, an action
-     * event will be fired with the return value if the mouse button is actually pressed over this point.
-     * The event may then either be consumed by the client, meaning that client code should handle it, or not,
-     * in which case there is (presumably) some default behavior that the UI will do (like closing a tab).
-     * <p>
-     * Note, should we support firing events for COMMAND_SELECT in the future, the correct way to detect
-     * selection changes is to listen on the selection model - no action events are fired for programmatic
-     * changes to the selection model.
-     *
-     * @param p A point in the coordinate space of the container
-     * @return A command string, typically COMMAND_CLOSE or COMMAND_SELECT, or null if not over a tab.
-     *
-     */
-    public String getCommandAtPoint (Point p) {
-        return getUI().getCommandAtPoint (p);
-    }
-
-
 
     /** The index at which a tab should be inserted if a drop operation
      * occurs at this point.
@@ -774,10 +758,14 @@ public class TabbedContainer extends JComponent implements Accessible {
         }
     }
     
+    @Deprecated
     public LocationInformer getLocationInformer() {
         return locationInformer;
     }
     
+    public WinsysInfoForTabbed getWinsysInfo() {
+        return winsysInfo;
+    }
 
     static {
         //Support for experimenting with different content policies in NetBeans
@@ -818,4 +806,5 @@ public class TabbedContainer extends JComponent implements Accessible {
         
         return accessibleContext;
     }
+    
 }

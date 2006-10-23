@@ -95,16 +95,16 @@ public final class ArrayDiff {
         }
     }
 
-    private Set deleted = null;
+    private Set<Integer> deleted = null;
 
     /**
      * Returns the indices of objects in the old array which are not present in
      * the new array.  The resulting array's size will be that of the old array
      */
-    public Set getDeletedIndices() {
+    public Set<Integer> getDeletedIndices() {
         if (deleted == null) {
-            HashSet set = new HashSet(Arrays.asList(nue));
-            HashSet results = new HashSet(old.length);
+            HashSet<TabData> set = new HashSet<TabData>(Arrays.asList(nue));
+            HashSet<Integer> results = new HashSet<Integer>(old.length);
             for (int i = 0; i < old.length; i++) {
                 if (!set.contains(old[i])) {
                     results.add(new Integer(i));
@@ -115,16 +115,16 @@ public final class ArrayDiff {
         return deleted;
     }
 
-    private Set added = null;
+    private Set<Integer> added = null;
 
     /**
      * Returns the indices of objects in the new array which are not present in
      * the old array
      */
-    public Set getAddedIndices() {
+    public Set<Integer> getAddedIndices() {
         if (added == null) {
-            HashSet set = new HashSet(Arrays.asList(old));
-            Set results = new HashSet(nue.length);
+            HashSet<TabData> set = new HashSet<TabData>(Arrays.asList(old));
+            Set<Integer> results = new HashSet<Integer>(nue.length);
             for (int i = 0; i < nue.length; i++) {
                 if (!set.contains(nue[i])) {
                     results.add(new Integer(i));
@@ -140,12 +140,12 @@ public final class ArrayDiff {
      * and old array.  The size of the result is Math.max(old.length,
      * nue.length).
      */
-    public Set getChangedIndices() {
+    public Set<Integer> getChangedIndices() {
         //XXX can add similar caching as with deleted/added fields if it looks
         //to prove useful.  getDeletedIndices() and getAddedIndices() are called
         //more than once, and the computation can be expensive.
         int max = Math.max(nue.length, old.length);
-        HashSet results = new HashSet(max);
+        HashSet<Integer> results = new HashSet<Integer>(max);
 
         for (int i = 0; i < max; i++) {
             if (i < old.length && i < nue.length) {
@@ -164,9 +164,9 @@ public final class ArrayDiff {
      * in the new array, but at a different index.  The indices returned are
      * indices into the old array.
      */
-    public Set getMovedIndices() {
-        HashSet set = new HashSet(Arrays.asList(nue));
-        HashSet results = new HashSet(old.length);
+    public Set<Integer> getMovedIndices() {
+        HashSet<TabData> set = new HashSet<TabData>(Arrays.asList(nue));
+        HashSet<Integer> results = new HashSet<Integer>(old.length);
 
         for (int i = 0; i < old.length; i++) {
             boolean isPresent = set.contains(old[i]);

@@ -358,15 +358,6 @@ public final class TabbedSlideAdapter implements Tabbed {
         return null;
     }
     
-    public String getCommandAtPoint(Point p) {
-        // XXX - TBD
-        int tab = tabForCoordinate(p);
-        if (tab != -1) {
-            return TabbedContainer.COMMAND_SELECT;
-        }
-        return null;
-    }
-    
     /** Add action for disabling slide */
     public Action[] getPopupActions(Action[] defaultActions, int tabIndex) {
         boolean isMDI = WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_JOINED;

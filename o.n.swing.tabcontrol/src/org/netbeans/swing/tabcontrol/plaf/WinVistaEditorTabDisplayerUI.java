@@ -19,15 +19,18 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
-import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.net.URL;
-import org.netbeans.swing.tabcontrol.TabListPopupAction;
-import org.openide.util.Utilities;
 
 /**
  * Windows Vista impl of tabs ui
@@ -35,7 +38,9 @@ import org.openide.util.Utilities;
  * @author S. Aubrecht
  */
 public final class WinVistaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
+    
     private static final Rectangle scratch5 = new Rectangle();
+    private static Map<Integer, String[]> buttonIconPaths;
 
     public WinVistaEditorTabDisplayerUI(TabDisplayer displayer) {
         super (displayer);
@@ -44,39 +49,6 @@ public final class WinVistaEditorTabDisplayerUI extends BasicScrollingTabDisplay
     public static ComponentUI createUI(JComponent c) {
         return new WinVistaEditorTabDisplayerUI ((TabDisplayer) c);
     }    
-
-    private static final String[] iconNames = new String[]{
-        "org/netbeans/swing/tabcontrol/resources/vista_left_enabled.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_left_disabled.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_left_over.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_left_pressed.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_right_enabled.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_right_disabled.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_right_over.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_right_pressed.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_popup_enabled.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_popup_enabled.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_popup_over.png", //NOI18N
-        "org/netbeans/swing/tabcontrol/resources/vista_popup_pressed.png"}; //NOI18N
-
-    protected AbstractButton[] createControlButtons() {
-        //XXX probably this can be moved into superclass?
-        JButton[] result = new JButton[3];
-        result[0] = new TimerButton(scroll().getBackwardAction(), false);
-        result[1] = new TimerButton(scroll().getForwardAction(), false);
-        result[2] = new OnPressButton(new TabListPopupAction(displayer));
-        configureButton(result[0], 0);
-        configureButton(result[1], 1);
-        configureButton(result[2], 2);
-        result[0].setPreferredSize(new Dimension(15, 15));
-        result[2].setPreferredSize(new Dimension(16, 15));
-        result[1].setPreferredSize(new Dimension(15, 15));
-
-        scroll().getBackwardAction().putValue("control", displayer); //NOI18N
-        scroll().getForwardAction().putValue("control", displayer); //NOI18N
-
-        return result;
-    }
 
     public Dimension getPreferredSize(JComponent c) {
         int prefHeight = 22;
@@ -87,34 +59,6 @@ public final class WinVistaEditorTabDisplayerUI extends BasicScrollingTabDisplay
             prefHeight = fm.getHeight() + ins.top + ins.bottom + 6;
         }
         return new Dimension(displayer.getWidth(), prefHeight);
-    }
-    
-    private static final Icon createIcon(int i) {
-        return new ImageIcon(Utilities.loadImage(iconNames[i]));
-    }
-
-    private static void configureButton(JButton button, int idx) {
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        button.setBorder(BorderFactory.createEmptyBorder());
-
-        Icon normal = createIcon((idx * 4));
-        Icon disabled = createIcon((idx * 4) + 1);
-        Icon rollover = createIcon((idx * 4) + 2);
-        Icon pressed = createIcon((idx * 4) + 3);
-
-        button.setIcon(normal);
-        button.setRolloverEnabled(true);
-        button.setRolloverIcon(rollover);
-        button.setDisabledIcon(disabled);
-        button.setPressedIcon(pressed);
-
-        button.setMargin(null);
-        button.setText(null);
-        //undocumented (?) call to hide action text - see JButton line 234
-        button.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
-        button.setFocusable(false);
     }
     
     public void paintBackground (Graphics g) {
@@ -154,14 +98,6 @@ public final class WinVistaEditorTabDisplayerUI extends BasicScrollingTabDisplay
     protected TabCellRenderer createDefaultRenderer() {
         return new WinVistaEditorTabCellRenderer();
     }
-
-    protected LayoutManager createLayout() {
-        return new WCLayout();
-    }
-
-    public java.awt.Insets getTabAreaInsets() {
-        return new Insets(0, 0, 0, 57);
-    }
     
     protected Rectangle getTabRectForRepaint( int tab, Rectangle rect ) {
         Rectangle res = super.getTabRectForRepaint( tab, rect );
@@ -172,43 +108,59 @@ public final class WinVistaEditorTabDisplayerUI extends BasicScrollingTabDisplay
         return res;
     }
 
-    private class WCLayout implements LayoutManager {
-
-        public void addLayoutComponent(String name, Component comp) {
+    private static void initIcons() {
+        if( null == buttonIconPaths ) {
+            buttonIconPaths = new HashMap<Integer, String[]>(7);
+            
+            //TODO add 'pressed' icons
+            //left button
+            String[] iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_left_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/vista_left_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_left_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_left_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_LEFT_BUTTON, iconPaths );
+            
+            //right button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_right_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/vista_right_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_right_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_right_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_RIGHT_BUTTON, iconPaths );
+            
+            //drop down button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_popup_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_popup_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_popup_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_DROP_DOWN_BUTTON, iconPaths );
+            
+            //maximize/restore button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_maximize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_maximize_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_maximize_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_restore_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_restore_over.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_restore_pressed.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
         }
+    }
 
-        public void layoutContainer(java.awt.Container parent) {
-            Insets in = getTabAreaInsets();
-            Component[] c = parent.getComponents();
-            int x = parent.getWidth() - 49;
-            int y = 0;
-            Dimension psize;
-            for (int i = 0; i < c.length; i++) {
-                y = in.top;
-                if (c[i] instanceof JButton) {
-                    int w = Math.min(
-                            ((JButton) c[i]).getIcon().getIconWidth(),
-                            parent.getWidth() - x);
-                    c[i].setBounds(x, y, w, Math.min(
-                            ((JButton) c[i]).getIcon().getIconHeight(),
-                            parent.getHeight()));
-                    x += ((JButton) c[i]).getIcon().getIconWidth();
-                    if (i == 1) {
-                        x += 3;
-                    }
-                }
-            }
+    public Icon getButtonIcon(int buttonId, int buttonState) {
+        Icon res = null;
+        initIcons();
+        String[] paths = buttonIconPaths.get( buttonId );
+        if( null != paths && buttonState >=0 && buttonState < paths.length ) {
+            res = TabControlButtonFactory.getIcon( paths[buttonState] );
         }
-
-        public Dimension minimumLayoutSize(Container parent) {
-            return getPreferredSize((JComponent) parent);
-        }
-
-        public Dimension preferredLayoutSize(Container parent) {
-            return getPreferredSize((JComponent) parent);
-        }
-
-        public void removeLayoutComponent(java.awt.Component comp) {
-        }
+        return res;
     }
 }

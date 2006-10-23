@@ -385,7 +385,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
 
     /** Possibly invokes the (un)maximization. */
     public static void handleMaximization(TabActionEvent tae) {
-        Component c = (Component) tae.getMouseEvent().getSource();
+        Component c = (Component) tae.getSource();
         while (c != null && !(c instanceof Tabbed))
             c = c.getParent();
         if (c == null) {

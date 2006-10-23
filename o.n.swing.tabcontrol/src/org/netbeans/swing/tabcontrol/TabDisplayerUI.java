@@ -172,13 +172,6 @@ public abstract class TabDisplayerUI extends ComponentUI {
         displayer.setSelectionModel(selectionModel);
     }
 
-    /** Get the command associated with a given point if the default mouse button
-     * is used, such as TabDisplayer.COMMAND_SELECT or TabDisplayer.COMMAND_CLOSE.
-     * @param p A point
-     * @return An action command
-     */
-    public abstract String getCommandAtPoint(Point p);
-
     /**
      *  The index a tab would acquire if dropped at a given point
      *
@@ -196,8 +189,12 @@ public abstract class TabDisplayerUI extends ComponentUI {
     
     protected abstract void cancelRequestAttention (int tab);   
     
+    public abstract Icon getButtonIcon( int buttonId, int buttonState );
     
-    public String getTooltipForButtons(Point point) {
-        return null;
+    public void postTabAction( TabActionEvent e ) {
+        if( shouldPerformAction( e.getActionCommand(), e.getTabIndex(), e.getMouseEvent() ) ) {
+            
+            //TODO do something here??
+        }
     }
 }

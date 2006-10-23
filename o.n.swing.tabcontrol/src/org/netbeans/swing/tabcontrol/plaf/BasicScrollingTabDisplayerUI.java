@@ -38,9 +38,14 @@ import java.lang.ref.SoftReference;
  * @author Tim Boudreau
  */
 public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
-    protected AbstractButton[] controlButtons;
-    protected LayoutManager layoutManager;
     private Rectangle scratch = new Rectangle();
+    
+    private JPanel controlButtons;
+    
+    private TabControlButton btnScrollLeft;
+    private TabControlButton btnScrollRight;
+    private TabControlButton btnDropDown;
+    private TabControlButton btnMaximizeRestore;
 
     /**
      * Creates a new instance of BasicScrollingTabDisplayerUI
@@ -81,6 +86,10 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         return result - (ins.left + ins.right);
     }
 
+    public Insets getTabAreaInsets() {
+        return new Insets(0, 0, 0, getControlButtons().getPreferredSize().width + 5);
+    }
+
     protected final int getLastVisibleTab() {
         if (displayer.getModel().size() == 0) {
             return -1;
@@ -97,8 +106,6 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
 
     protected void install() {
         super.install();
-        layoutManager = createLayout();
-        controlButtons = createControlButtons();
         installControlButtons();
         ((ScrollingTabLayoutModel) layoutModel).setPixelsToAddToSelection (
                 defaultRenderer.getPixelsToAddToSelection());
@@ -110,9 +117,70 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         displayer.removeAll();
     }
 
-    protected abstract LayoutManager createLayout();
+    protected LayoutManager createLayout() {
+        return new WCLayout();
+    }
+    
+    /**
+     * @return A component that holds control buttons (scroll left/right, drop down menu)
+     * that are displayed to right of the tab area.
+     */
+    protected Component getControlButtons() {
+        if( null == controlButtons ) {
+            JPanel buttonsPanel = new JPanel( null );
+            buttonsPanel.setOpaque( false );
 
-    protected abstract AbstractButton[] createControlButtons();
+            int width = 0;
+            int height = 0;
+            
+            //create scroll-left button
+            Action a = scroll().getBackwardAction();
+            a.putValue( "control", displayer ); //NO18N
+            btnScrollLeft = TabControlButtonFactory.createScrollLeftButton( displayer, a );
+            buttonsPanel.add( btnScrollLeft );
+            Icon icon = btnScrollLeft.getIcon();
+            btnScrollLeft.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+            width += icon.getIconWidth();
+
+            //create scroll-right button
+            a = scroll().getForwardAction();
+            a.putValue( "control", displayer ); //NO18N
+            btnScrollRight = TabControlButtonFactory.createScrollRightButton( displayer, a );
+            buttonsPanel.add( btnScrollRight );
+            icon = btnScrollRight.getIcon();
+            btnScrollRight.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+            width += icon.getIconWidth();
+
+            //create drop down button
+            btnDropDown = TabControlButtonFactory.createDropDownButton( displayer );
+            buttonsPanel.add( btnDropDown );
+
+            icon = btnDropDown.getIcon();
+            width += 3;
+            btnDropDown.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+            width += icon.getIconWidth();
+            height = icon.getIconHeight();
+            
+            //maximize / restore button
+//            if( null != displayer.getWinsysInfo() ) {
+//                width += 3;
+//                btnMaximizeRestore = TabControlButtonFactory.createMaximizeRestoreButton( displayer );
+//                buttonsPanel.add( btnMaximizeRestore );
+//                icon = btnMaximizeRestore.getIcon();
+//                btnMaximizeRestore.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+//                width += icon.getIconWidth();
+//            }
+            
+            Dimension size = new Dimension( width, height );
+            buttonsPanel.setMinimumSize( size );
+            buttonsPanel.setSize( size );
+            buttonsPanel.setPreferredSize( size );
+            buttonsPanel.setMaximumSize( size );
+            
+            controlButtons = buttonsPanel;
+        }
+        return controlButtons;
+    }
     
     protected ComponentListener createComponentListener() {
         return new ScrollingDisplayerComponentListener();
@@ -145,10 +213,8 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
     }
 
     protected void installControlButtons() {
-        displayer.setLayout(layoutManager);
-        for (int i = 0; i < controlButtons.length; i++) {
-            displayer.add(controlButtons[i]);
-        }
+        displayer.setLayout(createLayout());
+        displayer.add(getControlButtons());
     }
 
     public Dimension getMinimumSize(JComponent c) {
@@ -252,161 +318,9 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
                 }
             }
         }
-        
     }
 
-    /** A convenience button class which will continue re-firing its action
-     * on a timer for as long as the button is depressed.  Used for left-right scroll
-     * buttons.
-     */
-    protected static class TimerButton extends JButton implements ActionListener {
-        Timer timer = null;
-        Image disabledImage = null;
-        Image enabledImage = null;
-        boolean useCachedPainting = true;
-
-        public TimerButton(Action a) {
-            this( a, true );
-        }
-        
-        public TimerButton(Action a, boolean useCachedPainting) {
-            super(a);
-            this.useCachedPainting = useCachedPainting;
-        }
-
-        private Timer getTimer() {
-            if (timer == null) {
-                timer = new Timer(400, this);
-                timer.setRepeats(true);
-            }
-            return timer;
-        }
-
-        int count = 0;
-
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-            count++;
-            if (count > 2) {
-                if (count > 5) {
-                    timer.setDelay(75);
-                } else {
-                    timer.setDelay(200);
-                }
-            }
-            performAction();
-        }
-
-        private void performAction() {
-            if (!isEnabled()) {
-                stopTimer();
-                return;
-            }
-            getAction().actionPerformed(new ActionEvent(this,
-                                                        ActionEvent.ACTION_PERFORMED,
-                                                        getActionCommand()));
-        }
-
-        private void startTimer() {
-            performAction();
-            Timer t = getTimer();
-            if (t.isRunning()) {
-                return;
-            }
-            repaint();
-            t.setDelay(400);
-            t.start();
-        }
-
-        private void stopTimer() {
-            if (timer != null) {
-                timer.stop();
-            }
-            repaint();
-            count = 0;
-        }
-
-        protected void processMouseEvent(MouseEvent me) {
-            if (isEnabled() && me.getID() == me.MOUSE_PRESSED) {
-                startTimer();
-            } else if (me.getID() == me.MOUSE_RELEASED) {
-                stopTimer();
-            }
-            super.processMouseEvent(me);
-        }
-
-        protected void processFocusEvent(FocusEvent fe) {
-            super.processFocusEvent(fe);
-            if (fe.getID() == fe.FOCUS_LOST) {
-                stopTimer();
-            }
-        }
-
-        protected void paintComponent(Graphics g) {
-            if( useCachedPainting ) {
-                boolean enabled = isEnabled();
-                if (enabled && enabledImage == null
-                || !enabled && disabledImage == null) {
-                    GraphicsConfiguration gc = getGraphicsConfiguration();
-                    Image intermediateImage = gc.createCompatibleImage(16, 18, Transparency.BITMASK);
-                    Graphics2D gImg = (Graphics2D)intermediateImage.getGraphics();
-                    Composite old = gImg.getComposite();
-                    gImg.setComposite(AlphaComposite.Src);
-                    gImg.setColor(new Color(0, 0, 0, 0));
-                    gImg.fillRect(0, 0, 16, 18);
-                    gImg.setClip( 0, 0, 16, 18 );
-                    gImg.setComposite(old);
-                    super.paintComponent(gImg);
-                    gImg.dispose();
-                    if (enabled) {
-                        enabledImage = intermediateImage;
-                    }
-                    else {
-                        disabledImage = intermediateImage;
-                    }
-                }
-
-                g.drawImage(enabled? enabledImage: disabledImage, 0, 0, null);
-            } else {
-                super.paintComponent( g );
-            }
-        }
-    }
-
-    /** A convenience button class which fires its action event on mouse pressed, not
-     * mouse released.   Used to enable press-and-drag behavior on the tab list popup.
-     */
-    protected static class OnPressButton extends JButton {
-        public OnPressButton(Action a) {
-            super(a);
-        }
-
-        protected void processMouseEvent(MouseEvent me) {
-            super.processMouseEvent(me);
-            if (isEnabled() && me.getID() == me.MOUSE_PRESSED) {
-                Icon defaultIcon = getIcon();
-                Icon pressedIcon = getPressedIcon();
-                //swap regular and pressed icon to force 'pressed' visual feedback
-                if( null != defaultIcon && null != pressedIcon ) {
-                    setIcon( pressedIcon );
-                    setPressedIcon( defaultIcon );
-                }
-                getAction().actionPerformed(new ActionEvent(this,
-                                                            ActionEvent.ACTION_PERFORMED,
-                                                            "pressed"));
-            }
-            else if (isEnabled() && me.getID() == me.MOUSE_RELEASED) {
-                Icon defaultIcon = getPressedIcon();
-                Icon pressedIcon = getIcon();
-                //mouse button released - restore icons back
-                if( null != defaultIcon && null != pressedIcon ) {
-                    setIcon( defaultIcon );
-                    setPressedIcon( pressedIcon );
-                }
-            }
-        }
-    }
-
-    static SoftReference ctx = null;
+    static SoftReference<BufferedImage> ctx = null;
 
     /**
      * Provides an offscreen graphics context so that widths based on character
@@ -417,12 +331,48 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         //XXX multi-monitors w/ different resolution may have problems;
         //Better to call Toolkit to create a screen graphics
         if (ctx != null) {
-            result = (BufferedImage) ctx.get();
+            result = ctx.get();
         }
         if (result == null) {
             result = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
-            ctx = new SoftReference(result);
+            ctx = new SoftReference<BufferedImage>(result);
         }
         return (Graphics2D) result.getGraphics();
+    }
+
+    /**
+     * @return Bounds for the control buttons in the tab displayer container.
+     */
+    protected Rectangle getControlButtonsRectangle( Container parent ) {
+        Component c = getControlButtons();
+        return new Rectangle( parent.getWidth()-c.getWidth(), 0, c.getWidth(), c.getHeight() );
+    }
+    
+    /**
+     * Layout manager for the tab displayer to make sure that control buttons
+     * are always displayed at the end of the tab list.
+     */
+    private class WCLayout implements LayoutManager {
+
+        public void addLayoutComponent(String name, Component comp) {
+        }
+
+        public void layoutContainer(java.awt.Container parent) {
+            
+            Rectangle r = getControlButtonsRectangle( parent );
+            Component c = getControlButtons();
+            c.setBounds( r );
+        }
+
+        public Dimension minimumLayoutSize(Container parent) {
+            return getPreferredSize((JComponent) parent);
+        }
+
+        public Dimension preferredLayoutSize(Container parent) {
+            return getPreferredSize((JComponent) parent);
+        }
+
+        public void removeLayoutComponent(java.awt.Component comp) {
+        }
     }
 }

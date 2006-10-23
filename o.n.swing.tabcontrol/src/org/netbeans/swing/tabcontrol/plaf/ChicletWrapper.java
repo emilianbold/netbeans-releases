@@ -108,13 +108,13 @@ public class ChicletWrapper implements Runnable {
         return new Long(result);
     }
 
-    private static HashMap cache = new HashMap();
+    private static HashMap<CacheEntry,BufferedImage> cache = new HashMap<CacheEntry,BufferedImage>();
 
     private BufferedImage findBufferedImage() {
         Long hash = hash();
         CacheEntry entry = new CacheEntry (hash);
 
-        BufferedImage result = (BufferedImage) cache.get(entry);
+        BufferedImage result = cache.get(entry);
         if (result == null) {
             result = createImage();
         }
@@ -143,7 +143,7 @@ public class ChicletWrapper implements Runnable {
         if (cache.size() < 5) {
             return;
         }
-        HashMap newCache = (HashMap) cache.clone();
+        HashMap<CacheEntry,BufferedImage> newCache = new HashMap<CacheEntry,BufferedImage>( cache );
         long startTime = System.currentTimeMillis();
         CacheEntry[] entries = (CacheEntry[]) newCache.keySet().toArray(new CacheEntry[0]);
         Arrays.sort (entries);

@@ -141,15 +141,6 @@ public abstract class TabbedContainerUI extends ComponentUI {
         return !evt.isConsumed();
     }
 
-    /** Get the action associated with a given point if clicked with the default mouse button.
-     * This is used, for example, to not start a drag and drop operation if the user pressed
-     * the mouse in a close button and is dragging the mouse away to abort closing.
-     *
-     * @param p A point in the coordinate space of the tabbed container
-     * @return A string naming the action (constants defined in TabbedContainer/TabDisplayer), or null
-     */
-    public abstract String getCommandAtPoint (Point p);
-
     /**
      * Get the selection model that tracks and determines which tab is selected.
      *

@@ -66,6 +66,7 @@ import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.TabbedContainerUI;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
 import org.netbeans.swing.tabcontrol.event.ArrayDiff;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
@@ -403,8 +404,15 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      * Create the component which will display the tabs.
      */
     protected TabDisplayer createTabDisplayer() {
-        TabDisplayer result = new TabDisplayer(
-                container.getModel(), container.getType(), container.getLocationInformer());
+        TabDisplayer result = null;
+        WinsysInfoForTabbed winsysInfo = container.getWinsysInfo();
+        if (winsysInfo != null) {
+            result = new TabDisplayer(
+                    container.getModel(), container.getType(), winsysInfo);
+        } else {
+            result = new TabDisplayer(
+                    container.getModel(), container.getType(), container.getLocationInformer());
+        }
         result.setName("Tab Displayer");  //NOI18N
         return result;
     }
@@ -762,11 +770,6 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
 
     public void makeTabVisible(int tab) {
         tabDisplayer.makeTabVisible (tab);
-    }
-
-    public String getCommandAtPoint(Point p) {
-        p = SwingUtilities.convertPoint(container, p, tabDisplayer);
-        return tabDisplayer.getCommandAtPoint (p);
     }
 
     public SingleSelectionModel getSelectionModel() {
@@ -1163,7 +1166,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
                 //true if the text *and* the component match.  So if the winsys
                 //called setTabs just to change the title of a tab, we would
                 //end up removing and re-adding the component for no reason.
-                Set components = new HashSet();
+                Set<Component> components = new HashSet<Component>();
                 if (container.getContentPolicy() == TabbedContainer.CONTENT_POLICY_ADD_ALL) {
                     for (int i = 0; i < nue.length; i++) {
                         components.add(toComp(nue[i]));

@@ -104,13 +104,13 @@ class BaseTabLayoutModel implements TabLayoutModel {
         }
     }
 
-    private static Map widthMap = new HashMap(31);
+    private static Map<String,Integer> widthMap = new HashMap<String,Integer>(31);
 
     static int textWidth(String text, Font f) {
         //Note:  If we choose to support multiple fonts in different
         //tab controls in the system, make the cache non-static and
         //dump it if the font changes.
-        Integer result = (Integer) widthMap.get(text);
+        Integer result = widthMap.get(text);
         if (result == null) {
             double wid = HtmlRenderer.renderString(text, BasicScrollingTabDisplayerUI.getOffscreenGraphics(), 0, 0,
                                            Integer.MAX_VALUE,

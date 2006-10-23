@@ -211,6 +211,10 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
         }
         return result;
     }    
+
+    public Icon getButtonIcon(int buttonId, int buttonState) {
+        return null;
+    }
     
     private ButtonGroup bg = new ButtonGroup();
     private static int fontHeight = -1;

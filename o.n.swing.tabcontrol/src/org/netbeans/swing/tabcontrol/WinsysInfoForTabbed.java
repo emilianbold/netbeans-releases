@@ -22,15 +22,30 @@ package org.netbeans.swing.tabcontrol;
 import java.awt.Component;
 
 /**
- * Deprecated and not used, please use WinsysInfoForTabbed instead.
+ * Interface that provides external information (provided by window system)
+ * that TabbedContainers need to know in order to work fully.<p>
  *
- * @see WinsysInfoForTabbed
+ * Tab control uses info to provide for example tab buttons reacting on 
+ * the position of the container or on maximization state.
+ *
+ * @see TabbedContainer#TabbedContainer
  *
  * @author Dafe Simonek
  */
-@Deprecated
-public interface LocationInformer {
+public interface WinsysInfoForTabbed {
 
+    /** Returns global orientation of given component.
+     *
+     * @return Orientation of component, as defined in
+     * TabDisplayer.ORIENTATION_XXX constants
+     */
     public Object getOrientation (Component comp);
+    
+    /** Finds out in what state is window system mode containing given component.
+     * 
+     * @return true if given component is inside mode which is in maximized state,
+     * false otherwise 
+     */
+    public boolean inMaximizedMode (Component comp);
     
 }

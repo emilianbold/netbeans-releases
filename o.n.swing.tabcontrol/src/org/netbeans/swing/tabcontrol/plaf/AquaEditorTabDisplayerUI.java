@@ -24,17 +24,21 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
-
-import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
-import java.awt.*;
-import java.awt.event.HierarchyListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import org.netbeans.swing.tabcontrol.TabListPopupAction;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.UIManager;
 
 /**
  * A provisional look and feel for OS-X, round 2, using Java2d to emulate the
@@ -43,13 +47,13 @@ import org.netbeans.swing.tabcontrol.TabListPopupAction;
  * @author Tim Boudreau
  */
 public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
-    private Insets taInsets = new Insets(0, 0, 2, 80);
 
     /** Color used in drawing the line behind the tabs */
     private Color lineMiddleColor = null;
     /** Color used in drawing the line behind the tabs */
     private Color lineHlColor = null;
 
+    private static Map<Integer, String[]> buttonIconPaths;
 
     public AquaEditorTabDisplayerUI (TabDisplayer displayer) {
         super (displayer);
@@ -64,12 +68,10 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         return new AquaEditorTabCellRenderer();
     }
 
-    protected LayoutManager createLayout() {
-        return new OSXTabLayout();
-    }
-
     public Insets getTabAreaInsets() {
-        return taInsets;
+        Insets result = super.getTabAreaInsets();
+        result.bottom = 2;
+        return result;
     }
     
     public static ComponentUI createUI(JComponent c) {
@@ -87,33 +89,11 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
     protected int createRepaintPolicy () {
         return TabState.REPAINT_SELECTION_ON_ACTIVATION_CHANGE
                 | TabState.REPAINT_ON_SELECTION_CHANGE
-                | TabState.REPAINT_ON_MOUSE_ENTER_CLOSE_BUTTON
                 | TabState.REPAINT_ALL_ON_MOUSE_ENTER_TABS_AREA
+                | TabState.REPAINT_ON_MOUSE_ENTER_CLOSE_BUTTON
                 | TabState.REPAINT_ON_MOUSE_PRESSED;
     }
     
-
-    protected void processMouseWheelEvent(MouseWheelEvent e) {
-        //overridden to repaint the arrow buttons if the selected tab moves into
-        //or out of view
-        boolean wasShowing = selectionModel.getSelectedIndex()
-                >= getFirstVisibleTab() && selectionModel.getSelectedIndex()
-                <= getLastVisibleTab();
-
-        super.processMouseWheelEvent(e);
-
-        boolean stillShowing = selectionModel.getSelectedIndex()
-                >= getFirstVisibleTab() && selectionModel.getSelectedIndex()
-                <= getLastVisibleTab();
-
-        if (wasShowing != stillShowing) {
-            Component[] c = displayer.getComponents();
-            for (int i = 0; i < c.length; i++) {
-                c[i].repaint();
-            }
-        }
-    }
-
     public Dimension getPreferredSize(JComponent c) {
         int prefHeight = 28;
         //Never call getGraphics() on the control, it resets in-process
@@ -128,46 +108,6 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
             prefHeight += 1;
         }
         return new Dimension(displayer.getWidth(), prefHeight);
-    }
-
-    private static final int BUTTON_SIZE = 19;
-
-    protected AbstractButton[] createControlButtons() {
-        JButton[] result = new JButton[3];
-        result[0] = new TimerButton(scroll().getBackwardAction());
-        result[1] = new TimerButton(scroll().getForwardAction());
-        result[2] = new OnPressButton(new TabListPopupAction(displayer));
-        configureButton(result[0], new LeftIcon());
-        configureButton(result[1], new RightIcon());
-        configureButton(result[2], new DownIcon());
-        result[0].setPreferredSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
-        //This button draws no left/right side border, so make it wider
-        result[1].setPreferredSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
-        result[2].setPreferredSize(new Dimension(BUTTON_SIZE, BUTTON_SIZE));
-
-
-        result[0].setBorder(cborder);
-        result[1].setBorder(cborder);
-        result[2].setBorder(cborder);
-
-
-        scroll().getBackwardAction().putValue("control", displayer); //NOI18N
-        scroll().getForwardAction().putValue("control", displayer); //NOI18N
-
-        return result;
-    }
-
-    private final Border cborder = new RadioButtonPseudoBorder();
-
-    private static void configureButton(JButton button, Icon icon) {
-        button.setIcon(icon);
-        //        button.setMargin(null);
-        button.setText(null);
-        //undocumented (?) call to hide action text - see JButton line 234
-        button.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
-        button.setFocusable(false);
-        button.setRolloverEnabled(false);
-        button.setOpaque(false);
     }
 
     protected void paintAfterTabs(Graphics g) {
@@ -215,233 +155,71 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         }
     }
     
-    private class OSXTabLayout implements LayoutManager {
 
-        public void addLayoutComponent(String name, java.awt.Component comp) {
-        }
-
-        public void layoutContainer(java.awt.Container parent) {
-            Insets in = getTabAreaInsets();
-            Component[] c = parent.getComponents();
-            int x = parent.getWidth() - in.right + 3;
-            int y = 0;
-            Dimension psize;
-
-            int centerY = (((displayer.getHeight() - (AquaEditorTabCellRenderer.TOP_INSET
-                    + AquaEditorTabCellRenderer.BOTTOM_INSET)) / 2) + AquaEditorTabCellRenderer.TOP_INSET)
-                    + getTabAreaInsets().top;
-
-            for (int i = 0; i < c.length; i++) {
-                psize = c[i].getPreferredSize();
-//                y = in.top + 3; //hardcoded to spec
-                y = centerY - (psize.height / 2);
-                int w = Math.min(psize.width, parent.getWidth() - x);
-                c[i].setBounds(x, y, w, Math.min(psize.height,
-                                                 parent.getHeight()));
-                x += psize.width;
-            }
-        }
-
-        public Dimension minimumLayoutSize(java.awt.Container parent) {
-            return getPreferredSize((JComponent) parent);
-        }
-
-        public Dimension preferredLayoutSize(java.awt.Container parent) {
-            return getPreferredSize((JComponent) parent);
-        }
-
-        public void removeLayoutComponent(java.awt.Component comp) {
-        }
-
-    }
-
-    private static final int ICON_WIDTH = 11;
-    private static final int ICON_HEIGHT = 8;
-    private static final int[] xpoints = new int[20];
-    private static final int[] ypoints = new int[20];
-
-    private static class LeftIcon implements Icon {
-        protected boolean dontpaint = true;
-
-        public int getIconHeight() {
-            return ICON_HEIGHT;
-        }
-
-        public int getIconWidth() {
-            return ICON_WIDTH;
-        }
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            if (dontpaint) {
-                return;
-            }
-            x -= 1;
-            y -= 3;
-            g.setColor(c.isEnabled() ?
-                       c.getForeground() :
-                       UIManager.getColor("controlShadow")); //NOI18N
-            int wid = getIconWidth();
-            int hi = getIconHeight() + 1;
-            xpoints[0] = x + (wid - 4);
-            ypoints[0] = y + 1;
-
-            xpoints[1] = xpoints[0];
-            ypoints[1] = y + hi + 1;
-
-            xpoints[2] = x + 2;
-            ypoints[2] = y + (hi / 2) + 1;
-
-            g.fillPolygon(xpoints, ypoints, 3);
-
-        }
-    }
-
-    private static class RightIcon extends LeftIcon {
-        public int getIconWidth() {
-            return ICON_WIDTH;
-        }
-
-        public int getIconHeight() {
-            return ICON_HEIGHT - 1;
-        }
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            if (dontpaint) {
-                return;
-            }
-            y -= 2;
-            g.setColor(c.isEnabled() ?
-                       c.getForeground() :
-                       UIManager.getColor("controlShadow")); //NOI18N
-            int wid = getIconWidth();
-            int hi = getIconHeight() + 1;
-            xpoints[0] = x + 3; //x + (wid-4);
-            ypoints[0] = y;
-
-            xpoints[1] = x + 3;
-            ypoints[1] = y + hi + 1;
-
-            xpoints[2] = x + (wid - 4) + 1;//x+2;
-            ypoints[2] = y + (hi / 2);
-
-            g.fillPolygon(xpoints, ypoints, 3);
-
-        }
-    }
-
-    private static class DownIcon extends LeftIcon {
-        public int getIconHeight() {
-            return ICON_HEIGHT + 2;
-        }
-
-        public int getIconWidth() {
-            return ICON_WIDTH;
-        }
-
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            if (dontpaint) {
-                return;
-            }
-            y -= 5;
-
-            int wid = getIconWidth();
-            if (wid % 2 == 0)
-                wid--; //guarantee an odd number so lines are smooth
-            int hi = getIconHeight();
-            xpoints[0] = x-1;
-            ypoints[0] = y + (hi / 2);
-
-            xpoints[1] = (x + wid) - 2;
-            ypoints[1] = y + (hi / 2);
-
-
-            xpoints[2] = x + (wid / 2) - 1;
-            ypoints[2] = (y + hi);
-            g.setColor(c.isEnabled() ?
-                       c.getForeground() :
-                       UIManager.getColor("controlShadow")); //NOI18N
-            g.fillPolygon(xpoints, ypoints, 3);
-
-        }
-    }
-
-    private static BufferedImage img = null;
-    private static final void createImages() {
-        img = new BufferedImage (60, 20, BufferedImage.TYPE_INT_ARGB_PRE);
-        JRadioButton jrb = new JRadioButton();
-        CellRendererPane pane = new CellRendererPane();
-        pane.add (jrb);
-        jrb.setBounds (0, 0, 80, 20);
-        jrb.setBackground(null);
-        jrb.setOpaque(false);
-        
-        jrb.getModel().setRollover(false);
-        jrb.setRolloverEnabled(false);
-        jrb.getModel().setPressed(true);
-        jrb.setSelected (false);
-        
-        Graphics g = img.getGraphics();
-        jrb.paint (g);
-        
-        g.translate (20, 0);
-        jrb.setSelected(true);
-        jrb.paint (g);
-        g.translate (20, 0);
-        
-        jrb.setEnabled(false);
-        jrb.paint (g);
-    }
-    
-    
-    private class RadioButtonPseudoBorder implements Border {
-        public RadioButtonPseudoBorder() {
-            if (img == null) {
-                createImages();
-            }
-        }
-        
-        public Insets getBorderInsets(Component c) {
-            Insets ins = new Insets(3, 3, 3, 3);
-            return ins;
-        }
-
-        public boolean isBorderOpaque() {
-            return false;
-        }
-
-        public void paintBorder(Component c, Graphics g, int x, int y,
-                                int width, int height) {
-
+    private static void initIcons() {
+        if( null == buttonIconPaths ) {
+            buttonIconPaths = new HashMap<Integer, String[]>(7);
             
-            Icon ic = ((JButton) c).getIcon();
+            //left button
+            String[] iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/apple_left_enabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/apple_left_disabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/apple_left_enabled_editor.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_LEFT_BUTTON, iconPaths );
             
-            int pos = 0;
-            if (!c.isEnabled()) {
-                pos = 40;
-            } else {
-                boolean shouldSelect = selectionModel.getSelectedIndex() != -1
-                    && displayer.isActive() && ((ic.getClass()
-                    == LeftIcon.class && selectionModel.getSelectedIndex()
-                    < getFirstVisibleTab()) || (ic.getClass()
-                    == RightIcon.class && selectionModel.getSelectedIndex()
-                    > getLastVisibleTab()));
-                if (shouldSelect) {
-                    pos = 20;
-                }
-                if (shouldSelect) {
-                    c.setForeground(new Color(0, 64, 128));
-                } else {
-                    c.setForeground(UIManager.getColor("controlDkShadow")); //NOI18N
-                }            
-            }
-            Graphics2D g2d = (Graphics2D) g;
-            AffineTransform at = AffineTransform.getTranslateInstance(-pos, -1);
-            g2d.drawRenderedImage(img, at);
-
-            ((LeftIcon) ic).dontpaint = false;
-            ic.paintIcon(c, g, x + (width / 4) + 2, y + (width / 4) + 3);
-            ((LeftIcon) ic).dontpaint = true;
-
+            //right button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/apple_right_enabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/apple_right_disabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/apple_right_enabled_editor.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SCROLL_RIGHT_BUTTON, iconPaths );
+            
+            //drop down button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/apple_down_enabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/apple_down_disabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/apple_down_pressed_editor.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_DROP_DOWN_BUTTON, iconPaths );
+            
+            //maximize/restore button
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/apple_maximize_enabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/apple_maximize_disabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/apple_maximize_enabled_editor.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/apple_restore_enabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/apple_restore_disabled_editor.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/apple_restore_enabled_editor.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
         }
+    }
+
+    public Icon getButtonIcon(int buttonId, int buttonState) {
+        Icon res = null;
+        initIcons();
+        String[] paths = buttonIconPaths.get( buttonId );
+        if( null != paths && buttonState >=0 && buttonState < paths.length ) {
+            res = TabControlButtonFactory.getIcon( paths[buttonState] );
+        }
+        return res;
+    }
+
+    protected Rectangle getControlButtonsRectangle(Container parent) {
+        int centerY = (((displayer.getHeight() - (AquaEditorTabCellRenderer.TOP_INSET
+                + AquaEditorTabCellRenderer.BOTTOM_INSET)) / 2) + AquaEditorTabCellRenderer.TOP_INSET)
+                + getTabAreaInsets().top;
+        
+        int width = parent.getWidth();
+        int height = parent.getHeight();
+        int buttonsWidth = getControlButtons().getWidth();
+        int buttonsHeight = getControlButtons().getHeight();
+        return new Rectangle( width-buttonsWidth-3, centerY-buttonsHeight/2, buttonsWidth, buttonsHeight );
     }
 }

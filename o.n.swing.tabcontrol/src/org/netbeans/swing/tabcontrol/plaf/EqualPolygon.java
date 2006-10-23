@@ -182,20 +182,18 @@ public final class EqualPolygon extends Polygon {
 
     private Point[] sortPoints(Point[] p) {
         //Prune duplicates
-        HashSet set = new HashSet(Arrays.asList(p));
+        HashSet<Point> set = new HashSet<Point>(Arrays.asList(p));
         p = new Point[set.size()];
-        p = (Point[]) set.toArray(p);
+        p = set.toArray(p);
         //Then sort
         Arrays.sort(p, comparator);
         return p;
     }
 
-    private static final Comparator comparator = new PointsComparator();
+    private static final Comparator<Point> comparator = new PointsComparator();
 
-    private static class PointsComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            Point a = (Point) o1;
-            Point b = (Point) o2;
+    private static class PointsComparator implements Comparator<Point> {
+        public int compare(Point a, Point b) {
             int result = (a.y * (a.x - b.x)) - (b.y * (b.x - a.x));
             return result;
         }

@@ -130,7 +130,7 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
     }
     
     protected MouseListener createMouseListener() {
-        return new MouseAdapter() {}; //XXX
+        return new MouseAdapter() {};
     }
     
     public void requestAttention (int tab) {
@@ -394,9 +394,13 @@ public final class BasicSlidingTabDisplayerUI extends AbstractTabDisplayerUI {
         }
     }
 
-    private static final Comparator BUTTON_COMPARATOR = new IndexButtonComparator();
-    private static class IndexButtonComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
+    public Icon getButtonIcon(int buttonId, int buttonState) {
+        return null;
+    }
+
+    private static final Comparator<Component> BUTTON_COMPARATOR = new IndexButtonComparator();
+    private static class IndexButtonComparator implements Comparator<Component> {
+        public int compare(Component o1, Component o2) {
             if (o2 instanceof IndexButton && o1 instanceof IndexButton) {
                 return ((IndexButton) o1).getIndex() - ((IndexButton) o2).getIndex();
             }

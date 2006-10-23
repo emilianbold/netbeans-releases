@@ -196,10 +196,11 @@ public final class TabDisplayer extends JComponent implements Accessible {
     /**
      * Utility field holding list of ActionListeners.
      */
-    private transient List actionListenerList;
+    private transient List<ActionListener> actionListenerList;
     
-    /** Info about global positioning of this tab control 
-     * or null if no global location info is needed */
+    private WinsysInfoForTabbed winsysInfo = null;
+    
+    @Deprecated
     private LocationInformer locationInformer = null;
 
     private boolean showClose = !Boolean.getBoolean(
@@ -213,13 +214,22 @@ public final class TabDisplayer extends JComponent implements Accessible {
      * Creates a new instance of TabDisplayer
      */
     public TabDisplayer(TabDataModel model, int type) {
-        this (model, type, null);
+        this (model, type, (WinsysInfoForTabbed)null);
     }
     
     /**
+     * Depreacated, please use constructor with WinsysInfoForTabbed param.
+     */
+    @Deprecated
+    public TabDisplayer(TabDataModel model, int type, LocationInformer locationInformer) {
+        this (model, type, (WinsysInfoForTabbed)null);
+        this.locationInformer = locationInformer;
+    }
+        
+    /**
      * Creates a new instance of TabDisplayer
      */
-    public TabDisplayer(TabDataModel model, int type, LocationInformer locationInformer) {
+    public TabDisplayer(TabDataModel model, int type, WinsysInfoForTabbed winsysInfo) {
         switch (type) {
             case TYPE_VIEW:
             case TYPE_EDITOR:
@@ -231,7 +241,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
         }
         this.model = model;
         this.type = type;
-        this.locationInformer = locationInformer;
+        this.winsysInfo = winsysInfo;
         putClientProperty (PROP_ORIENTATION, ORIENTATION_NORTH);
         initialized = true;
         updateUI();
@@ -423,11 +433,6 @@ public final class TabDisplayer extends JComponent implements Accessible {
             }
             int index = getUI().tabForCoordinate(p);
             if (index != -1) {
-                // #55101 - have special tooltips for buttons.
-                String button = getUI().getTooltipForButtons(p);
-                if (button != null) {
-                    return button;
-                }
                 return getModel().getTab(index).tip;
             }
         }
@@ -449,8 +454,9 @@ public final class TabDisplayer extends JComponent implements Accessible {
         return dest;
     }
 
+    @Deprecated
     public final Image getDragImage(int index) {
-        return getUI().createImageOfTab(index);
+        return null;
     }
 
     /**
@@ -474,7 +480,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
      */
     public final synchronized void addActionListener(ActionListener listener) {
         if (actionListenerList == null) {
-            actionListenerList = new ArrayList();
+            actionListenerList = new ArrayList<ActionListener>();
         }
         actionListenerList.add(listener);
     }
@@ -490,10 +496,6 @@ public final class TabDisplayer extends JComponent implements Accessible {
         }
     }
 
-    public String getCommandAtPoint(Point p) {
-        return getUI().getCommandAtPoint (p);
-    }
-    
     public void registerShortcuts(JComponent comp) {
         getUI().registerShortcuts(comp);
     }
@@ -508,7 +510,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
      * @param event The event to be fired
      */
     protected final void postActionEvent(TabActionEvent event) {
-        List list;
+        List<ActionListener> list;
         synchronized (this) {
             if (actionListenerList == null) {
                 return;
@@ -516,7 +518,7 @@ public final class TabDisplayer extends JComponent implements Accessible {
             list = Collections.unmodifiableList(actionListenerList);
         }
         for (int i = 0; i < list.size(); i++) {
-            ((ActionListener) list.get(i)).actionPerformed(event);
+            list.get(i).actionPerformed(event);
         }
     }
 
@@ -524,6 +526,11 @@ public final class TabDisplayer extends JComponent implements Accessible {
         return getUI().tabForCoordinate(p);
     }
     
+    public WinsysInfoForTabbed getWinsysInfo() {
+        return winsysInfo;
+    }
+    
+    @Deprecated
     public LocationInformer getLocationInformer() {
         return locationInformer;
     }

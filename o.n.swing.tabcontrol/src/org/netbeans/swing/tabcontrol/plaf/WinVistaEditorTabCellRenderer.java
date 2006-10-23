@@ -25,10 +25,7 @@ package org.netbeans.swing.tabcontrol.plaf;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Area;
-import java.awt.geom.Point2D;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
-import org.netbeans.swing.tabcontrol.plaf.AbstractViewTabDisplayerUI.Controller;
 
 /**
  * Windows Vista implementation of tab renderer
@@ -48,8 +45,6 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
     private static final TabPainter rightClip = new WinVistaRightClipPainter();
     private static final TabPainter normal = new WinVistaPainter();
     
-    private static AbstractViewTabDisplayerUI.IconLoader closeIcon;
-
     /**
      * Creates a new instance of WinVistaEditorTabCellRenderer
      */
@@ -274,12 +269,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
                 return;
             }
             String iconPath = findIconPath(ren);
-            if (closeIcon == null) {
-                //Tab control can be asked to process mouse motion events that
-                //occured during startup - this causes an NPE here
-                closeIcon = new AbstractViewTabDisplayerUI.IconLoader();
-            }
-            Icon icon = closeIcon.obtainIcon(iconPath);
+            Icon icon = TabControlButtonFactory.getIcon(iconPath);
             int iconWidth = icon.getIconWidth();
             int iconHeight = icon.getIconHeight();
             rect.x = bounds.x + bounds.width - iconWidth - 2;
@@ -388,7 +378,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             
             //paint close button
             String iconPath = findIconPath( ren );
-            Icon icon = closeIcon.obtainIcon( iconPath );
+            Icon icon = TabControlButtonFactory.getIcon( iconPath );
             icon.paintIcon(ren, g, r.x, r.y);
         }
 

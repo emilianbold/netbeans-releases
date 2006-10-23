@@ -42,9 +42,11 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.swing.tabcontrol.LocationInformer;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 
 /** Adapter class that implements a pseudo JTabbedPane API on top
@@ -68,7 +70,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
 
     /** Creates a new instance of TabbedAdapter */
     public TabbedAdapter (int type) {
-        super (null, type, new LocInfo());
+        super (null, type, new WinsysInfo());
         getSelectionModel().addChangeListener(new ChangeListener() {
             public void stateChanged (ChangeEvent ce) {
                 int idx = getSelectionModel().getSelectedIndex();
@@ -452,6 +454,19 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         }
         return result;
     }
+
+    /** Finds out in what state is window system mode containing given component.
+     * 
+     * @return true if given component is inside mode which is in maximized state,
+     * false otherwise 
+     */
+    public static boolean isInMaximizedMode (Component comp) {
+        ModeImpl maxMode = WindowManagerImpl.getInstance().getMaximizedMode();
+        if (maxMode == null) {
+            return false;
+        }
+        return maxMode.containsTopComponent((TopComponent)comp);
+    }
     
     /********** implementation of SlideController *****************/
     
@@ -469,11 +484,11 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         return getTabRect(tabIndex, new Rectangle());
     }
 
-    /********* implementation of LocationInformer ********/
+    /********* implementation of WinsysInfoForTabbed ********/
     
-    static class LocInfo implements LocationInformer {
+    static class WinsysInfo implements WinsysInfoForTabbed {
     
-        public Object getOrientation(Component comp) {
+        public Object getOrientation (Component comp) {
             WindowManagerImpl wmi = WindowManagerImpl.getInstance();
             // don't show pin button in separate views
             if (!wmi.isDocked((TopComponent)comp)) {
@@ -492,7 +507,12 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
                 result = TabDisplayer.ORIENTATION_CENTER;
             }
             return result;   
+        }
+
+        public boolean inMaximizedMode (Component comp) {
+            return isInMaximizedMode(comp);
         }    
+        
     } // end of LocInfo
 
     /** Returns instance of weak property change listener used to listen to 
