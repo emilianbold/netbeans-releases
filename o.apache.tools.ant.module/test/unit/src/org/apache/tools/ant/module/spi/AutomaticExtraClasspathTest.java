@@ -49,6 +49,7 @@ public class AutomaticExtraClasspathTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         URL u = getClass().getResource("AutomaticExtraClasspathTest.xml");
         FileSystem fs = new XMLFileSystem(u);
@@ -56,6 +57,11 @@ public class AutomaticExtraClasspathTest extends NbTestCase {
         assertNotNull("There is the resource", fo);
         bad = fs.findResource("brokenURL");
         assertNotNull("There is the bad", bad);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
     }
 
     public static URL getWD() {
