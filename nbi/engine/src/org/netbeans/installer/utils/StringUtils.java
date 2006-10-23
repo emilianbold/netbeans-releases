@@ -20,6 +20,8 @@
  */
 package org.netbeans.installer.utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -27,8 +29,10 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.List;
-import org.netbeans.installer.product.ProductComponent;
-import org.netbeans.installer.utils.SystemUtils.Platform;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -107,6 +111,12 @@ public abstract class StringUtils {
     public abstract String escapeForRE(String string);
     
     public abstract String readStream(InputStream stream) throws IOException;
+    
+    public abstract Locale parseLocale(String string);
+    
+    public abstract String parseAscii(String string);
+    
+    public abstract String convertToAscii(String string);
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
@@ -233,6 +243,7 @@ public abstract class StringUtils {
         public String asString(Object [] strings) {
             return asString(strings, ", ");
         }
+        
         public String asString(Object [] strings, String separator) {
             StringBuilder result = new StringBuilder();
             
@@ -247,7 +258,6 @@ public abstract class StringUtils {
             
             return result.toString();
         }
-        
         
         public String formatSize(long longBytes) {
             StringBuffer result = new StringBuffer();
@@ -418,6 +428,53 @@ public abstract class StringUtils {
             }
             
             return builder.toString();
+        }
+        
+        public Locale parseLocale(String string) {
+            String[] parts = string.split("_");
+            switch (parts.length) {
+                case 1:
+                    return new Locale(parts[0]);
+                case 2:
+                    return new Locale(parts[0], parts[1]);
+                default:
+                    return new Locale(parts[0], parts[1], parts[2]);
+            }
+        }
+        
+        public String parseAscii(String string) {
+            String propertiesString = "uberkey=" + string;
+            Properties properties = new Properties();
+            
+            // we don't really care about enconding here, as the input string is 
+            // expected to be ASCII-only, which means it's the same for any encoding
+            try {
+            properties.load(new ByteArrayInputStream(propertiesString.getBytes()));
+            } catch (IOException e) {
+                ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Cannot parse string", e);
+                return string;
+            }
+            
+            return (String) properties.get("uberkey");
+        }
+        
+        public String convertToAscii(String string) {
+            Properties properties = new Properties();
+            
+            properties.put("uberkey", string);
+            
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            try {
+                properties.store(outputStream, "");
+            } catch (IOException e) {
+                ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Cannot convert string", e);
+                return string;
+            }
+            
+            Matcher matcher = Pattern.compile("uberkey=(.*)$", Pattern.MULTILINE).matcher(outputStream.toString());
+            matcher.find();
+            
+            return matcher.group(1);
         }
     }
 }
