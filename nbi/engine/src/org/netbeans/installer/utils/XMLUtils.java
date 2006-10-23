@@ -71,6 +71,7 @@ public abstract class XMLUtils {
     
     public abstract String getNodeTextContent(Node node);
     
+    public abstract Node addChildNode(Node parentNode, String tag, String textContent);
     
     ////////////////////////////////////////////////////////////////////////////
     // Inner Classes
@@ -187,5 +188,17 @@ public abstract class XMLUtils {
             return getNodeTextContent(getChildNode(root,childs));
         }
         
+        public Node addChildNode(Node parentNode, String tag, String textContent) {
+            Node result = null;
+            if(parentNode!=null && tag!=null) {
+                
+                result = parentNode.getOwnerDocument().createElement(tag);
+                if(textContent!=null) {
+                    result.setTextContent(textContent);
+                }
+                parentNode.appendChild(result);
+            }
+            return result;
+        }
     }
 }

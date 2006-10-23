@@ -31,22 +31,19 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathException;
-import javax.xml.xpath.XPathFactory;
 import org.netbeans.installer.download.DownloadOptions;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.XMLUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.conditions.WizardCondition;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -145,40 +142,32 @@ public class Wizard extends SubWizard {
     }
     
     private static List<WizardComponent> loadWizardComponents(Node node, ClassLoader loader)
-    throws InitializationException {
+            throws InitializationException {
         List<WizardComponent> wizardComponents = new ArrayList<WizardComponent>();
         
-        XPath xpath = XPathFactory.newInstance().newXPath();
-        try {
-            NodeList nodeList = (NodeList) xpath.evaluate("./component", node,
-                    XPathConstants.NODESET);
-            
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node componentNode = nodeList.item(i);
-                wizardComponents.add(loadWizardComponent(componentNode, loader));
-            }
-        } catch (XPathException e) {
-            throw new InitializationException(
-                    "Could not load components", e);
+        List <Node> nodeList = XMLUtils.getInstance().getChildList(node, "./component");
+        
+        for (int i = 0; i < nodeList.size(); i++) {
+            Node componentNode = nodeList.get(i);
+            wizardComponents.add(loadWizardComponent(componentNode, loader));
         }
         
         return wizardComponents;
     }
     
     private static WizardComponent loadWizardComponent(Node node, ClassLoader loader)
-    throws InitializationException {
+            throws InitializationException {
         WizardComponent component = null;
         
         try {
-            XPath xpath = XPathFactory.newInstance().newXPath();
             
-            String classname = (String) xpath.evaluate(
-                    "./@class", node, XPathConstants.STRING);
+            String classname = XMLUtils.getInstance().getNodeAttribute(node,
+                    "class");
             
             component = (WizardComponent) loader.loadClass(classname).newInstance();
             
             Node componentsNode =
-                    (Node) xpath.evaluate("./components", node, XPathConstants.NODE);
+                    XMLUtils.getInstance().getChildNode(node, "./components");
             
             if (componentsNode != null) {
                 List<WizardComponent> childComponents =
@@ -189,7 +178,7 @@ public class Wizard extends SubWizard {
             }
             
             Node conditionsNode =
-                    (Node) xpath.evaluate("./conditions", node, XPathConstants.NODE);
+                    XMLUtils.getInstance().getChildNode(node, "./conditions");
             
             if (conditionsNode != null) {
                 List<WizardCondition> conditions = loadWizardConditions(conditionsNode, loader);
@@ -199,13 +188,10 @@ public class Wizard extends SubWizard {
             }
             
             Node propertiesNode =
-                    (Node) xpath.evaluate("./properties", node, XPathConstants.NODE);
+                    XMLUtils.getInstance().getChildNode(node, "./properties");
             if (propertiesNode != null) {
                 loadProperties(propertiesNode, component, loader);
             }
-        } catch (XPathException e) {
-            throw new InitializationException(
-                    "Could not load component", e);
         } catch (ClassNotFoundException e) {
             throw new InitializationException(
                     "Could not load component", e);
@@ -213,6 +199,9 @@ public class Wizard extends SubWizard {
             throw new InitializationException(
                     "Could not load component", e);
         } catch (InstantiationException e) {
+            throw new InitializationException(
+                    "Could not load component", e);
+        } catch (ParseException e) {
             throw new InitializationException(
                     "Could not load component", e);
         }
@@ -221,33 +210,29 @@ public class Wizard extends SubWizard {
     }
     
     private static List<WizardCondition> loadWizardConditions(Node node, ClassLoader loader)
-    throws InitializationException {
+            throws InitializationException {
         List<WizardCondition> wizardConditions = new ArrayList<WizardCondition>();
         
         try {
-            XPath xpath = XPathFactory.newInstance().newXPath();
             
-            NodeList nodeList = (NodeList) xpath.evaluate(
-                    "./condition", node, XPathConstants.NODESET);
+            List <Node> nodeList = XMLUtils.getInstance().getChildList(node,
+                    "./condition");
             
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node conditionNode = nodeList.item(i);
+            for (int i = 0; i < nodeList.size(); i++) {
+                Node conditionNode = nodeList.get(i);
                 
-                String classname = (String) xpath.evaluate(
-                        "/@class", conditionNode, XPathConstants.STRING);
+                String classname = XMLUtils.getInstance().getNodeAttribute(conditionNode,
+                        "/@class");
                 
                 WizardCondition condition =
                         (WizardCondition) Class.forName(classname).newInstance();
                 
-                Node propertiesNode = (Node)
-                xpath.evaluate("./properties", node, XPathConstants.NODE);
+                Node propertiesNode = XMLUtils.getInstance().getChildNode(node,
+                        "./properties");
                 loadProperties(propertiesNode, condition, loader);
                 wizardConditions.add(condition);
             }
-        } catch (XPathException e) {
-            throw new InitializationException(
-                    "Could not load conditions", e);
-        } catch (ClassNotFoundException e) {
+        }  catch (ClassNotFoundException e) {
             throw new InitializationException(
                     "Could not load conditions", e);
         } catch (IllegalAccessException e) {
@@ -256,36 +241,32 @@ public class Wizard extends SubWizard {
         } catch (InstantiationException e) {
             throw new InitializationException(
                     "Could not load conditions", e);
+        }  catch (ParseException e) {
+            throw new InitializationException(
+                    "Could not load conditions", e);
         }
         
         return wizardConditions;
     }
     
     private static void loadProperties(Node node, Object component, ClassLoader loader)
-    throws InitializationException {
-        try {
-            XPath xpath = XPathFactory.newInstance().newXPath();
+            throws InitializationException {
+        
+        List <Node> nodeList = XMLUtils.getInstance().getChildList(node,
+                "./property");
+        
+        for (int i = 0; i < nodeList.size(); i++) {
+            Node propertyNode = nodeList.get(i);
             
-            NodeList nodeList = (NodeList) xpath.
-                    evaluate("./property", node, XPathConstants.NODESET);
+            String name = XMLUtils.getInstance().getNodeAttribute(propertyNode,"name");
             
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node propertyNode = nodeList.item(i);
-                
-                String name = (String) xpath.
-                        evaluate("./@name", propertyNode, XPathConstants.STRING);
-                String value = (String) xpath.
-                        evaluate("./text()", propertyNode, XPathConstants.STRING);
-                
-                if (component instanceof WizardComponent) {
-                    ((WizardComponent) component).setProperty(name, value);
-                } else if (component instanceof WizardCondition) {
-                    ((WizardCondition) component).setProperty(name, value);
-                }
+            String value = XMLUtils.getInstance().getNodeTextContent(propertyNode);
+            
+            if (component instanceof WizardComponent) {
+                ((WizardComponent) component).setProperty(name, value);
+            } else if (component instanceof WizardCondition) {
+                ((WizardCondition) component).setProperty(name, value);
             }
-        } catch (XPathException e) {
-            throw new InitializationException(
-                    "Could not load propeties", e);
         }
     }
     
