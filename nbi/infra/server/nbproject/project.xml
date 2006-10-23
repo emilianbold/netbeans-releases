@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.web.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/web-project/3">
-            <name>NetBeans Installer Server</name>
+            <name>NBI Server</name>
             <minimum-ant-version>1.6</minimum-ant-version>
             <explicit-platform explicit-source-supported="true"/>
             <web-module-libraries/>

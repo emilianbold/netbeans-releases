@@ -443,19 +443,18 @@ public abstract class StringUtils {
         }
         
         public String parseAscii(String string) {
-            String propertiesString = "uberkey=" + string;
             Properties properties = new Properties();
             
-            // we don't really care about enconding here, as the input string is 
+            // we don't really care about enconding here, as the input string is
             // expected to be ASCII-only, which means it's the same for any encoding
             try {
-            properties.load(new ByteArrayInputStream(propertiesString.getBytes()));
+                properties.load(new ByteArrayInputStream(("key=" + string).getBytes()));
             } catch (IOException e) {
                 ErrorManager.getInstance().notify(ErrorLevel.WARNING, "Cannot parse string", e);
                 return string;
             }
             
-            return (String) properties.get("uberkey");
+            return (String) properties.get("key");
         }
         
         public String convertToAscii(String string) {
@@ -472,9 +471,12 @@ public abstract class StringUtils {
             }
             
             Matcher matcher = Pattern.compile("uberkey=(.*)$", Pattern.MULTILINE).matcher(outputStream.toString());
-            matcher.find();
             
-            return matcher.group(1);
+            if (matcher.find()) {
+                return matcher.group(1);
+            } else {
+                return string;
+            }
         }
     }
 }
