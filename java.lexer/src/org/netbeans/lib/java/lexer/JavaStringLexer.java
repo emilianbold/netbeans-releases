@@ -20,11 +20,11 @@
 package org.netbeans.lib.java.lexer;
 
 import org.netbeans.api.java.lexer.JavaStringTokenId;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -42,11 +42,10 @@ public class JavaStringLexer implements Lexer<JavaStringTokenId> {
     
     private TokenFactory<JavaStringTokenId> tokenFactory;
     
-    public JavaStringLexer(LexerInput input, TokenFactory<JavaStringTokenId> tokenFactory, Object state,
-    LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
-        assert (state == null); // passed argument always null
+    public JavaStringLexer(LexerRestartInfo<JavaStringTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        assert (info.state() == null); // passed argument always null
     }
     
     public Object state() {

@@ -16,11 +16,9 @@ package org.netbeans.api.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
@@ -98,9 +96,7 @@ public class LanguagePathTest extends NbTestCase {
             this.mimeType = mimeType;
         }
         
-        protected Lexer<TestTokenId> createLexer(
-        LexerInput input, TokenFactory<TestTokenId> tokenFactory, Object state,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
+        protected Lexer<TestTokenId> createLexer(LexerRestartInfo<TestTokenId> info) {
             return null;
         }
 

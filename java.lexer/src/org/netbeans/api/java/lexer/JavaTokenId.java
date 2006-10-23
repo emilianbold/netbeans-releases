@@ -32,8 +32,7 @@ import org.netbeans.lib.java.lexer.JavaLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  * Token ids of java language defined as enum.
@@ -235,10 +234,8 @@ public enum JavaTokenId implements TokenId {
             return cats;
         }
 
-        protected Lexer<JavaTokenId> createLexer(
-        LexerInput input, TokenFactory<JavaTokenId> tokenFactory, Object state,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
-            return new JavaLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        protected Lexer<JavaTokenId> createLexer(LexerRestartInfo<JavaTokenId> info) {
+            return new JavaLexer(info);
         }
 
         protected LanguageEmbedding embedding(

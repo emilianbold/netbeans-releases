@@ -13,11 +13,10 @@
 
 package org.netbeans.modules.lexer.nbbridge.test.simple;
 
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -31,10 +30,9 @@ final class SimpleCharLexer implements Lexer<SimpleCharTokenId> {
     
     private TokenFactory<SimpleCharTokenId> tokenFactory;
     
-    SimpleCharLexer(LexerInput input, TokenFactory<SimpleCharTokenId> tokenFactory, Object state,
-    LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
+    SimpleCharLexer(LexerRestartInfo<SimpleCharTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
     }
     
     public Token<SimpleCharTokenId> nextToken() {

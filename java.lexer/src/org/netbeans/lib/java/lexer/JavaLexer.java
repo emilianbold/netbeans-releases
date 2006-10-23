@@ -20,11 +20,10 @@
 package org.netbeans.lib.java.lexer;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -52,15 +51,12 @@ public class JavaLexer implements Lexer<JavaTokenId> {
     
     private final int version;
 
-    public JavaLexer(LexerInput input, TokenFactory<JavaTokenId> tokenFactory, Object state,
-    LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
-        assert (state == null); // never set to non-null value in state()
+    public JavaLexer(LexerRestartInfo<JavaTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        assert (info.state() == null); // never set to non-null value in state()
         
-        Integer ver = (inputAttributes != null)
-                ? (Integer)inputAttributes.getValue(languagePath, "version")
-                : null;
+        Integer ver = (Integer)info.getAttributeValue("version");
         this.version = (ver != null) ? ver.intValue() : 5; // Use Java 1.5 by default
     }
     

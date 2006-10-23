@@ -20,11 +20,10 @@
 package org.netbeans.lib.java.lexer;
 
 import org.netbeans.api.java.lexer.JavadocTokenId;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -42,11 +41,10 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
     
     private TokenFactory<JavadocTokenId> tokenFactory;
     
-    public JavadocLexer(LexerInput input, TokenFactory<JavadocTokenId> tokenFactory, Object state,
-    LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
-        assert (state == null); // passed argument always null
+    public JavadocLexer(LexerRestartInfo<JavadocTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        assert (info.state() == null); // passed argument always null
     }
     
     public Object state() {

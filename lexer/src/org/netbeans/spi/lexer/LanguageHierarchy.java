@@ -197,9 +197,7 @@ public abstract class LanguageHierarchy<T extends TokenId> {
      *  (e.g. there might be a version of the language that the lexer should check).
      *  It may be null if there are no extra attributes.
      */
-    protected abstract Lexer<T> createLexer(LexerInput input,
-    TokenFactory<T> tokenFactory, Object state,
-    LanguagePath languagePath, InputAttributes inputAttributes);
+    protected abstract Lexer<T> createLexer(LexerRestartInfo<T> info);
     
     /**
      * Gets the mime type of the language constructed from this language hierarchy.
@@ -347,10 +345,14 @@ public abstract class LanguageHierarchy<T extends TokenId> {
         }
 
         @SuppressWarnings("unchecked")
-        public Lexer createLexer(LanguageHierarchy languageHierarchy,
-        LexerInput input, TokenFactory tokenFactory, Object state,
+        public Lexer createLexer(LanguageHierarchy languageHierarchy, LexerRestartInfo info) {
+            return languageHierarchy.createLexer(info);
+        }
+
+        public <T extends TokenId> LexerRestartInfo<T> createLexerRestartInfo(
+        LexerInput input, TokenFactory<T> tokenFactory, Object state,
         LanguagePath languagePath, InputAttributes inputAttributes) {
-            return languageHierarchy.createLexer(input, tokenFactory, state, languagePath, inputAttributes);
+            return new LexerRestartInfo<T>(input, tokenFactory, state, languagePath, inputAttributes);
         }
 
         @SuppressWarnings("unchecked")

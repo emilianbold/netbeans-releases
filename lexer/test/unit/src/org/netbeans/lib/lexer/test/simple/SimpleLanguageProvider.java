@@ -31,8 +31,7 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.LanguageProvider;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
@@ -89,7 +88,7 @@ public class SimpleLanguageProvider extends LanguageProvider {
             return Collections.emptyList();
         }
 
-        protected Lexer<TokenId> createLexer(LexerInput input, TokenFactory<TokenId> tokenFactory, Object state, LanguagePath languagePath, InputAttributes inputAttributes) {
+        protected Lexer<TokenId> createLexer(LexerRestartInfo<TokenId> info) {
             return null;
         }
 

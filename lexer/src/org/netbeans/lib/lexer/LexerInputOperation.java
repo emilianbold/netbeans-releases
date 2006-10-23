@@ -31,6 +31,7 @@ import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.PreprocessedTextToken;
 import org.netbeans.lib.lexer.token.PropertyCustomTextToken;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -129,10 +130,12 @@ public abstract class LexerInputOperation implements CharProvider {
         LexerInput lexerInput = LexerSpiPackageAccessor.get().createLexerInput(
                 (preprocessorOperation != null) ? preprocessorOperation : this);
 
-        lexer = LexerSpiPackageAccessor.get().createLexer(
-                languageOperation.languageHierarchy(),
+        @SuppressWarnings("unchecked")
+        LexerRestartInfo info = LexerSpiPackageAccessor.get().createLexerRestartInfo(
                 lexerInput, tokenFactory, lexerRestartState,
                 tokenList.languagePath(), inputAttributes());
+        lexer = LexerSpiPackageAccessor.get().createLexer(
+                languageOperation.languageHierarchy(), info);
     }
 
     public abstract int read(int index);

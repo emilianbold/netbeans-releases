@@ -13,11 +13,10 @@
 
 package org.netbeans.modules.lexer.nbbridge.test.simple;
 
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -41,11 +40,10 @@ final class SimplePlainLexer implements Lexer<SimplePlainTokenId> {
     
     private int state = INIT;
     
-    SimplePlainLexer(LexerInput input, TokenFactory<SimplePlainTokenId> tokenFactory, Object state,
-    LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
-        assert (state == null);
+    SimplePlainLexer(LexerRestartInfo<SimplePlainTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        assert (info.state() == null);
     }
     
     public Token<SimplePlainTokenId> nextToken() {

@@ -14,11 +14,10 @@
 package org.netbeans.lib.html.lexer;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -96,11 +95,10 @@ public class HTMLLexer implements Lexer<HTMLTokenId> {
     private static final int ISI_REF_HEX = 33;  // hexadecimal reference, in &#xa.. of &#X9..
     private static final int ISI_TAG_SLASH = 34; //after slash in html tag
     
-    public HTMLLexer(LexerInput input, TokenFactory<HTMLTokenId> tokenFactory, Object state,
-    LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
-        if (state == null) {
+    public HTMLLexer(LexerRestartInfo<HTMLTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        if (info.state() == null) {
             this.subState = INIT;
             this.state = INIT;
             this.scriptState = INIT;

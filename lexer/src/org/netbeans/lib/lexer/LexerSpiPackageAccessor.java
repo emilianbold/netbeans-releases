@@ -31,6 +31,7 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenFactory;
 import org.netbeans.spi.lexer.TokenValidator;
@@ -67,8 +68,10 @@ public abstract class LexerSpiPackageAccessor {
 
     public abstract <T extends TokenId> Map<String,Collection<T>> createTokenCategories(LanguageHierarchy<T> languageHierarchy);
     
-    public abstract Lexer createLexer(LanguageHierarchy languageHierarchy,
-    LexerInput input, TokenFactory tokenFactory, Object state,
+    public abstract Lexer createLexer(LanguageHierarchy languageHierarchy, LexerRestartInfo info);
+    
+    public abstract <T extends TokenId> LexerRestartInfo<T> createLexerRestartInfo(
+    LexerInput input, TokenFactory<T> tokenFactory, Object state,
     LanguagePath languagePath, InputAttributes inputAttributes);
     
     public abstract String mimeType(LanguageHierarchy languageHierarchy);

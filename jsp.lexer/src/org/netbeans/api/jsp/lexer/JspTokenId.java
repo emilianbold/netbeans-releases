@@ -32,8 +32,7 @@ import org.netbeans.lib.jsp.lexer.JspLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  * Token Ids for JSP language
@@ -83,10 +82,8 @@ public enum JspTokenId implements TokenId {
             return null;
         }
         
-        public Lexer<JspTokenId> createLexer(
-                LexerInput input, TokenFactory<JspTokenId> tokenFactory, Object state,
-                LanguagePath languagePath, InputAttributes inputAttributes) {
-            return new JspLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        public Lexer<JspTokenId> createLexer(LexerRestartInfo<JspTokenId> info) {
+            return new JspLexer(info);
         }
         
         public LanguageEmbedding embedding(

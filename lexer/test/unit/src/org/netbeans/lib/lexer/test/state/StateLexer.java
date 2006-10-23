@@ -13,13 +13,11 @@
 
 package org.netbeans.lib.lexer.test.state;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -46,25 +44,18 @@ final class StateLexer implements Lexer<StateTokenId> {
 
     private TokenFactory<StateTokenId> tokenFactory;
     
-    private LanguagePath languagePath;
+    private LexerRestartInfo<StateTokenId> info;
     
     private InputAttributes inputAttributes;
     
-    StateLexer(LexerInput input, TokenFactory<StateTokenId> tokenFactory, Object state,
-    LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
-        this.state = state;
-        this.languagePath = languagePath;
-        this.inputAttributes = inputAttributes;
+    StateLexer(LexerRestartInfo<StateTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        this.state = info.state();
+        this.info = info;
 
-        this.useIntStates = (inputAttributes != null)
-                ? Boolean.TRUE.equals((Boolean)inputAttributes.getValue(languagePath, "states"))
-                : false;
-        
-        Object expectedRestartState = (inputAttributes != null)
-                ? inputAttributes.getValue(languagePath, "restartState")
-                : null;
+        this.useIntStates = Boolean.TRUE.equals(info.getAttributeValue("states"));
+        Object expectedRestartState = info.getAttributeValue("restartState");
         if (expectedRestartState != null && !expectedRestartState.equals(state)) {
             throw new IllegalStateException("Expected restart state " + expectedRestartState + ", but real is " + state);
         }
@@ -75,7 +66,7 @@ final class StateLexer implements Lexer<StateTokenId> {
     }
 
     public Token<StateTokenId> nextToken() {
-        boolean returnNullToken = (inputAttributes != null && Boolean.TRUE.equals(inputAttributes.getValue(languagePath, "returnNullToken")));
+        boolean returnNullToken = Boolean.TRUE.equals(info.getAttributeValue("returnNullToken"));
         while (true) {
             int c = input.read();
             if (returnNullToken) // Test early return of null token

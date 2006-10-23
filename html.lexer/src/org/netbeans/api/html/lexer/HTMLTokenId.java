@@ -14,7 +14,6 @@ package org.netbeans.api.html.lexer;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguageDescription;
@@ -25,8 +24,7 @@ import org.netbeans.lib.html.lexer.HTMLLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  * Token ids of HTML language
@@ -86,10 +84,8 @@ public enum HTMLTokenId implements TokenId {
             return null;
         }
         
-        public Lexer<HTMLTokenId> createLexer(
-        LexerInput input, TokenFactory<HTMLTokenId> tokenFactory, Object state,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
-            return new HTMLLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        public Lexer<HTMLTokenId> createLexer(LexerRestartInfo<HTMLTokenId> info) {
+            return new HTMLLexer(info);
         }
         
         public LanguageEmbedding embedding(

@@ -22,15 +22,12 @@ package org.netbeans.api.java.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
-import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguageDescription;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.java.lexer.JavaStringLexer;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  * Token ids for java string language
@@ -77,10 +74,8 @@ public enum JavaStringTokenId implements TokenId {
             return null; // no extra categories
         }
 
-        protected Lexer<JavaStringTokenId> createLexer(
-        LexerInput input, TokenFactory<JavaStringTokenId> tokenFactory, Object state,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
-            return new JavaStringLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        protected Lexer<JavaStringTokenId> createLexer(LexerRestartInfo<JavaStringTokenId> info) {
+            return new JavaStringLexer(info);
         }
 
         public String mimeType() {

@@ -20,11 +20,10 @@
 package org.netbeans.lib.jsp.lexer;
 
 import org.netbeans.api.jsp.lexer.JspTokenId;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -100,14 +99,13 @@ public class JspLexer implements Lexer<JspTokenId> {
     private static final int ISP_SCRIPTLET_PC   = 37; // just after % in scriptlet
     
     
-    public JspLexer(LexerInput input, TokenFactory<JspTokenId> tokenFactory, Object state,
-            LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
-        if (state == null) {
+    public JspLexer(LexerRestartInfo<JspTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        if (info.state() == null) {
             this.state = INIT;
         } else {
-            this.state = ((Integer) state).intValue() / 1000;
+            this.state = ((Integer)info.state()).intValue() / 1000;
         }
     }
     

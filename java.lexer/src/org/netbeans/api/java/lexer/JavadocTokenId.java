@@ -22,15 +22,12 @@ package org.netbeans.api.java.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
-import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguageDescription;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.java.lexer.JavadocLexer;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  * Token ids for javadoc language (embedded in javadoc comments).
@@ -70,10 +67,8 @@ public enum JavadocTokenId implements TokenId {
             return null; // no extra categories
         }
 
-        protected Lexer<JavadocTokenId> createLexer(
-        LexerInput input, TokenFactory<JavadocTokenId> tokenFactory, Object state,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
-            return new JavadocLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        protected Lexer<JavadocTokenId> createLexer(LexerRestartInfo<JavadocTokenId> info) {
+            return new JavadocLexer(info);
         }
 
         public String mimeType() {

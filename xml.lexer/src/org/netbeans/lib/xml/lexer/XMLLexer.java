@@ -14,11 +14,10 @@
 package org.netbeans.lib.xml.lexer;
 
 import org.netbeans.api.xml.lexer.XMLTokenId;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
@@ -148,11 +147,10 @@ public class XMLLexer implements Lexer<XMLTokenId> {
     // internal DTD handling
     private static final int ISA_INIT_BR = 54;
     
-    public XMLLexer(LexerInput input, TokenFactory<XMLTokenId> tokenFactory, Object state,
-            LanguagePath languagePath, InputAttributes inputAttributes) {
-        this.input = input;
-        this.tokenFactory = tokenFactory;
-        loadState(state);
+    public XMLLexer(LexerRestartInfo<XMLTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        loadState(info.state());
     }
     
     private final boolean isAZ( int ch ) {

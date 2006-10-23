@@ -23,8 +23,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.TokenFactory;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  * Token identifications of the simple plain language.
@@ -52,10 +51,8 @@ public enum SimpleCharTokenId implements TokenId {
             return EnumSet.allOf(SimpleCharTokenId.class);
         }
         
-        public Lexer<SimpleCharTokenId> createLexer(
-        LexerInput input, TokenFactory<SimpleCharTokenId> tokenFactory, Object state,
-        LanguagePath languagePath, InputAttributes inputAttributes) {
-            return new SimpleCharLexer(input, tokenFactory, state, languagePath, inputAttributes);
+        public Lexer<SimpleCharTokenId> createLexer(LexerRestartInfo<SimpleCharTokenId> info) {
+            return new SimpleCharLexer(info);
         }
 
         public LanguageEmbedding embedding(
