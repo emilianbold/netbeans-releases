@@ -215,6 +215,7 @@ public class GetCleanAction extends AbstractSystemAction {
     }
 
     private static void backup(File file, Entry entry) {
+        if (!file.isFile()) return; // nothing to backup (avoid creating unnecessary directories in FileUtils.copyFile) 
         try {
             File backup;
             if (entry != null) {

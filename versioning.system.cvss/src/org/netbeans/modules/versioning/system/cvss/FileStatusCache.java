@@ -535,10 +535,14 @@ public class FileStatusCache {
      */ 
     private FileInformation createVersionedFileInformation(Entry entry, File file, int repositoryStatus) {
         if (entry.isDirectory()) {
-            if (new File(file, CvsVersioningSystem.FILENAME_CVS).isDirectory()) {
-                return FILE_INFORMATION_UPTODATE_DIRECTORY;
+            if (file.exists()) {
+                if (new File(file, CvsVersioningSystem.FILENAME_CVS).isDirectory()) {
+                    return FILE_INFORMATION_UPTODATE_DIRECTORY;
+                } else {
+                    return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, true);
+                }
             } else {
-                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, true);
+                return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY, true);
             }
         }
         if (entry.isNewUserFile()) {
