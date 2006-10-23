@@ -652,7 +652,11 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             if (shouldPerformAction (TabDisplayer.COMMAND_CLOSE, mouseInCloseButton, e)) {
                 //In NetBeans winsys, this should never be called - TabbedHandler will
                 //consume the event when it is re-propagated from the TabbedContainer
-                getDataModel().removeTab(mouseInCloseButton);
+                // #87565: somehow on Mac randomly we can get here with
+                // mouseInCloseButton = -1 so be defensive
+                if (mouseInCloseButton != -1) {
+                    getDataModel().removeTab(mouseInCloseButton);
+                }
             }
         }
 
