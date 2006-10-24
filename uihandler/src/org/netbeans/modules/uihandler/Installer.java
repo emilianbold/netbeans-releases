@@ -177,9 +177,9 @@ public class Installer extends ModuleInstall {
         } catch (ParserConfigurationException ex) {
             LOG.log(Level.WARNING, null, ex);
         } catch (SAXException ex) {
-            LOG.log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, url.toExternalForm(), ex);
         } catch (IOException ex) {
-            LOG.log(Level.WARNING, null, ex);
+            LOG.log(Level.WARNING, url.toExternalForm(), ex);
         }
         
         List<LogRecord> recs = getLogs();
