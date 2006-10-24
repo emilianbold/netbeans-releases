@@ -102,6 +102,8 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     private Collection/*<CodeTemplateProcessorFactory>*/ processorFactories;
     
+    private Collection/*<CodeTemplateFilter.Factory>*/ filterFactories;
+    
     private Map abbrev2template;
     
     private List sortedTemplatesByAbbrev;
@@ -109,6 +111,8 @@ implements LookupListener, Runnable, SettingsChangeListener {
     private List unmodSortedTemplatesByAbbrev;
     
     private List sortedTemplatesByParametrizedText;
+    
+    private List selectionTemplates;
     
     private EventListenerList listenerList = new EventListenerList();
     
@@ -137,6 +141,10 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     public Collection getCodeTemplates() {
         return unmodSortedTemplatesByAbbrev;
+    }
+    
+    public Collection findSelectionTemplates() {
+        return selectionTemplates;
     }
     
     public CodeTemplate findByAbbreviation(String abbreviation) {
@@ -196,6 +204,15 @@ implements LookupListener, Runnable, SettingsChangeListener {
             i++;
         }
         
+        return result;
+    }
+    
+    public Collection/*<CodeTemplateFilter>*/ getTemplateFilters(JTextComponent component, int offset) {
+        List/*<CodeTemplateFilter>*/ result = new ArrayList/*<CodeTemplateFilter>*/();
+        for (Iterator it = filterFactories.iterator(); it.hasNext();) {
+            CodeTemplateFilter.Factory factory = (CodeTemplateFilter.Factory)it.next();
+            result.add(factory.createFilter(component, offset));
+        }
         return result;
     }
 
@@ -298,6 +315,12 @@ implements LookupListener, Runnable, SettingsChangeListener {
         processorFactories = result.allInstances();
         // [TODO] listen for changes
 
+        result = MimeLookup.getMimeLookup(getMimeType()).lookup(
+                new Lookup.Template(CodeTemplateFilter.Factory.class));
+        
+        filterFactories = result.allInstances();
+        // [TODO] listen for changes
+
         // [TODO] take from settings
         setDescriptions(Lookup.EMPTY.lookup(new Lookup.Template(CodeTemplateDescription.class)));
     }
@@ -346,7 +369,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
                         desc = htmlText.toString();
 
                         CodeTemplateDescription ctd = new CodeTemplateDescription(
-                                abbreviation, desc, parametrizedText);
+                                abbreviation, desc, parametrizedText, null);
                         descriptionsInstances.add(ctd);
                         
                     }
@@ -366,13 +389,17 @@ implements LookupListener, Runnable, SettingsChangeListener {
         Collection descriptionsInstances = descriptions.allInstances();
         descriptionsInstances = updateDescriptionInstances(descriptionsInstances);
         List/*<CodeTemplate>*/ codeTemplates = new ArrayList(descriptionsInstances.size());
+        selectionTemplates = new ArrayList(descriptionsInstances.size());
         CodeTemplateApiPackageAccessor api = CodeTemplateApiPackageAccessor.get();
         // Construct template instances
         for (Iterator it = descriptionsInstances.iterator(); it.hasNext();) {
             CodeTemplateDescription description = (CodeTemplateDescription)it.next();
-            String abbreviation = description.getAbbreviation();
-            codeTemplates.add(api.createCodeTemplate(this, abbreviation,
-                    description.getDescription(), description.getParametrizedText()));
+            CodeTemplate ct = api.createCodeTemplate(this, description.getAbbreviation(),
+                    description.getDescription(), description.getParametrizedText());
+            codeTemplates.add(ct);
+            if (description.getParametrizedText().toLowerCase().indexOf("${selection") > -1) { //NOI18N
+                selectionTemplates.add(ct);
+            }
         }
         
         refreshMaps(codeTemplates);

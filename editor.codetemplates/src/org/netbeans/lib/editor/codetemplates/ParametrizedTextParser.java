@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
+import org.netbeans.lib.editor.util.swing.PositionRegion;
 
 /**
  * Parser of the parametrized text.
@@ -114,9 +115,14 @@ public final class ParametrizedTextParser {
         insertTextBuffer.append(parametrizedTextFragments.get(0));
         int fragIndex = 1;
         for (Iterator it = allParameters.iterator(); it.hasNext();) {
-            CodeTemplateParameter parameter = (CodeTemplateParameter)it.next();
-            CodeTemplateParameterImpl.get(parameter).setInsertTextOffset(insertTextBuffer.length());
-            insertTextBuffer.append(parameter.getValue());
+            CodeTemplateParameterImpl param = CodeTemplateParameterImpl.get(
+                    (CodeTemplateParameter)it.next());
+            int startOffset = insertTextBuffer.length();
+            insertTextBuffer.append(param.getValue());
+            param.resetPositions(
+                    PositionRegion.createFixedPosition(startOffset),
+                    PositionRegion.createFixedPosition(insertTextBuffer.length())
+            );
             insertTextBuffer.append(parametrizedTextFragments.get(fragIndex));
             fragIndex++;
         }

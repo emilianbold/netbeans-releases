@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -39,9 +40,11 @@ final class CodeTemplateAbbrevExpander implements AbbrevExpander {
         op.waitLoaded();
         CodeTemplate ct = op.findByAbbreviation(abbrev.toString());
         if (ct != null) {
-            // Select the abbrev text
-            component.setCaretPosition(abbrevStartOffset + abbrev.length());
-            component.moveCaretPosition(abbrevStartOffset);
+            try {
+                // Remove the abbrev text
+                doc.remove(abbrevStartOffset, abbrev.length());
+            } catch (BadLocationException ble) {
+            }
             ct.insert(component);
             return true;
         }

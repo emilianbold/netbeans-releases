@@ -22,11 +22,13 @@ package org.netbeans.lib.editor.codetemplates;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.Map;
+import javax.swing.text.Position;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
+import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 
 /**
  * Implementation of the code template parameter.
@@ -48,7 +50,9 @@ public final class CodeTemplateParameterImpl {
         return CodeTemplateSpiPackageAccessor.get().getImpl(parameter);
     }
     
-    
+    /**
+     * Insert handler - may be null e.g. when parsing for completion item rendering.
+     */
     private final CodeTemplateInsertHandler handler;
     
     private final CodeTemplateParameter parameter;
@@ -58,8 +62,6 @@ public final class CodeTemplateParameterImpl {
     private int parametrizedTextStartOffset;
     
     private int parametrizedTextEndOffset;
-    
-    private int insertTextOffset;
     
     private CodeTemplateParameter master;
     
@@ -75,6 +77,8 @@ public final class CodeTemplateParameterImpl {
     
     private SyncDocumentRegion region;
     
+    private MutablePositionRegion positionRegion;
+    
     private boolean editable;
     
     private boolean userModified;
@@ -82,7 +86,7 @@ public final class CodeTemplateParameterImpl {
 
     CodeTemplateParameterImpl(CodeTemplateInsertHandler handler,
     String parametrizedText, int parametrizedTextOffset) {
-        this.handler = handler;
+        this.handler = handler; // handler may be null for completion item parsing
         this.parametrizedTextStartOffset = parametrizedTextOffset;
        
         // Ensure the CodeTemplateSpiPackageAccessor gets registered
@@ -108,7 +112,8 @@ public final class CodeTemplateParameterImpl {
     }
     
     public String getValue() {
-        return isSlave() ? master.getValue() : value;
+        return isSlave() ? master.getValue()
+                : ((handler != null && handler.isInserted()) ? handler.getDocParameterValue(this) : value);
     }
     
     public void setValue(String newValue, boolean fromAPI) {
@@ -167,12 +172,28 @@ public final class CodeTemplateParameterImpl {
     }
 
     public int getInsertTextOffset() {
-        handler.checkInsertTextBuilt();
-        return insertTextOffset;
+        if (handler != null) {
+            if (!handler.isInserted()) {
+                handler.checkInsertTextBuilt();
+            }
+            return (positionRegion != null)
+                    ? positionRegion.getStartOffset() - handler.getInsertOffset()
+                    : 0;
+        } else { // handler is null
+            return (positionRegion != null) ? positionRegion.getStartOffset() : 0;
+        }
     }
 
-    void setInsertTextOffset(int insertTextOffset) {
-        this.insertTextOffset = insertTextOffset;
+    void resetPositions(Position startPosition, Position endPosition) {
+        if (positionRegion == null) {
+            positionRegion = new MutablePositionRegion(startPosition, endPosition);
+        } else {
+            positionRegion.reset(startPosition, endPosition);
+        }
+    }
+
+    public MutablePositionRegion getPositionRegion() {
+        return positionRegion;
     }
 
     public Map getHints() {
@@ -289,7 +310,7 @@ public final class CodeTemplateParameterImpl {
                     name = completedString;
                 } else { // hints
                     if (hints == null) { // Create hints
-                        hints = new HashMap(4);
+                        hints = new LinkedHashMap(4);
                         hintsUnmodifiable = Collections.unmodifiableMap(hints);
                     }
                     
@@ -347,6 +368,15 @@ public final class CodeTemplateParameterImpl {
         if (name.equals(CodeTemplateParameter.CURSOR_PARAMETER_NAME)) {
             editable = false;
             value = "";
+        } else if (name.equals(CodeTemplateParameter.SELECTION_PARAMETER_NAME)) {
+            editable = false;            
+            if (handler != null) {
+                value = handler.getComponent().getSelectedText();
+                if (value == null)
+                    value = ""; //NOI18N
+                else if (getHints().get(CodeTemplateParameter.LINE_HINT_NAME) != null && !value.endsWith("\n")) //NOI18N
+                    value += "\n"; //NOI18N
+            }
         } else {
             editable = !isHintValueFalse(CodeTemplateParameter.EDITABLE_HINT_NAME);
         }

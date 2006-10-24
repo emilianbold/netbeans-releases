@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.editor.codetemplates.api;
 
+import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateManagerOperation;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateSpiPackageAccessor;
@@ -46,8 +47,10 @@ public final class CodeTemplate {
     
     private final String parametrizedText;
     
+    private final List/*<String>*/ contexts;
+    
     CodeTemplate(CodeTemplateManagerOperation managerOperation,
-    String abbreviation, String description, String parametrizedText) {
+    String abbreviation, String description, String parametrizedText, List/*<String>*/ contexts) {
         
         assert (managerOperation != null);
         if (abbreviation == null) {
@@ -64,6 +67,7 @@ public final class CodeTemplate {
         this.abbreviation = abbreviation;
         this.description = description;
         this.parametrizedText = parametrizedText;
+        this.contexts = contexts;
     }
 
     /**
@@ -106,6 +110,10 @@ public final class CodeTemplate {
      */
     public String getParametrizedText() {
         return parametrizedText;
+    }
+    
+    public List/*<String>*/ getContexts() {
+        return contexts;
     }
 
     /**

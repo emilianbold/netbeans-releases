@@ -43,7 +43,8 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.junit.ide.ProjectSupport;
+//retouche:
+//import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
@@ -131,7 +132,8 @@ public class EditorTestCase extends JellyTestCase {
         
         
         /* 2. open project */
-        Object prj= ProjectSupport.openProject(projectPath);
+//retouche:
+//        Object prj= ProjectSupport.openProject(projectPath);
         
     }
    
@@ -177,7 +179,8 @@ public class EditorTestCase extends JellyTestCase {
     }
     
     protected void closeProject(String projectName) {
-        ProjectSupport.closeProject(projectName);
+//retouche:
+//        ProjectSupport.closeProject(projectName);
     }
     
     

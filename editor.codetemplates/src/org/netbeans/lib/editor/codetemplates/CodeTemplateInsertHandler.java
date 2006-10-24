@@ -25,14 +25,11 @@ import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -41,6 +38,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Formatter;
@@ -107,6 +105,8 @@ implements DocumentListener, KeyListener {
     private List/*<DrawLayer>*/ drawLayers;
     
     private Document doc;
+
+    private MutablePositionRegion positionRegion;
     
     /**
      * Whether an expanding of a template was requested
@@ -149,6 +149,9 @@ implements DocumentListener, KeyListener {
     JTextComponent component, Collection/*<CodeTemplateProcessorFactory>*/ processorFactories) {
         this.codeTemplate = codeTemplate;
         this.component = component;
+
+        Position zeroPos = PositionRegion.createFixedPosition(0);
+        this.positionRegion = new MutablePositionRegion(zeroPos, zeroPos);
         
         // Ensure that the SPI package accessor gets registered
         CodeTemplateInsertRequest.class.getClass().getName();
@@ -183,6 +186,7 @@ implements DocumentListener, KeyListener {
     
     private synchronized void markInserted() {
         this.inserted = true;
+        resetCachedInsertText();
     }
     
     public synchronized boolean isReleased() {
@@ -198,9 +202,24 @@ implements DocumentListener, KeyListener {
         parseParametrizedText();
     }
 
+    public int getInsertOffset() {
+        return positionRegion.getStartOffset();
+    }
+
     public String getInsertText() {
-        checkInsertTextBuilt();
-        return insertText;
+        if (inserted) {
+            try {
+                int startOffset = positionRegion.getStartOffset();
+                return doc.getText(startOffset, positionRegion.getEndOffset() - startOffset);
+            } catch (BadLocationException e) {
+                ErrorManager.getDefault().notify(e);
+                return "";
+            }
+
+        } else { // not inserted yet
+            checkInsertTextBuilt();
+            return insertText;
+        }
     }
     
     public List/*<CodeTemplateParameter>*/ getAllParameters() {
@@ -267,6 +286,7 @@ implements DocumentListener, KeyListener {
 
             // insert the complete text
             int insertOffset = component.getCaretPosition();
+            int docLen = doc.getLength();
             doc.insertString(insertOffset, completeInsertString, null);
             
             // Go through all master parameters and create region infos for them
@@ -275,7 +295,9 @@ implements DocumentListener, KeyListener {
 
                 if (CodeTemplateParameter.CURSOR_PARAMETER_NAME.equals(parameter.getName())) {
                     caretPosition = doc.createPosition(insertOffset + parameter.getInsertTextOffset());
-                } else {
+                    CodeTemplateParameterImpl paramImpl = CodeTemplateParameterImpl.get(parameter);
+                    paramImpl.resetPositions(caretPosition, caretPosition);
+                } else { // Not a CURSOR parameter
                     List parameterRegions = new ArrayList(4);
                     addParameterRegion(parameterRegions, parameter, doc, insertOffset);
                     for (Iterator slaveIt = parameter.getSlaves().iterator(); slaveIt.hasNext();) {
@@ -288,6 +310,9 @@ implements DocumentListener, KeyListener {
                 }
             }
             
+            positionRegion.reset(doc.createPosition(insertOffset),
+                    doc.createPosition(insertOffset + (doc.getLength() - docLen)));
+
             if (caretPosition == null) { // no specific ${cursor} parameter
                 caretPosition = doc.createPosition(insertOffset + completeInsertString.length());
             }
@@ -352,31 +377,29 @@ implements DocumentListener, KeyListener {
     public void tabAction(ActionEvent evt, Action origAction) {
         checkNotifyParameterUpdate();
 
-        if (activeMasterIndex < editableMasters.size()) {
-            activeMasterIndex++;
-            
-        } else { // release
-            activeMasterIndex = 0;
-        }
+        activeMasterIndex++;
+        activeMasterIndex %= editableMasters.size();
         tabUpdate();
     }
     
     public void shiftTabAction(ActionEvent evt) {
         checkNotifyParameterUpdate();
 
-        if (activeMasterIndex > 0) {
-            activeMasterIndex--;
-        } else {
-            activeMasterIndex = editableMasters.size();
-        }
+        if (activeMasterIndex-- == 0)
+            activeMasterIndex = editableMasters.size() - 1;
         tabUpdate();
     }
     
     public void enterAction(ActionEvent evt) {
         checkNotifyParameterUpdate();
 
-        forceCaretPosition();
-        release();
+        activeMasterIndex++;
+        if (activeMasterIndex == editableMasters.size()) { 
+            forceCaretPosition();
+            release();
+        } else {
+            tabUpdate();
+        }
     }
     
     void undoAction(ActionEvent evt) {
@@ -388,14 +411,11 @@ implements DocumentListener, KeyListener {
     }
     
     public String getDocParameterValue(CodeTemplateParameterImpl paramImpl) {
-        assert (!paramImpl.isSlave()); // assert master parameter
-        SyncDocumentRegion region = paramImpl.getRegion();
-        assert (region != null);
-        int offset = region.getFirstRegionStartOffset();
-        int length = region.getFirstRegionLength();
+        MutablePositionRegion positionRegion = paramImpl.getPositionRegion();
+        int offset = positionRegion.getStartOffset();
         String parameterText;
         try {
-            parameterText = doc.getText(offset, length);
+            parameterText = doc.getText(offset, positionRegion.getEndOffset() - offset);
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
             parameterText = null;
@@ -537,15 +557,10 @@ implements DocumentListener, KeyListener {
     }
     
     private void tabUpdate() {
-        if (activeMasterIndex == editableMasters.size()) {
-            // Goto remembered caret position
-            forceCaretPosition();
-        } else {
-            updateLastRegionBounds();
-            SyncDocumentRegion active = getActiveMasterImpl().getRegion();
-            component.select(active.getFirstRegionStartOffset(),
+        updateLastRegionBounds();
+        SyncDocumentRegion active = getActiveMasterImpl().getRegion();
+        component.select(active.getFirstRegionStartOffset(),
                 active.getFirstRegionEndOffset());
-        }
         
         // Repaint the selected blocks according to the current master
         requestRepaint();
@@ -630,7 +645,8 @@ implements DocumentListener, KeyListener {
                 activeMasterImpl.markUserModified();
                 notifyParameterUpdate(activeMasterImpl.getParameter(), true);
             } else { // the insert is not managed => release
-                release();
+                if (DocumentUtilities.isTypingModification(evt))
+                    release();
             }
         }
         updateLastRegionBounds();
@@ -651,9 +667,11 @@ implements DocumentListener, KeyListener {
                 }
                 activeMasterImpl.setValue(getDocParameterValue(activeMasterImpl), false);
                 activeMasterImpl.markUserModified();
-                notifyParameterUpdate(activeMasterImpl.getParameter(), true);
+                if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) == null)
+                    notifyParameterUpdate(activeMasterImpl.getParameter(), true);
             } else { // the insert is not managed => release
-                release();
+                if (DocumentUtilities.isTypingModification(evt))
+                    release();
             }
         }
         updateLastRegionBounds();
@@ -687,8 +705,9 @@ implements DocumentListener, KeyListener {
         BaseDocument bdoc = (BaseDocument)doc;
         Position startPos = bdoc.createPosition(startOffset);
         Position endPos = doc.createPosition(startOffset + parameter.getValue().length());
-        MutablePositionRegion region = new MutablePositionRegion(startPos, endPos);
-        parameterRegions.add(region);
+        CodeTemplateParameterImpl paramImpl = CodeTemplateParameterImpl.get(parameter);
+        paramImpl.resetPositions(startPos, endPos);
+        parameterRegions.add(paramImpl.getPositionRegion());
     }
 
     private String buildInsertText() {

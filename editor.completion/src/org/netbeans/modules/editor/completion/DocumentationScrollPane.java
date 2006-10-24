@@ -22,7 +22,6 @@ package org.netbeans.modules.editor.completion;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -76,7 +75,7 @@ public class DocumentationScrollPane extends JScrollPane {
     private HTMLDocView view;
     
     // doc browser history
-    private List/*<CompletionDocItem>*/ history = new ArrayList(5);
+    private List<CompletionDocumentation> history = new ArrayList<CompletionDocumentation>(5);
     private int currentHistoryIndex = -1;
     private CompletionDocumentation currentDocumentation = null;
     
@@ -223,7 +222,7 @@ public class DocumentationScrollPane extends JScrollPane {
     private synchronized void backHistory() {
         if (currentHistoryIndex > 0) {
             currentHistoryIndex--;
-            setDocumentation((CompletionDocumentation)history.get(currentHistoryIndex));            
+            setDocumentation(history.get(currentHistoryIndex));            
             if (currentHistoryIndex == 0)
                 bBack.setEnabled(false);
             bForward.setEnabled(true);
@@ -233,7 +232,7 @@ public class DocumentationScrollPane extends JScrollPane {
     private synchronized void forwardHistory(){
         if (currentHistoryIndex <history.size()-1){
             currentHistoryIndex++;
-            setDocumentation((CompletionDocumentation)history.get(currentHistoryIndex));
+            setDocumentation(history.get(currentHistoryIndex));
             if (currentHistoryIndex == history.size() - 1)
                 bForward.setEnabled(false); 
             bBack.setEnabled(true);

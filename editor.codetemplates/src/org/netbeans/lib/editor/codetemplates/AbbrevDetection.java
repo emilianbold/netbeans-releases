@@ -19,12 +19,17 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.KeyStroke;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -40,7 +45,12 @@ import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.HintsController;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -52,7 +62,7 @@ import org.openide.ErrorManager;
  */
 
 final class AbbrevDetection implements SettingsChangeListener, DocumentListener,
-PropertyChangeListener, KeyListener {
+PropertyChangeListener, KeyListener, CaretListener {
     
     /**
      * Document property which determines whether an ongoing document modification
@@ -62,9 +72,11 @@ PropertyChangeListener, KeyListener {
      */
     private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY
             = "abbrev-ignore-modification"; // NOI18N
+
+    private static final String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Label"); //NOI18N
     
     private static final AbbrevExpander[] abbrevExpanders = { new CodeTemplateAbbrevExpander() };
-    
+
     public static AbbrevDetection get(JTextComponent component) {
         AbbrevDetection ad = (AbbrevDetection)component.getClientProperty(AbbrevDetection.class);
         if (ad == null) {
@@ -95,8 +107,12 @@ PropertyChangeListener, KeyListener {
     /** Which chars reset abbreviation accounting */
     private Acceptor resetAcceptor;
     
+    private ErrorDescription errorDescription = null;
+    private List surrounsWithFixes = null;
+    
     private AbbrevDetection(JTextComponent component) {
         this.component = component;
+        component.addCaretListener(this);
         doc = component.getDocument();
         if (doc != null) {
             doc.addDocumentListener(this);
@@ -175,6 +191,14 @@ PropertyChangeListener, KeyListener {
         checkExpansionKeystroke(evt);
     }
     
+    public void caretUpdate(CaretEvent evt) {
+        if (evt.getDot() != evt.getMark()) {
+            showSurroundWithHint(evt.getDot());
+        } else {
+            hideSurroundWithHint();
+        }
+    }
+
     private boolean isIgnoreModification() {
         return Boolean.TRUE.equals(doc.getProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY));
     }
@@ -300,5 +324,25 @@ PropertyChangeListener, KeyListener {
         }
         return false;
     }
+    
+    private void showSurroundWithHint(int offset) {
+        if (surrounsWithFixes == null)
+            surrounsWithFixes = SurroundWithFix.getFixes(component);
+        try {
+            Position pos = doc.createPosition(offset);
+            errorDescription = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, SURROUND_WITH, surrounsWithFixes, doc, pos, pos);
+            HintsController.setErrors(doc, SURROUND_WITH, Collections.singleton(errorDescription));
+        } catch (BadLocationException ble) {
+            Logger.getLogger("global").log(Level.WARNING, ble.getMessage(), ble);
+        }
+    }
 
+    private void hideSurroundWithHint() {
+        if (surrounsWithFixes != null)
+            surrounsWithFixes = null;
+        if (errorDescription != null) {
+            errorDescription = null;
+            HintsController.setErrors(doc, SURROUND_WITH, Collections.emptySet());
+        }
+    }
 }

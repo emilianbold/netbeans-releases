@@ -46,7 +46,7 @@ public final class PatchedHtmlRenderer {
 
     /** Stack object used during HTML rendering to hold previous colors in
      * the case of nested color entries. */
-    private static Stack colorStack = new Stack();
+    private static Stack<Color> colorStack = new Stack<Color>();
 
     /**
      * Constant used by {@link #renderString renderString}, {@link #renderPlainString renderPlainString},
@@ -78,7 +78,7 @@ public final class PatchedHtmlRenderer {
 
     /** Cache for strings which have produced errors, so we don't post an
      * error message more than once */
-    private static Set badStrings = null;
+    private static Set<String> badStrings = null;
 
     /** Definitions for a limited subset of SGML character entities */
     private static final Object[] entities = new Object[] {
@@ -324,7 +324,7 @@ public final class PatchedHtmlRenderer {
         }
 
         //Thread safety - avoid allocating memory for the common case
-        Stack colorStack = SwingUtilities.isEventDispatchThread() ? PatchedHtmlRenderer.colorStack : new Stack();
+        Stack<Color> colorStack = SwingUtilities.isEventDispatchThread() ? PatchedHtmlRenderer.colorStack : new Stack<Color>();
 
         g.setColor(defaultColor);
         g.setFont(f);
@@ -525,7 +525,7 @@ public final class PatchedHtmlRenderer {
                         if (colorStack.isEmpty()) {
                             g.setColor(defaultColor);
                         } else {
-                            g.setColor((Color) colorStack.pop());
+                            g.setColor(colorStack.pop());
                         }
 
                         break;
@@ -1076,7 +1076,7 @@ public final class PatchedHtmlRenderer {
         if (!STRICT_HTML) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
                 if (badStrings == null) {
-                    badStrings = new HashSet();
+                    badStrings = new HashSet<String>();
                 }
 
                 if (!badStrings.contains(msg)) {

@@ -19,15 +19,16 @@
 
 package org.netbeans.modules.editor.completion;
 
+import java.awt.*;
+import java.awt.event.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.awt.event.*;
-import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CaretListener;
@@ -35,9 +36,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.editor.BaseDocument;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeListener;
@@ -70,20 +72,21 @@ import org.openide.util.NbBundle;
 public class CompletionImpl extends MouseAdapter implements DocumentListener,
 CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener, SettingsChangeListener {
     
-    private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.completion");
+    private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.editor.completion.debug");
+    private static final boolean allowFallbacks = !Boolean.getBoolean("org.netbeans.modules.editor.completion.noFallbacks");
 
     private static CompletionImpl singleton = null;
 
-    private static final String FOLDER_NAME = "CompletionProviders"; // NOI18N
     private static final String NO_SUGGESTIONS = NbBundle.getMessage(CompletionImpl.class, "completion-no-suggestions");
     private static final String PLEASE_WAIT = NbBundle.getMessage(CompletionImpl.class, "completion-please-wait");
 
-    private static final String POPUP_HIDE = "popup-hide"; //NOI18N
     private static final String COMPLETION_SHOW = "completion-show"; //NOI18N
+    private static final String COMPLETION_SMART_SHOW = "completion-smart-show"; //NOI18N
+    private static final String COMPLETION_ALL_SHOW = "completion-all-show"; //NOI18N
     private static final String DOC_SHOW = "doc-show"; //NOI18N
     private static final String TOOLTIP_SHOW = "tooltip-show"; //NOI18N
     
-    private static final int PLEASE_WAIT_TIMEOUT = 250;
+    private static final int PLEASE_WAIT_TIMEOUT = 750;
     
     public static CompletionImpl get() {
         if (singleton == null)
@@ -92,10 +95,10 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
 
     /** Text component being currently edited. Changed in AWT only. */
-    private WeakReference/*<JTextComponent>*/ activeComponent = null;
+    private WeakReference<JTextComponent> activeComponent = null;
     
     /** Document currently installed in the active component. Changed in AWT only. */
-    private WeakReference/*<Document>*/ activeDocument = null;
+    private WeakReference<Document> activeDocument = null;
     
     /** Map containing keystrokes that should be overriden by completion processing. Changed in AWT only. */
     private InputMap inputMap;
@@ -110,7 +113,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private CompletionProvider[] activeProviders = null;
     
     /** Mapping of mime-type to array of providers. Changed in AWT only. */
-    private HashMap /*<String, CompletionProvider[]>*/ providersCache = new HashMap();
+    private HashMap<String, CompletionProvider[]> providersCache = new HashMap<String, CompletionProvider[]>();
 
     /**
      * Result of the completion query.
@@ -151,7 +154,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     private boolean explicitQuery = false;
     
     private boolean tabCompletionWaiting = false;
-    private LinkedList waitingEvents = new LinkedList();
+    private LinkedList<KeyEvent> waitingEvents = new LinkedList<KeyEvent>();
     
     /** Ending offset of the recent insertion or removal. */
     private int modEndOffset;
@@ -197,7 +200,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     }
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
-                        null, -1, CompletionImpl.this);
+                        null, -1, CompletionImpl.this, false);
             }
         });
         pleaseWaitTimer.setRepeats(false);
@@ -205,15 +208,15 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
     }
     
     private JTextComponent getActiveComponent() {
-        return activeComponent != null ? (JTextComponent)activeComponent.get() : null;
+        return activeComponent != null ? activeComponent.get() : null;
     }
 
     private Document getActiveDocument() {
-        return activeDocument != null ? (Document)activeDocument.get() : null;
+        return activeDocument != null ? activeDocument.get() : null;
     }
     
     public int getSortType() {
-        return CompletionResultSet.PRIORITY_SORT_TYPE; // [TODO] additional types
+        return CompletionResultSet.PRIORITY_SORT_TYPE; // [TODO] create an option
     }
     
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
@@ -229,7 +232,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (activeProviders != null) {
             try {
                 modEndOffset = e.getOffset() + e.getLength();
-                if (getActiveComponent().getCaretPosition() != modEndOffset)
+                if (getActiveComponent().getSelectionStart() != modEndOffset)
                     return;
 
                 String typedText = e.getDocument().getText(e.getOffset(), e.getLength());
@@ -241,7 +244,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                     }
                     if (completionResultNull && (type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0 &&
                             CompletionSettings.INSTANCE.completionAutoPopup()) {
-                        showCompletion(false, true);
+                        showCompletion(false, true, CompletionProvider.COMPLETION_QUERY_TYPE);
                     }
 
                     boolean tooltipResultNull;
@@ -363,16 +366,14 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 getActiveComponent().removeMouseListener(this);
             }
             if (component != null) {
-// DIRTY HACK: Uncomment this after rewriting all modules to use the new Completion API.
-//            if (activeProviders != null) {
-                component.addCaretListener(this);
-                component.addKeyListener(this);
-                component.addFocusListener(this);
-                component.addMouseListener(this);
-// DIRTY HACK: Uncomment this after rewriting all modules to use the new Completion API.
-//            }
+                if (activeProviders != null) {
+                    component.addCaretListener(this);
+                    component.addKeyListener(this);
+                    component.addFocusListener(this);
+                    component.addMouseListener(this);
+                }
             }
-            activeComponent = component != null ? new WeakReference(component) : null;
+            activeComponent = component != null ? new WeakReference<JTextComponent>(component) : null;
             CompletionSettings.INSTANCE.notifyEditorComponentChange(getActiveComponent());
             layout.setEditorComponent(getActiveComponent());
             installKeybindings();
@@ -400,7 +401,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             if (activeProviders != null)
                 DocumentUtilities.addDocumentListener(document, this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
-            activeDocument = new WeakReference(document);
+            activeDocument = new WeakReference<Document>(document);
             cancel = true;
         }
         if (cancel)
@@ -447,22 +448,23 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         if (providersCache.containsKey(mimeType))
             return (CompletionProvider[])providersCache.get(mimeType);
 
-        List list = new ArrayList();
-        MimeLookup lookup = MimeLookup.getMimeLookup(mimeType);
-        list.addAll(lookup.lookup(new Lookup.Template(CompletionProvider.class)).allInstances());
-        int size = list.size();
-        CompletionProvider[] ret = size == 0 ? null : (CompletionProvider[])list.toArray(new CompletionProvider[size]);
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
+        Collection<? extends CompletionProvider> col = lookup.lookupAll(CompletionProvider.class);
+        int size = col.size();
+        CompletionProvider[] ret = size == 0 ? null : col.toArray(new CompletionProvider[size]);
         providersCache.put(mimeType, ret);
         return ret;
     }
     
-    private synchronized void dispatchKeyEvent(KeyEvent e) {
+    private void dispatchKeyEvent(KeyEvent e) {
         if (e == null)
             return;
-        if (tabCompletionWaiting) {
-            waitingEvents.add(e);
-            e.consume();
-            return;
+        synchronized (this) {
+            if (tabCompletionWaiting) {
+                waitingEvents.add(e);
+                e.consume();
+                return;
+            }
         }
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
         Object obj = inputMap.get(ks);
@@ -494,20 +496,22 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             }
             if (e.getKeyCode() == KeyEvent.VK_TAB) {
                 e.consume();
+                Result localCompletionResult;
                 synchronized (this) {
-                    if (!isAllResultsFinished(completionResult.getResultSets())) {
-                        tabCompletionWaiting = true;
-                    } else {
-                        insertCommonPrefix();
-                    }
+                    localCompletionResult = completionResult;
+                }
+                if (!isAllResultsFinished(localCompletionResult.getResultSets())) {
+                    tabCompletionWaiting = true;
+                } else {
+                    insertCommonPrefix();
                 }
                 return;
             }
         }
-	layout.processKeyEvent(e);
+        layout.processKeyEvent(e);
     }
     
-    void completionQuery(boolean delayQuery) {
+    private void completionQuery(boolean delayQuery, int queryType) {
         refreshedQuery = false;
         
         Result newCompletionResult = new Result(activeProviders.length);
@@ -515,15 +519,15 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             assert (completionResult == null);
             completionResult = newCompletionResult;
         }
-        List completionResultSets = newCompletionResult.getResultSets();
+        List<CompletionResultSetImpl> completionResultSets = newCompletionResult.getResultSets();
 
         // Initialize the completion tasks
         for (int i = 0; i < activeProviders.length; i++) {
             CompletionTask compTask = activeProviders[i].createTask(
-                    CompletionProvider.COMPLETION_QUERY_TYPE, getActiveComponent());
+                    queryType, getActiveComponent());
             if (compTask != null) {
                 CompletionResultSetImpl resultSet = new CompletionResultSetImpl(
-                        this, newCompletionResult, compTask, CompletionProvider.COMPLETION_QUERY_TYPE);
+                        this, newCompletionResult, compTask, queryType);
                 completionResultSets.add(resultSet);
             }
         }
@@ -543,7 +547,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
      * <br>
      * Must be called in AWT thread.
      */
-    private void completionRefresh() {        
+    private void completionRefresh() {
         Result localCompletionResult;
         synchronized (this) {
             localCompletionResult = completionResult;
@@ -616,7 +620,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
             }
             if (commonText != null) {
-                int caretOffset = c.getCaret().getDot();
+                int caretOffset = c.getSelectionStart();
                 if (anchorOffset > -1  && caretOffset - anchorOffset < commonText.length()) {
                     commonText = commonText.subSequence(caretOffset - anchorOffset, commonText.length());
                     // Insert the missing end part of the prefix
@@ -631,27 +635,34 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 }
             }
         }
-        if (tabCompletionWaiting) {
-            tabCompletionWaiting = false;
-            while(!waitingEvents.isEmpty()) {
-                KeyEvent e = (KeyEvent)waitingEvents.removeFirst();
-                e = new KeyEvent((Component)e.getSource(), e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar(), e.getKeyLocation());
-                c.dispatchEvent(e);
-            }
+        KeyEvent e;
+        while((e = getTabCompletionWaiting()) != null) {
+            e = new KeyEvent((Component)e.getSource(), e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar(), e.getKeyLocation());
+            c.dispatchEvent(e);
         }
+    }
+    
+    private synchronized KeyEvent getTabCompletionWaiting() {
+        KeyEvent e = null;
+        if (tabCompletionWaiting && !waitingEvents.isEmpty()) {
+            e = waitingEvents.removeFirst();
+            if (waitingEvents.isEmpty())
+                tabCompletionWaiting = false;
+        }
+        return e;
     }
     
     /**
      * May be called from any thread but it will be rescheduled into AWT.
      */
     public void showCompletion() {
-        showCompletion(false, false);
+        showCompletion(false, false, CompletionProvider.COMPLETION_QUERY_TYPE);
     }
-    
-    private void showCompletion(boolean explicitQuery, boolean delayQuery) {
+
+    private void showCompletion(boolean explicitQuery, boolean delayQuery, int queryType) {
         if (!SwingUtilities.isEventDispatchThread()) {
             // Re-call this method in AWT if necessary
-            SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.SHOW_COMPLETION));
+            SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.SHOW_COMPLETION, explicitQuery, delayQuery, queryType));
             return;
         }
 
@@ -659,15 +670,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         if (activeProviders != null) {
             completionAutoPopupTimer.stop();
             completionCancel(); // cancel possibly pending query
-            completionQuery(delayQuery);
-        } else {
-            // DIRTY HACK - remove this after rewriting all modules to use the new Completion API.
-            org.netbeans.editor.ext.Completion completion = org.netbeans.editor.ext.ExtUtilities.getCompletion(getActiveComponent());
-            if (completion != null) {
-                completion.setPaneVisible(true);
-            }
-            return;
-            // HACK end
+            completionQuery(delayQuery, queryType);
         }
     }
 
@@ -681,20 +684,27 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         
         // Compute total count of the result sets
         int sortedResultsSize = 0;
-        List completionResultSets = result.getResultSets();
+        int qType = 0;
+        List<CompletionResultSetImpl> completionResultSets = result.getResultSets();
         for (int i = completionResultSets.size() - 1; i >= 0; i--) {
-            CompletionResultSetImpl resultSet = (CompletionResultSetImpl)completionResultSets.get(i);
+            CompletionResultSetImpl resultSet = completionResultSets.get(i);
             sortedResultsSize += resultSet.getItems().size();
+            qType = resultSet.getQueryType();
+        }
+        
+        final boolean noSuggestions = sortedResultsSize == 0;
+        if (noSuggestions && qType == CompletionProvider.COMPLETION_QUERY_TYPE && allowFallbacks) {
+            showCompletion(this.explicitQuery, false, CompletionProvider.COMPLETION_ALL_QUERY_TYPE);
+            return;
         }
 
         // Collect and sort the gathered completion items
-        final List sortedResultItems = new ArrayList(sortedResultsSize);
+        final List<CompletionItem> sortedResultItems = new ArrayList<CompletionItem>(sortedResultsSize);
         String title = null;
         int anchorOffset = -1;
-        int addIndex = 0;
         for (int i = 0; i < completionResultSets.size(); i++) {
             CompletionResultSetImpl resultSet = (CompletionResultSetImpl)completionResultSets.get(i);
-            List resultItems = resultSet.getItems();
+            List<? extends CompletionItem> resultItems = resultSet.getItems();
             if (resultItems.size() > 0) {
                 sortedResultItems.addAll(resultItems);
                 if (title == null)
@@ -708,9 +718,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         // Request displaying of the completion pane in AWT thread
         final String displayTitle = title;
         final int displayAnchorOffset = anchorOffset;
+        final int queryType = qType;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
-                int caretOffset = getActiveComponent().getCaretPosition();
+                int caretOffset = getActiveComponent().getSelectionStart();
                 // completionResults = null;
                 if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery
                         && CompletionSettings.INSTANCE.completionInstantSubstitution()) {
@@ -726,13 +737,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     }
                 }
 
-                List res = new ArrayList(sortedResultItems);
-                boolean noSuggestions = false;
-                if (res.size() == 0) {
-                    res.add(NO_SUGGESTIONS);
-                    noSuggestions = true;
-                }
-                layout.showCompletion(res, displayTitle, displayAnchorOffset, CompletionImpl.this);
+                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, allowFallbacks && queryType == CompletionProvider.COMPLETION_QUERY_TYPE);
 
                 // Show documentation as well if set by default
                 if (CompletionSettings.INSTANCE.documentationAutoPopup()) {
@@ -794,14 +799,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 layout.clearDocumentationHistory();
             }
             documentationQuery();
-        } else {
-            // DIRTY HACK - remove this after rewriting all modules to use the new Completion API.
-            org.netbeans.editor.ext.CompletionJavaDoc completionDoc = org.netbeans.editor.ext.ExtUtilities.getCompletionJavaDoc(getActiveComponent());
-            if (completionDoc != null) {
-                completionDoc.setJavaDocVisible(true);
-            }
-            return;
-            // HACK end
         }
     }
 
@@ -833,7 +830,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             assert (docResult == null);
             docResult = newDocumentationResult;
         }
-        List documentationResultSets = docResult.getResultSets();
+        List<CompletionResultSetImpl> documentationResultSets = docResult.getResultSets();
 
         CompletionTask docTask;
         CompletionItem selectedItem = layout.getSelectedCompletionItem();
@@ -855,20 +852,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
 
         queryResultSets(documentationResultSets);
         newDocumentationResult.queryInvoked();
-    }
-
-    private void documentationRefresh() {
-        Result localDocumentationResult;
-        synchronized (this) {
-            localDocumentationResult = docResult;
-        }
-        if (localDocumentationResult != null) {
-            Result refreshResult = localDocumentationResult.createRefreshResult();
-            synchronized (this) {
-                docResult = refreshResult;
-            }
-            refreshResult.invokeRefresh();
-        }
     }
 
     private void documentationCancel() {
@@ -903,7 +886,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         // Ensure the documentation popup timer is stopped
         docAutoPopupTimer.stop();
         boolean hidePerformed = layout.hideDocumentation();
-	// Also hide completion if documentation pops automatically
+ // Also hide completion if documentation pops automatically
         if (hidePerformed && CompletionSettings.INSTANCE.documentationAutoPopup()) {
             hideCompletion();
         }
@@ -955,7 +938,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             assert (toolTipResult == null);
             toolTipResult = newToolTipResult;
         }
-        List toolTipResultSets = newToolTipResult.getResultSets();
+        List<CompletionResultSetImpl> toolTipResultSets = newToolTipResult.getResultSets();
 
         CompletionTask toolTipTask;
         CompletionItem selectedItem = layout.getSelectedCompletionItem();
@@ -1068,13 +1051,21 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         for (int i = 0; i < keys.length; i++) {
             inputMap.put(keys[i], COMPLETION_SHOW);
         }
-        actionMap.put(COMPLETION_SHOW, new CompletionShowAction());
+        actionMap.put(COMPLETION_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_QUERY_TYPE));
+
+        // Register smart completion show
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)), COMPLETION_SMART_SHOW);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)), COMPLETION_SMART_SHOW);
+        actionMap.put(COMPLETION_SMART_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_SMART_QUERY_TYPE));
         
+        // Register all completion show
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.ALT_MASK)), COMPLETION_ALL_SHOW);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, (InputEvent.CTRL_MASK | InputEvent.ALT_MASK)), COMPLETION_ALL_SHOW);
+        actionMap.put(COMPLETION_ALL_SHOW, new CompletionShowAction(CompletionProvider.COMPLETION_ALL_QUERY_TYPE));
+
         // Register documentation show
-        keys = findEditorKeys(ExtKit.documentationShowAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)));
-        for (int i = 0; i < keys.length; i++) {
-            inputMap.put(keys[i], DOC_SHOW);
-        }
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, (InputEvent.ALT_MASK | InputEvent.SHIFT_MASK)), DOC_SHOW);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, (InputEvent.ALT_MASK | InputEvent.SHIFT_MASK)), DOC_SHOW);
         actionMap.put(DOC_SHOW, new DocShowAction());
         
         // Register tooltip show
@@ -1093,6 +1084,8 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     void finishNotify(CompletionResultSetImpl finishedResult) {
         switch (finishedResult.getQueryType()) {
             case CompletionProvider.COMPLETION_QUERY_TYPE:
+            case CompletionProvider.COMPLETION_SMART_QUERY_TYPE:
+            case CompletionProvider.COMPLETION_ALL_QUERY_TYPE:
                 Result localCompletionResult;
                 synchronized (this) {
                     localCompletionResult = completionResult;
@@ -1142,9 +1135,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
     }
     
-    private static boolean isAllResultsFinished(List/*<CompletionResultSetImpl>*/ resultSets) {
+    private static boolean isAllResultsFinished(List<CompletionResultSetImpl> resultSets) {
         for (int i = resultSets.size() - 1; i >= 0; i--) {
-            CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
+            CompletionResultSetImpl result = resultSets.get(i);
             if (!result.isFinished()) {
                 if (debug) {
                     System.err.println("CompletionTask: " + result.getTask() // NOI18N
@@ -1165,9 +1158,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * <br>
      * The method assumes that all the resultSets are already finished.
      */
-    private static CompletionResultSetImpl findFirstValidResult(List/*<CompletionResultSetImpl>*/ resultSets) {
+    private static CompletionResultSetImpl findFirstValidResult(List<CompletionResultSetImpl> resultSets) {
         for (int i = 0; i < resultSets.size(); i++) {
-            CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
+            CompletionResultSetImpl result = resultSets.get(i);
             switch (result.getQueryType()) {
                 case CompletionProvider.DOCUMENTATION_QUERY_TYPE:
                     if (result.getDocumentation() != null) {
@@ -1203,14 +1196,20 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     }
     
     void testSetActiveComponent(JTextComponent component) {
-        activeComponent = new WeakReference(component);
+        activeComponent = new WeakReference<JTextComponent>(component);
     }
     
     // ..........................................................................
     
     private final class CompletionShowAction extends AbstractAction {
+        private int queryType;
+        
+        private CompletionShowAction(int queryType) {
+            this.queryType = queryType;
+        }
+
         public void actionPerformed(ActionEvent e) {
-            showCompletion(true, false);
+            showCompletion(true, false, queryType);
         }
     }
 
@@ -1236,15 +1235,25 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         private static final int HIDE_TOOL_TIP_PANE = 5;
         
         private final int opCode;
+        private final boolean explicitQuery;
+        private final boolean delayQuery;
+        private final int type;
         
         ParamRunnable(int opCode) {
-            this.opCode = opCode;
+            this(opCode, false, false, CompletionProvider.COMPLETION_QUERY_TYPE);
         }
         
+        ParamRunnable(int opCode, boolean explicitQuery, boolean delayQuery, int type) {
+            this.opCode = opCode;
+            this.explicitQuery = explicitQuery;
+            this.delayQuery = delayQuery;
+            this.type = type;
+        }
+
         public void run() {
             switch (opCode) {
                 case SHOW_COMPLETION:
-                    showCompletion();
+                    showCompletion(explicitQuery, delayQuery, type);
                     break;
 
                 case SHOW_DOCUMENTATION:
@@ -1273,19 +1282,19 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
     }
     
-    private static void queryResultSets(List resultSets) {
+    private static void queryResultSets(List<CompletionResultSetImpl> resultSets) {
         for (int i = 0; i < resultSets.size(); i++) {
-            CompletionResultSetImpl resultSet = (CompletionResultSetImpl)resultSets.get(i); 
+            CompletionResultSetImpl resultSet = resultSets.get(i); 
             resultSet.getTask().query(resultSet.getResultSet());
         }
     }
     
-    private static void createRefreshResultSets(List resultSets, Result refreshResult) {
-        List refreshResultSets = refreshResult.getResultSets();
+    private static void createRefreshResultSets(List<CompletionResultSetImpl> resultSets, Result refreshResult) {
+        List<CompletionResultSetImpl> refreshResultSets = refreshResult.getResultSets();
         int size = resultSets.size();
         // Create new resultSets
         for (int i = 0; i < size; i++) {
-            CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
+            CompletionResultSetImpl result = resultSets.get(i);
             result.markInactive();
             result = new CompletionResultSetImpl(result.getCompletionImpl(),
                     refreshResult, result.getTask(), result.getQueryType());
@@ -1293,11 +1302,11 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
     }
     
-    private static void refreshResultSets(List resultSets, boolean beforeQuery) {
+    private static void refreshResultSets(List<CompletionResultSetImpl> resultSets, boolean beforeQuery) {
         try {
             int size = resultSets.size();
             for (int i = 0; i < size; i++) {
-                CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
+                CompletionResultSetImpl result = resultSets.get(i);
                 result.getTask().refresh(beforeQuery ? null : result.getResultSet());
                 
             }
@@ -1306,10 +1315,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
     }
     
-    private static void cancelResultSets(List resultSets) {
+    private static void cancelResultSets(List<CompletionResultSetImpl> resultSets) {
         int size = resultSets.size();
         for (int i = 0; i < size; i++) {
-            CompletionResultSetImpl result = (CompletionResultSetImpl)resultSets.get(i);
+            CompletionResultSetImpl result = resultSets.get(i);
             result.markInactive();
             result.getTask().cancel();
         }
@@ -1342,14 +1351,14 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      */
     static final class Result {
         
-        private final List/*<CompletionResultSetImpl>*/ resultSets;
+        private final List<CompletionResultSetImpl> resultSets;
         
         private boolean invoked;                
         private boolean cancelled;
         private boolean beforeQuery = true;
         
         Result(int resultSetsSize) {
-            resultSets = new ArrayList(resultSetsSize);
+            resultSets = new ArrayList<CompletionResultSetImpl>(resultSetsSize);
         }
 
         /**
@@ -1357,7 +1366,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
          *
          * @return non-null resultSets.
          */
-        List/*<CompletionResultSetImpl>*/ getResultSets() {
+        List<CompletionResultSetImpl> getResultSets() {
             return resultSets;
         }
 
@@ -1438,5 +1447,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 queryInvoked();
         }
 
+    }
+    
+    public CompletionResultSetImpl createTestResultSet(CompletionTask task, int queryType) {
+        return new CompletionResultSetImpl(this, "TestResult", task, queryType);
     }
 }

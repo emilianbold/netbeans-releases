@@ -21,7 +21,6 @@ package org.netbeans.lib.editor.codetemplates.spi;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.settings.CodeTemplateDescription;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateInsertHandler;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateParameterImpl;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateSpiPackageAccessor;
@@ -189,14 +188,28 @@ public final class CodeTemplateInsertRequest {
      * Get the text where all the parameters are replaced
      * by their present values.
      * <br/>
-     * Unless any parameter's value gets changed this text
-     * would be inserted into the document once all the code template processors
-     * finish their processing.
+     * This is the text to be physically inserted into the document
+     * once the template processors possibly update the parameter's values.
+     * <br/>
+     * After the text gets physically inserted into the document this method
+     * continues to return the "living" text of the document with the inserted template.
      */
     public String getInsertText() {
         return handler.getInsertText();
     }
-    
+
+    /**
+     * Return offset of the inserted template in the document's text.
+     * <br/>
+     * The offset is physically represented as a swing position
+     * so it will reflect possible subsequent document mutations.
+     * <br/>
+     * Before the template gets inserted into the document this method
+     * returns zero.
+     */
+    public int getInsertTextOffset() {
+        return handler.getInsertOffset();
+    }
 
     private static final class SpiAccessor extends CodeTemplateSpiPackageAccessor {
         

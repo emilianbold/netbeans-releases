@@ -735,6 +735,14 @@ final class NbInstaller extends ModuleInstaller {
     private static final String[] CLASSPATH_PACKAGES = new String[] {
         // core.jar shall be inaccessible
         "org/netbeans/core/startup/",
+
+        "com/sun/tools/javac",
+        "com/sun/tools/javadoc",
+        "com/sun/javadoc",
+        "com/sun/source",
+        "javax/annotation",
+        "javax/lang/model",
+        "javax/tools"
     };
     
     private Set<String> findKosher(Module m) {

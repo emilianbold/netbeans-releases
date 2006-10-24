@@ -123,7 +123,7 @@ abstract class CompletionLayoutPopup {
 	    // Get caret position
 	    JTextComponent editorComponent = getEditorComponent();
 	    if (editorComponent != null) {
-		offset = editorComponent.getCaretPosition();
+		offset = editorComponent.getSelectionStart();
 	    }
 	}
 	return offset;

@@ -28,6 +28,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.openide.text.NbDocument;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -35,6 +36,8 @@ import org.openide.text.NbDocument;
  * @author Jan Lahoda
  */
 public class CaretMarkProvider extends MarkProvider implements CaretListener {
+    
+    private static final RequestProcessor RP = new RequestProcessor("CaretMarkProvider");
     
     private Mark mark;
     private JTextComponent component;
@@ -63,13 +66,19 @@ public class CaretMarkProvider extends MarkProvider implements CaretListener {
     }
 
     public void caretUpdate(CaretEvent e) {
-        List old = getMarks();
+        final List old = getMarks();
         
         mark = createMark();
         
-        List nue = getMarks();
+        final List nue = getMarks();
         
-        firePropertyChange(PROP_MARKS, old, nue);
+        //Do not fire this event under the document's write lock
+        //may deadlock with other providers:
+        RP.post(new Runnable() {
+            public void run() {
+                firePropertyChange(PROP_MARKS, old, nue);
+            }
+        });
     }
     
 }

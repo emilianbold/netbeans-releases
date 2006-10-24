@@ -21,8 +21,6 @@ package org.netbeans.lib.editor.codetemplates;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.EventObject;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
@@ -34,7 +32,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
-import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -49,7 +47,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 public final class CodeTemplateCompletionProvider implements CompletionProvider {
 
     public CompletionTask createTask(int type, JTextComponent component) {
-        return isAbbrevDisabled(component) ? null : new AsyncCompletionTask(new Query(), component);
+        return type != COMPLETION_QUERY_TYPE || isAbbrevDisabled(component) ? null : new AsyncCompletionTask(new Query(), component);
     }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
@@ -63,11 +61,66 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
     private static final class Query extends AsyncCompletionQuery
     implements ChangeListener {
 
-        private String identifierBeforeCursor;
-
+        private JTextComponent component;
+        
+        private int queryCaretOffset;
+        private int queryAnchorOffset;
+        private List queryResult;
+        
+        private String filterPrefix;
+        
+        protected void prepareQuery(JTextComponent component) {
+            this.component = component;
+        }
+        
+        protected boolean canFilter(JTextComponent component) {
+            int caretOffset = component.getSelectionStart();
+            Document doc = component.getDocument();
+            filterPrefix = null;
+            if (caretOffset >= queryCaretOffset) {
+                if (queryAnchorOffset < queryCaretOffset) {
+                    try {
+                        filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                        if (!isJavaIdentifierPart(filterPrefix)) {
+                            filterPrefix = null;
+                        }
+                    } catch (BadLocationException e) {
+                        // filterPrefix stays null -> no filtering
+                    }
+                }
+            }
+            return (filterPrefix != null);
+        }
+        
+        protected void filter(CompletionResultSet resultSet) {
+            if (filterPrefix != null && queryResult != null) {
+                resultSet.addAllItems(getFilteredData(queryResult, filterPrefix));
+            }
+            resultSet.finish();
+        }
+        
+        private boolean isJavaIdentifierPart(CharSequence text) {
+            for (int i = 0; i < text.length(); i++) {
+                if (!(Character.isJavaIdentifierPart(text.charAt(i))) ) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        private Collection getFilteredData(Collection data, String prefix) {
+            List ret = new ArrayList();
+            for (Iterator it = data.iterator(); it.hasNext();) {
+                CodeTemplateCompletionItem itm = (CodeTemplateCompletionItem) it.next();
+                if (itm.getInsertPrefix().toString().startsWith(prefix))
+                    ret.add(itm);
+            }
+            return ret;
+        }
+        
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
-            identifierBeforeCursor = null;
+            String identifierBeforeCursor = null;
             if (doc instanceof AbstractDocument) {
                 AbstractDocument adoc = (AbstractDocument)doc;
                 adoc.readLock();
@@ -82,18 +135,23 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
                     adoc.readUnlock();
                 }
             }
-
+            
             op.waitLoaded();
 
-            Collection cts = (identifierBeforeCursor != null)
-                ? op.findByParametrizedText(identifierBeforeCursor, true)
-                : Collections.EMPTY_LIST;
-            List items = new ArrayList(cts.size());
-            for (Iterator it = cts.iterator(); it.hasNext();) {
-                CodeTemplate ct = (CodeTemplate)it.next();
-                items.add(new CodeTemplateCompletionItem(ct));
+            queryCaretOffset = caretOffset;
+            queryAnchorOffset = (identifierBeforeCursor != null) ? caretOffset - identifierBeforeCursor.length() : caretOffset;
+            if (identifierBeforeCursor != null) {
+                Collection cts = op.findByParametrizedText(identifierBeforeCursor, true);
+                Collection/*<CodeTemplateFilter>*/ filters = op.getTemplateFilters(component, queryAnchorOffset);
+                queryResult = new ArrayList(cts.size());
+                for (Iterator it = cts.iterator(); it.hasNext();) {
+                    CodeTemplate ct = (CodeTemplate)it.next();
+                    if (accept(ct, filters))
+                        queryResult.add(new CodeTemplateCompletionItem(ct));
+                }
+                resultSet.addAllItems(queryResult);
             }
-            resultSet.addAllItems(items);
+            resultSet.setAnchorOffset(queryAnchorOffset);
             resultSet.finish();
         }
 
@@ -101,6 +159,15 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
             synchronized (this) {
                 notify();
             }
+        }
+        
+        private static boolean accept(CodeTemplate template, Collection/*<CodeTemplateFilter>*/ filters) {
+            for(Iterator it = filters.iterator(); it.hasNext();) {
+                CodeTemplateFilter filter = (CodeTemplateFilter)it.next();
+                if (!filter.accept(template))
+                    return false;                
+            }
+            return true;
         }
         
     }

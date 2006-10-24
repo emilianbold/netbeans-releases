@@ -140,7 +140,7 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
     private void performQuery(CompletionResultSet resultSet) {
         // Runs in AWT thread only
         if (component != null) {
-            queryCaretOffset = component.getCaretPosition();
+            queryCaretOffset = component.getSelectionStart();
         } else {
             queryCaretOffset = -1;
         }

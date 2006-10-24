@@ -46,9 +46,9 @@ public final class CompletionSettings implements SettingsChangeListener {
     
     private static final Object NULL_VALUE = new Object();
     
-    private Reference editorComponentRef;
+    private Reference<JTextComponent> editorComponentRef;
     
-    private Map settingName2value = new HashMap();
+    private Map<String, Object> settingName2value = new HashMap<String, Object>();
     
     private CompletionSettings() {
         Settings.addSettingsChangeListener(this);
@@ -108,7 +108,7 @@ public final class CompletionSettings implements SettingsChangeListener {
     }
     
     public void notifyEditorComponentChange(JTextComponent newEditorComponent) {
-        this.editorComponentRef = new WeakReference(newEditorComponent);
+        this.editorComponentRef = new WeakReference<JTextComponent>(newEditorComponent);
         clearSettingValues();
     }
     
@@ -119,7 +119,7 @@ public final class CompletionSettings implements SettingsChangeListener {
         }
         
         if (value == null) {
-            JTextComponent c = (JTextComponent)editorComponentRef.get();
+            JTextComponent c = editorComponentRef.get();
             if (c != null) {
                 Class kitClass = Utilities.getKitClass(c);
                 if (kitClass != null) {

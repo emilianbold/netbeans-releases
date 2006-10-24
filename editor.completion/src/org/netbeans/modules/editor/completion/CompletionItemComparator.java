@@ -29,11 +29,11 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
  * @author Dusan Balek, Miloslav Metelka
  */
 
-public class CompletionItemComparator implements Comparator {
+public class CompletionItemComparator implements Comparator<CompletionItem> {
 
-    public static final Comparator BY_PRIORITY = new CompletionItemComparator(true);
+    public static final Comparator<CompletionItem> BY_PRIORITY = new CompletionItemComparator(true);
 
-    public static final Comparator ALPHABETICAL = new CompletionItemComparator(false);
+    public static final Comparator<CompletionItem> ALPHABETICAL = new CompletionItemComparator(false);
     
     private final boolean byPriority;
     
@@ -41,7 +41,7 @@ public class CompletionItemComparator implements Comparator {
         this.byPriority = byPriority;
     }
     
-    public static final Comparator get(int sortType) {
+    public static final Comparator<CompletionItem> get(int sortType) {
         if (sortType == CompletionResultSet.PRIORITY_SORT_TYPE)
             return BY_PRIORITY;
         if (sortType == CompletionResultSet.TEXT_SORT_TYPE)
@@ -49,13 +49,9 @@ public class CompletionItemComparator implements Comparator {
         throw new IllegalArgumentException();
     }
     
-    public int compare(Object o1, Object o2) {
-        assertCompletionItem(o1);
-        assertCompletionItem(o2);
-        if (o1 == o2)
+    public int compare(CompletionItem i1, CompletionItem i2) {
+        if (i1 == i2)
             return 0;
-        CompletionItem i1 = (CompletionItem)o1;
-        CompletionItem i2 = (CompletionItem)o2;
         if (byPriority) {
             int importanceDiff = i1.getSortPriority() - i2.getSortPriority();
             if (importanceDiff != 0)
@@ -72,13 +68,6 @@ public class CompletionItemComparator implements Comparator {
                 return importanceDiff;
         }
         return -1;
-    }
-    
-    private static void assertCompletionItem(Object o) {
-        assert (o instanceof CompletionItem)
-            : "Non CompletionItem instance " // NOI18N
-                + o + ":" + ((o != null) ? o.getClass().getName() : "<null>") // NOI18N
-                + " appeared in the code completion result list"; // NOI18N
     }
     
     private static int compareText(CharSequence text1, CharSequence text2) {

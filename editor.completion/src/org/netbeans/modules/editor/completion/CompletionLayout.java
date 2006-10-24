@@ -19,10 +19,11 @@
 
 package org.netbeans.modules.editor.completion;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -30,16 +31,19 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Stack;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
-import javax.swing.Popup;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.util.NbBundle;
 
 /**
  * Layout of the completion, documentation and tooltip popup windows.
@@ -55,20 +59,20 @@ public final class CompletionLayout {
      * so that the text in the rendered completion items.aligns horizontally
      * with the text in the document.
      */
-    private static final int COMPLETION_ANCHOR_HORIZONTAL_SHIFT = 25;
+    private static final int COMPLETION_ANCHOR_HORIZONTAL_SHIFT = 22;
     
     /**
      * Gap between caret and the displayed popup.
      */
     static final int POPUP_VERTICAL_GAP = 1;
 
-    private Reference editorComponentRef;
+    private Reference<JTextComponent> editorComponentRef;
 
     private final CompletionPopup completionPopup;
     private final DocPopup docPopup;
     private final TipPopup tipPopup;
     
-    private Stack/*<CompletionLayoutPopup>*/ visiblePopups;
+    private Stack<CompletionLayoutPopup> visiblePopups;
     
     CompletionLayout() {
         completionPopup = new CompletionPopup();
@@ -80,18 +84,18 @@ public final class CompletionLayout {
         tipPopup = new TipPopup();
         tipPopup.setLayout(this);
         tipPopup.setPreferDisplayAboveCaret(true);
-        visiblePopups = new Stack();
+        visiblePopups = new Stack<CompletionLayoutPopup>();
     }
     
     public JTextComponent getEditorComponent() {
         return (editorComponentRef != null)
-	    ? (JTextComponent)editorComponentRef.get()
+	    ? editorComponentRef.get()
 	    : null;
     }
 
     public void setEditorComponent(JTextComponent editorComponent) {
         hideAll();
-        this.editorComponentRef = new WeakReference(editorComponent);
+        this.editorComponentRef = new WeakReference<JTextComponent>(editorComponent);
     }
 
     private void hideAll() {
@@ -102,8 +106,8 @@ public final class CompletionLayout {
     }
 
     public void showCompletion(List data, String title, int anchorOffset,
-    ListSelectionListener listSelectionListener) {
-        completionPopup.show(data, title, anchorOffset, listSelectionListener);
+    ListSelectionListener listSelectionListener, boolean showShortcutHints) {
+        completionPopup.show(data, title, anchorOffset, listSelectionListener, showShortcutHints);
         if (!visiblePopups.contains(completionPopup))
             visiblePopups.push(completionPopup);
     }
@@ -128,7 +132,7 @@ public final class CompletionLayout {
     
     public void processKeyEvent(KeyEvent evt) {
         for (int i = visiblePopups.size() - 1; i >= 0; i--) {
-            CompletionLayoutPopup popup = (CompletionLayoutPopup)visiblePopups.get(i);
+            CompletionLayoutPopup popup = visiblePopups.get(i);
             popup.processKeyEvent(evt);
             if (evt.isConsumed())
                 return;
@@ -253,12 +257,10 @@ public final class CompletionLayout {
     
     private static final class CompletionPopup extends CompletionLayoutPopup {
         
-        private CompletionScrollPane getCompletionScrollPane() {
-            return (CompletionScrollPane)getContentComponent();
-        }
-
+        private CompletionScrollPane completionScrollPane;
+        
         public void show(List data, String title, int anchorOffset,
-        ListSelectionListener listSelectionListener) {
+        ListSelectionListener listSelectionListener, boolean showShortcutHints) {
             
 	    JTextComponent editorComponent = getEditorComponent();
 	    if (editorComponent == null) {
@@ -275,7 +277,7 @@ public final class CompletionLayout {
             } else { // not yet visible => create completion scrollpane
                 lastSize = new Dimension(0, 0); // no last size => use (0,0)
 
-                setContentComponent(new CompletionScrollPane(
+                completionScrollPane = new CompletionScrollPane(
                     editorComponent, listSelectionListener,
                     new MouseAdapter() {
                         public void mouseClicked(MouseEvent evt) {
@@ -283,7 +285,7 @@ public final class CompletionLayout {
                             if (SwingUtilities.isLeftMouseButton(evt)) {
                                 if (c != null && evt.getClickCount() == 2 ) {
                                     CompletionItem selectedItem
-                                            = getCompletionScrollPane().getSelectedCompletionItem();
+                                            = completionScrollPane.getSelectedCompletionItem();
                                     if (selectedItem != null) {
                                         selectedItem.defaultAction(c);
                                     }
@@ -291,11 +293,27 @@ public final class CompletionLayout {
                             }
                         }
                     }
-                ));
+                );
             }
-
+            completionScrollPane.getViewport().getView().setFont(getEditorComponent().getFont());
+            
+            if (showShortcutHints) {
+                JPanel panel = new JPanel();
+                panel.setLayout(new BorderLayout());
+                panel.add(completionScrollPane, BorderLayout.CENTER);
+                JLabel label = new JLabel();
+                label.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.white),
+                        BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, Color.gray), BorderFactory.createEmptyBorder(2, 2, 2, 2))));
+                label.setFont(label.getFont().deriveFont((float)label.getFont().getSize() - 2));
+                label.setHorizontalAlignment(SwingConstants.RIGHT);
+                label.setText(NbBundle.getMessage(CompletionLayout.class, "TXT_completion_shrtcut_tips")); //NOI18N
+                panel.add(label, BorderLayout.SOUTH);
+                setContentComponent(panel);
+            } else {
+                setContentComponent(completionScrollPane);
+            }
             // Set the new data
-            getCompletionScrollPane().setData(data, title);
+            completionScrollPane.setData(data, title);
             setAnchorOffset(anchorOffset);
 
             Dimension prefSize = getPreferredSize();
@@ -319,18 +337,18 @@ public final class CompletionLayout {
         }
 
         public CompletionItem getSelectedCompletionItem() {
-            return isVisible() ? getCompletionScrollPane().getSelectedCompletionItem() : null;
+            return isVisible() ? completionScrollPane.getSelectedCompletionItem() : null;
         }
 
         public void processKeyEvent(KeyEvent evt) {
             if (isVisible()) {
-                Object actionMapKey = getCompletionScrollPane().getInputMap().get(
+                Object actionMapKey = completionScrollPane.getInputMap().get(
                         KeyStroke.getKeyStrokeForEvent(evt));
                 
                 if (actionMapKey != null) {
-                    Action action = getCompletionScrollPane().getActionMap().get(actionMapKey);
+                    Action action = completionScrollPane.getActionMap().get(actionMapKey);
                     if (action != null) {
-                        action.actionPerformed(new ActionEvent(getCompletionScrollPane(), 0, null));
+                        action.actionPerformed(new ActionEvent(completionScrollPane, 0, null));
                         evt.consume();
                     }
                 }

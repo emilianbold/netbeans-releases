@@ -19,9 +19,7 @@
 
 package org.netbeans.spi.editor.completion;
 
-import java.awt.Dimension;
 import java.util.Collection;
-import java.util.EventListener;
 import javax.swing.JToolTip;
 import org.netbeans.modules.editor.completion.CompletionResultSetImpl;
 import org.netbeans.modules.editor.completion.CompletionSpiPackageAccessor;
@@ -72,6 +70,7 @@ public final class CompletionResultSet {
      * (according to the xml-layer registration order)
      * will be taken into account.
      */
+    @Deprecated
     public void setTitle(String title) {
         impl.setTitle(title);
     }
@@ -123,7 +122,7 @@ public final class CompletionResultSet {
      *  to be practical to display in the listbox so subsequent
      *  adding should preferably be discontinued.
      */
-    public boolean addAllItems(Collection/*<CompletionItem>*/ items) {
+    public boolean addAllItems(Collection<? extends CompletionItem> items) {
         return impl.addAllItems(items);
     }
     

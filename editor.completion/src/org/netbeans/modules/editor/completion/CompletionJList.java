@@ -26,8 +26,8 @@ import java.util.List;
 import javax.swing.*;
 
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.LazyCompletionItem;
 
 /**
 * @author Miloslav Metelka, Dusan Balek
@@ -44,6 +44,17 @@ public class CompletionJList extends JList {
 
     private int fixedItemHeight;
     private int maxVisibleRowCount;
+    
+    private LazyListModel.Filter filter = new LazyListModel.Filter() {
+        public boolean accept(Object obj) {
+            if (obj instanceof LazyCompletionItem)
+                return ((LazyCompletionItem)obj).accept();
+            return true;
+        }
+        public void scheduleUpdate(Runnable run) {
+            SwingUtilities.invokeLater( run );
+        }
+    };
     
     public CompletionJList(int maxVisibleRowCount, MouseListener mouseListener) {
         this.maxVisibleRowCount = maxVisibleRowCount;
@@ -99,7 +110,24 @@ public class CompletionJList extends JList {
     void setData(List data) {
         if (data != null) {
             int itemCount = data.size();
-            ((Model)getModel()).setData(data);
+            ListModel lm = LazyListModel.create( new Model(data), filter, 0.9d, LocaleSupport.getString("completion-please-wait") ); //NOI18N
+            ListCellRenderer renderer = getCellRenderer();
+            int lmSize = lm.getSize();
+            int width = 0;
+            int maxWidth = getParent().getParent().getMaximumSize().width;
+            for(int index = 0; index < lmSize; index++) {
+                Object value = lm.getElementAt(index);
+                Component c = renderer.getListCellRendererComponent(this, value, index, false, false);
+                Dimension cellSize = c.getPreferredSize();
+                if (cellSize.width > width) {
+                    width = cellSize.width;
+                    if (width >= maxWidth)
+                        break;
+                }
+            }
+            setFixedCellWidth(width);
+            setModel(lm);
+            
             if (itemCount > 0) {
                 setSelectedIndex(0);
             }
@@ -108,7 +136,6 @@ public class CompletionJList extends JList {
         }
     }
     
-
     public void up() {
         int size = getModel().getSize();
         if (size > 0) {
@@ -205,10 +232,6 @@ public class CompletionJList extends JList {
             this.selected = selected;
         }
         
-        private void clearItem() {
-            this.item = item;
-        }
-        
         public void paintComponent(Graphics g) {
             // Although the JScrollPane without horizontal scrollbar
             // is explicitly set with a preferred size
@@ -227,7 +250,7 @@ public class CompletionJList extends JList {
             g.setColor(fgColor);
 
             // Render the item
-            item.render(g, getFont(), getForeground(), bgColor,
+            item.render(g, CompletionJList.this.getFont(), getForeground(), bgColor,
                     itemRenderWidth, getHeight(), selected);
         }
         
@@ -239,7 +262,7 @@ public class CompletionJList extends JList {
                         getDefaultConfiguration().createCompatibleImage(1, 1).getGraphics();
                 assert (cellPreferredSizeGraphics != null);
             }
-            return new Dimension(item.getPreferredWidth(cellPreferredSizeGraphics, getFont()),
+            return new Dimension(item.getPreferredWidth(cellPreferredSizeGraphics, CompletionJList.this.getFont()),
                     fixedItemHeight);
         }
 

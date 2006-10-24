@@ -19,6 +19,7 @@
 
 package org.netbeans.api.editor.settings;
 
+import java.util.List;
 import org.netbeans.api.editor.settings.CodeTemplateDescription;
 
 /**
@@ -46,14 +47,17 @@ public final class CodeTemplateDescription {
      * @param description non-null description.
      * @param parametrized non-null parametrized text.
      */
-    public CodeTemplateDescription(String abbreviation, String description, String parametrizedText) {
+    public CodeTemplateDescription(String abbreviation, String description, String parametrizedText, List/*<String>*/ contexts) {
         assert (abbreviation != null);
         assert (description != null);
         assert (parametrizedText != null);
         this.abbreviation = abbreviation;
         this.description = description;
         this.parametrizedText = parametrizedText;
+	this.contexts = contexts;
     }
+    
+    private final List/*<String>*/ contexts;    
     
     /**
      * Get abbreviation that triggers expansion of this code template.
@@ -88,6 +92,10 @@ public final class CodeTemplateDescription {
      */
     public String getParametrizedText() {
         return parametrizedText;
+    }
+
+    public List/*<String>*/ getContexts() {
+        return contexts;
     }
 
     public String toString() {

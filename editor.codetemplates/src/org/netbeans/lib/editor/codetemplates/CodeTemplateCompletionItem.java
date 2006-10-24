@@ -24,6 +24,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
@@ -124,21 +125,19 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     }
 
     public void defaultAction(JTextComponent component) {
+        Completion.get().hideAll();
         // Remove the typed part
         Document doc = component.getDocument();
-        int caretOffset = component.getCaretPosition();
+        int caretOffset = component.getSelectionStart();
         int initMatchLen = getInitialMatchLength(doc, caretOffset, codeTemplate.getParametrizedText());
         if (initMatchLen > 0) {
-            // Select the typed prefix so that it gets removed
-            //   by code template insertion
-            // Caret position should correspond to the insertion point
-            //   so move dot to lower position
-            component.setCaretPosition(caretOffset);
-            component.moveCaretPosition(caretOffset - initMatchLen);
+            try {
+                // Remove the typed prefix
+                doc.remove(caretOffset - initMatchLen, initMatchLen);
+            } catch (BadLocationException ble) {
+            }
         }
-
         codeTemplate.insert(component);
-        Completion.get().hideAll();
     }
     
     public void processKeyEvent(KeyEvent evt) {
@@ -176,7 +175,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     }
 
     public int getSortPriority() {
-        return 550;
+        return 650;
     }        
     
     public CharSequence getSortText() {

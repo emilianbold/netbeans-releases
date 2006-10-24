@@ -47,6 +47,16 @@ public interface CompletionProvider {
     public static final int TOOLTIP_QUERY_TYPE = 4;
 
     /**
+     * The <code>int</code> value representing the query for a smart code completion.
+     */
+    public static final int COMPLETION_SMART_QUERY_TYPE = 9;
+
+    /**
+     * The <code>int</code> value representing the query for an all code completion.
+     */
+    public static final int COMPLETION_ALL_QUERY_TYPE = 17;
+
+    /**
      * Creates a task that performs a query of the given type on the given component.
      * <br>
      * This method is invoked in AWT thread only and the returned task

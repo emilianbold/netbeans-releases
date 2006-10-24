@@ -19,11 +19,7 @@
 
 package org.netbeans.lib.editor.codetemplates.spi;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.lib.editor.codetemplates.CodeTemplateParameterImpl;
 
@@ -61,6 +57,10 @@ public final class CodeTemplateParameter {
      */
     public static final String CURSOR_PARAMETER_NAME = "cursor"; // NOI18N
     
+    public static final String SELECTION_PARAMETER_NAME = "selection"; // NOI18N
+
+    public static final String LINE_HINT_NAME = "line"; // NOI18N
+
     /**
      * Name of the hint that defines an explicit default value of a parameter.
      */

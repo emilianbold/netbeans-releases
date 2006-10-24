@@ -74,7 +74,7 @@ public final class CodeTemplateManager {
      * @return non-null code template that can be inserted into the document.
      */
     public CodeTemplate createTemporary(String parametrizedText) {
-        return new CodeTemplate(operation, "", "", parametrizedText); // NOI18N
+        return new CodeTemplate(operation, "", "", parametrizedText, null); // NOI18N
     }
     
     /**
@@ -138,7 +138,7 @@ public final class CodeTemplateManager {
         public CodeTemplate createCodeTemplate(
         CodeTemplateManagerOperation managerOperation,
         String abbreviation, String description, String parametrizedText) {
-            return new CodeTemplate(managerOperation, abbreviation, description, parametrizedText);
+            return new CodeTemplate(managerOperation, abbreviation, description, parametrizedText, null);
         }
         
     }

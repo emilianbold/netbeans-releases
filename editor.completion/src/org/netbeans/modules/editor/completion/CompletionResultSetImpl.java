@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.editor.completion;
 
-import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,8 +41,11 @@ public final class CompletionResultSetImpl {
     
     static {
         // Ensure the SPI accessor gets assigned
-        CompletionResultSet.class.getName();
+        try {
+            Class.forName(CompletionResultSet.class.getName(), true, CompletionResultSetImpl.class.getClassLoader());
+        } catch (ClassNotFoundException ex) {}
     }
+    
     private static final CompletionSpiPackageAccessor spi
             = CompletionSpiPackageAccessor.get();
 
@@ -65,9 +67,7 @@ public final class CompletionResultSetImpl {
     
     private int anchorOffset;
     
-    private List items;
-    
-    private boolean itemsAlreadySorted;
+    private List<CompletionItem> items;
     
     private boolean finished;
     
@@ -153,22 +153,22 @@ public final class CompletionResultSetImpl {
     public synchronized boolean addItem(CompletionItem item) {
         assert (item != null) : "Added item cannot be null";
         checkNotFinished();
-        if (!active || queryType != CompletionProvider.COMPLETION_QUERY_TYPE) {
+        if (!active || (queryType & CompletionProvider.COMPLETION_QUERY_TYPE) == 0) {
             return false; // signal do not add any further results
         }
 
         if (items == null) {
             int estSize = (estimatedItemCount == -1) ? 10 : estimatedItemCount;
-            items = new ArrayList(estSize);
+            items = new ArrayList<CompletionItem>(estSize);
         }
         items.add(item);
         return items.size() < 1000;
     }
     
-    public boolean addAllItems(Collection/*<CompletionItem>*/ items) {
+    public boolean addAllItems(Collection<? extends CompletionItem> items) {
         boolean cont = true;
-        for (Iterator it = items.iterator(); it.hasNext();) {
-            cont = addItem((CompletionItem)it.next());
+        for (Iterator<? extends CompletionItem> it = items.iterator(); it.hasNext();) {
+            cont = addItem(it.next());
         }
         return cont;
     }
@@ -176,9 +176,9 @@ public final class CompletionResultSetImpl {
     /**
      * @return non-null list of items.
      */
-    public synchronized List getItems() {
+    public synchronized List<? extends CompletionItem> getItems() {
         assert isFinished() : "Adding not finished";
-        return (items != null) ? items : Collections.EMPTY_LIST;
+        return (items != null) ? items : Collections.<CompletionItem>emptyList();
     }
     
     public synchronized void setDocumentation(CompletionDocumentation documentation) {

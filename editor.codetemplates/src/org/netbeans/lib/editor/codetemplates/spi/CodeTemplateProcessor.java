@@ -19,8 +19,6 @@
 
 package org.netbeans.lib.editor.codetemplates.spi;
 
-import java.util.Collection;
-
 /**
  * Fills in default values of the code template's parameters and may react
  * to user's typing modifications of the parameters.
