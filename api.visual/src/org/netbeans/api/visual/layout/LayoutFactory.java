@@ -13,6 +13,9 @@
 package org.netbeans.api.visual.layout;
 
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.api.visual.graph.GraphPinScene;
+import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.modules.visual.layout.*;
 
 /**
@@ -146,6 +149,36 @@ public final class LayoutFactory {
      */
     public static SceneLayout createDevolveWidgetLayout (Widget widget, Layout devolveLayout, boolean animate) {
         return new DevolveWidgetLayout (widget, devolveLayout, animate);
+    }
+
+    /**
+     * Creates a scene layout which performs a specified graph-oriented layout on a specified GraphScene.
+     * @param graphScene the graph scene
+     * @param graphLayout the graph layout
+     * @return the scene layout
+     */
+    public static <N,E> SceneLayout createSceneGraphLayout (final GraphScene<N,E> graphScene, final GraphLayout<N,E> graphLayout) {
+        assert graphScene != null  &&  graphLayout != null;
+        return new SceneLayout(graphScene) {
+            protected void performLayout () {
+                graphLayout.layoutGraph (graphScene);
+            }
+        };
+    }
+
+    /**
+     * Creates a scene layout which performs a specified graph-oriented layout on a specified GraphPinScene.
+     * @param graphPinScene the graph pin scene
+     * @param graphLayout the graph layout
+     * @return the scene layout
+     */
+    public static <N,E> SceneLayout createSceneGraphLayout (final GraphPinScene<N,?,E> graphPinScene, final GraphLayout<N,E> graphLayout) {
+        assert graphPinScene != null && graphLayout != null;
+        return new SceneLayout(graphPinScene) {
+            protected void performLayout () {
+                graphLayout.layoutGraph (graphPinScene);
+            }
+        };
     }
 
 }

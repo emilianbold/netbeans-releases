@@ -59,11 +59,21 @@ public abstract class SceneLayout {
 
     /**
      * Schedules the performing of this scene layout just immediately after the scene validation.
-     * It also calls scene revalidation.
+     * It also calls scene revalidation. The Scene.validate method has to be manually called after.
      */
     public final void invokeLayout () {
         attach ();
         scene.revalidate ();
+    }
+
+    /**
+     * Schedules the performing of this scene layout just immediately after the scene validation.
+     * It also calls scene revalidation. The Scene.validate method is called automatically at the end.
+     */
+    public final void invokeLayoutImmediately () {
+        attach ();
+        scene.revalidate ();
+        scene.validate ();
     }
 
     /**

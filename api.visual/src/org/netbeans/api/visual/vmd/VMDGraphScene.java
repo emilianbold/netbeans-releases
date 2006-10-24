@@ -18,6 +18,9 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphPinScene;
+import org.netbeans.api.visual.graph.layout.GridGraphLayout;
+import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -53,6 +56,8 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
     private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction (new MyPopupMenuProvider ());
     private WidgetAction moveAction = ActionFactory.createMoveAction ();
 
+    private SceneLayout sceneLayout;
+
     /**
      * Creates a VMD graph scene.
      */
@@ -67,6 +72,8 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         getActions ().addAction (ActionFactory.createZoomAction ());
         getActions ().addAction (ActionFactory.createPanAction ());
         getActions ().addAction (ActionFactory.createRectangularSelectAction (this, backgroundLayer));
+
+        sceneLayout = LayoutFactory.createSceneGraphLayout (this, new GridGraphLayout<String, String> ().setChecker (true));
     }
 
     /**
@@ -155,6 +162,13 @@ public class VMDGraphScene extends GraphPinScene<String, String, String> {
         } else
             anchor = nodeWidget.getNodeAnchor ();
         return anchor;
+    }
+
+    /**
+     * Invokes layout of the scene.
+     */
+    public void layoutScene () {
+        sceneLayout.invokeLayout ();
     }
 
     private static class MyPopupMenuProvider implements PopupMenuProvider {
