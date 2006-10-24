@@ -826,15 +826,20 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     }
     
     public SimpleSection getVariablesSection() {
-        return GuardedSectionManager.getInstance(getDocument()).findSimpleSection(SECTION_VARIABLES);
+        return getGuardedSectionManager().findSimpleSection(SECTION_VARIABLES);
     }
     
     public SimpleSection getInitComponentSection() {
-        return GuardedSectionManager.getInstance(getDocument()).findSimpleSection(SECTION_INIT_COMPONENTS);
+        return getGuardedSectionManager().findSimpleSection(SECTION_INIT_COMPONENTS);
     }
     
     public GuardedSectionManager getGuardedSectionManager() {
-        return GuardedSectionManager.getInstance(getDocument());
+        try {
+            StyledDocument doc = openDocument();
+            return GuardedSectionManager.getInstance(doc);
+        } catch (IOException ex) {
+            throw (IllegalStateException) new IllegalStateException("cannot open document").initCause(ex); // NOI18N
+        }
     }
 
     private final class FormGEditor implements GuardedEditorSupport {
